@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Threading;
 using Microsoft.PowerToys.QuickAccess;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -89,19 +90,54 @@ public sealed class QuickAccessFlyoutStateTests
     }
 
     [TestMethod]
-    public void LaunchContextParsesSeparateHideEvent()
+    public void LaunchContextParsesVisibilityEvents()
     {
-        var context = QuickAccessLaunchContext.Parse(["--show-event=show", "--hide-event=hide", "--exit-event=exit"]);
-        Assert.AreEqual("show", context.ShowEventName);
-        Assert.AreEqual("hide", context.HideEventName);
+        var context = QuickAccessLaunchContext.Parse(["--visibility-state-event=state", "--visibility-changed-event=changed", "--exit-event=exit"]);
+        Assert.AreEqual("state", context.VisibilityStateEventName);
+        Assert.AreEqual("changed", context.VisibilityChangedEventName);
         Assert.AreEqual("exit", context.ExitEventName);
     }
 
     [TestMethod]
-    public void LaunchContextStillAcceptsExistingArguments()
+    public void LaunchContextParsesPipeArgumentsWithoutVisibilityEvents()
     {
-        var context = QuickAccessLaunchContext.Parse(["--show-event=show", "--exit-event=exit"]);
-        Assert.IsNull(context.HideEventName);
-        Assert.AreEqual("show", context.ShowEventName);
+        var context = QuickAccessLaunchContext.Parse(["--runner-pipe=runner", "--app-pipe=app", "--exit-event=exit"]);
+        Assert.IsNull(context.VisibilityStateEventName);
+        Assert.IsNull(context.VisibilityChangedEventName);
+        Assert.AreEqual("runner", context.RunnerPipeName);
+        Assert.AreEqual("app", context.AppPipeName);
+    }
+
+    [TestMethod]
+    public void CoalescedVisibilitySignalsExposeLatestRequestedState()
+    {
+        AssertLatestVisibilityState(false, true, expected: true);
+        AssertLatestVisibilityState(true, false, expected: false);
+    }
+
+    private static void AssertLatestVisibilityState(bool firstRequest, bool latestRequest, bool expected)
+    {
+        using var stateEvent = new EventWaitHandle(false, EventResetMode.ManualReset);
+        using var changedEvent = new EventWaitHandle(false, EventResetMode.AutoReset);
+
+        SetVisibilityRequest(firstRequest, stateEvent, changedEvent);
+        SetVisibilityRequest(latestRequest, stateEvent, changedEvent);
+
+        Assert.AreEqual(0, WaitHandle.WaitAny([changedEvent], 0));
+        Assert.AreEqual(expected, stateEvent.WaitOne(0));
+    }
+
+    private static void SetVisibilityRequest(bool isVisible, EventWaitHandle stateEvent, EventWaitHandle changedEvent)
+    {
+        if (isVisible)
+        {
+            stateEvent.Set();
+        }
+        else
+        {
+            stateEvent.Reset();
+        }
+
+        changedEvent.Set();
     }
 }

@@ -19,11 +19,11 @@ namespace
 {
     wil::unique_handle quick_access_process;
     wil::unique_handle quick_access_job;
-    wil::unique_handle show_event;
-    wil::unique_handle hide_event;
+    wil::unique_handle visibility_state_event;
+    wil::unique_handle visibility_changed_event;
     wil::unique_handle exit_event;
-    std::wstring show_event_name;
-    std::wstring hide_event_name;
+    std::wstring visibility_state_event_name;
+    std::wstring visibility_changed_event_name;
     std::wstring exit_event_name;
     std::wstring runner_pipe_name;
     std::wstring app_pipe_name;
@@ -57,11 +57,11 @@ namespace
 
         quick_access_process.reset();
         quick_access_job.reset();
-        show_event.reset();
-        hide_event.reset();
+        visibility_state_event.reset();
+        visibility_changed_event.reset();
         exit_event.reset();
-        show_event_name.clear();
-        hide_event_name.clear();
+        visibility_state_event_name.clear();
+        visibility_changed_event_name.clear();
         exit_event_name.clear();
         runner_pipe_name.clear();
         app_pipe_name.clear();
@@ -82,10 +82,10 @@ namespace
     {
         std::wstring command_line = L"\"";
         command_line += exe_path;
-        command_line += L"\" --show-event=\"";
-        command_line += show_event_name;
-        command_line += L"\" --hide-event=\"";
-        command_line += hide_event_name;
+        command_line += L"\" --visibility-state-event=\"";
+        command_line += visibility_state_event_name;
+        command_line += L"\" --visibility-changed-event=\"";
+        command_line += visibility_changed_event_name;
         command_line += L"\" --exit-event=\"";
         command_line += exit_event_name;
         command_line += L"\"";
@@ -102,6 +102,26 @@ namespace
             command_line += L"\"";
         }
         return command_line;
+    }
+
+    void update_visibility_state(bool is_visible)
+    {
+        if (!visibility_state_event || !visibility_changed_event)
+        {
+            return;
+        }
+
+        const BOOL state_updated = is_visible ? SetEvent(visibility_state_event.get()) : ResetEvent(visibility_state_event.get());
+        if (!state_updated)
+        {
+            Logger::warn(L"QuickAccessHost: failed to update visibility state. error={}.", GetLastError());
+            return;
+        }
+
+        if (!SetEvent(visibility_changed_event.get()))
+        {
+            Logger::warn(L"QuickAccessHost: failed to signal visibility change. error={}.", GetLastError());
+        }
     }
 }
 
@@ -153,22 +173,24 @@ namespace QuickAccessHost
 
         reset_state_locked();
 
-        show_event_name = build_event_name(L"_Show");
-        hide_event_name = build_event_name(L"_Hide");
+        visibility_state_event_name = build_event_name(L"_VisibilityState");
+        visibility_changed_event_name = build_event_name(L"_VisibilityChanged");
         exit_event_name = build_event_name(L"_Exit");
 
-        show_event.reset(CreateEventW(nullptr, FALSE, FALSE, show_event_name.c_str()));
-        if (!show_event)
+        // The state event is manual-reset so it stores the latest requested visibility.
+        visibility_state_event.reset(CreateEventW(nullptr, TRUE, FALSE, visibility_state_event_name.c_str()));
+        if (!visibility_state_event)
         {
-            Logger::error(L"QuickAccessHost: failed to create show event. error={}.", GetLastError());
+            Logger::error(L"QuickAccessHost: failed to create visibility state event. error={}.", GetLastError());
             reset_state_locked();
             return;
         }
 
-        hide_event.reset(CreateEventW(nullptr, FALSE, FALSE, hide_event_name.c_str()));
-        if (!hide_event)
+        // This auto-reset event only wakes the listener; multiple changes may coalesce.
+        visibility_changed_event.reset(CreateEventW(nullptr, FALSE, FALSE, visibility_changed_event_name.c_str()));
+        if (!visibility_changed_event)
         {
-            Logger::error(L"QuickAccessHost: failed to create hide event. error={}.", GetLastError());
+            Logger::error(L"QuickAccessHost: failed to create visibility changed event. error={}.", GetLastError());
             reset_state_locked();
             return;
         }
@@ -304,23 +326,13 @@ namespace QuickAccessHost
     {
         start();
         std::scoped_lock lock(quick_access_mutex);
-
-        if (show_event)
-        {
-            if (!SetEvent(show_event.get()))
-            {
-                Logger::warn(L"QuickAccessHost: failed to signal show event. error={}.", GetLastError());
-            }
-        }
+        update_visibility_state(true);
     }
 
     void hide()
     {
         std::scoped_lock lock(quick_access_mutex);
-        if (hide_event && !SetEvent(hide_event.get()))
-        {
-            Logger::warn(L"QuickAccessHost: failed to signal hide event. error={}.", GetLastError());
-        }
+        update_visibility_state(false);
     }
 
     void stop()

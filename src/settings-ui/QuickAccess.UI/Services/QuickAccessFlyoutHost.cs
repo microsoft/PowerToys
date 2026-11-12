@@ -11,9 +11,7 @@ using DesktopFlyouts;
 using Microsoft.PowerToys.QuickAccess.Flyout;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
 using Microsoft.UI.Dispatching;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
-using Windows.Graphics;
 
 namespace Microsoft.PowerToys.QuickAccess.Services;
 
@@ -28,11 +26,11 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
     private readonly long _flyoutIsOpenChangedToken;
     private readonly QuickAccessFlyoutState _visibilityState = new();
     private bool _disposed;
-    private EventWaitHandle? _showEvent;
-    private EventWaitHandle? _hideEvent;
+    private EventWaitHandle? _visibilityStateEvent;
+    private EventWaitHandle? _visibilityChangedEvent;
     private EventWaitHandle? _exitEvent;
     private ManualResetEventSlim? _listenerShutdownEvent;
-    private Thread? _showListenerThread;
+    private Thread? _visibilityListenerThread;
     private Thread? _exitListenerThread;
     private CancellationTokenSource? _trimCts;
 
@@ -91,19 +89,9 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         if (action == QuickAccessFlyoutAction.Show)
         {
             CancelMemoryTrim();
-            if (GetCursorPos(out var cursor))
-            {
-                var displayArea = DisplayArea.GetFromPoint(new PointInt32(cursor.X, cursor.Y), DisplayAreaFallback.Nearest);
-                var workArea = displayArea.WorkArea;
-
-                // Keep the anchor inside the cursor's monitor. DesktopFlyouts clamps the
-                // flyout to that work area's bottom-right corner, including its margins.
-                _flyout.Show(new System.Drawing.Point(workArea.X + workArea.Width - 1, workArea.Y + workArea.Height - 1));
-            }
-            else
-            {
-                _flyout.Show();
-            }
+            _flyout.Show(DesktopFlyoutPosition.InWorkArea(
+                DesktopFlyoutWorkAreaPosition.BottomRight,
+                DesktopFlyoutMonitorSelection.Cursor));
 
             _flyout.RefreshIfAppsList();
         }
@@ -175,28 +163,32 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
 
     private void InitializeEventListeners()
     {
-        if (!string.IsNullOrEmpty(_launchContext.HideEventName))
+        if (!string.IsNullOrEmpty(_launchContext.VisibilityStateEventName))
         {
             try
             {
-                _hideEvent = EventWaitHandle.OpenExisting(_launchContext.HideEventName);
+                _visibilityStateEvent = EventWaitHandle.OpenExisting(_launchContext.VisibilityStateEventName);
             }
             catch (WaitHandleCannotBeOpenedException)
             {
             }
         }
 
-        if (!string.IsNullOrEmpty(_launchContext.ShowEventName))
+        if (!string.IsNullOrEmpty(_launchContext.VisibilityChangedEventName))
         {
             try
             {
-                _showEvent = EventWaitHandle.OpenExisting(_launchContext.ShowEventName);
-                EnsureListenerInfrastructure();
-                StartShowListenerThread();
+                _visibilityChangedEvent = EventWaitHandle.OpenExisting(_launchContext.VisibilityChangedEventName);
             }
             catch (WaitHandleCannotBeOpenedException)
             {
             }
+        }
+
+        if (_visibilityStateEvent is not null && _visibilityChangedEvent is not null)
+        {
+            EnsureListenerInfrastructure();
+            StartVisibilityListenerThread();
         }
 
         if (!string.IsNullOrEmpty(_launchContext.ExitEventName))
@@ -218,19 +210,19 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         _listenerShutdownEvent ??= new ManualResetEventSlim(false);
     }
 
-    private void StartShowListenerThread()
+    private void StartVisibilityListenerThread()
     {
-        if (_showEvent == null || _listenerShutdownEvent == null || _showListenerThread != null)
+        if (_visibilityStateEvent is null || _visibilityChangedEvent is null || _listenerShutdownEvent == null || _visibilityListenerThread != null)
         {
             return;
         }
 
-        _showListenerThread = new Thread(ListenForShowEvents)
+        _visibilityListenerThread = new Thread(ListenForVisibilityChanges)
         {
             IsBackground = true,
-            Name = "QuickAccess-ShowEventListener",
+            Name = "QuickAccess-VisibilityListener",
         };
-        _showListenerThread.Start();
+        _visibilityListenerThread.Start();
     }
 
     private void StartExitListenerThread()
@@ -248,34 +240,27 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         _exitListenerThread.Start();
     }
 
-    private void ListenForShowEvents()
+    private void ListenForVisibilityChanges()
     {
-        if (_showEvent == null || _listenerShutdownEvent == null)
+        if (_visibilityStateEvent is null || _visibilityChangedEvent is null || _listenerShutdownEvent == null)
         {
             return;
         }
 
-        var handles = _hideEvent is null
-            ? new WaitHandle[] { _showEvent, _listenerShutdownEvent.WaitHandle }
-            : new WaitHandle[] { _showEvent, _hideEvent, _listenerShutdownEvent.WaitHandle };
+        var handles = new WaitHandle[] { _visibilityChangedEvent, _listenerShutdownEvent.WaitHandle };
         try
         {
             while (true)
             {
                 var index = WaitHandle.WaitAny(handles);
-                if (index == handles.Length - 1)
+                if (index == 1)
                 {
                     break;
                 }
 
-                if (index == 0)
-                {
-                    _dispatcherQueue.TryEnqueue(ShowFlyout);
-                }
-                else
-                {
-                    _dispatcherQueue.TryEnqueue(HideFlyout);
-                }
+                // Read the manual-reset state when the UI thread handles the wake-up so
+                // coalesced change signals always apply the latest requested visibility.
+                _dispatcherQueue.TryEnqueue(ApplyRequestedVisibility);
             }
         }
         catch (ObjectDisposedException)
@@ -283,6 +268,23 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         }
         catch (ThreadInterruptedException)
         {
+        }
+    }
+
+    private void ApplyRequestedVisibility()
+    {
+        if (_disposed || _visibilityStateEvent is null)
+        {
+            return;
+        }
+
+        if (_visibilityStateEvent.WaitOne(0))
+        {
+            ShowFlyout();
+        }
+        else
+        {
+            HideFlyout();
         }
     }
 
@@ -317,7 +319,7 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         }
 
         _listenerShutdownEvent.Set();
-        JoinListenerThread(ref _showListenerThread);
+        JoinListenerThread(ref _visibilityListenerThread);
         JoinListenerThread(ref _exitListenerThread);
         _listenerShutdownEvent.Dispose();
         _listenerShutdownEvent = null;
@@ -357,8 +359,8 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
 
         CancelMemoryTrim();
         StopEventListeners();
-        _showEvent?.Dispose();
-        _hideEvent?.Dispose();
+        _visibilityStateEvent?.Dispose();
+        _visibilityChangedEvent?.Dispose();
         _exitEvent?.Dispose();
         _flyout.UnregisterPropertyChangedCallback(DesktopFlyout.IsOpenProperty, _flyoutIsOpenChangedToken);
         _flyout.Dispose();
@@ -371,15 +373,4 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, nint dwMinimumWorkingSetSize, nint dwMaximumWorkingSetSize);
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct NativePoint
-    {
-        public int X;
-        public int Y;
-    }
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GetCursorPos(out NativePoint point);
 }

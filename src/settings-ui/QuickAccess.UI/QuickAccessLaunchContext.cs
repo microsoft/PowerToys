@@ -9,29 +9,34 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.PowerToys.QuickAccess;
 
-public sealed record QuickAccessLaunchContext(string? ShowEventName, string? ExitEventName, string? RunnerPipeName, string? AppPipeName, string? HideEventName = null)
+public sealed record QuickAccessLaunchContext(
+    string? VisibilityStateEventName,
+    string? VisibilityChangedEventName,
+    string? ExitEventName,
+    string? RunnerPipeName,
+    string? AppPipeName)
 {
     public static QuickAccessLaunchContext Parse(string[] args)
     {
-        string? showEvent = null;
+        string? visibilityStateEvent = null;
+        string? visibilityChangedEvent = null;
         string? exitEvent = null;
         string? runnerPipe = null;
         string? appPipe = null;
-        string? hideEvent = null;
 
         foreach (var arg in args)
         {
-            if (TryReadValue(arg, "--show-event", out var value))
+            if (TryReadValue(arg, "--visibility-state-event", out var value))
             {
-                showEvent = value;
+                visibilityStateEvent = value;
+            }
+            else if (TryReadValue(arg, "--visibility-changed-event", out value))
+            {
+                visibilityChangedEvent = value;
             }
             else if (TryReadValue(arg, "--exit-event", out value))
             {
                 exitEvent = value;
-            }
-            else if (TryReadValue(arg, "--hide-event", out value))
-            {
-                hideEvent = value;
             }
             else if (TryReadValue(arg, "--runner-pipe", out value))
             {
@@ -43,7 +48,7 @@ public sealed record QuickAccessLaunchContext(string? ShowEventName, string? Exi
             }
         }
 
-        return new QuickAccessLaunchContext(showEvent, exitEvent, runnerPipe, appPipe, hideEvent);
+        return new QuickAccessLaunchContext(visibilityStateEvent, visibilityChangedEvent, exitEvent, runnerPipe, appPipe);
     }
 
     private static bool TryReadValue(string candidate, string key, [NotNullWhen(true)] out string? value)
