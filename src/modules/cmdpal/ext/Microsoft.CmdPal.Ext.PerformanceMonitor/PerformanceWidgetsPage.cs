@@ -1478,6 +1478,20 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
     public void ConfigureBandItem(ListItem item) => PerformanceMonitorDockItemPresentation.ConfigureGpuValueLabel(item, _gpuDisplayInfo);
 
+    // The card shows the GPU temperature, which the dock and the overview don't need, so it's read
+    // only while the card is open.
+    protected override void Loaded()
+    {
+        _dataManager.GetGPUStats().RequestDetails(true);
+        base.Loaded();
+    }
+
+    protected override void Unloaded()
+    {
+        base.Unloaded();
+        _dataManager.GetGPUStats().RequestDetails(false);
+    }
+
     protected override void OnActivated() => _dataManager.Start();
 
     protected override void OnDeactivated() => _dataManager.Stop();

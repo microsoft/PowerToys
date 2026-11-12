@@ -195,4 +195,72 @@ public class GPUStatsTests
         Assert.AreEqual(0, stats.GetGPUEngineHistory(0, GPUStats.EngineTypes.Length).Length);
         Assert.AreEqual(0, stats.GetGPUEngineHistory(-1, -1).Length);
     }
+
+    [TestMethod]
+    public void GetGPUTemperature_IsNotReadUntilACardRequestsIt()
+    {
+        var reads = 0;
+        using var stats = new GPUStats(
+            new() { [1] = new("NVIDIA GeForce RTX 4090", IsSoftware: false) },
+            [1],
+            _ =>
+            {
+                reads++;
+                return 44.4f;
+            });
+
+        stats.UpdateTemperatures();
+
+        Assert.AreEqual(0, reads);
+        Assert.AreEqual("--", stats.GetGPUTemperature(0));
+    }
+
+    [TestMethod]
+    public void GetGPUTemperature_ShowsEachAdaptersTemperatureWhileACardIsOpen()
+    {
+        using var stats = new GPUStats(
+            new()
+            {
+                [1] = new("NVIDIA GeForce RTX 4090", IsSoftware: false),
+                [2] = new("AMD Radeon(TM) Graphics", IsSoftware: false),
+            },
+            [1, 2],
+            luid => luid == 1 ? 44.4f : 56f);
+
+        stats.RequestDetails(true);
+        stats.UpdateTemperatures();
+
+        Assert.AreEqual("44 °C", stats.GetGPUTemperature(0));
+        Assert.AreEqual("56 °C", stats.GetGPUTemperature(1));
+    }
+
+    [TestMethod]
+    public void GetGPUTemperature_IsForgottenWhenTheLastCardCloses()
+    {
+        using var stats = new GPUStats(new() { [1] = new("NVIDIA GeForce RTX 4090", IsSoftware: false) }, [1], _ => 44.4f);
+
+        stats.RequestDetails(true);
+        stats.RequestDetails(true);
+        stats.UpdateTemperatures();
+        stats.RequestDetails(false);
+        stats.UpdateTemperatures();
+
+        Assert.AreEqual("44 °C", stats.GetGPUTemperature(0));
+
+        stats.RequestDetails(false);
+        stats.UpdateTemperatures();
+
+        Assert.AreEqual("--", stats.GetGPUTemperature(0));
+    }
+
+    [TestMethod]
+    public void GetGPUTemperature_AdapterWithoutATemperatureShowsUnavailable()
+    {
+        using var stats = new GPUStats(new() { [1] = new("Microsoft Basic Render Driver", IsSoftware: true) }, [1], _ => 0f);
+
+        stats.RequestDetails(true);
+        stats.UpdateTemperatures();
+
+        Assert.AreEqual("--", stats.GetGPUTemperature(0));
+    }
 }
