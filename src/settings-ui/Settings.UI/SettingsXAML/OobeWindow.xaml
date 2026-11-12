@@ -178,6 +178,11 @@
                     x:Uid="Shell_ZoomIt"
                     Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/ZoomIt.png}"
                     Tag="ZoomIt" />
+                <NavigationViewItem
+                    x:Uid="Shell_SoundManager"
+                    AutomationProperties.AutomationId="SoundManagerOobeNavItem"
+                    Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SoundManager.png}"
+                    Tag="SoundManager" />
             </NavigationView.MenuItems>
             <NavigationView.PaneFooter>
                 <NavigationViewItem

@@ -1638,6 +1638,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.ShortcutGuide.exe",
         L"PowerToys.ShortcutGuide.IndexYmlGenerator.exe",
         L"PowerToys.ZoomIt.exe",
+        L"PowerToys.SoundManager.exe",
         L"PowerToys.DSC.exe",
         L"PowerToys.BugReportTool.exe",
         L"PowerToys.StylesReportTool.exe",

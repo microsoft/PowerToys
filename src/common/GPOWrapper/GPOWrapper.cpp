@@ -44,6 +44,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredGrabAndMoveEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredSoundManagerEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredSoundManagerEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredFancyZonesEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredFancyZonesEnabledValue());

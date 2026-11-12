@@ -58,6 +58,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
       call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
       call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
       call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
+      call move /Y ..\..\..\SoundManager.wxs.bk ..\..\..\SoundManager.wxs
       call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
       call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
       call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
@@ -135,6 +136,7 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="Run.wxs" />
     <Compile Include="Settings.wxs" />
     <Compile Include="ShortcutGuide.wxs" />
+    <Compile Include="SoundManager.wxs" />
     <Compile Include="Tools.wxs" />
     <Compile Include="CliShims.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />

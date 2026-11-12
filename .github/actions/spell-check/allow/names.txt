@@ -23,6 +23,7 @@ registrypreview
 rooler
 scoobe
 shortcutguide
+soundmanager
 
 
 # USERS

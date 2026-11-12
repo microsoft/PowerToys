@@ -57,6 +57,7 @@
       <ComponentGroupRef Id="RegistryPreviewComponentGroup" />
       <ComponentGroupRef Id="RunComponentGroup" />
       <ComponentGroupRef Id="SettingsComponentGroup" />
+      <ComponentGroupRef Id="SoundManagerComponentGroup" />
       <ComponentGroupRef Id="ShortcutGuideComponentGroup" />
       <ComponentGroupRef Id="MouseWithoutBordersComponentGroup" />
       <ComponentGroupRef Id="EnvironmentVariablesComponentGroup" />

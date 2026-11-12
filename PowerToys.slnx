@@ -1088,6 +1088,13 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/SoundManager/">
+    <Project Path="src/modules/SoundManager/SoundManagerModuleInterface/SoundManagerModuleInterface.vcxproj" Id="b4c7e2a1-9d63-4f58-a7e2-3c81d0b5f927" />
+    <Project Path="src/modules/SoundManager/SoundManager/SoundManager.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
   <Folder Name="/modules/MeasureTool/">
     <Project Path="src/modules/MeasureTool/MeasureToolCore/PowerToys.MeasureToolCore.vcxproj" Id="54a93af7-60c7-4f6c-99d2-fbb1f75f853a">
       <BuildDependency Project="src/common/Display/Display.vcxproj" />

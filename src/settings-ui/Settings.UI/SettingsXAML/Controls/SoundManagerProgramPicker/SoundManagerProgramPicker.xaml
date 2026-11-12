@@ -1,0 +1,60 @@
+﻿<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.SoundManagerProgramPicker"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:helpers="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid
+        MinWidth="420"
+        MinHeight="320"
+        RowSpacing="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <AutoSuggestBox
+            x:Name="SearchBox"
+            x:Uid="SoundManager_ProgramSearchBox"
+            TextChanged="SearchBox_TextChanged">
+            <AutoSuggestBox.QueryIcon>
+                <SymbolIcon Symbol="Find" />
+            </AutoSuggestBox.QueryIcon>
+        </AutoSuggestBox>
+        <Grid Grid.Row="1">
+            <ListView
+                x:Name="ProgramList"
+                Margin="-4,0,-4,0"
+                AutomationProperties.AutomationId="SoundManager_ProgramList"
+                IsItemClickEnabled="True"
+                ItemClick="ProgramList_ItemClick"
+                ItemsSource="{x:Bind FilteredPrograms, Mode=OneTime}"
+                SelectionMode="Single">
+                <ListView.ItemContainerStyle>
+                    <!-- The theme draws the row highlight 4 pixels inside the row, so the padding gives the name the same room inside it. -->
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Margin" Value="0,0,0,2" />
+                        <Setter Property="Padding" Value="12,0,8,0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment" Value="Center" />
+                        <Setter Property="IsTabStop" Value="False" />
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate x:DataType="helpers:SoundManagerProgram">
+                        <TextBlock Text="{x:Bind Name, Mode=OneWay}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <TextBlock
+                x:Name="EmptyStateText"
+                Margin="12"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                TextWrapping="Wrap"
+                Visibility="Collapsed" />
+        </Grid>
+    </Grid>
+</UserControl>

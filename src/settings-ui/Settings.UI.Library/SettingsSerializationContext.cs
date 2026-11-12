@@ -80,6 +80,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(WorkspacesSettings))]
     [JsonSerializable(typeof(GrabAndMoveSettings))]
     [JsonSerializable(typeof(ZoomItSettings))]
+    [JsonSerializable(typeof(SoundManagerSettings))]
 
     // Properties Classes
     [JsonSerializable(typeof(AdvancedPasteProperties))]
@@ -123,6 +124,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(WorkspacesProperties))]
     [JsonSerializable(typeof(GrabAndMoveProperties))]
     [JsonSerializable(typeof(ZoomItProperties))]
+    [JsonSerializable(typeof(SoundManagerProperties))]
+    [JsonSerializable(typeof(SoundManagerMuteShortcuts))]
+    [JsonSerializable(typeof(SoundManagerMuteShortcut))]
 
     // Base Property Types (used throughout settings)
     [JsonSerializable(typeof(BoolProperty))]

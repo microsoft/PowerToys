@@ -31,6 +31,7 @@ This section contains documentation for individual PowerToys modules, including 
 | [Registry Preview](registrypreview.md) | Tool for visualizing and editing Registry files |
 | [Screen Ruler](screenruler.md) | Tool for measuring pixel distances and color boundaries on screen |
 | [Shortcut Guide](shortcut_guide.md) | Tool for displaying Windows keyboard shortcuts when holding the Windows key |
+| [Sound Manager](soundmanager.md) | Tool for controlling the volume of every program, the microphone and the audio devices from one window |
 | [Text Extractor](textextractor.md) | Tool for extracting text from images and screenshots |
 | [Window Hopper (Alt Window Cycle)](alt_window_cycle.md) | Tool for cycling between windows of the focused application |
 | [Workspaces](workspaces.md) | Tool for saving and restoring window layouts for different projects |
