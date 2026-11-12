@@ -572,7 +572,7 @@ opera.exe</value>
     <value>Try reconnecting when connection is lost</value>
   </data>
   <data name="MouseWithoutBorders_Switch2AllPcShortcut.Header" xml:space="preserve">
-    <value>Control all computes are once</value>
+    <value>Control all computers at once</value>
   </data>
   <data name="Shell_Welcome.Content" xml:space="preserve">
     <value>Getting started</value>
@@ -2323,6 +2323,17 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="PasteAsPngFile.Header" xml:space="preserve">
     <value>Paste as .png file</value>
   </data>
+  <data name="PasteAsJpgFile.Header" xml:space="preserve">
+    <value>Paste as .jpg file</value>
+  </data>
+  <data name="PasteAsJpgQuality.Header" xml:space="preserve">
+    <value>JPEG quality level</value>
+    <comment>JPEG is the image compression format, used when pasting the clipboard image as a .jpg file</comment>
+  </data>
+  <data name="PasteAsJpgQuality.Description" xml:space="preserve">
+    <value>Higher values produce better image quality but larger files</value>
+    <comment>Describes the JPEG quality level slider</comment>
+  </data>
   <data name="PasteAsHtmlFile.Header" xml:space="preserve">
     <value>Paste as .html file</value>
   </data>
@@ -2607,6 +2618,12 @@ From there, simply click on one of the supported files in the File Explorer and 
   </data>
   <data name="Awake_DisplaySettingsCard.Description" xml:space="preserve">
     <value>This setting is only available when keeping the PC awake</value>
+  </data>
+  <data name="Awake_AllowDisplayOffWhileLockedSettingsCard.Header" xml:space="preserve">
+    <value>Allow screen to turn off while locked</value>
+  </data>
+  <data name="Awake_AllowDisplayOffWhileLockedSettingsCard.Description" xml:space="preserve">
+    <value>When off, "Keep screen on" stays in effect while Windows is locked. On Modern Standby systems, Windows may still turn off the display.</value>
   </data>
   <data name="Awake_ExpirationSettingsExpander.Description" xml:space="preserve">
     <value>Keep custom awake state until a specific date and time</value>

@@ -514,7 +514,9 @@ ENABLETAB
 ENABLETEMPLATE
 encodedlaunch
 encryptor
+endfacet
 ENDSESSION
+endsolid
 ENSUREVISIBLE
 ENTERIDLE
 ENTERMENULOOP
@@ -2160,6 +2162,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WDA
+wdk
 wdm
 wdp
 wdupenv
@@ -2259,6 +2262,7 @@ wprp
 wql
 wregex
 WResize
+WRITEFAULT
 WRITEOBJECTS
 Wrk
 wrl

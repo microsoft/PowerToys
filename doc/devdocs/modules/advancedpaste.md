@@ -37,7 +37,7 @@ Input defaults to the clipboard; use at most one of `--input <path>`, `--stdin`,
 
 Clipboard modes use the Win32/OLE clipboard so they do not require a foreground app window. Like the Windows clipboard itself, they require an interactive user session; use file or standard-stream modes for services and session-0 automation.
 
-Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. The CLI honors the Advanced Paste enabled policy and AI actions honor the configured provider, AI-related GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
+Built-in actions are `plain-text`, `markdown`, `json`, `fix-spelling-and-grammar`, `image-to-text`, `paste-as-txt-file`, `paste-as-png-file`, `paste-as-jpg-file`, `paste-as-html-file`, `transcode-to-mp3`, `transcode-to-mp4`, and `paste-with-ai`. Use `actions list` to include configured custom actions. The CLI honors the Advanced Paste enabled policy and AI actions honor the configured provider, AI-related GPO, moderation, and credentials; `--provider <id>` selects another configured provider.
 
 Root `--help` and `transform --help` describe every built-in action, input/output defaults, AI/custom-action setup, examples, size limits, cancellation, and exit codes without loading settings or providers. `actions list` includes descriptions; its JSON array uses keys `name`, `kind`, `id`, `requiresPrompt`, and `description`. Saved custom actions are discovered through `actions list`, since they depend on the user's configuration.
 

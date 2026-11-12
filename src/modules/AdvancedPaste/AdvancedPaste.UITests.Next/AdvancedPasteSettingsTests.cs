@@ -54,6 +54,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             "image-to-text",
             "paste-as-file.paste-as-txt-file",
             "paste-as-file.paste-as-png-file",
+            "paste-as-file.paste-as-jpg-file",
             "paste-as-file.paste-as-html-file",
             "transcode.transcode-to-mp3",
             "transcode.transcode-to-mp4",
@@ -400,6 +401,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     [DataRow("ImageToText", "image-to-text", "image", ProductStrings.ImageToText)]
     [DataRow("PasteAsTxtFile", "paste-as-file.paste-as-txt-file", "text", ProductStrings.PasteAsTxtFile)]
     [DataRow("PasteAsPngFile", "paste-as-file.paste-as-png-file", "image", ProductStrings.PasteAsPngFile)]
+    [DataRow("PasteAsJpgFile", "paste-as-file.paste-as-jpg-file", "image", ProductStrings.PasteAsJpgFile)]
     [DataRow("PasteAsHtmlFile", "paste-as-file.paste-as-html-file", "html", ProductStrings.PasteAsHtmlFile)]
     [DataRow("TranscodeToMp3", "transcode.transcode-to-mp3", "video", ProductStrings.TranscodeToMp3)]
     [DataRow("TranscodeToMp4", "transcode.transcode-to-mp4", "video", ProductStrings.TranscodeToMp4)]
@@ -433,7 +435,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         NavigateToSettings();
         var original = AdditionalAction(ReadProperties(), propertyPath)["isShown"]!.GetValue<bool>();
         string[] actions = card == "PasteAsFile"
-            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsHtmlFile]
+            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsJpgFile, ProductStrings.PasteAsHtmlFile]
             : [ProductStrings.TranscodeToMp3, ProductStrings.TranscodeToMp4];
         var originalChildren = AdditionalAction(ReadProperties(), propertyPath).DeepClone();
 
