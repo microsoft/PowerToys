@@ -326,6 +326,27 @@ namespace QuickAccessHost
     {
         start();
         std::scoped_lock lock(quick_access_mutex);
+
+        if (quick_access_process)
+        {
+            const DWORD process_id = GetProcessId(quick_access_process.get());
+            if (process_id != 0)
+            {
+                if (AllowSetForegroundWindow(process_id))
+                {
+                    Logger::info(L"QuickAccessHost: allowed Quick Access process {} to activate its flyout.", process_id);
+                }
+                else
+                {
+                    Logger::warn(L"QuickAccessHost: failed to allow Quick Access process {} to activate its flyout. error={}", process_id, GetLastError());
+                }
+            }
+            else
+            {
+                Logger::warn(L"QuickAccessHost: failed to get Quick Access process ID for foreground permission. error={}", GetLastError());
+            }
+        }
+
         update_visibility_state(true);
     }
 
