@@ -31,7 +31,7 @@
       <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources</ManifestResourceName>
     </EmbeddedResource>
     <None Include="..\WorkspacesLauncherUI.WinUI\Properties\Resources.resx" Link="TestResources\NeutralResources.xml" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\WorkspacesLauncherUI.WinUI\SignatureWarningWindow.xaml" Link="TestResources\SignatureWarningWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\WorkspacesLauncherUI.WinUI\Views\SignatureWarningWindow.xaml" Link="TestResources\SignatureWarningWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Synthetic satellites are test-only fixtures, not product translations. -->
