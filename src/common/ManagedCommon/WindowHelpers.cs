@@ -8,11 +8,28 @@ namespace ManagedCommon
 {
     public class WindowHelpers
     {
+        // SendInput normally returns in well under a millisecond; this only bounds how long the caller (usually a UI
+        // thread) is held up when the input stack stalls.
+        private static readonly TimeSpan ForegroundInputTimeout = TimeSpan.FromMilliseconds(500);
+
+        private static readonly ForegroundInputInjector DefaultForegroundInputInjector = new(SendForegroundInput);
+
         public static void BringToForeground(IntPtr handle)
         {
-            NativeMethods.INPUT input = new NativeMethods.INPUT { type = NativeMethods.INPUTTYPE.INPUT_MOUSE, data = { } };
-            NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { input };
-            _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
+            BringToForeground(handle, DefaultForegroundInputInjector, ForegroundInputTimeout);
+        }
+
+        internal static void BringToForeground(IntPtr handle, ForegroundInputInjector foregroundInputInjector, TimeSpan foregroundInputTimeout)
+        {
+            // There's no foreground lock to get past if the window is already in the foreground, so don't send input.
+            if (handle != IntPtr.Zero && NativeMethods.GetForegroundWindow() == handle)
+            {
+                return;
+            }
+
+            // The input makes this process the one that received the last input event, which lets SetForegroundWindow
+            // get past the foreground lock.
+            foregroundInputInjector.TrySend(foregroundInputTimeout);
 
             NativeMethods.SetForegroundWindow(handle);
 
@@ -50,6 +67,13 @@ namespace ManagedCommon
                 var margins = new NativeMethods.MARGINS { cxLeftWidth = 0, cxRightWidth = 0, cyBottomHeight = 0, cyTopHeight = 2 };
                 NativeMethods.DwmExtendFrameIntoClientArea(handle, ref margins);
             }
+        }
+
+        private static void SendForegroundInput()
+        {
+            NativeMethods.INPUT input = new NativeMethods.INPUT { type = NativeMethods.INPUTTYPE.INPUT_MOUSE, data = { } };
+            NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { input };
+            _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
         }
     }
 }
