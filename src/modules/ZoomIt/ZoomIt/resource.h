@@ -13,6 +13,9 @@
 //////////////////////////////
 #define IDC_AUDIO                       117
 #define IDD_VIDEO_TRIM                  119
+#define IDR_WHISPER_MODEL_0             120
+#define IDR_WHISPER_MODEL_1             121
+#define IDR_WHISPER_MODEL_2             122
 #define IDC_LINK                        1000
 #define IDC_ALT                         1001
 #define IDC_CTRL                        1002
@@ -116,12 +119,40 @@
 #define IDC_TRIM_FILE                   1110
 #define IDC_MIC_MONO_MIX                1111
 #define IDC_CHECK_LOCK_WORKSTATION      1112
+#define IDC_WEBCAM_OVERLAY              1113
+#define IDC_WEBCAM_DEVICE               1114
+#define IDC_WEBCAM_POSITION             1115
+#define IDC_WEBCAM_SIZE                 1116
+#define IDC_WEBCAM_DEVICE_LABEL         1117
+#define IDC_WEBCAM_POSITION_LABEL       1118
+#define IDC_WEBCAM_SIZE_LABEL           1119
+#define IDC_WEBCAM_SHAPE                1120
+#define IDC_WEBCAM_SHAPE_LABEL          1121
+#define IDC_TRIM_APPEND                 1122
+#define IDC_RECORD_ASPECT_RATIO         1123
+#define IDC_WEBCAM_BACKGROUND_BLUR      1124
+#define IDC_TRIM_DELETE                 1136
+#define IDC_WEBCAM_BG_LABEL             1125
+#define IDC_WEBCAM_BG_MODE              1126
+#define IDC_WEBCAM_BG_IMAGE             1127
+#define IDC_WEBCAM_BG_BROWSE            1128
+#define IDC_THIRDPARTY_NOTICES          1129
+#define IDC_WEBCAM_SETTINGS             1130
+#define IDC_WEBCAM_BRIGHTNESS_LABEL     1131
+#define IDC_WEBCAM_BRIGHTNESS_SLIDER    1132
+#define IDC_NOISE_CANCELLATION          1133
+#define IDC_SNIP_SAVE_HOTKEY            1134
+#define IDC_SNIP_PANORAMA_SAVE_HOTKEY   1135
+#define IDC_MIRROR_HOTKEY               1138
+#define IDC_MIRROR_TRACK_WINDOW         1137
+#define IDC_SNIP_DICTATE_ENABLED        1139
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
 #define IDC_RECORD_HOTKEY               40007
 #define IDC_COPY_CROP                   40008
 #define IDC_COPY_OCR                    40014
+#define IDC_COPY_CROP_DICTATE           40015
 #define IDC_SAVE_CROP                   40009
 #define IDC_DEMOTYPE_HOTKEY             40011
 
@@ -129,9 +160,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        120
-#define _APS_NEXT_COMMAND_VALUE         40015
-#define _APS_NEXT_CONTROL_VALUE         1113
+#define _APS_NEXT_RESOURCE_VALUE        123
+#define _APS_NEXT_COMMAND_VALUE         40016
+#define _APS_NEXT_CONTROL_VALUE         1140
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

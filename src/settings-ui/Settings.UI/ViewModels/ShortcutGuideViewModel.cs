@@ -54,17 +54,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             InitializeEnabledValue();
 
-            _useLegacyPressWinKeyBehavior = Settings.Properties.UseLegacyPressWinKeyBehavior.Value;
-            _pressTimeForGlobalWindowsShortcuts = Settings.Properties.PressTimeForGlobalWindowsShortcuts.Value;
-            _pressTimeForTaskbarIconShortcuts = Settings.Properties.PressTimeForTaskbarIconShortcuts.Value;
-            _opacity = Settings.Properties.OverlayOpacity.Value;
+            _windowsKeyActionIndex = NormalizeWindowsKeyAction(Settings.Properties.WindowsKeyAction.Value);
+            bool settingsNormalized = Settings.Properties.WindowsKeyAction.Value != _windowsKeyActionIndex;
+            Settings.Properties.WindowsKeyAction.Value = _windowsKeyActionIndex;
+            _pressTime = Math.Clamp(
+                Settings.Properties.PressTime.Value,
+                ShortcutGuideProperties.MinimumPressTimeMs,
+                ShortcutGuideProperties.MaximumPressTimeMs);
+            Settings.Properties.PressTime.Value = _pressTime;
+            _closeOnWindowsKeyRelease = Settings.Properties.CloseOnWindowsKeyRelease.Value;
             _disabledApps = Settings.Properties.DisabledApps.Value;
+
+            if (settingsNormalized)
+            {
+                NotifyPropertyChanged(nameof(WindowsKeyActionIndex));
+            }
 
             switch (Settings.Properties.Theme.Value)
             {
                 case "dark": _themeIndex = 0; break;
                 case "light": _themeIndex = 1; break;
                 case "system": _themeIndex = 2; break;
+            }
+
+            switch (Settings.Properties.WindowPosition.Value)
+            {
+                case (int)ShortcutGuideWindowPosition.Right: _positionIndex = 1; break;
+                default: _positionIndex = 0; break;
             }
         }
 
@@ -97,10 +113,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isEnabled;
         private int _themeIndex;
-        private bool _useLegacyPressWinKeyBehavior;
-        private int _pressTimeForGlobalWindowsShortcuts;
-        private int _pressTimeForTaskbarIconShortcuts;
-        private int _opacity;
+        private int _positionIndex;
+        private int _windowsKeyActionIndex;
+        private int _pressTime;
+        private bool _closeOnWindowsKeyRelease;
 
         public bool IsEnabled
         {
@@ -153,6 +169,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public int WindowsKeyActionIndex
+        {
+            get => _windowsKeyActionIndex;
+
+            set
+            {
+                int normalizedValue = NormalizeWindowsKeyAction(value);
+                if (_windowsKeyActionIndex != normalizedValue)
+                {
+                    _windowsKeyActionIndex = normalizedValue;
+                    Settings.Properties.WindowsKeyAction.Value = normalizedValue;
+                    OnPropertyChanged(nameof(IsWindowsKeyHoldEnabled));
+                    OnPropertyChanged(nameof(IsOpenShortcutGuideWindowsKeyAction));
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool IsWindowsKeyHoldEnabled => _windowsKeyActionIndex != (int)ShortcutGuideWindowsKeyAction.Off;
+
+        public bool IsOpenShortcutGuideWindowsKeyAction => _windowsKeyActionIndex == (int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide;
+
+        public int PressTime
+        {
+            get => _pressTime;
+
+            set
+            {
+                int clampedValue = Math.Clamp(
+                    value,
+                    ShortcutGuideProperties.MinimumPressTimeMs,
+                    ShortcutGuideProperties.MaximumPressTimeMs);
+                if (_pressTime != clampedValue)
+                {
+                    _pressTime = clampedValue;
+                    Settings.Properties.PressTime.Value = clampedValue;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
+        public bool CloseOnWindowsKeyRelease
+        {
+            get => _closeOnWindowsKeyRelease;
+
+            set
+            {
+                if (_closeOnWindowsKeyRelease != value)
+                {
+                    _closeOnWindowsKeyRelease = value;
+                    Settings.Properties.CloseOnWindowsKeyRelease.Value = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public int ThemeIndex
         {
             get
@@ -177,73 +249,24 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        public int OverlayOpacity
+        public int PositionIndex
         {
             get
             {
-                return _opacity;
+                return _positionIndex;
             }
 
             set
             {
-                if (_opacity != value)
+                if (_positionIndex != value)
                 {
-                    _opacity = value;
-                    Settings.Properties.OverlayOpacity.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
+                    switch (value)
+                    {
+                        case 1: Settings.Properties.WindowPosition.Value = (int)ShortcutGuideWindowPosition.Right; break;
+                        default: Settings.Properties.WindowPosition.Value = (int)ShortcutGuideWindowPosition.Left; break;
+                    }
 
-        public bool UseLegacyPressWinKeyBehavior
-        {
-            get
-            {
-                return _useLegacyPressWinKeyBehavior;
-            }
-
-            set
-            {
-                if (_useLegacyPressWinKeyBehavior != value)
-                {
-                    _useLegacyPressWinKeyBehavior = value;
-                    Settings.Properties.UseLegacyPressWinKeyBehavior.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int PressTime
-        {
-            get
-            {
-                return _pressTimeForGlobalWindowsShortcuts;
-            }
-
-            set
-            {
-                if (_pressTimeForGlobalWindowsShortcuts != value)
-                {
-                    _pressTimeForGlobalWindowsShortcuts = value;
-                    Settings.Properties.PressTimeForGlobalWindowsShortcuts.Value = value;
-                    NotifyPropertyChanged();
-                }
-            }
-        }
-
-        public int DelayTime
-        {
-            get
-            {
-                return _pressTimeForTaskbarIconShortcuts;
-            }
-
-            set
-            {
-                if (_pressTimeForTaskbarIconShortcuts != value)
-                {
-                    _pressTimeForTaskbarIconShortcuts = value;
-                    Settings.Properties.PressTimeForTaskbarIconShortcuts.Value = value;
+                    _positionIndex = value;
                     NotifyPropertyChanged();
                 }
             }
@@ -286,6 +309,17 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+        }
+
+        private static int NormalizeWindowsKeyAction(int value)
+        {
+            return value switch
+            {
+                (int)ShortcutGuideWindowsKeyAction.Off => value,
+                (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators => value,
+                (int)ShortcutGuideWindowsKeyAction.OpenShortcutGuide => value,
+                _ => (int)ShortcutGuideWindowsKeyAction.TaskbarIndicators,
+            };
         }
     }
 }

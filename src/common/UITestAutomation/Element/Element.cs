@@ -68,7 +68,7 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Gets a value indicating whether the UI element is Enabled or not.
+        /// Gets a value indicating whether or not the UI element is Enabled.
         /// </summary>
         public bool Enabled
         {

@@ -5,18 +5,15 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
-using System.Text;
-using System.Windows;
-using System.Windows.Interop;
 
+// System.Windows / System.Windows.Interop removed: WinUI 3 has no WindowInteropHelper.
+// HandleRef lives in System.Runtime.InteropServices (already imported).
 namespace ColorPicker
 {
     // https://learn.microsoft.com/visualstudio/code-quality/ca1060?view=vs-2019
     // will have to rename
     public static class NativeMethods
     {
-        private const int GWL_EX_STYLE = -20;
-        private const int WS_EX_TOOLWINDOW = 0x00000080;
         public const int WH_KEYBOARD_LL = 13;
         public const int VkSnapshot = 0x2c;
         public const int KfAltdown = 0x2000;
@@ -117,7 +114,7 @@ namespace ColorPicker
             public int X;
             public int Y;
 
-            public static explicit operator System.Windows.Point(PointInter point) => new System.Windows.Point(point.X, point.Y);
+            public static explicit operator Windows.Foundation.Point(PointInter point) => new Windows.Foundation.Point(point.X, point.Y);
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -214,22 +211,16 @@ namespace ColorPicker
             public IntPtr AdditionalInformation;
         }
 
-        [DllImport("user32.dll")]
-        internal static extern IntPtr GetOpenClipboardWindow();
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
-        internal static extern int GetWindowText(int hwnd, StringBuilder text, int count);
-
+        /// <summary>
+        /// Sets the display affinity of a window, which controls how the window is
+        /// displayed on a monitor. Used to exclude the picker window from ZoomWindow's
+        /// source bitmap.
+        /// </summary>
         [DllImport("user32.dll", SetLastError = true)]
-        internal static extern int GetWindowLong(IntPtr hWnd, int nIndex);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint dwAffinity);
 
-        [DllImport("user32.dll")]
-        internal static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        internal static void SetToolWindowStyle(Window win)
-        {
-            var hwnd = new WindowInteropHelper(win).Handle;
-            _ = SetWindowLong(hwnd, GWL_EX_STYLE, GetWindowLong(hwnd, GWL_EX_STYLE) | WS_EX_TOOLWINDOW);
-        }
+        internal const uint WDA_NONE = 0x00000000;
+        internal const uint WDA_EXCLUDEFROMCAPTURE = 0x00000011;
     }
 }

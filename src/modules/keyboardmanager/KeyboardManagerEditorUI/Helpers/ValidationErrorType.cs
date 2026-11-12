@@ -19,6 +19,7 @@ namespace KeyboardManagerEditorUI.Helpers
         EmptyAppName,
         IllegalShortcut,
         DuplicateMapping,
+        ConflictingModifier,
         SelfMapping,
         EmptyTargetText,
         EmptyUrl,

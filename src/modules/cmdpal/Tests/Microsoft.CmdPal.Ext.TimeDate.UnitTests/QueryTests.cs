@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using Microsoft.CmdPal.Ext.TimeDate.Helpers;
 using Microsoft.CmdPal.Ext.TimeDate.Pages;
@@ -13,10 +15,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
 [TestClass]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("IDisposable", "CA1001:Types that own disposable fields should be disposable", Justification = "Disposed in TestCleanup")]
 public class QueryTests : CommandPaletteUnitTestBase
 {
-    private CultureInfo originalCulture;
-    private CultureInfo originalUiCulture;
+    private readonly List<TimeDateExtensionPage> _pages = [];
+    private CultureInfo originalCulture = null!;
+    private CultureInfo originalUiCulture = null!;
+    private ClockUpdateService _clockUpdateService = null!;
+    private CustomClockManager _customClockManager = null!;
 
     [TestInitialize]
     public void Setup()
@@ -26,11 +32,21 @@ public class QueryTests : CommandPaletteUnitTestBase
         CultureInfo.CurrentCulture = new CultureInfo("en-us", false);
         originalUiCulture = CultureInfo.CurrentUICulture;
         CultureInfo.CurrentUICulture = new CultureInfo("en-us", false);
+        _clockUpdateService = new ClockUpdateService(enableTimer: false);
+        _customClockManager = new CustomClockManager(Path.Combine(Path.GetTempPath(), $"custom-clocks-{Guid.NewGuid()}.json"));
     }
 
     [TestCleanup]
     public void CleanUp()
     {
+        foreach (var page in _pages)
+        {
+            page.Dispose();
+        }
+
+        _pages.Clear();
+        _clockUpdateService.Dispose();
+
         // Set culture to original value
         CultureInfo.CurrentCulture = originalCulture;
         CultureInfo.CurrentUICulture = originalUiCulture;
@@ -67,7 +83,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     public void BasicQueryTest(string input, string expectedMatchTerm)
     {
         var settings = new Settings();
-        var page = new TimeDateExtensionPage(settings);
+        var page = CreatePage(settings);
         page.SearchText = input;
         var resultLists = page.GetItems();
 
@@ -116,7 +132,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     public void FormatDateQueryTest(string input, string expectedMatchTerm)
     {
         var settings = new Settings();
-        var page = new TimeDateExtensionPage(settings);
+        var page = CreatePage(settings);
         page.SearchText = input;
         var resultLists = page.GetItems();
 
@@ -157,7 +173,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     public void InvalidInputShowsErrorResults(string query)
     {
         var settings = new Settings();
-        var page = new TimeDateExtensionPage(settings);
+        var page = CreatePage(settings);
         page.SearchText = query;
         var results = page.GetItems();
 
@@ -166,7 +182,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsTrue(results.Length > 0, $"Query '{query}' should return at least one result");
 
         var firstItem = results.FirstOrDefault();
-        Assert.IsTrue(firstItem.Title.StartsWith("Error: Invalid input", StringComparison.CurrentCulture), $"Query '{query}' should return an error result for invalid input");
+        Assert.IsTrue(firstItem!.Title.StartsWith("Error: Invalid input", StringComparison.CurrentCulture), $"Query '{query}' should return an error result for invalid input");
     }
 
     [DataTestMethod]
@@ -175,7 +191,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     public void EmptyQueryReturnsAllResults(string input)
     {
         var settings = new Settings();
-        var page = new TimeDateExtensionPage(settings);
+        var page = CreatePage(settings);
         page.SearchText = "abc";
         page.SearchText = input;
         var results = page.GetItems();
@@ -193,7 +209,7 @@ public class QueryTests : CommandPaletteUnitTestBase
     public void TimeZoneQuery(string query, string expectedSubtitle)
     {
         var settings = new Settings();
-        var page = new TimeDateExtensionPage(settings);
+        var page = CreatePage(settings);
         page.SearchText = query;
         var resultsList = page.GetItems();
         var results = Query(query, resultsList);
@@ -201,7 +217,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         // Assert
         Assert.IsNotNull(results);
         var firstResult = results.FirstOrDefault();
-        Assert.IsTrue(firstResult.Subtitle.StartsWith(expectedSubtitle, StringComparison.CurrentCulture), $"Could not find result with subtitle starting with '{expectedSubtitle}' for query '{query}'");
+        Assert.IsTrue(firstResult!.Subtitle.StartsWith(expectedSubtitle, StringComparison.CurrentCulture), $"Could not find result with subtitle starting with '{expectedSubtitle}' for query '{query}'");
     }
 
     [DataTestMethod]
@@ -211,22 +227,22 @@ public class QueryTests : CommandPaletteUnitTestBase
     public void DelimiterQueriesReturnResults(string query, string expectedResult)
     {
         var settings = new Settings();
-        var page = new TimeDateExtensionPage(settings);
+        var page = CreatePage(settings);
         page.SearchText = query;
         var resultsList = page.GetItems();
 
         // Assert
         Assert.IsNotNull(resultsList);
         var firstResult = resultsList.FirstOrDefault();
-        Assert.IsTrue(firstResult.Title.Contains(expectedResult, StringComparison.CurrentCulture), $"Delimiter query '{query}' result not match {expectedResult} current result {firstResult.Title}");
+        Assert.IsTrue(firstResult!.Title.Contains(expectedResult, StringComparison.CurrentCulture), $"Delimiter query '{query}' result not match {expectedResult} current result {firstResult.Title}");
     }
 
     [TestMethod]
     public void UpdateSearchTextMatchesSearchTextSetter()
     {
         var settings = new Settings();
-        var pageUsingSetter = new TimeDateExtensionPage(settings);
-        var pageUsingMethod = new TimeDateExtensionPage(settings);
+        var pageUsingSetter = CreatePage(settings);
+        var pageUsingMethod = CreatePage(settings);
         const string query = "time::12:30:45";
 
         pageUsingSetter.SearchText = query;
@@ -243,5 +259,12 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(methodFirstItem);
         Assert.AreEqual(setterFirstItem.Title, methodFirstItem.Title, "UpdateSearchText should keep the stored query in sync with SearchText.");
         Assert.AreEqual(setterFirstItem.Subtitle, methodFirstItem.Subtitle, "UpdateSearchText should keep the stored query in sync with SearchText.");
+    }
+
+    private TimeDateExtensionPage CreatePage(ISettingsInterface settings)
+    {
+        var page = new TimeDateExtensionPage(settings, _customClockManager, _clockUpdateService);
+        _pages.Add(page);
+        return page;
     }
 }

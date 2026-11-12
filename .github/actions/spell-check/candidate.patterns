@@ -1,6 +1,3 @@
-# D2D
-#D?2D
-
 # Repeated letters
 \b([a-z])\g{-1}{2,}\b
 
@@ -14,7 +11,7 @@
 ^.*\b[Cc][Ss][Pp][Ee][Ll]{2}:\s*[Dd][Ii][Ss][Aa][Bb][Ll][Ee]-[Ll][Ii][Nn][Ee]\b
 
 # copyright
-Copyright (?:\([Cc]\)|)(?:[-\d, ]|and)+(?: [A-Z][a-z]+ [A-Z][a-z]+,?)+
+Copyright (?:\([Cc]\)|©|)(?:[-\d, ]|and)+(?: [A-Z][a-z]+ [A-Z][a-z]+,?)+
 
 # patch hunk comments
 ^@@ -\d+(?:,\d+|) \+\d+(?:,\d+|) @@ .*
@@ -22,10 +19,10 @@ Copyright (?:\([Cc]\)|)(?:[-\d, ]|and)+(?: [A-Z][a-z]+ [A-Z][a-z]+,?)+
 index (?:[0-9a-z]{7,40},|)[0-9a-z]{7,40}\.\.[0-9a-z]{7,40}
 
 # file permissions
-['"`\s][-bcdLlpsw](?:[-r][-w][-Ssx]){2}[-r][-w][-SsTtx]\+?['"`\s]
+(?:^|['"`\s])(?!-+\s)[-bcdLlpsw](?:[-r][-w][-Ssx]){2}[-r][-w][-SsTtx]\+?['"`\s]
 
 # css fonts
-\bfont(?:-family|):[^;}]+
+\bfont(?:-family(?:[-\w+]*)|):[^;}]+
 
 # css url wrappings
 \burl\([^)]+\)
@@ -89,6 +86,9 @@ arn:aws:[-/:\w]+
 \bsns\.[-0-9a-z]+.amazonaws\.com/[-\w/&#%_?:=]*
 # AWS VPC
 vpc-\w+
+
+# Azure AD
+\baad\.\w{48}\b
 
 # While you could try to match `http://` and `https://` by using `s?` in `https?://`, sometimes there
 # YouTube url
@@ -171,7 +171,7 @@ themes\.googleusercontent\.com/static/fonts/[^/\s"]+/v\d+/[^.]+.
 GHSA(?:-[0-9a-z]{4}){3}
 
 # GitHub actions
-\buses:\s+[-\w.]+/[-\w./]+@[-\w.]+
+\buses:\s+(['"]?)[-\w.]+/[-\w./]+@[-\w.]+\g{-1}
 
 # GitLab commit
 \bgitlab\.[^/\s"]*/\S+/\S+/commit/[0-9a-f]{7,16}#[0-9a-f]{40}\b
@@ -240,7 +240,7 @@ accounts\.binance\.com/[a-z/]*oauth/authorize\?[-0-9a-zA-Z&%]*
 \bmedium\.com/@?[^/\s"]+/[-\w]+
 
 # microsoft
-\b(?:https?://|)(?:(?:(?:blogs|download\.visualstudio|docs|msdn2?|research)\.|)microsoft|blogs\.msdn)\.co(?:m|\.\w\w)/[-_a-zA-Z0-9()=./%]*
+\b(?:https?://|)(?:(?:(?:blogs|download\.visualstudio|docs|msdn2?|research)\.|)microsoft|blogs\.msdn)\.co(?:m|\.\w\w)/[-_a-zA-Z0-9()=./%?#]*
 # powerbi
 \bapp\.powerbi\.com/reportEmbed/[^"' ]*
 # vs devops
@@ -414,7 +414,7 @@ ipfs://[0-9a-zA-Z]{3,}
 \bgetopts\s+(?:"[^"]+"|'[^']+')
 
 # ANSI color codes
-(?:\\(?:u00|x)1[Bb]|\\03[1-7]|\x1b|\\u\{1[Bb]\})\[\d+(?:;\d+)*m
+(?:\\(?:u00|x)1[Bb]|\\03[1-7]|\x1b|\\u\{1[Bb]\})\[(?:\d+(?:;\d+)*|)m
 
 # URL escaped characters
 %[0-9A-F][A-F](?=[A-Za-z])
@@ -431,7 +431,7 @@ sha\d+:[0-9a-f]*?[a-f]{3,}[0-9a-f]*
 # sha-... -- uses a fancy capture
 (\\?['"]|&quot;)[0-9a-f]{40,}\g{-1}
 # hex runs
-\b[0-9a-fA-F]{16,}\b
+\b(?=(?:[a-fA-F]{0,2}\d)*[a-fA-F]{3})[0-9a-fA-F]{16,}\b
 # hex in url queries
 =[0-9a-fA-F]*?(?:[A-F]{3,}|[a-f]{3,})[0-9a-fA-F]*?&
 # ssh
@@ -455,7 +455,11 @@ LS0tLS1CRUdJT.*
 
 # uuid:
 \b[0-9a-fA-F]{8}-(?:[0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}\b
-# hex digits including css/html color classes:
+
+# unicode escaped characters (4)
+\\u[0-9a-fA-F]{4}
+
+# hex digits including css/html color classes
 (?:[\\0][xX]|\\u\{?|[uU]\+|#x?|%23|&H)[0-9_a-fA-FgGrR]*?[a-fA-FgGrR]{2,}[0-9_a-fA-FgGrR]*(?:[uUlL]{0,3}|[iu]\d+)\b
 
 # integrity
@@ -478,7 +482,7 @@ Name\[[^\]]+\]=.*
 (?:(?:\b|_|(?<=[a-z]))I|(?:\b|_)(?:nsI|isA))(?=(?:[A-Z][a-z]{2,})+(?:[A-Z\d]|\b))
 
 # python
-#\b(?i)py(?!gments|gmy|lon|ramid|ro|th)(?=[a-z]{2,})
+#\b(?i)py(?!gment|gmy|lon|ramid|ro|th)(?=[a-z]{2,})
 
 # crypt
 (['"])\$2[ayb]\$.{56}\g{-1}
@@ -498,11 +502,20 @@ Name\[[^\]]+\]=.*
 # go.sum
 \bh1:\S+
 
+# golang print-f-style functions
+#(?i)(?<=append|comma|debug|equal|err|error|exit|fatal|format|info|log|name|panic|print|skip|scan|string|trace|true|warn|warning|wrap|write)(?:f|ln)(?:[ (]|$)
+
+# golang regular expression
+(?<!")\br".+?"
+
 # imports
-^import\s+(?:(?:static|type)\s+|)(?:[\w.]|\{\s*\w*?(?:,\s*(?:\w*|\*))+\s*\})+
+^import\s+(?:(?:static|type)\s+|)(?:[\w.]|\{\s*\w*?(?:,\s*(?:\w*|\*))+\s*\})+(?:\s+from (['"]).*?\g{-1}|)
 
 # scala modules
 #("[^"]+"\s*%%?\s*){2,3}"[^"]+"
+
+# Dataframes / NumPy
+#\b(?:df|np)\.\w{3,}
 
 # container images
 image: [-\w./:@]+
@@ -533,12 +546,18 @@ content: (['"])[-a-zA-Z=;:/0-9+]*=\g{-1}
 # Note that there's a high false positive rate, remove the `?=` and search for the regex to see if the matches seem like reasonable strings
 (?<!['"])\b(?:B|BR|Br|F|FR|Fr|R|RB|RF|Rb|Rf|U|UR|Ur|b|bR|br|f|fR|fr|r|rB|rF|rb|rf|u|uR|ur)['"](?=[A-Z]{3,}|[A-Z][a-z]{2,}|[a-z]{3,})
 
+# Regular expression for word breaks
+#\\b(?=[a-z]{2})
+
 # Regular expressions for (P|p)assword
 \([A-Z]\|[a-z]\)[a-z]+
 
+# Java regular expressions
+Pattern\.(?:compile|matches)\(".*"
+
 # JavaScript regular expressions
-# javascript test regex
-/.{3,}/[gim]*\.test\(
+# javascript exec/test regex
+/.{3,}?/[gim]*\.(?:exec|test)\(
 # javascript match regex
 \.match\(/[^/\s"]{3,}/[gim]*\s*
 # javascript match regex
@@ -565,7 +584,7 @@ perl(?:\s+-[a-zA-Z]\w*)+
 regexp?\.MustCompile\((?:`[^`]*`|".*"|'.*')\)
 
 # regex choice
-# \(\?:[^)]+\|[^)]+\)
+#\((?:\?:|)[^)|]+(?<! )\|(?!(?:jq|xargs)\b)[^)| ][^)]*\)
 
 # proto
 ^\s*(\w+)\s\g{-1} =
@@ -587,6 +606,9 @@ urn:shemas-jetbrains-com
 
 # Debian changelog severity
 [-\w]+ \(.*\) (?:\w+|baseline|unstable|experimental); urgency=(?:low|medium|high|emergency|critical)\b
+
+# Red Hat Package management spec file dependencies
+^(?:Build|)Requires: [-.\w]+
 
 # kubernetes pod status lists
 # https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#pod-phase
@@ -642,6 +664,8 @@ PrependWithABINamepsace
 >[-a-zA-Z=;:/0-9+]{3,}=</
 # base64 encoded content, possibly wrapped in mime
 #(?:^|[\s=;:?])[-a-zA-Z=;:/0-9+]{50,}(?:[\s=;:?]|$)
+# jwt
+(?:\be[wy][-a-zA-Z=;:/0-9+]+\.){2}[-_\w]+
 # base64 encoded json
 \beyJ[-a-zA-Z=;:/0-9+]+
 # base64 encoded pkcs
@@ -679,9 +703,9 @@ systemd.*?running in system mode \([-+].*\)$
 
 # Non-English
 # Even repositories expecting pure English content can unintentionally have Non-English content... People will occasionally mistakenly enter [homoglyphs](https://en.wikipedia.org/wiki/Homoglyph) which are essentially typos, and using this pattern will mean check-spelling will not complain about them.
-#
+# .
 # If the content to be checked should be written in English and the only Non-English items will be people's names, then you can consider adding this.
-#
+# .
 # Alternatively, if you're using check-spelling v0.0.25+, and you would like to _check_ the Non-English content for spelling errors, you can. For information on how to do so, see:
 # https://docs.check-spelling.dev/Feature:-Configurable-word-characters.html#unicode
 [a-zA-Z]*[ÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź][a-zA-Z]{3}[a-zA-ZÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź]*|[a-zA-Z]{3,}[ÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź]|[ÀÁÂÃÄÅÆČÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝßàáâãäåæčçèéêëìíîïðñòóôõöøùúûüýÿĀāŁłŃńŅņŒœŚśŠšŜŝŸŽžź][a-zA-Z]{3,}
@@ -693,7 +717,7 @@ systemd.*?running in system mode \([-+].*\)$
 # This corpus only had capital letters, but you probably want lowercase ones as well.
 \b[LN]'+[a-z]{2,}\b
 
-# latex (check-spelling >= 0.0.22)
+# LaTeX
 \\\w{2,}\{
 
 # American Mathematical Society (AMS) / Doxygen
@@ -720,7 +744,6 @@ nolint:\s*[\w,]+
 # cygwin paths
 /cygdrive/[a-zA-Z]/(?:Program Files(?: \(.*?\)| ?)(?:/[-+.~\\/()\w ]+)*|[-+.~\\/()\w])+
 
-# in check-spelling@v0.0.22+, printf markers aren't automatically consumed
 # printf markers
 #(?<!\\)\\[nrt](?=[a-z]{2,})
 # alternate printf markers if you run into latex and friends
@@ -749,12 +772,12 @@ W/"[^"]+"
 
 # Compiler flags (Unix, Java/Scala)
 # Use if you have things like `-Pdocker` and want to treat them as `docker`
-#(?:^|[\t ,>"'`=(#])-(?:(?:J-|)[DPWXY]|[Llf])(?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,})
+#(?:^|[\t ,>"'`=\[(#])-(?:(?:J-|)[DPWXY]|[Llf])(?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,})
 
 # Compiler flags (Windows / PowerShell)
 # This is a subset of the more general compiler flags pattern.
 # It avoids matching `-Path` to prevent it from being treated as `ath`
-#(?:^|[\t ,"'`=(#])-(?:[DPL](?=[A-Z]{2,})|[WXYlf](?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,}))
+#(?:^|[\t ,"'`=\[(#])-(?:[DPL](?=[A-Z]{2,})|[WXYlf](?=[A-Z]{2,}|[A-Z][a-z]|[a-z]{2,}))
 
 # Compiler flags (linker)
 ,-B
@@ -762,7 +785,7 @@ W/"[^"]+"
 # Library prefix
 # e.g., `lib`+`archive`, `lib`+`raw`, `lib`+`unwind`
 # (ignores some words that happen to start with `lib`)
-(?:\b|_)[Ll]ib(?:re(?=office)|)(?!era[lt]|ero|erty|rar(?:i(?:an|es)|y))(?=[a-z])
+(?:\b|_)[Ll]ib(?!era[lt])(?:re(?=office)|era|)(?!ero|erty|rar(?:i(?:an|es)|y))(?=[a-z])
 
 # iSCSI iqn (approximate regex)
 \biqn\.[0-9]{4}-[0-9]{2}(?:[\.-][a-z][a-z0-9]*)*\b
@@ -773,9 +796,9 @@ W/"[^"]+"
 # curl arguments
 \b(?:\\n|)curl(?:\.exe|)(?:\s+-[a-zA-Z]{1,2}\b)*(?:\s+-[a-zA-Z]{3,})(?:\s+-[a-zA-Z]+)*
 # set arguments
-\b(?:bash|sh|set)(?:\s+[-+][abefimouxE]{1,2})*\s+[-+][abefimouxE]{3,}(?:\s+[-+][abefimouxE]+)*
+\b(?:bash|(?<!\.)sh|set)(?:\s+[-+][abefimouxE]{1,2})*\s+[-+][abefimouxE]{3,}(?:\s+[-+][abefimouxE]+)*
 # tar arguments
-\b(?:\\n|)g?tar(?:\.exe|)(?:(?:\s+--[-a-zA-Z]+|\s+-[a-zA-Z]+|\s[ABGJMOPRSUWZacdfh-pr-xz]+\b)(?:=[^ ]*|))+
+\b(?:\\n|)g?tar(?:\.exe|)(?:\s-C \S+|(?:\s+--[-a-zA-Z]+|\s+-[a-zA-Z]+|\s[ABGJMOPRSUWZacdfh-pr-xz]+\b)(?:=[^ ]*|))+
 # tput arguments -- https://man7.org/linux/man-pages/man5/terminfo.5.html -- technically they can be more than 5 chars long...
 \btput\s+(?:(?:-[SV]|-T\s*\w+)\s+)*\w{3,5}\b
 # macOS temp folders

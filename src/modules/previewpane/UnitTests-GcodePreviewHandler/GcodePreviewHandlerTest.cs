@@ -54,6 +54,7 @@ namespace GcodePreviewHandlerUnitTests
                 // Act
                 gcodePreviewHandlerControl.DoPreview(mockStream.Object);
                 var textBox = gcodePreviewHandlerControl.Controls[0] as RichTextBox;
+                Assert.IsNotNull(textBox);
 
                 // Assert
                 Assert.IsFalse(string.IsNullOrWhiteSpace(textBox.Text));

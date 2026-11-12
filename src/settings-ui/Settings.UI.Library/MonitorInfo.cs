@@ -8,10 +8,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text.Json.Serialization;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
+using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
 {
-    public class MonitorInfo : Observable
+    public class MonitorInfo : Observable, IRetainableMonitor
     {
         private const byte VcpCodeSelectColorPreset = 0x14;
 
@@ -29,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         private bool _enableRotation;
         private bool _enableColorTemperature;
         private bool _enablePowerState;
+        private System.DateTime? _lastSeenUtc;
         private string _capabilitiesRaw = string.Empty;
         private List<VcpCodeDisplayInfo> _vcpCodesFormatted = new List<VcpCodeDisplayInfo>();
         private int _monitorNumber;
@@ -330,6 +332,26 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        /// <summary>
+        /// Gets or sets the UTC timestamp of the last time PowerDisplay successfully
+        /// discovered this monitor. Used to age out entries for monitors that have
+        /// been disconnected for longer than <see cref="PowerDisplaySettings.MonitorEntryRetentionDays"/>.
+        /// Null on entries written by older PowerDisplay versions that pre-date this field.
+        /// </summary>
+        [JsonPropertyName("lastSeenUtc")]
+        public System.DateTime? LastSeenUtc
+        {
+            get => _lastSeenUtc;
+            set
+            {
+                if (_lastSeenUtc != value)
+                {
+                    _lastSeenUtc = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
         [JsonPropertyName("capabilitiesRaw")]
         public string CapabilitiesRaw
         {
@@ -349,25 +371,27 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public List<VcpCodeDisplayInfo> VcpCodesFormatted
         {
             get => _vcpCodesFormatted;
-            set
+            init => ReplaceVcpCodesFormatted(value);
+        }
+
+        public void ReplaceVcpCodesFormatted(IEnumerable<VcpCodeDisplayInfo> value)
+        {
+            var newValue = value?.ToList() ?? new List<VcpCodeDisplayInfo>();
+
+            // Only update if content actually changed (compare by VCP code list content)
+            if (AreVcpCodesEqual(_vcpCodesFormatted, newValue))
             {
-                var newValue = value ?? new List<VcpCodeDisplayInfo>();
-
-                // Only update if content actually changed (compare by VCP code list content)
-                if (AreVcpCodesEqual(_vcpCodesFormatted, newValue))
-                {
-                    return;
-                }
-
-                _vcpCodesFormatted = newValue;
-                OnPropertyChanged();
-                InvalidateColorPresetCache();
+                return;
             }
+
+            _vcpCodesFormatted = newValue;
+            OnPropertyChanged(nameof(VcpCodesFormatted));
+            InvalidateColorPresetCache();
         }
 
         /// <summary>
         /// Compare two VcpCodesFormatted lists for equality by content.
-        /// Returns true if both lists have the same VCP codes (by code value).
+        /// Returns true if both lists have the same codes, values, and display names.
         /// </summary>
         private static bool AreVcpCodesEqual(List<VcpCodeDisplayInfo> list1, List<VcpCodeDisplayInfo> list2)
         {
@@ -389,17 +413,30 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             // Compare by code values - order matters for our use case
             for (int i = 0; i < list1.Count; i++)
             {
-                if (list1[i].Code != list2[i].Code)
+                if (list1[i].Code != list2[i].Code
+                    || list1[i].Title != list2[i].Title
+                    || list1[i].Values != list2[i].Values
+                    || list1[i].HasValues != list2[i].HasValues)
                 {
                     return false;
                 }
 
-                // Also compare ValueList count to detect preset changes
+                // Compare values as well as their count; capability refreshes and custom
+                // names can change the available options without changing the list size.
                 var values1 = list1[i].ValueList;
                 var values2 = list2[i].ValueList;
                 if ((values1?.Count ?? 0) != (values2?.Count ?? 0))
                 {
                     return false;
+                }
+
+                for (int valueIndex = 0; valueIndex < (values1?.Count ?? 0); valueIndex++)
+                {
+                    if (values1[valueIndex].Value != values2[valueIndex].Value
+                        || values1[valueIndex].Name != values2[valueIndex].Name)
+                    {
+                        return false;
+                    }
                 }
             }
 
@@ -653,6 +690,51 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return string.Join(System.Environment.NewLine, lines);
         }
 
+        public string GetDiagnosticsAsText()
+        {
+            var lines = new List<string>();
+
+            lines.Add("Power Display monitor diagnostics");
+            lines.Add($"Generated: {DateTimeOffset.Now:u}");
+            lines.Add(string.Empty);
+
+            lines.Add("Monitor");
+            lines.Add(new string('-', 50));
+            lines.Add($"Name: {Name}");
+            lines.Add($"Display name: {DisplayName}");
+            lines.Add($"Monitor number: {MonitorNumber}");
+            lines.Add($"Monitor ID: {Id}");
+            lines.Add($"Communication method: {CommunicationMethod}");
+            lines.Add(string.Empty);
+
+            lines.Add("Current values");
+            lines.Add(new string('-', 50));
+            lines.Add($"Brightness: {CurrentBrightness}");
+            lines.Add($"Contrast: {Contrast}");
+            lines.Add($"Volume: {Volume}");
+            lines.Add($"Color temperature VCP: 0x{ColorTemperatureVcp:X2}");
+            lines.Add(string.Empty);
+
+            lines.Add("Detected support");
+            lines.Add(new string('-', 50));
+            lines.Add($"Supports brightness: {SupportsBrightness}");
+            lines.Add($"Supports contrast: {SupportsContrast}");
+            lines.Add($"Supports volume: {SupportsVolume}");
+            lines.Add($"Supports input source: {SupportsInputSource}");
+            lines.Add($"Supports color temperature: {SupportsColorTemperature}");
+            lines.Add($"Supports power state: {SupportsPowerState}");
+            lines.Add(string.Empty);
+
+            lines.Add("Raw capabilities");
+            lines.Add(new string('-', 50));
+            lines.Add(string.IsNullOrWhiteSpace(CapabilitiesRaw) ? "No raw capabilities detected" : CapabilitiesRaw);
+            lines.Add(string.Empty);
+
+            lines.Add(GetVcpCodesAsText());
+
+            return string.Join(Environment.NewLine, lines);
+        }
+
         /// <summary>
         /// Update this monitor's properties from another MonitorInfo instance.
         /// This preserves the object reference while updating all properties.
@@ -681,7 +763,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableColorTemperature = other.EnableColorTemperature;
             EnablePowerState = other.EnablePowerState;
             CapabilitiesRaw = other.CapabilitiesRaw;
-            VcpCodesFormatted = other.VcpCodesFormatted;
+            ReplaceVcpCodesFormatted(other.VcpCodesFormatted);
             SupportsBrightness = other.SupportsBrightness;
             SupportsContrast = other.SupportsContrast;
             SupportsColorTemperature = other.SupportsColorTemperature;
@@ -689,6 +771,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             SupportsInputSource = other.SupportsInputSource;
             SupportsPowerState = other.SupportsPowerState;
             MonitorNumber = other.MonitorNumber;
+            LastSeenUtc = other.LastSeenUtc;
         }
     }
 }

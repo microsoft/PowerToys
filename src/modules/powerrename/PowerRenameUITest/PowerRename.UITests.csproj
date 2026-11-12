@@ -17,18 +17,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Include="..\..\..\codeAnalysis\GlobalSuppressions.cs" Link="GlobalSuppressions.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <None Include="BasicRenameTests.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="MSTest" />
-		<PackageReference Include="System.Net.Http" />
-		<PackageReference Include="System.Private.Uri" />
-		<PackageReference Include="System.Text.RegularExpressions" />
 		<ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
 	</ItemGroup>
 

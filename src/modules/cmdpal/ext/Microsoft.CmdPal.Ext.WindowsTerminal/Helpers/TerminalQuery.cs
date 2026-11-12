@@ -73,7 +73,7 @@ public class TerminalQuery : ITerminalQuery
             var aumid = appListEntries.Single().AppUserModelId;
             var version = new Version(p.Id.Version.Major, p.Id.Version.Minor, p.Id.Version.Build, p.Id.Version.Revision);
             var settingsPath = Path.Combine(localAppDataPath, "Packages", p.Id.FamilyName, "LocalState", "settings.json");
-            yield return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath);
+            yield return new TerminalPackage(aumid, version, p.DisplayName, settingsPath, p.Logo.LocalPath, p.InstalledPath);
         }
     }
 }

@@ -52,7 +52,7 @@ namespace PowerDisplay.Common.Drivers
             IntPtr hMonitor,
             MonitorInfoEx* lpmi);
 
-        [LibraryImport("user32.dll", EntryPoint = "EnumDisplaySettingsW", StringMarshalling = StringMarshalling.Utf16)]
+        [LibraryImport("user32.dll", EntryPoint = "EnumDisplaySettingsW", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static unsafe partial bool EnumDisplaySettings(
             [MarshalAs(UnmanagedType.LPWStr)] string? lpszDeviceName,
@@ -86,7 +86,7 @@ namespace PowerDisplay.Common.Drivers
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool DestroyPhysicalMonitor(IntPtr hMonitor);
 
-        [LibraryImport("Dxva2.dll")]
+        [LibraryImport("Dxva2.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool GetVCPFeatureAndVCPFeatureReply(
             IntPtr hPhysicalMonitor,
@@ -95,7 +95,7 @@ namespace PowerDisplay.Common.Drivers
             out uint pdwCurrentValue,
             out uint pdwMaximumValue);
 
-        [LibraryImport("Dxva2.dll")]
+        [LibraryImport("Dxva2.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         internal static partial bool SetVCPFeature(
             IntPtr hPhysicalMonitor,
@@ -114,9 +114,5 @@ namespace PowerDisplay.Common.Drivers
             IntPtr hPhysicalMonitor,
             IntPtr pszASCIICapabilitiesString,
             uint dwCapabilitiesStringLengthInCharacters);
-
-        // ==================== Kernel32.dll ====================
-        [LibraryImport("kernel32.dll")]
-        internal static partial uint GetLastError();
     }
 }

@@ -14,7 +14,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public partial class QuickAccessViewModel : Observable
+    public partial class QuickAccessViewModel : Observable, IDisposable
     {
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
 
@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly ResourceLoader _resourceLoader;
         private readonly DispatcherQueue _dispatcherQueue;
         private GeneralSettings _generalSettings;
+        private bool _disposed;
 
         public ObservableCollection<QuickAccessItem> Items { get; } = new();
 
@@ -54,12 +55,30 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeItems();
         }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            _kbmSettingsRepository.SettingsChanged -= OnKbmSettingsChanged;
+            GC.SuppressFinalize(this);
+        }
+
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
             if (_dispatcherQueue != null)
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = newSettings;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
@@ -76,8 +95,9 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.Hosts);
             AddFlyoutMenuItem(ModuleType.KeyboardManager);
             AddFlyoutMenuItem(ModuleType.LightSwitch);
-
-            // AddFlyoutMenuItem(ModuleType.PowerDisplay); // TEMPORARILY_DISABLED: PowerDisplay
+            AddFlyoutMenuItem(ModuleType.MousePointerCrosshairs);
+            AddFlyoutMenuItem(ModuleType.MouseWithoutBorders);
+            AddFlyoutMenuItem(ModuleType.PowerDisplay);
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);
@@ -95,11 +115,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             Items.Add(new QuickAccessItem
             {
-                Title = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                Title = GetModuleItemTitle(moduleType),
                 Tag = moduleType,
                 Visible = GetItemVisibility(moduleType),
                 Description = GetModuleToolTip(moduleType),
-                Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers
+                    .ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 Command = new RelayCommand(() => _launcher.Launch(moduleType)),
             });
         }
@@ -110,6 +131,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = _settingsRepository.SettingsConfig;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
@@ -155,6 +181,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             return visible;
         }
 
+        private string GetModuleItemTitle(ModuleType moduleType)
+        {
+            return moduleType switch
+            {
+                ModuleType.MouseWithoutBorders => _resourceLoader.GetString(
+                    "MouseWithoutBorders_ReconnectButton/Text"),
+                _ => _resourceLoader.GetString(
+                    Microsoft.PowerToys.Settings.UI.Library.Helpers
+                        .ModuleHelper.GetModuleLabelResourceName(moduleType)),
+            };
+        }
+
         private string GetModuleToolTip(ModuleType moduleType)
         {
             return moduleType switch
@@ -168,17 +206,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ModuleType.PowerOCR => SettingsRepository<PowerOcrSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 ModuleType.Workspaces => SettingsRepository<WorkspacesSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.Hotkey.Value.ToString(),
                 ModuleType.MeasureTool => SettingsRepository<MeasureToolSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
-                ModuleType.ShortcutGuide => GetShortcutGuideToolTip(),
+                ModuleType.ShortcutGuide => SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
+                ModuleType.MouseWithoutBorders => SettingsRepository<MouseWithoutBordersSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ReconnectShortcut.ToString(),
+                ModuleType.MousePointerCrosshairs => SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 _ => string.Empty,
             };
-        }
-
-        private string GetShortcutGuideToolTip()
-        {
-            var shortcutGuideSettings = SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig;
-            return shortcutGuideSettings.Properties.UseLegacyPressWinKeyBehavior.Value
-                ? "Win"
-                : shortcutGuideSettings.Properties.OpenShortcutGuide.ToString();
         }
     }
 }

@@ -15,9 +15,7 @@ using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Utils;
-using CustomVcpValueMapping = Microsoft.PowerToys.Settings.UI.Library.CustomVcpValueMapping;
+using PowerDisplay.Models;
 
 namespace Microsoft.PowerToys.Settings.UI.Views
 {
@@ -276,30 +274,13 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                             seenValues.Add(vcpValue);
                             var displayName = !string.IsNullOrEmpty(valueInfo.Name)
                                 ? $"{valueInfo.Name} (0x{vcpValue:X2})"
-                                : VcpNames.GetFormattedValueName(vcpCode, vcpValue);
+                                : $"0x{vcpValue:X2}";
                             values.Add(new VcpValueItem
                             {
                                 Value = vcpValue,
                                 DisplayName = displayName,
                             });
                         }
-                    }
-                }
-            }
-
-            // If no values found from monitors, fall back to built-in values from VcpNames
-            if (values.Count == 0)
-            {
-                var builtInValues = VcpNames.GetValueMappings(vcpCode);
-                if (builtInValues is not null)
-                {
-                    foreach (var kvp in builtInValues)
-                    {
-                        values.Add(new VcpValueItem
-                        {
-                            Value = kvp.Key,
-                            DisplayName = $"{kvp.Value} (0x{kvp.Key:X2})",
-                        });
                     }
                 }
             }
@@ -340,7 +321,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             var resourceKey = $"PowerDisplay_VcpCode_Name_0x{vcpCode:X2}";
             var localizedName = resourceLoader.GetString(resourceKey);
-            var name = string.IsNullOrEmpty(localizedName) ? VcpNames.GetCodeName(vcpCode) : localizedName;
+            var name = string.IsNullOrEmpty(localizedName) ? $"0x{vcpCode:X2}" : localizedName;
             return $"{name} (0x{vcpCode:X2})";
         }
 

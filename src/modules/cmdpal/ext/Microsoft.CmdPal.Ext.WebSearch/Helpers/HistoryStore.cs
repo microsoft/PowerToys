@@ -39,7 +39,7 @@ internal sealed class HistoryStore
         {
             lock (_lock)
             {
-                return [.. _items];
+                return (HistoryItem[])[.. _items];
             }
         }
     }

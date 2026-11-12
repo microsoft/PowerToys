@@ -79,8 +79,8 @@ internal sealed partial class FallbackRemoteDesktopItem : FallbackCommandItem
             {
                 var connectionName = query.Trim();
                 Command = new OpenRemoteDesktopCommand(connectionName);
-                Title = string.Format(CultureInfo.CurrentCulture, RemoteDesktopOpenHostFormat, connectionName);
-                Subtitle = Resources.remotedesktop_title;
+                Title = Resources.remotedesktop_title;
+                Subtitle = string.Format(CultureInfo.CurrentCulture, RemoteDesktopOpenHostFormat, connectionName);
             }
             else
             {

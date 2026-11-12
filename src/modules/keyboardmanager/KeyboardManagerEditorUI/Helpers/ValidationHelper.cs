@@ -16,19 +16,25 @@ namespace KeyboardManagerEditorUI.Helpers
     {
         public static readonly Dictionary<ValidationErrorType, (string Title, string Message)> ValidationMessages = new()
         {
-            { ValidationErrorType.EmptyOriginalKeys, ("Missing Original Keys", "Please enter at least one original key to create a remapping.") },
-            { ValidationErrorType.EmptyRemappedKeys, ("Missing Target Keys", "Please enter at least one target key to create a remapping.") },
-            { ValidationErrorType.ModifierOnly, ("Invalid Shortcut", "Shortcuts must contain at least one action key in addition to modifier keys (Ctrl, Alt, Shift, Win).") },
-            { ValidationErrorType.EmptyAppName, ("Missing Application Name", "You've selected app-specific remapping but haven't specified an application name. Please enter the application name.") },
-            { ValidationErrorType.IllegalShortcut, ("Reserved System Shortcut", "Win+L and Ctrl+Alt+Delete are reserved system shortcuts and cannot be remapped.") },
-            { ValidationErrorType.DuplicateMapping, ("Duplicate Remapping", "This key or shortcut is already remapped.") },
-            { ValidationErrorType.SelfMapping, ("Invalid Remapping", "A key or shortcut cannot be remapped to itself. Please choose a different target.") },
-            { ValidationErrorType.EmptyTargetText, ("Missing Target Text", "Please enter the text to be inserted when the shortcut is pressed.") },
-            { ValidationErrorType.EmptyUrl, ("Missing URL", "Please enter the URL to open when the shortcut is pressed.") },
-            { ValidationErrorType.EmptyProgramPath, ("Missing Program Path", "Please enter the program path to launch when the shortcut is pressed.") },
-            { ValidationErrorType.OneKeyMapping, ("Invalid Remapping", "A single key cannot be remapped to a Program or URL shortcut. Please choose a combination of keys.") },
+            { ValidationErrorType.EmptyOriginalKeys, (ResourceHelper.GetString("Validation_EmptyOriginalKeys_Title"), ResourceHelper.GetString("Validation_EmptyOriginalKeys_Message")) },
+            { ValidationErrorType.EmptyRemappedKeys, (ResourceHelper.GetString("Validation_EmptyRemappedKeys_Title"), ResourceHelper.GetString("Validation_EmptyRemappedKeys_Message")) },
+            { ValidationErrorType.ModifierOnly, (ResourceHelper.GetString("Validation_ModifierOnly_Title"), ResourceHelper.GetString("Validation_ModifierOnly_Message")) },
+            { ValidationErrorType.EmptyAppName, (ResourceHelper.GetString("Validation_EmptyAppName_Title"), ResourceHelper.GetString("Validation_EmptyAppName_Message")) },
+            { ValidationErrorType.IllegalShortcut, (ResourceHelper.GetString("Validation_IllegalShortcut_Title"), ResourceHelper.GetString("Validation_IllegalShortcut_Message")) },
+            { ValidationErrorType.DuplicateMapping, (ResourceHelper.GetString("Validation_DuplicateMapping_Title"), ResourceHelper.GetString("Validation_DuplicateMapping_Message")) },
+            { ValidationErrorType.ConflictingModifier, (ResourceHelper.GetString("Validation_ConflictingModifier_Title"), ResourceHelper.GetString("Validation_ConflictingModifier_Message")) },
+            { ValidationErrorType.SelfMapping, (ResourceHelper.GetString("Validation_SelfMapping_Title"), ResourceHelper.GetString("Validation_SelfMapping_Message")) },
+            { ValidationErrorType.EmptyTargetText, (ResourceHelper.GetString("Validation_EmptyTargetText_Title"), ResourceHelper.GetString("Validation_EmptyTargetText_Message")) },
+            { ValidationErrorType.EmptyUrl, (ResourceHelper.GetString("Validation_EmptyUrl_Title"), ResourceHelper.GetString("Validation_EmptyUrl_Message")) },
+            { ValidationErrorType.EmptyProgramPath, (ResourceHelper.GetString("Validation_EmptyProgramPath_Title"), ResourceHelper.GetString("Validation_EmptyProgramPath_Message")) },
+            { ValidationErrorType.OneKeyMapping, (ResourceHelper.GetString("Validation_OneKeyMapping_Title"), ResourceHelper.GetString("Validation_OneKeyMapping_Message")) },
         };
 
+        // Note on the edit-mode parameters below: <paramref name="isEditMode"/> is the legacy
+        // count-based tolerance flag; <paramref name="editingId"/> is the id of the row currently being
+        // edited (its key in ShortcutSettingsDictionary). When editingId is supplied, the duplicate /
+        // conflict checks exclude that one row by identity, so an edit that collides with any *other*
+        // row is correctly rejected. When it is null they fall back to the old count tolerance.
         public static ValidationErrorType ValidateKeyMapping(
             List<string> originalKeys,
             List<string> remappedKeys,
@@ -36,7 +42,8 @@ namespace KeyboardManagerEditorUI.Helpers
             string appName,
             KeyboardMappingService mappingService,
             bool isEditMode = false,
-            Remapping? editingRemapping = null)
+            string? editingId = null,
+            SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always)
         {
             if (originalKeys == null || originalKeys.Count == 0)
             {
@@ -59,19 +66,67 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.EmptyAppName;
             }
 
-            if (originalKeys.Count > 1 && IsIllegalShortcut(originalKeys, mappingService))
+            if ((originalKeys.Count > 1 && IsIllegalShortcut(originalKeys, mappingService)) ||
+                (remappedKeys.Count > 1 && IsIllegalShortcut(remappedKeys, mappingService)))
             {
                 return ValidationErrorType.IllegalShortcut;
             }
 
-            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName))
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName, editingId, condition))
             {
                 return ValidationErrorType.DuplicateMapping;
+            }
+
+            if (originalKeys.Count == 1 && HasConflictingModifierMapping(originalKeys[0], isEditMode, mappingService, editingId))
+            {
+                return ValidationErrorType.ConflictingModifier;
             }
 
             if (IsSelfMapping(originalKeys, remappedKeys, mappingService))
             {
                 return ValidationErrorType.SelfMapping;
+            }
+
+            return ValidationErrorType.NoError;
+        }
+
+        public static ValidationErrorType ValidateDisableMapping(
+            List<string> originalKeys,
+            bool isAppSpecific,
+            string appName,
+            KeyboardMappingService mappingService,
+            bool isEditMode = false,
+            string? editingId = null,
+            SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always)
+        {
+            if (originalKeys == null || originalKeys.Count == 0)
+            {
+                return ValidationErrorType.EmptyOriginalKeys;
+            }
+
+            if (originalKeys.Count > 1 && ContainsOnlyModifierKeys(originalKeys))
+            {
+                return ValidationErrorType.ModifierOnly;
+            }
+
+            if (isAppSpecific && string.IsNullOrWhiteSpace(appName))
+            {
+                return ValidationErrorType.EmptyAppName;
+            }
+
+            if (originalKeys.Count > 1 && IsIllegalShortcut(originalKeys, mappingService))
+            {
+                return ValidationErrorType.IllegalShortcut;
+            }
+
+            if (IsDuplicateMapping(originalKeys, isEditMode, mappingService, appName, editingId, condition))
+            {
+                return ValidationErrorType.DuplicateMapping;
+            }
+
+            if (originalKeys.Count == 1 && HasConflictingModifierMapping(originalKeys[0], isEditMode, mappingService, editingId))
+            {
+                return ValidationErrorType.ConflictingModifier;
             }
 
             return ValidationErrorType.NoError;
@@ -83,7 +138,8 @@ namespace KeyboardManagerEditorUI.Helpers
             bool isAppSpecific,
             string appName,
             KeyboardMappingService mappingService,
-            bool isEditMode = false)
+            bool isEditMode = false,
+            string? editingId = null)
         {
             if (keys == null || keys.Count == 0)
             {
@@ -110,7 +166,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return ValidationErrorType.IllegalShortcut;
             }
 
-            if (IsDuplicateMapping(keys, isEditMode, mappingService, appName))
+            if (IsDuplicateMapping(keys, isEditMode, mappingService, appName, editingId))
             {
                 return ValidationErrorType.DuplicateMapping;
             }
@@ -125,14 +181,14 @@ namespace KeyboardManagerEditorUI.Helpers
             string appName,
             KeyboardMappingService mappingService,
             bool isEditMode = false,
-            Remapping? editingRemapping = null)
+            string? editingId = null)
         {
             if (string.IsNullOrWhiteSpace(url))
             {
                 return ValidationErrorType.EmptyUrl;
             }
 
-            return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
+            return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingId);
         }
 
         public static ValidationErrorType ValidateAppMapping(
@@ -142,24 +198,25 @@ namespace KeyboardManagerEditorUI.Helpers
             string appName,
             KeyboardMappingService mappingService,
             bool isEditMode = false,
-            Remapping? editingRemapping = null)
+            string? editingId = null)
         {
             if (string.IsNullOrWhiteSpace(programPath))
             {
                 return ValidationErrorType.EmptyProgramPath;
             }
 
-            return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
+            return ValidateProgramOrUrlMapping(originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingId);
         }
 
-        public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService, string appName)
-        {
-            int upperLimit = isEditMode ? 1 : 0;
-            string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
-            return SettingsManager.EditorSettings.ShortcutSettingsDictionary.Values
-                .Count(settings => KeyboardManagerInterop.AreShortcutsEqual(settings.Shortcut.OriginalKeys, shortcutKeysString) &&
-                                   (string.IsNullOrEmpty(settings.Shortcut.TargetApp) || string.IsNullOrEmpty(appName) || settings.Shortcut.TargetApp == appName)) > upperLimit;
-        }
+        public static bool IsDuplicateMapping(List<string> keys, bool isEditMode, KeyboardMappingService mappingService, string appName, string? editingId = null, SingleKeyRemapCondition condition = SingleKeyRemapCondition.Always) =>
+            DuplicateMappingHelper.IsDuplicateMapping(
+                SettingsManager.EditorSettings.ShortcutSettingsDictionary,
+                BuildKeyCodeString(keys, mappingService),
+                isEditMode,
+                appName,
+                editingId,
+                KeyboardManagerInterop.AreShortcutsEqual,
+                condition);
 
         public static bool IsSelfMapping(List<string> originalKeys, List<string> remappedKeys, KeyboardMappingService mappingService)
         {
@@ -220,14 +277,14 @@ namespace KeyboardManagerEditorUI.Helpers
             string appName,
             KeyboardMappingService mappingService,
             bool isEditMode = false,
-            Remapping? editingRemapping = null)
+            string? editingId = null)
         {
             if (originalKeys.Count < 2)
             {
                 return ValidationErrorType.OneKeyMapping;
             }
 
-            ValidationErrorType error = ValidateKeyMapping(originalKeys, originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingRemapping);
+            ValidationErrorType error = ValidateKeyMapping(originalKeys, originalKeys, isAppSpecific, appName, mappingService, isEditMode, editingId);
 
             return error == ValidationErrorType.SelfMapping ? ValidationErrorType.NoError : error;
         }
@@ -237,6 +294,90 @@ namespace KeyboardManagerEditorUI.Helpers
             string shortcutKeysString = BuildKeyCodeString(keys, mappingService);
             Logger.LogInfo($"Checking if shortcut is illegal: {shortcutKeysString}");
             return KeyboardManagerInterop.IsShortcutIllegal(shortcutKeysString);
+        }
+
+        /// <summary>
+        /// Checks if a single key conflicts with existing single-key mappings via modifier variants.
+        /// E.g., remapping LCtrl when Ctrl is already mapped, or vice versa.
+        /// </summary>
+        private static bool HasConflictingModifierMapping(string keyName, bool isEditMode, KeyboardMappingService mappingService, string? editingId = null)
+        {
+            int keyCode = KeyboardManagerInterop.GetKeyCodeFromName(keyName);
+            int keyType = KeyboardManagerInterop.GetKeyType(keyCode);
+
+            // Only modifier keys can conflict with their variants
+            if (keyType >= 4)
+            {
+                return false;
+            }
+
+            // With the edited row's identity we exclude it below and any remaining conflict is real;
+            // without it, fall back to the old count tolerance.
+            int upperLimit = editingId != null ? 0 : (isEditMode ? 1 : 0);
+            int conflictCount = 0;
+
+            foreach (var kvp in SettingsManager.EditorSettings.ShortcutSettingsDictionary)
+            {
+                // Inactive rows are retained for other profiles and are not part of the
+                // candidate engine configuration, so they cannot conflict with this edit.
+                if (!kvp.Value.IsActive)
+                {
+                    continue;
+                }
+
+                if (editingId != null && kvp.Key == editingId)
+                {
+                    continue; // exclude the row being edited by identity, not by count
+                }
+
+                string existingOriginal = kvp.Value.Shortcut.OriginalKeys;
+
+                // Only check single-key mappings (no semicolons)
+                if (string.IsNullOrEmpty(existingOriginal) || existingOriginal.Contains(';'))
+                {
+                    continue;
+                }
+
+                if (int.TryParse(existingOriginal, out int existingKeyCode))
+                {
+                    if (existingKeyCode == keyCode)
+                    {
+                        continue; // Exact match handled by DuplicateMapping
+                    }
+
+                    int existingKeyType = KeyboardManagerInterop.GetKeyType(existingKeyCode);
+
+                    // Same modifier family but a different key code. This is only a genuine (ambiguous)
+                    // conflict when one side is the generic, side-agnostic modifier (e.g. Ctrl vs Left
+                    // Ctrl): the generic one matches either physical side, so mapping both is ambiguous.
+                    // Two DISTINCT specific sides (e.g. Left Ctrl vs Right Ctrl) are separate physical
+                    // keys and can coexist (this is exactly the left/right ⌘ -> 英数/かな use case).
+                    if (existingKeyType == keyType && (IsGenericModifier(keyCode) || IsGenericModifier(existingKeyCode)))
+                    {
+                        conflictCount++;
+                        if (conflictCount > upperLimit)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Whether the key code is a generic, side-agnostic modifier (Ctrl/Alt/Shift, or the
+        /// "both Windows keys" pseudo-key). These match either physical side at the hook level, so
+        /// pairing one with a specific side of the same family is ambiguous; two specific sides are not.
+        /// </summary>
+        private static bool IsGenericModifier(int keyCode)
+        {
+            const int VK_SHIFT = 0x10;
+            const int VK_CONTROL = 0x11;
+            const int VK_MENU = 0x12;    // Alt
+            const int VK_WIN_BOTH = 0x104; // CommonSharedConstants::VK_WIN_BOTH
+            return keyCode == VK_SHIFT || keyCode == VK_CONTROL || keyCode == VK_MENU || keyCode == VK_WIN_BOTH;
         }
 
         private static string BuildKeyCodeString(List<string> keys, KeyboardMappingService mappingService)

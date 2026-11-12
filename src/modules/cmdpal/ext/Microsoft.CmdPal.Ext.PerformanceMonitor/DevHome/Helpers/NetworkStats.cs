@@ -5,179 +5,191 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
+using System.Globalization;
+using System.Threading;
 using Microsoft.CmdPal.Common;
 
 namespace CoreWidgetProvider.Helpers;
 
-internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisposable
+internal sealed partial class NetworkStats
 {
-    private readonly Dictionary<string, List<PerformanceCounter>> _networkCounters = new();
-    private bool _networkCounterReadFailureLogged;
-
-    private Dictionary<string, Data> NetworkUsages { get; set; } = new();
-
-    private Dictionary<string, List<float>> NetChartValues { get; set; } = new();
+    internal const string AllPhysicalAdaptersId = "all-physical-network-adapters";
+    private const string PhysicalAdapterIdPrefix = "network-interface:";
+    private readonly IPhysicalNetworkInterfaceSnapshotProvider _snapshotProvider;
+    private readonly string _allAdaptersName;
+    private readonly Dictionary<ulong, CounterSample> _previousSamples = new();
+    private readonly Dictionary<ulong, List<float>> _chartValues = new();
+    private readonly List<float> _allAdaptersChartValues = new();
+    private readonly List<ulong> _missingInterfaceIds = new();
+    private NetworkAdapterData[] _networkAdapters = [];
+    private long? _lastTimestamp;
+    private bool _snapshotReadFailureLogged;
 
     public sealed class Data
     {
         public float Usage
         {
-            get; set;
+            get; init;
         }
 
         public float Sent
         {
-            get; set;
+            get; init;
         }
 
         public float Received
         {
-            get; set;
+            get; init;
         }
     }
+
+    private sealed record NetworkAdapterData(string Id, string Name, Data Usage, List<float> ChartValues);
+
+    private readonly record struct CounterSample(ulong ReceivedBytes, ulong SentBytes);
 
     public NetworkStats()
+        : this(new PhysicalNetworkInterfaceSnapshotProvider(), Resources.GetResource("All_Physical_Network_Adapters"))
     {
-        InitNetworkPerfCounters();
+        GetData();
     }
 
-    private void InitNetworkPerfCounters()
+    internal NetworkStats(IPhysicalNetworkInterfaceSnapshotProvider snapshotProvider, string allAdaptersName)
     {
-        try
-        {
-            var perfCounterCategory = CreatePerformanceCounterCategory("Network Interface");
-            if (perfCounterCategory is null)
-            {
-                return;
-            }
-
-            var instanceNames = perfCounterCategory.GetInstanceNames();
-            foreach (var instanceName in instanceNames)
-            {
-                try
-                {
-                    var bytesSent = CreatePerformanceCounter("Network Interface", "Bytes Sent/sec", instanceName, logFailure: false);
-                    var bytesReceived = CreatePerformanceCounter("Network Interface", "Bytes Received/sec", instanceName, logFailure: false);
-                    var currentBandwidth = CreatePerformanceCounter("Network Interface", "Current Bandwidth", instanceName, logFailure: false);
-                    if (bytesSent is null || bytesReceived is null || currentBandwidth is null)
-                    {
-                        bytesSent?.Dispose();
-                        bytesReceived?.Dispose();
-                        currentBandwidth?.Dispose();
-                        continue;
-                    }
-
-                    var instanceCounters = new List<PerformanceCounter> { bytesSent, bytesReceived, currentBandwidth };
-                    _networkCounters.Add(instanceName, instanceCounters);
-                    NetChartValues.Add(instanceName, new List<float>());
-                    NetworkUsages.Add(instanceName, new Data());
-                }
-                catch (Exception)
-                {
-                    // Skip interfaces whose counters cannot be initialized.
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            CoreLogger.LogError("Failed to initialize network performance counters.", ex);
-        }
+        _snapshotProvider = snapshotProvider;
+        _allAdaptersName = allAdaptersName;
+        _networkAdapters = [new(AllPhysicalAdaptersId, _allAdaptersName, new Data(), _allAdaptersChartValues)];
     }
 
     public void GetData()
     {
-        float maxUsage = 0;
-        foreach (var networkCounterWithName in _networkCounters)
+        try
         {
-            try
+            var snapshots = _snapshotProvider.GetSnapshots();
+            var timestamp = Stopwatch.GetTimestamp();
+            var elapsedSeconds = _lastTimestamp is long previousTimestamp
+                ? Stopwatch.GetElapsedTime(previousTimestamp, timestamp).TotalSeconds
+                : 0;
+
+            ApplySnapshots(snapshots, elapsedSeconds);
+            _lastTimestamp = timestamp;
+        }
+        catch (Exception ex)
+        {
+            if (!_snapshotReadFailureLogged)
             {
-                var sent = networkCounterWithName.Value[0].NextValue();
-                var received = networkCounterWithName.Value[1].NextValue();
-                var bandWidth = networkCounterWithName.Value[2].NextValue();
-                if (bandWidth == 0)
-                {
-                    continue;
-                }
-
-                var usage = 8 * (sent + received) / bandWidth;
-                var name = networkCounterWithName.Key;
-                NetworkUsages[name].Sent = sent;
-                NetworkUsages[name].Received = received;
-                NetworkUsages[name].Usage = usage;
-
-                var chartValues = NetChartValues[name];
-                lock (chartValues)
-                {
-                    ChartHelper.AddNextChartValue(usage * 100, chartValues);
-                }
-
-                if (usage > maxUsage)
-                {
-                    maxUsage = usage;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogFailureOnce(ref _networkCounterReadFailureLogged, "Failed while reading network performance counters.", ex);
+                _snapshotReadFailureLogged = true;
+                CoreLogger.LogError("Failed while reading physical network interface statistics.", ex);
             }
         }
+    }
+
+    internal void ApplySnapshots(IReadOnlyList<PhysicalNetworkInterfaceSnapshot> snapshots, double elapsedSeconds)
+    {
+        var currentInterfaceIds = new HashSet<ulong>(snapshots.Count);
+        var adapterMeasurements = new List<(PhysicalNetworkInterfaceSnapshot Snapshot, Data Usage)>(snapshots.Count);
+        double totalSent = 0;
+        double totalReceived = 0;
+        double totalBandwidth = 0;
+
+        foreach (var snapshot in snapshots)
+        {
+            currentInterfaceIds.Add(snapshot.InterfaceLuid);
+
+            var sent = 0d;
+            var received = 0d;
+            if (elapsedSeconds > 0 && _previousSamples.TryGetValue(snapshot.InterfaceLuid, out var previousSample))
+            {
+                sent = GetBytesPerSecond(previousSample.SentBytes, snapshot.SentBytes, elapsedSeconds);
+                received = GetBytesPerSecond(previousSample.ReceivedBytes, snapshot.ReceivedBytes, elapsedSeconds);
+            }
+
+            _previousSamples[snapshot.InterfaceLuid] = new(snapshot.ReceivedBytes, snapshot.SentBytes);
+
+            var usage = CreateUsage(sent, received, snapshot.LinkSpeed);
+            adapterMeasurements.Add((snapshot, usage));
+            totalSent += sent;
+            totalReceived += received;
+            totalBandwidth += snapshot.LinkSpeed;
+        }
+
+        RemoveMissingInterfaces(currentInterfaceIds);
+
+        var aggregateUsage = CreateUsage(totalSent, totalReceived, totalBandwidth);
+        AddChartValue(_allAdaptersChartValues, aggregateUsage.Usage);
+
+        var adapters = new NetworkAdapterData[adapterMeasurements.Count + 1];
+        adapters[0] = new(AllPhysicalAdaptersId, _allAdaptersName, aggregateUsage, _allAdaptersChartValues);
+
+        for (var index = 0; index < adapterMeasurements.Count; index++)
+        {
+            var (snapshot, usage) = adapterMeasurements[index];
+            if (!_chartValues.TryGetValue(snapshot.InterfaceLuid, out var chartValues))
+            {
+                chartValues = new List<float>();
+                _chartValues.Add(snapshot.InterfaceLuid, chartValues);
+            }
+
+            AddChartValue(chartValues, usage.Usage);
+            adapters[index + 1] = new(GetPhysicalAdapterId(snapshot), snapshot.Name, usage, chartValues);
+        }
+
+        Volatile.Write(ref _networkAdapters, adapters);
     }
 
     public string CreateNetImageUrl(int netChartIndex)
     {
-        return ChartHelper.CreateImageUrl(NetChartValues.ElementAt(netChartIndex).Value, ChartHelper.ChartType.Net);
+        var adapters = Volatile.Read(ref _networkAdapters);
+        var resolvedIndex = ResolveIndex(netChartIndex, adapters.Length);
+        return ChartHelper.CreateImageUrl(adapters[resolvedIndex].ChartValues, ChartHelper.ChartType.Net);
     }
 
     public string GetNetworkName(int networkIndex)
     {
-        if (NetChartValues.Count <= networkIndex)
+        var adapters = Volatile.Read(ref _networkAdapters);
+        return adapters[ResolveIndex(networkIndex, adapters.Length)].Name;
+    }
+
+    public string GetNetworkId(int networkIndex)
+    {
+        var adapters = Volatile.Read(ref _networkAdapters);
+        return adapters[ResolveIndex(networkIndex, adapters.Length)].Id;
+    }
+
+    public int GetNetworkIndex(string adapterId)
+    {
+        var adapters = Volatile.Read(ref _networkAdapters);
+        for (var index = 0; index < adapters.Length; index++)
         {
-            return string.Empty;
+            if (string.Equals(adapters[index].Id, adapterId, StringComparison.OrdinalIgnoreCase))
+            {
+                return index;
+            }
         }
 
-        return NetChartValues.ElementAt(networkIndex).Key;
+        return -1;
     }
 
     public Data GetNetworkUsage(int networkIndex)
     {
-        if (NetChartValues.Count <= networkIndex)
-        {
-            return new Data();
-        }
-
-        var currNetworkName = NetChartValues.ElementAt(networkIndex).Key;
-        if (!NetworkUsages.TryGetValue(currNetworkName, out var value))
-        {
-            return new Data();
-        }
-
-        return value;
+        var adapters = Volatile.Read(ref _networkAdapters);
+        return adapters[ResolveIndex(networkIndex, adapters.Length)].Usage;
     }
 
     public int GetPrevNetworkIndex(int networkIndex)
     {
-        if (NetChartValues.Count == 0)
+        var adapterCount = Volatile.Read(ref _networkAdapters).Length;
+        if (adapterCount == 0)
         {
             return 0;
         }
 
-        if (networkIndex == 0)
-        {
-            return NetChartValues.Count - 1;
-        }
-
-        return networkIndex - 1;
+        return networkIndex <= 0 || networkIndex >= adapterCount ? adapterCount - 1 : networkIndex - 1;
     }
 
     public int GetNextNetworkIndex(int networkIndex)
     {
-        if (NetChartValues.Count == 0)
-        {
-            return 0;
-        }
-
-        if (networkIndex == NetChartValues.Count - 1)
+        var adapterCount = Volatile.Read(ref _networkAdapters).Length;
+        if (adapterCount == 0 || networkIndex < 0 || networkIndex >= adapterCount - 1)
         {
             return 0;
         }
@@ -185,14 +197,57 @@ internal sealed partial class NetworkStats : PerformanceCounterSourceBase, IDisp
         return networkIndex + 1;
     }
 
-    public void Dispose()
+    private static double GetBytesPerSecond(ulong previousValue, ulong currentValue, double elapsedSeconds)
     {
-        foreach (var counterPair in _networkCounters)
+        return currentValue >= previousValue ? (currentValue - previousValue) / elapsedSeconds : 0;
+    }
+
+    private static int ResolveIndex(int requestedIndex, int adapterCount)
+    {
+        return (uint)requestedIndex < (uint)adapterCount ? requestedIndex : 0;
+    }
+
+    private static string GetPhysicalAdapterId(PhysicalNetworkInterfaceSnapshot snapshot)
+    {
+        return snapshot.InterfaceGuid != Guid.Empty
+            ? PhysicalAdapterIdPrefix + snapshot.InterfaceGuid.ToString("D")
+            : PhysicalAdapterIdPrefix + snapshot.InterfaceLuid.ToString("X16", CultureInfo.InvariantCulture);
+    }
+
+    private static Data CreateUsage(double sent, double received, double bandwidth)
+    {
+        var usage = bandwidth > 0 ? Math.Min(8 * (sent + received) / bandwidth, 1) : 0;
+        return new Data
         {
-            foreach (var counter in counterPair.Value)
+            Sent = (float)sent,
+            Received = (float)received,
+            Usage = (float)usage,
+        };
+    }
+
+    private static void AddChartValue(List<float> chartValues, float usage)
+    {
+        lock (chartValues)
+        {
+            ChartHelper.AddNextChartValue(usage * 100, chartValues);
+        }
+    }
+
+    private void RemoveMissingInterfaces(HashSet<ulong> currentInterfaceIds)
+    {
+        _missingInterfaceIds.Clear();
+        foreach (var interfaceId in _previousSamples.Keys)
+        {
+            if (!currentInterfaceIds.Contains(interfaceId))
             {
-                counter.Dispose();
+                _missingInterfaceIds.Add(interfaceId);
             }
+        }
+
+        foreach (var interfaceId in _missingInterfaceIds)
+        {
+            _previousSamples.Remove(interfaceId);
+            _chartValues.Remove(interfaceId);
         }
     }
 }

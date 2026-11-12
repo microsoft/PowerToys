@@ -1,18 +1,35 @@
 #pragma once
 
 #include "LoopbackCapture.h"
+#include "NoiseSuppressor.h"
+
+#include <atomic>
+#include <deque>
+#include <optional>
+#include <memory>
+#include <mutex>
+#include <thread>
 
 class AudioSampleGenerator
 {
 public:
-    AudioSampleGenerator(bool captureMicrophone = true, bool captureSystemAudio = true, bool micMonoMix = false);
+    AudioSampleGenerator(bool captureMicrophone = true, bool captureSystemAudio = true, bool mixMicrophoneMono = false, bool useNoiseCancellation = false);
     ~AudioSampleGenerator();
 
     winrt::Windows::Foundation::IAsyncAction InitializeAsync();
     winrt::Windows::Media::MediaProperties::AudioEncodingProperties GetEncodingProperties();
+    bool HasAudio() const { return m_audioInputNode != nullptr || m_loopbackCapture != nullptr; }
+    bool MicrophoneUnavailable() const { return m_microphoneUnavailable.load(); }
+    bool SystemAudioUnavailable() const { return m_systemAudioUnavailable.load(); }
+
+    // Takes ownership of a generator whose InitializeAsync may still be in
+    // flight and disposes of it without blocking the calling thread.
+    static winrt::fire_and_forget DisposeAsync(
+        std::unique_ptr<AudioSampleGenerator> generator,
+        winrt::Windows::Foundation::IAsyncAction initAction );
 
     std::optional<winrt::Windows::Media::Core::MediaStreamSample> TryGetNextSample();
-    void Start();
+    void Start(int64_t videoStartTimestamp = 0);
     void Stop();
 
 private:
@@ -23,6 +40,10 @@ private:
     void FlushRemainingAudio();
     void CombineQueuedSamples();
     void AppendResampledLoopbackSamples(std::vector<float> const& rawLoopbackSamples, bool flushRemaining = false);
+    void CaptureSystemAudio();
+    void DrainLoopbackSamples(bool flushRemaining = false);
+    void QueueSample(winrt::Windows::Media::Core::MediaStreamSample const& sample);
+    winrt::Windows::Media::Core::MediaStreamSample PopSample();
 
     void CheckInitialized()
     {
@@ -45,8 +66,12 @@ private:
     winrt::Windows::Media::Audio::AudioDeviceInputNode m_audioInputNode{ nullptr };
     winrt::Windows::Media::Audio::AudioSubmixNode m_submixNode{ nullptr };
     winrt::Windows::Media::Audio::AudioFrameOutputNode m_audioOutputNode{ nullptr };
+    winrt::Windows::Media::MediaProperties::AudioEncodingProperties m_outputProperties{ nullptr };
     
     std::unique_ptr<LoopbackCapture> m_loopbackCapture;
+    std::thread m_systemAudioThread;
+    wil::unique_event m_systemAudioStopEvent;
+    std::mutex m_startStopLock;
     std::vector<float> m_loopbackBuffer;  // Accumulated loopback samples (resampled to match AudioGraph)
     wil::srwlock m_loopbackBufferLock;
     uint32_t m_loopbackChannels = 2;
@@ -66,9 +91,22 @@ private:
     wil::unique_event m_startEvent;
     wil::unique_event m_asyncInitialized;
     std::deque<winrt::Windows::Media::Core::MediaStreamSample> m_samples;
+    size_t m_queuedSampleBytes = 0;
+    size_t m_droppedAudioSamples = 0;
     std::atomic<bool> m_initialized = false;
     std::atomic<bool> m_started = false;
+    std::atomic<bool> m_microphoneUnavailable{ false };
+    std::atomic<bool> m_systemAudioUnavailable{ false };
     bool m_captureMicrophone = true;
     bool m_captureSystemAudio = true;
-    bool m_micMonoMix = false;
+    bool m_mixMicrophoneMono = false;
+    bool m_useNoiseCancellation = false;
+    std::unique_ptr<NoiseSuppressor> m_noiseSuppressor;
+
+    // Timestamp rebasing: audio RelativeTime → video SystemRelativeTime domain.
+    // Without this, the transcoder sees audio timestamps (~350ms) far below video
+    // timestamps (~111 billion ticks) and starves video while trying to fill the gap.
+    int64_t m_videoStartTimestamp = 0;
+    int64_t m_timestampOffset = 0;
+    bool m_hasTimestampOffset = false;
 };

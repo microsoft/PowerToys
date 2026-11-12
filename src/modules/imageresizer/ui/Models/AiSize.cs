@@ -19,7 +19,7 @@ namespace ImageResizer.Models
 
         [ObservableProperty]
         [JsonPropertyName("scale")]
-        private int _scale = 2;
+        public partial int Scale { get; set; } = 2;
 
         /// <summary>
         /// Gets the formatted scale display string (e.g., "2x").

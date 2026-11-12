@@ -58,7 +58,7 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
 
             if (!File.Exists(settingsPath))
             {
-                return false;
+                return true;
             }
 
             var json = File.ReadAllText(settingsPath);
@@ -72,9 +72,9 @@ internal sealed class KeyboardManagerModuleCommandProvider : ModuleCommandProvid
         }
         catch
         {
-            // If we can't read the setting, default to not showing the command
+            // If we can't read the setting, default to showing the command
         }
 
-        return false;
+        return true;
     }
 }

@@ -10,6 +10,8 @@ public record PinToDockMessage(
     string ProviderId,
     string CommandId,
     bool Pin,
+    bool WithReload = true,
     DockPinSide Side = DockPinSide.Start,
     bool? ShowTitles = null,
-    bool? ShowSubtitles = null);
+    bool? ShowSubtitles = null,
+    string? MonitorDeviceId = null);

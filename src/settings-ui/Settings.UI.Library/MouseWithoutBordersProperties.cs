@@ -26,6 +26,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
     public class MouseWithoutBordersProperties : ICloneable
     {
+        private List<string> _machineMatrixString = new List<string>();
+
         [CmdConfigureIgnore]
         public static HotkeySettings DefaultHotKeySwitch2AllPC => new HotkeySettings();
 
@@ -44,6 +46,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [CmdConfigureIgnore]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool UseService { get; set; }
+
+        [CmdConfigureIgnore]
+        public BoolProperty AllowNonConsoleSessions { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowOriginalUI { get; set; }
@@ -82,7 +87,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShowClipboardAndNetworkStatusMessages { get; set; }
 
         [CmdConfigureIgnoreAttribute]
-        public List<string> MachineMatrixString { get; set; }
+        public List<string> MachineMatrixString
+        {
+            get => _machineMatrixString;
+            init => _machineMatrixString = value ?? new List<string>();
+        }
+
+        public void ReplaceMachineMatrixString(IEnumerable<string> value)
+        {
+            // Publish a complete snapshot; readers may still hold the previous list.
+            var replacement = value?.ToList() ?? new List<string>();
+            _machineMatrixString = replacement;
+        }
 
         [CmdConfigureIgnoreAttribute]
         public StringProperty MachinePool { get; set; }
@@ -192,6 +208,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             Switch2AllPCShortcut = DefaultHotKeySwitch2AllPC;
 
             // These are internal, i.e. cannot be edited directly from UI
+            AllowNonConsoleSessions = new BoolProperty(false);
             MachinePool = ":,:,:,:";
             MatrixOneRow = true;
             MachineID = new IntProperty(0);

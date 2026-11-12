@@ -59,7 +59,9 @@ struct LogSettings
     inline const static std::string mouseHighlighterLoggerName = "mouse-highlighter";
     inline const static std::string mouseJumpLoggerName = "mouse-jump";
     inline const static std::string mousePointerCrosshairsLoggerName = "mouse-pointer-crosshairs";
+    inline const static std::string autoHideCursorLoggerName = "auto-hide-cursor";
     inline const static std::string cursorWrapLoggerName = "cursor-wrap";
+    inline const static std::string mouseButtonLockLoggerName = "mouse-button-lock";
     inline const static std::string imageResizerLoggerName = "imageresizer";
     inline const static std::string powerRenameLoggerName = "powerrename";
     inline const static std::string alwaysOnTopLoggerName = "always-on-top";
@@ -84,6 +86,7 @@ struct LogSettings
     inline const static std::string zoomItLoggerName = "zoom-it";
     inline const static std::string lightSwitchLoggerName = "light-switch";
     inline const static std::string powerDisplayLoggerName = "powerdisplay";
+    inline const static std::string grabAndMoveLoggerName = "grabandmove";
     inline const static int retention = 30;
     std::wstring logLevel;
     LogSettings();

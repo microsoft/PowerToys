@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -19,10 +19,20 @@ public partial class SamplesListPage : ListPage
             Title = "List Page Sample Command",
             Subtitle = "Display a list of items",
         },
+        new ListItem(new SampleToastsPage())
+        {
+            Title = "Toast Notification Samples",
+            Subtitle = "Demonstrates CommandResult.ShowToast and lets you send custom toasts",
+        },
         new ListItem(new SampleListPageWithDetails())
         {
             Title = "List Page With Details",
             Subtitle = "A list of items, each with additional details to display",
+        },
+        new ListItem(new SampleLiveDetailsPage())
+        {
+            Title = "Live Updating Details",
+            Subtitle = "Details pane updates in real time without reselecting",
         },
         new ListItem(new SectionsIndexPage())
         {
@@ -39,6 +49,21 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: false))
+        {
+            Title = "Small-batch incremental loading (list)",
+            Subtitle = "Starts with one item and loads up to eight per batch, up to 512. Type to reset; use Ctrl+K to restart or switch layouts.",
+        },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: true))
+        {
+            Title = "Small-batch incremental loading (grid)",
+            Subtitle = "Starts with one tile and loads up to eight per batch, up to 512. Check keyboard navigation, viewport resizing, and switching layouts.",
+        },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: true, initialItemCount: 0))
+        {
+            Title = "Incremental loading from an empty grid",
+            Subtitle = "Starts empty and loads up to eight items per batch, up to 512. The first batch should appear without input.",
+        },
         new ListItem(new SampleGridsListPage())
         {
             Title = "Grid views and galleries",
@@ -54,10 +79,35 @@ public partial class SamplesListPage : ListPage
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
         },
+        new ListItem(new SampleSwatchIconPage())
+        {
+            Title = "Swatch Icon Palette",
+            Subtitle = "A 256-color circle and square swatch stress sample",
+        },
+        new ListItem(new SampleSvgIconPage())
+        {
+            Title = "SVG Icon Protocols",
+            Subtitle = "Plain, themed, semantic, and custom-color SVG icon samples",
+        },
+        new ListItem(new SampleShellItemIconPage())
+        {
+            Title = "System32 Shell Icons",
+            Subtitle = "A large real-world list for Shell icon identity and cache testing",
+        },
+        new ListItem(new SampleShellItemIconPage(useLegacyIndexerIcons: true))
+        {
+            Title = "System32 Legacy Indexer Icons",
+            Subtitle = "The same System32 list using pre-protocol ThumbnailHelper streams",
+        },
         new ListItem(new SlowListPage())
         {
             Title = "Slow loading list page",
             Subtitle = "A demo of a list page that takes a while to load",
+        },
+        new ListItem(new SampleSuggestionsPage())
+        {
+            Title = "Sample Prefix Suggestions",
+            Subtitle = "A demo of using 'nested' pages to provide 'suggestions' as the user types",
         },
 
         // Content pages
@@ -115,12 +165,56 @@ public partial class SamplesListPage : ListPage
             Title = "Sample settings page",
             Subtitle = "A demo of the settings helpers",
         },
+        new ListItem(new SampleListSettingsPage())
+        {
+            Title = "Path and list settings controls",
+            Subtitle = "Manage strings, file paths, and escaped key/value pairs",
+        },
 
         // Data package samples
+        new ListItem(new SampleClipboardPage())
+        {
+            Title = "Clipboard Helper Samples",
+            Subtitle = "Test text, RTF, images, and custom data packages with ClipboardHelper",
+        },
         new ListItem(new SampleDataTransferPage())
         {
             Title = "Clipboard and Drag-and-Drop Demo",
             Subtitle = "Demonstrates clipboard integration and drag-and-drop functionality",
+        },
+
+        // Parameter pages
+        new ListItem(new SimpleParameterTest())
+        {
+            Title = "Sample parameters page",
+            Subtitle = "A demo of a command that takes simple parameters",
+        },
+        new ListItem(new ButtonParameterTest())
+        {
+            Title = "Button parameters page",
+            Subtitle = "A demo of a command that takes simple parameters",
+        },
+        new ListItem(new MixedParamTestPage(stringFirst: true))
+        {
+            Title = "Mixed parameter types (string first)",
+            Subtitle = "A demo of a command that takes multiple types of parameters",
+        },
+        new ListItem(new MixedParamTestPage(stringFirst: false))
+        {
+            Title = "Mixed parameter types (file first)",
+            Subtitle = "A demo of a command that takes multiple types of parameters",
+        },
+
+        // List parameters
+        new ListItem(new CreateNoteParametersPage())
+        {
+            Title = "Create note sample",
+            Subtitle = "A parameter page with both a string and list parameter",
+        },
+        new ListItem(new CreateNoteParametersPage(gridProperties: new MediumGridLayout { ShowTitle = true }))
+        {
+            Title = "Create note sample (grid view)",
+            Subtitle = "A parameter page with a string and a grid of folders",
         },
 
         // Evil edge cases

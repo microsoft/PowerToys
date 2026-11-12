@@ -4,6 +4,8 @@
 
 using System.Collections.Immutable;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.Ext.Run;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 
@@ -22,7 +24,8 @@ internal sealed class RunHistoryService : IRunHistoryService
     {
         if (_appStateService.State.RunHistory.IsEmpty)
         {
-            var history = Microsoft.Terminal.UI.RunHistory.CreateRunHistory();
+            var history = WindowsRunHistory.Read();
+
             _appStateService.UpdateState(state => state with
             {
                 RunHistory = history.ToImmutableList(),
@@ -53,5 +56,20 @@ internal sealed class RunHistoryService : IRunHistoryService
                 .Remove(item)
                 .Insert(0, item),
         });
+    }
+
+    public long RunCommand(string commandLine, string workingDir, bool asAdmin, ulong hwnd)
+    {
+        return RunHistory.ExecuteCommandline(commandLine, workingDir, hwnd, asAdmin);
+    }
+
+    public ParseCommandlineResult ParseCommandline(string commandLine, string workingDirectory)
+    {
+        return RunHistory.ParseCommandline(commandLine, workingDirectory);
+    }
+
+    public string QualifyCommandLineDirectory(string commandLine, string fullFilePath, string defaultDirectory)
+    {
+        return RunHistory.QualifyCommandLineDirectory(commandLine, fullFilePath, defaultDirectory);
     }
 }

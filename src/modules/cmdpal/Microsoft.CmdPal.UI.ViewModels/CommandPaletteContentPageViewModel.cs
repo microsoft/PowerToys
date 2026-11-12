@@ -13,7 +13,9 @@ public partial class CommandPaletteContentPageViewModel : ContentPageViewModel
     {
     }
 
-    public override ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
+    public override ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context) => CreateViewModel(content, context);
+
+    public static ContentViewModel? CreateViewModel(IContent content, WeakReference<IPageContext> context)
     {
         ContentViewModel? viewModel = content switch
         {

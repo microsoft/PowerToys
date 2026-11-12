@@ -45,7 +45,9 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring ShowPeekEvent();
         static hstring TerminatePeekEvent();
         static hstring PowerAccentExitEvent();
+        static hstring ShortcutGuideExitEvent();
         static hstring ShortcutGuideTriggerEvent();
+        static hstring ShortcutGuideWinKeyHoldEvent();
         static hstring RegistryPreviewTriggerEvent();
         static hstring GcodePreviewResizeEvent();
         static hstring BgcodePreviewResizeEvent();
@@ -68,10 +70,12 @@ namespace winrt::PowerToys::Interop::implementation
         static hstring ShowCmdPalEvent();
         static hstring TogglePowerDisplayEvent();
         static hstring TerminatePowerDisplayEvent();
+        static hstring AutoDisablePowerDisplayEvent();
         static hstring RefreshPowerDisplayMonitorsEvent();
         static hstring SettingsUpdatedPowerDisplayEvent();
         static hstring PowerDisplaySendSettingsTelemetryEvent();
         static hstring HotkeyUpdatedPowerDisplayEvent();
+        static hstring RescanPowerDisplayMonitorsEvent();
         static hstring PowerDisplayToggleMessage();
         static hstring PowerDisplayApplyProfileMessage();
         static hstring PowerDisplayTerminateAppMessage();
@@ -88,4 +92,3 @@ namespace winrt::PowerToys::Interop::factory_implementation
     {
     };
 }
-

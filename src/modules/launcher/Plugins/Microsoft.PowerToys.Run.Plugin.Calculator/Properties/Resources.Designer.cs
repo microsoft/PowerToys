@@ -68,6 +68,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.Properties {
                 return ResourceManager.GetString("wox_plugin_calculator_calculation_failed", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Complex numbers are not supported.
+        /// </summary>
+        public static string wox_plugin_calculator_complex_number_returned {
+            get {
+                return ResourceManager.GetString("wox_plugin_calculator_complex_number_returned", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Copy failed, please try later.

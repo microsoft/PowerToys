@@ -53,16 +53,16 @@ namespace ImageResizer.ViewModels
         private int? _originalHeight;
 
         [ObservableProperty]
-        private string _currentResolutionDescription;
+        public partial string CurrentResolutionDescription { get; set; }
 
         [ObservableProperty]
-        private string _newResolutionDescription;
+        public partial string NewResolutionDescription { get; set; }
 
         [ObservableProperty]
-        private bool _isDownloadingModel;
+        public partial bool IsDownloadingModel { get; set; }
 
         [ObservableProperty]
-        private string _modelStatusMessage;
+        public partial string ModelStatusMessage { get; set; }
 
         public InputViewModel(
             Settings settings,
@@ -79,7 +79,6 @@ namespace ImageResizer.ViewModels
             Settings = settings;
             if (settings != null)
             {
-                settings.CustomSize.PropertyChanged += (sender, e) => settings.SelectedSize = (CustomSize)sender;
                 settings.AiSize.PropertyChanged += (sender, e) =>
                 {
                     if (e.PropertyName == nameof(AiSize.Scale))

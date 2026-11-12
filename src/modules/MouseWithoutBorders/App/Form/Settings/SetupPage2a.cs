@@ -73,7 +73,7 @@ namespace MouseWithoutBorders
 
         private void SetLinkButtonState()
         {
-            LinkButton.Enabled = SecurityCodeField.Text.Length >= 16 && ComputerNameField.Text.Trim().Length > 0;
+            LinkButton.Enabled = Encryption.IsKeyValid(Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty), out _) && ComputerNameField.Text.Trim().Length > 0;
             if (!string.IsNullOrEmpty(SecurityCodeField.Text))
             {
                 _securityCode = SecurityCodeField.Text;
@@ -87,9 +87,18 @@ namespace MouseWithoutBorders
 
         private void LinkButtonClick(object sender, System.EventArgs e)
         {
+            var key = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
+            if (!Encryption.IsKeyValid(key, out string error))
+            {
+                Common.ShowToolTip(error, 10000, System.Windows.Forms.ToolTipIcon.Error, false);
+                _ = SecurityCodeField.Focus();
+                return;
+            }
+
             if (GetSecureKey() != SecurityCodeField.Text)
             {
-                Encryption.MyKey = Regex.Replace(SecurityCodeField.Text, @"\s+", string.Empty);
+                Setting.Values.MyKey = key;
+                Encryption.MyKey = key;
                 SecurityCode = Encryption.MyKey;
             }
 

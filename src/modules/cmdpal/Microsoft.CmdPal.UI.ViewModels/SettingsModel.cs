@@ -11,13 +11,65 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 
 public record SettingsModel
 {
+    // LOAD BEARNING: Some SettingsChanged subscribers react selectively (e.g.
+    // MainWindow.MainWindowSettingsComparer, DockWindowManager.OnSettingsChanged). If a new
+    // setting needs a live reaction, add it there too - otherwise it won't take effect.
+
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    public const int DefaultCompactCenterHeightPercentage = 75;
+
+    internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
+    internal const int MaxQuickAccessShelfPinnedCommandLimit = 99;
+    internal const int DefaultQuickAccessShelfPinnedCommandLimit = 9;
+    internal const int MinRecentCommandsDisplayLimit = 1;
+    internal const int MaxRecentCommandsDisplayLimit = 10;
+    internal const int DefaultRecentCommandsDisplayLimit = 5;
+
+    public static readonly bool IsWindowsKeyHotkeyFeatureEnabled = GetWindowsKeyHotkeyFeatureFlag();
+
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
+
+    /// <summary>
+    /// Gets the default shortcut that focuses the dock: win+alt+J. It shares the
+    /// activation shortcut's modifiers so the two sit next to each other in muscle memory.
+    /// Win+Alt+D would read better, but Windows 11 already owns it for the taskbar clock.
+    /// </summary>
+    public static HotkeySettings DefaultDockFocusShortcut { get; } = new HotkeySettings(true, false, true, false, 0x4A); // win+alt+J
 
     public HotkeySettings? Hotkey { get; init; } = DefaultActivationShortcut;
 
+    private readonly HotkeySettings? _dockFocusHotkey = DefaultDockFocusShortcut;
+
+    /// <summary>
+    /// Gets the shortcut that reveals and focuses the dock. Lives here rather than in
+    /// <see cref="Settings.DockSettings"/> because a change to that record makes
+    /// DockWindowManager tear down and rebuild every dock window, and a keybinding
+    /// has no business doing that.
+    /// </summary>
+    /// <remarks>
+    /// The setter falls back to the default because settings files written before this
+    /// shortcut existed have no value for it, and the deserializer hands us a null
+    /// instead of leaving the property initializer alone.
+    /// </remarks>
+    public HotkeySettings? DockFocusHotkey
+    {
+        get => _dockFocusHotkey;
+        init => _dockFocusHotkey = value ?? DefaultDockFocusShortcut;
+    }
+
+    public bool DockFocusPrimaryFirst { get; init; }
+
+    public bool DockFocusAcrossMonitors { get; init; } = true;
+
+    public bool DockRememberLastFocusedItem { get; init; } = true;
+
     public bool UseLowLevelGlobalHotkey { get; init; }
+
+    public bool UseWindowsKey { get; init; }
+
+    [JsonIgnore]
+    public bool IsWindowsKeyHotkeyActive => IsWindowsKeyHotkeyFeatureEnabled && UseWindowsKey;
 
     public bool ShowAppDetails { get; init; }
 
@@ -31,26 +83,97 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public string Language { get; init; } = string.Empty;
+
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
     public bool IgnoreShortcutWhenBusy { get; init; }
 
     public bool AllowBreakthroughShortcut { get; init; }
 
-    public bool AllowExternalReload { get; init; }
+    public ImmutableList<PinnedCommandSettings> PinnedCommands { get; init; }
+        = ImmutableList<PinnedCommandSettings>.Empty;
 
-    public ImmutableDictionary<string, ProviderSettings> ProviderSettings { get; init; }
+    public bool EnableExternalCommandLinks { get; init; } = true;
+
+    public bool AllowAltF4 { get; init; }
+
+    public bool CompactMode { get; set; }
+
+    public bool ShowQuickAccessShelf { get; init; }
+
+    public AltNumberShortcutBehavior ListItemAltNumberBehavior { get; init; }
+
+    public RecentCommandsPlacement RecentCommandsOnQuickAccessShelf { get; init; }
+
+    public RecentCommandsPlacement RecentCommandsOnHome { get; init; }
+
+    private int _quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit;
+
+    public int QuickAccessShelfPinnedCommandLimit
+    {
+        get => _quickAccessShelfPinnedCommandLimit;
+        init => _quickAccessShelfPinnedCommandLimit = Math.Clamp(
+            value,
+            MinQuickAccessShelfPinnedCommandLimit,
+            MaxQuickAccessShelfPinnedCommandLimit);
+    }
+
+    private int _recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit;
+
+    public int RecentCommandsDisplayLimit
+    {
+        get => _recentCommandsDisplayLimit;
+        init => _recentCommandsDisplayLimit = Math.Clamp(
+            value,
+            MinRecentCommandsDisplayLimit,
+            MaxRecentCommandsDisplayLimit);
+    }
+
+    // When compact mode is on and the palette is centered on launch, this is the relative
+    // height from the bottom of the screen (as a percentage) at which the collapsed search
+    // box is vertically centered. 75 places it in the upper portion of the display. Ignored
+    // when compact mode is off.
+    public int CompactCenterHeightPercentage { get; set; } = DefaultCompactCenterHeightPercentage;
+
+    private ImmutableDictionary<string, ProviderSettings>? _providerSettings
         = ImmutableDictionary<string, ProviderSettings>.Empty;
 
-    public string[] FallbackRanks { get; init; } = [];
+    public ImmutableDictionary<string, ProviderSettings> ProviderSettings
+    {
+        get => _providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        init => _providerSettings = value;
+    }
 
-    public ImmutableDictionary<string, CommandAlias> Aliases { get; init; }
+    private string[]? _fallbackRanks = [];
+
+    public string[] FallbackRanks
+    {
+        get => _fallbackRanks ?? [];
+        init => _fallbackRanks = value;
+    }
+
+    private ImmutableDictionary<string, CommandAlias>? _aliases
         = ImmutableDictionary<string, CommandAlias>.Empty;
 
-    public ImmutableList<TopLevelHotkey> CommandHotkeys { get; init; }
+    public ImmutableDictionary<string, CommandAlias> Aliases
+    {
+        get => _aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        init => _aliases = value;
+    }
+
+    private ImmutableList<TopLevelHotkey>? _commandHotkeys
         = ImmutableList<TopLevelHotkey>.Empty;
 
+    public ImmutableList<TopLevelHotkey> CommandHotkeys
+    {
+        get => _commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        init => _commandHotkeys = value;
+    }
+
     public MonitorBehavior SummonOn { get; init; } = MonitorBehavior.ToMouse;
+
+    public ToastPosition ToastPosition { get; init; } = ToastPosition.UseSystemSettings;
 
     public bool DisableAnimations { get; init; } = true;
 
@@ -62,7 +185,13 @@ public record SettingsModel
 
     public bool EnableDock { get; init; }
 
-    public DockSettings DockSettings { get; init; } = new();
+    private DockSettings? _dockSettings = new();
+
+    public DockSettings DockSettings
+    {
+        get => _dockSettings ?? new();
+        init => _dockSettings = value;
+    }
 
     // Theme settings
     public UserTheme Theme { get; init; } = UserTheme.Default;
@@ -91,8 +220,67 @@ public record SettingsModel
 
     // </Theme settings>
 
+    // Extension Gallery settings
+
+    /// <summary>
+    /// Gets the URL of the custom gallery feed <strong>for development only</strong>. This feed is currently only enabled in
+    /// development builds and is used for testing purposes. <strong>It is not used in CI builds.</strong>
+    /// </summary>
+    /// <remarks>
+    /// We do not want to allow this to be changed in retail builds to prevent the injection of a malicious feed.
+    /// </remarks>
+    public string? GalleryFeedUrl { get; init; }
+
+    // </Gallery settings>
+
+    // Internal diagnostics settings
+
+    /// <summary>
+    /// Gets a value indicating whether the main window's HWND chrome (title bar, border,
+    /// system-drawn rounded corners) is visible. <strong>For internal debugging only.</strong>
+    /// Off by default. The setting is persisted but only honored in non-CI builds; release /
+    /// CI builds always force the borderless / transparent host window.
+    /// </summary>
+    public bool ShowHwndFrame { get; init; }
+
+    // </Internal diagnostics settings>
+
     // END SETTINGS
     ///////////////////////////////////////////////////////////////////////////
+
+    [JsonConstructor]
+    public SettingsModel(
+          ImmutableList<PinnedCommandSettings>? pinnedCommands = null,
+          ImmutableDictionary<string, ProviderSettings>? providerSettings = null,
+          string[]? fallbackRanks = null,
+          ImmutableDictionary<string, CommandAlias>? aliases = null,
+          ImmutableList<TopLevelHotkey>? commandHotkeys = null,
+          bool enableExternalCommandLinks = true,
+          int quickAccessShelfPinnedCommandLimit = DefaultQuickAccessShelfPinnedCommandLimit,
+          int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit,
+          bool dockFocusAcrossMonitors = true,
+          bool dockRememberLastFocusedItem = true,
+          bool dockFocusPrimaryFirst = false)
+    {
+        PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
+        ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
+        FallbackRanks = fallbackRanks ?? [];
+        Aliases = aliases ?? ImmutableDictionary<string, CommandAlias>.Empty;
+        CommandHotkeys = commandHotkeys ?? ImmutableList<TopLevelHotkey>.Empty;
+        EnableExternalCommandLinks = enableExternalCommandLinks;
+        QuickAccessShelfPinnedCommandLimit = quickAccessShelfPinnedCommandLimit;
+        RecentCommandsDisplayLimit = recentCommandsDisplayLimit;
+        DockFocusAcrossMonitors = dockFocusAcrossMonitors;
+        DockRememberLastFocusedItem = dockRememberLastFocusedItem;
+        DockFocusPrimaryFirst = dockFocusPrimaryFirst;
+    }
+
+    public SettingsModel()
+    {
+    }
+
+    private static bool GetWindowsKeyHotkeyFeatureFlag() =>
+        Environment.GetEnvironmentVariable("CMDPAL_ENABLE_WIN_HOTKEY") == "1";
 
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {
@@ -114,6 +302,222 @@ public record SettingsModel
             ProviderSettings = ProviderSettings.SetItem(provider.ProviderId, connected),
         };
         return (newModel, connected);
+    }
+
+    public SettingsModel NormalizePinnedCommands()
+    {
+        var pinnedCommands = PinnedCommands;
+        if (pinnedCommands.Count == 0)
+        {
+            var migratedPins = ImmutableList.CreateBuilder<PinnedCommandSettings>();
+            foreach (var (providerId, providerSettings) in ProviderSettings.OrderBy(static kvp => kvp.Key, StringComparer.Ordinal))
+            {
+                foreach (var commandId in providerSettings.PinnedCommandIds)
+                {
+                    migratedPins.Add(new PinnedCommandSettings(providerId, commandId));
+                }
+            }
+
+            pinnedCommands = migratedPins.ToImmutable();
+        }
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    public SettingsModel WithPinnedCommands(ImmutableList<PinnedCommandSettings> pinnedCommands)
+    {
+        var groupedPinnedCommands = pinnedCommands
+            .GroupBy(static pin => pin.ProviderId, StringComparer.Ordinal)
+            .ToDictionary(
+                static group => group.Key,
+                static group => group.Select(static pin => pin.CommandId).ToImmutableList(),
+                StringComparer.Ordinal);
+
+        var allProviderIds = ProviderSettings.Keys.Union(groupedPinnedCommands.Keys, StringComparer.Ordinal).ToArray();
+        var providerSettingsAlreadyMatch = allProviderIds.All(providerId =>
+        {
+            ProviderSettings.TryGetValue(providerId, out var currentProviderSettings);
+            groupedPinnedCommands.TryGetValue(providerId, out var desiredPinnedIds);
+
+            var currentPinnedIds = currentProviderSettings?.PinnedCommandIds ?? ImmutableList<string>.Empty;
+            desiredPinnedIds ??= ImmutableList<string>.Empty;
+
+            return currentPinnedIds.SequenceEqual(desiredPinnedIds);
+        });
+
+        if (PinnedCommands.SequenceEqual(pinnedCommands) && providerSettingsAlreadyMatch)
+        {
+            return this;
+        }
+
+        var providerSettingsBuilder = ProviderSettings.ToBuilder();
+        foreach (var providerId in allProviderIds)
+        {
+            providerSettingsBuilder.TryGetValue(providerId, out var providerSettings);
+            providerSettings ??= new ProviderSettings();
+
+            groupedPinnedCommands.TryGetValue(providerId, out var desiredPinnedIds);
+            desiredPinnedIds ??= ImmutableList<string>.Empty;
+
+            providerSettingsBuilder[providerId] = providerSettings with { PinnedCommandIds = desiredPinnedIds };
+        }
+
+        return this with
+        {
+            PinnedCommands = pinnedCommands,
+            ProviderSettings = providerSettingsBuilder.ToImmutable(),
+        };
+    }
+
+    public bool IsCommandPinned(string providerId, string commandId)
+    {
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public List<string> GetPinnedCommandIds(string providerId)
+    {
+        List<string> pinnedCommandIds = [];
+        foreach (var pinnedCommand in PinnedCommands)
+        {
+            if (pinnedCommand.ProviderId == providerId)
+            {
+                pinnedCommandIds.Add(pinnedCommand.CommandId);
+            }
+        }
+
+        return pinnedCommandIds;
+    }
+
+    public SettingsModel TryPinCommand(string providerId, string commandId)
+    {
+        if (IsCommandPinned(providerId, commandId))
+        {
+            return this;
+        }
+
+        return WithPinnedCommands(PinnedCommands.Add(new PinnedCommandSettings(providerId, commandId)));
+    }
+
+    public SettingsModel TryUnpinCommand(string providerId, string commandId)
+    {
+        for (var i = 0; i < PinnedCommands.Count; i++)
+        {
+            var pinnedCommand = PinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return WithPinnedCommands(PinnedCommands.RemoveAt(i));
+            }
+        }
+
+        return this;
+    }
+
+    public SettingsModel TryMovePinnedCommand(string providerId, string commandId, bool moveUp, Func<PinnedCommandSettings, bool>? isVisible = null)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index < 0)
+        {
+            return this;
+        }
+
+        // Find the next visible neighbor in the move direction, skipping
+        // stale entries (removed/disabled/failed extensions).
+        var direction = moveUp ? -1 : 1;
+        var targetIndex = index + direction;
+        while (targetIndex >= 0 && targetIndex < PinnedCommands.Count &&
+               isVisible != null && !isVisible(PinnedCommands[targetIndex]))
+        {
+            targetIndex += direction;
+        }
+
+        if (targetIndex < 0 || targetIndex >= PinnedCommands.Count)
+        {
+            return this;
+        }
+
+        // Remove and re-insert rather than swap so that stale entries
+        // between index and targetIndex keep their relative positions.
+        var pinnedCommand = PinnedCommands[index];
+        var pinnedCommands = PinnedCommands.RemoveAt(index);
+        pinnedCommands = pinnedCommands.Insert(targetIndex, pinnedCommand);
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    public SettingsModel TryMovePinnedCommandToTop(string providerId, string commandId)
+    {
+        var index = FindPinnedCommandIndex(providerId, commandId);
+        if (index <= 0)
+        {
+            return this;
+        }
+
+        var pinnedCommand = PinnedCommands[index];
+        var pinnedCommands = PinnedCommands.RemoveAt(index);
+        pinnedCommands = pinnedCommands.Insert(0, pinnedCommand);
+
+        return WithPinnedCommands(pinnedCommands);
+    }
+
+    public SettingsModel TryPlacePinnedCommand(
+        string providerId,
+        string commandId,
+        string targetProviderId,
+        string targetCommandId,
+        bool placeAfter)
+    {
+        var sourceIndex = FindPinnedCommandIndex(providerId, commandId);
+        var targetIndex = FindPinnedCommandIndex(targetProviderId, targetCommandId);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex == targetIndex)
+        {
+            return this;
+        }
+
+        var pinnedCommand = PinnedCommands[sourceIndex];
+        var pinnedCommands = PinnedCommands.RemoveAt(sourceIndex);
+
+        targetIndex = FindPinnedCommandIndex(pinnedCommands, targetProviderId, targetCommandId);
+        if (targetIndex < 0)
+        {
+            return this;
+        }
+
+        var insertionIndex = targetIndex + (placeAfter ? 1 : 0);
+        pinnedCommands = pinnedCommands.Insert(insertionIndex, pinnedCommand);
+        return PinnedCommands.SequenceEqual(pinnedCommands)
+            ? this
+            : WithPinnedCommands(pinnedCommands);
+    }
+
+    private int FindPinnedCommandIndex(string providerId, string commandId)
+        => FindPinnedCommandIndex(PinnedCommands, providerId, commandId);
+
+    private static int FindPinnedCommandIndex(
+        IReadOnlyList<PinnedCommandSettings> pinnedCommands,
+        string providerId,
+        string commandId)
+    {
+        for (var i = 0; i < pinnedCommands.Count; i++)
+        {
+            var pinnedCommand = pinnedCommands[i];
+            if (pinnedCommand.ProviderId == providerId &&
+                pinnedCommand.CommandId == commandId)
+            {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     public string[] GetGlobalFallbacks()
@@ -165,11 +569,15 @@ public record SettingsModel
 [JsonSerializable(typeof(ImmutableList<HistoryItem>), TypeInfoPropertyName = "ImmutableHistoryList")]
 [JsonSerializable(typeof(ImmutableDictionary<string, FallbackSettings>), TypeInfoPropertyName = "ImmutableFallbackDictionary")]
 [JsonSerializable(typeof(ImmutableList<string>), TypeInfoPropertyName = "ImmutableStringList")]
+[JsonSerializable(typeof(ImmutableList<PinnedCommandSettings>), TypeInfoPropertyName = "ImmutablePinnedCommandSettingsList")]
 [JsonSerializable(typeof(ImmutableList<DockBandSettings>), TypeInfoPropertyName = "ImmutableDockBandSettingsList")]
+[JsonSerializable(typeof(DockMonitorConfig))]
+[JsonSerializable(typeof(ImmutableList<DockMonitorConfig>), TypeInfoPropertyName = "ImmutableDockMonitorConfigList")]
 [JsonSerializable(typeof(ImmutableDictionary<string, ProviderSettings>), TypeInfoPropertyName = "ImmutableProviderSettingsDictionary")]
 [JsonSerializable(typeof(ImmutableDictionary<string, CommandAlias>), TypeInfoPropertyName = "ImmutableAliasDictionary")]
 [JsonSerializable(typeof(ImmutableList<TopLevelHotkey>), TypeInfoPropertyName = "ImmutableTopLevelHotkeyList")]
 [JsonSerializable(typeof(Dictionary<string, object>), TypeInfoPropertyName = "Dictionary")]
+[JsonSerializable(typeof(PinnedCommandSettings))]
 [JsonSourceGenerationOptions(UseStringEnumConverter = true, WriteIndented = true, IncludeFields = true, PropertyNameCaseInsensitive = true, AllowTrailingCommas = true)]
 [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Just used here")]
 internal sealed partial class JsonSerializationContext : JsonSerializerContext
@@ -185,10 +593,31 @@ public enum MonitorBehavior
     ToLast = 4,
 }
 
+public enum ToastPosition
+{
+    UseSystemSettings = 0,
+    BottomCenter = 1,
+    TopLeft = 2,
+    TopCenter = 3,
+}
+
 public enum EscapeKeyBehavior
 {
     ClearSearchFirstThenGoBack = 0,
     AlwaysGoBack = 1,
     AlwaysDismiss = 2,
     AlwaysHide = 3,
+}
+
+public enum RecentCommandsPlacement
+{
+    Hidden = 0,
+    BeforePinned = 1,
+    AfterPinned = 2,
+}
+
+public enum AltNumberShortcutBehavior
+{
+    Run = 0,
+    Select = 1,
 }

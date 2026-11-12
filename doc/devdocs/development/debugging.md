@@ -97,6 +97,10 @@ The Shell Process Debugging Tool is a Visual Studio extension that helps debug m
 - Check Event Viewer for application crashes related to `PowerToys.Settings.exe`
 - Crash dumps can be obtained from Event Viewer
 
+### Debugging Command Palette
+Command Palette can be easily debugged using the solution filter in `src/modules/cmdpal/Command Palette.slnf`. This will open Command Palette as its own Visual Studio solution that can be run and debugged directly in Visual Studio without the need for the Shell Process Debugging Tool.
+
+
 ## Troubleshooting Build Errors
 
 ### Missing Image Files or Corrupted Build State

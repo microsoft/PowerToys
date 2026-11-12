@@ -119,6 +119,40 @@ internal sealed partial class SampleListPage : ListPage
                 ],
             },
 
+            new ListItem(
+                new ToastCommand("Primary command invoked", MessageState.Info) { Name = "Primary command", Icon = new IconInfo("") }) // dial 1
+            {
+                Title = "Context menu with a submenu without shortcuts",
+                Subtitle = "Only the top-level menu shows Enter and Ctrl+Enter",
+                Icon = new IconInfo(""),  // "More" dots
+                MoreCommands = [
+                    new CommandContextItem(
+                        new ToastCommand("Secondary command invoked", MessageState.Warning) { Name = "Secondary command", Icon = new IconInfo("") }) // dial 2
+                    {
+                        Title = "Secondary command",
+                    },
+                    new CommandContextItem(new NoOpCommand { Name = "Submenu" })
+                    {
+                        Title = "Submenu without shortcuts",
+                        Icon = new IconInfo(""), // dial 3
+                        MoreCommands = [
+                            new CommandContextItem(new ToastCommand("First nested command invoked") { Name = "Do it", Icon = new IconInfo("A") })
+                            {
+                                Title = "First nested command",
+                            },
+                            new CommandContextItem(new ToastCommand("Second nested command invoked") { Name = "Do it", Icon = new IconInfo("B") })
+                            {
+                                Title = "Second nested command",
+                            },
+                            new CommandContextItem(new ToastCommand("Third nested command invoked") { Name = "Do it", Icon = new IconInfo("C") })
+                            {
+                                Title = "Third nested command",
+                            },
+                        ],
+                    },
+                ],
+            },
+
             new ListItem(new SendMessageCommand())
             {
                 Title = "I send lots of messages",
@@ -305,7 +339,7 @@ internal sealed partial class SampleListPage : ListPage
 
         public ListItemChangingCommandInTime()
         {
-            Subtitle = "I change my command every 10 seconds, and the command changes it's icon every 2 seconds";
+            Subtitle = "I change my command every 10 seconds, and the command changes its icon every 2 seconds";
             var timer = new Timer(OnTimerElapsed, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
             this.Command = _commands[0];
         }

@@ -8,6 +8,10 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal static class BindTransformers
 {
+    public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+    public static Visibility BoolToInvertedVisibility(bool value) => value ? Visibility.Collapsed : Visibility.Visible;
+
     public static bool Negate(bool value) => !value;
 
     public static Visibility NegateVisibility(Visibility value) => value == Visibility.Visible ? Visibility.Collapsed : Visibility.Visible;
@@ -21,6 +25,14 @@ internal static class BindTransformers
     public static Visibility EmptyOrWhitespaceToVisible(string? input)
         => string.IsNullOrWhiteSpace(input) ? Visibility.Visible : Visibility.Collapsed;
 
+    // A space measures as a text line without hard-coding a height that would
+    // stop following text scaling. All tiles reserve the page's enabled slots.
+    public static string ReserveTextLine(string? input)
+        => string.IsNullOrWhiteSpace(input) ? " " : input;
+
     public static Visibility VisibleWhenAny(bool value1, bool value2)
         => (value1 || value2) ? Visibility.Visible : Visibility.Collapsed;
+
+    public static Thickness BottomBorderThicknessWhenAll(bool value1, bool value2)
+        => value1 && value2 ? new Thickness(0, 0, 0, 1) : new Thickness(0);
 }

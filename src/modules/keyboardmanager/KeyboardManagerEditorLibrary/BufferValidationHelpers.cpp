@@ -232,7 +232,7 @@ namespace BufferValidationHelpers
                 std::get<Shortcut>(tempShortcut).SetKeyCodes(selectedCodes);
             }
 
-            // Convert app name to lower case
+            // Convert app name to lowercase
             std::transform(appName.begin(), appName.end(), appName.begin(), towlower);
             std::wstring lowercaseDefAppName = KeyboardManagerEditorStrings::DefaultAppName();
             std::transform(lowercaseDefAppName.begin(), lowercaseDefAppName.end(), lowercaseDefAppName.begin(), towlower);

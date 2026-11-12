@@ -2,11 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using ManagedCommon;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.PowerToys.QuickAccess.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Xaml.Navigation;
 
 namespace Microsoft.PowerToys.QuickAccess.Flyout;
 
@@ -22,6 +24,7 @@ public sealed partial class ShellPage : Page
     public ShellPage()
     {
         InitializeComponent();
+        ContentFrame.NavigationFailed += ContentFrame_NavigationFailed;
     }
 
     public void Initialize(IQuickAccessCoordinator coordinator, LauncherViewModel launcherViewModel, AllAppsViewModel allAppsViewModel)
@@ -64,5 +67,14 @@ public sealed partial class ShellPage : Page
         {
             appsListPage.ViewModel?.RefreshSettings();
         }
+    }
+
+    private static void ContentFrame_NavigationFailed(object sender, NavigationFailedEventArgs e)
+    {
+        // A page constructor or XAML load failure here would otherwise bubble out of the
+        // Frame and crash the launcher. Log the failure and mark it handled so the flyout
+        // can remain available; the next summon will retry navigation.
+        Logger.LogError($"QuickAccess: navigation to '{e.SourcePageType?.FullName}' failed.", e.Exception);
+        e.Handled = true;
     }
 }

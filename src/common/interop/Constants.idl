@@ -41,7 +41,9 @@ namespace PowerToys
             static String ShowPeekEvent();
             static String TerminatePeekEvent();
             static String PowerAccentExitEvent();
+            static String ShortcutGuideExitEvent();
             static String ShortcutGuideTriggerEvent();
+            static String ShortcutGuideWinKeyHoldEvent();
             static String RegistryPreviewTriggerEvent();
             static String MeasureToolTriggerEvent();
             static String GcodePreviewResizeEvent();
@@ -65,10 +67,12 @@ namespace PowerToys
             static String ShowCmdPalEvent();
             static String TogglePowerDisplayEvent();
             static String TerminatePowerDisplayEvent();
+            static String AutoDisablePowerDisplayEvent();
             static String RefreshPowerDisplayMonitorsEvent();
             static String SettingsUpdatedPowerDisplayEvent();
             static String PowerDisplaySendSettingsTelemetryEvent();
             static String HotkeyUpdatedPowerDisplayEvent();
+            static String RescanPowerDisplayMonitorsEvent();
             static String PowerDisplayToggleMessage();
             static String PowerDisplayApplyProfileMessage();
             static String PowerDisplayTerminateAppMessage();
@@ -79,4 +83,3 @@ namespace PowerToys
         }
     }
 }
-

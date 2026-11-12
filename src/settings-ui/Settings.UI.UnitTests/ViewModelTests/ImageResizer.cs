@@ -241,6 +241,71 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void CreateNewImageSizeModelShouldNotAddToCollection()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            int sizeOfOriginalArray = viewModel.Sizes.Count;
+
+            // act
+            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("New size");
+
+            // Assert - the working copy is populated but not committed to the collection
+            Assert.IsNotNull(workingCopy);
+            Assert.AreEqual("New size 1", workingCopy.Name);
+            Assert.AreEqual(sizeOfOriginalArray, viewModel.Sizes.Count);
+        }
+
+        [TestMethod]
+        public void AddImageSizeWithModelShouldCommitPreparedSize()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            int sizeOfOriginalArray = viewModel.Sizes.Count;
+            ImageSize workingCopy = viewModel.CreateNewImageSizeModel("New size");
+
+            // act
+            viewModel.AddImageSize(workingCopy);
+
+            // Assert
+            Assert.AreEqual(sizeOfOriginalArray + 1, viewModel.Sizes.Count);
+            Assert.IsTrue(viewModel.Sizes.Contains(workingCopy));
+        }
+
+        [TestMethod]
+        public void UpdateImageSizeShouldApplyWorkingCopyValuesToOriginal()
+        {
+            // arrange
+            var mockSettingsUtils = ISettingsUtilsMocks.GetStubSettingsUtils<ImageResizerSettings>();
+            Func<string, int> sendMockIPCConfigMSG = msg => { return 0; };
+            ImageResizerViewModel viewModel = new ImageResizerViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(_mockGeneralSettingsUtils.Object), sendMockIPCConfigMSG, (string name) => name);
+            viewModel.AddImageSize("Original");
+            ImageSize original = viewModel.Sizes.First(x => x.Id == 0);
+
+            ImageSize edited = original.Clone();
+            edited.Name = "Edited";
+            edited.Fit = ResizeFit.Stretch;
+            edited.Width = 320;
+            edited.Height = 240;
+            edited.Unit = ResizeUnit.Percent;
+
+            // act
+            viewModel.UpdateImageSize(original, edited);
+
+            // Assert - the edits are applied to the original preset in place
+            Assert.AreEqual("Edited", original.Name);
+            Assert.AreEqual(ResizeFit.Stretch, original.Fit);
+            Assert.AreEqual(320, original.Width);
+            Assert.AreEqual(240, original.Height);
+            Assert.AreEqual(ResizeUnit.Percent, original.Unit);
+            Assert.AreSame(original, viewModel.Sizes.First(x => x.Id == 0));
+        }
+
+        [TestMethod]
         public void DeleteImageSizeShouldDeleteImageSizeWhenSuccessful()
         {
             // arrange
@@ -312,6 +377,72 @@ namespace ViewModelTests
             // Assert
             Assert.AreEqual(50, imageSize.Width);
             Assert.AreEqual(50, imageSize.Height);
+        }
+
+        [TestMethod]
+        public void ImageSizeNameShouldNotBeSetToEmptyNullOrWhitespace()
+        {
+            // arrange
+            ImageSize imageSize = new ImageSize()
+            {
+                Id = 0,
+                Name = "Original Name",
+                Fit = ResizeFit.Fit,
+                Width = 100,
+                Height = 100,
+                Unit = ResizeUnit.Pixel,
+            };
+
+            // Act - try to set name to empty string
+            imageSize.Name = string.Empty;
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - try to set name to null
+            imageSize.Name = null;
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - try to set name to whitespace only
+            imageSize.Name = "   ";
+
+            // Assert - name should remain unchanged
+            Assert.AreEqual("Original Name", imageSize.Name);
+
+            // Act - set name to valid value
+            imageSize.Name = "New Valid Name";
+
+            // Assert - name should be updated
+            Assert.AreEqual("New Valid Name", imageSize.Name);
+        }
+
+        [TestMethod]
+        public void ImageSizeNameShouldNotBeNullAfterConstructionWithEmptyOrMissingName()
+        {
+            // Arrange & Act - construct with default (empty) name, simulating deserialization of legacy settings
+            ImageSize defaultSize = new ImageSize();
+
+            // Assert - name should be non-null empty string, not null (prevents NullReferenceException in callers)
+            Assert.IsNotNull(defaultSize.Name);
+
+            // Arrange & Act - construct with explicit empty name
+            ImageSize emptyNameSize = new ImageSize(id: 1, name: string.Empty);
+
+            // Assert - name should remain as the initialized default, not null
+            Assert.IsNotNull(emptyNameSize.Name);
+
+            // Arrange & Act - construct with explicit null name
+            ImageSize nullNameSize = new ImageSize(id: 2, name: null);
+
+            // Assert - name should remain as the initialized default, not null
+            Assert.IsNotNull(nullNameSize.Name);
+
+            // Verify that StartsWith can be called without NullReferenceException
+            Assert.IsFalse(defaultSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
+            Assert.IsFalse(emptyNameSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
+            Assert.IsFalse(nullNameSize.Name.StartsWith("Custom", StringComparison.InvariantCulture));
         }
     }
 }

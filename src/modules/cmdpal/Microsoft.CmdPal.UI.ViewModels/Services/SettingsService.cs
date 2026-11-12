@@ -2,12 +2,14 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Services;
@@ -23,6 +25,8 @@ public sealed class SettingsService : ISettingsService
     private readonly IPersistenceService _persistence;
     private readonly IApplicationInfoService _appInfoService;
     private readonly string _filePath;
+    private readonly Lock _saveLock = new();
+    private string? _lastSavedSettingsJson;
 
     public SettingsService(IPersistenceService persistence, IApplicationInfoService appInfoService)
     {
@@ -30,6 +34,7 @@ public sealed class SettingsService : ISettingsService
         _appInfoService = appInfoService;
         _filePath = SettingsJsonPath();
         _settings = _persistence.Load(_filePath, JsonSerializationContext.Default.SettingsModel);
+        _lastSavedSettingsJson = JsonSerializer.Serialize(_settings, JsonSerializationContext.Default.SettingsModel);
         ApplyMigrations();
     }
 
@@ -42,10 +47,13 @@ public sealed class SettingsService : ISettingsService
     public event TypedEventHandler<ISettingsService, SettingsModel>? SettingsChanged;
 
     /// <inheritdoc/>
-    public void Save(bool hotReload = true) => UpdateSettings(s => s, hotReload);
+    public void Save(bool hotReload = true) => UpdateSettings(s => s, hotReload, forceSave: true);
 
     /// <inheritdoc/>
     public void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload = true)
+        => UpdateSettings(transform, hotReload, forceSave: false);
+
+    private void UpdateSettings(Func<SettingsModel, SettingsModel> transform, bool hotReload, bool forceSave)
     {
         SettingsModel snapshot;
         SettingsModel updated;
@@ -56,8 +64,51 @@ public sealed class SettingsService : ISettingsService
         }
         while (Interlocked.CompareExchange(ref _settings, updated, snapshot) != snapshot);
 
-        var newSettings = Volatile.Read(ref _settings);
-        _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
+#if DEBUG
+        var saveLockRequested = Stopwatch.GetTimestamp();
+        TimeSpan saveLockWait;
+        TimeSpan saveDuration = default;
+        var saveAttempted = false;
+#endif
+
+        SettingsModel newSettings;
+        lock (_saveLock)
+        {
+#if DEBUG
+            var saveStarted = Stopwatch.GetTimestamp();
+            saveLockWait = Stopwatch.GetElapsedTime(saveLockRequested, saveStarted);
+#endif
+
+            // Read after acquiring the lock so an older caller cannot save a stale snapshot last.
+            newSettings = Volatile.Read(ref _settings);
+
+            // Compare persisted values, not record equality: provider connections contain
+            // runtime-only metadata, and immutable collections can be rebuilt without changes.
+            var settingsJson = JsonSerializer.Serialize(newSettings, JsonSerializationContext.Default.SettingsModel);
+            if (forceSave || !string.Equals(settingsJson, _lastSavedSettingsJson, StringComparison.Ordinal))
+            {
+                _lastSavedSettingsJson = null;
+                var saved = _persistence.Save(newSettings, _filePath, JsonSerializationContext.Default.SettingsModel);
+                _lastSavedSettingsJson = saved ? settingsJson : null;
+
+#if DEBUG
+                saveAttempted = true;
+                saveDuration = Stopwatch.GetElapsedTime(saveStarted);
+#endif
+            }
+        }
+
+#if DEBUG
+        if (saveAttempted)
+        {
+            var saveCaller = new StackTrace(skipFrames: 2, fNeedFileInfo: true);
+            Logger.LogDebug(
+                $"Settings save attempt (thread {Environment.CurrentManagedThreadId}, hotReload={hotReload}): " +
+                $"lock wait {saveLockWait.TotalMilliseconds:F2} ms, persistence {saveDuration.TotalMilliseconds:F2} ms." +
+                $"{Environment.NewLine}{saveCaller}");
+        }
+#endif
+
         if (hotReload)
         {
             SettingsChanged?.Invoke(this, newSettings);
@@ -92,6 +143,13 @@ public sealed class SettingsService : ISettingsService
         catch (Exception ex)
         {
             Debug.WriteLine($"Migration check failed: {ex}");
+        }
+
+        var normalizedSettings = _settings.NormalizePinnedCommands();
+        if (!ReferenceEquals(normalizedSettings, _settings))
+        {
+            _settings = normalizedSettings;
+            migratedAny = true;
         }
 
         if (migratedAny)

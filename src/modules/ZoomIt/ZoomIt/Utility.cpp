@@ -452,6 +452,36 @@ HBRUSH HandleDarkModeCtlColor(HDC hdc, HWND hCtrl, UINT message)
 {
     if (!IsDarkModeEnabled())
     {
+        // Light mode: explicitly set system colors to prevent stale white text
+        // after a dark-to-light transition or theme mismatch.
+        switch (message)
+        {
+        case WM_CTLCOLORDLG:
+            SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
+            SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+            return GetSysColorBrush(COLOR_BTNFACE);
+
+        case WM_CTLCOLORSTATIC:
+            SetBkMode(hdc, TRANSPARENT);
+            SetTextColor(hdc, IsWindowEnabled(hCtrl) ? GetSysColor(COLOR_WINDOWTEXT) : GetSysColor(COLOR_GRAYTEXT));
+            return GetSysColorBrush(COLOR_BTNFACE);
+
+        case WM_CTLCOLORBTN:
+            SetBkColor(hdc, GetSysColor(COLOR_BTNFACE));
+            SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+            return GetSysColorBrush(COLOR_BTNFACE);
+
+        case WM_CTLCOLOREDIT:
+            SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
+            SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+            return GetSysColorBrush(COLOR_WINDOW);
+
+        case WM_CTLCOLORLISTBOX:
+            SetBkColor(hdc, GetSysColor(COLOR_WINDOW));
+            SetTextColor(hdc, GetSysColor(COLOR_WINDOWTEXT));
+            return GetSysColorBrush(COLOR_WINDOW);
+        }
+
         return nullptr;
     }
 

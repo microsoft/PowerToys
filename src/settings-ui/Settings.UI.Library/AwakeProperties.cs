@@ -12,18 +12,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class AwakeProperties
     {
+        private readonly Dictionary<string, uint> _customTrayTimes = [];
+
         public AwakeProperties()
         {
             KeepDisplayOn = false;
+            AllowDisplayOffWhileLocked = true;
             Mode = AwakeMode.PASSIVE;
             IntervalHours = 0;
             IntervalMinutes = 1;
             ExpirationDateTime = DateTimeOffset.Now;
-            CustomTrayTimes = [];
         }
 
         [JsonPropertyName("keepDisplayOn")]
         public bool KeepDisplayOn { get; set; }
+
+        [JsonPropertyName("allowDisplayOffWhileLocked")]
+        public bool AllowDisplayOffWhileLocked { get; set; }
 
         [JsonPropertyName("mode")]
         public AwakeMode Mode { get; set; }
@@ -39,6 +44,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("customTrayTimes")]
         [CmdConfigureIgnore]
-        public Dictionary<string, uint> CustomTrayTimes { get; set; }
+        public Dictionary<string, uint> CustomTrayTimes
+        {
+            get => _customTrayTimes;
+            init => _customTrayTimes = value ?? [];
+        }
     }
 }

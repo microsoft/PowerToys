@@ -1,0 +1,41 @@
+# Adapted from microsoft/terminal build/pipelines/templates-v2/steps-install-vcpkg.yml.
+#
+# Detects vcpkg from (in order):
+#   1. The Visual Studio installation (Microsoft.VisualStudio.Component.Vcpkg,
+#      declared in the repo-root .vsconfig).
+#   2. A local clone at deps/vcpkg, cloned and bootstrapped on demand.
+#
+# Sets the pipeline-scoped VCPKG_ROOT variable; the rest of the build
+# resolves vcpkg through it (see the three-tier VcpkgRoot fallback in
+# Cpp.Build.props). No repo-level vcpkg submodule required.
+parameters:
+- name: useVSPreview
+  type: boolean
+  default: false
+
+steps:
+  - pwsh: |-
+      # vswhere -prerelease is opt-in via the useVSPreview parameter so CI on
+      # stable VS doesn't accidentally pick up a Preview install when both
+      # are present. Matches the existing useVSPreview plumbing for
+      # verifyAndSetLatestVCToolsVersion.ps1.
+      $vswhereArgs = @('-latest', '-requires', 'Microsoft.VisualStudio.Component.Vcpkg', '-property', 'installationPath')
+      $useVSPreview = '${{ parameters.useVSPreview }}' -eq 'True'
+      if ($useVSPreview) { $vswhereArgs = @('-prerelease') + $vswhereArgs }
+      $VsInstallRoot = & 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe' @vswhereArgs
+      If ([String]::IsNullOrEmpty($VsInstallRoot)) {
+        Remove-Item -Recurse -Force deps/vcpkg -ErrorAction:Ignore
+        git clone https://github.com/microsoft/vcpkg deps/vcpkg
+        if ($LASTEXITCODE -ne 0) { throw "git clone vcpkg failed (exit $LASTEXITCODE)" }
+        Push-Location deps/vcpkg
+        & ./bootstrap-vcpkg.bat -disableMetrics
+        if ($LASTEXITCODE -ne 0) { Pop-Location; throw "bootstrap-vcpkg failed (exit $LASTEXITCODE)" }
+        $VcpkgRoot = $PWD
+        Pop-Location
+        Write-Host "Using vcpkg from local checkout ($VcpkgRoot)"
+      } Else {
+        $VcpkgRoot = Join-Path $VsInstallRoot 'VC\vcpkg'
+        Write-Host "Using vcpkg from Visual Studio installation ($VcpkgRoot)"
+      }
+      Write-Host "##vso[task.setvariable variable=VCPKG_ROOT]$VcpkgRoot"
+    displayName: Detect VS vcpkg or bootstrap locally

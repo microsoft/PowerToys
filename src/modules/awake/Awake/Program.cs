@@ -19,6 +19,7 @@ using Awake.Core;
 using Awake.Core.Models;
 using Awake.Core.Native;
 using Awake.Properties;
+using Awake.Telemetry;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
@@ -27,13 +28,6 @@ namespace Awake
 {
     internal sealed class Program
     {
-        private static readonly string[] _aliasesConfigOption = ["--use-pt-config", "-c"];
-        private static readonly string[] _aliasesDisplayOption = ["--display-on", "-d"];
-        private static readonly string[] _aliasesTimeOption = ["--time-limit", "-t"];
-        private static readonly string[] _aliasesPidOption = ["--pid", "-p"];
-        private static readonly string[] _aliasesExpireAtOption = ["--expire-at", "-e"];
-        private static readonly string[] _aliasesParentPidOption = ["--use-parent-pid", "-u"];
-
         private static readonly JsonSerializerOptions _serializerOptions = new() { IncludeFields = true };
         private static readonly ETWTrace _etwTrace = new();
 
@@ -62,13 +56,19 @@ namespace Awake
             if (parseResult.Tokens.Any(t => t.Value.ToLowerInvariant() is "--help" or "-h" or "-?"))
             {
                 // Print help and exit.
-                return rootCommand.Invoke(args);
+                return parseResult.Invoke();
             }
 
             if (parseResult.Errors.Count > 0)
             {
                 // Shows errors and returns non-zero.
-                return rootCommand.Invoke(args);
+                LogCLITelemetry(successful: false);
+                return parseResult.Invoke();
+            }
+
+            if (parseResult.Action != rootCommand.Action)
+            {
+                return parseResult.Invoke();
             }
 
             _settingsUtils = SettingsUtils.Default;
@@ -96,6 +96,7 @@ namespace Awake
             {
                 // Awake is already running - there is no need for us to process
                 // anything further
+                LogCLITelemetry(successful: false);
                 Exit(Core.Constants.AppName + " is already running! Exiting the application.", 1);
                 return 1;
             }
@@ -103,6 +104,7 @@ namespace Awake
             {
                 if (PowerToys.GPOWrapper.GPOWrapper.GetConfiguredAwakeEnabledValue() == PowerToys.GPOWrapper.GpoRuleConfigured.Disabled)
                 {
+                    LogCLITelemetry(successful: false);
                     Exit("PowerToys.Awake tried to start with a group policy setting that disables the tool. Please contact your system administrator.", 1);
                     return 1;
                 }
@@ -125,7 +127,9 @@ namespace Awake
                     Bridge.GetPwrCapabilities(out _powerCapabilities);
                     Logger.LogInfo(JsonSerializer.Serialize(_powerCapabilities, _serializerOptions));
 
-                    return await rootCommand.InvokeAsync(args);
+                    var result = await parseResult.InvokeAsync();
+                    LogCLITelemetry(successful: result == 0);
+                    return result;
                 }
             }
         }
@@ -134,69 +138,81 @@ namespace Awake
         {
             Logger.LogInfo("Parsing parameters...");
 
-            Option<bool> configOption = new(_aliasesConfigOption, () => false, Resources.AWAKE_CMD_HELP_CONFIG_OPTION)
+            Option<bool> configOption = new("--use-pt-config", "-c")
             {
+                Description = Resources.AWAKE_CMD_HELP_CONFIG_OPTION,
+                DefaultValueFactory = _ => false,
                 Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
+                Required = false,
             };
 
-            Option<bool> displayOption = new(_aliasesDisplayOption, () => false, Resources.AWAKE_CMD_HELP_DISPLAY_OPTION)
+            Option<bool> displayOption = new("--display-on", "-d")
             {
+                Description = Resources.AWAKE_CMD_HELP_DISPLAY_OPTION,
+                DefaultValueFactory = _ => false,
                 Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
+                Required = false,
             };
 
-            Option<uint> timeOption = new(_aliasesTimeOption, () => 0, Resources.AWAKE_CMD_HELP_TIME_OPTION)
+            Option<uint> timeOption = new("--time-limit", "-t")
             {
+                Description = Resources.AWAKE_CMD_HELP_TIME_OPTION,
+                DefaultValueFactory = _ => 0,
                 Arity = ArgumentArity.ExactlyOne,
-                IsRequired = false,
+                Required = false,
             };
 
-            Option<int> pidOption = new(_aliasesPidOption, () => 0, Resources.AWAKE_CMD_HELP_PID_OPTION)
+            Option<int> pidOption = new("--pid", "-p")
             {
+                Description = Resources.AWAKE_CMD_HELP_PID_OPTION,
+                DefaultValueFactory = _ => 0,
                 Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
+                Required = false,
             };
 
-            Option<string> expireAtOption = new(_aliasesExpireAtOption, () => string.Empty, Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION)
+            Option<string> expireAtOption = new("--expire-at", "-e")
             {
+                Description = Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION,
+                DefaultValueFactory = _ => string.Empty,
                 Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
+                Required = false,
             };
 
-            Option<bool> parentPidOption = new(_aliasesParentPidOption, () => false, Resources.AWAKE_CMD_PARENT_PID_OPTION)
+            Option<bool> parentPidOption = new("--use-parent-pid", "-u")
             {
+                Description = Resources.AWAKE_CMD_PARENT_PID_OPTION,
+                DefaultValueFactory = _ => false,
                 Arity = ArgumentArity.ZeroOrOne,
-                IsRequired = false,
+                Required = false,
             };
 
-            timeOption.AddValidator(result =>
+            timeOption.Validators.Add(result =>
             {
                 if (result.Tokens.Count != 0 && !uint.TryParse(result.Tokens[0].Value, out _))
                 {
                     string errorMessage = $"Interval in --time-limit could not be parsed correctly. Check that the value is valid and doesn't exceed 4,294,967,295. Value used: {result.Tokens[0].Value}.";
                     Logger.LogError(errorMessage);
-                    result.ErrorMessage = errorMessage;
+                    result.AddError(errorMessage);
                 }
             });
 
-            pidOption.AddValidator(result =>
+            pidOption.Validators.Add(result =>
             {
                 if (result.Tokens.Count != 0 && !int.TryParse(result.Tokens[0].Value, out _))
                 {
                     string errorMessage = $"PID value in --pid could not be parsed correctly. Check that the value is valid and falls within the boundaries of Windows PID process limits. Value used: {result.Tokens[0].Value}.";
                     Logger.LogError(errorMessage);
-                    result.ErrorMessage = errorMessage;
+                    result.AddError(errorMessage);
                 }
             });
 
-            expireAtOption.AddValidator(result =>
+            expireAtOption.Validators.Add(result =>
             {
                 if (result.Tokens.Count != 0 && !DateTimeOffset.TryParse(result.Tokens[0].Value, out _))
                 {
                     string errorMessage = $"Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples. Value used: {result.Tokens[0].Value}.";
                     Logger.LogError(errorMessage);
-                    result.ErrorMessage = errorMessage;
+                    result.AddError(errorMessage);
                 }
             });
 
@@ -211,9 +227,31 @@ namespace Awake
             ];
 
             rootCommand.Description = Core.Constants.AppName;
-            rootCommand.SetHandler(HandleCommandLineArguments, configOption, displayOption, timeOption, pidOption, expireAtOption, parentPidOption);
+            rootCommand.SetAction(parseResult => HandleCommandLineArguments(
+                parseResult.GetValue(configOption),
+                parseResult.GetValue(displayOption),
+                parseResult.GetValue(timeOption),
+                parseResult.GetValue(pidOption),
+                parseResult.GetValue(expireAtOption) ?? string.Empty,
+                parseResult.GetValue(parentPidOption)));
 
             return rootCommand;
+        }
+
+        private static void LogCLITelemetry(bool successful)
+        {
+            try
+            {
+                PowerToysTelemetry.Log.WriteEvent(new AwakeCLICommandEvent
+                {
+                    CommandName = "awake",
+                    Successful = successful,
+                });
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to log CLI telemetry: {ex.Message}");
+            }
         }
 
         private static void AwakeUnhandledExceptionCatcher(object sender, UnhandledExceptionEventArgs e)
@@ -526,6 +564,8 @@ namespace Awake
                     ?? throw new InvalidOperationException("Settings are null.");
 
                 Logger.LogInfo($"Identified custom time shortcuts for the tray: {settings.Properties.CustomTrayTimes.Count}");
+
+                Manager.SetAllowDisplayOffWhileLocked(settings.Properties.AllowDisplayOffWhileLocked);
 
                 switch (settings.Properties.Mode)
                 {

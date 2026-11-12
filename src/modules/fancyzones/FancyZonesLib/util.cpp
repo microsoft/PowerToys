@@ -6,6 +6,7 @@
 #include <common/utils/process_path.h>
 #include <common/utils/window.h>
 #include <common/utils/excluded_apps.h>
+#include <modules/interface/powertoy_module_interface.h>
 
 #include <array>
 #include <complex>
@@ -263,6 +264,32 @@ namespace FancyZonesUtils
         inputKey[0].type = INPUT_KEYBOARD;
         inputKey[0].ki.wVk = key;
         inputKey[0].ki.dwFlags = KEYEVENTF_KEYUP;
+        inputKey[0].ki.dwExtraInfo = PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG; // Prevent hook re-trigger if this utility is used in the future
         SendInput(1, inputKey, sizeof(INPUT));
+    }
+
+    std::optional<GUID> PickNextLayoutId(const std::vector<GUID>& layoutIds, const std::optional<GUID>& current, bool reverse) noexcept
+    {
+        const auto size = static_cast<int>(layoutIds.size());
+        if (size < 2)
+        {
+            return std::nullopt;
+        }
+
+        // When the currently applied layout is not part of the cycle, start from its beginning (or end)
+        int next = reverse ? size - 1 : 0;
+        if (current.has_value())
+        {
+            for (int i = 0; i < size; ++i)
+            {
+                if (layoutIds[i] == current.value())
+                {
+                    next = (i + (reverse ? size - 1 : 1)) % size;
+                    break;
+                }
+            }
+        }
+
+        return layoutIds[next];
     }
 }

@@ -38,32 +38,58 @@ namespace AdvancedPaste.Settings
 
         public bool ShowCustomPreview { get; private set; }
 
+        public bool ShowAIPaste { get; private set; }
+
         public bool CloseAfterLosingFocus { get; private set; }
 
         public bool EnableClipboardPreview { get; private set; }
 
         public IReadOnlyList<PasteFormats> AdditionalActions => _additionalActions;
 
+        public int PasteAsJpgQuality { get; private set; }
+
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => _customActions;
+
+        public string FixSpellingAndGrammarPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarSystemPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarProviderId { get; private set; } = string.Empty;
+
+        public bool FixSpellingAndGrammarCoachingEnabled { get; private set; }
+
+        public bool FixSpellingAndGrammarCoachingShortcutSet { get; private set; }
+
+        public string FixSpellingAndGrammarCoachingPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarCoachingSystemPrompt { get; private set; } = string.Empty;
+
+        public string FixSpellingAndGrammarCoachingProviderId { get; private set; } = string.Empty;
 
         public PasteAIConfiguration PasteAIConfiguration { get; private set; }
 
-        public UserSettings(IFileSystem fileSystem)
+        public UserSettings(IFileSystem fileSystem, bool watchForChanges = true)
         {
             _settingsUtils = new SettingsUtils(fileSystem);
 
             IsAIEnabled = false;
             ShowCustomPreview = true;
+            ShowAIPaste = true;
             CloseAfterLosingFocus = false;
             EnableClipboardPreview = true;
+            PasteAsJpgQuality = AdvancedPasteProperties.DefaultPasteAsJpgQuality;
             PasteAIConfiguration = new PasteAIConfiguration();
             _additionalActions = [];
             _customActions = [];
-            _taskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+            _taskScheduler = SynchronizationContext.Current is null
+                ? TaskScheduler.Default
+                : TaskScheduler.FromCurrentSynchronizationContext();
 
             LoadSettingsFromJson();
 
-            _watcher = Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem);
+            _watcher = watchForChanges
+                ? Helper.GetFileWatcher(AdvancedPasteModuleName, "settings.json", OnSettingsFileChanged, fileSystem)
+                : null;
         }
 
         private void OnSettingsFileChanged()
@@ -109,16 +135,30 @@ namespace AdvancedPaste.Settings
 
                                 IsAIEnabled = properties.IsAIEnabled;
                                 ShowCustomPreview = properties.ShowCustomPreview;
+                                ShowAIPaste = properties.ShowAIPaste;
                                 CloseAfterLosingFocus = properties.CloseAfterLosingFocus;
                                 EnableClipboardPreview = properties.EnableClipboardPreview;
+                                PasteAsJpgQuality = properties.PasteAsJpgQuality?.Value ?? AdvancedPasteProperties.DefaultPasteAsJpgQuality;
                                 PasteAIConfiguration = properties.PasteAIConfiguration ?? new PasteAIConfiguration();
+
+                                var fixSpellingAction = properties.AdditionalActions.FixSpellingAndGrammar;
+                                FixSpellingAndGrammarPrompt = fixSpellingAction.Prompt ?? string.Empty;
+                                FixSpellingAndGrammarSystemPrompt = fixSpellingAction.SystemPrompt ?? string.Empty;
+                                FixSpellingAndGrammarProviderId = fixSpellingAction.ProviderId ?? string.Empty;
+                                FixSpellingAndGrammarCoachingEnabled = fixSpellingAction.CoachingEnabled;
+                                FixSpellingAndGrammarCoachingShortcutSet = fixSpellingAction.CoachingShortcut?.Code > 0;
+                                FixSpellingAndGrammarCoachingPrompt = fixSpellingAction.CoachingPrompt ?? string.Empty;
+                                FixSpellingAndGrammarCoachingSystemPrompt = fixSpellingAction.CoachingSystemPrompt ?? string.Empty;
+                                FixSpellingAndGrammarCoachingProviderId = fixSpellingAction.CoachingProviderId ?? string.Empty;
 
                                 var sourceAdditionalActions = properties.AdditionalActions;
                                 (PasteFormats Format, IAdvancedPasteAction[] Actions)[] additionalActionFormats =
                                 [
                                     (PasteFormats.ImageToText, [sourceAdditionalActions.ImageToText]),
+                                    (PasteFormats.FixSpellingAndGrammar, [sourceAdditionalActions.FixSpellingAndGrammar]),
                                     (PasteFormats.PasteAsTxtFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsTxtFile]),
                                     (PasteFormats.PasteAsPngFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsPngFile]),
+                                    (PasteFormats.PasteAsJpgFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsJpgFile]),
                                     (PasteFormats.PasteAsHtmlFile, [sourceAdditionalActions.PasteAsFile, sourceAdditionalActions.PasteAsFile.PasteAsHtmlFile]),
                                     (PasteFormats.TranscodeToMp3, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp3]),
                                     (PasteFormats.TranscodeToMp4, [sourceAdditionalActions.Transcode, sourceAdditionalActions.Transcode.TranscodeToMp4]),

@@ -21,12 +21,15 @@ public class TerminalPackage
 
     public string LogoPath { get; }
 
-    public TerminalPackage(string appUserModelId, Version version, string displayName, string settingsPath, string logoPath)
+    public string InstallPath { get; }
+
+    public TerminalPackage(string appUserModelId, Version version, string displayName, string settingsPath, string logoPath, string installPath)
     {
         AppUserModelId = appUserModelId;
         Version = version;
         DisplayName = displayName;
         SettingsPath = settingsPath;
         LogoPath = logoPath;
+        InstallPath = installPath;
     }
 }

@@ -1,0 +1,16 @@
+--- a/include/spdlog/fmt/bundled/format.h
++++ b/include/spdlog/fmt/bundled/format.h
+@@ -354,7 +354,12 @@ inline typename Container::value_type* get_data(Container& c) {
+   return c.data();
+ }
+ 
+-#if defined(_SECURE_SCL) && _SECURE_SCL
++// PowerToys: stdext::checked_array_iterator was deprecated in VS 2019 16.10
++// and removed entirely in MSVC 14.51 (compiler 19.51, _MSC_VER >= 1951;
++// see microsoft/STL STL4043). Skip the broken branch on those toolsets so the
++// pointer-based fallback below is used instead. Drop this guard once
++// deps/spdlog is bumped past v1.14 (which ships fmt 10.2 and removes this code).
++#if defined(_SECURE_SCL) && _SECURE_SCL && (!defined(_MSC_VER) || _MSC_VER < 1951)
+ // Make a checked iterator to avoid MSVC warnings.
+ template <typename T> using checked_ptr = stdext::checked_array_iterator<T*>;
+ template <typename T> checked_ptr<T> make_checked(T* p, size_t size) {

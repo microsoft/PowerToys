@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using PowerDisplay.Models;
 using SettingsUILibrary = Settings.UI.Library;
 using SettingsUILibraryHelpers = Settings.UI.Library.Helpers;
 
@@ -43,13 +44,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(GeneralSettings))]
     [JsonSerializable(typeof(OutGoingGeneralSettings))]
     [JsonSerializable(typeof(AdvancedPasteSettings))]
+    [JsonSerializable(typeof(AltWindowCycleSettings))]
     [JsonSerializable(typeof(AlwaysOnTopSettings))]
+    [JsonSerializable(typeof(AutoHideCursorSettings))]
     [JsonSerializable(typeof(AwakeSettings))]
     [JsonSerializable(typeof(CmdNotFoundSettings))]
     [JsonSerializable(typeof(ColorPickerSettings))]
     [JsonSerializable(typeof(ColorPickerSettingsVersion1))]
     [JsonSerializable(typeof(CropAndLockSettings))]
     [JsonSerializable(typeof(CursorWrapSettings))]
+    [JsonSerializable(typeof(MouseButtonLockSettings))]
     [JsonSerializable(typeof(EnvironmentVariablesSettings))]
     [JsonSerializable(typeof(FancyZonesSettings))]
     [JsonSerializable(typeof(FileLocksmithSettings))]
@@ -74,17 +78,20 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(RegistryPreviewSettings))]
     [JsonSerializable(typeof(ShortcutGuideSettings))]
     [JsonSerializable(typeof(WorkspacesSettings))]
+    [JsonSerializable(typeof(GrabAndMoveSettings))]
     [JsonSerializable(typeof(ZoomItSettings))]
 
     // Properties Classes
     [JsonSerializable(typeof(AdvancedPasteProperties))]
     [JsonSerializable(typeof(AlwaysOnTopProperties))]
+    [JsonSerializable(typeof(AutoHideCursorProperties))]
     [JsonSerializable(typeof(AwakeProperties))]
     [JsonSerializable(typeof(CmdPalProperties))]
     [JsonSerializable(typeof(ColorPickerProperties))]
     [JsonSerializable(typeof(ColorPickerPropertiesVersion1))]
     [JsonSerializable(typeof(CropAndLockProperties))]
     [JsonSerializable(typeof(CursorWrapProperties))]
+    [JsonSerializable(typeof(MouseButtonLockProperties))]
     [JsonSerializable(typeof(EnvironmentVariablesProperties))]
     [JsonSerializable(typeof(FileLocksmithProperties))]
     [JsonSerializable(typeof(FileLocksmithLocalProperties))]
@@ -114,6 +121,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(ShortcutConflictProperties))]
     [JsonSerializable(typeof(ShortcutGuideProperties))]
     [JsonSerializable(typeof(WorkspacesProperties))]
+    [JsonSerializable(typeof(GrabAndMoveProperties))]
     [JsonSerializable(typeof(ZoomItProperties))]
 
     // Base Property Types (used throughout settings)
@@ -158,8 +166,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]
 
     // IPC Send Message Wrapper Classes (Snd*)
+    [JsonSerializable(typeof(SndAutoHideCursorSettings))]
     [JsonSerializable(typeof(SndAwakeSettings))]
     [JsonSerializable(typeof(SndCursorWrapSettings))]
+    [JsonSerializable(typeof(SndMouseButtonLockSettings))]
     [JsonSerializable(typeof(SndFindMyMouseSettings))]
     [JsonSerializable(typeof(SndLightSwitchSettings))]
     [JsonSerializable(typeof(SndMouseHighlighterSettings))]
@@ -171,8 +181,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     [JsonSerializable(typeof(SndShortcutGuideSettings))]
 
     // IPC Message Generic Wrapper Types (SndModuleSettings<T>)
+    [JsonSerializable(typeof(SndModuleSettings<SndAutoHideCursorSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndAwakeSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndCursorWrapSettings>))]
+    [JsonSerializable(typeof(SndModuleSettings<SndMouseButtonLockSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndFindMyMouseSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndLightSwitchSettings>))]
     [JsonSerializable(typeof(SndModuleSettings<SndMouseHighlighterSettings>))]

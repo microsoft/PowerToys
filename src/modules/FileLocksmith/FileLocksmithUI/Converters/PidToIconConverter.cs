@@ -6,6 +6,7 @@ using System;
 using System.Drawing;
 using System.IO;
 
+using ManagedCommon;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media.Imaging;
 
@@ -20,7 +21,20 @@ namespace PowerToys.FileLocksmithUI.Converters
 
             if (!string.IsNullOrEmpty(y))
             {
-                icon = Icon.ExtractAssociatedIcon(y);
+                try
+                {
+                    icon = Icon.ExtractAssociatedIcon(y);
+                }
+                catch (Exception ex)
+                {
+                    // The process image path can be non-empty but no longer exist on disk
+                    // (e.g. self-updating software that deletes its old versioned directory while
+                    // the old process is still running). ExtractAssociatedIcon then throws and,
+                    // because this converter runs per-row during ListView virtualization, the
+                    // exception would otherwise reach App_UnhandledException and fast-fail the app.
+                    // Fall through to the placeholder icon instead of crashing.
+                    Logger.LogWarning($"Couldn't extract the icon for '{y}'. {ex}");
+                }
             }
 
             if (icon != null)

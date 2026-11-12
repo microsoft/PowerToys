@@ -6,9 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -17,16 +20,30 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.Library.ViewModels.Commands;
-using PowerDisplay.Common.Models;
-using PowerDisplay.Common.Services;
-using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using PowerToys.Interop;
-using CustomVcpValueMapping = Microsoft.PowerToys.Settings.UI.Library.CustomVcpValueMapping;
 
 namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class PowerDisplayViewModel : PageViewModelBase
     {
+        // Mirror of PowerDisplay.Lib's PathConstants.CrashDetectedFlagPath. Settings UI cannot
+        // reference PowerDisplay.Lib, so the path is recomputed here. Keep in sync with that file.
+        private static readonly string CrashDetectedFlagPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "Microsoft",
+            "PowerToys",
+            "PowerDisplay",
+            "crash_detected.flag");
+
+        private readonly Func<CancellationToken, Task<PowerDisplayProfiles>> _loadProfilesAsync;
+        private readonly Func<int, int?, Task<bool>> _reorderProfileAsync;
+        private readonly Func<PowerDisplayProfile, Task> _addOrUpdateProfileAsync;
+        private readonly Func<int, Task<bool>> _removeProfileByIdAsync;
+        private readonly Action<string> _signalNamedEvent;
+
+        private bool _isProfilesLoading;
+
         protected override string ModuleName => PowerDisplaySettings.ModuleName;
 
         private GeneralSettings GeneralSettingsConfig { get; set; }
@@ -36,47 +53,98 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         public ButtonClickCommand LaunchEventHandler => new ButtonClickCommand(Launch);
 
         public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc)
+            : this(
+                settingsUtils,
+                settingsRepository,
+                powerDisplaySettingsRepository,
+                ipcMSGCallBackFunc,
+                NativeEventWaiter.WaitForEventLoop)
         {
-            // Set up localized VCP code names for UI display
-            VcpNames.LocalizedCodeNameProvider = GetLocalizedVcpCodeName;
+        }
 
+        public PowerDisplayViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository, Func<string, int> ipcMSGCallBackFunc, Action<string, Action> waitForEventLoop)
+            : this(settingsUtils, settingsRepository, powerDisplaySettingsRepository, ipcMSGCallBackFunc, waitForEventLoop, SignalNamedEvent)
+        {
+        }
+
+        internal PowerDisplayViewModel(
+            SettingsUtils settingsUtils,
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            ISettingsRepository<PowerDisplaySettings> powerDisplaySettingsRepository,
+            Func<string, int> ipcMSGCallBackFunc,
+            Action<string, Action> waitForEventLoop,
+            Action<string> signalNamedEvent,
+            Func<CancellationToken, Task<PowerDisplayProfiles>> loadProfilesAsync = null,
+            Func<int, int?, Task<bool>> reorderProfileAsync = null,
+            Func<PowerDisplayProfile, Task> addOrUpdateProfileAsync = null,
+            Func<int, Task<bool>> removeProfileByIdAsync = null)
+        {
             // To obtain the general settings configurations of PowerToys Settings.
             ArgumentNullException.ThrowIfNull(settingsRepository);
+            ArgumentNullException.ThrowIfNull(waitForEventLoop);
+            ArgumentNullException.ThrowIfNull(signalNamedEvent);
 
+            _signalNamedEvent = signalNamedEvent;
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
+            _loadProfilesAsync = loadProfilesAsync ?? ProfileHelper.LoadProfilesAsync;
+            _reorderProfileAsync = reorderProfileAsync ?? ((id, beforeId) =>
+                ProfileHelper.UpdateProfilesAsync(profiles => profiles.MoveProfileBefore(id, beforeId)));
+            _addOrUpdateProfileAsync = addOrUpdateProfileAsync ?? (profile => ProfileHelper.AddOrUpdateProfileAsync(profile));
+            _removeProfileByIdAsync = removeProfileByIdAsync ?? (id => ProfileHelper.RemoveProfileByIdAsync(id));
 
             _settings = powerDisplaySettingsRepository.SettingsConfig;
 
             InitializeEnabledValue();
 
-            // Initialize monitors collection using property setter for proper subscription setup
-            var loadedMonitors = _settings.Properties.Monitors;
+            // Initialize monitors collection using property setter for proper subscription setup.
+            // Hide legacy-format Ids; the current discovery pipeline only emits "\\?\DISPLAY#..."
+            // DevicePath Ids, so any "DDC_*" / "WMI_*" entries in settings.json are upgrade
+            // duplicates of a "\\?\" entry kept by the rebuilder's retention rule.
+            var loadedMonitors = FilterLegacyIds(_settings.Properties.Monitors).ToList();
 
-            Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings");
+            Logger.LogInfo($"[Constructor] Initializing with {loadedMonitors.Count} monitors from settings (filtered)");
 
-            Monitors = new ObservableCollection<MonitorInfo>(loadedMonitors);
+            ReplaceMonitors(new ObservableCollection<MonitorInfo>(loadedMonitors));
 
             // set the callback functions value to handle outgoing IPC message.
             SendConfigMSG = ipcMSGCallBackFunc;
 
-            // Subscribe to collection changes for HasProfiles binding
-            _profiles.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasProfiles));
-
-            // Load profiles
-            LoadProfiles();
+            _profiles.CollectionChanged += Profiles_CollectionChanged;
 
             // Load custom VCP mappings
             LoadCustomVcpMappings();
 
             // Listen for monitor refresh events from PowerDisplay.exe
-            NativeEventWaiter.WaitForEventLoop(
+            waitForEventLoop(
                 Constants.RefreshPowerDisplayMonitorsEvent(),
                 () =>
                 {
                     Logger.LogInfo("Received refresh monitors event from PowerDisplay.exe");
                     ReloadMonitorsFromSettings();
                 });
+
+            // Crash quarantine state. The flag file is the single source of truth; the page
+            // re-checks it on construction (catches crashes that happened before Settings UI
+            // launched) and on every navigation via OnPageLoaded (catches crashes while
+            // Settings UI is already open). The AutoDisable event is left as a single-consumer
+            // signal for the runner DLL — Settings UI does not race for it.
+            RefreshCrashLockState();
+        }
+
+        public override void OnPageLoaded()
+        {
+            base.OnPageLoaded();
+            RefreshCrashLockState();
+        }
+
+        private void RefreshCrashLockState()
+        {
+            if (File.Exists(CrashDetectedFlagPath) && !IsCrashLockActive)
+            {
+                Logger.LogInfo("PowerDisplayViewModel: crash flag present, locking page");
+                IsCrashLockActive = true;
+            }
         }
 
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
@@ -108,16 +176,61 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                if (_isEnabled != value)
+                if (_isEnabled == value)
                 {
-                    _isEnabled = value;
-                    OnPropertyChanged(nameof(IsEnabled));
+                    return;
+                }
 
-                    GeneralSettingsConfig.Enabled.PowerDisplay = value;
-                    OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
-                    SendConfigMSG(outgoing.ToString());
+                if (value)
+                {
+                    // Enabling PowerDisplay can crash some monitors via DDC/CI capability
+                    // fetch (see #47556 / PR #47734). Don't commit yet — confirm with the user
+                    // first, then either commit or revert the toggle via OnPropertyChanged.
+                    _ = ConfirmAndEnableModuleAsync();
+                }
+                else
+                {
+                    CommitIsEnabled(false);
                 }
             }
+        }
+
+        private async Task ConfirmAndEnableModuleAsync()
+        {
+            try
+            {
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.EnableModule))
+                {
+                    CommitIsEnabled(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: enable-module confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(IsEnabled));
+            }
+        }
+
+        private void CommitIsEnabled(bool value)
+        {
+            _isEnabled = value;
+            OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(CanUseProfiles));
+            OnPropertyChanged(nameof(CanDragProfiles));
+
+            GeneralSettingsConfig.Enabled.PowerDisplay = value;
+            OutGoingGeneralSettings outgoing = new OutGoingGeneralSettings(GeneralSettingsConfig);
+            SendConfigMSG(outgoing.ToString());
         }
 
         public bool IsEnabledGpoConfigured
@@ -125,10 +238,107 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             get => _enabledStateIsGPOConfigured;
         }
 
+        public bool IsCrashLockActive
+        {
+            get => _isCrashLockActive;
+            private set
+            {
+                if (_isCrashLockActive != value)
+                {
+                    _isCrashLockActive = value;
+                    OnPropertyChanged(nameof(IsCrashLockActive));
+                }
+            }
+        }
+
+        public ButtonClickCommand DismissCrashWarningCommand => new ButtonClickCommand(DismissCrashWarning);
+
+        private void DismissCrashWarning()
+        {
+            try
+            {
+                var path = CrashDetectedFlagPath;
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                    Logger.LogInfo("PowerDisplayViewModel: user dismissed crash warning, flag deleted");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"PowerDisplayViewModel: failed to delete crash flag: {ex.Message}");
+            }
+
+            IsCrashLockActive = false;
+        }
+
         public bool RestoreSettingsOnStartup
         {
             get => _settings.Properties.RestoreSettingsOnStartup;
             set => SetSettingsProperty(_settings.Properties.RestoreSettingsOnStartup, value, v => _settings.Properties.RestoreSettingsOnStartup = v);
+        }
+
+        /// <summary>
+        /// View-supplied confirmation dialog. Default no-op denies all dangerous enables;
+        /// PowerDisplayPage replaces this in its constructor with a real dialog show.
+        /// </summary>
+        public Func<PowerDisplayWarningKind, Task<bool>> ConfirmDangerousFeatureAsync { get; set; } = _ => Task.FromResult(false);
+
+        // Dangerous toggle. TwoWay-bound to the UI; the setter handles the "ask first"
+        // gesture entirely inside the ViewModel. Initial-binding push and post-cancel
+        // revert both hit the equality guard at the top and no-op.
+        public bool MaxCompatibilityMode
+        {
+            get => _settings.Properties.MaxCompatibilityMode;
+            set
+            {
+                if (_settings.Properties.MaxCompatibilityMode == value)
+                {
+                    return;
+                }
+
+                if (value)
+                {
+                    // Don't commit yet. Run the async confirm, then either commit (UI is
+                    // already showing the requested state) or revert via OnPropertyChanged.
+                    _ = ConfirmAndEnableMaxCompatAsync();
+                }
+                else
+                {
+                    _settings.Properties.MaxCompatibilityMode = false;
+                    OnPropertyChanged();
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
+            }
+        }
+
+        private async Task ConfirmAndEnableMaxCompatAsync()
+        {
+            try
+            {
+                if (await ConfirmDangerousFeatureAsync(PowerDisplayWarningKind.MaxCompatibility))
+                {
+                    _settings.Properties.MaxCompatibilityMode = true;
+                    NotifySettingsChanged();
+                    SignalRescanRequest();
+                }
+            }
+            catch (Exception ex)
+            {
+                // ContentDialog.ShowAsync throws if another dialog is already open or the
+                // XamlRoot has been torn down. Don't let the fire-and-forget task carry the
+                // exception into TaskScheduler.UnobservedTaskException — log and fall through
+                // to the finally so the ToggleSwitch revert path still runs.
+                Logger.LogError($"PowerDisplayViewModel: max-compat confirm dialog failed: {ex.Message}");
+            }
+            finally
+            {
+                // Either branch (commit, cancel, or exception) raises PropertyChanged so the
+                // TwoWay binding pushes the ViewModel value back to the ToggleSwitch — commit
+                // echoes silently, cancel/exception pulls the UI back to the original state.
+                OnPropertyChanged(nameof(MaxCompatibilityMode));
+            }
         }
 
         public bool ShowSystemTrayIcon
@@ -180,7 +390,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 if (SetSettingsProperty(_settings.Properties.ActivationShortcut, value, v => _settings.Properties.ActivationShortcut = v))
                 {
                     // Signal PowerDisplay.exe to re-register the hotkey
-                    EventHelper.SignalEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
+                    _signalNamedEvent(Constants.HotkeyUpdatedPowerDisplayEvent());
                     Logger.LogInfo($"ActivationShortcut changed, signaled HotkeyUpdatedPowerDisplayEvent");
                 }
             }
@@ -209,31 +419,75 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public List<int> MonitorRefreshDelayOptions => _monitorRefreshDelayOptions;
 
-        public ObservableCollection<MonitorInfo> Monitors
+        /// <summary>
+        /// Gets or sets the selected mouse-wheel mode as the ComboBox index.
+        /// Enum values intentionally match the displayed item order.
+        /// </summary>
+        public int MouseWheelControlModeIndex
         {
-            get => _monitors;
+            get => (int)_settings.Properties.MouseWheelControlMode.Normalize();
             set
             {
-                if (_monitors != null)
+                var mode = ((MouseWheelControlMode)value).Normalize();
+                if ((int)mode != value)
                 {
-                    _monitors.CollectionChanged -= Monitors_CollectionChanged;
-                    UnsubscribeFromItemPropertyChanged(_monitors);
+                    OnPropertyChanged(nameof(MouseWheelControlModeIndex));
+                    return;
                 }
 
-                _monitors = value;
-
-                if (_monitors != null)
+                if (SetSettingsProperty(
+                    _settings.Properties.MouseWheelControlMode,
+                    mode,
+                    v => _settings.Properties.MouseWheelControlMode = v))
                 {
-                    _monitors.CollectionChanged += Monitors_CollectionChanged;
-                    SubscribeToItemPropertyChanged(_monitors);
+                    SignalSettingsUpdated();
                 }
-
-                OnPropertyChanged(nameof(Monitors));
-                HasMonitors = _monitors?.Count > 0;
-
-                // Update TotalMonitorCount for dynamic DisplayName
-                UpdateTotalMonitorCount();
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the per-mouse-wheel-notch step shared by all PowerDisplay flyout sliders.
+        /// </summary>
+        public int MouseWheelIncrement
+        {
+            get => _settings.Properties.MouseWheelIncrement;
+            set
+            {
+                if (SetSettingsProperty(_settings.Properties.MouseWheelIncrement, value, v => _settings.Properties.MouseWheelIncrement = v))
+                {
+                    // Push to the (possibly open) flyout so the new step takes effect immediately.
+                    SignalSettingsUpdated();
+                }
+            }
+        }
+
+        private readonly List<int> _mouseWheelIncrementOptions = new List<int> { 1, 2, 5, 10, 15, 20, 25 };
+
+        public List<int> MouseWheelIncrementOptions => _mouseWheelIncrementOptions;
+
+        public ObservableCollection<MonitorInfo> Monitors => _monitors;
+
+        private void ReplaceMonitors(ObservableCollection<MonitorInfo> value)
+        {
+            if (_monitors != null)
+            {
+                _monitors.CollectionChanged -= Monitors_CollectionChanged;
+                UnsubscribeFromItemPropertyChanged(_monitors);
+            }
+
+            _monitors = value;
+
+            if (_monitors != null)
+            {
+                _monitors.CollectionChanged += Monitors_CollectionChanged;
+                SubscribeToItemPropertyChanged(_monitors);
+            }
+
+            OnPropertyChanged(nameof(Monitors));
+            HasMonitors = _monitors?.Count > 0;
+
+            // Update TotalMonitorCount for dynamic DisplayName
+            UpdateTotalMonitorCount();
         }
 
         public bool HasMonitors
@@ -255,12 +509,35 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             UnsubscribeFromItemPropertyChanged(e.OldItems?.Cast<MonitorInfo>());
 
             HasMonitors = _monitors.Count > 0;
-            _settings.Properties.Monitors = _monitors.ToList();
-            NotifySettingsChanged();
+
+            // Collection mutations during ReloadMonitorsFromSettings come from disk —
+            // don't save back. ReloadMonitorsFromSettings itself rebuilds
+            // _settings.Properties.Monitors when it's done.
+            // Don't sync _settings.Properties.Monitors from _monitors here either —
+            // _monitors is the filtered view and would silently strip legacy entries.
+            if (!_isReloading)
+            {
+                NotifySettingsChanged();
+            }
 
             // Update TotalMonitorCount for dynamic DisplayName
             UpdateTotalMonitorCount();
         }
+
+        /// <summary>
+        /// True for the DevicePath form of Monitor Id ("\\?\DISPLAY#..."). The current
+        /// discovery pipeline only emits this form; older "DDC_*" / "WMI_*" entries in
+        /// settings.json are upgrade-duplicates kept by the rebuilder's retention rule
+        /// and shouldn't be bound to the UI.
+        /// </summary>
+        private static bool IsVisibleMonitorId(string id)
+            => !string.IsNullOrEmpty(id) && id.StartsWith(@"\\?\", StringComparison.Ordinal);
+
+        /// <summary>
+        /// Drop legacy-format Ids. See <see cref="IsVisibleMonitorId"/>.
+        /// </summary>
+        private static IEnumerable<MonitorInfo> FilterLegacyIds(IEnumerable<MonitorInfo> monitors)
+            => monitors.Where(m => IsVisibleMonitorId(m.Id));
 
         /// <summary>
         /// Update TotalMonitorCount on all monitors for dynamic DisplayName formatting.
@@ -333,24 +610,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 Logger.LogDebug($"[PowerDisplayViewModel] Monitor {monitor.Name} property {e.PropertyName} changed");
             }
 
-            // Update the settings object to keep it in sync
-            _settings.Properties.Monitors = _monitors.ToList();
+            // Property changes during ReloadMonitorsFromSettings come from disk
+            // (UpdateFrom), not user input — don't save or signal back out.
+            if (_isReloading)
+            {
+                return;
+            }
 
-            // Save settings when any monitor property changes
+            // Only these properties are edited by the Settings page. Runtime data and
+            // derived display properties must not save again after the update event:
+            // PowerDisplay may already be reading the file in response to that event.
+            if (e.PropertyName is not (nameof(MonitorInfo.EnableContrast) or
+                nameof(MonitorInfo.EnableVolume) or
+                nameof(MonitorInfo.EnableInputSource) or
+                nameof(MonitorInfo.EnableRotation) or
+                nameof(MonitorInfo.EnableColorTemperature) or
+                nameof(MonitorInfo.EnablePowerState) or
+                nameof(MonitorInfo.IsHidden)))
+            {
+                return;
+            }
+
+            // MonitorInfo is a reference type shared between _monitors and
+            // _settings.Properties.Monitors — the property change is already visible
+            // in the persisted list, so just trigger save. Rebuilding the list from
+            // _monitors here would silently drop legacy entries the filter hides.
             NotifySettingsChanged();
 
-            // For feature visibility properties, explicitly signal PowerDisplay to refresh
-            // This is needed because set_config() doesn't signal SettingsUpdatedEvent to avoid UI refresh issues
-            if (e.PropertyName == nameof(MonitorInfo.EnableContrast) ||
-                e.PropertyName == nameof(MonitorInfo.EnableVolume) ||
-                e.PropertyName == nameof(MonitorInfo.EnableInputSource) ||
-                e.PropertyName == nameof(MonitorInfo.EnableRotation) ||
-                e.PropertyName == nameof(MonitorInfo.EnableColorTemperature) ||
-                e.PropertyName == nameof(MonitorInfo.EnablePowerState) ||
-                e.PropertyName == nameof(MonitorInfo.IsHidden))
-            {
-                SignalSettingsUpdated();
-            }
+            // set_config() does not signal this event. Notify the module only after
+            // the user preference has been saved.
+            SignalSettingsUpdated();
         }
 
         /// <summary>
@@ -358,8 +647,33 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SignalSettingsUpdated()
         {
-            EventHelper.SignalEvent(Constants.SettingsUpdatedPowerDisplayEvent());
+            _signalNamedEvent(Constants.SettingsUpdatedPowerDisplayEvent());
             Logger.LogInfo("Signaled SettingsUpdatedPowerDisplayEvent for feature visibility change");
+        }
+
+        /// <summary>
+        /// Signal PowerDisplay.exe to perform a full hardware rescan. Used when a
+        /// setting changes that affects monitor discovery (currently: max-compatibility
+        /// mode). Distinct from <see cref="SignalSettingsUpdated"/>, which only fires
+        /// the lightweight settings-applied path on the module side.
+        /// </summary>
+        public void SignalRescanRequest()
+        {
+            _signalNamedEvent(Constants.RescanPowerDisplayMonitorsEvent());
+            Logger.LogInfo("Signaled RescanPowerDisplayMonitorsEvent (max-compat toggle finalized)");
+        }
+
+        private static void SignalNamedEvent(string eventName)
+        {
+            try
+            {
+                using var handle = new EventWaitHandle(false, EventResetMode.AutoReset, eventName);
+                handle.Set();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to signal event '{eventName}': {ex.Message}");
+            }
         }
 
         public void Launch()
@@ -384,27 +698,36 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void ReloadMonitorsFromSettings()
         {
+            _isReloading = true;
             try
             {
                 Logger.LogInfo("Reloading monitors from settings file");
 
-                // Read fresh settings from file
+                // Read fresh settings from file. UpdateFrom / Add / Remove below fire
+                // PropertyChanged + CollectionChanged on the existing MonitorInfo
+                // instances; the _isReloading guard above stops those from triggering
+                // saves back to disk. We rebuild _settings.Properties.Monitors at the
+                // end so visible entries keep reference identity with the items inside
+                // _monitors (which user toggles mutate) while legacy entries take fresh
+                // disk references (UI doesn't bind them).
                 var updatedSettings = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-                var updatedMonitors = updatedSettings.Properties.Monitors;
+                var allFromDisk = updatedSettings.Properties.Monitors;
+                var updatedMonitors = allFromDisk.Where(m => IsVisibleMonitorId(m.Id)).ToList();
+                var legacyFromDisk = allFromDisk.Where(m => !IsVisibleMonitorId(m.Id)).ToList();
 
-                Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} monitors from settings");
+                Logger.LogInfo($"[ReloadMonitors] Loaded {updatedMonitors.Count} visible + {legacyFromDisk.Count} legacy from settings");
 
                 // Update existing MonitorInfo objects instead of replacing the collection
                 // This preserves XAML x:Bind bindings which reference specific object instances
                 if (Monitors == null)
                 {
                     // First time initialization - create new collection
-                    Monitors = new ObservableCollection<MonitorInfo>(updatedMonitors);
+                    ReplaceMonitors(new ObservableCollection<MonitorInfo>(updatedMonitors));
                 }
                 else
                 {
                     // Create a dictionary for quick lookup by Id
-                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m);
+                    var updatedMonitorsDict = updatedMonitors.ToDictionary(m => m.Id, m => m, MonitorIdComparer.Instance);
 
                     // Update existing monitors or remove ones that no longer exist
                     for (int i = Monitors.Count - 1; i >= 0; i--)
@@ -435,8 +758,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     }
                 }
 
-                // Update internal settings reference
-                _settings.Properties.Monitors = updatedMonitors;
+                // Rebuild _settings.Properties.Monitors so visible items share refs
+                // with _monitors (user toggles will be visible to save). Legacy entries
+                // use the freshly-read instances; we never bind them to UI.
+                _settings.Properties.Monitors.Clear();
+                _settings.Properties.Monitors.AddRange(_monitors.Concat(legacyFromDisk));
 
                 Logger.LogInfo($"Successfully reloaded {updatedMonitors.Count} monitors");
             }
@@ -444,17 +770,30 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 Logger.LogError($"Failed to reload monitors from settings: {ex.Message}");
             }
+            finally
+            {
+                _isReloading = false;
+            }
         }
 
         private Func<string, int> SendConfigMSG { get; }
 
         private bool _isEnabled;
+        private bool _isCrashLockActive;
         private PowerDisplaySettings _settings;
         private ObservableCollection<MonitorInfo> _monitors;
         private bool _hasMonitors;
 
+        // True while ReloadMonitorsFromSettings is running. Suppresses PropertyChanged /
+        // CollectionChanged-triggered saves and IPC signals so changes coming from disk
+        // don't get written back as if they were user input.
+        private bool _isReloading;
+
         // Profile-related fields
+        private bool _suppressProfileSelectionPersistence;
         private ObservableCollection<PowerDisplayProfile> _profiles = new ObservableCollection<PowerDisplayProfile>();
+        private List<PowerDisplayProfile> _savedProfiles = new List<PowerDisplayProfile>();
+        private bool _isProfileReorderError;
 
         // Custom VCP mapping fields
         private ObservableCollection<CustomVcpValueMapping> _customVcpMappings;
@@ -479,10 +818,62 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         public bool HasProfiles => _profiles?.Count > 0;
 
+        private void Profiles_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            if (_suppressProfileSelectionPersistence)
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(HasProfiles));
+            OnPropertyChanged(nameof(IsProfileDragDisabledByElevation));
+        }
+
+        public bool IsProfilesLoading
+        {
+            get => _isProfilesLoading;
+            private set
+            {
+                if (_isProfilesLoading == value)
+                {
+                    return;
+                }
+
+                _isProfilesLoading = value;
+                OnPropertyChanged(nameof(IsProfilesLoading));
+                OnPropertyChanged(nameof(CanUseProfiles));
+                OnPropertyChanged(nameof(CanDragProfiles));
+            }
+        }
+
+        public bool CanUseProfiles => IsEnabled && !IsProfilesLoading;
+
+        // Like Mouse Without Borders, do not enter WinUI's native drag/drop path while elevated.
+        // https://github.com/microsoft/microsoft-ui-xaml/issues/7690
+        public bool CanDragProfiles => CanUseProfiles && !GeneralSettingsConfig.IsElevated;
+
+        public bool IsProfileDragDisabledByElevation => GeneralSettingsConfig.IsElevated && HasProfiles;
+
+        public bool IsProfileReorderError
+        {
+            get => _isProfileReorderError;
+            private set
+            {
+                if (_isProfileReorderError != value)
+                {
+                    _isProfileReorderError = value;
+                    OnPropertyChanged(nameof(IsProfileReorderError));
+                }
+            }
+        }
+
         public void RefreshEnabledState()
         {
             InitializeEnabledValue();
             OnPropertyChanged(nameof(IsEnabled));
+            OnPropertyChanged(nameof(CanUseProfiles));
+            OnPropertyChanged(nameof(CanDragProfiles));
+            OnPropertyChanged(nameof(IsProfileDragDisabledByElevation));
         }
 
         private bool SetSettingsProperty<T>(T currentValue, T newValue, Action<T> setter, [CallerMemberName] string propertyName = null)
@@ -498,28 +889,154 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             return true;
         }
 
-        /// <summary>
-        /// Load profiles from disk
-        /// </summary>
-        private void LoadProfiles()
+        public async Task InitializeProfilesAsync(CancellationToken cancellationToken = default)
         {
+            if (IsProfilesLoading)
+            {
+                return;
+            }
+
+            IsProfilesLoading = true;
+            _suppressProfileSelectionPersistence = true;
+            IsProfileReorderError = false;
             try
             {
-                var profilesData = ProfileService.LoadProfiles();
-
-                // Load profile objects (no Custom - it's not a profile anymore)
+                var loaded = await LoadProfilesCoreAsync(cancellationToken);
+                ReplaceProfiles(loaded);
+            }
+            catch (Exception ex)
+            {
                 Profiles.Clear();
-                foreach (var profile in profilesData.Profiles)
+                IsProfileReorderError = true;
+                Logger.LogError($"Failed to load profiles: {ex.Message}");
+            }
+            finally
+            {
+                _suppressProfileSelectionPersistence = false;
+                IsProfilesLoading = false;
+                OnPropertyChanged(nameof(HasProfiles));
+                OnPropertyChanged(nameof(IsProfileDragDisabledByElevation));
+            }
+        }
+
+        private Task<PowerDisplayProfiles> LoadProfilesCoreAsync(
+            CancellationToken cancellationToken)
+        {
+            return _loadProfilesAsync(cancellationToken);
+        }
+
+        private void ReplaceProfiles(PowerDisplayProfiles profilesData)
+        {
+            var profiles = profilesData.GetAssignedProfiles().ToList();
+            var wasSuppressed = _suppressProfileSelectionPersistence;
+            _suppressProfileSelectionPersistence = true;
+            try
+            {
+                // Suppress the temporary empty state so the expander stays open while refreshing.
+                Profiles.Clear();
+                foreach (var profile in profiles)
                 {
                     Profiles.Add(profile);
                 }
 
-                Logger.LogInfo($"Loaded {Profiles.Count} profiles");
+                _savedProfiles = profiles;
+            }
+            finally
+            {
+                _suppressProfileSelectionPersistence = wasSuppressed;
+            }
+
+            OnPropertyChanged(nameof(HasProfiles));
+            OnPropertyChanged(nameof(IsProfileDragDisabledByElevation));
+            Logger.LogInfo($"Loaded {Profiles.Count} profiles");
+        }
+
+        public bool CanMoveProfileUp(PowerDisplayProfile profile)
+            => CanUseProfiles && FindProfileIndex(profile?.Id ?? 0) > 0;
+
+        public bool CanMoveProfileDown(PowerDisplayProfile profile)
+        {
+            var index = FindProfileIndex(profile?.Id ?? 0);
+            return CanUseProfiles && index >= 0 && index < Profiles.Count - 1;
+        }
+
+        public Task MoveProfileUpAsync(PowerDisplayProfile profile)
+        {
+            if (!CanMoveProfileUp(profile))
+            {
+                return Task.CompletedTask;
+            }
+
+            var index = FindProfileIndex(profile.Id);
+            return ReorderProfileAsync(profile.Id, Profiles[index - 1].Id);
+        }
+
+        public Task MoveProfileDownAsync(PowerDisplayProfile profile)
+        {
+            if (!CanMoveProfileDown(profile))
+            {
+                return Task.CompletedTask;
+            }
+
+            var index = FindProfileIndex(profile.Id);
+            int? beforeId = index + 2 < Profiles.Count ? Profiles[index + 2].Id : null;
+            return ReorderProfileAsync(profile.Id, beforeId);
+        }
+
+        private int FindProfileIndex(int id)
+        {
+            for (var index = 0; index < Profiles.Count; index++)
+            {
+                if (Profiles[index].Id == id)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+        public async Task ReorderProfileAsync(int profileId, int? beforeProfileId)
+        {
+            if (!CanUseProfiles || profileId < 1 || beforeProfileId is < 1 || profileId == beforeProfileId)
+            {
+                return;
+            }
+
+            IsProfilesLoading = true;
+            IsProfileReorderError = false;
+            try
+            {
+                // Move by stable ids in the latest stored list. Saving the UI's entire snapshot
+                // would overwrite concurrent profile edits or drop profiles added by another process.
+                if (await _reorderProfileAsync(profileId, beforeProfileId))
+                {
+                    // Keep a fallback for a successful write followed by an unreadable file.
+                    var saved = new PowerDisplayProfiles { Profiles = _savedProfiles.ToList() };
+                    saved.MoveProfileBefore(profileId, beforeProfileId);
+                    _savedProfiles = saved.Profiles;
+                    SignalSettingsUpdated();
+                }
+
+                ReplaceProfiles(await LoadProfilesCoreAsync(CancellationToken.None));
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to load profiles: {ex.Message}");
-                Profiles.Clear();
+                IsProfileReorderError = true;
+                Logger.LogError($"Failed to reorder profiles: {ex.Message}");
+                try
+                {
+                    ReplaceProfiles(await LoadProfilesCoreAsync(CancellationToken.None));
+                }
+                catch (Exception reloadException)
+                {
+                    Logger.LogError($"Failed to reload profiles after reordering: {reloadException.Message}");
+                    ReplaceProfiles(new PowerDisplayProfiles { Profiles = _savedProfiles });
+                }
+            }
+            finally
+            {
+                IsProfilesLoading = false;
             }
         }
 
@@ -536,10 +1053,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return;
                 }
 
-                Logger.LogInfo($"Applying profile: {profile.Name}");
+                Logger.LogInfo($"Applying profile: {profile.DisplayName}");
 
                 // Send custom action to trigger profile application
-                // The profile name is passed via Named Pipe IPC to PowerDisplay.exe
+                // The profile id is passed via Named Pipe IPC to PowerDisplay.exe
                 var actionMessage = new PowerDisplayActionMessage
                 {
                     Action = new PowerDisplayActionMessage.ActionData
@@ -547,14 +1064,14 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                         PowerDisplay = new PowerDisplayActionMessage.PowerDisplayAction
                         {
                             ActionName = "ApplyProfile",
-                            Value = profile.Name,
+                            Value = profile.Id.ToString(System.Globalization.CultureInfo.InvariantCulture),
                         },
                     },
                 };
 
                 SendConfigMSG(JsonSerializer.Serialize(actionMessage, SettingsSerializationContext.Default.PowerDisplayActionMessage));
 
-                Logger.LogInfo($"Profile '{profile.Name}' applied successfully");
+                Logger.LogInfo($"Profile '{profile.DisplayName}' apply request sent via IPC");
             }
             catch (Exception ex)
             {
@@ -562,104 +1079,101 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
-        /// <summary>
-        /// Create a new profile
-        /// </summary>
-        public void CreateProfile(PowerDisplayProfile profile)
+        public Task CreateProfileAsync(PowerDisplayProfile profile)
+            => UpsertProfileAsync(profile, isNew: true);
+
+        public Task UpdateProfileAsync(PowerDisplayProfile profile)
+            => UpsertProfileAsync(profile, isNew: false);
+
+        private async Task UpsertProfileAsync(PowerDisplayProfile profile, bool isNew)
         {
+            if (profile == null || !profile.IsValid())
+            {
+                Logger.LogWarning("Invalid profile");
+                return;
+            }
+
+            if (IsProfilesLoading)
+            {
+                Logger.LogWarning("A profile operation is already in progress");
+                return;
+            }
+
+            IsProfilesLoading = true;
             try
             {
-                if (profile == null || !profile.IsValid())
-                {
-                    Logger.LogWarning("Invalid profile");
-                    return;
-                }
-
-                Logger.LogInfo($"Creating profile: {profile.Name}");
-
-                var profilesData = ProfileService.LoadProfiles();
-                profilesData.SetProfile(profile);
-                ProfileService.SaveProfiles(profilesData);
-
-                // Reload profile list
-                LoadProfiles();
-
-                // Signal PowerDisplay to reload profiles
+                await _addOrUpdateProfileAsync(profile);
+                var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
+                ReplaceProfiles(profiles);
+                IsProfileReorderError = false;
                 SignalSettingsUpdated();
-
-                Logger.LogInfo($"Profile '{profile.Name}' created successfully");
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to create profile: {ex.Message}");
+                Profiles.Clear();
+                Logger.LogError($"Failed to {(isNew ? "create" : "update")} profile: {ex.Message}");
+            }
+            finally
+            {
+                IsProfilesLoading = false;
             }
         }
 
-        /// <summary>
-        /// Update an existing profile
-        /// </summary>
-        public void UpdateProfile(string oldName, PowerDisplayProfile newProfile)
+        public async Task DeleteProfileAsync(int id)
         {
+            if (id < 1)
+            {
+                return;
+            }
+
+            if (IsProfilesLoading)
+            {
+                Logger.LogWarning("A profile operation is already in progress");
+                return;
+            }
+
+            IsProfilesLoading = true;
             try
             {
-                if (newProfile == null || !newProfile.IsValid())
+                if (!await _removeProfileByIdAsync(id))
                 {
-                    Logger.LogWarning("Invalid profile");
+                    Logger.LogWarning($"Profile id {id} was not found");
                     return;
                 }
 
-                Logger.LogInfo($"Updating profile: {oldName} -> {newProfile.Name}");
-
-                var profilesData = ProfileService.LoadProfiles();
-
-                // Remove old profile and add updated one
-                profilesData.RemoveProfile(oldName);
-                profilesData.SetProfile(newProfile);
-                ProfileService.SaveProfiles(profilesData);
-
-                // Reload profile list
-                LoadProfiles();
-
-                // Signal PowerDisplay to reload profiles
+                var profiles = await LoadProfilesCoreAsync(CancellationToken.None);
+                ReplaceProfiles(profiles);
+                IsProfileReorderError = false;
                 SignalSettingsUpdated();
-
-                Logger.LogInfo($"Profile updated to '{newProfile.Name}' successfully");
+                await ClearDeletedProfileReferencesAsync(id);
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Failed to update profile: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Delete a profile
-        /// </summary>
-        public void DeleteProfile(string profileName)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(profileName))
-                {
-                    return;
-                }
-
-                Logger.LogInfo($"Deleting profile: {profileName}");
-
-                var profilesData = ProfileService.LoadProfiles();
-                profilesData.RemoveProfile(profileName);
-                ProfileService.SaveProfiles(profilesData);
-
-                // Reload profile list
-                LoadProfiles();
-
-                // Signal PowerDisplay to reload profiles
-                SignalSettingsUpdated();
-
-                Logger.LogInfo($"Profile '{profileName}' deleted successfully");
-            }
-            catch (Exception ex)
-            {
+                Profiles.Clear();
                 Logger.LogError($"Failed to delete profile: {ex.Message}");
+            }
+            finally
+            {
+                IsProfilesLoading = false;
+            }
+        }
+
+        private async Task ClearDeletedProfileReferencesAsync(int deletedProfileId)
+        {
+            try
+            {
+                var lightSwitch = await Task.Run(
+                    () => SettingsUtils.GetSettingsOrDefault<LightSwitchSettings>(
+                        LightSwitchSettings.ModuleName));
+                LightSwitchProfileSettingsUpdater.ClearDeletedProfileAndSend(
+                    lightSwitch,
+                    deletedProfileId,
+                    SendConfigMSG);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(
+                    $"Failed to clear LightSwitch references for deleted profile id {deletedProfileId}: {ex.Message}");
             }
         }
 
@@ -743,7 +1257,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// </summary>
         private void SaveCustomVcpMappings()
         {
-            _settings.Properties.CustomVcpMappings = CustomVcpMappings.ToList();
+            _settings.Properties.CustomVcpMappings.Clear();
+            _settings.Properties.CustomVcpMappings.AddRange(CustomVcpMappings);
             NotifySettingsChanged();
 
             // Signal PowerDisplay to reload settings
@@ -751,20 +1266,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         /// <summary>
-        /// Provides localized VCP code names for UI display.
-        /// Looks for resource string with pattern "PowerDisplay_VcpCode_Name_0xXX".
-        /// Returns null for unknown codes to use the default MCCS name.
+        /// Re-read the flyout-owned runtime fields (linked brightness enabled + per-monitor
+        /// exclusion list) from disk into <see cref="_settings"/> so a save originating from an
+        /// unrelated Settings toggle does not overwrite them with the page's stale snapshot.
+        /// These fields have no Settings UI surface — the PowerDisplay flyout is their sole editor.
         /// </summary>
-#nullable enable
-        private static string? GetLocalizedVcpCodeName(byte vcpCode)
+        private void PreserveFlyoutOwnedState()
         {
-            var resourceKey = $"PowerDisplay_VcpCode_Name_0x{vcpCode:X2}";
-            var localizedName = ResourceLoaderInstance.ResourceLoader.GetString(resourceKey);
-
-            // ResourceLoader returns empty string if key not found
-            return string.IsNullOrEmpty(localizedName) ? null : localizedName;
+            try
+            {
+                var current = SettingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
+                _settings.Properties.LinkedLevelsActive = current.Properties.LinkedLevelsActive;
+                var exclusions = current.Properties.ExcludedFromSyncMonitorIds.ToList();
+                _settings.Properties.ExcludedFromSyncMonitorIds.Clear();
+                _settings.Properties.ExcludedFromSyncMonitorIds.AddRange(exclusions);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to preserve flyout-owned PowerDisplay state before save: {ex.Message}");
+            }
         }
-#nullable restore
 
         private void NotifySettingsChanged()
         {
@@ -773,6 +1294,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 return;
             }
+
+            // linked_levels_active and excluded_from_sync_monitor_ids are owned by the PowerDisplay
+            // flyout (the only UI that toggles them); the Settings page has no surface for them.
+            // _settings was loaded once at page construction, so serializing it would otherwise
+            // clobber flyout changes made meanwhile — both on disk and in the IPC config pushed
+            // to the module. Re-read the current on-disk values and carry them forward untouched.
+            PreserveFlyoutOwnedState();
 
             // Persist locally first so settings survive even if the module DLL isn't loaded yet.
             SettingsUtils.SaveSettings(_settings.ToJsonString(), PowerDisplaySettings.ModuleName);

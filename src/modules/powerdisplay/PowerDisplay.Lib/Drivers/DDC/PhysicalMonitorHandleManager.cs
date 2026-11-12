@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using ManagedCommon;
+using PowerDisplay.Models;
 using static PowerDisplay.Common.Drivers.PInvoke;
 
 namespace PowerDisplay.Common.Drivers.DDC
@@ -17,7 +18,7 @@ namespace PowerDisplay.Common.Drivers.DDC
     public partial class PhysicalMonitorHandleManager : IDisposable
     {
         // Mapping: monitorId -> physical handle (thread-safe)
-        private readonly ConcurrentDictionary<string, IntPtr> _monitorIdToHandleMap = new();
+        private readonly ConcurrentDictionary<string, IntPtr> _monitorIdToHandleMap = new(MonitorIdComparer.Instance);
         private readonly object _handleLock = new();
         private bool _disposed;
 

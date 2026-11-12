@@ -10,6 +10,37 @@
 #include "RemapShortcut.h"
 #include "Helpers.h"
 
+namespace
+{
+    bool WriteJsonAtomically(const std::wstring& filePath, const json::JsonObject& object)
+    {
+        const std::wstring temporaryPath = filePath + L"." + std::to_wstring(GetCurrentProcessId()) + L"." + std::to_wstring(GetCurrentThreadId()) + L".tmp";
+
+        try
+        {
+            std::ofstream stream{ temporaryPath, std::ios::binary | std::ios::trunc };
+            stream.exceptions(std::ios::failbit | std::ios::badbit);
+
+            const std::string serialized = winrt::to_string(object.Stringify());
+            stream.write(serialized.data(), static_cast<std::streamsize>(serialized.size()));
+            stream.flush();
+            stream.close();
+
+            if (!MoveFileExW(temporaryPath.c_str(), filePath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+            {
+                throw winrt::hresult_error(HRESULT_FROM_WIN32(GetLastError()));
+            }
+
+            return true;
+        }
+        catch (...)
+        {
+            DeleteFileW(temporaryPath.c_str());
+            return false;
+        }
+    }
+}
+
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
 {
@@ -22,6 +53,12 @@ void MappingConfiguration::ClearSingleKeyRemaps()
 {
     singleKeyReMap.clear();
     scanMap.clear();
+}
+
+// Function to clear the "Alone" single key remapping table.
+void MappingConfiguration::ClearSingleKeyAloneRemaps()
+{
+    aloneSingleKeyReMap.clear();
 }
 
 // Function to clear the Keys remapping table.
@@ -77,6 +114,19 @@ bool MappingConfiguration::AddSingleKeyRemap(const DWORD& originalKey, const Key
     return true;
 }
 
+bool MappingConfiguration::AddSingleKeyAloneRemap(const DWORD& originalKey, const KeyShortcutTextUnion& aloneRemapKey)
+{
+    // Reject a duplicate source key within the alone table.
+    auto it = aloneSingleKeyReMap.find(originalKey);
+    if (it != aloneSingleKeyReMap.end())
+    {
+        return false;
+    }
+
+    aloneSingleKeyReMap[originalKey] = aloneRemapKey;
+    return true;
+}
+
 bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text)
 {
     if (auto it = singleKeyToTextReMap.find(originalKey); it != end(singleKeyToTextReMap))
@@ -93,7 +143,7 @@ bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, cons
 // Function to add a new App specific shortcut remapping
 bool MappingConfiguration::AddAppSpecificShortcut(const std::wstring& app, const Shortcut& originalSC, const KeyShortcutTextUnion& newSC)
 {
-    // Convert app name to lower case
+    // Convert app name to lowercase
     std::wstring process_name;
     process_name.resize(app.length());
     std::transform(app.begin(), app.end(), process_name.begin(), towlower);
@@ -128,6 +178,7 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
     {
         auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
         ClearSingleKeyRemaps();
+        ClearSingleKeyAloneRemaps();
 
         if (remapKeysData)
         {
@@ -139,16 +190,30 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
                     auto originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName);
                     auto newRemapKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
 
-                    // If remapped to a shortcut
-                    if (std::wstring(newRemapKey).find(L";") != std::string::npos)
-                    {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), Shortcut(newRemapKey.c_str()));
-                    }
+                    // Optional dual-key condition. Missing field defaults to "always" (legacy behavior),
+                    // so preexisting settings files load unchanged. "alone" routes to the alone table.
+                    auto condition = it.GetObjectW().GetNamedString(KeyboardManagerConstants::RemapConditionSettingName, KeyboardManagerConstants::RemapConditionAlways);
+                    const bool isAloneCondition = (std::wstring(condition) == KeyboardManagerConstants::RemapConditionAlone);
 
-                    // If remapped to a key
+                    // Parse the target: a ';'-separated value is a shortcut; otherwise a single key.
+                    const bool remapToShortcut = (std::wstring(newRemapKey).find(L";") != std::string::npos);
+                    KeyShortcutTextUnion target;
+                    if (remapToShortcut)
+                    {
+                        target = Shortcut(newRemapKey.c_str());
+                    }
                     else
                     {
-                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), std::stoul(newRemapKey.c_str()));
+                        target = static_cast<DWORD>(std::stoul(newRemapKey.c_str()));
+                    }
+
+                    if (isAloneCondition)
+                    {
+                        AddSingleKeyAloneRemap(std::stoul(originalKey.c_str()), target);
+                    }
+                    else
+                    {
+                        AddSingleKeyRemap(std::stoul(originalKey.c_str()), target);
                     }
                 }
                 catch (...)
@@ -410,6 +475,7 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
 bool MappingConfiguration::LoadSettings()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
+    configurationNameResolved = false;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -421,6 +487,7 @@ bool MappingConfiguration::LoadSettings()
         }
 
         currentConfig = *current_config;
+    configurationNameResolved = true;
 
         // Read the config file and load the remaps.
         auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
@@ -444,6 +511,11 @@ bool MappingConfiguration::LoadSettings()
     }
 
     return false;
+}
+
+bool MappingConfiguration::IsConfigurationNameResolved() const
+{
+    return configurationNameResolved;
 }
 
 // Save the updated configuration.
@@ -482,6 +554,30 @@ bool MappingConfiguration::SaveSettingsToFile()
         {
             keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
         }
+
+        inProcessRemapKeysArray.Append(keys);
+    }
+
+    // Serialize "Alone" (dual-key) single key remaps into the same inProcess array, tagged with an
+    // explicit condition field so they round-trip back into aloneSingleKeyReMap on load. Regular
+    // remaps above omit the field, which the loader treats as "always" (backward compatible).
+    for (const auto& it : aloneSingleKeyReMap)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(it.first))));
+
+        // For key to key remapping
+        if (it.second.index() == 0)
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(winrt::to_hstring((unsigned int)std::get<DWORD>(it.second))));
+        }
+        // For key to shortcut remapping
+        else
+        {
+            keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(std::get<Shortcut>(it.second).ToHstringVK()));
+        }
+
+        keys.SetNamedValue(KeyboardManagerConstants::RemapConditionSettingName, json::value(KeyboardManagerConstants::RemapConditionAlone));
 
         inProcessRemapKeysArray.Append(keys);
     }
@@ -637,11 +733,8 @@ bool MappingConfiguration::SaveSettingsToFile()
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
 
-    try
-    {
-        json::to_file((PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json"), configJson);
-    }
-    catch (...)
+    const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
+    if (!WriteJsonAtomically(settingsFilePath, configJson))
     {
         result = false;
         Logger::error(L"Failed to save the settings");

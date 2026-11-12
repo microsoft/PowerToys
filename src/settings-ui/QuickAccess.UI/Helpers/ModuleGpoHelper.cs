@@ -16,15 +16,18 @@ internal static class ModuleGpoHelper
         {
             ModuleType.AdvancedPaste => GPOWrapper.GetConfiguredAdvancedPasteEnabledValue(),
             ModuleType.AlwaysOnTop => GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue(),
+            ModuleType.AutoHideCursor => GPOWrapper.GetConfiguredAutoHideCursorEnabledValue(),
             ModuleType.Awake => GPOWrapper.GetConfiguredAwakeEnabledValue(),
             ModuleType.CmdPal => GPOWrapper.GetConfiguredCmdPalEnabledValue(),
             ModuleType.ColorPicker => GPOWrapper.GetConfiguredColorPickerEnabledValue(),
             ModuleType.CropAndLock => GPOWrapper.GetConfiguredCropAndLockEnabledValue(),
             ModuleType.CursorWrap => GPOWrapper.GetConfiguredCursorWrapEnabledValue(),
+            ModuleType.MouseButtonLock => GPOWrapper.GetConfiguredMouseButtonLockEnabledValue(),
             ModuleType.EnvironmentVariables => GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue(),
             ModuleType.FancyZones => GPOWrapper.GetConfiguredFancyZonesEnabledValue(),
             ModuleType.FileLocksmith => GPOWrapper.GetConfiguredFileLocksmithEnabledValue(),
             ModuleType.FindMyMouse => GPOWrapper.GetConfiguredFindMyMouseEnabledValue(),
+            ModuleType.AltWindowCycle => GPOWrapper.GetConfiguredAltWindowCycleEnabledValue(),
             ModuleType.Hosts => GPOWrapper.GetConfiguredHostsFileEditorEnabledValue(),
             ModuleType.ImageResizer => GPOWrapper.GetConfiguredImageResizerEnabledValue(),
             ModuleType.KeyboardManager => GPOWrapper.GetConfiguredKeyboardManagerEnabledValue(),
@@ -44,6 +47,7 @@ internal static class ModuleGpoHelper
             ModuleType.ShortcutGuide => GPOWrapper.GetConfiguredShortcutGuideEnabledValue(),
             ModuleType.PowerOCR => GPOWrapper.GetConfiguredTextExtractorEnabledValue(),
             ModuleType.ZoomIt => GPOWrapper.GetConfiguredZoomItEnabledValue(),
+            ModuleType.GrabAndMove => GPOWrapper.GetConfiguredGrabAndMoveEnabledValue(),
             _ => GpoRuleConfigured.Unavailable,
         };
     }

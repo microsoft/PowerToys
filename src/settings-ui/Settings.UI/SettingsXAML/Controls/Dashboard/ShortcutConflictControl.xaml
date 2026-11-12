@@ -23,7 +23,10 @@
                     AutomationProperties.AccessibilityView="Raw"
                     FontSize="20"
                     Glyph="&#xEDA7;" />
-                <StackPanel Grid.Column="1" Orientation="Vertical">
+                <StackPanel
+                    Grid.Column="1"
+                    Orientation="Vertical"
+                    Spacing="1">
                     <TextBlock x:Uid="ShortcutConflictControl_Title" FontWeight="SemiBold" />
                     <TextBlock
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"

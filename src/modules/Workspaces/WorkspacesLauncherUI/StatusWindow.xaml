@@ -1,22 +1,16 @@
-﻿<Window
+<Window
     x:Class="WorkspacesLauncherUI.StatusWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:converters="clr-namespace:WorkspacesLauncherUI.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:WorkspacesLauncherUI"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:props="clr-namespace:WorkspacesLauncherUI.Properties"
-    xmlns:ui="http://schemas.modernwpf.com/2019"
     Title="{x:Static props:Resources.LauncherWindowTitle}"
-    Width="350"
+    Width="360"
     Height="340"
-    ui:TitleBar.Background="{DynamicResource PrimaryBackgroundBrush}"
-    ui:TitleBar.InactiveBackground="{DynamicResource TertiaryBackgroundBrush}"
-    ui:WindowHelper.UseModernWindowStyle="True"
-    Background="{DynamicResource PrimaryBackgroundBrush}"
     BorderBrush="Red"
-    BorderThickness="5"
+    BorderThickness="4"
     Closing="Window_Closing"
     ResizeMode="NoResize"
     Topmost="True"
@@ -24,10 +18,15 @@
     mc:Ignorable="d">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
-        <converters:BooleanToInvertedVisibilityConverter x:Key="BooleanToInvertedVisibilityConverter" />
+        <DataTemplate x:Key="WrappedButtonText">
+            <TextBlock
+                Text="{Binding}"
+                TextAlignment="Center"
+                TextWrapping="Wrap" />
+        </DataTemplate>
     </Window.Resources>
 
-    <Grid Margin="5" Background="Transparent">
+    <Grid Margin="4" Background="Transparent">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*" />
             <RowDefinition Height="Auto" />
@@ -57,19 +56,20 @@
                                 <TextBlock
                                     Grid.Column="1"
                                     VerticalAlignment="Center"
-                                    FontSize="14"
-                                    FontWeight="Normal"
-                                    Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                    Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
-                                <ui:ProgressRing
-                                    x:Name="ProgressRing"
+                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                    Text="{Binding Name, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                                <ProgressBar
                                     Grid.Column="2"
                                     Width="20"
                                     Height="20"
                                     Margin="10"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
-                                    IsActive="True"
+                                    AutomationProperties.AutomationId="{Binding Name, StringFormat='LaunchProgress_{0}'}"
+                                    AutomationProperties.Name="{Binding StateDescription}"
+                                    IsIndeterminate="True"
+                                    ToolTip="{Binding StateDescription}"
                                     Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
                                 <TextBlock
                                     Grid.Column="2"
@@ -78,11 +78,25 @@
                                     Margin="10"
                                     HorizontalAlignment="Center"
                                     VerticalAlignment="Center"
+                                    AutomationProperties.AutomationId="{Binding Name, StringFormat='LaunchState_{0}'}"
+                                    AutomationProperties.Name="{Binding StateDescription}"
                                     FontFamily="{DynamicResource SymbolThemeFontFamily}"
                                     FontSize="20"
                                     Foreground="{Binding StateColor}"
                                     Text="{Binding StateGlyph}"
-                                    Visibility="{Binding Loading, Mode=OneWay, Converter={StaticResource BooleanToInvertedVisibilityConverter}, UpdateSourceTrigger=PropertyChanged}" />
+                                    ToolTip="{Binding StateDescription}"
+                                    Visibility="{Binding ShowStateGlyph, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    MaxWidth="120"
+                                    Margin="10"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    AutomationProperties.Name="{Binding StateDescription}"
+                                    Foreground="{Binding StateColor}"
+                                    Text="{Binding StateDescription}"
+                                    TextWrapping="Wrap"
+                                    Visibility="{Binding IsSkipped, Mode=OneWay, Converter={StaticResource BoolToVis}, UpdateSourceTrigger=PropertyChanged}" />
                             </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
@@ -92,23 +106,22 @@
         <Button
             x:Name="CancelButton"
             Grid.Row="1"
-            Height="36"
-            Margin="5,5,5,5"
+            Margin="4"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.CancelLaunch}"
-            Background="{DynamicResource SecondaryBackgroundBrush}"
             Click="CancelButtonClicked"
-            Content="{x:Static props:Resources.CancelLaunch}" />
+            Content="{x:Static props:Resources.CancelLaunch}"
+            ContentTemplate="{StaticResource WrappedButtonText}" />
         <Button
             x:Name="DismissButton"
             Grid.Row="1"
             Grid.Column="1"
-            Height="36"
-            Margin="5,5,5,5"
+            Margin="4"
             HorizontalAlignment="Stretch"
             AutomationProperties.Name="{x:Static props:Resources.Dismiss}"
             Click="DismissButtonClicked"
             Content="{x:Static props:Resources.Dismiss}"
-            Style="{StaticResource AccentButtonStyle}" />
+            ContentTemplate="{StaticResource WrappedButtonText}"
+            Style="{DynamicResource AccentButtonStyle}" />
     </Grid>
 </Window>

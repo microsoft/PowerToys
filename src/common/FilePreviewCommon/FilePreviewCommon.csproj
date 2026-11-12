@@ -14,7 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="Markdig.Signed" />
-    <PackageReference Include="System.Text.Encoding.CodePages" />
     <PackageReference Include="UTF.Unknown" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
 #define HKEY_WINDOWS_THEME L"Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"
 
 // disabling warning 4702 - unreachable code
-// prevent the warning after the call off a infinite loop function
+// prevent the warning after the call off an infinite loop function
 #pragma warning(push)
 #pragma warning(disable : 4702)
 DWORD WINAPI _checkTheme(LPVOID lpParam)

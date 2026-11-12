@@ -27,6 +27,18 @@ public class CommandPaletteTestBase : UITestBase
 
     protected void SetTimeAndDaterExtensionSearchBox(string text) => SetSearchBoxText(text);
 
+    protected void OpenSettingsWindow()
+    {
+        this.Find<Button>(By.AccessibilityId("SettingsIconButton")).Click();
+    }
+
+    protected void NavigateToDockSettings()
+    {
+        this.Find<NavigationViewItem>("Dock (Preview)").Click();
+    }
+
+    protected ToggleSwitch FindDockAutoHideToggle() => this.Find<ToggleSwitch>(By.AccessibilityId("CmdPal_DockSettingsPage_AutoHide"));
+
     private void SetSearchBoxText(string text)
     {
         Assert.AreEqual(this.Find<TextBox>(By.AccessibilityId("MainSearchBox")).SetText(text, true).Text, text);

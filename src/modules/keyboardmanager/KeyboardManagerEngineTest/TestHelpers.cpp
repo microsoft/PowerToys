@@ -11,10 +11,13 @@ namespace TestHelpers
         input.ResetKeyboardState();
         input.SetHookProc(nullptr);
         input.SetSendVirtualInputTestHandler(nullptr);
+        input.SetSendVirtualInputShouldFail(nullptr);
         input.SetForegroundProcess(L"");
         state.ClearSingleKeyRemaps();
+        state.ClearSingleKeyAloneRemaps();
         state.ClearOSLevelShortcuts();
         state.ClearAppSpecificShortcuts();
+        state.ClearSingleKeyToTextRemaps();
 
         // Allocate memory for the keyboardManagerState activatedApp member to avoid CRT assert errors
         std::wstring maxLengthString;

@@ -8,6 +8,7 @@ struct CommandResult
 {
     int exit_code;
     std::wstring output;
+    std::wstring command_name;
 };
 
 struct IProcessFinder

@@ -34,7 +34,7 @@ namespace Wox.Plugin
 
         public bool Disabled { get; set; }
 
-        // This property is used in PT Run only to decide whether to updated the Disabled property or not.
+        // This property is used in PT Run only to decide whether or not to updated the Disabled property.
         [JsonIgnore]
         public bool IsEnabledPolicyConfigured { get; set; }
 

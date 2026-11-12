@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
@@ -23,17 +25,19 @@ internal sealed partial class SearchQuery : IDisposable
 
     private readonly Lock _lockObject = new();
 
-    private IRowset _currentRowset;
+    private IRowset? _currentRowset;
+    private SearchSqlQueryPlan _queryPlan;
+    private bool _fallbackAttempted;
 
     public QueryState State { get; private set; } = QueryState.NotStarted;
 
     private int? LastHResult { get; set; }
 
-    private string LastErrorMessage { get; set; }
+    private string? LastErrorMessage { get; set; }
 
     public uint Cookie { get; private set; }
 
-    public string SearchText { get; private set; }
+    public string SearchText { get; private set; } = string.Empty;
 
     public ConcurrentQueue<SearchResult> SearchResults { get; private set; } = [];
 
@@ -52,18 +56,44 @@ internal sealed partial class SearchQuery : IDisposable
     {
         SearchText = searchText;
         Cookie = cookie;
-        ExecuteSyncInternal();
+        _fallbackAttempted = false;
+
+        try
+        {
+            _queryPlan = QueryStringBuilder.GenerateQueryPlan(searchText);
+        }
+        catch (Exception ex)
+        {
+            lock (_lockObject)
+            {
+                State = QueryState.ExecuteFailed;
+                LastHResult = ex.HResult;
+                LastErrorMessage = ex.Message;
+                _currentRowset = null;
+                SearchResults.Clear();
+            }
+
+            Logger.LogError("Error preparing query", ex);
+            return;
+        }
+
+        ExecuteSyncInternal(_queryPlan.PrimarySqlQuery);
+
+        if (_currentRowset is null && State is QueryState.NoResults or QueryState.AllNoise)
+        {
+            TryExecuteFallbackQuery("primary query returned no rowset");
+        }
     }
 
-    private void ExecuteSyncInternal()
+    private void ExecuteSyncInternal(string queryStr)
     {
         lock (_lockObject)
         {
             State = QueryState.Running;
             LastHResult = null;
             LastErrorMessage = null;
+            _currentRowset = null;
 
-            var queryStr = QueryStringBuilder.GenerateQuery(SearchText);
             try
             {
                 var result = ExecuteCommand(queryStr);
@@ -117,6 +147,11 @@ internal sealed partial class SearchQuery : IDisposable
     {
         if (_currentRowset is null)
         {
+            if (offset == 0 && State is QueryState.NoResults or QueryState.AllNoise && TryExecuteFallbackQuery("primary query returned no results"))
+            {
+                return FetchRows(offset, limit);
+            }
+
             var message = $"No rowset to fetch rows from. State={State}, HResult={LastHResult}, Error='{LastErrorMessage}'";
 
             switch (State)
@@ -149,7 +184,7 @@ internal sealed partial class SearchQuery : IDisposable
             Logger.LogInfo($"Reset the current rowset. State={State}, HResult={LastHResult}, Error='{LastErrorMessage}'");
             Logger.LogError("Failed to cast current rowset to IGetRow", ex);
 
-            ExecuteSyncInternal();
+            ExecuteSyncInternal(_queryPlan.PrimarySqlQuery);
 
             if (_currentRowset is null)
             {
@@ -180,6 +215,11 @@ internal sealed partial class SearchQuery : IDisposable
 
             if (rowCountReturned == 0)
             {
+                if (offset == 0 && TryExecuteFallbackQuery("primary query returned zero rows"))
+                {
+                    return FetchRows(offset, limit);
+                }
+
                 // No more rows to fetch
                 return false;
             }
@@ -216,6 +256,20 @@ internal sealed partial class SearchQuery : IDisposable
                 Marshal.FreeCoTaskMem(prghRows);
             }
         }
+    }
+
+    private bool TryExecuteFallbackQuery(string reason)
+    {
+        if (_fallbackAttempted || !_queryPlan.HasFallback || State == QueryState.Cancelled)
+        {
+            return false;
+        }
+
+        _fallbackAttempted = true;
+        Logger.LogInfo($"Retrying search with implicit filename wildcard matching. Reason={reason}, Query=\"{SearchText}\"");
+        ExecuteSyncInternal(_queryPlan.FallbackSqlQuery!);
+
+        return _currentRowset is not null;
     }
 
     private static ExecuteCommandResult ExecuteCommand(string queryStr)
@@ -286,6 +340,14 @@ internal sealed partial class SearchQuery : IDisposable
         CancelOutstandingQueries();
     }
 
+    internal SearchExecutionStatus GetExecutionStatus()
+    {
+        lock (_lockObject)
+        {
+            return new SearchExecutionStatus(State, LastHResult, LastErrorMessage);
+        }
+    }
+
     internal enum QueryState
     {
         NotStarted = 0,
@@ -301,8 +363,13 @@ internal sealed partial class SearchQuery : IDisposable
     }
 
     private readonly record struct ExecuteCommandResult(
-        IRowset Rowset,
+        IRowset? Rowset,
         QueryState State,
         int? HResult,
-        string ErrorMessage);
+        string? ErrorMessage);
+
+    internal readonly record struct SearchExecutionStatus(
+        QueryState State,
+        int? HResult,
+        string? ErrorMessage);
 }

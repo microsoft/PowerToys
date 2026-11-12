@@ -2,12 +2,15 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Logging;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.Common.WinGet.Services;
+using Microsoft.CmdPal.Ext.Actions;
 using Microsoft.CmdPal.Ext.Apps;
 using Microsoft.CmdPal.Ext.Bookmarks;
 using Microsoft.CmdPal.Ext.Calc;
@@ -25,11 +28,14 @@ using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
 using Microsoft.CmdPal.Ext.WindowWalker;
 using Microsoft.CmdPal.Ext.WinGet;
+using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
@@ -76,11 +82,18 @@ public partial class App : Application, IDisposable
         _globalErrorHandler.Register(this, GlobalErrorHandler.Options.Default, appInfoService);
 #endif
 
-        Services = ConfigureServices(appInfoService);
+        var persistenceService = new PersistenceService();
+        var settingsService = new SettingsService(persistenceService, appInfoService);
+        var languageService = new LanguageService();
+        var languageOverride = languageService.ApplyLanguageOverride(settingsService.Settings.Language);
+        appInfoService.SetLanguageOverride(languageOverride);
+        Services = ConfigureServices(appInfoService, persistenceService, settingsService, languageService);
 
         IconProvider.Initialize(Services);
 
         this.InitializeComponent();
+
+        ContentFormControl.RegisterCustomElements();
 
         // Ensure types used in XAML are preserved for AOT compilation
         TypePreservation.PreserveTypes();
@@ -88,6 +101,7 @@ public partial class App : Application, IDisposable
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
+                Logger.LogInfo("Command Palette exit requested: PowerToys exit event.");
                 EtwTrace?.Dispose();
                 AppWindow?.Close();
                 Environment.Exit(0);
@@ -98,8 +112,9 @@ public partial class App : Application, IDisposable
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
 
-        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        // Now that CoreLogger is initialized, initialize the logger delegates in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
+        appInfoService.SetLogFile(() => Logger.CurrentLogFile);
     }
 
     /// <summary>
@@ -112,32 +127,54 @@ public partial class App : Application, IDisposable
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
+
+        // Initialize the palette window before creating dock windows.
+        if (Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
+        {
+            WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(true));
+        }
     }
 
     /// <summary>
     /// Configures the services for the application
     /// </summary>
-    private static ServiceProvider ConfigureServices(IApplicationInfoService appInfoService)
+    private static ServiceProvider ConfigureServices(
+        IApplicationInfoService appInfoService,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService,
+        ILanguageService languageService)
     {
         // TODO: It's in the Labs feed, but we can use Sergio's AOT-friendly source generator for this: https://github.com/CommunityToolkit/Labs-Windows/discussions/463
         ServiceCollection services = new();
+        var uiScheduler = TaskScheduler.FromCurrentSynchronizationContext();
 
         // Root services
-        services.AddSingleton(TaskScheduler.FromCurrentSynchronizationContext());
+        services.AddSingleton(uiScheduler);
         var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
         services.AddCmdPalLogging();
 
-        AddBuiltInCommands(services, appInfoService.ConfigDirectory);
+        var winGet = services.AddWinGetServices();
+
+        services.AddGalleryServices();
+
+        AddBuiltInCommands(services, appInfoService.ConfigDirectory, winGet?.PackageManager, winGet?.OperationTracker, uiScheduler);
 
         AddCoreServices(services, appInfoService);
 
-        AddUIServices(services, dispatcherQueue);
+        AddUIServices(services, dispatcherQueue, persistenceService, settingsService);
+
+        services.AddSingleton<ILanguageService>(languageService);
 
         return services.BuildServiceProvider();
     }
 
-    private static void AddBuiltInCommands(ServiceCollection services, string configDirectory)
+    private static void AddBuiltInCommands(
+        ServiceCollection services,
+        string configDirectory,
+        IWinGetPackageManagerService? winGetPackageManagerService,
+        IWinGetOperationTrackerService? winGetOperationTrackerService,
+        TaskScheduler uiScheduler)
     {
         var providerLoadGuard = new ProviderLoadGuard(configDirectory);
 
@@ -150,7 +187,10 @@ public partial class App : Application, IDisposable
         services.AddSingleton<ICommandProvider, ShellCommandsProvider>();
         services.AddSingleton<ICommandProvider, CalculatorCommandProvider>();
         services.AddSingleton<ICommandProvider>(files);
-        services.AddSingleton<ICommandProvider, BookmarksCommandProvider>(_ => BookmarksCommandProvider.CreateWithDefaultStore());
+
+        var bookmarks = BookmarksCommandProvider.CreateWithDefaultStore();
+        services.AddSingleton<ICommandProvider>(bookmarks);
+        services.AddSingleton<IBookmarksManager>(bookmarks.BookmarksManager);
 
         services.AddSingleton<ICommandProvider, WindowWalkerCommandsProvider>();
         services.AddSingleton<ICommandProvider, WebSearchCommandsProvider>();
@@ -158,20 +198,25 @@ public partial class App : Application, IDisposable
 
         // GH #38440: Users might not have WinGet installed! Or they might have
         // a ridiculously old version. Or might be running as admin.
-        // We shouldn't explode in the App ctor if we fail to instantiate an
-        // instance of PackageManager, which will happen in the static ctor
-        // for WinGetStatics
-        try
+        if (winGetPackageManagerService is not null && winGetOperationTrackerService is not null)
         {
-            var winget = new WinGetExtensionCommandsProvider();
-            winget.SetAllLookup(
-                query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
-                query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
-            services.AddSingleton<ICommandProvider>(winget);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Couldn't load winget", ex);
+            try
+            {
+                var winget = new WinGetExtensionCommandsProvider(winGetPackageManagerService, winGetOperationTrackerService, uiScheduler);
+                winget.NotificationRequested += static (_, message) =>
+                    WeakReferenceMessenger.Default.Send(new ShowToastMessage(message)
+                    {
+                        Duration = TimeSpan.FromSeconds(4),
+                    });
+                winget.SetAllLookup(
+                    query => allApps.LookupAppByPackageFamilyName(query, requireSingleMatch: true),
+                    query => allApps.LookupAppByProductCode(query, requireSingleMatch: true));
+                services.AddSingleton<ICommandProvider>(winget);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Couldn't load winget", ex);
+            }
         }
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
@@ -213,20 +258,37 @@ public partial class App : Application, IDisposable
 
             Logger.LogError("Couldn't load performance monitor", ex);
         }
+
+        if (ActionsCommandsProvider.IsActionsFeatureEnabled)
+        {
+            services.AddSingleton<ICommandProvider, ActionsCommandsProvider>();
+        }
     }
 
-    private static void AddUIServices(ServiceCollection services, DispatcherQueue dispatcherQueue)
+    private static void AddUIServices(
+        ServiceCollection services,
+        DispatcherQueue dispatcherQueue,
+        IPersistenceService persistenceService,
+        ISettingsService settingsService)
     {
         // Models & persistence services
-        services.AddSingleton<IPersistenceService, PersistenceService>();
-        services.AddSingleton<ISettingsService, SettingsService>();
+        services.AddSingleton(persistenceService);
+        services.AddSingleton(settingsService);
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ISettingsLinkResolver, SettingsLinkResolver>();
+        services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddTransient<SettingsLinkContextMenuService>();
+        services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
+        services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
         // Services
+        services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        services.AddSingleton<ExternalCommandLinkCoordinatorFactory>();
         services.AddSingleton<ICommandProviderCache, DefaultCommandProviderCache>();
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
+        services.AddSingleton<AccessKeyModeController>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();
@@ -237,15 +299,23 @@ public partial class App : Application, IDisposable
         services.AddIconServices(dispatcherQueue);
     }
 
-    private static void AddCoreServices(ServiceCollection services, IApplicationInfoService appInfoService)
+    private static void AddCoreServices(
+        ServiceCollection services,
+        IApplicationInfoService appInfoService)
     {
         // Core services
         services.AddSingleton(appInfoService);
 
-        services.AddSingleton<IExtensionService, ExtensionService>();
+        // Load IExtensionServices here
+        services.AddSingleton<IExtensionService, BuiltInExtensionService>();
+        services.AddSingleton<IExtensionService, WinRTExtensionService>();
+
         services.AddSingleton<IRunHistoryService, RunHistoryService>();
 
         services.AddSingleton<IRootPageService, PowerToysRootPageService>();
+        services.AddSingleton<IRootPageAccessor>(static sp =>
+            new DeferredRootPageAccessor(() => sp.GetRequiredService<IRootPageService>()));
+
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
 
@@ -257,10 +327,19 @@ public partial class App : Application, IDisposable
         services.AddSingleton<DockViewModel>();
         services.AddSingleton<IContextMenuFactory, CommandPaletteContextMenuFactory>();
         services.AddSingleton<IPageViewModelFactoryService, CommandPalettePageViewModelFactory>();
+
+        // Multi-monitor dock support
+        services.AddSingleton<IMonitorService, MonitorService>();
+        services.AddSingleton<Dock.DockWindowManager>(sp =>
+            new Dock.DockWindowManager(
+                sp.GetRequiredService<IMonitorService>(),
+                sp.GetRequiredService<ISettingsService>(),
+                Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread()));
     }
 
     public void Dispose()
     {
+        (Services as IDisposable)?.Dispose();
         _globalErrorHandler.Dispose();
         EtwTrace.Dispose();
         GC.SuppressFinalize(this);

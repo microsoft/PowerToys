@@ -5,18 +5,21 @@
             <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#FF34424d" />
             <Color x:Key="InfoBarInformationalSeverityIconBackground">#FF5fb2f2</Color>
             <SolidColorBrush x:Key="SolidBackgroundBrush" Color="Black" />
+            <ImageSource x:Key="PTImageUrl">ms-appx:///Assets/Settings/Modules/PT.dark.png</ImageSource>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="#FFd3e7f7" />
             <Color x:Key="InfoBarInformationalSeverityIconBackground">#FF0063b1</Color>
             <SolidColorBrush x:Key="SolidBackgroundBrush" Color="White" />
+            <ImageSource x:Key="PTImageUrl">ms-appx:///Assets/Settings/Modules/PT.light.png</ImageSource>
         </ResourceDictionary>
 
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="InfoBarInformationalSeverityBackgroundBrush" Color="{StaticResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SolidBackgroundBrush" Color="{StaticResource SystemColorWindowTextColor}" />
             <Color x:Key="InfoBarInformationalSeverityIconBackground">#FF5fb2f2</Color>
+            <ImageSource x:Key="PTImageUrl">ms-appx:///Assets/Settings/Modules/PT.dark.png</ImageSource>
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
 </ResourceDictionary>

@@ -6,6 +6,7 @@
     xmlns:commoncontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:KeyboardManagerEditorUI.Controls"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
@@ -80,28 +81,35 @@
                             Style="{StaticResource CustomShortcutToggleButtonStyle}"
                             Unchecked="TriggerKeyToggleBtn_Unchecked">
                             <ToggleButton.Content>
-                                <ItemsControl x:Name="TriggerKeys">
-                                    <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <controls:WrapPanel
-                                                HorizontalSpacing="4"
-                                                Orientation="Horizontal"
-                                                VerticalSpacing="4" />
-                                        </ItemsPanelTemplate>
-                                    </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <commoncontrols:KeyVisual
-                                                Padding="8"
-                                                Background="{ThemeResource ControlFillColorDefaultBrush}"
-                                                BorderThickness="1"
-                                                Content="{Binding}"
-                                                CornerRadius="{StaticResource OverlayCornerRadius}"
-                                                FontSize="16"
-                                                Style="{StaticResource DefaultKeyVisualStyle}" />
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
+                                <Grid>
+                                    <StackPanel
+                                        x:Name="TriggerEmptyKeyPickerPanel"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Spacing="8">
+                                        <TextBlock
+                                            x:Uid="TriggerKeyPlaceholder"
+                                            HorizontalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}" />
+                                        <local:KeyDropDownButton x:Name="TriggerEmptyKeyDropDown" />
+                                    </StackPanel>
+                                    <ItemsControl x:Name="TriggerKeys" IsTabStop="False">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <controls:WrapPanel
+                                                    HorizontalSpacing="4"
+                                                    Orientation="Horizontal"
+                                                    VerticalSpacing="4" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <local:KeyDropDownButton KeyName="{Binding}" Loaded="TriggerKeyDropDown_Loaded" />
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
                             </ToggleButton.Content>
                         </ToggleButton>
                         <CheckBox
@@ -137,6 +145,21 @@
                 BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
                 GotFocus="AppNameTextBox_GotFocus"
                 Visibility="Collapsed" />
+            <!--
+                Single-key remap condition (dual-key / tap-alone). Only meaningful for a single-key
+                remap whose action is a key/shortcut; visibility is gated in code-behind
+                (UpdateConditionVisibility) and it starts collapsed.
+            -->
+            <ComboBox
+                x:Name="ConditionComboBox"
+                x:Uid="ConditionComboBox"
+                Margin="0,4,0,0"
+                HorizontalAlignment="Stretch"
+                SelectedIndex="0"
+                Visibility="Collapsed">
+                <ComboBoxItem x:Uid="Condition_Always" />
+                <ComboBoxItem x:Uid="Condition_Alone" />
+            </ComboBox>
         </StackPanel>
         <!--  Arrow Separator  -->
         <Grid
@@ -204,6 +227,12 @@
                         <TextBlock x:Uid="ActionType_OpenApp_Text" />
                     </StackPanel>
                 </ComboBoxItem>
+                <ComboBoxItem x:Uid="ActionType_Disable" Tag="Disable">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon FontSize="14" Glyph="&#xE711;" />
+                        <TextBlock x:Uid="ActionType_Disable_Text" />
+                    </StackPanel>
+                </ComboBoxItem>
                 <!--
                 <ComboBoxItem x:Uid="ActionType_MouseClick" Tag="MouseClick">
                     <StackPanel Orientation="Horizontal" Spacing="8">
@@ -235,29 +264,40 @@
                         Style="{StaticResource CustomShortcutToggleButtonStyle}"
                         Unchecked="ActionKeyToggleBtn_Unchecked">
                         <ToggleButton.Content>
-                            <ItemsControl x:Name="ActionKeys">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <controls:WrapPanel
-                                            HorizontalSpacing="4"
-                                            Orientation="Horizontal"
-                                            VerticalSpacing="4" />
-                                    </ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <commoncontrols:KeyVisual
-                                            Padding="8"
-                                            Background="{ThemeResource CustomAccentBackgroundBrush}"
-                                            BorderThickness="0"
-                                            Content="{Binding}"
-                                            CornerRadius="{StaticResource OverlayCornerRadius}"
-                                            FontSize="16"
-                                            Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
-                                            Style="{StaticResource DefaultKeyVisualStyle}" />
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                            <Grid>
+                                <StackPanel
+                                    x:Name="ActionEmptyKeyPickerPanel"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Spacing="8">
+                                    <TextBlock
+                                        x:Uid="ActionKeyPlaceholder"
+                                        HorizontalAlignment="Center"
+                                        Foreground="{ThemeResource TextFillColorDisabledBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}" />
+                                    <local:KeyDropDownButton
+                                        x:Name="ActionEmptyKeyDropDown"
+                                        UseAccentStyle="True" />
+                                </StackPanel>
+                                <ItemsControl x:Name="ActionKeys" IsTabStop="False">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <controls:WrapPanel
+                                                HorizontalSpacing="4"
+                                                Orientation="Horizontal"
+                                                VerticalSpacing="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <local:KeyDropDownButton
+                                                KeyName="{Binding}"
+                                                Loaded="ActionKeyDropDown_Loaded"
+                                                UseAccentStyle="True" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
                         </ToggleButton.Content>
                     </ToggleButton>
                 </tkcontrols:Case>
@@ -288,7 +328,7 @@
                 <!--  Open App Action  -->
                 <tkcontrols:Case Value="OpenApp">
                     <StackPanel Orientation="Vertical" Spacing="16">
-                        <Grid ColumnSpacing="8">
+                        <Grid ColumnSpacing="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -307,13 +347,17 @@
                                 Click="ProgramPathSelectButton_Click"
                                 Content="{ui:FontIcon Glyph=&#xE8DA;,
                                                       FontSize=16}"
-                                Style="{StaticResource SubtleButtonStyle}" />
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="ProgramPathSelectButtonTooltip" />
+                                </ToolTipService.ToolTip>
+                            </Button>
                         </Grid>
                         <TextBox
                             x:Name="ProgramArgsInput"
                             x:Uid="ProgramArgsInput"
                             GotFocus="ProgramArgsInput_GotFocus" />
-                        <Grid ColumnSpacing="8">
+                        <Grid ColumnSpacing="4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
@@ -331,7 +375,11 @@
                                 Click="StartInSelectButton_Click"
                                 Content="{ui:FontIcon Glyph=&#xE8DA;,
                                                       FontSize=16}"
-                                Style="{StaticResource SubtleButtonStyle}" />
+                                Style="{StaticResource SubtleButtonStyle}">
+                                <ToolTipService.ToolTip>
+                                    <TextBlock x:Uid="StartInSelectButtonTooltip" />
+                                </ToolTipService.ToolTip>
+                            </Button>
                         </Grid>
                         <ComboBox
                             x:Name="ElevationComboBox"
@@ -369,6 +417,13 @@
                 <tkcontrols:Case Value="MouseClick">
                     <TextBlock
                         x:Uid="MouseClickPlaceholder"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        TextWrapping="Wrap" />
+                </tkcontrols:Case>
+                <!--  Disable Action  -->
+                <tkcontrols:Case Value="Disable">
+                    <TextBlock
+                        x:Uid="DisableDescription"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                         TextWrapping="Wrap" />
                 </tkcontrols:Case>

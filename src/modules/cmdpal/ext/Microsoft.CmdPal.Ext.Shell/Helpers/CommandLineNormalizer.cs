@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Text;
+using Microsoft.CmdPal.Common.Helpers;
 using Windows.Win32;
-using Windows.Win32.Foundation;
 using Windows.Win32.Storage.FileSystem;
 
 namespace Microsoft.CmdPal.Ext.Shell.Helpers;
@@ -65,7 +65,7 @@ public static class CommandLineNormalizer
         // One of the most important things this function does is to strip quotes.
         // That way the commandLine "foo.exe -bar" and "\"foo.exe\" \"-bar\"" appear identical.
         // We'll use CommandLineToArgvW for that as it's close to what CreateProcessW uses.
-        var argv = ParseCommandLineToArguments(normalized);
+        var argv = CommandLineParser.Parse(normalized);
 
         if (argv.Length == 0)
         {
@@ -128,38 +128,6 @@ public static class CommandLineNormalizer
     }
 
     /// <summary>
-    /// Parses a command line string into arguments using CommandLineToArgvW.
-    /// </summary>
-    private static string[] ParseCommandLineToArguments(string commandLine)
-    {
-        unsafe
-        {
-            var argv = PInvoke.CommandLineToArgv(commandLine, out var argc);
-
-            if (argv == null || argc == 0)
-            {
-                return Array.Empty<string>();
-            }
-
-            try
-            {
-                var args = new string[argc];
-
-                for (var i = 0; i < argc; i++)
-                {
-                    args[i] = new string(argv[i]);
-                }
-
-                return args;
-            }
-            finally
-            {
-                PInvoke.LocalFree(new HLOCAL(argv));
-            }
-        }
-    }
-
-    /// <summary>
     /// Resolves the executable path from the command line arguments.
     /// Handles cases where the path contains spaces and was split during parsing.
     /// </summary>
@@ -206,14 +174,12 @@ public static class CommandLineNormalizer
 
         unsafe
         {
-            var outParam = default(PWSTR); // ultimately discarded
-
             var result = PInvoke.SearchPath(
                 null,           // Use default search path
                 executableName,
                 ".exe",         // Default extension
                 buffer,
-                &outParam);     // We don't need the file part
+                out var outParam);     // We don't need the file part
 
             if (result == 0)
             {
@@ -224,7 +190,7 @@ public static class CommandLineNormalizer
             {
                 // Buffer was too small, resize and try again
                 buffer = new char[result];
-                result = PInvoke.SearchPath(null, executableName, ".exe", buffer, &outParam);
+                result = PInvoke.SearchPath(null, executableName, ".exe", buffer, out outParam);
 
                 if (result == 0)
                 {

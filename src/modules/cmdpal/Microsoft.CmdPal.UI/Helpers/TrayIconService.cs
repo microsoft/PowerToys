@@ -5,8 +5,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
+using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
-using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.UI.Xaml;
@@ -107,10 +107,8 @@ internal sealed partial class TrayIconService
         if (_trayIconData is not null)
         {
             var d = (NOTIFYICONDATAW)_trayIconData;
-            if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
-            {
-                _trayIconData = null;
-            }
+            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d);
+            _trayIconData = null;
         }
 
         if (_popupMenu is not null)
@@ -136,9 +134,15 @@ internal sealed partial class TrayIconService
     private DestroyIconSafeHandle GetAppIconHandle()
     {
         var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
-        DestroyIconSafeHandle largeIcon;
-        PInvoke.ExtractIconEx(exePath, 0, out largeIcon, out _, 1);
-        return largeIcon;
+
+        Span<HICON> large = new([default]); // 1 size array to accept icon
+        var extractedIconCount = PInvoke.ExtractIconEx(exePath, 0, large);
+        if ((extractedIconCount < 1) || (large[0] == HICON.Null))
+        {
+            return new DestroyIconSafeHandle(HICON.Null);
+        }
+
+        return new DestroyIconSafeHandle(large[0]);
     }
 
     private LRESULT WindowProc(
@@ -157,6 +161,7 @@ internal sealed partial class TrayIconService
                     }
                     else if (wParam == PInvoke.WM_USER + 2)
                     {
+                        Logger.LogInfo("Command Palette exit requested: tray menu Quit.");
                         WeakReferenceMessenger.Default.Send<QuitMessage>();
                     }
                 }

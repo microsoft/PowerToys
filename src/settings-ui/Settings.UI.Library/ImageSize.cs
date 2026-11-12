@@ -41,7 +41,7 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     }
 
     private int _id;
-    private string _name;
+    private string _name = string.Empty;
     private ResizeFit _fit;
     private double _height;
     private double _width;
@@ -65,11 +65,22 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
         get => !(Unit == ResizeUnit.Percent && Fit != ResizeFit.Stretch);
     }
 
+    /// <summary>
+    /// Gets or sets the name of the image size.
+    /// Invalid values (null, empty, or whitespace) are silently ignored to maintain the existing name.
+    /// </summary>
     [JsonPropertyName("name")]
     public string Name
     {
         get => _name;
-        set => SetProperty(ref _name, value);
+        set
+        {
+            // Prevent setting empty or null names
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                SetProperty(ref _name, value);
+            }
+        }
     }
 
     [JsonPropertyName("fit")]
@@ -117,6 +128,12 @@ public partial class ImageSize : INotifyPropertyChanged, IHasId
     /// </summary>
     [JsonIgnore]
     public ImageSize AccessibleTextHelper => this;
+
+    /// <summary>
+    /// Creates a copy of this <see cref="ImageSize"/>. Used to build a working copy for editing
+    /// so changes can be discarded (on cancel) without touching the original preset.
+    /// </summary>
+    public ImageSize Clone() => new ImageSize(_id, _name, _fit, _width, _height, _unit);
 
     public string ToJsonString() => JsonSerializer.Serialize(this);
 }

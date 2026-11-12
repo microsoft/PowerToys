@@ -29,10 +29,8 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 
 #define ZOOM_LEVEL_MIN		1
 #define ZOOM_LEVEL_INIT		2
-#define ZOOM_LEVEL_STEP_IN	((float) 1.1)
-#define ZOOM_LEVEL_STEP_OUT	((float) 0.8)
-#define ZOOM_LEVEL_MAX		32
-#define ZOOM_LEVEL_STEP_TIME	20
+#define ZOOM_LEVEL_MAX		256
+#define ZOOM_ANIMATION_FRAME_TIME	10
 
 #define LIVEZOOM_MOVE_REGIONS	8
 
@@ -55,17 +53,7 @@ type_pEnableThemeDialogTexture    pEnableThemeDialogTexture;
 #define MAX_LIVE_PEN_WIDTH    600
 
 #define APPNAME		L"ZoomIt"
-#define WM_USER_TRAY_ACTIVATE	WM_USER+100
-#define WM_USER_TYPING_OFF		WM_USER+101
-#define WM_USER_GET_ZOOM_LEVEL	WM_USER+102
-#define WM_USER_GET_SOURCE_RECT	WM_USER+103
-#define WM_USER_SET_ZOOM		WM_USER+104
-#define WM_USER_STOP_RECORDING	WM_USER+105
-#define WM_USER_SAVE_CURSOR		WM_USER+106
-#define WM_USER_RESTORE_CURSOR	WM_USER+107
-#define WM_USER_MAGNIFY_CURSOR	WM_USER+108
-#define WM_USER_EXIT_MODE		WM_USER+109
-#define WM_USER_RELOAD_SETTINGS	WM_USER+110
+#include "ZoomItMessages.h"
 
 typedef struct _TYPED_KEY {
     RECT		rc;
@@ -89,6 +77,8 @@ typedef struct {
 #define COLOR_ORANGE	RGB(255,128,0)
 #define COLOR_YELLOW	RGB(255, 255, 0 )
 #define COLOR_PINK		RGB(255,128,255)
+#define COLOR_WHITE		RGB(255,255,255)
+#define COLOR_BLACK		RGB(0,0,0)
 #define COLOR_BLUR		RGB(112,112,112)
 
 #define DRAW_RECTANGLE	1
@@ -101,6 +91,10 @@ typedef struct {
 #define LIVE_DRAW_ZOOM   3
 
 #define PEN_COLOR_HIGHLIGHT(Pencolor)	((Pencolor >> 24) != 0xFF)
+
+// Debug output — compiles to nothing in Release builds.
+void OutputDebug(const TCHAR* format, ...);
+
 #define PEN_COLOR_BLUR(Pencolor)        ((Pencolor & 0x00FFFFFF) == COLOR_BLUR)
 
 #define CURSOR_SAVE_MARGIN  4

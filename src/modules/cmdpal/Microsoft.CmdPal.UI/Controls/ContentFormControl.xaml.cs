@@ -4,53 +4,111 @@
 
 using AdaptiveCards.ObjectModel.WinUI3;
 using AdaptiveCards.Rendering.WinUI3;
+using ManagedCommon;
+using Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
+using Microsoft.CmdPal.AdaptiveCards.Polyfills;
+using Microsoft.CmdPal.UI.Controls.AdaptiveCards;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.System;
 
 namespace Microsoft.CmdPal.UI.Controls;
 
 public sealed partial class ContentFormControl : UserControl
 {
-    private static readonly AdaptiveCardRenderer _renderer;
+    private readonly IncrementalAdaptiveCardUpdater _cardUpdater;
+    private readonly AdaptiveCardRenderer _renderer;
+    private static bool _customElementParsersRegistered;
     private ContentFormViewModel? _viewModel;
+    private AdaptiveHostConfig _hostConfig;
 
     // LOAD-BEARING: if you don't hang onto a reference to the RenderedAdaptiveCard
     // then the GC might clean it up sometime, even while the card is in the UI
     // tree. If this gets GC'ed, then it'll revoke our Action handler, and the
     // form will do seemingly nothing.
-    private RenderedAdaptiveCard? _renderedCard;
+    private RenderedAdaptiveCard? _attachedRenderedCard;
 
     public ContentFormViewModel? ViewModel { get => _viewModel; set => AttachViewModel(value); }
 
-    static ContentFormControl()
+    internal static void RegisterCustomElements()
     {
-        // We can't use `CardOverrideStyles` here yet, because we haven't called InitializeComponent once.
-        // But also, the default value isn't `null` here. It's... some other default empty value.
-        // So clear it out so that we know when the first time we get created is
-        _renderer = new AdaptiveCardRenderer()
+        if (_customElementParsersRegistered)
         {
-            OverrideStyles = null,
-        };
+            return;
+        }
+
+        RegisterParser<AdaptiveStringListInputElement, AdaptiveStringListInputElementParser>();
+        RegisterParser<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementParser>();
+        RegisterParser<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementParser>();
+        RegisterParser<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementParser>();
+        AdaptiveCardPolyfills.RegisterParsers(AdaptiveCardParserRegistrations.ElementParsers);
+
+        _customElementParsersRegistered = true;
     }
 
     public ContentFormControl()
     {
         this.InitializeComponent();
-        var lightTheme = ActualTheme == Microsoft.UI.Xaml.ElementTheme.Light;
-        _renderer.HostConfig = lightTheme ? AdaptiveCardsConfig.Light : AdaptiveCardsConfig.Dark;
-
-        // 5% BODGY: if we set this multiple times over the lifetime of the app,
-        // then the second call will explode, because "CardOverrideStyles is already the child of another element".
-        // SO only set this once.
-        if (_renderer.OverrideStyles is null)
+        _hostConfig = AdaptiveCardsConfig.Create(ActualTheme);
+        var renderer = new AdaptiveCardRenderer()
         {
-            _renderer.OverrideStyles = CardOverrideStyles;
+            HostConfig = _hostConfig,
+            OverrideStyles = CardOverrideStyles,
+        };
+        _renderer = renderer;
+        RegisterRenderer<AdaptiveStringListInputElement, AdaptiveStringListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveFilePathListInputElement, AdaptiveFilePathListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveKeyValueListInputElement, AdaptiveKeyValueListInputElementRenderer>(renderer);
+        RegisterRenderer<AdaptiveFilePathInputElement, AdaptiveFilePathInputElementRenderer>(renderer);
+        AdaptiveCardPolyfills.RegisterRenderers(renderer);
+        _cardUpdater = new IncrementalAdaptiveCardUpdater(
+            renderer,
+            CardHost,
+            AdaptiveCardParserRegistrations.ElementParsers,
+            AdaptiveCardParserRegistrations.ActionParsers,
+            AdaptiveCardPolyfills.PatchableElements);
+
+        // The theme can differ once the control joins a window with its own requested theme.
+        Loaded += (_, _) => RefreshHostConfig();
+        ActualThemeChanged += (_, _) => RefreshHostConfig();
+    }
+
+    /// <summary>Re-renders the card for the current theme, since host config colors are baked into it.</summary>
+    private void RefreshHostConfig()
+    {
+        var hostConfig = AdaptiveCardsConfig.Create(ActualTheme);
+        if (ReferenceEquals(hostConfig, _hostConfig))
+        {
+            return;
         }
 
-        // TODO in the future, we should handle ActualThemeChanged and replace
-        // our rendered card with one for that theme. But today is not that day
+        _hostConfig = hostConfig;
+        _renderer.HostConfig = hostConfig;
+        var card = _viewModel?.Card;
+        ResetCard();
+        if (card is not null)
+        {
+            RequestDisplayCard(card);
+        }
+    }
+
+    private static void RegisterParser<TElement, TParser>()
+        where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+        where TParser : IAdaptiveElementParser, new()
+    {
+        AdaptiveCardParserRegistrations.ElementParsers.Set(TElement.CustomInputType, new TParser());
+    }
+
+    private static void RegisterRenderer<TElement, TRenderer>(AdaptiveCardRenderer renderer)
+        where TElement : IAdaptiveCardElement, ICustomAdaptiveCardElement
+        where TRenderer : IAdaptiveElementRenderer, new()
+    {
+        renderer.ElementRenderers.Set(TElement.CustomInputType, new TRenderer());
     }
 
     private void AttachViewModel(ContentFormViewModel? vm)
@@ -59,6 +117,8 @@ public sealed partial class ContentFormControl : UserControl
         {
             _viewModel.PropertyChanged -= ViewModel_PropertyChanged;
         }
+
+        ResetCard();
 
         _viewModel = vm;
 
@@ -69,7 +129,7 @@ public sealed partial class ContentFormControl : UserControl
             var c = _viewModel.Card;
             if (c is not null)
             {
-                DisplayCard(c);
+                RequestDisplayCard(c);
             }
         }
     }
@@ -86,24 +146,73 @@ public sealed partial class ContentFormControl : UserControl
             var c = ViewModel.Card;
             if (c is not null)
             {
-                DisplayCard(c);
+                RequestDisplayCard(c);
             }
         }
     }
 
-    private void DisplayCard(AdaptiveCardParseResult result)
+    private void RequestDisplayCard(AdaptiveCardParseResult result)
     {
-        _renderedCard = _renderer.RenderAdaptiveCard(result.AdaptiveCard);
-        ContentGrid.Children.Clear();
-        if (_renderedCard.FrameworkElement is not null)
-        {
-            ContentGrid.Children.Add(_renderedCard.FrameworkElement);
+        _ = DisplayCardAsync(result.AdaptiveCard);
+    }
 
-            // Use the Loaded event to ensure we focus after the card is in the visual tree
-            _renderedCard.FrameworkElement.Loaded += OnFrameworkElementLoaded;
+    private async Task DisplayCardAsync(AdaptiveCard card)
+    {
+        try
+        {
+            await _cardUpdater.UpdateAsync(card);
+            AttachRenderedCard(_cardUpdater.RenderedCard);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to update an Adaptive Card", ex);
+        }
+    }
+
+    private void AttachRenderedCard(RenderedAdaptiveCard? renderedCard)
+    {
+        if (ReferenceEquals(_attachedRenderedCard, renderedCard))
+        {
+            return;
         }
 
-        _renderedCard.Action += Rendered_Action;
+        if (_attachedRenderedCard?.FrameworkElement is FrameworkElement oldRoot)
+        {
+            oldRoot.KeyDown -= OnFormKeyDown;
+            oldRoot.Loaded -= OnFrameworkElementLoaded;
+            oldRoot.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
+        }
+
+        if (_attachedRenderedCard is not null)
+        {
+            _attachedRenderedCard.Action -= Rendered_Action;
+        }
+
+        _attachedRenderedCard = renderedCard;
+        if (renderedCard?.FrameworkElement is FrameworkElement root)
+        {
+            root.KeyDown += OnFormKeyDown;
+            root.Loaded += OnFrameworkElementLoaded;
+            root.LayoutUpdated += OnFrameworkElementLayoutUpdated;
+            renderedCard.Action += Rendered_Action;
+        }
+    }
+
+    private void ResetCard()
+    {
+        AttachRenderedCard(null);
+        _cardUpdater.Reset();
+    }
+
+    private void OnFrameworkElementLayoutUpdated(object? sender, object e)
+    {
+        // Only fix once — unhook from sender (not the updater, whose card may have been
+        // reassigned by the time this fires).
+        if (sender is FrameworkElement element)
+        {
+            element.LayoutUpdated -= OnFrameworkElementLayoutUpdated;
+            FixToggleAccessibilityNames(element);
+        }
     }
 
     private void OnFrameworkElementLoaded(object sender, RoutedEventArgs e)
@@ -125,6 +234,102 @@ public sealed partial class ContentFormControl : UserControl
                 focusableElement?.Focus(FocusState.Programmatic);
             });
         }
+    }
+
+    /// <summary>
+    /// Fixes missing AutomationProperties.Name on CheckBox and ToggleSwitch controls
+    /// rendered by the Adaptive Cards library (AdaptiveCards.Rendering.WinUI3 v2.x).
+    /// Without this fix, Narrator announces "space, checkbox, checked" instead of the
+    /// actual setting label. This method walks the tree, finds CheckBox/ToggleSwitch
+    /// controls missing an automation name, and binds it to the adjacent label TextBlock.
+    /// </summary>
+    private static void FixToggleAccessibilityNames(DependencyObject root)
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+
+            if (child is CheckBox or ToggleSwitch && child is FrameworkElement toggle)
+            {
+                var existingName = AutomationProperties.GetName(toggle);
+                if (string.IsNullOrEmpty(existingName))
+                {
+                    // In Adaptive Cards, the label TextBlock is a sibling to the CheckBox's
+                    // container within a shared Grid parent. Walk up to find that Grid, then
+                    // search for a TextBlock with actual text content.
+                    var label = FindAdjacentLabel(toggle);
+                    if (label is not null)
+                    {
+                        toggle.SetBinding(AutomationProperties.NameProperty, new Binding
+                        {
+                            Source = label,
+                            Path = new PropertyPath(nameof(TextBlock.Text)),
+                            Mode = BindingMode.OneWay,
+                        });
+                    }
+                }
+            }
+
+            // Recurse into children
+            FixToggleAccessibilityNames(child);
+        }
+    }
+
+    /// <summary>
+    /// Walks up the visual tree from a control to find the nearest parent Grid,
+    /// then searches that Grid's descendants for a TextBlock with non-whitespace text.
+    /// This handles the Adaptive Cards layout where the label TextBlock is a sibling
+    /// of the CheckBox's container within a shared Grid row.
+    /// </summary>
+    private static TextBlock? FindAdjacentLabel(FrameworkElement control)
+    {
+        // Walk up the tree to find the nearest Grid ancestor (the row container)
+        DependencyObject? current = control;
+        Grid? parentGrid = null;
+        for (var depth = 0; depth < 10 && current != null; depth++)
+        {
+            current = VisualTreeHelper.GetParent(current);
+            if (current is Grid grid)
+            {
+                // Find the grid that contains multiple children (the row container)
+                if (VisualTreeHelper.GetChildrenCount(grid) > 1)
+                {
+                    parentGrid = grid;
+                    break;
+                }
+            }
+        }
+
+        if (parentGrid == null)
+        {
+            return null;
+        }
+
+        // Search the parent Grid for a TextBlock with actual text
+        return FindFirstNonEmptyTextBlock(parentGrid);
+    }
+
+    private static TextBlock? FindFirstNonEmptyTextBlock(DependencyObject root)
+    {
+        var childCount = VisualTreeHelper.GetChildrenCount(root);
+        for (var i = 0; i < childCount; i++)
+        {
+            var child = VisualTreeHelper.GetChild(root, i);
+
+            if (child is TextBlock tb && !string.IsNullOrWhiteSpace(tb.Text))
+            {
+                return tb;
+            }
+
+            var result = FindFirstNonEmptyTextBlock(child);
+            if (result != null)
+            {
+                return result;
+            }
+        }
+
+        return null;
     }
 
     private Control? FindFirstFocusableElement(DependencyObject parent)
@@ -155,6 +360,50 @@ public sealed partial class ContentFormControl : UserControl
         }
 
         return null;
+    }
+
+    private void OnFormKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        // Snapshot the fields so a subsequent DisplayCard call can't swap the
+        // rendered/parsed card out from under us mid-method. This keeps the
+        // resolved submit action and the gathered inputs from the same card.
+        var renderedCard = _cardUpdater.RenderedCard;
+        var adaptiveCard = _cardUpdater.Card;
+
+        if (e.Key != VirtualKey.Enter || renderedCard == null || adaptiveCard == null)
+        {
+            return;
+        }
+
+        // Only submit when Enter is pressed inside a single-line TextBox
+        if (e.OriginalSource is TextBox textBox && !textBox.AcceptsReturn)
+        {
+            // Find the first Submit or Execute action on the card
+            IAdaptiveActionElement? submitAction = null;
+            foreach (var action in adaptiveCard.Actions)
+            {
+                if (action is AdaptiveSubmitAction or AdaptiveExecuteAction)
+                {
+                    submitAction = action;
+                    break;
+                }
+            }
+
+            if (submitAction != null)
+            {
+                e.Handled = true;
+
+                // Validate (and gather) the inputs before submitting. AsJson() only
+                // returns the values cached by a successful ValidateInputs() call, so
+                // skipping this would submit an empty payload. This mirrors what the
+                // renderer does internally when a submit button is clicked.
+                var inputs = renderedCard.UserInputs;
+                if (inputs.ValidateInputs(submitAction))
+                {
+                    ViewModel?.HandleSubmit(submitAction, inputs.AsJson());
+                }
+            }
+        }
     }
 
     private void Rendered_Action(RenderedAdaptiveCard sender, AdaptiveActionEventArgs args) =>

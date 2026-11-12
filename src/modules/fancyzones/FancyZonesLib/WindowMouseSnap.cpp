@@ -73,6 +73,11 @@ bool WindowMouseSnap::MoveSizeStart(HMONITOR monitor, bool isSnapping)
 
 void WindowMouseSnap::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bool isSnapping, bool isSelectManyZonesState)
 {
+    // Enter snapping mode before calculating highlights. The transition resets m_highlightedZones;
+    // doing it after Update discards the zone selected by the first Shift-triggered update and makes
+    // snapping depend on an otherwise unnecessary second mouse move.
+    SwitchSnappingMode(isSnapping);
+
     auto iter = m_activeWorkAreas.find(monitor);
     if (isSnapping && iter != m_activeWorkAreas.end())
     {
@@ -108,8 +113,6 @@ void WindowMouseSnap::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen, bo
             }
         }
     }
-
-    SwitchSnappingMode(isSnapping);
 }
 
 void WindowMouseSnap::MoveSizeEnd()
@@ -142,6 +145,14 @@ void WindowMouseSnap::MoveSizeEnd()
         }
     }
 
+    SwitchSnappingMode(false);
+}
+
+void WindowMouseSnap::Abort()
+{
+    // End the drag WITHOUT snapping the window into a zone. Used when the dragged
+    // window is destroyed mid-drag: snapping a now-dead HWND would corrupt zone
+    // state, so we only tear down the overlays, highlights, and transparency.
     SwitchSnappingMode(false);
 }
 

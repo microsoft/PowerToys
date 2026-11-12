@@ -13,6 +13,7 @@
 namespace WICMetadataExtractorTests
 {
     class ExtractAVIFMetadataTests;
+    class FactoryLifetimeTests;
 }
 
 namespace PowerRenameLib
@@ -34,6 +35,7 @@ namespace PowerRenameLib
     {
         // Friend declarations for unit testing
         friend class WICMetadataExtractorTests::ExtractAVIFMetadataTests;
+        friend class WICMetadataExtractorTests::FactoryLifetimeTests;
 
     public:
         WICMetadataExtractor();
@@ -53,7 +55,6 @@ namespace PowerRenameLib
     private:
         // WIC factory management
         static CComPtr<IWICImagingFactory> GetWICFactory();
-        static void InitializeWIC();
 
         // WIC operations
         CComPtr<IWICBitmapDecoder> CreateDecoder(const std::wstring& filePath);

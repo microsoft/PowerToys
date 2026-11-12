@@ -142,6 +142,24 @@ namespace Microsoft.CmdPal.Ext.Apps.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide app description in search results.
+        /// </summary>
+        internal static string hide_app_descriptions {
+            get {
+                return ResourceManager.GetString("hide_app_descriptions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hide description text next to app results for a cleaner look.
+        /// </summary>
+        internal static string hide_app_descriptions_description {
+            get {
+                return ResourceManager.GetString("hide_app_descriptions_description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Also include non-app shortcuts from the Start menu.
         /// </summary>
         internal static string include_non_apps_in_start_menu {

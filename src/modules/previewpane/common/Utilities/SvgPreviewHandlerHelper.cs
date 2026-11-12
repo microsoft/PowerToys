@@ -21,7 +21,7 @@ namespace Common.Utilities
         private const string ViewboxAttribute = "viewBox=\"";
 
         /// <summary>
-        /// Dictionary of elements in lower case that are blocked from Svg for preview pane.
+        /// Dictionary of elements in lowercase that are blocked from Svg for preview pane.
         /// Reference for list of Svg Elements: https://developer.mozilla.org/docs/Web/SVG/Element.
         /// </summary>
         private static Dictionary<string, bool> blockedElementsName = new Dictionary<string, bool>
@@ -132,9 +132,9 @@ namespace Common.Utilities
 
         private static int FindFirstXmlCloseTagIndex(string s, int openTagIndex)
         {
-            int index = 1;
+            int index = openTagIndex + 1;
 
-            while ((index = s.IndexOf('>', openTagIndex)) != -1)
+            while ((index = s.IndexOf('>', index)) != -1)
             {
                 if (index > 0 && s[index - 1] != '?')
                 {

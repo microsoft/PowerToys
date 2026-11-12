@@ -35,8 +35,6 @@ namespace EnvironmentVariablesUILib.Models
             {
                 foreach (var variable in Variables)
                 {
-                    var applyToSystem = variable.ApplyToSystem;
-
                     // Get existing variable with the same name if it exist
                     var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
 
@@ -46,13 +44,13 @@ namespace EnvironmentVariablesUILib.Models
                         variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
 
                         // Backup the variable
-                        if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToOverride))
+                        if (!EnvironmentVariablesHelper.SetBackupVariableWithoutNotify(variableToOverride))
                         {
                             LoggerInstance.Logger.LogError("Failed to set backup variable.");
                         }
                     }
 
-                    if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variable))
+                    if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variable))
                     {
                         LoggerInstance.Logger.LogError("Failed to set profile variable.");
                     }
@@ -78,7 +76,7 @@ namespace EnvironmentVariablesUILib.Models
         public void UnapplyVariable(Variable variable)
         {
             // Unset the variable
-            if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(variable))
+            if (!EnvironmentVariablesHelper.UnsetProfileVariableWithoutNotify(variable))
             {
                 LoggerInstance.Logger.LogError("Failed to unset variable.");
             }
@@ -93,12 +91,12 @@ namespace EnvironmentVariablesUILib.Models
             {
                 var variableToRestore = new Variable(originalName, backupVariable.Values, backupVariable.ParentType);
 
-                if (!EnvironmentVariablesHelper.UnsetVariableWithoutNotify(backupVariable))
+                if (!EnvironmentVariablesHelper.UnsetBackupVariableWithoutNotify(backupVariable))
                 {
                     LoggerInstance.Logger.LogError("Failed to unset backup variable.");
                 }
 
-                if (!EnvironmentVariablesHelper.SetVariableWithoutNotify(variableToRestore))
+                if (!EnvironmentVariablesHelper.SetProfileVariableWithoutNotify(variableToRestore))
                 {
                     LoggerInstance.Logger.LogError("Failed to restore backup variable.");
                 }
@@ -107,7 +105,7 @@ namespace EnvironmentVariablesUILib.Models
 
         public bool IsCorrectlyApplied()
         {
-            if (!IsEnabled)
+            if (!IsEnabled || !IsApplicable())
             {
                 return false;
             }
@@ -128,6 +126,11 @@ namespace EnvironmentVariablesUILib.Models
 
         public bool IsApplicable()
         {
+            if (!Valid)
+            {
+                return false;
+            }
+
             foreach (var variable in Variables)
             {
                 if (!variable.Validate())
@@ -135,15 +138,18 @@ namespace EnvironmentVariablesUILib.Models
                     return false;
                 }
 
-                // Get existing variable with the same name if it exist
+                // Get existing variable with the same name if it exists.
                 var variableToOverride = EnvironmentVariablesHelper.GetExisting(variable.Name);
 
                 // It exists. Backup is needed.
                 if (variableToOverride != null && variableToOverride.ParentType == VariablesSetType.User)
                 {
-                    variableToOverride.Name = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
-                    if (!variableToOverride.Validate())
+                    string backupName = EnvironmentVariablesHelper.GetBackupVariableName(variableToOverride, this.Name);
+
+                    if (!EnvironmentVariablesHelper.TryValidateBackupVariable(backupName, variableToOverride.Values, out string errorMessage))
                     {
+                        LoggerInstance.Logger.LogError(
+                            $"The variable '{variable.Name}' cannot be applied because the backup variable '{backupName}' would be invalid: {errorMessage}");
                         return false;
                     }
                 }

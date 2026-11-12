@@ -10,6 +10,7 @@
 
 #include "CaptureFrameWait.h"
 #include "AudioSampleGenerator.h"
+#include "WebcamCapture.h"
 #include <d3d11_4.h>
 #include <ppltasks.h>
 #include <atomic>
@@ -26,9 +27,8 @@ public:
         winrt::GraphicsCaptureItem const& item,
         RECT const& cropRect,
         uint32_t frameRate,
-        bool captureAudio,
-        bool captureSystemAudio,
-        bool micMonoMix,
+        std::unique_ptr<AudioSampleGenerator> audioGenerator,
+        winrt::Windows::Foundation::IAsyncAction audioInitAction,
         winrt::Streams::IRandomAccessStream const& stream);
     ~VideoRecordingSession();
 
@@ -38,12 +38,26 @@ public:
 
     bool HasCapturedVideoFrames() const { return m_hasVideoSample.load(); }
 
+    // Access the webcam capture for on-screen preview.
+    WebcamCapture* GetWebcamCapture() const { return m_webcamCapture.get(); }
+
+    // Return the crop rect (recording region in capture-item coordinates).
+    RECT GetCropRect() const { return m_rcCrop; }
+
     // Trim and save functionality
     static std::wstring ShowSaveDialogWithTrim(
         HWND hWnd,
         const std::wstring& suggestedFileName,
         const std::wstring& originalVideoPath,
         std::wstring& trimmedVideoPath);
+
+    // Transition type for connecting appended clips
+    enum class AppendTransition
+    {
+        None,           // Hard cut
+        FadeToBlack,    // Insert solid black frame
+        FadeToWhite,    // Insert solid white frame
+    };
 
     struct TrimDialogData
     {
@@ -56,7 +70,15 @@ public:
             UINT height{ 0 };
         };
 
+        // Tracks a boundary between appended clips for timeline visualization
+        struct ClipBoundary
+        {
+            winrt::Windows::Foundation::TimeSpan time{ 0 };     // Absolute time in composition
+            AppendTransition transition{ AppendTransition::None };
+        };
+
         std::wstring videoPath;
+        std::vector<ClipBoundary> clipBoundaries;   // Boundaries between appended clips
         winrt::Windows::Foundation::TimeSpan videoDuration{ 0 };
         winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
         winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
@@ -127,12 +149,42 @@ public:
         HFONT hTimeLabelFont{ nullptr };
 
         // Mouse tracking for timeline
-        enum DragMode { None, TrimStart, Position, TrimEnd };
+        enum DragMode { None, TrimStart, Position, TrimEnd, DeleteStart, DeleteEnd };
         DragMode dragMode{ None };
         bool isDragging{ false };
+
+        // Interior "cut from the middle" editing. A pending delete region is
+        // selected on the timeline (right-drag or by dragging its red grips) and
+        // then committed with the Delete Region button or the Delete key, which
+        // removes that interval from the composition and stitches the halves.
+        bool hasPendingDelete{ false };
+        winrt::Windows::Foundation::TimeSpan pendingDeleteStart{ 0 };
+        winrt::Windows::Foundation::TimeSpan pendingDeleteEnd{ 0 };
+        winrt::Windows::Foundation::TimeSpan pendingDeleteAnchor{ 0 }; // Fixed endpoint during a delete-region drag
+        bool hasDeletes{ false };  // TRUE once any interior delete has been committed
+        std::vector<winrt::Windows::Foundation::TimeSpan> deleteJoinMarkers; // Stitch points
+
+        // Undo snapshots for committed delete edits (most recent last).
+        struct EditorUndoSnapshot
+        {
+            winrt::Windows::Media::Editing::MediaComposition composition{ nullptr };
+            winrt::Windows::Foundation::TimeSpan videoDuration{ 0 };
+            winrt::Windows::Foundation::TimeSpan trimStart{ 0 };
+            winrt::Windows::Foundation::TimeSpan trimEnd{ 0 };
+            winrt::Windows::Foundation::TimeSpan currentPosition{ 0 };
+            std::vector<ClipBoundary> clipBoundaries;
+            std::vector<winrt::Windows::Foundation::TimeSpan> deleteJoinMarkers;
+            bool hasDeletes{ false };
+        };
+        std::vector<EditorUndoSnapshot> undoStack;
+
         int lastPlayheadX{ -1 }; // Track last playhead pixel position for efficient invalidation
         MMRESULT mmTimerId{ 0 }; // Multimedia timer for smooth MP4 playback
         bool standaloneMode{ false }; // When true, OK becomes "Save As" and handles file saving directly
+        // Non-standalone (post-recording) mode: on OK the editor renders its edited
+        // composition (honoring interior deletes/appends and outer trim) to this temp
+        // file, which the outer save flow then moves to the user's chosen destination.
+        std::wstring renderedOutputPath;
 
         // Helper to convert time to pixel position
         int TimeToPixel(winrt::Windows::Foundation::TimeSpan time, int timelineWidth) const
@@ -164,7 +216,8 @@ public:
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
         winrt::Windows::Foundation::TimeSpan& trimEnd,
-        bool standaloneMode = false);
+        bool standaloneMode = false,
+        std::wstring* pRenderedPath = nullptr);
 
 private:
     static INT_PTR CALLBACK TrimDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam);
@@ -173,6 +226,11 @@ private:
         const std::wstring& sourceVideoPath,
         winrt::Windows::Foundation::TimeSpan trimTimeStart,
         winrt::Windows::Foundation::TimeSpan trimTimeEnd);
+    static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> RenderCompositionAsync(
+        winrt::Windows::Media::Editing::MediaComposition composition,
+        winrt::Windows::Foundation::TimeSpan trimTimeStart,
+        winrt::Windows::Foundation::TimeSpan trimTimeEnd,
+        const std::wstring& sourceVideoPath);
     static winrt::Windows::Foundation::IAsyncOperation<winrt::hstring> TrimGifAsync(
         const std::wstring& sourceGifPath,
         winrt::Windows::Foundation::TimeSpan trimTimeStart,
@@ -182,7 +240,8 @@ private:
         const std::wstring& videoPath,
         winrt::Windows::Foundation::TimeSpan& trimStart,
         winrt::Windows::Foundation::TimeSpan& trimEnd,
-        bool standaloneMode = false);
+        bool standaloneMode = false,
+        std::wstring* pRenderedPath = nullptr);
 
 private:
     VideoRecordingSession(
@@ -190,9 +249,8 @@ private:
         winrt::Capture::GraphicsCaptureItem const& item,
         RECT const cropRect,
         uint32_t frameRate,
-        bool captureAudio,
-        bool captureSystemAudio,
-        bool micMonoMix,
+        std::unique_ptr<AudioSampleGenerator> audioGenerator,
+        winrt::Windows::Foundation::IAsyncAction audioInitAction,
         winrt::Streams::IRandomAccessStream const& stream);
     void CloseInternal();
 
@@ -220,13 +278,41 @@ private:
     winrt::MediaTranscoder m_transcoder{ nullptr };
 
     std::unique_ptr<AudioSampleGenerator> m_audioGenerator;
+    std::unique_ptr<WebcamCapture> m_webcamCapture;
 
     winrt::com_ptr<IDXGISwapChain1> m_previewSwapChain;
-    winrt::com_ptr<ID3D11RenderTargetView> m_renderTargetView;
+
+    // Cached render target view to avoid per-frame allocation.
+    winrt::com_ptr<ID3D11RenderTargetView> m_cachedRTV;
 
     std::atomic<bool> m_isRecording = false;
     std::atomic<bool> m_closed = false;
 
     // Set once the MediaStreamSource successfully returns at least one video sample.
     std::atomic<bool> m_hasVideoSample = false;
+
+    // Frame captured during OnMediaStreamSourceStarting that would otherwise
+    // be discarded.  By serving it as the very first video sample we eliminate
+    // the timestamp gap between the start position and the first encoded frame.
+    std::optional<CaptureFrame> m_cachedStartingFrame;
+
+    // When a webcam overlay is active we must produce video frames even when
+    // the desktop is static.  m_cachedDesktopTex holds a standalone GPU copy
+    // of the last cropped desktop content so we can composite a fresh webcam
+    // frame onto it without needing a new capture-pool surface.
+    winrt::com_ptr<ID3D11Texture2D> m_cachedDesktopTex;
+    winrt::TimeSpan m_lastVideoTimestamp{ 0 };
+    int64_t m_frameIntervalTicks = 0;   // 10 000 000 / fps
+
+    // Wall-clock reference for synthesising repeat-frame timestamps.
+    // Using QPC keeps repeat-frame timestamps aligned with audio's
+    // real-time clock, preventing A/V drift on static desktops.
+    LARGE_INTEGER m_qpcFreq{};
+    LARGE_INTEGER m_qpcRecordingStart{};    // QPC at first sample
+    int64_t m_startSystemRelativeTime = 0; // SystemRelativeTime of first frame
+    int64_t m_adjustedStartSRT = 0;        // QPC-based current SRT set in OnStarting
+    bool m_hasQpcOrigin = false;
+
+    // Audio initialization started in the constructor, awaited in StartAsync.
+    winrt::Windows::Foundation::IAsyncAction m_audioInitAction{ nullptr };
 };

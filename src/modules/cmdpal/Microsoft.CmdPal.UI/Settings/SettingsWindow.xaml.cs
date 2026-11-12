@@ -3,20 +3,28 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using CommunityToolkit.Mvvm.Messaging;
+using CommunityToolkit.WinUI;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Gallery;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI.Input;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media.Animation;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 using WinUIEx;
+using ListHelpers = Microsoft.CommandPalette.Extensions.Toolkit.ListHelpers;
 using RS_ = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance;
 using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
 
@@ -25,35 +33,82 @@ namespace Microsoft.CmdPal.UI.Settings;
 public sealed partial class SettingsWindow : WindowEx,
     IDisposable,
     IRecipient<NavigateToExtensionSettingsMessage>,
+    IRecipient<OpenExtensionGalleryScreenshotViewerMessage>,
     IRecipient<QuitMessage>
 {
-    private readonly LocalKeyboardListener _localKeyboardListener;
-
+    private readonly LocalKeyboardListener _localKeyboardListener = new();
     private readonly NavigationViewItem? _internalNavItem;
+    private readonly SettingsLinkContextMenuService _settingsLinkContextMenuService;
+    private readonly ISettingsLinkResolver _settingsLinkResolver;
+    private readonly ISettingsService _settingsService;
+    private readonly IFuzzyMatcherProvider _fuzzyMatcherProvider;
+    private readonly SettingsTargetHighlighter _settingsTargetHighlighter = new();
+    private readonly TopLevelCommandManager _topLevelCommandManager;
+    private readonly SettingsSearchCatalog _settingsSearchCatalog;
+    private readonly ObservableCollection<SettingsSearchResult> _settingsSearchSuggestions = [];
+    private IDisposable? _currentPage;
+
+    private Storyboard? _breadcrumbStoryboard;
+    private IReadOnlyList<ExtensionGalleryScreenshotViewModel> _currentScreenshotSet = [];
+    private ExtensionGalleryScreenshotViewModel? _currentScreenshot;
+    private CancellationTokenSource? _extensionSettingsNavigationCts;
+    private CancellationTokenSource? _settingsTargetNavigationCts;
+    private bool _isClosed;
 
     public ObservableCollection<Crumb> BreadCrumbs { get; } = [];
 
     // Gets or sets optional action invoked after NavigationView is loaded.
     public Action? NavigationViewLoaded { get; set; }
 
-    public SettingsWindow()
+    public string CurrentScreenshotDisplayName => _currentScreenshot?.DisplayName ?? string.Empty;
+
+    public string CurrentScreenshotPositionText =>
+        _currentScreenshot is null || _currentScreenshotSet.Count == 0
+            ? string.Empty
+            : $"{GetCurrentScreenshotIndex() + 1} / {_currentScreenshotSet.Count}";
+
+    public SettingsWindow(
+        TopLevelCommandManager topLevelCommandManager,
+        ISettingsLinkResolver settingsLinkResolver,
+        SettingsLinkContextMenuService settingsLinkContextMenuService,
+        ISettingsService settingsService,
+        IFuzzyMatcherProvider fuzzyMatcherProvider)
     {
+        ArgumentNullException.ThrowIfNull(topLevelCommandManager);
+        ArgumentNullException.ThrowIfNull(settingsLinkResolver);
+        ArgumentNullException.ThrowIfNull(settingsLinkContextMenuService);
+        ArgumentNullException.ThrowIfNull(settingsService);
+        ArgumentNullException.ThrowIfNull(fuzzyMatcherProvider);
+
+        _settingsLinkContextMenuService = settingsLinkContextMenuService;
+        _settingsLinkResolver = settingsLinkResolver;
+        _settingsService = settingsService;
+        _fuzzyMatcherProvider = fuzzyMatcherProvider;
+        _topLevelCommandManager = topLevelCommandManager;
+        _settingsSearchCatalog = new(SettingsSearchCatalog.CreateEntries(id => RS_.GetString(id.Replace('.', '/'))));
+
         this.InitializeComponent();
+        SettingsSearchBox.ItemsSource = _settingsSearchSuggestions;
         this.ExtendsContentIntoTitleBar = true;
+        this.SetTitleBar(AppTitleBar);
         this.SetIcon();
         var title = RS_.GetString("SettingsWindowTitle");
         this.AppWindow.Title = title;
         this.AppTitleBar.Title = title;
+        TitleBarHelper.SetPreferredTheme(this);
+
         PositionCentered();
 
         WeakReferenceMessenger.Default.Register<NavigateToExtensionSettingsMessage>(this);
+        WeakReferenceMessenger.Default.Register<OpenExtensionGalleryScreenshotViewerMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
 
-        _localKeyboardListener = new LocalKeyboardListener();
         _localKeyboardListener.KeyPressed += LocalKeyboardListener_OnKeyPressed;
         _localKeyboardListener.Start();
         Closed += SettingsWindow_Closed;
+        RootElement.SizeChanged += RootElement_SizeChanged;
         RootElement.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(RootElement_OnPointerPressed), true);
+        _topLevelCommandManager.PropertyChanged += TopLevelCommandManager_PropertyChanged;
 
         if (!BuildInfo.IsCiBuild)
         {
@@ -61,21 +116,169 @@ public sealed partial class SettingsWindow : WindowEx,
             {
                 Content = "Internal Tools",
                 Icon = new FontIcon { Glyph = "\uEC7A" },
-                Tag = "Internal",
+                Tag = SettingsPageTags.Internal,
             };
-            NavView.MenuItems.Add(_internalNavItem);
+            NavView.FooterMenuItems.Add(_internalNavItem);
         }
         else
         {
             _internalNavItem = null;
         }
 
-        Navigate("General");
+        Navigate(SettingsPageTags.General);
     }
 
     private void SettingsWindow_Closed(object sender, WindowEventArgs args)
     {
         Dispose();
+    }
+
+    private void SettingsSearchBox_Loaded(object sender, RoutedEventArgs e)
+    {
+        SettingsSearchBox.ApplyTemplate();
+        var textBox = SettingsSearchBox.FindDescendant<TextBox>();
+        textBox?.ApplyTemplate();
+
+        // ponytail: uses WinUI's four-column template; use a custom template if its layout changes.
+        if (textBox?.FindDescendant<Button>(button => button.Name == "QueryButton") is not { Parent: Grid layout } queryButton
+            || layout.ColumnDefinitions.Count != 4
+            || textBox.FindDescendant<ScrollViewer>(element => element.Name == "ContentElement") is not { } content
+            || textBox.FindDescendant<ContentControl>(element => element.Name == "PlaceholderTextContentPresenter") is not { } placeholder
+            || textBox.FindDescendant<Button>(button => button.Name == "DeleteButton") is not { } clearButton)
+        {
+            return;
+        }
+
+        layout.ColumnDefinitions[0].Width = GridLength.Auto;
+        layout.ColumnDefinitions[1].Width = new GridLength(1, GridUnitType.Star);
+        Grid.SetColumn(queryButton, 0);
+        Grid.SetColumn(content, 1);
+        Grid.SetColumn(placeholder, 1);
+        Grid.SetColumn(clearButton, 2);
+    }
+
+    private void SettingsSearch_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+    {
+        SettingsSearchBox.Focus(FocusState.Keyboard);
+        SettingsSearchBox.FindDescendant<TextBox>()?.SelectAll();
+        UpdateSettingsSearch();
+        args.Handled = true;
+    }
+
+    private void SettingsSearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+    {
+        if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+        {
+            UpdateSettingsSearch();
+        }
+    }
+
+    private SettingsSearchResult[] GetSettingsSearchResults(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return [];
+        }
+
+        var dynamicEntries = SettingsSearchCatalog.CreateExtensionEntries(
+            _topLevelCommandManager.CommandProviders,
+            _settingsService.Settings,
+            id => RS_.GetString(id.Replace('.', '/')));
+        return _settingsSearchCatalog.Search(query, _fuzzyMatcherProvider.Current, dynamicEntries);
+    }
+
+    private void UpdateSettingsSearch()
+    {
+        if (_isClosed || !SettingsSearchBox.IsLoaded || SettingsSearchBox.XamlRoot is null)
+        {
+            return;
+        }
+
+        var results = GetSettingsSearchResults(SettingsSearchBox.Text);
+        var template = (DataTemplate)SettingsSearchBox.Resources[results.Length == 0 ? "SettingsSearchEmptyTemplate" : "SettingsSearchResultTemplate"];
+        if (SettingsSearchBox.ItemTemplate != template)
+        {
+            SettingsSearchBox.ItemTemplate = template;
+            SettingsSearchBox.ItemContainerStyle = (Style)SettingsSearchBox.Resources[results.Length == 0 ? "SettingsSearchEmptyItemStyle" : "SettingsSearchItemStyle"];
+        }
+
+        var suggestions = string.IsNullOrWhiteSpace(SettingsSearchBox.Text)
+            ? []
+            : SettingsSearchCatalog.CreateSuggestions(
+                results,
+                RS_.GetString(results.Length == 1 ? "SettingsWindow_SearchShowOneResult" : "SettingsWindow_SearchShowAllResults"),
+                RS_.GetString("SettingsWindow_SearchNoResults"));
+        ListHelpers.InPlaceUpdateList(_settingsSearchSuggestions, suggestions, out _);
+
+        var showSuggestions = !string.IsNullOrWhiteSpace(SettingsSearchBox.Text);
+        if (SettingsSearchBox.IsSuggestionListOpen != showSuggestions)
+        {
+            SettingsSearchBox.IsSuggestionListOpen = showSuggestions;
+        }
+    }
+
+    private void SettingsSearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+    {
+        if (_isClosed || !sender.IsLoaded || sender.XamlRoot is null)
+        {
+            return;
+        }
+
+        var destination = (args.ChosenSuggestion as SettingsSearchResult)?.Destination;
+        var query = args.QueryText.Trim();
+        sender.IsSuggestionListOpen = false;
+
+        // Finish the suggestion's input event before changing pages and focus.
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (_isClosed || !NavFrame.IsLoaded || NavFrame.XamlRoot is null)
+            {
+                return;
+            }
+
+            if (destination is not null)
+            {
+                Navigate(destination);
+            }
+            else if (!string.IsNullOrWhiteSpace(query))
+            {
+                CancelSettingsNavigation();
+                if (NavFrame.Content is SettingsSearchPage page && page.Query == query)
+                {
+                    page.ShowResults(query, GetSettingsSearchResults(query), Navigate);
+                }
+                else
+                {
+                    NavFrame.Navigate(typeof(SettingsSearchPage), query);
+                }
+
+                NavigateToSettingsTarget(null, focusPage: true);
+            }
+        });
+    }
+
+    private void TopLevelCommandManager_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(TopLevelCommandManager.IsLoading))
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (_isClosed)
+                {
+                    return;
+                }
+
+                if (SettingsSearchBox.IsSuggestionListOpen)
+                {
+                    UpdateSettingsSearch();
+                }
+
+                if (NavFrame.Content is SettingsSearchPage page)
+                {
+                    page.ShowResults(page.Query, GetSettingsSearchResults(page.Query), Navigate);
+                }
+            });
+        }
     }
 
     // Handles NavigationView loaded event.
@@ -106,28 +309,121 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        var selectedItem = args.InvokedItemContainer;
-        Navigate((selectedItem.Tag as string)!);
+        // Clearing selection for search results can invoke this event without an item container.
+        if (args.InvokedItemContainer?.Tag is string pageTag)
+        {
+            Navigate(pageTag);
+        }
     }
 
-    internal void Navigate(string page)
+    private void RootElement_ContextRequested(UIElement sender, ContextRequestedEventArgs args)
     {
+        if (_settingsLinkContextMenuService.TryShow(args, NavFrame.Content as Page))
+        {
+            args.Handled = true;
+        }
+    }
+
+    private void RootElement_ContextCanceled(UIElement sender, RoutedEventArgs args)
+    {
+        _settingsLinkContextMenuService.Hide();
+    }
+
+    internal void Navigate(OpenSettingsMessage message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        Navigate(
+            message.SettingsPageTag,
+            message.ExtensionGalleryId,
+            message.SettingsLinkId,
+            message.ExtensionProviderId,
+            message.CommandId,
+            focusPage: true);
+    }
+
+    internal void Navigate(
+        string page,
+        string? extensionGalleryId = null,
+        string? settingsLinkId = null,
+        string? extensionProviderId = null,
+        string? commandId = null,
+        bool focusPage = false)
+    {
+        CancelSettingsNavigation();
+        SettingsLinkFallbackInfoBar.IsOpen = false;
+
+        string? settingsTarget = null;
+        var settingsAction = SettingsLinkAction.None;
+        var settingsLinkFallback = SettingsLinkFallback.None;
+        if (settingsLinkId is not null)
+        {
+            if (page != string.Empty ||
+                extensionGalleryId is not null)
+            {
+                Logger.LogError($"Invalid settings link navigation for '{settingsLinkId}'.");
+                return;
+            }
+
+            var resolution = _settingsLinkResolver.Resolve(settingsLinkId, extensionProviderId);
+            var destination = resolution.Destination;
+            if (extensionProviderId is not null &&
+                !destination.RequiresExtensionProvider)
+            {
+                Logger.LogError($"Invalid settings link navigation for '{settingsLinkId}'.");
+                return;
+            }
+
+            settingsLinkFallback = resolution.Fallback;
+            page = destination.PageTag;
+            settingsTarget = destination.ElementId;
+            settingsAction = destination.Action;
+            if (!destination.RequiresExtensionProvider)
+            {
+                extensionProviderId = null;
+            }
+        }
+        else if (extensionProviderId is not null)
+        {
+            Logger.LogError("Extension settings navigation requires a settings link ID.");
+            return;
+        }
+
+        if (extensionProviderId is not null)
+        {
+            if (settingsAction != SettingsLinkAction.None)
+            {
+                Logger.LogError($"Settings action '{settingsAction}' cannot target an extension provider.");
+                return;
+            }
+
+            if (commandId is not null)
+            {
+                settingsTarget = SettingsPageTarget.CommandTargetPrefix + commandId;
+            }
+
+            NavigateToExtensionSettings(extensionProviderId, settingsTarget, settingsLinkId!, settingsLinkFallback, focusPage);
+            return;
+        }
+
         Type? pageType;
         switch (page)
         {
-            case "General":
+            case SettingsPageTags.General:
                 pageType = typeof(GeneralPage);
                 break;
-            case "Appearance":
+            case SettingsPageTags.Appearance:
                 pageType = typeof(AppearancePage);
                 break;
-            case "Extensions":
+            case SettingsPageTags.Extensions:
                 pageType = typeof(ExtensionsPage);
                 break;
-            case "Dock":
+            case SettingsPageTags.Gallery:
+                pageType = typeof(ExtensionGalleryPage);
+                break;
+            case SettingsPageTags.Dock:
                 pageType = typeof(DockSettingsPage);
                 break;
-            case "Internal":
+            case SettingsPageTags.Internal:
                 pageType = typeof(InternalPage);
                 break;
             case "":
@@ -141,27 +437,349 @@ public sealed partial class SettingsWindow : WindowEx,
                 break;
         }
 
-        if (pageType is not null)
+        if (pageType is null)
         {
-            NavFrame.Navigate(pageType);
+            return;
+        }
 
-            // Now, make sure to actually select the correct menu item too
-            foreach (var obj in NavView.MenuItems)
+        var openGallery = pageType == typeof(ExtensionGalleryPage);
+        var openGalleryExtension = openGallery && !string.IsNullOrWhiteSpace(extensionGalleryId);
+        if (openGallery && TryOpenGallery(extensionGalleryId))
+        {
+            NavigateToSettingsTarget(null, focusPage: focusPage);
+            return;
+        }
+
+        if (pageType == typeof(ExtensionsPage) && TryReturnToExtensionsPage())
+        {
+            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId, focusPage);
+            ShowSettingsLinkFallback(settingsLinkFallback);
+            return;
+        }
+
+        if (NavFrame.Content?.GetType() == pageType)
+        {
+            NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId, focusPage);
+            ShowSettingsLinkFallback(settingsLinkFallback);
+            return;
+        }
+
+        if (!NavFrame.Navigate(pageType))
+        {
+            Logger.LogWarning($"Could not open settings page '{pageType.Name}'.");
+            return;
+        }
+
+        if (openGalleryExtension && NavFrame.Content is ExtensionGalleryPage galleryPage)
+        {
+            galleryPage.OpenExtension(extensionGalleryId!);
+        }
+
+        NavigateToSettingsTarget(settingsTarget, settingsAction, settingsLinkId, focusPage);
+
+        // Now, make sure to actually select the correct menu item too
+        foreach (var obj in NavView.MenuItems)
+        {
+            if (obj is NavigationViewItem item && item.Tag is string s && s == page)
             {
-                if (obj is NavigationViewItem item)
-                {
-                    if (item.Tag is string s && s == page)
-                    {
-                        NavView.SelectedItem = item;
-                    }
-                }
+                NavView.SelectedItem = item;
             }
         }
+
+        ShowSettingsLinkFallback(settingsLinkFallback);
+    }
+
+    private void NavigateToSettingsTarget(
+        string? settingsTarget,
+        SettingsLinkAction settingsAction = SettingsLinkAction.None,
+        string? settingsLinkId = null,
+        bool focusPage = false)
+    {
+        if (settingsTarget is null && settingsAction == SettingsLinkAction.None && !focusPage)
+        {
+            return;
+        }
+
+        if (NavFrame.Content is not FrameworkElement page)
+        {
+            Logger.LogWarning($"Settings target '{settingsTarget}' has no active page.");
+            return;
+        }
+
+        var cancellation = new CancellationTokenSource();
+        _settingsTargetNavigationCts = cancellation;
+        _ = NavigateToSettingsTargetAsync(page, settingsTarget, settingsAction, settingsLinkId, cancellation);
+    }
+
+    private void ShowSettingsLinkFallback(SettingsLinkFallback fallback)
+    {
+        if (fallback == SettingsLinkFallback.None)
+        {
+            return;
+        }
+
+        var resource = fallback switch
+        {
+            SettingsLinkFallback.UnknownLink => "SettingsLink_Fallback_UnknownLink",
+            SettingsLinkFallback.UnknownProvider => "SettingsLink_Fallback_UnknownProvider",
+            SettingsLinkFallback.HiddenTarget => "SettingsLink_Fallback_HiddenTarget",
+            SettingsLinkFallback.MissingTarget => "SettingsLink_Fallback_MissingTarget",
+            SettingsLinkFallback.DisabledProvider => "SettingsLink_Fallback_DisabledProvider",
+            _ => "SettingsLink_Fallback_Other",
+        };
+        SettingsLinkFallbackInfoBar.Title = RS_.GetString(
+            fallback is SettingsLinkFallback.HiddenTarget or SettingsLinkFallback.MissingTarget or SettingsLinkFallback.DisabledProvider
+                ? "SettingsLink_Fallback_UnavailableTitle"
+                : "SettingsLink_Fallback_RedirectedTitle");
+        SettingsLinkFallbackInfoBar.Message = RS_.GetString(resource);
+        SettingsLinkFallbackInfoBar.IsOpen = true;
+    }
+
+    private void NavigateToExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback, bool focusPage)
+    {
+        var cancellation = new CancellationTokenSource();
+        _extensionSettingsNavigationCts = cancellation;
+        _ = NavigateToExtensionSettingsAsync(providerId, settingsTarget, settingsLinkId, fallback, focusPage, cancellation);
+    }
+
+    private async Task NavigateToExtensionSettingsAsync(
+        string providerId,
+        string? settingsTarget,
+        string settingsLinkId,
+        SettingsLinkFallback fallback,
+        bool focusPage,
+        CancellationTokenSource cancellation)
+    {
+        try
+        {
+            if (_topLevelCommandManager.IsLoading)
+            {
+                await _topLevelCommandManager.WaitForCurrentLoadAsync(cancellation.Token);
+            }
+
+            cancellation.Token.ThrowIfCancellationRequested();
+            if (!ReferenceEquals(_extensionSettingsNavigationCts, cancellation))
+            {
+                return;
+            }
+
+            _extensionSettingsNavigationCts = null;
+            OpenExtensionSettings(providerId, settingsTarget, settingsLinkId, fallback, focusPage);
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to navigate to extension settings for '{providerId}'.", ex);
+        }
+        finally
+        {
+            if (ReferenceEquals(_extensionSettingsNavigationCts, cancellation))
+            {
+                _extensionSettingsNavigationCts = null;
+            }
+
+            cancellation.Dispose();
+        }
+    }
+
+    private void OpenExtensionSettings(string providerId, string? settingsTarget, string settingsLinkId, SettingsLinkFallback fallback, bool focusPage)
+    {
+        if (NavFrame.Content is ExtensionPage extensionPage)
+        {
+            if (string.Equals(extensionPage.ViewModel?.ProviderId, providerId, StringComparison.Ordinal))
+            {
+                NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId, focusPage: focusPage);
+                ShowSettingsLinkFallback(fallback);
+                return;
+            }
+
+            _ = TryReturnToExtensionsPage();
+        }
+
+        if (NavFrame.Content is not ExtensionsPage)
+        {
+            NavFrame.Navigate(typeof(ExtensionsPage));
+        }
+
+        if (NavFrame.Content is not ExtensionsPage extensionsPage)
+        {
+            Logger.LogWarning($"Could not open the Extensions page for provider '{providerId}'.");
+            return;
+        }
+
+        var extension = extensionsPage.FindProvider(providerId);
+        if (extension is null)
+        {
+            Logger.LogWarning($"Unknown extension settings provider '{providerId}'.");
+            NavigateToSettingsTarget(null, focusPage: focusPage);
+            ShowSettingsLinkFallback(SettingsLinkFallback.UnknownProvider);
+            return;
+        }
+
+        if (!NavFrame.Navigate(typeof(ExtensionPage), extension.Provider))
+        {
+            Logger.LogWarning($"Could not open the settings page for provider '{providerId}'.");
+            return;
+        }
+
+        NavigateToSettingsTarget(settingsTarget, settingsLinkId: settingsLinkId, focusPage: focusPage);
+        ShowSettingsLinkFallback(fallback);
+    }
+
+    private bool TryReturnToExtensionsPage()
+    {
+        if (NavFrame.Content is ExtensionsPage)
+        {
+            return true;
+        }
+
+        if (NavFrame.Content is not ExtensionPage ||
+            !NavFrame.CanGoBack ||
+            NavFrame.BackStack.Count == 0 ||
+            NavFrame.BackStack[NavFrame.BackStack.Count - 1].SourcePageType != typeof(ExtensionsPage))
+        {
+            return false;
+        }
+
+        NavFrame.GoBack();
+        NavFrame.ForwardStack.Clear();
+        return NavFrame.Content is ExtensionsPage;
+    }
+
+    private async Task NavigateToSettingsTargetAsync(
+        FrameworkElement page,
+        string? settingsTarget,
+        SettingsLinkAction settingsAction,
+        string? settingsLinkId,
+        CancellationTokenSource cancellation)
+    {
+        try
+        {
+            if (settingsTarget is not null)
+            {
+                var (target, isHidden) = await SettingsPageTarget.NavigateAsync(page, settingsTarget, cancellation.Token);
+                if (target is null)
+                {
+                    Logger.LogWarning($"Unavailable settings target '{settingsTarget}' for page '{page.GetType().Name}'.");
+                    if (settingsLinkId is not null)
+                    {
+                        var fallback = _settingsLinkResolver.ClassifyUnavailableTarget(
+                            isHidden,
+                            page is ExtensionPage { ViewModel.IsEnabled: false });
+                        ShowSettingsLinkFallback(fallback);
+                    }
+
+                    return;
+                }
+
+                _settingsTargetHighlighter.Highlight(target, true);
+            }
+            else
+            {
+                await SettingsPageTarget.WaitForLoadedAsync(page, cancellation.Token);
+                cancellation.Token.ThrowIfCancellationRequested();
+                if (_isClosed || !ReferenceEquals(NavFrame.Content, page) || page.XamlRoot is null)
+                {
+                    return;
+                }
+
+                page.UpdateLayout();
+                if (FocusManager.FindFirstFocusableElement(page) is FrameworkElement focusable)
+                {
+                    focusable.Focus(FocusState.Programmatic);
+                }
+            }
+
+            await InvokeSettingsLinkActionAsync(page, settingsAction, cancellation.Token);
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to navigate to settings target '{settingsTarget}'.", ex);
+        }
+        finally
+        {
+            if (ReferenceEquals(_settingsTargetNavigationCts, cancellation))
+            {
+                _settingsTargetNavigationCts = null;
+            }
+
+            cancellation.Dispose();
+        }
+    }
+
+    private static async Task InvokeSettingsLinkActionAsync(
+        FrameworkElement page,
+        SettingsLinkAction settingsAction,
+        CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        switch (settingsAction)
+        {
+            case SettingsLinkAction.None:
+                return;
+            case SettingsLinkAction.OpenFallbackOrder when page is ExtensionsPage extensionsPage:
+                await extensionsPage.ShowFallbackOrderDialogAsync();
+                return;
+            default:
+                throw new InvalidOperationException(
+                    $"Settings action '{settingsAction}' is invalid for page '{page.GetType().Name}'.");
+        }
+    }
+
+    private void CancelSettingsNavigation()
+    {
+        _extensionSettingsNavigationCts?.Cancel();
+        _extensionSettingsNavigationCts = null;
+        _settingsTargetNavigationCts?.Cancel();
+        _settingsTargetNavigationCts = null;
+        _settingsTargetHighlighter.Clear();
+    }
+
+    private bool TryOpenGallery(string? extensionId)
+    {
+        var openExtension = !string.IsNullOrWhiteSpace(extensionId);
+        if (NavFrame.Content is ExtensionGalleryItemPage itemPage)
+        {
+            if (openExtension && string.Equals(itemPage.ViewModel?.Id, extensionId, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            // Details is a child of the gallery on the same frame. Return to the existing
+            // gallery entry so the next details page replaces this one in the journal.
+            if (NavFrame.CanGoBack &&
+                NavFrame.BackStack.Count > 0 &&
+                NavFrame.BackStack[NavFrame.BackStack.Count - 1].SourcePageType == typeof(ExtensionGalleryPage))
+            {
+                NavFrame.GoBack();
+                NavFrame.ForwardStack.Clear();
+            }
+        }
+
+        if (NavFrame.Content is not ExtensionGalleryPage galleryPage)
+        {
+            return false;
+        }
+
+        galleryPage.ClearPendingExtension();
+
+        if (openExtension)
+        {
+            galleryPage.OpenExtension(extensionId!);
+        }
+
+        return true;
     }
 
     private void Navigate(ProviderSettingsViewModel extension)
     {
-        NavFrame.Navigate(typeof(ExtensionPage), extension);
+        NavFrame.Navigate(typeof(ExtensionPage), extension.Provider);
     }
 
     private void PositionCentered()
@@ -177,6 +795,16 @@ public sealed partial class SettingsWindow : WindowEx,
     }
 
     public void Receive(NavigateToExtensionSettingsMessage message) => Navigate(message.ProviderSettingsVM);
+
+    public void Receive(OpenExtensionGalleryScreenshotViewerMessage message)
+    {
+        if (message.Screenshots.Count == 0)
+        {
+            return;
+        }
+
+        OpenScreenshotViewer(message.Screenshot, message.Screenshots, startConnectedAnimation: true);
+    }
 
     private void NavigationBreadcrumbBar_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
     {
@@ -194,11 +822,13 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void Window_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
     {
+        _localKeyboardListener.EnableRaisingEvents = args.WindowActivationState != WindowActivationState.Deactivated;
         WeakReferenceMessenger.Default.Send<Microsoft.UI.Xaml.WindowActivatedEventArgs>(args);
     }
 
     private void Window_Closed(object sender, WindowEventArgs args)
     {
+        _isClosed = true;
         WeakReferenceMessenger.Default.Send<SettingsWindowClosedMessage>();
 
         WeakReferenceMessenger.Default.UnregisterAll(this);
@@ -229,6 +859,12 @@ public sealed partial class SettingsWindow : WindowEx,
 
     private void TryGoBack()
     {
+        if (ScreenshotViewerPopup.IsOpen)
+        {
+            CloseScreenshotViewer();
+            return;
+        }
+
         if (NavFrame.CanGoBack)
         {
             NavFrame.GoBack();
@@ -278,57 +914,301 @@ public sealed partial class SettingsWindow : WindowEx,
         }
     }
 
+    private void RootElement_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        SettingsSearchBox.Width = Math.Clamp(e.NewSize.Width - 320, 160, 480);
+        UpdateScreenshotViewerPopupSize();
+    }
+
+    private void HideBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+
+        var fadeOut = new DoubleAnimation
+        {
+            To = 0,
+            Duration = new Duration(TimeSpan.FromMilliseconds(200)),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn },
+        };
+        Storyboard.SetTarget(fadeOut, BreadcrumbContainer);
+        Storyboard.SetTargetProperty(fadeOut, "Opacity");
+
+        _breadcrumbStoryboard = new Storyboard();
+        _breadcrumbStoryboard.Children.Add(fadeOut);
+        _breadcrumbStoryboard.Completed += (_, _) =>
+        {
+            BreadcrumbContainer.Visibility = Visibility.Collapsed;
+            BreadcrumbContainer.Opacity = 1;
+            _breadcrumbStoryboard = null;
+        };
+        _breadcrumbStoryboard.Begin();
+    }
+
+    private void ShowBreadcrumb()
+    {
+        _breadcrumbStoryboard?.Stop();
+        _breadcrumbStoryboard = null;
+
+        if (BreadcrumbContainer.Visibility == Visibility.Collapsed)
+        {
+            BreadcrumbContainer.Opacity = 0;
+            BreadcrumbContainer.Visibility = Visibility.Visible;
+
+            var fadeIn = new DoubleAnimation
+            {
+                To = 1,
+                Duration = new Duration(TimeSpan.FromMilliseconds(250)),
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            };
+            Storyboard.SetTarget(fadeIn, BreadcrumbContainer);
+            Storyboard.SetTargetProperty(fadeIn, "Opacity");
+
+            _breadcrumbStoryboard = new Storyboard();
+            _breadcrumbStoryboard.Children.Add(fadeIn);
+            _breadcrumbStoryboard.Completed += (_, _) => _breadcrumbStoryboard = null;
+            _breadcrumbStoryboard.Begin();
+        }
+        else
+        {
+            BreadcrumbContainer.Opacity = 1;
+        }
+    }
+
     public void Dispose()
     {
+        _isClosed = true;
+        _topLevelCommandManager.PropertyChanged -= TopLevelCommandManager_PropertyChanged;
+        CancelSettingsNavigation();
+        _settingsLinkContextMenuService.Hide();
+        _currentPage?.Dispose();
+        _currentPage = null;
+        CloseScreenshotViewer();
+        _settingsTargetHighlighter.Close();
+        WinGetOperationsButtonControl?.Dispose();
         _localKeyboardListener?.Dispose();
     }
 
     private void NavFrame_OnNavigated(object sender, NavigationEventArgs e)
     {
-        BreadCrumbs.Clear();
+        CancelSettingsNavigation();
+        SettingsLinkFallbackInfoBar.IsOpen = false;
 
-        if (e.SourcePageType == typeof(GeneralPage))
+        // Settings pages are not cached and can be navigated away from before they load.
+        _currentPage?.Dispose();
+        _currentPage = e.Content as IDisposable;
+
+        BreadCrumbs.Clear();
+        ShowBreadcrumb();
+
+        if (e.Content is SettingsSearchPage searchPage && e.Parameter is string query)
+        {
+            NavView.SelectedItem = null;
+            SettingsSearchBox.Text = query;
+            SettingsSearchBox.IsSuggestionListOpen = false;
+            BreadCrumbs.Add(new(RS_.GetString("SettingsWindow_SearchResultsTitle"), string.Empty));
+            searchPage.ShowResults(query, GetSettingsSearchResults(query), Navigate);
+        }
+        else if (e.SourcePageType == typeof(GeneralPage))
         {
             NavView.SelectedItem = GeneralPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_GeneralPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GeneralPage"), SettingsPageTags.General));
         }
         else if (e.SourcePageType == typeof(AppearancePage))
         {
             NavView.SelectedItem = AppearancePageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_AppearancePage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_AppearancePage"), SettingsPageTags.Appearance));
         }
         else if (e.SourcePageType == typeof(ExtensionsPage))
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), SettingsPageTags.Extensions));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryPage))
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            HideBreadcrumb();
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), SettingsPageTags.Gallery));
+        }
+        else if (e.SourcePageType == typeof(ExtensionGalleryItemPage) && e.Parameter is ExtensionGalleryItemViewModel galleryExtension)
+        {
+            NavView.SelectedItem = GalleryPageNavItem;
+            HideBreadcrumb();
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_GalleryPage"), SettingsPageTags.Gallery));
+            BreadCrumbs.Add(new(galleryExtension.Title, galleryExtension));
         }
         else if (e.SourcePageType == typeof(DockSettingsPage))
         {
             NavView.SelectedItem = DockSettingsPageNavItem;
-            var pageType = RS_.GetString("Settings_PageTitles_DockPage");
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_DockPage"), SettingsPageTags.Dock));
         }
-        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is ProviderSettingsViewModel vm)
+        else if (e.SourcePageType == typeof(ExtensionPage) && e.Parameter is CommandProviderWrapper provider)
         {
             NavView.SelectedItem = ExtensionPageNavItem;
-            var extensionsPageType = RS_.GetString("Settings_PageTitles_ExtensionsPage");
-            BreadCrumbs.Add(new(extensionsPageType, extensionsPageType));
-            BreadCrumbs.Add(new(vm.DisplayName, vm));
+            BreadCrumbs.Add(new(RS_.GetString("Settings_PageTitles_ExtensionsPage"), SettingsPageTags.Extensions));
+            BreadCrumbs.Add(new(provider.DisplayName, provider));
         }
         else if (e.SourcePageType == typeof(InternalPage) && _internalNavItem is not null)
         {
             NavView.SelectedItem = _internalNavItem;
-            var pageType = "Internal";
-            BreadCrumbs.Add(new(pageType, pageType));
+            BreadCrumbs.Add(new(SettingsPageTags.Internal, SettingsPageTags.Internal));
         }
         else
         {
             BreadCrumbs.Add(new($"[{e.SourcePageType?.Name}]", string.Empty));
             Logger.LogError($"Unknown breadcrumb for page type '{e.SourcePageType}'");
         }
+    }
+
+    private void CloseScreenshotViewerButton_Click(object sender, RoutedEventArgs e)
+    {
+        CloseScreenshotViewer();
+    }
+
+    private void ScreenshotViewerOverlay_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        if (!ScreenshotViewerPopup.IsOpen || _currentScreenshotSet.Count <= 1)
+        {
+            return;
+        }
+
+        var delta = e.GetCurrentPoint(ScreenshotViewerOverlay).Properties.MouseWheelDelta;
+        if (delta > 0)
+        {
+            ChangeScreenshot(-1);
+            e.Handled = true;
+        }
+        else if (delta < 0)
+        {
+            ChangeScreenshot(1);
+            e.Handled = true;
+        }
+    }
+
+    private void ScreenshotViewerOverlay_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (!ScreenshotViewerPopup.IsOpen)
+        {
+            return;
+        }
+
+        switch (e.Key)
+        {
+            case VirtualKey.Escape:
+                CloseScreenshotViewer();
+                e.Handled = true;
+                break;
+            case VirtualKey.Left:
+                ChangeScreenshot(-1);
+                e.Handled = true;
+                break;
+            case VirtualKey.Right:
+                ChangeScreenshot(1);
+                e.Handled = true;
+                break;
+        }
+    }
+
+    private void ScreenshotViewerFlipView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        _currentScreenshot = ScreenshotViewerFlipView.SelectedItem as ExtensionGalleryScreenshotViewModel;
+        UpdateScreenshotViewerBindings();
+    }
+
+    private void OpenScreenshotViewer(
+        ExtensionGalleryScreenshotViewModel screenshot,
+        IReadOnlyList<ExtensionGalleryScreenshotViewModel> screenshots,
+        bool startConnectedAnimation)
+    {
+        _currentScreenshotSet = screenshots;
+        UpdateScreenshotViewerBindings();
+        UpdateScreenshotViewerPopupSize();
+        ScreenshotViewerFlipView.ItemsSource = screenshots;
+
+        // _currentScreenshot has to be set after ItemsSource for the FlipView to update to the correct index
+        _currentScreenshot = screenshot;
+        ScreenshotViewerFlipView.SelectedIndex = GetCurrentScreenshotIndex();
+        ScreenshotViewerPopup.IsOpen = true;
+
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            ScreenshotViewerOverlay.UpdateLayout();
+
+            if (startConnectedAnimation)
+            {
+                var animation = ConnectedAnimationService.GetForCurrentView().GetAnimation(OpenExtensionGalleryScreenshotViewerMessage.ConnectedAnimationKey);
+                animation?.TryStart(ScreenshotViewerImageHost);
+            }
+
+            ScreenshotViewerOverlay.Focus(FocusState.Programmatic);
+        });
+    }
+
+    private void CloseScreenshotViewer()
+    {
+        if (ScreenshotViewerPopup.IsOpen)
+        {
+            ScreenshotViewerPopup.IsOpen = false;
+        }
+
+        ScreenshotViewerFlipView.ItemsSource = null;
+        ScreenshotViewerFlipView.SelectedIndex = -1;
+        _currentScreenshotSet = [];
+        _currentScreenshot = null;
+        UpdateScreenshotViewerBindings();
+        if (!_isClosed)
+        {
+            RootElement.Focus(FocusState.Programmatic);
+        }
+    }
+
+    private void ChangeScreenshot(int delta)
+    {
+        if (_currentScreenshotSet.Count <= 1 || ScreenshotViewerFlipView.SelectedIndex < 0)
+        {
+            return;
+        }
+
+        var nextIndex = (ScreenshotViewerFlipView.SelectedIndex + delta) % _currentScreenshotSet.Count;
+        if (nextIndex < 0)
+        {
+            nextIndex += _currentScreenshotSet.Count;
+        }
+
+        ScreenshotViewerFlipView.SelectedIndex = nextIndex;
+    }
+
+    private int GetCurrentScreenshotIndex()
+    {
+        if (_currentScreenshot is null)
+        {
+            return -1;
+        }
+
+        for (var i = 0; i < _currentScreenshotSet.Count; i++)
+        {
+            if (ReferenceEquals(_currentScreenshotSet[i], _currentScreenshot))
+            {
+                return i;
+            }
+        }
+
+        return Math.Clamp(_currentScreenshot.Index, 0, _currentScreenshotSet.Count - 1);
+    }
+
+    private void UpdateScreenshotViewerPopupSize()
+    {
+        if (RootElement.ActualWidth <= 0 || RootElement.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        ScreenshotViewerOverlay.Width = RootElement.ActualWidth;
+        ScreenshotViewerOverlay.Height = RootElement.ActualHeight;
+    }
+
+    private void UpdateScreenshotViewerBindings()
+    {
+        Bindings.Update();
     }
 }
 

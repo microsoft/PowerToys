@@ -7,6 +7,7 @@ This file provides reusable helper functions used by the build scripts:
 - Get-BuildPaths: returns ScriptDir, OriginalCwd, RepoRoot (repo root detection)
 - RunMSBuild: wrapper around msbuild.exe (accepts optional Platform/Configuration)
 - RestoreThenBuild: performs restore and optionally builds the solution/project
+- Get-ProjectSolutionDir: returns the $(SolutionDir) a solution build would give a single project
 - BuildProjectsInDirectory: discovers and builds local .slnx/.csproj/.vcxproj files
 - Ensure-VsDevEnvironment: initializes the Visual Studio developer environment when possible.
   It prefers the DevShell PowerShell module (Microsoft.VisualStudio.DevShell.dll / Enter-VsDevShell),
@@ -18,7 +19,9 @@ Dot-source this file from a script to load helpers:
 . "$PSScriptRoot\build-common.ps1"
 
 ERROR DETAILS
-When a build fails, check the logs written next to the solution/project folder:
+When a build fails, check the logs in <repo>\artifacts\logs\<project name>\, where <repo> is the repo/worktree
+containing the project being built (first parent folder with PowerToys.slnx) and <project name> is the
+solution or project file name without its extension:
 - build.<configuration>.<platform>.all.log — full MSBuild text log
 - build.<configuration>.<platform>.errors.log — extracted errors only
 - build.<configuration>.<platform>.warnings.log — extracted warnings only
@@ -28,6 +31,40 @@ When a build fails, check the logs written next to the solution/project folder:
 Do not execute this file directly; dot-source it from `build.ps1` or `build-installer.ps1` so helpers are available in your script scope.
 #>
 
+function Get-ProjectRepoRoot {
+    param (
+        [string]$Solution
+    )
+
+    # Use the repo/worktree that contains the project being built (first ancestor with PowerToys.slnx),
+    # so builds in another clone don't write logs into the clone whose tools\build scripts ran.
+    # Falls back to the repo that contains these scripts.
+    # Relative paths are resolved against $script:RepoRoot because msbuild runs from there.
+    $fallback = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+    if (-not $Solution) { return $fallback }
+
+    try {
+        $fullPath = $Solution
+        if (-not [System.IO.Path]::IsPathRooted($fullPath)) {
+            $base = $script:RepoRoot
+            if (-not $base) { $base = (Get-Location).Path }
+            $fullPath = Join-Path $base $fullPath
+        }
+        $dir = Split-Path ([System.IO.Path]::GetFullPath($fullPath)) -Parent
+        while ($dir) {
+            if (Test-Path -LiteralPath (Join-Path $dir 'PowerToys.slnx') -PathType Leaf) {
+                return $dir
+            }
+            $parent = Split-Path $dir -Parent
+            if ($parent -eq $dir) { break }
+            $dir = $parent
+        }
+    } catch {
+    }
+
+    return $fallback
+}
+
 function RunMSBuild {
     param (
         [string]$Solution,
@@ -36,9 +73,12 @@ function RunMSBuild {
         [string]$Configuration
     )
 
-    # Prefer the solution's folder for logs; fall back to current directory
-    $logRoot = Split-Path -Path $Solution
-    if (-not $logRoot) { $logRoot = '.' }
+    # Logs go to <repo>\artifacts\logs\<project name>\, not the project folder: the context-menu
+    # projects run MakeAppx on their own folder before compiling, and MSBuild's open log files
+    # there make it fail with 0x80070020 (file in use).
+    $projectName = [System.IO.Path]::GetFileNameWithoutExtension($Solution)
+    $logRoot = Join-Path (Get-ProjectRepoRoot $Solution) "artifacts\logs\$projectName"
+    New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 
     $cfg = $null
     if ($Configuration) { $cfg = $Configuration.ToLower() } else { $cfg = 'unknown' }
@@ -98,6 +138,42 @@ function RestoreThenBuild {
     }
 }
 
+function Get-ProjectSolutionDir {
+    param (
+        [string]$ProjectPath
+    )
+
+    # Returns the $(SolutionDir) (with a trailing '\') that a solution build gives this project, or $null
+    # when the project is outside a PowerToys repo/worktree. Checks PowerToys.slnx first, then the nearest
+    # parent folder whose .sln/.slnx lists the project (e.g. installer\PowerToysSetup.slnx), then falls
+    # back to the repo root.
+    $projectFull = [System.IO.Path]::GetFullPath($ProjectPath)
+    $repoRoot = (Get-ProjectRepoRoot $projectFull).TrimEnd('\')
+    if (-not $projectFull.StartsWith("$repoRoot\", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $null
+    }
+
+    $solutions = @(Join-Path $repoRoot 'PowerToys.slnx')
+    $dir = Split-Path $projectFull -Parent
+    while ($dir.Length -gt $repoRoot.Length) {
+        $solutions += Get-ChildItem -LiteralPath $dir -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -in '.sln', '.slnx' } |
+            ForEach-Object { $_.FullName }
+        $dir = Split-Path $dir -Parent
+    }
+
+    foreach ($sln in $solutions) {
+        $slnDir = Split-Path $sln -Parent
+        $relativePath = $projectFull.Substring($slnDir.Length).TrimStart('\')
+        $content = Get-Content -LiteralPath $sln -Raw -ErrorAction SilentlyContinue
+        if ($content -and ($content -replace '/', '\').IndexOf("`"$relativePath`"", [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+            return "$slnDir\"
+        }
+    }
+
+    return "$repoRoot\"
+}
+
 function BuildProjectsInDirectory {
     param(
         [string]$DirectoryPath,
@@ -134,6 +210,18 @@ function BuildProjectsInDirectory {
             RestoreThenBuild $f.FullName $ExtraArgs $Platform $Configuration $RestoreOnly
         } else {
             $buildArgs = '/m'
+            if ($f.Extension -in '.csproj', '.vcxproj') {
+                # Without this, $(SolutionDir) is the project folder, so projects with IntDir/OutDir under it
+                # write intermediates there (and the context-menu projects pack them into their MSIX).
+                # ExtraArgs come later, so a caller's /p:SolutionDir still wins.
+                $solutionDir = Get-ProjectSolutionDir $f.FullName
+                if ($solutionDir -and $solutionDir.Contains(' ')) {
+                    # RunMSBuild splits ExtraArgs on spaces.
+                    Write-Warning ("[LOCAL BUILD] Not passing SolutionDir because its path contains spaces: {0}" -f $solutionDir)
+                } elseif ($solutionDir) {
+                    $buildArgs = "$buildArgs /p:SolutionDir=$solutionDir"
+                }
+            }
             if ($ExtraArgs) { $buildArgs = "$buildArgs $ExtraArgs" }
             RunMSBuild $f.FullName $buildArgs $Platform $Configuration
         }
@@ -176,11 +264,22 @@ function Get-DefaultPlatform {
     return 'x64'
 }
 
+function Test-VsHasNativeTools {
+    # Returns $true when the current process environment was initialized with a
+    # usable native (C++) toolchain. Any VS instance (full SKU or Build Tools)
+    # without the C++ workload leaves these unset, which is the original
+    # MSB4086 ($(PlatformToolsetVersion) empty) failure mode we are guarding
+    # against.
+    if (-not $env:VCToolsInstallDir) { return $false }
+    if (-not (Test-Path $env:VCToolsInstallDir)) { return $false }
+    return $true
+}
+
 function Ensure-VsDevEnvironment {
     $OriginalLocationForVsInit = Get-Location
     try {
 
-    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR -or $env:DevEnvDir -or $env:VCToolsInstallDir) {
+    if ($env:VSINSTALLDIR -or $env:VCINSTALLDIR) {
         Write-Host "[VS] VS developer environment already present"
         return $true
     }
@@ -193,22 +292,44 @@ function Ensure-VsDevEnvironment {
     $vswhere = $vswhereCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
     if ($vswhere) { Write-Host "[VS] vswhere found: $vswhere" } else { Write-Host "[VS] vswhere not found" }
 
+    # Probe for a Visual Studio install with the C++ workload. Selection is
+    # capability-based (-requires VC.Tools.x86.x64), not SKU-based: full VS
+    # SKUs and Build Tools are equally valid as long as the C++ workload is
+    # installed. -prerelease lets vswhere see Preview/Insiders alongside GA.
+    $vsProducts = @('Microsoft.VisualStudio.Product.Community',
+                     'Microsoft.VisualStudio.Product.Professional',
+                     'Microsoft.VisualStudio.Product.Enterprise',
+                     'Microsoft.VisualStudio.Product.BuildTools')
+
     $instPaths = @()
     if ($vswhere) {
-        # First try with the VC tools requirement (preferred)
-        try { $p = & $vswhere -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
-        # Fallback: try without -requires to find any VS installations
+        # Newest VS instance with the C++ VC tools workload (stable + prerelease).
+        try { $p = & $vswhere -latest -prerelease -products $vsProducts -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath 2>$null; if ($p) { $instPaths += $p } } catch {}
+        # Last-resort fallback if no instance reports the VC workload (still
+        # validated below by Test-VsHasNativeTools to skip unusable installs).
         if (-not $instPaths) {
-            try { $p2 = & $vswhere -latest -products * -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
+            try { $p2 = & $vswhere -latest -prerelease -products $vsProducts -property installationPath 2>$null; if ($p2) { $instPaths += $p2 } } catch {}
         }
     }
 
-    # Add explicit common year-based candidates as a last resort
+    # Add explicit common candidates as a last resort (newest first)
     if (-not $instPaths) {
         $explicit = @(
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Insiders",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Preview",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Community",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Professional",
+            "$env:ProgramFiles\Microsoft Visual Studio\2026\Enterprise",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Insiders",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Preview",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Community",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Professional",
+            "$env:ProgramFiles\Microsoft Visual Studio\18\Enterprise",
+            "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Preview",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles (x86)\Microsoft Visual Studio\2022\Enterprise",
+            "$env:ProgramFiles\Microsoft Visual Studio\2022\Preview",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Community",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Professional",
             "$env:ProgramFiles\Microsoft Visual Studio\2022\Enterprise"
@@ -221,7 +342,8 @@ function Ensure-VsDevEnvironment {
         return $false
     }
 
-    # Try each candidate installation path until one works
+    # Try each candidate installation path until one yields a working native
+    # toolchain (validated post-init via Test-VsHasNativeTools).
     foreach ($inst in $instPaths) {
         if (-not $inst) { continue }
         Write-Host "[VS] Checking candidate: $inst"
@@ -234,6 +356,10 @@ function Ensure-VsDevEnvironment {
                 # Call Enter-VsDevShell using only the install path to avoid parameter name differences
                 try {
                     Enter-VsDevShell -VsInstallPath $inst -ErrorAction Stop
+                    if (-not (Test-VsHasNativeTools)) {
+                        Write-Warning "[VS] DevShell entered $inst but VC tools (VCToolsInstallDir) not present - skipping"
+                        continue
+                    }
                     Write-Host "[VS] Entered Visual Studio DevShell at $inst"
                     return $true
                 } catch {
@@ -249,11 +375,19 @@ function Ensure-VsDevEnvironment {
             Write-Host "[VS] Running VsDevCmd.bat and importing environment from $vsDevCmd"
             try {
                 $cmdOut = cmd.exe /c "`"$vsDevCmd`" && set"
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Warning "[VS] VsDevCmd.bat exited with code $LASTEXITCODE at $inst"
+                    continue
+                }
                 foreach ($line in $cmdOut) {
                     $parts = $line -split('=',2)
                     if ($parts.Length -eq 2) {
                         try { [Environment]::SetEnvironmentVariable($parts[0], $parts[1], 'Process') } catch {}
                     }
+                }
+                if (-not (Test-VsHasNativeTools)) {
+                    Write-Warning "[VS] VsDevCmd.bat imported $inst but VC tools (VCToolsInstallDir) not present - skipping"
+                    continue
                 }
                 Write-Host "[VS] Imported environment from VsDevCmd.bat at $inst"
                 return $true

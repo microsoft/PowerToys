@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Windows.Foundation;
 
@@ -26,6 +27,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
     private readonly IPlaceholderParser _placeholderParser;
     private readonly SupersedingAsyncValueGate<BookmarkListItemReclassifyResult> _classificationGate;
     private readonly TaskCompletionSource _initializationTcs = new();
+    private readonly bool _isBandItem;
 
     private BookmarkData _bookmark;
 
@@ -37,12 +39,18 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
     public Guid BookmarkId => _bookmark.Id;
 
-    public BookmarkListItem(BookmarkData bookmark, IBookmarksManager bookmarksManager, IBookmarkResolver commandResolver, IBookmarkIconLocator iconLocator, IPlaceholderParser placeholderParser)
+    public BookmarkListItem(
+        BookmarkData bookmark,
+        IBookmarksManager bookmarksManager,
+        IBookmarkResolver commandResolver,
+        IBookmarkIconLocator iconLocator,
+        IPlaceholderParser placeholderParser,
+        bool asBand = false)
     {
         ArgumentNullException.ThrowIfNull(bookmark);
         ArgumentNullException.ThrowIfNull(bookmarksManager);
         ArgumentNullException.ThrowIfNull(commandResolver);
-
+        _isBandItem = asBand;
         _bookmark = bookmark;
         _bookmarksManager = bookmarksManager;
         _bookmarksManager.BookmarkUpdated += BookmarksManagerOnBookmarkUpdated;
@@ -77,9 +85,15 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
         try
         {
+            var addressChanged = !string.Equals(_bookmark.Bookmark, data.Bookmark, StringComparison.Ordinal);
             _bookmark = data;
             OnPropertyChanged(nameof(BookmarkTitle));
             OnPropertyChanged(nameof(BookmarkAddress));
+
+            if (addressChanged)
+            {
+                DataPackage = null;
+            }
 
             Subtitle = Resources.bookmarks_item_refreshing;
             _ = _classificationGate.ExecuteAsync();
@@ -107,11 +121,35 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         BuildSpecificContextMenuItems(classification, contextMenu);
         AddCommonContextMenuItems(_bookmark, _bookmarksManager, bookmarkSavedHandler, contextMenu);
 
+        var localFilePath =
+            classification.Kind is CommandKind.FileExecutable or CommandKind.FileDocument or CommandKind.Shortcut or CommandKind.InternetShortcut &&
+            File.Exists(classification.Target)
+                ? classification.Target
+                : null;
+
+        // If we're a band AND the classification kind was directory , then flip
+        // the command and the first contextMenu item
+        if (_isBandItem && classification.Kind == CommandKind.Directory && contextMenu.Count > 0)
+        {
+            var firstContextCommand = contextMenu[0] as CommandContextItem;
+            if (firstContextCommand != null)
+            {
+                var browseCommand = firstContextCommand.Command;
+                if (browseCommand != null)
+                {
+                    contextMenu.RemoveAt(0);
+                    contextMenu.Insert(0, new CommandContextItem(command));
+                    command = browseCommand;
+                }
+            }
+        }
+
         return new BookmarkListItemReclassifyResult(
             command,
             title,
             subtitle,
-            contextMenu.ToArray());
+            contextMenu.ToArray(),
+            localFilePath);
     }
 
     private void ApplyClassificationResult(BookmarkListItemReclassifyResult classificationResult)
@@ -128,6 +166,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         Title = classificationResult.Title;
         Subtitle = classificationResult.Subtitle;
         MoreCommands = classificationResult.MoreCommands;
+        DataPackage = DataPackageHelper.CreateDataPackageForPath(this, classificationResult.LocalFilePath);
 
         _initializationTcs.TrySetResult();
     }
@@ -140,9 +179,20 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         // TODO: unify across all built-in extensions
         var bookmarkTargetType = classification.Kind;
 
-        // TODO: add "Run as administrator" for executables/shortcuts
         if (!classification.IsPlaceholder)
         {
+            if ((bookmarkTargetType == CommandKind.Shortcut ||
+                (bookmarkTargetType is CommandKind.FileExecutable or CommandKind.PathCommand or CommandKind.FileDocument &&
+                    RunAsAdministratorCommand.IsSupportedFileType(classification.Target))) &&
+                classification.Launch == LaunchMethod.ShellExecute &&
+                File.Exists(classification.Target))
+            {
+                contextMenu.Add(new CommandContextItem(new RunAsAdministratorCommand(classification.Target, classification.Arguments, classification.WorkingDirectory))
+                {
+                    RequestedShortcut = KeyChords.RunAsAdministrator,
+                });
+            }
+
             if (bookmarkTargetType == CommandKind.FileDocument && File.Exists(classification.Target))
             {
                 contextMenu.Add(new CommandContextItem(new OpenWithCommand(classification.Input)));
@@ -155,7 +205,8 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         {
             case CommandKind.Directory:
                 directoryPath = targetPath;
-                contextMenu.Add(new CommandContextItem(new DirectoryPage(directoryPath))); // Browse
+                var c = new DirectoryPage(directoryPath);
+                contextMenu.Add(new CommandContextItem(c)); // Browse
                 break;
             case CommandKind.FileExecutable:
             case CommandKind.FileDocument:
@@ -298,6 +349,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         ICommand Command,
         string Title,
         string Subtitle,
-        IContextItem[] MoreCommands
+        IContextItem[] MoreCommands,
+        string? LocalFilePath
     );
 }

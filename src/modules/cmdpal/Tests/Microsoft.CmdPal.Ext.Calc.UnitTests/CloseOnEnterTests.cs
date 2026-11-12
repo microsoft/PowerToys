@@ -5,6 +5,7 @@
 using System.Globalization;
 using System.Linq;
 using Microsoft.CmdPal.Ext.Calc.Helper;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
@@ -18,47 +19,49 @@ public class CloseOnEnterTests
     public void PrimaryIsCopy_WhenCloseOnEnterTrue()
     {
         var settings = new Settings(closeOnEnter: true);
-        TypedEventHandler<object, object> handleSave = (s, e) => { };
         TypedEventHandler<object, object> handleReplace = (s, e) => { };
 
-        var item = ResultHelper.CreateResult(
+        var item = ResultHelper.CreateResultForPage(
             4m,
             CultureInfo.CurrentCulture,
             CultureInfo.CurrentCulture,
             "2+2",
             settings,
-            handleSave,
             handleReplace);
 
         Assert.IsNotNull(item);
         Assert.IsInstanceOfType(item.Command, typeof(CopyTextCommand));
+        Assert.IsTrue(item.MoreCommands.OfType<CommandContextItem>().All(command => command.Command is not SaveCommand));
 
-        var firstMore = item.MoreCommands.First();
-        Assert.IsInstanceOfType(firstMore, typeof(CommandContextItem));
-        Assert.IsInstanceOfType(((CommandItem)firstMore).Command, typeof(SaveCommand));
+        var result = ((CopyTextCommand)item.Command).Result;
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toastArgs = result.Args as ToastArgs;
+        Assert.IsNotNull(toastArgs);
+        Assert.AreEqual(CommandResultKind.Hide, ((CommandResult)toastArgs.Result).Kind);
     }
 
     [TestMethod]
-    public void PrimaryIsSave_WhenCloseOnEnterFalse()
+    public void PrimaryIsCopy_WhenCloseOnEnterFalse()
     {
         var settings = new Settings(closeOnEnter: false);
-        TypedEventHandler<object, object> handleSave = (s, e) => { };
         TypedEventHandler<object, object> handleReplace = (s, e) => { };
 
-        var item = ResultHelper.CreateResult(
+        var item = ResultHelper.CreateResultForPage(
             4m,
             CultureInfo.CurrentCulture,
             CultureInfo.CurrentCulture,
             "2+2",
             settings,
-            handleSave,
             handleReplace);
 
         Assert.IsNotNull(item);
-        Assert.IsInstanceOfType(item.Command, typeof(SaveCommand));
+        Assert.IsInstanceOfType(item.Command, typeof(CopyTextCommand));
+        Assert.IsTrue(item.MoreCommands.OfType<CommandContextItem>().All(command => command.Command is not SaveCommand));
 
-        var firstMore = item.MoreCommands.First();
-        Assert.IsInstanceOfType(firstMore, typeof(CommandContextItem));
-        Assert.IsInstanceOfType(((CommandItem)firstMore).Command, typeof(CopyTextCommand));
+        var result = ((CopyTextCommand)item.Command).Result;
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toastArgs = result.Args as ToastArgs;
+        Assert.IsNotNull(toastArgs);
+        Assert.AreEqual(CommandResultKind.KeepOpen, ((CommandResult)toastArgs.Result).Kind);
     }
 }

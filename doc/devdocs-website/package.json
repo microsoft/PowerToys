@@ -1,0 +1,16 @@
+{
+  "name": "powertoys-devdocs-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static Dev Docs website generated from doc/devdocs with docmd.",
+  "scripts": {
+    "dev": "docmd dev",
+    "build": "docmd build"
+  },
+  "dependencies": {
+    "docmd-plugin-github-source-links": "file:./docmd-plugins/github-source-links"
+  },
+  "devDependencies": {
+    "@docmd/core": "0.8.6"
+  }
+}

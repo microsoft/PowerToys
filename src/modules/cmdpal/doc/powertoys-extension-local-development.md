@@ -2,7 +2,7 @@
 
 This guide is for iterating on `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj`.
 
-The extension is registered through the shared sparse package defined in `src/PackageIdentity/AppxManifest.xml`. That manifest declares `Microsoft.CmdPal.Ext.PowerToys.exe` at the sparse package root, so the sparse package and the extension must be built for the same platform and configuration, for example `x64\Debug`.
+The extension is registered through the shared sparse package defined in `src/PackageIdentity/AppxManifest.xml`. That manifest declares `Microsoft.CmdPal.Ext.PowerToys.exe` relative to the sparse package's ExternalLocation (`WinUI3Apps\` subfolder), so the sparse package and the extension must be built for the same platform and configuration, for example `x64\Debug`.
 
 ## Local development loop
 
@@ -30,12 +30,12 @@ The extension is registered through the shared sparse package defined in `src/Pa
    The command will look like this:
 
    ```powershell
-   Add-AppxPackage -Path "<repo>\<Platform>\<Configuration>\PowerToysSparse.msix" -ExternalLocation "<repo>\<Platform>\<Configuration>"
+   Add-AppxPackage -Path "<repo>\<Platform>\<Configuration>\PowerToysSparse.msix" -ExternalLocation "<repo>\<Platform>\<Configuration>\WinUI3Apps"
    ```
 
 4. Build `src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.PowerToys/Microsoft.CmdPal.Ext.PowerToys.csproj` in the same platform and configuration.
 
-   This project writes `Microsoft.CmdPal.Ext.PowerToys.exe` directly into the sparse package root, such as `x64\Debug` or `ARM64\Debug`. That matches the `Executable="Microsoft.CmdPal.Ext.PowerToys.exe"` entry in `src/PackageIdentity/AppxManifest.xml`.
+   This project writes `Microsoft.CmdPal.Ext.PowerToys.exe` into the `WinUI3Apps\` subfolder of the output root, such as `x64\Debug\WinUI3Apps` or `ARM64\Debug\WinUI3Apps`. That matches the `Executable="Microsoft.CmdPal.Ext.PowerToys.exe"` entry in `src/PackageIdentity/AppxManifest.xml` resolved relative to the sparse package's ExternalLocation.
 
 5. Restart Command Palette.
 

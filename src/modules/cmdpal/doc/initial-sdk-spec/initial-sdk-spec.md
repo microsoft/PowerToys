@@ -1,7 +1,7 @@
 ---
 author: Mike Griese
 created on: 2024-07-19
-last updated: 2026-02-05
+last updated: 2026-10-29
 issue id: n/a
 ---
 
@@ -76,8 +76,45 @@ functionality.
     - [Status messages](#status-messages)
     - [Rendering of ICommandItems in Lists and Menus](#rendering-of-icommanditems-in-lists-and-menus)
   - [Addenda I: API additions (ICommandProvider2)](#addenda-i-api-additions-icommandprovider2)
+  - [Addenda II: Commands with Parameters](#addenda-ii-commands-with-parameters)
+    - [String parameters](#string-parameters)
+    - [Command parameters - Invokable Commands](#command-parameters---invokable-commands)
+    - [Command parameters - List Commands](#command-parameters---list-commands)
+    - [Examples](#examples)
+  - [Addenda III: Rich Search (DRAFT)](#addenda-iii-rich-search-draft)
+    - [Nov 2025 status](#nov-2025-status)
   - [Addenda IV: Dock bands](#addenda-iv-dock-bands)
     - [Pinning nested commands to the dock (and top level)](#pinning-nested-commands-to-the-dock-and-top-level)
+  - [Addenda V: Extra content types](#addenda-v-extra-content-types)
+    - [Image content](#image-content)
+    - [Plain text content](#plain-text-content)
+  - [Addenda VI: Adaptive Card Actions](#addenda-vi-adaptive-card-actions)
+  - [Addenda VII: Rich content details](#addenda-vii-rich-content-details)
+  - [Addenda IX: Dock label layout hints](#addenda-ix-dock-label-layout-hints)
+    - [Width values](#width-values)
+    - [Toolkit methods](#toolkit-methods)
+    - [Attributes](#attributes)
+    - [Host behavior](#host-behavior)
+    - [Change notifications](#change-notifications)
+  - [Addenda X: Fallbacks v2](#addenda-x-fallbacks-v2)
+    - [Goals](#goals)
+    - [Overview](#overview)
+    - [API](#api)
+    - [Passive fallbacks](#passive-fallbacks)
+      - [Why `CreateCommand`](#why-createcommand)
+    - [Active fallbacks](#active-fallbacks)
+    - [Result sources](#result-sources)
+      - [Snapshots and progress](#snapshots-and-progress)
+      - [Cancellation and stale results](#cancellation-and-stale-results)
+      - [Paging](#paging)
+    - [Rendering and ranking](#rendering-and-ranking)
+    - [Provider and host compatibility](#provider-and-host-compatibility)
+    - [Toolkit helpers](#toolkit-helpers)
+    - [Examples](#examples-1)
+      - [Passive web search](#passive-web-search)
+      - [Opening a page with the query](#opening-a-page-with-the-query)
+      - [File results on the top level](#file-results-on-the-top-level)
+      - [Registering passive commands and result sources](#registering-passive-commands-and-result-sources)
   - [Class diagram](#class-diagram)
   - [Future considerations](#future-considerations)
     - [Arbitrary parameters and arguments](#arbitrary-parameters-and-arguments)
@@ -353,7 +390,7 @@ On a cold launch, DevPal will do the following:
      * Start it up.
      * Check if it's fresh or frozen.
      * Call `TopLevelCommands`, and put all of them in the list
-     * Create a extension cache entry for that app.
+     * Create an extension cache entry for that app.
      * If the provider is frozen: we can actually release the
        `ICommandProvider` instance at this point.
    * And of course, if we don't find all the packages we had cached, then delete
@@ -454,7 +491,7 @@ ms-windows-store://assoc/?Tags=AppExtension-com.microsoft.commandpalette
 
 to open the store to a list of extensions. However, we can't list those
 ourselves directly. Our friends in DevHome suggested it could be possible to
-stand up a azure service which could query the store for us, and return a list
+stand up an azure service which could query the store for us, and return a list
 of extensions. This is not something that they currently have planned, nor would
 it be cheap from an engineering standpoint.
 
@@ -572,6 +609,10 @@ interface IGoToPageArgs requires ICommandResultArgs{
 interface IToastArgs requires ICommandResultArgs{
     String Message { get; };
     ICommandResult Result { get; };
+}
+interface IToastArgs2 requires IToastArgs{
+    IIconInfo Icon { get; };
+    ICommand Command { get; };
 }
 interface IConfirmationArgs requires ICommandResultArgs{
     String Title { get; };
@@ -700,6 +741,15 @@ Use cases for each `CommandResultKind`:
     before the previous one is dismissed, the new toast will replace the old
     one. This includes if the `Result` of one `IToastArgs` is another
     `IToastArgs`.
+  * An extension can optionally customize the toast via `IToastArgs2` (the
+    toolkit's `ToastArgs` already implements it):
+    * `Icon` is displayed next to the message.
+    * `Command` manifests as an action button on the right side of the toast
+      (e.g. "Undo", "View details"), using the command's icon and name. When
+      clicked, the toast is dismissed and the command is performed — an
+      invokable command is invoked directly, and a page command summons the
+      palette and navigates to the page.
+    * Hosts that predate `IToastArgs2` display just the message.
 * `Confirm`: Display a confirmation dialog to the user. This is useful for
   actions that are destructive or irreversible. The `ConfirmationArgs` will
   specify the title, and description for the dialog. The primary button of the
@@ -799,8 +849,21 @@ interface IListItem requires ICommandItem {
     String TextToSuggest { get; };
 }
 
-interface IGridProperties  {
-    Windows.Foundation.Size TileSize { get; };
+[uuid("50C6F080-1CBE-4CE4-B92F-DA2F116ED524")]
+interface IGridProperties requires INotifyPropChanged { }
+
+[uuid("05914D59-6ECB-4992-9CF2-5982B5120A26")]
+interface ISmallGridLayout requires IGridProperties { }
+
+interface IMediumGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+}
+
+interface IGalleryGridLayout requires IGridProperties
+{
+    Boolean ShowTitle { get; };
+    Boolean ShowSubtitle { get; };
 }
 
 interface IListPage requires IPage, INotifyItemsChanged {
@@ -922,9 +985,10 @@ of grouped results, they're free to have as many sections as they like.
 
 When the `GridProperties` property is set to null, DevPal will display the items
 as a simple list, grouping them by section. When the `GridProperties` property
-is set to a non-null value, DevPal will display the items as a grid, with each
-item in the grid being a `TileSize` square. Grids are useful for showing items
-that are more visual in nature, like images or icons.
+is set to a non-null value, DevPal uses the implemented layout interface:
+`ISmallGridLayout`, `IMediumGridLayout`, or `IGalleryGridLayout`. Medium and
+gallery layouts can show titles, and gallery layouts can also show subtitles.
+Grids are useful for visual content such as images or icons.
 
 Each item in the list may also include an optional `Details` property. This
 allows the extension to provide additional information about the item, like a
@@ -1105,7 +1169,7 @@ interface IFilterItem {}
 [uuid("0a923c7f-5b7b-431d-9898-3c8c841d02ed")]
 interface ISeparatorFilterItem requires IFilterItem {}
 
-interface IFilter requires IFilterItem {
+interface IFilter requires INotifyPropChanged, IFilterItem {
     String Id { get; };
     String Name { get; };
     IIconInfo Icon { get; };
@@ -1113,7 +1177,7 @@ interface IFilter requires IFilterItem {
 
 interface IFilters {
     String CurrentFilterId { get; set; };
-    IFilterItem[] Filters();
+    IFilterItem[] GetFilters();
 }
 ```
 
@@ -1396,6 +1460,15 @@ interface ITag {
 
 [uuid("6a6dd345-37a3-4a1e-914d-4f658a4d583d")]
 interface IDetailsData {}
+
+[contract(Microsoft.CommandPalette.Extensions.ExtensionsContract, 1)]
+enum ContentSize
+{
+    Small = 0,
+    Medium = 1,
+    Large = 2,
+};
+
 interface IDetailsElement {
     String Key { get; };
     IDetailsData Data { get; };
@@ -1465,6 +1538,10 @@ interface IFallbackHandler {
 interface IFallbackCommandItem requires ICommandItem {
     IFallbackHandler FallbackHandler{ get; };
     String DisplayTitle { get; };
+};
+
+interface IFallbackCommandItem2 requires IFallbackCommandItem {
+    String Id { get; };
 };
 
 interface ICommandProvider requires Windows.Foundation.IClosable, INotifyItemsChanged
@@ -1736,8 +1813,24 @@ However, this class comes with restrictions around the ability to call it from a
 background thread. Since extensions are always running in the background, this
 presents persistent difficulties.
 
-We'll provide a helper class that allows developers to easily use the clipboard
-in their extensions.
+The extension toolkit provides `ClipboardHelper` for this purpose. Its methods
+create the required STA work automatically, so extension code does not need to
+create a foreground window or manage a clipboard thread:
+
+```cs
+ClipboardHelper.SetText("text");
+ClipboardHelper.SetRtf("plain text", rtfText);
+ClipboardHelper.SetImage(RandomAccessStreamReference.CreateFromStream(stream));
+ClipboardHelper.SetContent(dataPackage);
+```
+
+`SetText` and `SetRtf` use the Win32 clipboard formats directly. `SetImage`
+accepts a `RandomAccessStreamReference` containing an image and writes it as
+the standard bitmap clipboard format. `SetContent` accepts a `DataPackage` for
+other Windows clipboard formats. Clipboard ownership and bounded retries are
+handled by the helper. Clipboard access can still fail when another process
+owns the shared clipboard, so callers should treat clipboard operations as
+best-effort and surface their own user-facing error when appropriate.
 
 ### Settings helpers
 
@@ -1780,7 +1873,7 @@ class MyAppSettings {
         /* You can save the settings to the file here */
         var mySettingsFilePath = /* whatever */;
         string mySettingsJson = mySettings.Settings.GetState();
-        // Or you could raise a event to indicate to the rest of your app that settings have changed.
+        // Or you could raise an event to indicate to the rest of your app that settings have changed.
     }
 }
 
@@ -2006,7 +2099,7 @@ class CommandWithOnlyProperties : IExtendedAttributesProvider { ... }
 
 will populate the WinRT type cache in Command Palette with the type information
 for `ICommandWithProperties`. In fact, if Command Palette has the
-`IExtendedAttributesProvider` type info in it's cache, and then later receives a new
+`IExtendedAttributesProvider` type info in its cache, and then later receives a new
 `MyCommandWithProperties` object, it'll actually be able to know that
 `MyCommandWithProperties` is an `IExtendedAttributesProvider`. WinRT is just weird
 like that some times.
@@ -2047,6 +2140,183 @@ Fortunately, we can put all of that (`GetApiExtensionStubs`,
 `SupportCommandsWithProperties`) directly in `Toolkit.CommandProvider`, so
 developers won't have to do anything. The toolkit will just do the right thing
 for them.
+
+## Addenda II: Commands with Parameters
+
+Extensions will often want to provide commands that accept parameters from the
+user.
+
+To support this, we're adding a new page type. The `IParametersPage` is a page
+that allows an extension to define a set of parameters that the user can fill.
+These parameters can be of different types, such as:
+* Labels: static text that provides context or instructions.
+* String parameters: text input fields where the user can type a string.
+* Command parameters: interactive fields that allow the user to select from a
+  list of predefined commands, or just press a button to select an input.
+
+Interleaving labels with parameters allows extensions to create rich, guided
+input forms for their commands. These are a more lightweight solution than the
+current adaptive card content. 
+
+```csharp
+[uuid("a2590cc9-510c-4af7-b562-a6b56fe37f55")]
+interface IParameterRun requires INotifyPropChanged
+{
+};
+
+interface ILabelRun requires IParameterRun
+{
+    String Text{ get; };
+};
+
+interface IParameterValueRun requires IParameterRun
+{
+    String PlaceholderText{ get; };
+    Boolean NeedsValue{ get; }; // TODO! name is weird
+};
+
+interface IStringParameterRun requires IParameterValueRun
+{
+    String Text{ get; set; };
+
+    // TODO! do we need a way to validate string inputs?
+};
+
+interface ICommandParameterRun requires IParameterValueRun
+{
+    String DisplayText{ get; };
+    ICommand GetSelectValueCommand(UInt64 hostHwnd);
+    IIconInfo Icon{ get; }; // ? maybe
+
+};
+
+interface IParametersPage requires IPage
+{
+    IParameterRun[] Parameters{ get; };
+    IListItem Command{ get; };
+};
+```
+
+When we open a `IParametersPage`, we will render the `Parameters` in the search
+box. We'll move focus to the first `IParameterRun` that is not a `ILabelRun`.
+What those interactions looks like depends on the type of `IParameterRun`. 
+
+There are three basic types of inputs: strings, invokable commands, and lists.
+Strings are a special case that doesn't require a command to set the value.
+Lists and invokable commands are picked based on the type of the
+`SelectValueCommand`. Each of these are detailed below. 
+
+When all the parameters have `NeedsValue` set to `false`, we will display a
+single item to the user - the `Command` item. 
+
+### String parameters
+
+These are rendered as a text box within the search box. The user can type into
+it. Focus is moved to the next parameter when the user presses Enter or tab. 
+
+### Command parameters - Invokable Commands
+
+These are used when the `SelectValueCommand` is an `IInvokableCommand`.
+
+These are rendered as a button within the search box. The button text is
+`DisplayText` if it is set. If it is not, we will display the
+`PlaceholderText`. If the user clicks the button, we invoke the
+`SelectValueCommand` (and ignore the `CommandResult`).
+
+This is good for file pickers, date pickers, color pickers, etc. Anything that
+requires a custom UI to pick a value.
+
+When the extension has picked a value, it should set the `NeedsValue` to false. 
+The extension can also set the `DisplayText` and `Icon` to reflect the chosen value.
+
+When the user presses enter with the button focused, we will also invoke the
+`SelectValueCommand`.
+
+When the user presses tab, we will move focus to the next parameter.
+
+If the `NeedsValue` property is changed to `false` while it's focused, we will
+move focus to the next parameter.
+
+### Command parameters - List Commands
+
+These are used when the `SelectValueCommand` is an `IListPage` - both static and
+dynamic lists work similarly.
+
+These are rendered as a text box within the search box. When the user focuses
+the text box, we will display the items from the `IListPage` in the body of
+CmdPal. The user can then type to filter the list. This filtering will work the
+same way as any other list page in CmdPal - CmdPal will filter static lists, or
+pass the query to a dynamic list.
+
+The items in this list should all be `IListItem` objects with
+`IInvokableCommands`. Putting a `IPage` into one of these items will cause the
+user to navigate away from the parameters page, which would probably be
+unexpected.
+
+When the user picks an item from the list, the extension should handle that
+command by bubbling an event up to the `CommandRun`, and setting the `Value`,
+`DisplayText`, and `Icon` properties, and setting `NeedsValue` to false.
+
+When the user presses enter with the text box focused, we will invoke the
+command of the selected item in the list. 
+
+When the user presses tab, we will move focus to the next parameter.
+
+If the `NeedsValue` property is changed to `false` while it's focused, we will
+move focus to the next parameter.
+
+### Examples
+
+Lets say you had a command like "Create a note \${title} in \${folder}".
+`title` is a string input, and `folder` is a static list of folders. 
+
+The extension author can then define a `IParametersPage` with four runs in it:
+* A `ILabelRun` for "Create a note"
+* A `IStringParameterRun` for the `title`
+* A `ILabelRun` for "in"
+* A `ICommandParameterRun` for the `folder`. The `Command` will be a
+  `IListPage`, where the items are possible folders
+
+In this example, the user can pick the "create note" command, then type the
+title, hit enter/tab, and then pick a folder from the list, then hit enter to
+run the command.
+
+Samples for the parameters page are implemented over in 
+[the sample extension](../../ext/SamplePagesExtension/Pages/ParameterSamples.cs)
+
+
+## Addenda III: Rich Search (DRAFT)
+
+> [!NOTE]
+> _Mike_: Rich search and parameters were prototyped together, but ultimately we used two different solutions. 
+>
+> Currently, we have a dummy implementation of draft C (ZWSP tokens), but without full API changes. Detailed [below](#nov-2025-status).
+
+Extensions will often want to provide rich search experiences for their users.
+
+This addenda is broken into multiple draft specs currently. These represent
+different approaches to the same goals. 
+
+* **A**: [Rich Search Box](./drafts/RichSearchBox-draft-A.md)
+* **B**: [Prefix Search](./drafts/PrefixSearch-draft-B.md)
+* **C**: [ZWSP tokens](./drafts/PlainRichSearch-draft-C.md)
+
+### Nov 2025 status
+
+As of Nov 2025, we're implementing a simple version of draft C in the host. 
+
+In this version, if the extension implements `IDynamicListPage`, and also
+implements `IExtendedAttributesProvider`, then they can set the `TokenSearch`
+property. This will enlighten CmdPal to treat ZWSP-separated tokens in the
+search text specially. 
+
+For an example, see 
+[this sample implementation](../../ext/SamplePagesExtension/Pages/SampleSuggestionsPage.cs).
+
+In my head, I am still leaning towards a more full-featured version of draft C,
+but with full CommandItem's in the `ISearchUpdateArgs` instead of just strings.
+We'd almost need a new page type to support that, where the extension can add
+`ICommandItem`s to the search box directly.
 
 ## Addenda IV: Dock bands
 
@@ -2159,6 +2429,847 @@ In neither of those scenarios was the full "display" of the item needed. In
 pinning scenarios, however, we need everything that the user would see in the UI
 for that item, which is all in the `ICommandItem`.
 
+## Addenda V: Extra content types
+
+Extra content types for [Content Pages](#content-pages) views so we can provide extra functionality to the user.
+
+### Image content
+
+Image content is dedicated to displaying a single image. The host will attempt to display the entire
+image in the UI or a scaled down preview, while respecting the max width and height. If possible, the host will
+provide UI controls to display the image 1:1, save it or copy it to the clipboard.
+
+```csharp
+interface IImageContent requires IContent {
+    IIconInfo Image { get; };
+    Int32 MaxWidth { get; };
+    Int32 MaxHeight { get; };
+}
+```
+
+### Plain text content
+
+Developers can declare that the content is unformatted plain text and provide
+hints about how to render it, such as what font to use and whether to
+wrap words or not. Users can control the view settings.
+
+```csharp
+enum FontFamily
+{
+    UserInterface,
+    Monospace,
+};
+
+interface IPlainTextContent requires IContent {
+    String Text { get; };
+    FontFamily FontFamily { get; };
+    Boolean WrapWords { get; };
+}
+```
+
+## Addenda VI: Adaptive Card Actions
+
+Adaptive Cards supports setting multiple actions on a card. Those actions can be
+identified by an `id` property on the action. That `id` is not necessarily
+encoded in the JSON payload of the action.
+
+For us to properly support the gammut of AC scenarios, we need to be able to
+pass the `id` of the action back to the extension. This is a relatively simple
+addition to the `IForm` interface.
+
+```csharp
+interface IFormContent2 requires IFormContent {
+    ICommandResult SubmitAction(String actionId, String inputs, String data);
+}
+```
+
+## Addenda VII: Rich content details
+
+Originally, the `IDetails` was designed for just a simple title, image, and
+markdown body. However it also makes sense to allow for more complex content in
+the details view. This is especially useful for extensions that want to provide
+richer inline content in the details view, like a card.
+
+```csharp
+interface IDetails2 requires IDetails {
+    IContent[] GetContent();
+}
+```
+
+This is a method, not a property, because we want to explicitly indicate that
+the content may be generated when it is requested. 
+
+Should an extension want to indicate that the content has changed, they can
+raise a `INotifyPropChanged` event on the `IDetails2` object for the property
+name "Content". The host will accept that as a notification that the content has
+changed. 
+
+## Addenda IX: Dock label layout hints
+
+Optional attributes exposed through `IExtendedAttributesProvider.GetProperties()`.
+Apply to the rendered item: the root of a single-item band, or each `IListPage` child.
+
+### Width values
+
+`DockLabelWidth` is an immutable Toolkit helper with three factories:
+
+- `Dips(double value)`: device-independent pixels.
+- `Characters(double value)`: multiples of the `0` glyph width in the target font.
+- `Sample(string text)`: literal text measured in the target font; empty text reserves zero.
+
+Numeric values must be finite, non-negative, and no greater than `float.MaxValue`.
+Factories reject invalid numbers and null samples.
+Helpers serialize widths as primitive attributes; the managed `DockLabelWidth` object does not cross WinRT.
+
+### Toolkit methods
+
+Receiver: `TItem : CommandItem, IExtendedAttributesProvider` (including `ListItem`).
+Requires a persistent, writable property bag. All methods return the same `TItem`.
+
+- `SetDockLabelReservations(DockLabelWidth? titleWidth, DockLabelWidth? subtitleWidth)`:
+  replace both row reservations; `null` removes the corresponding reservation.
+- `ClearDockLabelReservations()`: remove both row reservations; preserve shared limits.
+- `SetDockLabelWidthLimits(DockLabelWidth? minimum, DockLabelWidth? maximum)`:
+  replace both shared limits; `null` removes the corresponding limit.
+- `ClearDockLabelWidthLimits()`: remove both shared limits; preserve row reservations.
+- `SetDockLabelTabularDigits(bool enabled = true)`: enable equal-width digits in both rows.
+- `SetDockLabelTrailingAlignment(bool enabled = true)`: align both rows to the trailing edge.
+
+Both width arguments are required, including explicit `null` values.
+Presentation hints are independent; `enabled: false` removes the corresponding hint.
+Number formatting and decimal precision remain the extension's responsibility.
+
+Example: `item.SetDockLabelReservations(DockLabelWidth.Sample("100%"), DockLabelWidth.Sample(localizedSubtitle))`.
+Optional cap: `item.SetDockLabelWidthLimits(null, DockLabelWidth.Characters(20))`.
+
+### Attributes
+
+Constants are defined in `WellKnownExtensionAttributes`.
+Attribute keys use the prefix `Microsoft.CommandPalette.Dock.`.
+
+| Constant | Key suffix | Value | Measurement font |
+| --- | --- | --- | --- |
+| `DockTitleWidth` | `TitleWidth` | Width | Title |
+| `DockSubtitleWidth` | `SubtitleWidth` | Width | Subtitle |
+| `DockMinLabelWidth` | `MinLabelWidth` | Width | Title |
+| `DockMaxLabelWidth` | `MaxLabelWidth` | Width | Title |
+| `DockLabelTabularDigits` | `TabularDigits` | `bool` | Both rows |
+| `DockLabelTrailingAlignment` | `TrailingAlignment` | `bool` | Both rows |
+
+Width encodings:
+
+- `double`: DIPs.
+- Invariant number followed by `ch`: character units, including fractional or exponent notation.
+- `text:` followed by literal text: sample. For example, `text:12ch` measures the characters `12ch`.
+- Unit suffixes and the sample prefix are case-sensitive. Invalid values are ignored.
+
+### Host behavior
+
+- Reservations: measure each enabled row in its own font and text scale.
+  Fix the shared label width to the largest valid reservation, clamped by explicit min/max.
+- Limits: use the title font for character units and samples.
+  Without a row reservation, constrain the content's natural width.
+  Equal limits fix the width; a maximum alone permits shrinking.
+  Ignore both limits if the resolved minimum exceeds the maximum.
+- Defaults: apply only when no enabled row has a valid reservation.
+  Minimum 24 DIPs with a title, zero for subtitle-only items; maximum 100 DIPs.
+  An explicit limit overrides a conflicting default.
+- Visibility: compact mode excludes the subtitle; settings exclude hidden rows.
+  Empty displayed text retains its row reservation. Hidden labels reserve no space.
+- Samples: independent of displayed text, never rendered or inferred from it.
+  Keep samples stable across value updates to avoid resizing.
+  Measurements include pixel rounding and are cached until hints, fonts, language,
+  direction, text scale, or display scale change.
+- Scope: label column only, excluding icons and padding. Vertical docks may shrink below the minimum.
+- Overflow: ellipsis, with full text in the tooltip.
+
+### Change notifications
+
+- Width attributes: `PropChanged("DockLabelWidth")`.
+- Tabular digits: `PropChanged("DockLabelTabularDigits")`.
+- Trailing alignment: `PropChanged("DockLabelTrailingAlignment")`.
+- Entire property bag: `PropChanged("Properties")`.
+- Helpers notify once after updating all affected keys; unchanged hints do not notify.
+- Ordinary `Title` / `Subtitle` updates require no additional hint notification.
+
+## Addenda X: Fallbacks v2
+
+_with credit to [@jiripolasek](https://github.com/jiripolasek), [whose
+work](https://github.com/microsoft/PowerToys/commit/d80d09509dce6d50134fcd3cd6a3613ce5d41cdf)
+helped inspire this final design_.
+  
+The original DevPal design required each fallback to return exactly one result.
+File search therefore used a nested page. User feedback shows that users want
+files, settings, and open windows in the top-level search results.
+
+The word "fallback" describes three scenarios:
+
+1. A **passive command** which can handle arbitrary text, like "Search the web
+   for {query}". The host can format and display this without calling the
+   extension on every keypress.
+2. An **active command** which needs to react to every query, like a command
+   line parser that changes its title, icon, or command as the user types. This
+   is the behavior of the original `IFallbackHandler`.
+3. A **result source** which searches in response to the top-level query and
+   returns zero or more items. File search is the obvious example.
+
+Trying to represent all three with `IFallbackHandler.UpdateQuery` has two bad
+outcomes. Simple commands pay for an out-of-process call on every keypress, and
+search providers are forced to hide all their results behind one command and a
+nested page.
+
+This addendum separates those behaviors. It is intended to address the user
+feedback in [#38683], [#39010], [#38877], and [#44989].
+
+### Goals
+
+* Let an extension return multiple results directly to the top-level search.
+* Keep simple fallbacks out of the cross-process query path.
+* Preserve the original query when a result is invoked or opens a page.
+* Support slow and remote sources without blocking faster sources.
+* Support incremental results and paging.
+* Let the host cancel old asynchronous work and reliably reject stale results.
+* Preserve source attribution and the order chosen by the extension.
+* Keep the WinRT interface inheritance linear for metadata-based marshalling.
+* Remain compatible with existing `IFallbackCommandItem` and
+  `IFallbackHandler` implementations.
+
+This does not define a common relevance score between extensions. Different
+sources have different ideas of what a score means, and mixing those values
+would produce unpredictable ordering. A future API could define a common score
+contract.
+
+### Overview
+
+The host selects the behavior from the item's interfaces and `QueryHandler`.
+
+There are three "modes" of a fallback:
+
+| Mode | Implementation | Host behavior | Typical examples |
+| ---- |---|---|---|
+| [Active](#active-fallbacks) | No `IFallbackCommandItem3` | Call the legacy `FallbackHandler.UpdateQuery`. | Existing v1 fallbacks |
+| [Passive](#passive-fallbacks) | `IFallbackCommandItem3` with a null `QueryHandler` | Format and match locally. Call `CreateCommand` only on activation. | Web search, ask an assistant, open a URL |
+| [Results](#results-fallbacks) | `IFallbackCommandItem3` with a non-null `QueryHandler` | Call `QueryHandler.QueryAsync` and display its returned items. | Files, settings, open windows, remote search |
+
+A provider can return legacy fallbacks, passive commands, and result sources together.
+For example, one provider can expose a passive web search command and a result source for browser history.
+The host reads `QueryHandler` when it loads the fallback.
+The extension must keep this handler unchanged for the lifetime of that fallback.
+The host never calls `FallbackHandler.UpdateQuery` on an item that implements `IFallbackCommandItem3`.
+
+### API
+
+```csharp
+enum HostMatchKind
+{
+    None = 0,
+    Regex,
+};
+
+interface IFallbackQueryArgs requires IExtendedAttributesProvider
+{
+    String Query { get; };
+    String QueryId { get; };
+    UInt32 RequestedItemCount { get; };
+    String[] LanguageTags { get; };
+};
+
+[uuid(4f3ba46e-4d06-4a3e-9464-8b6e9f5b792c)]
+interface IFallbackCommandInvocationArgs requires IFallbackQueryArgs
+{
+};
+
+interface IFallbackCommandResult
+{
+    String Query { get; };
+    String QueryId { get; };
+    IListItem[] Items { get; };
+    Boolean HasMoreItems { get; };
+
+    Windows.Foundation.IAsyncOperationWithProgress<
+        IFallbackCommandResult,
+        IFallbackCommandResult> LoadMoreItemsAsync(UInt32 requestedItemCount);
+};
+
+interface IFallbackQueryHandler
+{
+    Windows.Foundation.IAsyncOperationWithProgress<
+        IFallbackCommandResult,
+        IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
+};
+
+interface IFallbackCommandItem3 requires IFallbackCommandItem2
+{
+    String Name { get; };
+
+    String TitleTemplate { get; };
+    String SubtitleTemplate { get; };
+
+    HostMatchKind MatchKind { get; };
+    String MatchValue { get; };
+
+    IFallbackQueryHandler QueryHandler { get; };
+
+    ICommand CreateCommand(IFallbackCommandInvocationArgs args);
+};
+```
+
+`ICommandProvider.FallbackCommands()` continues to return
+`IFallbackCommandItem[]`. For each returned object, a v2 host checks whether it
+also implements `IFallbackCommandItem3`. This is the same pattern the host
+already uses to discover `IFallbackCommandItem2`.
+
+The host creates `IFallbackQueryArgs` for each accepted top-level query.
+`IFallbackCommandInvocationArgs` extends this context for passive command activation.
+`IFallbackCommandResult` describes a complete snapshot and owns its continuation.
+`IFallbackQueryHandler` retains its linear inheritance from `IFallbackHandler` for marshalling.
+This inheritance does not cause the host to call `UpdateQuery` for v2 fallbacks.
+
+`IFallbackQueryArgs.GetProperties()` is reserved for optional host context that
+does not justify a new contract version. Extensions must ignore properties they
+do not understand. The initial host does not require any extended properties.
+
+`QueryId` is an opaque ID created by the host. It is unique within the host
+session and compared using ordinal string equality. An extension may use it as
+a key for query state, but must not parse it or assume that IDs sort in
+creation order.
+
+`RequestedItemCount` is a budget, not a requirement to return exactly that many
+items. For `QueryAsync`, it is the requested size of the initial snapshot. For
+`LoadMoreItemsAsync`, the corresponding argument is the number of additional
+items requested. A source may return fewer items, including none. The host must
+ignore items beyond the requested budget and may apply a lower display limit.
+
+`LanguageTags` contains the user's preferred display languages in priority
+order. A source can use these tags to select the language for results. The
+source does not have to use the current culture of the host process.
+
+For passive fallbacks, `Name` supplies the default action label before `CreateCommand` runs.
+The returned command must expose the same `ICommand.Name`.
+This label is separate from the item's `Title` and its source-attribution `DisplayTitle`.
+For result sources, the host ignores `Name`, the templates, `MatchKind`, `MatchValue`, and `CreateCommand`.
+Each returned `IListItem` supplies its own display properties and command.
+
+For the sake of clarity, the final complete `IFallbackCommandItem3` interface looks like the following:
+
+```cs
+// for IFallbackCommandItem
+interface IFallbackHandler {
+    void UpdateQuery(String query);
+};
+
+// for IFallbackCommandItem3
+interface IFallbackQueryHandler
+{
+    IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args);
+};
+
+public interface IFallbackCommandItem3
+{
+    // ---- IFallbackCommandItem ----
+    IFallbackHandler FallbackHandler{ get; };
+    String DisplayTitle { get; };
+
+    // ---- IFallbackCommandItem2 ----
+    String Id { get; };
+
+    // ---- IFallbackCommandItem3 ----
+    String Name { get; };
+
+    // If this is set, then this is treated as a result source.
+    // If it is null, then this is treated as a passive fallback.
+    IFallbackQueryHandler QueryHandler { get; };
+
+    // Passive fallbacks use these:
+    String TitleTemplate { get; };
+    String SubtitleTemplate { get; };
+    HostMatchKind MatchKind { get; };
+    String MatchValue { get; };
+
+    // Called only after the user activates a passive fallback. This supports both
+    // invokable commands and pages.
+    ICommand CreateCommand(IFallbackCommandInvocationArgs args);
+}
+```
+
+
+### Passive fallbacks
+
+Passive fallbacks implement `IFallbackCommandItem3` and return null from `QueryHandler`.
+The host must not call either `IFallbackHandler.UpdateQuery` or
+`IFallbackQueryHandler.QueryAsync` for a passive fallback.
+
+For each query, the host creates the display title and subtitle by replacing
+every literal `{query}` token in `TitleTemplate` and `SubtitleTemplate`. The
+query is inserted as plain text. It is not interpreted as a format string,
+regular expression, URI, or markup.
+
+If a template is null or empty, the host uses the corresponding `Title` or
+`Subtitle` from the fallback item. While the provider is live, the item remains
+observable, so an extension can independently change static state such as "Now
+playing". Those independent property changes are not query updates. A cached
+passive descriptor is a snapshot and does not receive later property changes.
+
+If `MatchKind` is `Regex`, the host performs a full-string match of `Query`
+against `MatchValue`. The initial host limits patterns to 4,096 characters and
+uses a timeout no longer than 50 milliseconds. An invalid expression, a
+timeout, or a non-match hides the fallback for that query. A host may disable a
+pattern which repeatedly fails or times out. Regex matching is performed in the
+host process and does not require an extension call.
+
+If `MatchKind` is `None`, there is no additional match filtering. The host's
+normal fallback visibility and user settings decide whether to show the item.
+
+The host associates each displayed passive item with the query and internal
+query generation that produced it. If the user activates an item after the
+top-level query has changed, the host ignores that activation and refreshes the
+list. This check is entirely host-side; it does not call the passive fallback
+or read query state from it.
+
+Only after that check succeeds does the host call `CreateCommand`, passing the
+exact query that produced the displayed item, and invoke or navigate to the
+returned command. This is the first time the passive fallback receives that
+query. Although `IFallbackCommandInvocationArgs` includes the host's opaque
+`QueryId`, the passive fallback receives it only with this activation-time call,
+never while the user types.
+
+#### Why `CreateCommand`
+
+An earlier prototype added an `IInvokableCommand2.InvokeWithArgs` method. That
+works for invokable commands, but it does not solve the equivalent page
+scenario. Consider a passive WinGet fallback: selecting "Search WinGet for
+foo" should open its list page with `foo` already in the page's search box.
+Pages are navigated to; they do not have an invocation method where the host can
+pass additional arguments.
+
+`CreateCommand` handles both cases. It runs only after activation, and it can
+return either:
+
+* an `IInvokableCommand` which has captured the query, or
+* an `IPage` initialized with the query.
+
+An extension which does not need the query may return the same object as
+`ICommandItem.Command`. A result source returns query-specific
+commands in its `IListItem`s, so the host does not call the fallback item's
+`CreateCommand` for those results.
+
+The host activates passive fallbacks through `CreateCommand`.
+Legacy fallbacks without `IFallbackCommandItem3` continue to use `ICommandItem.Command`.
+The host keeps the provider ID, fallback ID, exact query, and query ID with each
+displayed fallback or result item. This provenance is host state; the host does
+not change the extension's item to store it.
+
+This also avoids adding another interface branch to `ICommand`. Out-of-process
+metadata-based marshalling behaves best when interfaces form a linear chain.
+The same is why formatting, host matching, and the query handler are all on
+`IFallbackCommandItem3`, rather than separate
+`IFormattedFallbackCommandItem` and `IHostMatchedFallbackCommandItem` interfaces.
+
+### Active fallbacks
+
+Active fallbacks are legacy items that do not implement `IFallbackCommandItem3`.
+Their query and activation behavior does not change.
+The host calls `FallbackHandler.UpdateQuery` on a worker thread.
+The fallback can update its title, subtitle, icon, or command.
+On activation, the host uses `ICommandItem.Command`.
+
+`UpdateQuery` cannot be cancelled and has no query ID.
+The host continues to accept later property changes from the item.
+The cancellation and stale-snapshot rules for result sources do not apply to legacy active fallbacks.
+
+There is no v2 active fallback.
+A new extension that needs query-dependent work can return one item from a result source.
+This approach supports cancellation and query-specific commands without changes to a shared legacy item.
+A passive fallback is sufficient for host-side formatting or activation-time query handling.
+
+### Result sources
+
+A result source implements `IFallbackCommandItem3` and returns a non-null `QueryHandler`.
+The host calls this handler's `QueryAsync`, never its inherited `UpdateQuery`.
+A result source searches its domain. The host sends it the whole
+top-level query and displays the returned `IListItem`s directly on the main
+page. The extension does not need to create a nested page merely to expose its
+search results.
+
+For example, a file source can return five file items, a settings source can
+return two settings items, and an open-window source can return one window. All
+eight items can be visible on the top level at the same time.
+
+The host calls result sources concurrently. A slow source must not block a fast
+source, and a failure in one source must not remove results from another.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant H as DevPal host
+    participant F as File result source
+    participant S as Settings result source
+
+    U->>H: Type "display"
+    par Query enabled sources
+        H->>F: QueryAsync(query, query ID 42)
+        H->>S: QueryAsync(query, query ID 42)
+    end
+    S-->>H: Progress snapshot: 2 settings
+    H-->>U: Show settings results
+    F-->>H: Progress snapshot: 3 files
+    H-->>U: Add file results
+    S-->>H: Final snapshot
+    F-->>H: Final snapshot: 5 files, HasMoreItems=true
+    H-->>U: Replace the file source snapshot
+```
+
+#### Snapshots and progress
+
+Every progress value is a complete snapshot for that source and query, not a
+delta. The host replaces the previous snapshot from that source. The final
+return value is also a complete snapshot.
+
+Snapshots make cross-process recovery straightforward. If a progress event is
+lost or coalesced, the next snapshot still describes the complete visible
+state. Extensions should return items in their desired order.
+
+When a source publishes a snapshot, the initial host rebuilds the combined
+fallback-result list. It does not wait for the other sources to finish.
+
+Extensions should give result commands stable, non-empty IDs when possible.
+The host may use those IDs to preserve selection and reuse view models between
+snapshots. An item without a stable ID remains valid, but the host may need to
+replace it wholesale.
+
+The host keeps `(provider ID, fallback ID, query ID, query)` provenance with
+every displayed result. Result commands and pages are created by the source for
+that query and must retain any query context they need when invoked. The host
+checks the provenance before invoking or navigating to the item.
+
+#### Cancellation and stale results
+
+When the user changes the query, the host cancels the old
+`IAsyncOperationWithProgress`. A separate `CancelQuery` API is intentionally
+not included. The extension should observe cancellation on the async operation
+and stop expensive work as soon as practical.
+
+Cancellation does not guarantee that the operation stops immediately. An
+out-of-process source can still report progress or complete after cancellation.
+Therefore, every snapshot carries both `Query` and `QueryId`. The host must
+reject a snapshot unless both values match the active request for that source.
+
+The same rule applies at activation time. If an old item is invoked after the
+query changed, the host ignores the invocation and refreshes the list. It must
+not execute an action using a stale query.
+
+The extension must not reuse a result object from one query ID for another
+query ID. It may reuse the underlying domain objects and commands.
+
+#### Paging
+
+When a completed query or load-more operation returns `HasMoreItems = true`,
+the host may offer or automatically request more items. It calls
+`LoadMoreItemsAsync` on that final result object. The host must not load from a
+progress snapshot or overlap a query and load-more operation.
+
+The result object stores the continuation state. Progress and the final value
+from `LoadMoreItemsAsync` are again complete snapshots, including the
+previously returned items. The returned final result owns the next
+continuation. At most one query or load-more operation may be active for a
+source and query ID at a time.
+
+The host retains the result object on which it called `LoadMoreItemsAsync`
+until that operation completes or is cancelled. A progress snapshot may replace
+the visible snapshot, but it does not replace the in-flight operation owner.
+When the operation completes, continuation ownership transfers to its final
+result.
+
+Starting a new top-level query cancels both the original query operation and
+any load-more operation. A result keeps its continuation until
+`HasMoreItems = false`, cancellation, provider closure, or the host releases
+the result. A source may also expire an inactive continuation, in which case a
+load-more request returns the current complete snapshot with
+`HasMoreItems = false`.
+
+### Rendering and ranking
+
+Result sources are authoritative for matching within their own domain. The host
+must not fuzzy-filter their returned items. A semantic or structured result can
+be valid even when its title does not contain the query text.
+
+The initial host groups each source's results under an attributed section and
+preserves the source's item order. By default, source sections appear after
+directly matched top-level commands and applications, and before single-command
+fallbacks.
+
+Within a provider, the order returned from `FallbackCommands()` is the default
+source order. Across providers, the host uses its normal deterministic provider
+order. A user's persisted fallback order overrides both defaults.
+
+The user can configure each fallback independently:
+
+* enabled or disabled,
+* placement in the main results or in a dedicated section,
+* order relative to other fallback sources,
+* minimum query length,
+* delay before querying, and
+* maximum item count for each request.
+
+The host owns query scheduling and its default settings.
+The API does not expose extension-suggested delays or minimum query lengths.
+The host can limit user settings and apply its own safety budgets.
+
+Putting a source "in the main results" does not make its private relevance
+scores comparable with host results. Until a common scoring contract exists,
+the host treats each source as an ordered block and applies host policy to the
+block as a whole.
+
+The host displays the provider's `DisplayName` or the fallback's `DisplayTitle`
+as source attribution. It must not overwrite an item's subtitle to add that
+attribution; the subtitle belongs to the extension.
+
+Items with empty titles are not displayed. A source returns an empty array to
+indicate that it has no results. A null item, duplicate stable ID, mismatched
+query or query ID, unsupported command, or exception is rejected for that
+source without affecting any other source. A null `Items` value is treated as
+an empty array. A null or unsupported value from `CreateCommand` is not
+executed. Query failures are logged and isolated by source; the host does not
+synthesize an error result on the main page.
+
+### Provider and host compatibility
+
+A host which supports `IFallbackCommandItem3` continues to call
+`ICommandProvider.FallbackCommands()`. It treats an item as v2 when it can query
+the returned object for `IFallbackCommandItem3`; otherwise, it treats the item
+as a legacy active fallback.
+
+Every `IFallbackCommandItem3.Id` must be non-empty, stable across package
+updates, and unique within its provider. The host uses the pair of provider ID
+and fallback ID for settings, cached descriptors, ordering, and activation.
+
+An older host sees v2 objects only as `IFallbackCommandItem`s and treats them as
+active fallbacks. For that reason, the toolkit's passive and result-source base
+classes should provide a safe no-op implementation of `UpdateQuery`. Extension
+authors should also provide a sensible static `Title` and `Command` when an
+acceptable degraded experience is possible.
+
+Providers with active or result fallbacks are always treated as fresh, because
+the host needs a live object to query. A provider containing only passive
+fallbacks does not need to remain running for query updates. The host may cache
+only scalar display and matching metadata for a passive fallback, not interface
+objects. On activation, it rehydrates the provider, calls
+`FallbackCommands()`, finds the fallback by ID, queries it for
+`IFallbackCommandItem3`, and calls `CreateCommand` on
+that live object. A passive fallback which independently updates observable
+properties must remain live to provide those updates.
+
+The host keeps a provider alive while it holds any visible result, active
+query, continuation, invocation, or page returned by that provider. It may
+release the provider after all of those objects have been released.
+
+### Toolkit helpers
+
+The toolkit should provide default implementations for:
+
+* `FallbackCommandItem`, the unchanged legacy base class that implements
+  `IFallbackCommandItem2`, not `IFallbackCommandItem3`,
+* `FallbackPassiveItem`, a passive fallback that implements `IFallbackCommandItem3`
+  and returns null from `QueryHandler`,
+* `FallbackResultsItem`, a result source that implements `IFallbackCommandItem3`
+  and returns itself from `QueryHandler`, and
+* `FallbackQueryResult`, which owns an optional paging callback.
+
+Both new helpers derive from `FallbackCommandItem`.
+An existing subclass of `FallbackCommandItem` remains a legacy active fallback after recompilation.
+Its `UpdateQuery` and `Command` behavior does not change.
+The extension must explicitly adopt a new helper or implement `IFallbackCommandItem3` to use v2.
+
+`FallbackPassiveItem.Name` follows the current command's name until the extension sets it.
+An explicit name also updates the current command if it is a toolkit `Command`.
+`CreateCommand` returns the current `Command` by default.
+Only the host replaces `{query}` in the templates.
+
+Both new helpers implement `UpdateQuery` as a no-op for older hosts.
+`FallbackResultsItem` adapts a cancellable C# `Task` method to the WinRT asynchronous operation.
+`FallbackQueryResult` permits one
+load-more callback. It removes the callback when the call starts. A later or
+concurrent call returns the current snapshot with `HasMoreItems = false`.
+
+### Examples
+
+#### Passive web search
+
+This fallback does no work while the user types. Only after the user activates
+it does the extension create a command containing the query.
+
+```cs
+internal sealed partial class WebSearchFallback : FallbackPassiveItem
+{
+    public WebSearchFallback()
+        : base("Search the web", "com.contoso.web.search")
+    {
+        Name = "Search the web";
+        Title = "Search the web"; // Degraded title for older hosts
+        TitleTemplate = "Search the web for \"{query}\"";
+        SubtitleTemplate = "Open results in the default browser";
+        Icon = new IconInfo("\uE721");
+    }
+
+    public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
+    {
+        var escapedQuery = Uri.EscapeDataString(args.Query);
+        return new OpenUrlCommand($"https://www.example.com/search?q={escapedQuery}")
+        {
+            Name = "Search the web",
+        };
+    }
+}
+```
+
+A command-line fallback can use host-side matching to avoid waking its
+extension for queries that cannot be command lines:
+
+```cs
+internal sealed partial class ShellFallback : FallbackPassiveItem
+{
+    public ShellFallback()
+        : base("Run command", "com.contoso.shell.run")
+    {
+        Name = "Run command";
+        TitleTemplate = "Run \"{query}\"";
+        MatchKind = HostMatchKind.Regex;
+        MatchValue = @"[^\r\n]+";
+    }
+
+    public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
+        => new RunShellCommand(args.Query);
+}
+```
+
+The host performs the regex match. The extension is not called until
+`CreateCommand`.
+
+#### Opening a page with the query
+
+The same API works for pages. This fallback opens a dynamic WinGet page with
+the top-level query already applied:
+
+```cs
+internal sealed partial class WinGetFallback : FallbackPassiveItem
+{
+    public WinGetFallback()
+        : base("Search WinGet", "com.contoso.winget.search")
+    {
+        Name = "Search WinGet";
+        TitleTemplate = "Search WinGet for \"{query}\"";
+        Icon = new IconInfo("\uE719");
+    }
+
+    public override ICommand CreateCommand(IFallbackCommandInvocationArgs args)
+        => new WinGetSearchPage()
+        {
+            SearchText = args.Query,
+        };
+}
+```
+
+No special page interface is needed. The extension creates an ordinary page in
+the right initial state.
+
+#### File results on the top level
+
+This simplified sample reports file results in batches. The exact toolkit
+helpers may differ, but the important parts are cancellation, complete
+snapshots, stable commands, and preservation of the query ID.
+
+```cs
+internal sealed partial class FileSearchFallback : FallbackResultsItem
+{
+    private readonly FileIndex _index;
+
+    public FileSearchFallback(FileIndex index)
+        : base("Files", "com.contoso.files.search")
+    {
+        _index = index;
+        Icon = new IconInfo("\uE8B7");
+    }
+
+    // or, with the toolkit
+    protected override async Task<IFallbackCommandResult> QueryAsync(
+        FallbackQueryArgs args,
+        CancellationToken cancellationToken,
+        IProgress<IFallbackCommandResult> progress)
+    {
+        var cursor = _index.Search(args.Query);
+        var items = new List<IListItem>();
+        while (items.Count < args.RequestedItemCount &&
+               await cursor.MoveNextAsync(cancellationToken))
+        {
+            items.Add(CreateFileItem(cursor.Current));
+
+            if (items.Count % 5 == 0)
+            {
+                progress.Report(new FallbackQueryResult(
+                    args.Query,
+                    args.QueryId,
+                    items.ToArray(),
+                    cursor.HasMoreItems));
+            }
+        }
+
+        return new FallbackQueryResult(
+            args.Query,
+            args.QueryId,
+            items.ToArray(),
+            cursor.HasMoreItems,
+            (requestedItemCount, loadMoreCancellation, loadMoreProgress) =>
+                LoadMoreFromCursorAsync(
+                    args,
+                    cursor,
+                    items,
+                    requestedItemCount,
+                    loadMoreCancellation,
+                    loadMoreProgress));
+    }
+
+    private static IListItem CreateFileItem(FileHit hit)
+    {
+        return new ListItem(new OpenFileCommand(hit.Path)
+        {
+            Id = $"com.contoso.files.open:{hit.StableId}",
+        })
+        {
+            Title = hit.Name,
+            Subtitle = hit.Path,
+            Icon = new IconInfo(hit.Path),
+        };
+    }
+}
+```
+
+The source does not need to update one fallback item's title. It returns the
+actual file items that the user can invoke from the top level. In this sample,
+`FallbackQueryResult` owns the callback and captured cursor until paging is
+exhausted or the result is released. `LoadMoreFromCursorAsync` returns another
+complete `FallbackQueryResult`, including the previously loaded items and the
+next paging callback when more items remain.
+
+#### Registering passive commands and result sources
+
+An extension can mix passive commands and result sources in one provider:
+
+```cs
+internal sealed partial class ContosoCommandProvider : CommandProvider
+{
+    private readonly WebSearchFallback _webSearch = new();
+    private readonly WinGetFallback _winGet = new();
+    private readonly FileSearchFallback _files = new(FileIndex.Default);
+
+    public override IFallbackCommandItem[] FallbackCommands()
+        => [_webSearch, _winGet, _files];
+}
+```
+
+The host evaluates `_webSearch` and `_winGet` locally. It queries `_files`
+asynchronously and can show each file as soon as a progress snapshot arrives.
+
 ## Class diagram
 
 This is a diagram attempting to show the relationships between the various types we've defined for the SDK. Some elements are omitted for clarity. (Notably, `IconData` and `IPropChanged`, which are used in many places.)
@@ -2251,8 +3362,17 @@ classDiagram
     ITag "*" *-- IListItem
     IFallbackHandler "?" *-- IListItem
 
-    class IGridProperties  {
-        Windows.Foundation.Size TileSize
+    IGridProperties --|> INotifyPropChanged
+    class IGridProperties
+    ISmallGridLayout --|> IGridProperties
+    IMediumGridLayout --|> IGridProperties
+    IGalleryGridLayout --|> IGridProperties
+    class IMediumGridLayout {
+        Boolean ShowTitle
+    }
+    class IGalleryGridLayout {
+        Boolean ShowTitle
+        Boolean ShowSubtitle
     }
 
     IListPage --|> IPage
@@ -2350,7 +3470,7 @@ follow - these are not part of the current SDK spec.
 
 > [!NOTE]
 >
-> A thought: what if a action returns a `CommandResult.Entity`, then that takes
+> A thought: what if an action returns a `CommandResult.Entity`, then that takes
 > devpal back home, but leaves the entity in the query box. This would allow for
 > a Quicksilver-like "thing, do" flow. That command would prepopulate the
 > parameters. So we would then filter top-level commands based on things that can
@@ -2411,19 +3531,22 @@ Is that just a `Details` object? A markdown body?
 
 ### Generating the `.idl`
 
-The `.idl` for this SDK can be generated directly from this file. To do so, run the following command:
+This Markdown file is the source for the SDK definitions. Do not edit
+`extensionsdk/Microsoft.CommandPalette.Extensions/Microsoft.CommandPalette.Extensions.idl`
+directly. API declarations use `csharp` or `c#` fences; implementation examples use
+`cs` fences and are not emitted by the generator.
+
+Install the generator dependency with `python -m pip install mistletoe`, and ensure
+its `mistletoe` command is on `PATH`. From `src/modules/cmdpal`, regenerate with:
 
 ```ps1
-.\generate-interface.ps1 > .\Microsoft.DevPalette.Extensions.idl
+.\doc\initial-sdk-spec\generate-interface.ps1 |
+    Set-Content -Encoding utf8 .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.idl
 ```
 
-(After a `pip3 install mistletoe`)
-
-Or, to generate straight to the place I'm consuming it from:
-
-```ps1
-.\doc\initial-sdk-spec\generate-interface.ps1 > .\extensionsdk\Microsoft.CommandPalette.Extensions\Microsoft.CommandPalette.Extensions.Toolkit.idl
-```
+Review the generated diff along with the Markdown changes. Existing interface
+members, UUIDs and `requires` declarations must be preserved when reconciling old
+source drift. Regenerating a second time should produce no further changes.
 
 ### Adding APIs
 
@@ -2461,3 +3584,9 @@ interfaces. We'll instead need to rely on the tried-and-true method of adding a
 
 [Dev Home Extension]: https://learn.microsoft.com/en-us/windows/dev-home/extensions
 [`ISupportIncrementalLoading`]: https://learn.microsoft.com/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.data.isupportincrementalloading
+
+
+[#38683]: https://github.com/microsoft/PowerToys/issues/38683
+[#39010]: https://github.com/microsoft/PowerToys/issues/39010
+[#38877]: https://github.com/microsoft/PowerToys/issues/38877
+[#44989]: https://github.com/microsoft/PowerToys/issues/44989

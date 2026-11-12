@@ -6,6 +6,7 @@ using System.Diagnostics;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,9 +17,11 @@ using Microsoft.Windows.Storage.Pickers;
 
 namespace Microsoft.CmdPal.UI.Settings;
 
-public sealed partial class DockSettingsPage : Page
+public sealed partial class DockSettingsPage : Page, IDisposable
 {
     private readonly TaskScheduler _mainTaskScheduler = TaskScheduler.FromCurrentSynchronizationContext();
+    private readonly ISettingsService _settingsService;
+    private readonly IMonitorService? _monitorService;
 
     internal SettingsViewModel ViewModel { get; }
 
@@ -30,19 +33,98 @@ public sealed partial class DockSettingsPage : Page
 
         var themeService = App.Current.Services.GetService<IThemeService>()!;
         var topLevelCommandManager = App.Current.Services.GetService<TopLevelCommandManager>()!;
-        var settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        _settingsService = App.Current.Services.GetRequiredService<ISettingsService>();
+        var languageService = App.Current.Services.GetRequiredService<ILanguageService>();
+        _monitorService = App.Current.Services.GetService<IMonitorService>();
 
-        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, settingsService);
+        ViewModel = new SettingsViewModel(topLevelCommandManager, _mainTaskScheduler, themeService, _settingsService, languageService, _monitorService);
+
+        Loaded += DockSettingsPage_Loaded;
+        Unloaded += DockSettingsPage_Unloaded;
 
         // Initialize UI state
         InitializeSettings();
+    }
+
+    public void Dispose()
+    {
+        Loaded -= DockSettingsPage_Loaded;
+        Unloaded -= DockSettingsPage_Unloaded;
+        _settingsService.SettingsChanged -= OnSettingsChanged;
+        if (_monitorService is not null)
+        {
+            _monitorService.MonitorsChanged -= OnMonitorsChanged;
+        }
+
+        ViewModel.Dispose();
+    }
+
+    private void DockSettingsPage_Loaded(object sender, RoutedEventArgs e)
+    {
+        _settingsService.SettingsChanged += OnSettingsChanged;
+        if (_monitorService is not null)
+        {
+            _monitorService.MonitorsChanged += OnMonitorsChanged;
+        }
+
+        ViewModel.PopulateMonitorConfigs();
+        UpdateMonitorOverridesInfoBars();
+    }
+
+    private void DockSettingsPage_Unloaded(object sender, RoutedEventArgs e)
+    {
+        _settingsService.SettingsChanged -= OnSettingsChanged;
+        if (_monitorService is not null)
+        {
+            _monitorService.MonitorsChanged -= OnMonitorsChanged;
+        }
+    }
+
+    private void OnSettingsChanged(ISettingsService sender, SettingsModel settings)
+    {
+        DispatcherQueue.TryEnqueue(UpdateMonitorOverridesInfoBars);
+    }
+
+    private void OnMonitorsChanged(object? sender, EventArgs e)
+    {
+        DispatcherQueue.TryEnqueue(UpdateMonitorOverridesInfoBars);
+    }
+
+    private void UpdateMonitorOverridesInfoBars()
+    {
+        if (!IsLoaded)
+        {
+            return;
+        }
+
+        var settings = _settingsService.Settings;
+        var monitors = settings.EnableDock ? _monitorService?.GetMonitors() ?? [] : [];
+        DisabledDocksInfoBar.IsOpen = settings.EnableDock &&
+            settings.DockSettings.HasDisabledDocksForMonitors(monitors);
+        PositionOverridesInfoBar.IsOpen = settings.EnableDock &&
+            settings.DockSettings.HasPositionOverridesForMonitors(monitors);
+    }
+
+    private async void ManageMonitors_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            ViewModel.PopulateMonitorConfigs();
+            await SettingsPageTarget.NavigateAsync(this, "monitors", CancellationToken.None);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to navigate to dock monitor settings", ex);
+        }
     }
 
     private void InitializeSettings()
     {
         // Initialize UI controls to match current settings
         DockPositionComboBox.SelectedIndex = SelectedSideIndex;
+        DockSizeComboBox.SelectedIndex = SelectedDockSizeIndex;
         BackdropComboBox.SelectedIndex = SelectedBackdropIndex;
+        UpdateDockSizeCardVisibility();
     }
 
     private async void PickBackgroundImage_Click(object sender, RoutedEventArgs e)
@@ -108,7 +190,11 @@ public sealed partial class DockSettingsPage : Page
     public int SelectedSideIndex
     {
         get => SideToSelectedIndex(ViewModel.Dock_Side);
-        set => ViewModel.Dock_Side = SelectedIndexToSide(value);
+        set
+        {
+            ViewModel.Dock_Side = SelectedIndexToSide(value);
+            UpdateDockSizeCardVisibility();
+        }
     }
 
     public int SelectedBackdropIndex
@@ -126,18 +212,16 @@ public sealed partial class DockSettingsPage : Page
     // Conversion methods for ComboBox bindings
     private static int DockSizeToSelectedIndex(DockSize size) => size switch
     {
-        DockSize.Small => 0,
-        DockSize.Medium => 1,
-        DockSize.Large => 2,
+        DockSize.Default => 0,
+        DockSize.Compact => 1,
         _ => 0,
     };
 
     private static DockSize SelectedIndexToDockSize(int index) => index switch
     {
-        0 => DockSize.Small,
-        1 => DockSize.Medium,
-        2 => DockSize.Large,
-        _ => DockSize.Small,
+        0 => DockSize.Default,
+        1 => DockSize.Compact,
+        _ => DockSize.Default,
     };
 
     private static int SideToSelectedIndex(DockSide side) => side switch
@@ -162,6 +246,8 @@ public sealed partial class DockSettingsPage : Page
     {
         DockBackdrop.Transparent => 0,
         DockBackdrop.Acrylic => 1,
+        DockBackdrop.Mica => 2,
+        DockBackdrop.MicaAlt => 3,
         _ => 1,
     };
 
@@ -169,8 +255,17 @@ public sealed partial class DockSettingsPage : Page
     {
         0 => DockBackdrop.Transparent,
         1 => DockBackdrop.Acrylic,
+        2 => DockBackdrop.Mica,
+        3 => DockBackdrop.MicaAlt,
         _ => DockBackdrop.Acrylic,
     };
+
+    private void UpdateDockSizeCardVisibility()
+    {
+        var side = ViewModel.Dock_Side;
+        var isTopOrBottom = side == DockSide.Top || side == DockSide.Bottom;
+        DockSizeSettingsCard.Visibility = isTopOrBottom ? Visibility.Visible : Visibility.Collapsed;
+    }
 
     private List<TopLevelViewModel> GetAllBands()
     {

@@ -4,15 +4,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
-using Polly;
-using Polly.Retry;
 using PowerDisplay.Common.Interfaces;
 using PowerDisplay.Common.Models;
+using PowerDisplay.Common.Services;
 using PowerDisplay.Common.Utils;
+using PowerDisplay.Models;
 using static PowerDisplay.Common.Drivers.NativeConstants;
 using static PowerDisplay.Common.Drivers.NativeDelegates;
 using static PowerDisplay.Common.Drivers.PInvoke;
@@ -30,96 +32,102 @@ namespace PowerDisplay.Common.Drivers.DDC
     /// </summary>
     public partial class DdcCiController : IMonitorController, IDisposable
     {
-        /// <summary>
-        /// Represents a candidate monitor discovered during Phase 1 of monitor enumeration.
-        /// </summary>
-        /// <param name="Handle">Physical monitor handle for DDC/CI communication</param>
-        /// <param name="PhysicalMonitor">Native physical monitor structure with description</param>
-        /// <param name="MonitorInfo">Display info from QueryDisplayConfig (EdidId, FriendlyName, MonitorNumber)</param>
-        private readonly record struct CandidateMonitor(
-            IntPtr Handle,
-            PHYSICAL_MONITOR PhysicalMonitor,
-            MonitorDisplayInfo MonitorInfo);
-
-        /// <summary>
-        /// Delay between retry attempts for DDC/CI operations (in milliseconds)
-        /// </summary>
-        private const int RetryDelayMs = 100;
-
-        /// <summary>
-        /// Retry pipeline for getting capabilities string length (3 retries).
-        /// </summary>
-        private static readonly ResiliencePipeline<uint> CapabilitiesLengthRetryPipeline =
-            new ResiliencePipelineBuilder<uint>()
-                .AddRetry(new RetryStrategyOptions<uint>
-                {
-                    MaxRetryAttempts = 2, // 2 retries = 3 total attempts
-                    Delay = TimeSpan.FromMilliseconds(RetryDelayMs),
-                    ShouldHandle = new PredicateBuilder<uint>().HandleResult(len => len == 0),
-                    OnRetry = static args =>
-                    {
-                        Logger.LogWarning($"[Retry] GetCapabilitiesStringLength returned invalid result on attempt {args.AttemptNumber + 1}, retrying...");
-                        return default;
-                    },
-                })
-                .Build();
-
-        /// <summary>
-        /// Retry pipeline for getting capabilities string (5 retries).
-        /// </summary>
-        private static readonly ResiliencePipeline<string?> CapabilitiesStringRetryPipeline =
-            new ResiliencePipelineBuilder<string?>()
-                .AddRetry(new RetryStrategyOptions<string?>
-                {
-                    MaxRetryAttempts = 4, // 4 retries = 5 total attempts
-                    Delay = TimeSpan.FromMilliseconds(RetryDelayMs),
-                    ShouldHandle = new PredicateBuilder<string?>().HandleResult(static str => string.IsNullOrEmpty(str)),
-                    OnRetry = static args =>
-                    {
-                        Logger.LogWarning($"[Retry] GetCapabilitiesString returned invalid result on attempt {args.AttemptNumber + 1}, retrying...");
-                        return default;
-                    },
-                })
-                .Build();
-
         private readonly PhysicalMonitorHandleManager _handleManager = new();
         private readonly MonitorDiscoveryHelper _discoveryHelper;
+        private readonly IKnownGoodVcpStore _knownGoodStore;
+        private readonly IVcpFeatureReader _vcpReader;
+        private readonly VcpFeatureProbeService _probeService;
+        private readonly ContinuousVcpInitializer _continuousInitializer;
+        private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
 
         private bool _disposed;
 
-        public DdcCiController()
+        /// <summary>
+        /// Gets or sets a value indicating whether to probe each supported VCP feature directly
+        /// when the cap string cannot be obtained or parsed. Set by <see cref="MonitorManager"/>
+        /// from the PowerDisplay settings before each discovery pass.
+        /// </summary>
+        public bool MaxCompatibilityMode { get; set; }
+
+        /// <param name="knownGoodStore">
+        /// Persisted store for known-good VCP observations. Required: a controller without one
+        /// silently loses the discovery cache that maximum compatibility mode depends on.
+        /// </param>
+        public DdcCiController(IKnownGoodVcpStore knownGoodStore)
+            : this(
+                knownGoodStore,
+                new NativeVcpFeatureReader())
         {
+        }
+
+        /// <param name="knownGoodStore">Persisted store for known-good VCP observations.</param>
+        /// <param name="reader">VCP feature reader; the production implementation wraps Dxva2.</param>
+        /// <param name="delayAsync">
+        /// Pacing delay for the capabilities retry loop and the VCP probe. Injected so tests can
+        /// drive the discovery pipeline without waiting out the real inter-transaction intervals.
+        /// </param>
+        internal DdcCiController(
+            IKnownGoodVcpStore knownGoodStore,
+            IVcpFeatureReader reader,
+            Func<TimeSpan, CancellationToken, Task>? delayAsync = null)
+        {
+            _knownGoodStore = knownGoodStore;
+            _vcpReader = reader;
+            _delayAsync = delayAsync ?? Task.Delay;
+            _probeService = new VcpFeatureProbeService(_vcpReader, _delayAsync);
+            _continuousInitializer = new ContinuousVcpInitializer(_vcpReader, _knownGoodStore);
             _discoveryHelper = new MonitorDiscoveryHelper();
         }
 
+        internal static string DeriveMonitorId(MonitorDisplayInfo info) =>
+            MonitorIdentity.FromDevicePath(info.DevicePath);
+
         public string Name => "DDC/CI Monitor Controller";
 
-        /// <summary>
-        /// Get monitor brightness using VCP code 0x10
-        /// </summary>
+        /// <inheritdoc />
         public async Task<VcpFeatureValue> GetBrightnessAsync(Monitor monitor, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(monitor);
             return await GetVcpFeatureAsync(monitor, VcpCodeBrightness, cancellationToken);
         }
 
-        /// <summary>
-        /// Set monitor brightness using VCP code 0x10
-        /// </summary>
+        /// <inheritdoc />
         public Task<MonitorOperationResult> SetBrightnessAsync(Monitor monitor, int brightness, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, brightness, cancellationToken);
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            var raw = VcpFeatureValue.FromPercentage(brightness, monitor.BrightnessVcpMax);
+            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeBrightness, raw, cancellationToken);
+        }
 
-        /// <summary>
-        /// Set monitor contrast
-        /// </summary>
+        /// <inheritdoc />
+        public async Task<VcpFeatureValue> GetContrastAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            return await GetVcpFeatureAsync(monitor, VcpCodeContrast, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public Task<MonitorOperationResult> SetContrastAsync(Monitor monitor, int contrast, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, contrast, cancellationToken);
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            var raw = VcpFeatureValue.FromPercentage(contrast, monitor.ContrastVcpMax);
+            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeContrast, raw, cancellationToken);
+        }
 
-        /// <summary>
-        /// Set monitor volume
-        /// </summary>
+        /// <inheritdoc />
+        public async Task<VcpFeatureValue> GetVolumeAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            return await GetVcpFeatureAsync(monitor, VcpCodeVolume, cancellationToken);
+        }
+
+        /// <inheritdoc />
         public Task<MonitorOperationResult> SetVolumeAsync(Monitor monitor, int volume, CancellationToken cancellationToken = default)
-            => SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, volume, cancellationToken);
+        {
+            ArgumentNullException.ThrowIfNull(monitor);
+            var raw = VcpFeatureValue.FromPercentage(volume, monitor.VolumeVcpMax);
+            return SetVcpFeatureAsync(monitor, NativeConstants.VcpCodeVolume, raw, cancellationToken);
+        }
 
         /// <summary>
         /// Get monitor color temperature using VCP code 0x14 (Select Color Preset)
@@ -172,128 +180,77 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Get monitor capabilities string with retry logic.
-        /// Uses cached CapabilitiesRaw if available to avoid slow I2C operations.
+        /// Discovers external DDC/CI-managed monitors. Each enumerated hMonitor runs its own
+        /// async pipeline (filter → physical-handle retrieval → caps fetch + VCP init); all
+        /// pipelines run concurrently via Task.WhenAll. Caller (MonitorManager) supplies the
+        /// displays it did not route to WMI — i.e. everything WmiMonitorBrightness did not expose.
         /// </summary>
-        public async Task<string> GetCapabilitiesStringAsync(Monitor monitor, CancellationToken cancellationToken = default)
+        /// <param name="targets">Displays MonitorManager did not claim via WMI (not exposed by WmiMonitorBrightness).</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>List of DDC/CI-managed external monitors.</returns>
+        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(
+            IReadOnlyList<MonitorDisplayInfo> targets,
+            CancellationToken cancellationToken = default)
         {
-            ArgumentNullException.ThrowIfNull(monitor);
+            var stopwatch = Stopwatch.StartNew();
 
-            // Check if capabilities are already cached
-            if (!string.IsNullOrEmpty(monitor.CapabilitiesRaw))
+            var handles = EnumerateMonitorHandles();
+            var targetsByGdi = BuildGdiLookup(targets);
+            Logger.LogInfo(
+                $"DDC: Discovery start — {handles.Count} candidate handles, {targets.Count} external targets");
+
+            if (handles.Count == 0)
             {
-                return monitor.CapabilitiesRaw;
+                Logger.LogInfo($"DDC: Discovery complete in {stopwatch.ElapsedMilliseconds}ms — 0 monitors (no handles)");
+                return Enumerable.Empty<Monitor>();
             }
 
-            return await Task.Run(
-                () =>
-                {
-                    if (monitor.Handle == IntPtr.Zero)
-                    {
-                        return string.Empty;
-                    }
-
-                    try
-                    {
-                        // Step 1: Get capabilities string length with retry
-                        var length = CapabilitiesLengthRetryPipeline.Execute(() =>
-                        {
-                            if (GetCapabilitiesStringLength(monitor.Handle, out uint len) && len > 0)
-                            {
-                                return len;
-                            }
-
-                            return 0u;
-                        });
-
-                        if (length == 0)
-                        {
-                            Logger.LogWarning("[Retry] GetCapabilitiesStringLength failed after 3 attempts");
-                            return string.Empty;
-                        }
-
-                        // Step 2: Get actual capabilities string with retry
-                        var capsString = CapabilitiesStringRetryPipeline.Execute(
-                            () => TryGetCapabilitiesString(monitor.Handle, length));
-
-                        if (!string.IsNullOrEmpty(capsString))
-                        {
-                            return capsString;
-                        }
-
-                        Logger.LogWarning("[Retry] GetCapabilitiesString failed after 5 attempts");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Exception getting capabilities string: {ex.Message}");
-                    }
-
-                    return string.Empty;
-                },
-                cancellationToken);
-        }
-
-        /// <summary>
-        /// Try to get capabilities string from monitor handle.
-        /// </summary>
-        private string? TryGetCapabilitiesString(IntPtr handle, uint length)
-        {
-            var buffer = System.Runtime.InteropServices.Marshal.AllocHGlobal((int)length);
+            // Wrap the whole parallel discovery in a CrashDetectionScope: it writes discovery.lock
+            // on Begin and deletes it on Dispose, so if the process is killed during capabilities
+            // I/O (BSOD, FailFast, TerminateProcess) the surviving lock is picked up by
+            // CrashRecovery on the next startup. A single Begin/Dispose wraps the entire
+            // Task.WhenAll because CrashDetectionScope uses FileMode.CreateNew + FileShare.None
+            // and cannot be nested across the per-handle pipelines.
+            IReadOnlyList<Monitor>[] results;
+            CrashDetectionScope? scope;
             try
             {
-                if (CapabilitiesRequestAndCapabilitiesReply(handle, buffer, length))
-                {
-                    return System.Runtime.InteropServices.Marshal.PtrToStringAnsi(buffer);
-                }
+                scope = CrashDetectionScope.Begin();
+            }
+            catch (Exception scopeEx)
+            {
+                // Lock could not be written (e.g. read-only %LOCALAPPDATA%). Proceed without
+                // crash protection rather than failing discovery — log so this is diagnosable.
+                Logger.LogWarning(
+                    $"DDC: CrashDetectionScope.Begin failed ({scopeEx.GetType().Name}: {scopeEx.Message}); proceeding without crash protection");
+                scope = null;
+            }
 
-                return null;
+            try
+            {
+                var pipelines = handles
+                    .Select(h => DiscoverFromHandleAsync(h, targetsByGdi, cancellationToken))
+                    .ToList();
+                results = await Task.WhenAll(pipelines);
             }
             finally
             {
-                System.Runtime.InteropServices.Marshal.FreeHGlobal(buffer);
+                scope?.Dispose();
             }
-        }
 
-        /// <summary>
-        /// Discover supported monitors using a three-phase approach:
-        /// Phase 1: Enumerate and collect candidate monitors with their handles
-        /// Phase 2: Fetch DDC/CI capabilities in parallel (slow I2C operations)
-        /// Phase 3: Create Monitor objects for valid DDC/CI monitors
-        /// </summary>
-        public async Task<IEnumerable<Monitor>> DiscoverMonitorsAsync(CancellationToken cancellationToken = default)
-        {
-            try
+            var monitors = results.SelectMany(r => r).ToList();
+            var newHandleMap = new Dictionary<string, IntPtr>(MonitorIdComparer.Instance);
+            foreach (var m in monitors)
             {
-                // Get monitor display info from QueryDisplayConfig, keyed by device path (unique per target)
-                var allMonitorDisplayInfo = DdcCiNative.GetAllMonitorDisplayInfo();
-
-                // Phase 1: Collect candidate monitors
-                var monitorHandles = EnumerateMonitorHandles();
-                if (monitorHandles.Count == 0)
-                {
-                    return Enumerable.Empty<Monitor>();
-                }
-
-                var candidateMonitors = await CollectCandidateMonitorsAsync(
-                    monitorHandles, allMonitorDisplayInfo, cancellationToken);
-
-                if (candidateMonitors.Count == 0)
-                {
-                    return Enumerable.Empty<Monitor>();
-                }
-
-                // Phase 2: Fetch capabilities in parallel
-                var fetchResults = await FetchCapabilitiesInParallelAsync(
-                    candidateMonitors, cancellationToken);
-
-                // Phase 3: Create monitor objects
-                return CreateValidMonitors(fetchResults);
+                newHandleMap[m.Id] = m.Handle;
             }
-            catch (Exception ex)
-            {
-                Logger.LogError($"DDC: DiscoverMonitorsAsync exception: {ex.Message}\nStack: {ex.StackTrace}");
-                return Enumerable.Empty<Monitor>();
-            }
+
+            _handleManager.UpdateHandleMap(newHandleMap);
+
+            Logger.LogInfo(
+                $"DDC: Discovery complete in {stopwatch.ElapsedMilliseconds}ms — " +
+                $"{monitors.Count}/{handles.Count} monitors");
+            return monitors;
         }
 
         /// <summary>
@@ -318,6 +275,19 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
+        /// Group external targets by GDI device name (case-insensitive) into a lookup keyed by name.
+        /// Mirror mode can have multiple targets share one GDI source — hence the value is a List.
+        /// </summary>
+        private static Dictionary<string, List<MonitorDisplayInfo>> BuildGdiLookup(
+            IReadOnlyList<MonitorDisplayInfo> externalTargets)
+        {
+            return externalTargets
+                .Where(t => !string.IsNullOrEmpty(t.GdiDeviceName))
+                .GroupBy(t => t.GdiDeviceName, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(g => g.Key, g => g.ToList(), StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
         /// Get GDI device name for a monitor handle (e.g., "\\.\DISPLAY1").
         /// </summary>
         private unsafe string? GetGdiDeviceName(IntPtr hMonitor)
@@ -332,155 +302,252 @@ namespace PowerDisplay.Common.Drivers.DDC
         }
 
         /// <summary>
-        /// Phase 1: Collect all candidate monitors with their physical handles.
-        /// Matches physical monitors with MonitorDisplayInfo using GDI device name and friendly name.
-        /// Supports mirror mode where multiple physical monitors share the same GDI name.
+        /// Construct a Monitor and initialize its VCP feature values using pre-fetched
+        /// evidence (obtained on the async side via <see cref="FetchCapabilitiesWithFallbackAsync"/>).
+        /// Returns null when capabilities are unavailable or the physical-monitor handle becomes
+        /// invalid during initialization. Any monitor with at least one supported VCP code from
+        /// capabilities, a live probe, or the exact monitor's cache is otherwise kept; the
+        /// per-feature SupportsXxx flags on Monitor gate UI controls.
         /// </summary>
-        private async Task<List<CandidateMonitor>> CollectCandidateMonitorsAsync(
-            List<IntPtr> monitorHandles,
-            Dictionary<string, MonitorDisplayInfo> allMonitorDisplayInfo,
-            CancellationToken cancellationToken)
+        /// <remarks>
+        /// Pure synchronous work — callers wrap this in <see cref="Task.Run"/> to dispatch
+        /// to the threadpool. Within a single physical monitor the VCP reads serialize on
+        /// one I²C bus; parallelism across physical monitors happens at the caller.
+        /// </remarks>
+        private Monitor? BuildMonitorFromPhysical(
+            PHYSICAL_MONITOR physical,
+            MonitorDisplayInfo info,
+            string monitorId,
+            VcpDiscoveryEvidence evidence)
         {
-            var candidates = new List<CandidateMonitor>();
-
-            foreach (var hMonitor in monitorHandles)
+            // The caller already skipped the unusable-capabilities and dead-handle cases, each with
+            // its own log line; this null check only carries that contract into the nullable flow.
+            if (evidence.Capabilities == null)
             {
-                // Get GDI device name for this monitor (e.g., "\\.\DISPLAY1")
-                var gdiDeviceName = GetGdiDeviceName(hMonitor);
-                if (string.IsNullOrEmpty(gdiDeviceName))
-                {
-                    Logger.LogWarning($"DDC: Failed to get GDI device name for hMonitor 0x{hMonitor:X}");
-                    continue;
-                }
-
-                var physicalMonitors = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
-                if (physicalMonitors == null || physicalMonitors.Length == 0)
-                {
-                    Logger.LogWarning($"DDC: Failed to get physical monitors for {gdiDeviceName} after retries");
-                    continue;
-                }
-
-                // Find all MonitorDisplayInfo entries that match this GDI device name
-                // In mirror mode, multiple targets share the same GDI name
-                var matchingInfos = allMonitorDisplayInfo.Values
-                    .Where(info => string.Equals(info.GdiDeviceName, gdiDeviceName, StringComparison.OrdinalIgnoreCase))
-                    .ToList();
-
-                if (matchingInfos.Count == 0)
-                {
-                    Logger.LogWarning($"DDC: No QueryDisplayConfig info for {gdiDeviceName}, skipping");
-                    continue;
-                }
-
-                for (int i = 0; i < physicalMonitors.Length; i++)
-                {
-                    var physicalMonitor = physicalMonitors[i];
-
-                    if (i >= matchingInfos.Count)
-                    {
-                        Logger.LogWarning($"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries ({matchingInfos.Count}) for {gdiDeviceName}");
-                        break;
-                    }
-
-                    var monitorInfo = matchingInfos[i];
-
-                    candidates.Add(new CandidateMonitor(physicalMonitor.HPhysicalMonitor, physicalMonitor, monitorInfo));
-                }
+                return null;
             }
 
-            return candidates;
-        }
-
-        /// <summary>
-        /// Phase 2: Fetch DDC/CI capabilities in parallel for all candidate monitors.
-        /// This is the slow I2C operation (~4s per monitor), but parallelization
-        /// significantly reduces total time when multiple monitors are connected.
-        /// </summary>
-        private async Task<(CandidateMonitor Candidate, DdcCiValidationResult Result)[]> FetchCapabilitiesInParallelAsync(
-            List<CandidateMonitor> candidates,
-            CancellationToken cancellationToken)
-        {
-            var tasks = candidates.Select(candidate =>
-                Task.Run(
-                    () => (Candidate: candidate, Result: DdcCiNative.FetchCapabilities(candidate.Handle)),
-                    cancellationToken));
-
-            var results = await Task.WhenAll(tasks);
-
-            return results;
-        }
-
-        /// <summary>
-        /// Phase 3: Create Monitor objects for valid DDC/CI monitors.
-        /// A monitor is valid if it has capabilities with brightness support.
-        /// </summary>
-        private List<Monitor> CreateValidMonitors(
-            (CandidateMonitor Candidate, DdcCiValidationResult Result)[] fetchResults)
-        {
-            var monitors = new List<Monitor>();
-            var newHandleMap = new Dictionary<string, IntPtr>();
-
-            foreach (var (candidate, capResult) in fetchResults)
+            try
             {
-                if (!capResult.IsValid)
-                {
-                    continue;
-                }
-
-                var monitor = _discoveryHelper.CreateMonitorFromPhysical(
-                    candidate.PhysicalMonitor,
-                    candidate.MonitorInfo);
-
+                var monitor = _discoveryHelper.CreateMonitorFromPhysical(physical, info, monitorId);
                 if (monitor == null)
                 {
-                    continue;
+                    return null;
                 }
 
-                // Set capabilities data
-                if (!string.IsNullOrEmpty(capResult.CapabilitiesString))
+                if (!string.IsNullOrEmpty(evidence.CapabilitiesRaw))
                 {
-                    monitor.CapabilitiesRaw = capResult.CapabilitiesString;
+                    monitor.CapabilitiesRaw = evidence.CapabilitiesRaw;
                 }
 
-                if (capResult.VcpCapabilitiesInfo != null)
+                monitor.VcpCapabilitiesInfo = evidence.Capabilities;
+                UpdateMonitorCapabilitiesFromVcp(monitor, evidence.Capabilities);
+
+                // Continuous (percent-scaled) VCPs first, then the discrete-enum ones. Only the
+                // continuous stage can discard the monitor, and that is a policy choice rather
+                // than a property of the stage: losing a whole display because 0xD6 answered
+                // badly is worse than showing it without a power control. Note the check is not
+                // on every path — a caps string that parses but advertises none of 0x10/0x12/0x62
+                // leaves the continuous stage nothing to read and suppresses the probe, so such a
+                // monitor is published with a handle no VCP read has exercised.
+                if (!_continuousInitializer.Initialize(monitor, evidence))
                 {
-                    monitor.VcpCapabilitiesInfo = capResult.VcpCapabilitiesInfo;
-                    UpdateMonitorCapabilitiesFromVcp(monitor, capResult.VcpCapabilitiesInfo);
-
-                    // Initialize input source if supported
-                    if (monitor.SupportsInputSource)
-                    {
-                        InitializeInputSource(monitor, candidate.Handle);
-                    }
-
-                    // Initialize color temperature if supported
-                    if (monitor.SupportsColorTemperature)
-                    {
-                        InitializeColorTemperature(monitor, candidate.Handle);
-                    }
-
-                    // Initialize power state if supported
-                    if (monitor.SupportsPowerState)
-                    {
-                        InitializePowerState(monitor, candidate.Handle);
-                    }
-
-                    // Initialize contrast if supported
-                    if (monitor.SupportsContrast)
-                    {
-                        InitializeContrast(monitor, candidate.Handle);
-                    }
+                    Logger.LogWarning(
+                        $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle became unavailable during continuous VCP initialization");
+                    return null;
                 }
 
-                // Initialize brightness (always supported for DDC/CI monitors)
-                InitializeBrightness(monitor, candidate.Handle);
+                if (monitor.SupportsColorTemperature)
+                {
+                    InitializeColorTemperature(monitor, physical.HPhysicalMonitor);
+                }
 
-                monitors.Add(monitor);
-                newHandleMap[monitor.Id] = candidate.Handle;
+                if (monitor.SupportsInputSource)
+                {
+                    InitializeInputSource(monitor, physical.HPhysicalMonitor);
+                }
+
+                if (monitor.SupportsPowerState)
+                {
+                    InitializePowerState(monitor, physical.HPhysicalMonitor);
+                }
+
+                return monitor;
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogError(
+                    $"DDC: [DevicePath={info.DevicePath}] BuildMonitorFromPhysical exception: {ex.Message}");
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Releases a physical-monitor handle that discovery abandoned.
+        /// </summary>
+        /// <remarks>
+        /// Handles only reach <see cref="PhysicalMonitorHandleManager"/> through monitors that were
+        /// successfully built: the map is rebuilt from the returned monitor list, and its cleanup pass
+        /// only destroys handles that were in the previous map. A handle dropped on an abandon path
+        /// therefore never gets destroyed, and every discovery over a monitor that keeps failing leaks
+        /// one more — and a discovery runs on every display-topology change, so a docking-station
+        /// user accumulates them for the process lifetime.
+        /// </remarks>
+        private static void ReleaseAbandonedPhysical(PHYSICAL_MONITOR physical)
+        {
+            if (physical.HPhysicalMonitor == IntPtr.Zero)
+            {
+                return;
             }
 
-            _handleManager.UpdateHandleMap(newHandleMap);
-            return monitors;
+            try
+            {
+                DestroyPhysicalMonitor(physical.HPhysicalMonitor);
+            }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                Logger.LogWarning(
+                    $"DDC: failed to destroy abandoned physical monitor handle 0x{physical.HPhysicalMonitor:X}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Fetches DDC/CI capabilities with retry, falling back to direct VCP probing
+        /// when <see cref="MaxCompatibilityMode"/> is on and the cap string is missing
+        /// or unparsable. Cancellation is honored both during the cap-string fetch
+        /// (cooperative — checked between attempts) and during the 1 s delay between
+        /// retries.
+        /// </summary>
+        internal async Task<VcpDiscoveryEvidence> FetchCapabilitiesWithFallbackAsync(
+            IntPtr hPhysicalMonitor,
+            string monitorId,
+            CancellationToken cancellationToken)
+        {
+            const int maxAttempts = 3;
+            const int retryDelayMs = 1000;
+
+            // Snapshot the mode once. The property is settable from the UI thread whenever settings
+            // are reloaded, and this method awaits several times, so reading it at each decision
+            // point could let one monitor's evidence be gathered under one mode and reconciled under
+            // the other.
+            var maxCompatibility = MaxCompatibilityMode;
+
+            string? capsString = null;
+            for (int attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                // The Win32 cap-string fetch is synchronous (~4 s I²C). Dispatch to the
+                // threadpool so the calling pipeline can interleave with siblings.
+                capsString = await Task.Run(
+                    () => DdcCiNative.TryGetCapabilitiesString(hPhysicalMonitor),
+                    cancellationToken);
+
+                if (!string.IsNullOrEmpty(capsString))
+                {
+                    break;
+                }
+
+                if (attempt < maxAttempts)
+                {
+                    Logger.LogWarning(
+                        $"DDC: cap string fetch attempt {attempt} returned empty " +
+                        $"(handle=0x{hPhysicalMonitor:X}); retrying in {retryDelayMs}ms");
+                    await _delayAsync(TimeSpan.FromMilliseconds(retryDelayMs), cancellationToken);
+                }
+            }
+
+            VcpCapabilities? caps = null;
+            if (!string.IsNullOrEmpty(capsString))
+            {
+                var parseResult = MccsCapabilitiesParser.Parse(capsString);
+                if (parseResult.Capabilities.SupportedVcpCodes.Count > 0)
+                {
+                    caps = parseResult.Capabilities;
+                }
+                else
+                {
+                    Logger.LogWarning(
+                        $"DDC: parsed capabilities have no VCP codes " +
+                        $"(handle=0x{hPhysicalMonitor:X}, parseErrors={parseResult.Errors.Count})");
+                }
+            }
+            else
+            {
+                Logger.LogWarning(
+                    $"DDC: cap string still empty after {maxAttempts} attempts (handle=0x{hPhysicalMonitor:X})");
+            }
+
+            IReadOnlyDictionary<byte, VcpProbeObservation> live =
+                new Dictionary<byte, VcpProbeObservation>();
+
+            if (caps == null && maxCompatibility)
+            {
+                Logger.LogInfo(
+                    $"DDC: [max-compat] caps unusable for handle=0x{hPhysicalMonitor:X}; probing VCP features directly");
+
+                live = await _probeService.ProbeAsync(hPhysicalMonitor, cancellationToken);
+            }
+
+            var cached = maxCompatibility
+                ? _knownGoodStore.GetKnownGoodFeatures(monitorId)
+                : new Dictionary<byte, KnownGoodVcpFeature>();
+
+            var evidence = VcpDiscoveryEvidence.Reconcile(
+                capsString ?? string.Empty,
+                caps,
+                live,
+                cached);
+
+            // Persisted even when Reconcile discarded this pass. ProbeAsync stops at the first
+            // handle-class failure, so every successful observation here was answered while the
+            // handle was still live — the value is proven, only the pass is not. Reconcile empties
+            // InitialValues to tell BuildMonitorFromPhysical to skip this monitor, which is a
+            // different question from whether the reading was real. Keeping it is the point: a dead
+            // handle usually means a cable or KVM switch, and the next rediscovery is exactly the
+            // pass that wants the value this one managed to read.
+            foreach (var observation in live.Values.Where(value => value.IsSuccess))
+            {
+                _knownGoodStore.UpsertKnownGoodFeature(
+                    monitorId,
+                    KnownGoodVcpFeature.From(observation.Code, observation.Value));
+            }
+
+            if (live.Count > 0)
+            {
+                var liveSuccessCount = live.Values.Count(value => value.IsSuccess);
+                var cachedValueCount = evidence.InitialValues.Values.Count(value => !value.IsLive);
+                var message =
+                    $"DDC: [max-compat] probe outcome for handle=0x{hPhysicalMonitor:X}: " +
+                    $"{liveSuccessCount}/{live.Count} live feature(s), {cachedValueCount} cached feature(s)";
+
+                if (liveSuccessCount > 0)
+                {
+                    Logger.LogInfo(message);
+                }
+                else
+                {
+                    Logger.LogWarning(message);
+                }
+            }
+
+            if (evidence.CacheSupplementedCodes.Count > 0)
+            {
+                // Logged on its own rather than folded into the probe-outcome block above, which is
+                // gated on live.Count and therefore silent on the caps-parsed path. The two overlap
+                // when a probe ran but no reply proved the code — a duplicate line is cheaper than a
+                // support log that cannot tell a cache-supplied control from an advertised one. See
+                // VcpDiscoveryEvidence.CacheSupplementedCodes.
+                var detail = string.Join(
+                    ", ",
+                    evidence.CacheSupplementedCodes.Select(code => $"0x{code:X2}"));
+
+                Logger.LogInfo(
+                    $"DDC: [max-compat] cached evidence added feature(s) not advertised by capabilities " +
+                    $"for handle=0x{hPhysicalMonitor:X}: {detail}");
+            }
+
+            return evidence;
         }
 
         /// <summary>
@@ -491,6 +558,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (TryGetVcpFeature(handle, VcpCodeInputSource, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentInputSource = (int)current;
+                monitor.ReadValues |= MonitorReadFlags.InputSource;
             }
         }
 
@@ -502,6 +570,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (TryGetVcpFeature(handle, VcpCodeSelectColorPreset, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentColorTemperature = (int)current;
+                monitor.ReadValues |= MonitorReadFlags.ColorTemperature;
             }
         }
 
@@ -513,30 +582,7 @@ namespace PowerDisplay.Common.Drivers.DDC
             if (TryGetVcpFeature(handle, VcpCodePowerMode, monitor.Id, out uint current, out uint _))
             {
                 monitor.CurrentPowerState = (int)current;
-            }
-        }
-
-        /// <summary>
-        /// Initialize brightness value for a monitor using VCP 0x10.
-        /// </summary>
-        private static void InitializeBrightness(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeBrightness, monitor.Id, out uint current, out uint max))
-            {
-                var brightnessInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                monitor.CurrentBrightness = brightnessInfo.ToPercentage();
-            }
-        }
-
-        /// <summary>
-        /// Initialize contrast value for a monitor using VCP 0x12.
-        /// </summary>
-        private static void InitializeContrast(Monitor monitor, IntPtr handle)
-        {
-            if (TryGetVcpFeature(handle, VcpCodeContrast, monitor.Id, out uint current, out uint max))
-            {
-                var contrastInfo = new VcpFeatureValue((int)current, 0, (int)max);
-                monitor.CurrentContrast = contrastInfo.ToPercentage();
+                monitor.ReadValues |= MonitorReadFlags.PowerState;
             }
         }
 
@@ -556,7 +602,7 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return true;
             }
 
-            var lastError = GetLastError();
+            var lastError = Marshal.GetLastWin32Error();
             var monitorPrefix = string.IsNullOrEmpty(monitorId) ? string.Empty : $"[{monitorId}] ";
             Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {lastError}");
             return false;
@@ -567,6 +613,12 @@ namespace PowerDisplay.Common.Drivers.DDC
         /// </summary>
         private static void UpdateMonitorCapabilitiesFromVcp(Monitor monitor, VcpCapabilities vcpCaps)
         {
+            // Check for Brightness support (VCP 0x10)
+            if (vcpCaps.SupportsVcpCode(VcpCodeBrightness))
+            {
+                monitor.Capabilities |= MonitorCapabilities.Brightness;
+            }
+
             // Check for Contrast support (VCP 0x12)
             if (vcpCaps.SupportsVcpCode(VcpCodeContrast))
             {
@@ -599,6 +651,7 @@ namespace PowerDisplay.Common.Drivers.DDC
         {
             const int maxRetries = 3;
             const int retryDelayMs = 200;
+            PHYSICAL_MONITOR[]? lastResult = null;
 
             for (int attempt = 0; attempt < maxRetries; attempt++)
             {
@@ -607,29 +660,36 @@ namespace PowerDisplay.Common.Drivers.DDC
                     await Task.Delay(retryDelayMs, cancellationToken);
                 }
 
-                var monitors = _discoveryHelper.GetPhysicalMonitors(hMonitor, out bool hasNullHandles);
+                // Sync Win32 call wrapped on the threadpool so concurrent callers
+                // (one per hMonitor pipeline) dispatch to separate threads rather
+                // than serializing on the calling thread before the first await.
+                var (monitors, hasNullHandles) = await Task.Run(
+                    () =>
+                    {
+                        var m = _discoveryHelper.GetPhysicalMonitors(hMonitor, out bool nulls);
+                        return (m, nulls);
+                    },
+                    cancellationToken);
 
-                // Success: got valid monitors with no NULL handles filtered out
                 if (monitors != null && !hasNullHandles)
                 {
                     return monitors;
                 }
 
-                // Got monitors but some had NULL handles - retry to see if API stabilizes
+                lastResult = monitors;
+
                 if (monitors != null && hasNullHandles && attempt < maxRetries - 1)
                 {
                     Logger.LogWarning($"DDC: Some monitors had NULL handles on attempt {attempt + 1}, will retry");
                     continue;
                 }
 
-                // No monitors returned - retry
                 if (monitors == null && attempt < maxRetries - 1)
                 {
                     Logger.LogWarning($"DDC: GetPhysicalMonitors returned null on attempt {attempt + 1}, will retry");
                     continue;
                 }
 
-                // Last attempt - return whatever we have (may have NULL handles filtered)
                 if (monitors != null && hasNullHandles)
                 {
                     Logger.LogWarning($"DDC: NULL handles still present after {maxRetries} attempts, using filtered result");
@@ -638,7 +698,164 @@ namespace PowerDisplay.Common.Drivers.DDC
                 return monitors;
             }
 
-            return null;
+            return lastResult;
+        }
+
+        /// <summary>
+        /// Full per-hMonitor pipeline: GDI-name filter, get physical handles, and for each
+        /// matching physical run <see cref="BuildMonitorFromPhysical"/> on the threadpool.
+        /// Physical monitors that share an hMonitor (mirror mode) process sequentially —
+        /// they share the GDI source and I2C arbitration. Parallelism across hMonitors is
+        /// the caller's job (see <see cref="DiscoverMonitorsAsync"/>'s Task.WhenAll).
+        /// </summary>
+        /// <remarks>
+        /// Catches all exceptions except <see cref="OperationCanceledException"/> and
+        /// <see cref="OutOfMemoryException"/> — those propagate to Task.WhenAll and the
+        /// surrounding MonitorManager.SafeDiscoverAsync wrapper.
+        /// </remarks>
+        private async Task<IReadOnlyList<Monitor>> DiscoverFromHandleAsync(
+            IntPtr hMonitor,
+            IReadOnlyDictionary<string, List<MonitorDisplayInfo>> targetsByGdi,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var gdiName = GetGdiDeviceName(hMonitor);
+                if (string.IsNullOrEmpty(gdiName))
+                {
+                    Logger.LogWarning($"DDC: Failed to get GDI device name for hMonitor 0x{hMonitor:X}");
+                    return Array.Empty<Monitor>();
+                }
+
+                if (!targetsByGdi.TryGetValue(gdiName, out var matchingInfos))
+                {
+                    // GDI name not in the DDC target list — either a panel already claimed by
+                    // WMI or a target QueryDisplayConfig didn't enumerate. Skip BEFORE the
+                    // expensive GetPhysicalMonitorsFromHMONITOR call.
+                    Logger.LogDebug($"DDC skipping {gdiName}: not in external targets list");
+                    return Array.Empty<Monitor>();
+                }
+
+                var physicals = await GetPhysicalMonitorsWithRetryAsync(hMonitor, cancellationToken);
+                if (physicals == null || physicals.Length == 0)
+                {
+                    Logger.LogWarning($"DDC: Failed to get physical monitors for {gdiName} after retries");
+                    return Array.Empty<Monitor>();
+                }
+
+                var monitors = new List<Monitor>();
+                for (int i = 0; i < physicals.Length; i++)
+                {
+                    if (i >= matchingInfos.Count)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: Physical monitor index {i} exceeds available QueryDisplayConfig entries " +
+                            $"({matchingInfos.Count}) for {gdiName}");
+
+                        for (int unmatched = i; unmatched < physicals.Length; unmatched++)
+                        {
+                            ReleaseAbandonedPhysical(physicals[unmatched]);
+                        }
+
+                        break;
+                    }
+
+                    cancellationToken.ThrowIfCancellationRequested();
+                    var physical = physicals[i];
+                    var info = matchingInfos[i];
+                    var monitorId = DeriveMonitorId(info);
+
+                    // No DevicePath means no stable Id, and every later stage needs one: settings
+                    // persisted under an unstable key would not survive the next reboot, and the
+                    // known-good store rejects an empty key outright. Deciding it here — before any
+                    // I2C traffic — is what keeps that rejection from surfacing as an exception
+                    // mid-pipeline, which the catch below would turn into "drop this hMonitor's
+                    // remaining physicals and leak their handles".
+                    if (string.IsNullOrEmpty(monitorId))
+                    {
+                        Logger.LogWarning(
+                            $"DDC: Skipping monitor #{info.MonitorNumber} (name='{info.FriendlyName}') — " +
+                            $"DevicePath unavailable, cannot derive a stable Id");
+                        ReleaseAbandonedPhysical(physical);
+                        continue;
+                    }
+
+#if DEBUG
+                    if (Environment.GetEnvironmentVariable("POWERDISPLAY_SIMULATE_CRASH") == "1")
+                    {
+                        // Debug-only: simulate a hard process kill to test the crash recovery
+                        // pipeline without invoking the kernel BSOD path. FailFast does not run
+                        // finally blocks, so the discovery.lock written by CrashDetectionScope
+                        // survives — just like a real BSOD.
+                        Logger.LogWarning("DEBUG: POWERDISPLAY_SIMULATE_CRASH=1 — invoking FailFast");
+                        Environment.FailFast("Simulated crash for quarantine testing");
+                    }
+#endif
+
+                    // Log identity of the monitor we are about to touch via DDC/CI BEFORE the
+                    // first syscall. If the call triggers a kernel stack-cookie overrun inside
+                    // win32kfull (see GH #47556 / #47968), this is the last log line that
+                    // survives — it has to carry enough to identify the offending hardware:
+                    // EdidId for blacklist matching, plus the human-readable name and full
+                    // DevicePath.
+                    var edidId = MonitorIdentity.EdidIdFromMonitorId(info.DevicePath);
+                    Logger.LogInfo(
+                        $"DDC: probing capabilities [EdidId={edidId}] [FriendlyName='{info.FriendlyName}'] [DevicePath={info.DevicePath}]");
+
+                    // Async caps fetch (retry + max-compat probe). Awaits Task.Delay between
+                    // retries instead of blocking the threadpool.
+                    var evidence = await FetchCapabilitiesWithFallbackAsync(
+                        physical.HPhysicalMonitor,
+                        monitorId,
+                        cancellationToken);
+
+                    if (evidence.IsPhysicalMonitorUnavailable)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — physical monitor handle is no longer valid");
+                        ReleaseAbandonedPhysical(physical);
+                        continue;
+                    }
+
+                    if (evidence.Capabilities == null)
+                    {
+                        Logger.LogWarning(
+                            $"DDC: [DevicePath={info.DevicePath}] monitor ignored — capabilities unavailable");
+                        ReleaseAbandonedPhysical(physical);
+                        continue;
+                    }
+
+                    // Heavy sync block (VCP reads on this one I2C bus, minus whatever the probe
+                    // already answered). Dispatch to the threadpool; await before the next physical
+                    // because they share the same hMonitor's I2C arbitration.
+                    var monitor = await Task.Run(
+                        () => BuildMonitorFromPhysical(physical, info, monitorId, evidence),
+                        cancellationToken);
+
+                    if (monitor != null)
+                    {
+                        monitors.Add(monitor);
+                    }
+                    else
+                    {
+                        // Construction failed, threw, or the handle died during continuous VCP
+                        // initialization. Either way this physical never becomes a Monitor, so it
+                        // never reaches the handle manager.
+                        ReleaseAbandonedPhysical(physical);
+                    }
+                }
+
+                return monitors;
+            }
+            catch (Exception ex) when (
+                ex is not OperationCanceledException &&
+                ex is not OutOfMemoryException)
+            {
+                Logger.LogError($"DDC: pipeline exception for hMonitor=0x{hMonitor:X}: {ex.Message}");
+                return Array.Empty<Monitor>();
+            }
         }
 
         /// <summary>
@@ -660,11 +877,14 @@ namespace PowerDisplay.Common.Drivers.DDC
                         return VcpFeatureValue.Invalid;
                     }
 
-                    if (TryGetVcpFeature(monitor.Handle, vcpCode, monitor.Id, out uint current, out uint max))
+                    var read = _vcpReader.Read(monitor.Handle, vcpCode);
+                    if (read.IsSuccess)
                     {
-                        return new VcpFeatureValue((int)current, 0, (int)max);
+                        return new VcpFeatureValue((int)read.Current, 0, (int)read.Maximum);
                     }
 
+                    var monitorPrefix = string.IsNullOrEmpty(monitor.Id) ? string.Empty : $"[{monitor.Id}] ";
+                    Logger.LogError($"{monitorPrefix}Failed to read VCP 0x{vcpCode:X2}, error code: {read.ErrorCode}");
                     return VcpFeatureValue.Invalid;
                 },
                 cancellationToken);
@@ -693,11 +913,12 @@ namespace PowerDisplay.Common.Drivers.DDC
                     {
                         if (SetVCPFeature(monitor.Handle, vcpCode, (uint)value))
                         {
+                            RefreshKnownGoodAfterWrite(monitor, vcpCode, value);
                             return MonitorOperationResult.Success();
                         }
 
-                        var lastError = GetLastError();
-                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", (int)lastError);
+                        var lastError = Marshal.GetLastWin32Error();
+                        return MonitorOperationResult.Failure($"Failed to set VCP 0x{vcpCode:X2}", lastError);
                     }
                     catch (Exception ex)
                     {
@@ -705,6 +926,51 @@ namespace PowerDisplay.Common.Drivers.DDC
                     }
                 },
                 cancellationToken);
+        }
+
+        /// <summary>
+        /// Keeps an existing known-good cache entry aligned with a successful write. The cache is
+        /// otherwise only refreshed by a successful read, so a slider move would leave it holding the
+        /// pre-write value; maximum compatibility mode then republishes that stale value on a later
+        /// discovery whose probe touched the code but could not read it, and
+        /// <see cref="ContinuousVcpInitializer"/> applies it without re-reading.
+        /// </summary>
+        /// <remarks>
+        /// Only an entry a real read already established is refreshed, and only when the value was
+        /// scaled against the very maximum that entry holds. A successful SetVCPFeature is not
+        /// evidence that the device implements the code, and a monitor whose discovery read failed
+        /// still carries the placeholder <see cref="Monitor.BrightnessVcpMax"/> of 100 — writing that
+        /// back would replace a read-proven device range (e.g. 0-50) with the placeholder and
+        /// mis-scale every later write.
+        /// </remarks>
+        /// <param name="monitor">The monitor that just accepted the write.</param>
+        /// <param name="vcpCode">The VCP code written.</param>
+        /// <param name="rawValue">The device-native value handed to SetVCPFeature.</param>
+        internal void RefreshKnownGoodAfterWrite(Monitor monitor, byte vcpCode, int rawValue)
+        {
+            if (string.IsNullOrEmpty(monitor.Id) ||
+                !_knownGoodStore.GetKnownGoodFeatures(monitor.Id).TryGetValue(vcpCode, out var existing))
+            {
+                return;
+            }
+
+            var maximum = vcpCode switch
+            {
+                VcpCodeBrightness => monitor.BrightnessVcpMax,
+                VcpCodeContrast => monitor.ContrastVcpMax,
+                VcpCodeVolume => monitor.VolumeVcpMax,
+                _ => 0,
+            };
+
+            var written = new VcpFeatureValue(rawValue, 0, existing.Maximum);
+            if (maximum != existing.Maximum || !written.IsValid)
+            {
+                return;
+            }
+
+            _knownGoodStore.UpsertKnownGoodFeature(
+                monitor.Id,
+                KnownGoodVcpFeature.From(vcpCode, written));
         }
 
         public void Dispose()

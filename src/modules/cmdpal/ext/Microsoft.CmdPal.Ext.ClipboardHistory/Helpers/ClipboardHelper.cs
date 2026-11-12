@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -114,7 +114,7 @@ internal static class ClipboardHelper
         var storageFile = await StorageFile.GetFileFromPathAsync(fileName);
 
         DataPackage output = new();
-        output.SetStorageItems([storageFile]);
+        output.SetStorageItems((StorageFile[])[storageFile]);
         ClipboardThreadQueue.EnqueueTask(() => Clipboard.SetContent(output));
 
         await FlushAsync();

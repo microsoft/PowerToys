@@ -25,9 +25,20 @@ public interface IApplicationInfoService
     string LogDirectory { get; }
 
     /// <summary>
+    /// Gets the current log file path, or null when the logger is unavailable.
+    /// </summary>
+    string? LogFile { get; }
+
+    /// <summary>
     /// Gets the directory path where application configuration files are stored.
     /// </summary>
     string ConfigDirectory { get; }
+
+    /// <summary>
+    /// Gets the directory path where application cache files are stored.
+    /// This location should be safe to recreate and should not be used for durable settings.
+    /// </summary>
+    string CacheDirectory { get; }
 
     /// <summary>
     /// Gets a value indicating whether the application is running with administrator privileges.
@@ -46,4 +57,16 @@ public interface IApplicationInfoService
     /// </summary>
     /// <param name="getLogDirectory">Delegate to retrieve the log directory path.</param>
     void SetLogDirectory(Func<string> getLogDirectory);
+
+    /// <summary>
+    /// Sets the delegate used to retrieve the current log file path.
+    /// </summary>
+    /// <param name="getLogFile">Delegate to retrieve the current log file path.</param>
+    void SetLogFile(Func<string?> getLogFile);
+
+    /// <summary>
+    /// Sets the language override configured by the user.
+    /// </summary>
+    /// <param name="languageTag">The IETF BCP 47 language tag (e.g. "cs-CZ"), or empty for system default.</param>
+    void SetLanguageOverride(string languageTag);
 }

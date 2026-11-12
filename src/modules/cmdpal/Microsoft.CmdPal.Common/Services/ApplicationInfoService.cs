@@ -8,6 +8,7 @@ using System.Security.Principal;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel;
+using Windows.Storage;
 
 namespace Microsoft.CmdPal.Common.Services;
 
@@ -16,11 +17,17 @@ namespace Microsoft.CmdPal.Common.Services;
 /// </summary>
 public sealed class ApplicationInfoService : IApplicationInfoService
 {
+    private const string UnpackagedCacheDirectoryName = "Cache";
+
+    private readonly Lazy<string> _cacheDirectory;
     private readonly Lazy<string> _configDirectory = new(() => Utilities.BaseSettingsPath("Microsoft.CmdPal"));
     private readonly Lazy<bool> _isElevated;
     private readonly Lazy<string> _logDirectory;
     private readonly Lazy<AppPackagingFlavor> _packagingFlavor;
     private Func<string>? _getLogDirectory;
+    private Func<string?>? _getLogFile;
+
+    public string? LanguageOverride { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ApplicationInfoService"/> class.
@@ -28,6 +35,7 @@ public sealed class ApplicationInfoService : IApplicationInfoService
     /// </summary>
     public ApplicationInfoService()
     {
+        _cacheDirectory = new Lazy<string>(DetermineCacheDirectory);
         _packagingFlavor = new Lazy<AppPackagingFlavor>(DeterminePackagingFlavor);
         _isElevated = new Lazy<bool>(DetermineElevationStatus);
         _logDirectory = new Lazy<string>(() => _getLogDirectory?.Invoke() ?? "Not available");
@@ -54,13 +62,28 @@ public sealed class ApplicationInfoService : IApplicationInfoService
         _getLogDirectory = getLogDirectory;
     }
 
+    public void SetLogFile(Func<string?> getLogFile)
+    {
+        ArgumentNullException.ThrowIfNull(getLogFile);
+        _getLogFile = getLogFile;
+    }
+
+    public void SetLanguageOverride(string languageTag)
+    {
+        LanguageOverride = string.IsNullOrEmpty(languageTag) ? null : languageTag;
+    }
+
     public string AppVersion => VersionHelper.GetAppVersionSafe();
 
     public AppPackagingFlavor PackagingFlavor => _packagingFlavor.Value;
 
     public string LogDirectory => _logDirectory.Value;
 
+    public string? LogFile => _getLogFile?.Invoke();
+
     public string ConfigDirectory => _configDirectory.Value;
+
+    public string CacheDirectory => _cacheDirectory.Value;
 
     public bool IsElevated => _isElevated.Value;
 
@@ -71,6 +94,7 @@ public sealed class ApplicationInfoService : IApplicationInfoService
                   App version:           {AppVersion}
                   Packaging flavor:      {PackagingFlavor}
                   Is elevated:           {(IsElevated ? "yes" : "no")}
+                  Language override:     {LanguageOverride ?? "System default"}
 
                 Environment:
                   OS version:            {RuntimeInformation.OSDescription}
@@ -84,7 +108,31 @@ public sealed class ApplicationInfoService : IApplicationInfoService
                 Paths:
                   Log directory:         {LogDirectory}
                   Config directory:      {ConfigDirectory}
+                  Cache directory:       {CacheDirectory}
                 """;
+    }
+
+    private string DetermineCacheDirectory()
+    {
+        if (PackagingFlavor != AppPackagingFlavor.Packaged)
+        {
+            return Path.Combine(Utilities.BaseSettingsPath("Microsoft.CmdPal"), UnpackagedCacheDirectoryName);
+        }
+
+        try
+        {
+            var cacheDirectory = ApplicationData.Current.LocalCacheFolder.Path;
+            if (!string.IsNullOrWhiteSpace(cacheDirectory))
+            {
+                return cacheDirectory;
+            }
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to resolve packaged cache directory", ex);
+        }
+
+        return Path.Combine(Utilities.BaseSettingsPath("Microsoft.CmdPal"), UnpackagedCacheDirectoryName);
     }
 
     private static AppPackagingFlavor DeterminePackagingFlavor()

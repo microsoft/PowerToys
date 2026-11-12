@@ -1,0 +1,432 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Collections.Generic;
+using ManagedCommon;
+using Microsoft.CmdPal.UI.ViewModels.Models;
+using Windows.Win32;
+using Windows.Win32.Devices.DeviceAndDriverInstallation;
+using Windows.Win32.Devices.Display;
+using Windows.Win32.Foundation;
+using Windows.Win32.Graphics.Gdi;
+using Windows.Win32.System.Registry;
+using Windows.Win32.UI.HiDpi;
+
+namespace Microsoft.CmdPal.UI.Services;
+
+/// <summary>
+/// Implementation of <see cref="IMonitorService"/> using Win32 monitor enumeration APIs.
+/// </summary>
+public sealed class MonitorService : IMonitorService
+{
+    private const uint PrimaryFlag = 0x00000001;
+
+    private readonly object _lock = new();
+    private readonly Func<IReadOnlyList<MonitorInfo>> _enumerateMonitors;
+    private IReadOnlyList<MonitorInfo>? _cachedSnapshot;
+
+    public MonitorService()
+        : this(static () => EnumerateMonitors(BuildDisplayInfoMapWithRetry()).AsReadOnly())
+    {
+    }
+
+    internal MonitorService(Func<IReadOnlyList<MonitorInfo>> enumerateMonitors)
+    {
+        _enumerateMonitors = enumerateMonitors;
+    }
+
+    /// <inheritdoc/>
+    public event EventHandler? MonitorsChanged;
+
+    /// <inheritdoc/>
+    public IReadOnlyList<MonitorInfo> GetMonitors(bool forceRefresh = false)
+    {
+        lock (_lock)
+        {
+            if (!forceRefresh && _cachedSnapshot is not null)
+            {
+                return _cachedSnapshot;
+            }
+        }
+
+        // BuildDisplayInfoMapWithRetry sleeps between attempts, so it runs unlocked. Another
+        // thread might race us and rebuild the map too, but that's cheaper than blocking
+        // every caller for up to 100ms.
+        var monitors = _enumerateMonitors();
+
+        lock (_lock)
+        {
+            if (!forceRefresh && _cachedSnapshot is not null)
+            {
+                return _cachedSnapshot;
+            }
+
+            _cachedSnapshot = monitors;
+            return _cachedSnapshot;
+        }
+    }
+
+    /// <inheritdoc/>
+    public MonitorInfo? GetMonitorByStableId(string stableId)
+    {
+        var monitors = GetMonitors();
+        foreach (var monitor in monitors)
+        {
+            if (string.Equals(monitor.StableId, stableId, StringComparison.OrdinalIgnoreCase))
+            {
+                return monitor;
+            }
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc/>
+    public MonitorInfo? GetMonitorByDeviceId(string deviceId)
+    {
+        var monitors = GetMonitors();
+        foreach (var monitor in monitors)
+        {
+            if (string.Equals(monitor.DeviceId, deviceId, StringComparison.OrdinalIgnoreCase))
+            {
+                return monitor;
+            }
+        }
+
+        return null;
+    }
+
+    /// <inheritdoc/>
+    public MonitorInfo? GetPrimaryMonitor()
+    {
+        var monitors = GetMonitors();
+        foreach (var monitor in monitors)
+        {
+            if (monitor.IsPrimary)
+            {
+                return monitor;
+            }
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Call this when a display settings change message is received (e.g. WM_DISPLAYCHANGE)
+    /// to invalidate the cached monitor list and raise <see cref="MonitorsChanged"/>.
+    /// </summary>
+    public void NotifyMonitorsChanged()
+    {
+        lock (_lock)
+        {
+            _cachedSnapshot = null;
+        }
+
+        Logger.LogDebug("Display topology changed, invalidating monitor cache");
+        MonitorsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
+    /// Number of immediate attempts to build the stable-ID display info map before giving up.
+    /// Right after WM_DISPLAYCHANGE, the Display Configuration API can transiently fail or
+    /// return an incomplete topology while Windows is still settling. Immediate retries
+    /// avoid blocking the UI thread while giving the API another chance to return stable data.
+    /// </summary>
+    private const int DisplayInfoMapRetryCount = 3;
+
+    private static unsafe List<MonitorInfo> EnumerateMonitors(Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)> displayInfo)
+    {
+        var monitors = new List<MonitorInfo>();
+
+        PInvoke.EnumDisplayMonitors(
+            HDC.Null,
+            (RECT*)null,
+            (HMONITOR hMonitor, HDC hdcMonitor, RECT* lprcMonitor, LPARAM dwData) =>
+            {
+                var infoEx = default(MONITORINFOEXW);
+                infoEx.monitorInfo.cbSize = (uint)sizeof(MONITORINFOEXW);
+                if (PInvoke.GetMonitorInfo(hMonitor, (MONITORINFO*)&infoEx))
+                {
+                    var hr = PInvoke.GetDpiForMonitor(
+                        hMonitor,
+                        MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI,
+                        out var dpiX,
+                        out _);
+                    if (hr.Failed || dpiX == 0)
+                    {
+                        dpiX = 96;
+                    }
+
+                    var isPrimary = (infoEx.monitorInfo.dwFlags & PrimaryFlag) != 0;
+                    var deviceName = new string(infoEx.szDevice.AsSpan()).TrimEnd('\0');
+
+                    var friendlyName = string.Empty;
+                    var stableId = deviceName; // Fall back to GDI name
+                    string? hardwareId = null;
+                    if (displayInfo.TryGetValue(deviceName, out var info))
+                    {
+                        friendlyName = info.FriendlyName;
+                        hardwareId = info.HardwareId;
+                        if (!string.IsNullOrEmpty(info.DevicePath))
+                        {
+                            stableId = info.DevicePath;
+                        }
+                    }
+
+                    var displayName = FormatDisplayName(deviceName, isPrimary, friendlyName);
+                    var rcMonitor = infoEx.monitorInfo.rcMonitor;
+                    var rcWork = infoEx.monitorInfo.rcWork;
+
+                    monitors.Add(new MonitorInfo
+                    {
+                        DeviceId = deviceName,
+                        StableId = stableId,
+                        FriendlyName = friendlyName,
+                        HardwareId = hardwareId,
+                        DisplayName = displayName,
+                        Bounds = new ScreenRect(
+                            rcMonitor.left,
+                            rcMonitor.top,
+                            rcMonitor.right,
+                            rcMonitor.bottom),
+                        WorkArea = new ScreenRect(
+                            rcWork.left,
+                            rcWork.top,
+                            rcWork.right,
+                            rcWork.bottom),
+                        Dpi = dpiX,
+                        IsPrimary = isPrimary,
+                    });
+                }
+
+                return true;
+            },
+            0);
+
+        return monitors;
+    }
+
+    /// <summary>
+    /// Calls <see cref="BuildDisplayInfoMap"/>, retrying a few times if it comes back
+    /// incomplete. Right after WM_DISPLAYCHANGE the API can transiently fail or only resolve
+    /// some active sources, and a partial map would leave those monitors on their volatile
+    /// GDI name, tricking <see cref="Settings.MonitorConfigReconciler"/> into treating a
+    /// still-connected monitor as brand new.
+    /// </summary>
+    private static Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)> BuildDisplayInfoMapWithRetry()
+    {
+        var map = new Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)>(StringComparer.OrdinalIgnoreCase);
+
+        for (var attempt = 0; attempt < DisplayInfoMapRetryCount; attempt++)
+        {
+            map = BuildDisplayInfoMap(out var expectedSourceCount);
+            if (map.Count >= expectedSourceCount && expectedSourceCount > 0)
+            {
+                return map;
+            }
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// Builds a map from GDI device name (e.g. <c>\\.\DISPLAY1</c>) to display metadata
+    /// (friendly name and stable device path) using the Display Configuration APIs.
+    /// Returns an empty dictionary on failure so callers can fall back gracefully.
+    /// <paramref name="expectedSourceCount"/> is the number of distinct GDI source device
+    /// names among the active paths, not the raw path count: in Duplicate/clone mode several
+    /// paths share one source, so comparing against the path count would never be satisfied.
+    /// </summary>
+    private static unsafe Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)> BuildDisplayInfoMap(out uint expectedSourceCount)
+    {
+        var map = new Dictionary<string, (string FriendlyName, string DevicePath, string? HardwareId)>(StringComparer.OrdinalIgnoreCase);
+        expectedSourceCount = 0;
+
+        try
+        {
+            var result = PInvoke.GetDisplayConfigBufferSizes(
+                QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                out var pathCount,
+                out var modeCount);
+            if (result != WIN32_ERROR.NO_ERROR)
+            {
+                return map;
+            }
+
+            var paths = new DISPLAYCONFIG_PATH_INFO[pathCount];
+            var modes = new DISPLAYCONFIG_MODE_INFO[modeCount];
+
+            // QDC_ONLY_ACTIVE_PATHS requires a null topology pointer, so omit the optional argument.
+            result = PInvoke.QueryDisplayConfig(
+                QUERY_DISPLAY_CONFIG_FLAGS.QDC_ONLY_ACTIVE_PATHS,
+                ref pathCount,
+                paths,
+                ref modeCount,
+                modes);
+            if (result != WIN32_ERROR.NO_ERROR)
+            {
+                return map;
+            }
+
+            var expectedSources = new HashSet<(LUID AdapterId, uint Id)>();
+
+            for (var i = 0; i < pathCount; i++)
+            {
+                var path = paths[i];
+                expectedSources.Add((path.sourceInfo.adapterId, path.sourceInfo.id));
+
+                // Get the GDI device name from the source info
+                var sourceName = default(DISPLAYCONFIG_SOURCE_DEVICE_NAME);
+                sourceName.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+                sourceName.header.size = (uint)sizeof(DISPLAYCONFIG_SOURCE_DEVICE_NAME);
+                sourceName.header.adapterId = path.sourceInfo.adapterId;
+                sourceName.header.id = path.sourceInfo.id;
+
+                if (PInvoke.DisplayConfigGetDeviceInfo(ref sourceName.header) != 0)
+                {
+                    continue;
+                }
+
+                var gdiName = new string(sourceName.viewGdiDeviceName.AsSpan()).TrimEnd('\0');
+                if (string.IsNullOrEmpty(gdiName))
+                {
+                    continue;
+                }
+
+                // Get the friendly name from the target info
+                var targetName = default(DISPLAYCONFIG_TARGET_DEVICE_NAME);
+                targetName.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
+                targetName.header.size = (uint)sizeof(DISPLAYCONFIG_TARGET_DEVICE_NAME);
+                targetName.header.adapterId = path.targetInfo.adapterId;
+                targetName.header.id = path.targetInfo.id;
+
+                if (PInvoke.DisplayConfigGetDeviceInfo(ref targetName.header) != 0)
+                {
+                    continue;
+                }
+
+                var friendly = new string(targetName.monitorFriendlyDeviceName.AsSpan()).TrimEnd('\0');
+                var devicePath = new string(targetName.monitorDevicePath.AsSpan()).TrimEnd('\0');
+                if (!string.IsNullOrEmpty(friendly) || !string.IsNullOrEmpty(devicePath))
+                {
+                    map.TryAdd(gdiName, (friendly ?? string.Empty, devicePath ?? string.Empty, ReadHardwareId(devicePath)));
+                }
+            }
+
+            expectedSourceCount = (uint)expectedSources.Count;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Logger.LogError($"BuildDisplayInfoMap failed: {ex.Message}");
+        }
+
+        return map;
+    }
+
+    /// <summary>
+    /// Reads the monitor's EDID from its devnode's <c>Device Parameters</c> key and turns it
+    /// into an <see cref="EdidIdentity"/> hardware ID. Returns <c>null</c> on any failure so
+    /// the monitor just falls back to device path matching.
+    /// </summary>
+    private static unsafe string? ReadHardwareId(string? devicePath)
+    {
+        var instanceId = DevicePathToInstanceId(devicePath);
+        if (instanceId is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            uint devInst;
+            fixed (char* pInstanceId = instanceId)
+            {
+                if (PInvoke.CM_Locate_DevNode(out devInst, pInstanceId, CM_LOCATE_DEVNODE_FLAGS.CM_LOCATE_DEVNODE_NORMAL) != CONFIGRET.CR_SUCCESS)
+                {
+                    return null;
+                }
+            }
+
+            HKEY key;
+            if (PInvoke.CM_Open_DevNode_Key(devInst, (uint)REG_SAM_FLAGS.KEY_READ, 0, PInvoke.RegDisposition_OpenExisting, &key, PInvoke.CM_REGISTRY_HARDWARE) != CONFIGRET.CR_SUCCESS)
+            {
+                return null;
+            }
+
+            try
+            {
+                const int MaxEdidLength = 1024;
+                var buffer = stackalloc byte[MaxEdidLength];
+                uint size = MaxEdidLength;
+                fixed (char* pValueName = "EDID")
+                {
+                    if (PInvoke.RegQueryValueEx(key, pValueName, null, null, buffer, &size) != WIN32_ERROR.ERROR_SUCCESS)
+                    {
+                        return null;
+                    }
+                }
+
+                return EdidIdentity.TryCreate(new ReadOnlySpan<byte>(buffer, (int)size));
+            }
+            finally
+            {
+                PInvoke.RegCloseKey(key);
+            }
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            Logger.LogDebug($"ReadHardwareId failed for '{devicePath}': {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Converts a monitor interface path (<c>\\?\DISPLAY#DEL41A3#5&amp;1c2f&amp;0&amp;UID4352#{guid}</c>)
+    /// into its device instance ID (<c>DISPLAY\DEL41A3\5&amp;1c2f&amp;0&amp;UID4352</c>).
+    /// </summary>
+    internal static string? DevicePathToInstanceId(string? devicePath)
+    {
+        const string prefix = @"\\?\";
+        if (string.IsNullOrEmpty(devicePath) || !devicePath.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var body = devicePath[prefix.Length..];
+        var guidStart = body.LastIndexOf("#{", StringComparison.Ordinal);
+        if (guidStart <= 0)
+        {
+            return null;
+        }
+
+        return body[..guidStart].Replace('#', '\\');
+    }
+
+    private static string FormatDisplayName(string deviceName, bool isPrimary, string friendlyName)
+    {
+        string name;
+
+        if (!string.IsNullOrEmpty(friendlyName))
+        {
+            name = friendlyName;
+        }
+        else if (deviceName.StartsWith(@"\\.\DISPLAY", StringComparison.OrdinalIgnoreCase))
+        {
+            // Fallback: convert "\\.\DISPLAY1" → "Display 1"
+            var number = deviceName.Substring(@"\\.\DISPLAY".Length);
+            name = $"Display {number}";
+        }
+        else
+        {
+            name = deviceName;
+        }
+
+        if (isPrimary)
+        {
+            name += " (Primary)";
+        }
+
+        return name;
+    }
+}

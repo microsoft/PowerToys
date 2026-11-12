@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using CommunityToolkit.Mvvm.Messaging;
-using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.Commands;
@@ -12,22 +10,42 @@ public sealed partial class ShowDetailsCommand : InvokableCommand
 {
     public static string ShowDetailsCommandId { get; } = "com.microsoft.cmdpal.showDetails";
 
-    private static IconInfo IconInfo { get; } = new IconInfo("\uF000"); // KnowledgeArticle Icon
+    private static IconInfo ShowIcon { get; } = new IconInfo("\uF000"); // KnowledgeArticle Icon
+
+    private static IconInfo HideIcon { get; } = new IconInfo("\uED1A"); // Hide Icon
 
     private DetailsViewModel Details { get; set; }
 
-    public ShowDetailsCommand(DetailsViewModel details)
+    private readonly Action<DetailsViewModel?> _setDetails;
+
+    private bool _isDetailsVisible;
+
+    public ShowDetailsCommand(DetailsViewModel details, Action<DetailsViewModel?> setDetails)
     {
         Id = ShowDetailsCommandId;
         Name = UI.ViewModels.Properties.Resources.ShowDetailsCommand;
-        Icon = IconInfo;
+        Icon = ShowIcon;
         Details = details;
+        _setDetails = setDetails;
     }
 
     public override CommandResult Invoke()
     {
-        // Send the ShowDetailsMessage when the action is invoked
-        WeakReferenceMessenger.Default.Send<ShowDetailsMessage>(new(Details));
+        _isDetailsVisible = !_isDetailsVisible;
+
+        if (_isDetailsVisible)
+        {
+            _setDetails(Details);
+            Name = UI.ViewModels.Properties.Resources.HideDetailsCommand;
+            Icon = HideIcon;
+        }
+        else
+        {
+            _setDetails(null);
+            Name = UI.ViewModels.Properties.Resources.ShowDetailsCommand;
+            Icon = ShowIcon;
+        }
+
         return CommandResult.KeepOpen();
     }
 }

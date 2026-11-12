@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -6,6 +6,25 @@ using System.Collections.Immutable;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
+
+/// <summary>
+/// Per-provider relevance nudge applied to main/root page search results. The value is a
+/// within-tier bonus only: it can reorder items that already share a relevance tier but can
+/// never move an item across a tier boundary. The underlying integer values are the sign of
+/// the bonus (Lower subtracts, Higher adds), and <see cref="Normal"/> is 0 so a missing or
+/// legacy setting deserializes to the neutral default.
+/// </summary>
+public enum ProviderSearchWeight
+{
+    /// <summary>De-prioritize this provider's results within their tier.</summary>
+    Lower = -1,
+
+    /// <summary>Default. No provider nudge.</summary>
+    Normal = 0,
+
+    /// <summary>Prioritize this provider's results within their tier.</summary>
+    Higher = 1,
+}
 
 public record ProviderSettings
 {
@@ -18,11 +37,29 @@ public record ProviderSettings
 
     public bool IsEnabled { get; init; } = true;
 
-    public ImmutableDictionary<string, FallbackSettings> FallbackCommands { get; init; }
+    /// <summary>
+    /// Per-provider within-tier ranking nudge for main-page search. Defaults to
+    /// <see cref="ProviderSearchWeight.Normal"/>; missing/legacy values deserialize to Normal.
+    /// </summary>
+    public ProviderSearchWeight SearchWeight { get; init; } = ProviderSearchWeight.Normal;
+
+    private ImmutableDictionary<string, FallbackSettings>? _fallbackCommands
         = ImmutableDictionary<string, FallbackSettings>.Empty;
 
-    public ImmutableList<string> PinnedCommandIds { get; init; }
+    public ImmutableDictionary<string, FallbackSettings> FallbackCommands
+    {
+        get => _fallbackCommands ?? ImmutableDictionary<string, FallbackSettings>.Empty;
+        init => _fallbackCommands = value;
+    }
+
+    private ImmutableList<string>? _pinnedCommandIds
         = ImmutableList<string>.Empty;
+
+    public ImmutableList<string> PinnedCommandIds
+    {
+        get => _pinnedCommandIds ?? ImmutableList<string>.Empty;
+        init => _pinnedCommandIds = value;
+    }
 
     [JsonIgnore]
     public string ProviderId { get; init; } = string.Empty;
@@ -37,7 +74,6 @@ public record ProviderSettings
     {
     }
 
-    [JsonConstructor]
     public ProviderSettings(bool isEnabled)
     {
         IsEnabled = isEnabled;
