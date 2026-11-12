@@ -15,6 +15,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
+using Microsoft.Windows.Globalization;
+using Windows.Globalization.DateTimeFormatting;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -96,6 +98,8 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
             }
 
             StringBuilder releaseNotesHtmlBuilder = new StringBuilder(string.Empty);
+            var language = ApplicationLanguages.PrimaryLanguageOverride;
+            var formatter = new DateTimeFormatter("longdate", string.IsNullOrEmpty(language) ? ApplicationLanguages.Languages : new[] { language });
 
             // Regex to remove installer hash sections from the release notes.
             Regex removeHashRegex = new Regex(RemoveInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
@@ -126,7 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
                 var releaseUrl = string.Format(CultureInfo.InvariantCulture, GitHubReleaseLinkTemplate, release.TagName);
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"# {release.Name}");
-                string formattedDate = release.PublishedDate.ToString($"{CultureInfo.CurrentCulture.DateTimeFormat.MonthDayPattern}, yyyy", CultureInfo.CurrentCulture);
+                string formattedDate = formatter.Format(release.PublishedDate);
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"{formattedDate.Replace(".", "\\.")} • [{ResourceLoaderInstance.ResourceLoader.GetString("ScoobeReleaseNotes_ViewOnGitHub")}]({releaseUrl})");
                 releaseNotesHtmlBuilder.AppendLine();
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
