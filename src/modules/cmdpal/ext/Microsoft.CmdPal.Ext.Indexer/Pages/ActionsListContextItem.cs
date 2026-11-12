@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Runtime.Versioning;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Indexer.Commands;
@@ -16,6 +17,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Pages;
 
+[SupportedOSPlatform("windows10.0.26100.0")]
 internal sealed partial class ActionsListContextItem : CommandContextItem, IDisposable
 {
     private readonly string fullPath;

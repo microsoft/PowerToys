@@ -273,7 +273,7 @@ public abstract class KernelServiceBase(
                                        : async (Kernel kernel) => await ExecuteStandardTransformAsync(kernel, format),
                 functionName: format.ToString(),
                 description: requiresPrompt ? coreDescription : $"{coreDescription} Puts the result back on the clipboard.",
-                parameters: requiresPrompt ? [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }] : null,
+                parameters: requiresPrompt ? new KernelParameterMetadata[] { new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) } } : null,
                 returnParameter: new() { Description = "Array of available clipboard formats after operation" });
 
         HashSet<string> usedFunctionNames = new(Enum.GetNames<PasteFormats>(), StringComparer.OrdinalIgnoreCase);
@@ -386,7 +386,7 @@ public abstract class KernelServiceBase(
         ExecuteTransformAsync(
            kernel,
            new ActionChainItem(format, Arguments: []),
-           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView, kernel.GetCancellationToken(), kernel.GetProgress()));
+           async dataPackageView => await TransformHelpers.TransformAsync(format, dataPackageView, kernel.GetCancellationToken(), kernel.GetProgress(), _userSettings.PasteAsJpgQuality));
 
     private static async Task<string> ExecuteTransformAsync(Kernel kernel, ActionChainItem actionChainItem, Func<DataPackageView, Task<DataPackage>> transformFunc)
     {
