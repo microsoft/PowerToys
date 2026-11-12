@@ -89,9 +89,7 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         if (action == QuickAccessFlyoutAction.Show)
         {
             CancelMemoryTrim();
-            _flyout.Show(DesktopFlyoutPosition.InWorkArea(
-                DesktopFlyoutWorkAreaPosition.BottomRight,
-                DesktopFlyoutMonitorSelection.Cursor));
+            _flyout.Show(GetFlyoutPosition());
 
             _flyout.RefreshIfAppsList();
         }
@@ -104,6 +102,47 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
     private void HideFlyout()
     {
         ExecuteFlyoutAction(_visibilityState.RequestHide());
+    }
+
+    private static DesktopFlyoutPosition GetFlyoutPosition()
+    {
+        if (TryGetRunnerTrayIconBounds(out var bounds))
+        {
+            return DesktopFlyoutPosition.ForTaskbarAnchor(bounds);
+        }
+
+        return DesktopFlyoutPosition.InWorkArea(
+            DesktopFlyoutWorkAreaPosition.BottomRight,
+            DesktopFlyoutMonitorSelection.Cursor);
+    }
+
+    private static bool TryGetRunnerTrayIconBounds(out System.Drawing.Rectangle bounds)
+    {
+        bounds = System.Drawing.Rectangle.Empty;
+
+        // Match the tray icon registered by Runner in tray_icon.cpp.
+        var trayIconWindow = FindWindowW("PToyTrayIconWindow", null);
+        if (trayIconWindow == IntPtr.Zero)
+        {
+            return false;
+        }
+
+        var identifier = new NotifyIconIdentifier
+        {
+            CbSize = (uint)Marshal.SizeOf<NotifyIconIdentifier>(),
+            HWnd = trayIconWindow,
+            UId = 1,
+        };
+
+        if (Shell_NotifyIconGetRect(ref identifier, out var iconRect) < 0 ||
+            iconRect.Right <= iconRect.Left ||
+            iconRect.Bottom <= iconRect.Top)
+        {
+            return false;
+        }
+
+        bounds = System.Drawing.Rectangle.FromLTRB(iconRect.Left, iconRect.Top, iconRect.Right, iconRect.Bottom);
+        return true;
     }
 
     private void OnFlyoutIsOpenChanged(DependencyObject sender, DependencyProperty property)
@@ -373,4 +412,28 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
     [DllImport("kernel32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetProcessWorkingSetSize(IntPtr hProcess, nint dwMinimumWorkingSetSize, nint dwMaximumWorkingSetSize);
+
+    [DllImport("user32.dll", EntryPoint = "FindWindowW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern IntPtr FindWindowW(string? className, string? windowName);
+
+    [DllImport("shell32.dll", ExactSpelling = true)]
+    private static extern int Shell_NotifyIconGetRect(ref NotifyIconIdentifier identifier, out NativeRect iconLocation);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NotifyIconIdentifier
+    {
+        public uint CbSize;
+        public IntPtr HWnd;
+        public uint UId;
+        public Guid GuidItem;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
 }
