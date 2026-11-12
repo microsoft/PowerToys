@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using KeyboardManagerEditorUI.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -99,6 +100,37 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsFalse(
                 ValidationHelper.DoApplicationScopesOverlap(existing, candidate),
                 "Unrelated app-specific mappings should be able to share the same shortcut.");
+        }
+
+        [DataTestMethod]
+        [DataRow("tr-TR")]
+        [DataRow("az-Latn-AZ")]
+        public void ProcessNameComparisonIgnoresCurrentCulture(string cultureName)
+        {
+            // Turkish and Azerbaijani casing rules treat 'I' and 'i' as
+            // different letters. Windows process-name matching must not.
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+            CultureInfo originalUICulture = CultureInfo.CurrentUICulture;
+
+            try
+            {
+                CultureInfo testCulture = CultureInfo.GetCultureInfo(cultureName);
+                CultureInfo.CurrentCulture = testCulture;
+                CultureInfo.CurrentUICulture = testCulture;
+
+                Assert.IsTrue(
+                    ValidationHelper.DoApplicationScopesOverlap("FILE.EXE", "file.exe"),
+                    "Executable matching must not vary with the user's regional settings.");
+
+                Assert.IsFalse(
+                    ValidationHelper.DoApplicationScopesOverlap("FILE.EXE", "filter.exe"),
+                    "Different executables must remain distinct in every culture.");
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+                CultureInfo.CurrentUICulture = originalUICulture;
+            }
         }
     }
 }
