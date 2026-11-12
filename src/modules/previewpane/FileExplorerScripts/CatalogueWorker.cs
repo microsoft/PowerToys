@@ -4,7 +4,6 @@
 
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
@@ -18,28 +17,30 @@ namespace FileExplorerScripts;
 
 internal static class CatalogueWorker
 {
-    public static async Task RunAsync(int runnerId)
+    public static async Task RunAsync(int runnerId, CancellationToken cancellationToken)
     {
-        using var runner = Process.GetProcessById(runnerId);
+        cancellationToken.ThrowIfCancellationRequested();
         using var singleton = new Mutex(false, @"Local\PowerToys.FileExplorerScripts.Catalogue." + runnerId, out var created);
         if (!created)
         {
             return;
         }
 
-        using var stop = new EventWaitHandle(false, EventResetMode.ManualReset, @"Local\PowerToys.FileExplorerScripts.Stop." + runnerId);
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await ShellRegistration.RegisterAsync();
+            cancellationToken.ThrowIfCancellationRequested();
             using var client = new PowerScriptsClient("file-explorer", reuseHost: true);
             var defaultIconPath = Path.Combine(AppContext.BaseDirectory, "PowerToys.FileExplorerScripts.exe");
             string? lastError = null;
-            do
+            while (true)
             {
                 try
                 {
-                    using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                    var enabled = ExplorerSettings.IsParentEnabled() && await IsConsumerEnabledAsync(client, timeout.Token);
+                    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                    timeout.CancelAfter(TimeSpan.FromSeconds(5));
+                    var enabled = ExplorerSettings.IsParentEnabled() && (await client.GetConsumerStateAsync(timeout.Token)).IsEnabled;
                     var scripts = enabled ? await client.ListAsync(timeout.Token) : [];
                     var fileScripts = scripts.Where(item => item.Input is PowerScriptIO.Files or PowerScriptIO.Image or PowerScriptIO.Audio).Take(1025).ToArray();
                     var showParameters = ExplorerSettings.ShowParameters();
@@ -91,6 +92,10 @@ internal static class CatalogueWorker
                     });
                     lastError = null;
                 }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
                 catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException or Win32Exception or OperationCanceledException)
                 {
                     if (lastError != exception.Message)
@@ -108,8 +113,9 @@ internal static class CatalogueWorker
                         writer.WriteEndArray();
                     });
                 }
+
+                await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
             }
-            while (!runner.HasExited && !await Task.Run(() => stop.WaitOne(TimeSpan.FromSeconds(5))));
         }
         finally
         {
@@ -120,50 +126,6 @@ internal static class CatalogueWorker
                 writer.WriteEndArray();
             });
             ShellRegistration.UnregisterClassic();
-        }
-    }
-
-    private static async Task<bool> IsConsumerEnabledAsync(PowerScriptsClient client, CancellationToken cancellationToken)
-    {
-        if (!client.IsAvailable)
-        {
-            throw new FileNotFoundException("The PowerScripts Host is not installed.", client.HostPath);
-        }
-
-        var start = new ProcessStartInfo(client.HostPath!)
-        {
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-        };
-        start.ArgumentList.Add("consumers");
-        start.ArgumentList.Add("list");
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("Unable to query consumer settings.");
-        try
-        {
-            var stdout = process.StandardOutput.ReadToEndAsync(cancellationToken);
-            var stderr = process.StandardError.ReadToEndAsync(cancellationToken);
-            await Task.WhenAll(stdout, stderr);
-            await process.WaitForExitAsync(cancellationToken);
-            if (process.ExitCode != 0)
-            {
-                throw new InvalidOperationException(await stderr);
-            }
-
-            using var document = JsonDocument.Parse(await stdout);
-            return document.RootElement.GetProperty("consumers").EnumerateArray()
-                .Single(item => item.GetProperty("id").GetString() == "file-explorer").GetProperty("isEnabled").GetBoolean();
-        }
-        catch (OperationCanceledException)
-        {
-            if (!process.HasExited)
-            {
-                process.Kill(entireProcessTree: true);
-            }
-
-            await process.WaitForExitAsync(CancellationToken.None);
-            throw;
         }
     }
 

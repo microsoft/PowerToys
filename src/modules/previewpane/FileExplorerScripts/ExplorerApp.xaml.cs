@@ -54,6 +54,8 @@ public sealed partial class App : Application, IDisposable
 
     protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        // Window construction can raise OnLaunched before the app constructor returns.
+        await Task.Yield();
         var watching = false;
         try
         {
@@ -61,6 +63,9 @@ public sealed partial class App : Application, IDisposable
             if (arguments.Length == 3 && arguments[1] == "--watch")
             {
                 watching = true;
+                using var lifetime = new CatalogueLifetime(int.Parse(arguments[2], CultureInfo.InvariantCulture));
+                using var stopping = lifetime.Token.Register(() => _shutdown.Cancel());
+                lifetime.Token.ThrowIfCancellationRequested();
                 try
                 {
                     using var warmup = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
@@ -72,7 +77,7 @@ public sealed partial class App : Application, IDisposable
                     Logger.LogError("Unable to prewarm the Explorer PowerScripts Host. Catalogue refresh will report its current availability.", exception);
                 }
 
-                await CatalogueWorker.RunAsync(int.Parse(arguments[2], CultureInfo.InvariantCulture));
+                await CatalogueWorker.RunAsync(int.Parse(arguments[2], CultureInfo.InvariantCulture), lifetime.Token);
             }
             else if (arguments.Length == 3 && arguments[1] == "--request")
             {

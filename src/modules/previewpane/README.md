@@ -18,6 +18,9 @@ The runner-owned app also receives context-menu requests through AppLifecycle ac
 serialized per app instance. It retains private Host stdio sessions for catalogue and execution;
 metadata, approval and policy are still revalidated for every request. Windows sandboxes and
 interpreters remain fresh. Progress windows are constructed only after the configured delay.
+The runner's stop event is monitored before Host prewarm, so disabling the module also cancels
+startup. The runner retains ownership until shutdown completes and uses a kill-on-close process
+job to contain the catalogue and its Host descendants if graceful shutdown times out or the runner exits.
 
 Enable the integration in **PowerScripts app > Consumer modules > File Explorer**. The
 **Show parameter options before running** preference is in File Explorer Add-ons settings

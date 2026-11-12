@@ -107,6 +107,18 @@ PowerPreviewModule::PowerPreviewModule() :
 void PowerPreviewModule::destroy()
 {
     stop_scripts_consumer();
+    if (m_scriptsJob)
+    {
+        CloseHandle(m_scriptsJob);
+    }
+    if (m_scriptsProcess)
+    {
+        CloseHandle(m_scriptsProcess);
+    }
+    if (m_scriptsStop)
+    {
+        CloseHandle(m_scriptsStop);
+    }
     Trace::Destroyed();
     delete this;
 }
@@ -213,6 +225,11 @@ void PowerPreviewModule::start_scripts_consumer()
     }
 
     stop_scripts_consumer();
+    if (m_scriptsProcess)
+    {
+        return;
+    }
+
     const auto eventName = L"Local\\PowerToys.FileExplorerScripts.Stop." + std::to_wstring(GetCurrentProcessId());
     m_scriptsStop = CreateEventW(nullptr, TRUE, FALSE, eventName.c_str());
     if (!m_scriptsStop)
@@ -221,20 +238,38 @@ void PowerPreviewModule::start_scripts_consumer()
         return;
     }
 
+    m_scriptsJob = CreateJobObjectW(nullptr, nullptr);
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits{};
+    limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+    if (!m_scriptsJob || !SetInformationJobObject(m_scriptsJob, JobObjectExtendedLimitInformation, &limits, sizeof(limits)))
+    {
+        Logger::error(L"Unable to create the Explorer PowerScripts process job: {}", GetLastError());
+        stop_scripts_consumer();
+        return;
+    }
+
     const auto executable = get_module_folderpath() + L"\\WinUI3Apps\\PowerToys.FileExplorerScripts.exe";
     auto command = L"\"" + executable + L"\" --watch " + std::to_wstring(GetCurrentProcessId());
     STARTUPINFOW startup{ sizeof(startup) };
     PROCESS_INFORMATION process{};
-    if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, 0, nullptr, nullptr, &startup, &process))
+    if (!CreateProcessW(executable.c_str(), command.data(), nullptr, nullptr, FALSE, CREATE_SUSPENDED, nullptr, nullptr, &startup, &process))
     {
         Logger::error(L"Unable to start the Explorer PowerScripts catalogue: {}", GetLastError());
-        CloseHandle(m_scriptsStop);
-        m_scriptsStop = nullptr;
+        stop_scripts_consumer();
+        return;
+    }
+
+    m_scriptsProcess = process.hProcess;
+    if (!AssignProcessToJobObject(m_scriptsJob, m_scriptsProcess) || ResumeThread(process.hThread) == static_cast<DWORD>(-1))
+    {
+        Logger::error(L"Unable to attach the Explorer PowerScripts process to its lifetime job: {}", GetLastError());
+        TerminateProcess(m_scriptsProcess, ERROR_CANCELLED);
+        CloseHandle(process.hThread);
+        stop_scripts_consumer();
         return;
     }
 
     CloseHandle(process.hThread);
-    m_scriptsProcess = process.hProcess;
 }
 
 void PowerPreviewModule::stop_scripts_consumer()
@@ -242,19 +277,40 @@ void PowerPreviewModule::stop_scripts_consumer()
     if (m_scriptsStop)
     {
         SetEvent(m_scriptsStop);
-        CloseHandle(m_scriptsStop);
-        m_scriptsStop = nullptr;
     }
 
     if (m_scriptsProcess)
     {
-        if (WaitForSingleObject(m_scriptsProcess, 6000) == WAIT_TIMEOUT)
+        auto stopped = WaitForSingleObject(m_scriptsProcess, 6000);
+        if (stopped == WAIT_TIMEOUT && m_scriptsJob)
         {
-            Logger::warn(L"Explorer PowerScripts catalogue is still shutting down.");
+            Logger::warn(L"Explorer PowerScripts catalogue did not stop in time; terminating its process job.");
+            if (TerminateJobObject(m_scriptsJob, ERROR_CANCELLED))
+            {
+                stopped = WaitForSingleObject(m_scriptsProcess, 6000);
+            }
+        }
+
+        if (stopped != WAIT_OBJECT_0)
+        {
+            Logger::error(L"Unable to stop the Explorer PowerScripts catalogue; retaining its process and stop event.");
+            return;
         }
 
         CloseHandle(m_scriptsProcess);
         m_scriptsProcess = nullptr;
+    }
+
+    if (m_scriptsJob)
+    {
+        CloseHandle(m_scriptsJob);
+        m_scriptsJob = nullptr;
+    }
+
+    if (m_scriptsStop)
+    {
+        CloseHandle(m_scriptsStop);
+        m_scriptsStop = nullptr;
     }
 }
 

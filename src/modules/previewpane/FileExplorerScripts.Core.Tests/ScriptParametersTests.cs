@@ -32,6 +32,19 @@ public sealed class ScriptParametersTests
     }
 
     [TestMethod]
+    public void ExplicitEmptyStringOverridesADefaultWhileMissingValuesUseIt()
+    {
+        var script = Script(Parameter("string", "prefix"));
+        var cleared = ScriptParameters.Parse(script, new Dictionary<string, string?> { ["string"] = string.Empty });
+        Assert.AreEqual(string.Empty, cleared["string"].GetString());
+        Assert.AreEqual("prefix", ScriptParameters.GetDefaults(script)["string"].GetString());
+        Assert.AreEqual(string.Empty, ScriptParameters.GetDefaults(Script(Parameter("string", string.Empty)))["string"].GetString());
+        Assert.Throws<ArgumentException>(() => ScriptParameters.Parse(
+            Script(Parameter("string", "prefix", required: true)),
+            new Dictionary<string, string?> { ["string"] = string.Empty }));
+    }
+
+    [TestMethod]
     public void MissingRequiredAndInvalidDefaultsDisableDefaultExecution()
     {
         foreach (var parameter in new[]

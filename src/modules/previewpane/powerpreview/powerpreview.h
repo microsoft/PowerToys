@@ -29,6 +29,7 @@ private:
     std::vector<FileExplorerModule> m_fileExplorerModules;
     HANDLE m_scriptsProcess = nullptr;
     HANDLE m_scriptsStop = nullptr;
+    HANDLE m_scriptsJob = nullptr;
 
     void start_scripts_consumer();
     void stop_scripts_consumer();
@@ -36,6 +37,7 @@ private:
     // Function to warn the user that PowerToys needs to run as administrator for changes to take effect
     void show_update_warning_message();
     void apply_settings(const PowerToysSettings::PowerToyValues& settings);
+
 public:
     PowerPreviewModule();
 

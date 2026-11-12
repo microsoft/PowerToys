@@ -43,6 +43,24 @@ public sealed class ExplorerScriptServiceTests
     }
 
     [TestMethod]
+    public async Task ExplicitlyClearedStringDefaultSurvivesExecutionRevalidation()
+    {
+        using var fixture = new Fixture();
+        const string catalogue = """
+            [{"id":"script","io":{"input":"files","output":"text"},
+              "parameters":[{"name":"prefix","type":"string","isRequired":false,"default":"prefix"}]}]
+            """;
+        fixture.Write("catalogue.json", catalogue);
+        fixture.Write("result.json", """{"text":"produced"}""");
+        var service = Service(fixture);
+        var script = (await service.GetApplicableScriptsAsync([fixture.Input])).Single();
+        var parameters = ScriptParameters.Parse(script, new Dictionary<string, string?> { ["prefix"] = string.Empty });
+        await service.ExecuteAsync(script, [fixture.Input], parameters, fixture.Destination);
+        using var payload = JsonDocument.Parse(await File.ReadAllTextAsync(Path.Combine(fixture.Root, "payload.json")));
+        Assert.AreEqual(string.Empty, payload.RootElement.GetProperty("parameters").GetProperty("prefix").GetString());
+    }
+
+    [TestMethod]
     public async Task ChangedMediaBytesOrMimeContractNeverInvokesTransform()
     {
         using var fixture = new Fixture();

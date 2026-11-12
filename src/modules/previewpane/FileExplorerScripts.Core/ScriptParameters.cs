@@ -59,7 +59,7 @@ public static class ScriptParameters
             }
 
             var value = values.TryGetValue(parameter.Name, out var supplied) ? supplied : parameter.Default;
-            if (string.IsNullOrEmpty(value))
+            if (value is null || (value.Length == 0 && parameter.Type != "string"))
             {
                 if (parameter.IsRequired)
                 {
