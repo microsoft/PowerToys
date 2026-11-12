@@ -235,7 +235,7 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
     }
 
     private static Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeQueryAsync(
-        ExtensionObject<IFallbackHandler2> handler,
+        ExtensionObject<IFallbackQueryHandler> handler,
         IFallbackQueryArgs args,
         CancellationToken cancellationToken)
         => StartCancelableAsync(
