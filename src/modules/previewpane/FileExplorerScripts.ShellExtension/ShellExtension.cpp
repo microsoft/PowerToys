@@ -12,8 +12,8 @@
 #include <chrono>
 #include <cstring>
 #include <filesystem>
-#include <fstream>
 #include <string>
+#include <string_view>
 #include <vector>
 
 using namespace Microsoft::WRL;
@@ -22,6 +22,12 @@ using namespace winrt::Windows::Data::Json;
 namespace
 {
     HMODULE moduleHandle;
+
+    winrt::handle OpenCatalogue(const std::filesystem::path& path)
+    {
+        const auto raw = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        return winrt::handle{ raw == INVALID_HANDLE_VALUE ? nullptr : raw };
+    }
 
     std::filesystem::path DataDirectory()
     {
@@ -35,15 +41,20 @@ namespace
     JsonObject ReadCatalogue()
     {
         const auto path = DataDirectory() / L"catalogue.json";
-        std::error_code error;
-        const auto size = std::filesystem::file_size(path, error);
-        if (error || size > 1024 * 1024)
+        const auto file = OpenCatalogue(path);
+        LARGE_INTEGER size{};
+        if (!file || !GetFileSizeEx(file.get(), &size) || size.QuadPart <= 0 || size.QuadPart > 1024 * 1024)
         {
             return JsonObject{};
         }
 
-        std::ifstream stream(path, std::ios::binary);
-        const std::string contents((std::istreambuf_iterator<char>(stream)), std::istreambuf_iterator<char>());
+        std::string contents(static_cast<size_t>(size.QuadPart), '\0');
+        DWORD read = 0;
+        if (!ReadFile(file.get(), contents.data(), static_cast<DWORD>(contents.size()), &read, nullptr) || read != contents.size())
+        {
+            return JsonObject{};
+        }
+
         JsonObject result;
         if (!JsonObject::TryParse(winrt::to_hstring(contents), result))
         {
@@ -53,6 +64,99 @@ namespace
         const auto now = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         const auto age = now - result.GetNamedNumber(L"updated", 0);
         return age >= 0 && age < 60 ? result : JsonObject{};
+    }
+
+    bool IsSafePathComponent(std::wstring_view name)
+    {
+        if (name.empty() || name.size() > 255 || name == L"." || name == L".." || name.back() == L'.' || name.back() == L' ' ||
+            std::all_of(name.begin(), name.end(), [](wchar_t character) {
+                return character == L' ' || character == L'\x0085' || character == L'\x00a0' || character == L'\x1680' ||
+                       (character >= L'\x2000' && character <= L'\x200a') || character == L'\x2028' || character == L'\x2029' ||
+                       character == L'\x202f' || character == L'\x205f' || character == L'\x3000';
+            }) ||
+            std::any_of(name.begin(), name.end(), [](wchar_t character) { return character < 32 || std::wstring_view(L"<>:\"/\\|?*").find(character) != std::wstring_view::npos; }))
+        {
+            return false;
+        }
+
+        auto stem = name.substr(0, name.find(L'.'));
+        while (!stem.empty() && stem.back() == L' ')
+        {
+            stem.remove_suffix(1);
+        }
+
+        const auto equals = [&](std::wstring_view value) {
+            return CompareStringOrdinal(stem.data(), static_cast<int>(stem.size()), value.data(), static_cast<int>(value.size()), TRUE) == CSTR_EQUAL;
+        };
+        for (const auto reserved : { L"CON", L"PRN", L"AUX", L"NUL", L"CONIN$", L"CONOUT$" })
+        {
+            if (equals(reserved))
+            {
+                return false;
+            }
+        }
+
+        if (stem.size() == 4 &&
+            (CompareStringOrdinal(stem.data(), 3, L"COM", 3, TRUE) == CSTR_EQUAL || CompareStringOrdinal(stem.data(), 3, L"LPT", 3, TRUE) == CSTR_EQUAL) &&
+            ((stem[3] >= L'0' && stem[3] <= L'9') || stem[3] == L'\x00b9' || stem[3] == L'\x00b2' || stem[3] == L'\x00b3'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool IsSupportedFile(const std::wstring& name)
+    {
+        // Keep menu eligibility aligned with FileExplorerScripts.Core/LocalPaths.cs.
+        if (name.size() < 3 || name.size() > 259 ||
+            !((name[0] >= L'A' && name[0] <= L'Z') || (name[0] >= L'a' && name[0] <= L'z')) ||
+            name[1] != L':' || name[2] != L'\\' || name.back() == L'\\' ||
+            name.find(L'/') != std::wstring::npos || name.find(L':', 2) != std::wstring::npos)
+        {
+            return false;
+        }
+
+        for (size_t start = 3; start < name.size();)
+        {
+            const auto end = name.find(L'\\', start);
+            if (!IsSafePathComponent(std::wstring_view(name).substr(start, end == std::wstring::npos ? name.size() - start : end - start)))
+            {
+                return false;
+            }
+            if (end == std::wstring::npos)
+            {
+                break;
+            }
+            start = end + 1;
+        }
+
+        const auto drive = GetDriveTypeW(name.substr(0, 3).c_str());
+        if (drive != DRIVE_FIXED && drive != DRIVE_REMOVABLE && drive != DRIVE_RAMDISK)
+        {
+            return false;
+        }
+
+        const auto attributes = GetFileAttributesW(name.c_str());
+        if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT | FILE_ATTRIBUTE_DEVICE)))
+        {
+            return false;
+        }
+
+        for (auto parent = std::filesystem::path(name).parent_path(); !parent.empty(); parent = parent.parent_path())
+        {
+            const auto parentAttributes = GetFileAttributesW(parent.c_str());
+            if (parentAttributes == INVALID_FILE_ATTRIBUTES || (parentAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+            {
+                return false;
+            }
+            if (parent == parent.root_path())
+            {
+                break;
+            }
+        }
+
+        return true;
     }
 
     std::vector<std::wstring> GetFiles(IShellItemArray* selection)
@@ -73,11 +177,9 @@ namespace
                 return {};
             }
 
-            const auto attributes = GetFileAttributesW(path);
             const std::wstring name(path);
             CoTaskMemFree(path);
-            if (attributes == INVALID_FILE_ATTRIBUTES || (attributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) ||
-                name.size() > 32767 || name.starts_with(L"\\\\"))
+            if (!IsSupportedFile(name))
             {
                 return {};
             }

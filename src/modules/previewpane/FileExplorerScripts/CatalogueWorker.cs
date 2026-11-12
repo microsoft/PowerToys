@@ -44,7 +44,8 @@ internal static class CatalogueWorker
                     var scripts = enabled ? await client.ListAsync(timeout.Token) : [];
                     var fileScripts = scripts.Where(item => item.Input is PowerScriptIO.Files or PowerScriptIO.Image or PowerScriptIO.Audio).Take(1025).ToArray();
                     var showParameters = ExplorerSettings.ShowParameters();
-                    WriteCache(writer =>
+                    await WriteCacheAsync(
+                        writer =>
                     {
                         writer.WriteBoolean("enabled", enabled);
                         writer.WriteBoolean("showParameters", showParameters);
@@ -89,7 +90,8 @@ internal static class CatalogueWorker
                         }
 
                         writer.WriteEndArray();
-                    });
+                        },
+                        cancellationToken);
                     lastError = null;
                 }
                 catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
@@ -104,14 +106,23 @@ internal static class CatalogueWorker
                         lastError = exception.Message;
                     }
 
-                    WriteCache(writer =>
+                    try
                     {
-                        writer.WriteBoolean("enabled", true);
-                        writer.WriteString("error", exception.Message);
-                        writer.WriteString("more", Strings.Get("Failed"));
-                        writer.WriteStartArray("scripts");
-                        writer.WriteEndArray();
-                    });
+                        await WriteCacheAsync(
+                            writer =>
+                        {
+                            writer.WriteBoolean("enabled", true);
+                            writer.WriteString("error", exception.Message);
+                            writer.WriteString("more", Strings.Get("Failed"));
+                            writer.WriteStartArray("scripts");
+                            writer.WriteEndArray();
+                            },
+                            cancellationToken);
+                    }
+                    catch (Exception publicationError) when (publicationError is IOException or UnauthorizedAccessException)
+                    {
+                        Logger.LogError("Unable to publish Explorer PowerScripts recovery status; catalogue refresh will retry.", publicationError);
+                    }
                 }
 
                 await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
@@ -119,17 +130,29 @@ internal static class CatalogueWorker
         }
         finally
         {
-            WriteCache(writer =>
+            try
             {
-                writer.WriteBoolean("enabled", false);
-                writer.WriteStartArray("scripts");
-                writer.WriteEndArray();
-            });
-            ShellRegistration.UnregisterClassic();
+                await WriteCacheAsync(
+                    writer =>
+                {
+                    writer.WriteBoolean("enabled", false);
+                    writer.WriteStartArray("scripts");
+                    writer.WriteEndArray();
+                    },
+                    CancellationToken.None);
+            }
+            catch (Exception publicationError) when (publicationError is IOException or UnauthorizedAccessException)
+            {
+                Logger.LogError("Unable to publish Explorer PowerScripts shutdown status.", publicationError);
+            }
+            finally
+            {
+                ShellRegistration.UnregisterClassic();
+            }
         }
     }
 
-    private static void WriteCache(Action<Utf8JsonWriter> write)
+    private static async Task WriteCacheAsync(Action<Utf8JsonWriter> write, CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(ExplorerSettings.CachePath)!);
         var temporary = ExplorerSettings.CachePath + "." + Guid.NewGuid().ToString("N") + ".tmp";
@@ -149,7 +172,7 @@ internal static class CatalogueWorker
                 throw new InvalidOperationException(Strings.Get("CatalogueTooLarge"));
             }
 
-            File.Move(temporary, ExplorerSettings.CachePath, overwrite: true);
+            await CatalogueFile.PublishAsync(temporary, ExplorerSettings.CachePath, cancellationToken);
         }
         finally
         {

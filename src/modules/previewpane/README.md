@@ -55,7 +55,10 @@ no verified state is available. The fast state callback never reads media.
 Cloud placeholders are not hydrated, and media is not decoded or transcoded in Explorer.
 Invocation revalidates and supplies the existing scalar/array media payload, at most 16 MiB.
 Multiple selections, larger assets and unsupported formats remain file-input only.
-Directories, reparse points and UNC/device paths remain excluded.
+Directories, reparse points (including ancestor folders), UNC/device/stream paths,
+network drives and paths longer than 259 characters remain excluded. Native menu eligibility
+matches managed invocation validation. Catalogue readers allow atomic replacement;
+transient publication contention is retried briefly, then logged without stopping refresh.
 Windows and managed Linux execution continue to use PowerScripts' existing runtime configuration.
 
 Build the Core, native shell, app and `powerpreview` projects for the same architecture.
@@ -74,6 +77,10 @@ cl /EHsc /std:c++20 /DUNICODE /D_UNICODE /DWIN32_LEAN_AND_MEAN /DNOMINMAX /I ..\
 ShellExtensionTests.exe <shell DLL path> <valid PNG path> <valid WAV path> [invalid or non-media paths...]
 ```
 This checks both callback orders, selection replacement, and fast/verified/classic menu latency.
+Use `--isolated` instead of the DLL path to run the same command implementation with a private
+temporary catalogue, without changing user data or shell registration. This also checks atomic
+publication with an open native reader, path grammar, reparse ancestors and the 259/260-character
+boundary. Reparse-point cases require Developer Mode or permission to create symbolic links.
 
 -  Add new C++ DLL project in the preview pane folder. This DLL is actual preview handler, i.e. implements IPreviewHandler/IThumbnailProvider interface.
 -  Add new .NET EXE project in the preview pane folder. This EXE is being spawned by C++ DLL to generate preview/thumbnail.

@@ -15,6 +15,7 @@
     <Compile Remove="FakeHost\**\*.cs" />
     <Compile Include="..\FileExplorerScripts\ExplorerSettings.cs" Link="ExplorerSettings.cs" />
     <Compile Include="..\FileExplorerScripts\CatalogueLifetime.cs" Link="CatalogueLifetime.cs" />
+    <Compile Include="..\FileExplorerScripts\CatalogueFile.cs" Link="CatalogueFile.cs" />
   </ItemGroup>
   <Target Name="CopyFakeHost" AfterTargets="Build">
     <PropertyGroup>
