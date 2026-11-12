@@ -115,7 +115,8 @@ internal sealed partial class SnippetPicksPage : ListPage
     /// <summary>One match to pick. Picking the last choice pastes; an earlier one opens the page for the next.</summary>
     private ListItem MatchItem(SnippetFill fill, ClipboardChoice choice, string match)
     {
-        var picked = fill with { Picks = [.. fill.Picks, match] };
+        string[] picks = [.. fill.Picks, match];
+        var picked = fill with { Picks = picks };
         var last = picked.Picks.Count == picked.Plan.Choices.Count;
         return new ListItem(last ? Insert(picked) : new SnippetPicksPage(_snippet, _actions, _inserted, picked))
         {

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
@@ -215,7 +214,7 @@ internal sealed class SnippetInserter
     /// <summary>Sends <paramref name="key"/>'s key-up, with one more try, after a batch that may have left it down.</summary>
     private void LetGoOf(ushort key)
     {
-        IReadOnlyList<KeyStroke> up = [KeyStroke.KeyUp(key)];
+        var up = new[] { KeyStroke.KeyUp(key) };
         if (!_desktop.Send(up))
         {
             _ = _desktop.Send(up);

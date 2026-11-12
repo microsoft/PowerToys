@@ -22,12 +22,12 @@ internal static class ClipboardPrivacy
     public const string CanUploadToCloudClipboard = "CanUploadToCloudClipboard";
 
     /// <summary>Gets every exclusion format, in the order they should be published.</summary>
-    public static IReadOnlyList<string> FormatNames { get; } =
+    public static IReadOnlyList<string> FormatNames { get; } = Array.AsReadOnly<string>(
     [
         ExcludeFromMonitorProcessing,
         CanIncludeInClipboardHistory,
         CanUploadToCloudClipboard,
-    ];
+    ]);
 
     /// <summary>
     /// A little-endian DWORD zero for every exclusion format (the monitor-processing format ignores its data).

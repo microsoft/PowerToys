@@ -60,7 +60,7 @@ public static class ClipboardParts
 
         if (part == ClipboardPart.All)
         {
-            return [text];
+            return new[] { text };
         }
 
         if (text.Length > MaxScannedLength)

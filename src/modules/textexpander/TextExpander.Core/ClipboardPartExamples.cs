@@ -20,37 +20,37 @@ public static class ClipboardPartExamples
         ArgumentNullException.ThrowIfNull(culture);
         return part switch
         {
-            ClipboardPart.Email =>
-            [
+            ClipboardPart.Email => new ClipboardPartExample[]
+            {
                 new("you@example.com", Counts: true),
                 new("first.last+news@mail.example.org", Counts: true),
                 new("you@example", Counts: false, "AddDomainEnding"),
                 new("you at example.com", Counts: false, "AddAt"),
-            ],
-            ClipboardPart.Link =>
-            [
+            },
+            ClipboardPart.Link => new ClipboardPartExample[]
+            {
                 new("https://example.com/track", Counts: true),
                 new("www.example.com", Counts: true),
                 new("example.com", Counts: false, "AddWebStart"),
                 new("ftp://example.com/file", Counts: false, "NotWebLink"),
-            ],
-            ClipboardPart.Phone =>
-            [
+            },
+            ClipboardPart.Phone => new ClipboardPartExample[]
+            {
                 new("(425) 555-0123", Counts: true),
                 new("+1 425 555 0123", Counts: true),
                 new("555-0123", Counts: true),
                 new("4255550123", Counts: false, "AddPlusOrSpaces"),
                 new("10:30, 2026-11-04", Counts: false, "TimeAndDate"),
-            ],
-            ClipboardPart.Number =>
-            [
+            },
+            ClipboardPart.Number => new ClipboardPartExample[]
+            {
                 new(SampleNumber(culture), Counts: true),
                 new(2.5.ToString(culture), Counts: true),
                 new("1042", Counts: true),
                 new("ID123", Counts: false, "AfterLetter"),
                 new("10:30, 2026-11-04", Counts: false, "TimeAndDate"),
                 new("(425) 555-0123", Counts: false, "PhoneNumber"),
-            ],
+            },
             _ => [],
         };
     }

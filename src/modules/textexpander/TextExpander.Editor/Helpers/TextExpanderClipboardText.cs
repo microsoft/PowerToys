@@ -16,7 +16,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
     internal static class TextExpanderClipboardText
     {
         /// <summary>Gets the parts Insert variable and the Clipboard panel offer, in their order.</summary>
-        public static IReadOnlyList<ClipboardPart> Parts { get; } = [ClipboardPart.Email, ClipboardPart.Link, ClipboardPart.Phone, ClipboardPart.Number];
+        public static IReadOnlyList<ClipboardPart> Parts { get; } = Array.AsReadOnly<ClipboardPart>([ClipboardPart.Email, ClipboardPart.Link, ClipboardPart.Phone, ClipboardPart.Number]);
 
         /// <summary>
         /// Gets what a bubble shows for <paramref name="variable"/>: "Clipboard" for the whole copy, or the part, from the

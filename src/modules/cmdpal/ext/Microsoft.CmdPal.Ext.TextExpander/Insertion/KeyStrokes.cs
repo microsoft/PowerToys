@@ -32,7 +32,7 @@ internal static class KeyStrokes
 
     /// <summary>Gets the modifier keys checked before a paste or a typed Enter or Tab.</summary>
     internal static IReadOnlyList<ushort> Modifiers { get; } =
-        [LeftShift, RightShift, LeftControl, RightControl, LeftAlt, RightAlt, LeftWindows, RightWindows];
+        Array.AsReadOnly<ushort>([LeftShift, RightShift, LeftControl, RightControl, LeftAlt, RightAlt, LeftWindows, RightWindows]);
 
     /// <summary>
     /// Whether <paramref name="virtualKey"/> is an extended key, sent with its flag as Text Expander sends it, so the app
@@ -77,19 +77,19 @@ internal static class KeyStrokes
             if (ch is '\n' or '\t')
             {
                 var key = ch == '\n' ? Return : Tab;
-                yield return new TypedCharacter([KeyStroke.KeyDown(key), KeyStroke.KeyUp(key)], IsKey: true, ch);
+                yield return new TypedCharacter(new[] { KeyStroke.KeyDown(key), KeyStroke.KeyUp(key) }, IsKey: true, ch);
             }
             else if (char.IsHighSurrogate(ch) && i + 1 < text.Length && char.IsLowSurrogate(text[i + 1]))
             {
                 var low = text[++i];
                 yield return new TypedCharacter(
-                    [KeyStroke.CharacterDown(ch), KeyStroke.CharacterUp(ch), KeyStroke.CharacterDown(low), KeyStroke.CharacterUp(low)],
+                    new[] { KeyStroke.CharacterDown(ch), KeyStroke.CharacterUp(ch), KeyStroke.CharacterDown(low), KeyStroke.CharacterUp(low) },
                     IsKey: false,
                     ch);
             }
             else
             {
-                yield return new TypedCharacter([KeyStroke.CharacterDown(ch), KeyStroke.CharacterUp(ch)], IsKey: false, ch);
+                yield return new TypedCharacter(new[] { KeyStroke.CharacterDown(ch), KeyStroke.CharacterUp(ch) }, IsKey: false, ch);
             }
         }
     }
