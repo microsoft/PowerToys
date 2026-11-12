@@ -176,6 +176,45 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
     }
 
     /// <summary>
+    /// A snippet has one cursor position: with $|$ in Replacement, Insert variable's Cursor position is unavailable and
+    /// says why, whether the snippet came with one or one was just added. Either used to close the editor.
+    /// </summary>
+    [TestMethod("TextExpander.Editor.OffersOneCursorPositionPerSnippet")]
+    [TestCategory("TextExpander")]
+    [TestCategory("TextExpander.Editor")]
+    public void OffersOneCursorPositionPerSnippet()
+    {
+        const string OnlyOne = "Only one cursor position per snippet.";
+        var added = new Snippet(";tecursor", "$|$");
+        var editor = OpenEditor(OpenTextExpanderPage());
+        editor.WaitForCount(DefaultSnippets.Count);
+
+        editor.OpenRow(Letter.Trigger);
+        var cursor = OpenCursorPositionItem(editor);
+        Assert.IsFalse(cursor.IsEnabled, $"Cursor position is offered in '{Letter.Trigger}', which has one.");
+        Assert.AreEqual(OnlyOne, cursor.HelpText);
+        CloseCursorPositionMenu(editor);
+        editor.CancelAndWait();
+
+        editor.OpenNewSnippet();
+        editor.SetTrigger(added.Trigger);
+        editor.FocusReplacement();
+        cursor = OpenCursorPositionItem(editor);
+        Assert.IsTrue(cursor.IsEnabled, "Cursor position isn't offered in an empty replacement.");
+        Step("Selecting Cursor position");
+        cursor.Click(msPostAction: 300);
+        Assert.IsTrue(editor.WaitForReplacementText(added.Replacement), $"Replacement holds '{TextExpanderFiles.Visible(editor.ReplacementText)}'.");
+        cursor = OpenCursorPositionItem(editor);
+        Assert.IsFalse(cursor.IsEnabled, "A second cursor position is offered.");
+        Assert.AreEqual(OnlyOne, cursor.HelpText);
+        CloseCursorPositionMenu(editor);
+        editor.Save();
+
+        Assert.IsTrue(editor.WaitForRow(added.Trigger, present: true), $"The new snippet isn't listed. Rows: {editor.DescribeRows()}.");
+        AssertDatabase([.. DefaultSnippets, added]);
+    }
+
+    /// <summary>
     /// {{Date}} isn't a variable, so it's typed as written: the dialog says so under Replacement, and Use {{date}} fixes
     /// it. Saved as written, its row says it's typed as written and what it likely means.
     /// </summary>
@@ -564,6 +603,24 @@ public sealed class TextExpanderEditorTests : TextExpanderTestBase
         editor.WaitForSnippetDialog("Edit snippet");
         Assert.AreEqual(trigger, editor.TriggerText, $"Enter {when} opened another snippet.");
         editor.CancelAndWait();
+    }
+
+    /// <summary>Opens Insert variable and gets its Cursor position item.</summary>
+    private Element OpenCursorPositionItem(SnippetEditor editor)
+    {
+        Step("Opening Insert variable");
+        editor.Session.Find<Button>(By.AccessibilityId("Button_TextExpander_InsertVariable"), 10_000).Invoke(msPostAction: 300);
+        return editor.Session.WaitForExact<Element>("Cursor position", 10_000, "MenuItem");
+    }
+
+    /// <summary>Closes Insert variable with Esc, which leaves the snippet dialog open.</summary>
+    private static void CloseCursorPositionMenu(SnippetEditor editor)
+    {
+        editor.Press("Esc", 0x1B);
+        Assert.IsTrue(
+            editor.Session.WaitFor(() => editor.Session.FindExact<Element>("Cursor position", "MenuItem").Count == 0, 10_000, pollIntervalMS: 250),
+            "Esc did not close Insert variable.");
+        Assert.IsTrue(editor.IsDialogOpen, "Esc closed the snippet dialog along with Insert variable.");
     }
 
     /// <summary>Whether an app is set to open files with <paramref name="extension"/>: a command or a packaged app's handler.</summary>

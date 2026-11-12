@@ -365,7 +365,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 item.IsEnabled = available;
                 item.Style = available ? null : (Style)Resources["UnavailableCursorItemStyle"];
                 AutomationProperties.SetName(item, variable.Name);
-                AutomationProperties.SetHelpText(item, available ? string.Empty : ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_Variable_Cursor_OnlyOne.Text"));
+                AutomationProperties.SetHelpText(item, available ? string.Empty : ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_Variable_Cursor_OnlyOne/Text"));
             }
         }
 

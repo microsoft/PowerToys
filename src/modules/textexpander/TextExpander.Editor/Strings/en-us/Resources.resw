@@ -380,11 +380,11 @@
   </data>
   <data name="TextExpander_Variable_Cursor" xml:space="preserve">
     <value>Cursor position</value>
+    <comment>Insert variable menu: where the cursor ends up after the snippet is typed</comment>
   </data>
   <data name="TextExpander_Variable_Cursor_OnlyOne.Text" xml:space="preserve">
     <value>Only one cursor position per snippet.</value>
     <comment>Shown below the disabled Cursor position item in Insert variable when the replacement already contains a cursor marker. Also used as the item's accessibility help text.</comment>
-    <comment>Insert variable menu: where the cursor ends up after the snippet is typed</comment>
   </data>
   <data name="TextExpander_Variable_Date" xml:space="preserve">
     <value>Date</value>

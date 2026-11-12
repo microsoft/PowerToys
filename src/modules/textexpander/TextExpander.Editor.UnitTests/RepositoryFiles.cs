@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.UnitTests;
 internal static class RepositoryFiles
 {
     public const string EditorPage = @"src\modules\textexpander\TextExpander.Editor\TextExpanderEditorXAML\Views\TextExpanderPage.xaml";
+    public const string EditorProject = @"src\modules\textexpander\TextExpander.Editor\TextExpander.Editor.csproj";
     public const string EditorResources = @"src\modules\textexpander\TextExpander.Editor\Strings\en-us\Resources.resw";
     public const string SettingsPage = @"src\settings-ui\Settings.UI\SettingsXAML\Views\TextExpanderPage.xaml";
     public const string SettingsResources = @"src\settings-ui\Settings.UI\Strings\en-us\Resources.resw";
@@ -25,6 +26,8 @@ internal static class RepositoryFiles
     public static XDocument Xml(string relativePath) => XDocument.Load(Find(relativePath));
 
     public static string Text(string relativePath) => File.ReadAllText(Find(relativePath));
+
+    public static string FullPath(string relativePath) => Find(relativePath);
 
     /// <summary>The editor page's snippet list, whose rows are built from its DataTemplate.</summary>
     public static XElement SnippetList()

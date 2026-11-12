@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
@@ -34,6 +36,9 @@ namespace ViewModelTests
         private static readonly string[] ErrorBarHandlers = { "ReloadSnippets_Click", "UseSnippetsFile_Click" };
         private static readonly string[] PromptBackdrops = { "{ThemeResource SmokeFillColorDefault}", "{ThemeResource SolidBackgroundFillColorBaseAlt}", "{ThemeResource SystemColorWindowColor}" };
         private static readonly string[] SnippetFolderButtons = { "Button_TextExpander_OpenSnippetFile", "Button_TextExpander_ReloadSnippets", "Button_TextExpander_MoveSnippets", "Button_TextExpander_UseSnippetsFile" };
+
+        // A string the code loads by a name written out in full.
+        private static readonly Regex LoadedByName = new(@"\b(?:GetString|resource|_getResourceString)\(\s*""(?<name>[^""]+)""\s*\)");
 
         // Loaded by name or set through x:Uid, so nothing but this test notices one going missing.
         private static readonly string[] EditorKeys =
@@ -431,6 +436,29 @@ namespace ViewModelTests
             Assert.AreEqual(
                 SnippetFile.Read(Encoding.UTF8.GetBytes(TextExpanderStarter.Content)).Snippets.Single(snippet => snippet.Trigger == "!mysig").Replacement,
                 editor["TextExpander_StarterSignature_Text"].ReplaceLineEndings("\n"));
+        }
+
+        /// <summary>
+        /// MRT names a string that Resources.resw holds as NAME.Text, for x:Uid, NAME/Text, and GetString throws for a
+        /// name it doesn't have, which nothing catches in an event handler: asking for
+        /// TextExpander_Variable_Cursor_OnlyOne.Text closed the editor whenever a replacement had a cursor marker.
+        /// </summary>
+        [TestMethod]
+        public void EveryStringTheCodeLoadsByNameIsInTheResources()
+        {
+            HashSet<string> names = Xml(EditorResources).Descendants("data").Select(data => (string)data.Attribute("name")).ToHashSet(StringComparer.Ordinal);
+            string editor = Path.GetDirectoryName(FullPath(EditorProject));
+            var loaded = Directory.EnumerateFiles(editor, "*.cs", SearchOption.AllDirectories)
+                .Where(file => !Path.GetRelativePath(editor, file).StartsWith("obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(file => LoadedByName.Matches(File.ReadAllText(file)).Select(call => (Source: Path.GetFileName(file), Name: call.Groups["name"].Value)))
+                .ToList();
+
+            Assert.IsTrue(loaded.Count >= 50, loaded.Count.ToString(CultureInfo.InvariantCulture));
+            foreach ((string source, string name) in loaded)
+            {
+                Assert.IsFalse(name.Contains('.', StringComparison.Ordinal), $"{source} loads {name}, which MRT names {name.Replace('.', '/')}.");
+                Assert.IsTrue(names.Contains(name.Replace('/', '.')), $"{source} loads {name}, which Resources.resw doesn't have.");
+            }
         }
 
         [TestMethod]
