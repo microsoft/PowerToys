@@ -96,16 +96,10 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         private async void AIComplianceLearnMore_Click(Microsoft.UI.Xaml.Documents.Hyperlink sender, Microsoft.UI.Xaml.Documents.HyperlinkClickEventArgs args)
         {
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
-            var modelName = ViewModel.PasteAIConfiguration.ActiveProvider?.ModelName;
-            if (string.IsNullOrWhiteSpace(modelName))
-            {
-                modelName = resourceLoader.GetString("AdvancedPaste_AIComplianceAnyModel");
-            }
-
             AIComplianceModelNotice.Text = string.Format(
                 System.Globalization.CultureInfo.CurrentCulture,
                 resourceLoader.GetString("AdvancedPaste_AIComplianceModelNotice"),
-                modelName);
+                resourceLoader.GetString("AdvancedPaste/ModuleTitle"));
             AIComplianceDialog.XamlRoot = RootPage.XamlRoot;
             await AIComplianceDialog.ShowAsync();
         }

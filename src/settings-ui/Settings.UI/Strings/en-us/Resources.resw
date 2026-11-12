@@ -3822,11 +3822,7 @@ Activate by holding the key for the character you want to add an accent to, then
   </data>
   <data name="AdvancedPaste_AIComplianceModelNotice" xml:space="preserve">
     <value>AI agents and models that you host and choose to connect to is your choice. If you choose a third party agent or model, Microsoft may not provide, host, operate, or monitor them. If you use {0} to interact with an agent or model you host, you do so at your own risk.</value>
-    <comment>{0} is the selected default model's name, or the localized word "any" when no model is selected.</comment>
-  </data>
-  <data name="AdvancedPaste_AIComplianceAnyModel" xml:space="preserve">
-    <value>any</value>
-    <comment>Used in place of a model name in AdvancedPaste_AIComplianceModelNotice when no model is selected.</comment>
+    <comment>{0} is the localized product name from AdvancedPaste.ModuleTitle.</comment>
   </data>
   <data name="AdvancedPaste_AIComplianceModelResponsibilities.Text" xml:space="preserve">
     <value>If you choose a third-party model, Microsoft does not filter, moderate, or validate model responses. You are responsible for implementing your own content provenance solutions, responsible AI mitigations, such as system prompts, content filters or other safety systems, and for reviewing output before you use it; or determining that your selected model implements these solutions on your behalf.</value>
