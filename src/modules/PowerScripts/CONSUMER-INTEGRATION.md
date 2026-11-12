@@ -243,11 +243,18 @@ execution still validates availability, contracts, global policy, and trust thro
 
 ### Command Palette
 
-Command Palette (`command-palette`) exposes one PowerScripts entry leading to an asynchronously
-loaded script list. Search filters this page's catalogue; individual scripts are not top-level
-commands, fallback suggestions, or entries in the Apps search channel. Refresh remains in the
-actions menu, not a row among the scripts. Discovery failures offer retry and are reported separately
-from an empty compatible catalogue.
+Command Palette (`command-palette`) exposes a PowerScripts entry leading to an asynchronously
+loaded script list, and a fallback v2 result source that finds scripts directly from the main search.
+Both entry points search script names and descriptions and share the same cached catalogue and
+per-script pages and run sessions. Main-search results honor the host's item budget and offer
+additional matches through Load more. Individual scripts are not added to the Apps search channel.
+Refresh remains in the actions menu, not a row among the scripts, and updates both entry points.
+Discovery failures offer retry on the full script list and are reported separately from an empty
+compatible catalogue.
+
+Discovery, filtering, and paging never execute a script. Selecting a script without parameters
+opens its result page and starts the run; a script with any declared parameters first opens its
+parameter form. Cancelling a search does not stop a run that the user has already started.
 
 The adapter accepts only `input: none` and `output: none` or `text`. No primary input does not
 exclude named parameters. It does not supply clipboard content, selected files, or inline media,

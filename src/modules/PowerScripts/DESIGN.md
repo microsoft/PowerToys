@@ -24,13 +24,16 @@ Advanced Paste automatically offers all clipboard-compatible scripts when its in
 or exclusions; no-input scripts are not offered.
 Consumers requiring saved bindings own their assignment UI and persistence, using the shared
 Host/client contracts for discovery and execution. Command Palette provides a PowerScripts entry
-with an internally filtered script list and parameter/run pages for `none` input and `none`/`text`
-output. Explicitly invoking a script with no declared parameters starts it and opens the results
+with an internally filtered script list, a fallback v2 source that finds scripts in the main search,
+and parameter/run pages for `none` input and `none`/`text` output. The list and fallback share a
+cached catalogue and per-script pages and sessions. Explicitly invoking a script with no declared
+parameters starts it and opens the results
 page; scripts declaring parameters open a form and require **Run**. Discovery, filtering, and page
 construction/rendering do not execute scripts. Refresh is an actions-menu command, with retry for
 discovery failures. The results page keeps text above parameter controls and supports Stop and
-explicit rerun. It uses `command-palette` attribution and the shared Host, without registering each script
-as a home-page command or fallback. This version has no shared configuration picker.
+explicit rerun. It uses `command-palette` attribution and the shared Host. Searching and paging only
+inspect catalogue metadata; they never execute scripts, and cancelling a query does not cancel an
+explicitly started run. This version has no shared configuration picker.
 The client remains headless, with no Settings UI dependency.
 See the [onboarding recipe](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
 

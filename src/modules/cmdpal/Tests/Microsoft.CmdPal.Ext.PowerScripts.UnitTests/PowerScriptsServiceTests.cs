@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
 
@@ -126,7 +128,7 @@ public sealed class PowerScriptsServiceTests
     }
 
     [TestMethod]
-    public void ProviderPublishesOneBrowserEntryWithoutDiscoveringOrRunningScripts()
+    public void ProviderPublishesBrowserAndResultsFallbackWithoutDiscoveringOrRunningScripts()
     {
         var service = new FakePowerScriptsService
         {
@@ -141,6 +143,11 @@ public sealed class PowerScriptsServiceTests
         Assert.AreEqual(0, service.DiscoverCalls);
         Assert.AreEqual(0, service.RunCalls);
         Assert.AreSame(commands, provider.TopLevelCommands());
-        Assert.IsNull(provider.FallbackCommands());
+        var fallback = provider.FallbackCommands().Single();
+        Assert.IsInstanceOfType<PowerScriptsListPage>(commands[0].Command);
+        Assert.IsInstanceOfType<FallbackResultsItem>(fallback);
+        Assert.AreEqual(PowerScriptsFallback.FallbackId, ((IFallbackCommandItem2)fallback).Id);
+        Assert.AreSame(commands[0].Command, fallback.Command);
+        Assert.IsNotNull(((IFallbackCommandItem3)fallback).QueryHandler);
     }
 }

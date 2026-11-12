@@ -4,6 +4,7 @@
 
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.PowerScripts.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -41,6 +42,69 @@ public sealed class PowerScriptsListPageTests
         Assert.AreEqual("Beta", filtered[0].Title);
         page.SearchText = "ALPHA";
         Assert.AreEqual("Alpha", page.GetItems()[0].Title);
+        Assert.AreEqual(1, service.DiscoverCalls);
+        Assert.AreEqual(0, service.RunCalls);
+    }
+
+    [TestMethod]
+    [Timeout(5000)]
+    public async Task SharedSourceQueriesDoNotChangeTheListSearchOrCreateDifferentCommands()
+    {
+        var service = new FakePowerScriptsService
+        {
+            Catalog = new(
+            [
+                new PowerScriptInfo { Id = "alpha", Name = "Alpha", Description = "First action" },
+                new PowerScriptInfo { Id = "beta", Name = "Beta", Description = "Second action" },
+            ],
+            true),
+        };
+        using var source = new PowerScriptsCatalogSource(service, static _ => { });
+        using var page = new PowerScriptsListPage(source);
+        var catalog = await source.GetCatalogAsync(CancellationToken.None);
+        page.SearchText = "alpha";
+        var listItem = page.GetItems().Single();
+
+        var otherQuery = source.GetItems(catalog, "beta").Single();
+        var sameQuery = source.GetItems(catalog, "alpha").Single();
+
+        Assert.AreEqual("Beta", otherQuery.Title);
+        Assert.AreEqual("alpha", page.SearchText);
+        Assert.AreSame(listItem.Command, sameQuery.Command);
+        Assert.AreSame(listItem.Command, page.GetItems().Single().Command);
+        Assert.AreEqual(1, service.DiscoverCalls);
+        Assert.AreEqual(0, service.RunCalls);
+    }
+
+    [TestMethod]
+    [Timeout(5000)]
+    public async Task DisposingAListViewDoesNotCancelItsProviderOwnedDiscovery()
+    {
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var result = new TaskCompletionSource<PowerScriptsCatalog>(TaskCreationOptions.RunContinuationsAsynchronously);
+        CancellationToken discoveryToken = default;
+        var service = new FakePowerScriptsService
+        {
+            DiscoverHandler = cancellationToken =>
+            {
+                discoveryToken = cancellationToken;
+                started.TrySetResult();
+                return result.Task.WaitAsync(cancellationToken);
+            },
+        };
+        using var source = new PowerScriptsCatalogSource(service, static _ => { });
+        using var page = new PowerScriptsListPage(source);
+        page.GetItems();
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(4));
+        var sharedQuery = source.GetCatalogAsync(CancellationToken.None);
+
+        page.Dispose();
+
+        Assert.IsFalse(discoveryToken.IsCancellationRequested);
+        result.SetResult(new([TestScripts.Create()], true));
+        var catalog = await sharedQuery.WaitAsync(TimeSpan.FromSeconds(4));
+        Assert.HasCount(1, source.GetItems(catalog, string.Empty));
+        Assert.HasCount(0, page.GetItems());
         Assert.AreEqual(1, service.DiscoverCalls);
         Assert.AreEqual(0, service.RunCalls);
     }

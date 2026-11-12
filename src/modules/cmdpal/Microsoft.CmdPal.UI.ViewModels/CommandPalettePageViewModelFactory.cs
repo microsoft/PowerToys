@@ -26,22 +26,27 @@ public class CommandPalettePageViewModelFactory
         ICommandProviderContext providerContext,
         FallbackQueryContext? fallbackContext = null)
     {
-        // A page from a fallback result stays valid only while its snapshot is open.
-        // Take the reference before construction. If we built the view-model first, we
-        // would have to tear it down again, and it subscribes to host events in its
-        // constructor.
+        // Take the reference while the result is still current, before the page
+        // subscribes to host events in its constructor.
         IDisposable? snapshotLease = null;
-        if (fallbackContext is not null && !fallbackContext.TryAcquireSnapshotLease(out snapshotLease))
+        if (fallbackContext is not null
+            && (!fallbackContext.CanInvoke || !fallbackContext.TryAcquireSnapshotLease(out snapshotLease)))
         {
             return null;
         }
+
+        // Once navigation is accepted, the page owns its snapshot reference. A new
+        // search must not disable its forms, output commands, or nested pages.
+        var pageFallbackContext = fallbackContext is null
+            ? null
+            : fallbackContext with { QueryToken = CancellationToken.None };
 
         PageViewModel? viewModel = page switch
         {
             MainListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested, IsMainPage = true },
             IListPage listPage => new ListViewModel(listPage, _scheduler, host, providerContext, _contextMenuFactory) { IsRootPage = !nested },
             IContentPage contentPage => new CommandPaletteContentPageViewModel(contentPage, _scheduler, host, providerContext),
-            IParametersPage paramsPage => new ParametersPageViewModel(paramsPage, _scheduler, host, providerContext, _contextMenuFactory, fallbackContext),
+            IParametersPage paramsPage => new ParametersPageViewModel(paramsPage, _scheduler, host, providerContext, _contextMenuFactory, pageFallbackContext),
             _ => null,
         };
 
@@ -51,7 +56,7 @@ public class CommandPalettePageViewModelFactory
             return null;
         }
 
-        viewModel.AttachFallbackContext(fallbackContext, snapshotLease);
+        viewModel.AttachFallbackContext(pageFallbackContext, snapshotLease);
         return viewModel;
     }
 }

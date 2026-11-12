@@ -38,10 +38,12 @@ Do not revive removed fields or edit KBM JSON.
 
 ## Command Palette
 
-Open the **PowerScripts** entry to browse and filter compatible scripts: primary
-input `none`, output `none` or `text`. Individual scripts are not home-page commands
-or fallback suggestions. Refresh stays in the actions menu, with retry for discovery
-errors; it is not a script-list row.
+Search script names or descriptions on Command Palette's main page to see compatible
+scripts in the **PowerScripts** results section; use Load more for additional matches.
+The **PowerScripts** entry also opens the full browsable list. Both support primary
+input `none`, output `none` or `text`, and share their catalogue and script pages.
+Searching and paging do not run scripts. Refresh stays in the actions menu, with retry
+for discovery errors on the full list; it is not a script-list row.
 
 - Explicitly activate a script with no declared parameters to start it and open
   its results page. Scripts declaring any parameters, including optional values
