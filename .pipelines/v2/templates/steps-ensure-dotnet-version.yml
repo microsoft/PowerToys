@@ -1,10 +1,7 @@
 parameters:
 - name: version
   type: string
-  default: "10.0"
-- name: exactVersion
-  type: string
-  default: ""
+  default: " "
 - name: sdk
   type: boolean
   default: false
@@ -24,17 +21,21 @@ steps:
       exit 1
     }
     $NEW_DOTNET_ROOT = "$(Agent.ToolsDirectory)\dotnet"
-    $EXACT_VERSION = "${{parameters.exactVersion}}"
-    if ([string]::IsNullOrWhiteSpace($EXACT_VERSION)) {
-      & ./dotnet-install.ps1 -Channel "${{parameters.version}}" -InstallDir $NEW_DOTNET_ROOT
-    } else {
-      & ./dotnet-install.ps1 -Version $EXACT_VERSION -InstallDir $NEW_DOTNET_ROOT
+    $Version = "${{parameters.version}}"
+    $Params = @{
+      InstallDir = $NEW_DOTNET_ROOT;
     }
+    If ([String]::IsNullOrWhitespace($Version)) {
+      $Params.JsonFile = "global.json"
+    } Else {
+      $Params.Channel = $Version
+    }
+    & ./dotnet-install.ps1 @Params
     Write-Host "##vso[task.setvariable variable=DOTNET_ROOT]${NEW_DOTNET_ROOT}"
     Write-Host "##vso[task.prependpath]${NEW_DOTNET_ROOT}"
     Remove-Item dotnet-install.ps1 -ErrorAction:Ignore
-  ${{ if eq(parameters.sdk, true) }}:
-    displayName: "Install .NET ${{parameters.version}} SDK"
+  ${{ if eq(parameters.version, ' ') }}:
+    displayName: "Install .NET SDK (global.json)"
   ${{ else }}:
-    displayName: "Install .NET ${{parameters.version}}"
+    displayName: "Install .NET SDK (${{parameters.version}})"
   retryCountOnTaskFailure: 3

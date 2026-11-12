@@ -115,7 +115,7 @@ WellKnownSidType.AuthenticatedUserSid, null);
                             if (!string.IsNullOrEmpty(rejectionReason))
                             {
 #if !MM_HELPER
-                                Logger.Log($"Rejected Settings IPC client: {rejectionReason}");
+                                Logger.Log($"Rejected IPC client: {rejectionReason}");
 #endif
                                 if (serverChannel.IsConnected)
                                 {
@@ -126,8 +126,8 @@ WellKnownSidType.AuthenticatedUserSid, null);
                                 continue;
                             }
 
-                            var taskRpc = JsonRpc.Attach(serverChannel, targetFactory(serverChannel));
-                            await taskRpc.Completion;
+                            using var taskRpc = JsonRpc.Attach(serverChannel, targetFactory(serverChannel));
+                            await taskRpc.Completion.WaitAsync(cancellationToken);
                         }
                         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
                         {

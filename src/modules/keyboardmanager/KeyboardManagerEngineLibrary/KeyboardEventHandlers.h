@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <optional>
 #include <common/hooks/LowlevelKeyboardEvent.h>
 #include "State.h"
@@ -13,6 +14,10 @@ namespace KeyboardEventHandlers
 {
     namespace ProgramLauncher
     {
+        // Override only the OS launch boundary, after path resolution and already-running actions.
+        // Unit tests can launch isolated targets without requiring an interactive Explorer shell.
+        using LaunchCallback = std::function<void(const std::wstring&, const std::wstring&, const std::wstring&)>;
+
         constexpr bool ShouldUseExplorerShell(Shortcut::StartWindowType startWindowType) noexcept
         {
             return startWindowType == Shortcut::StartWindowType::Normal;
@@ -74,9 +79,27 @@ namespace KeyboardEventHandlers
     ResetChordsResults ResetChordsIfNeeded(LowlevelKeyboardEvent* data, State& state, const std::optional<std::wstring>& activatedApp);
 
     // Function to handle (start or show) programs for shortcuts
-    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept;
+    void CreateOrShowProcessForShortcut(Shortcut shortcut, const ProgramLauncher::LaunchCallback& launchProgram = {}) noexcept;
 
     void CloseProcessByName(const std::wstring& fileNamePart);
+
+    // Returns whether matching processes were found, even if none could be opened.
+    bool CloseAndEndProcessesByName(const std::wstring& fileNamePart);
+
+    namespace ProcessCloser
+    {
+        // Implementation details exposed for deterministic process-replacement tests.
+        struct ProcessSnapshot
+        {
+            DWORD pid;
+            FILETIME creationTime;
+            std::wstring imagePath;
+        };
+
+        std::optional<ProcessSnapshot> SnapshotProcess(HANDLE process);
+        // The caller keeps each identity's query handle open through this call.
+        void CloseAndEndProcesses(const std::vector<ProcessSnapshot>& snapshots);
+    }
 
     void TerminateProcessesByName(const std::wstring& fileNamePart);
 

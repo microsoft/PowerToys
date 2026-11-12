@@ -136,6 +136,7 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             EditWorkspace(name);
             Step("Launching the saved workspace from Launch and Edit.");
+            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Launching a saved workspace must not require a temporary draft.");
             Editor.Find<Button>(By.AccessibilityId("LaunchEditButton")).Invoke(msPostAction: 0);
             var original = State.Fixture.WaitForWindow(originalTitle);
             AssertPositioned(original, app);

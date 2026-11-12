@@ -14,6 +14,9 @@ For more information, please read the [Microsoft privacy statement](https://priv
 2. **Stability**: Monitoring bugs and system crashes, as well as analyzing GitHub issue reports, assists us in prioritizing the most urgent issues.
 3. **Performance**: Assessing the performance of PowerToys features to load and execute gives us an understanding of what surfaces are causing slowdowns. This supports our commitment to providing you with tools that are both speedy and effective.
 
+Managed diagnostic events include fixed metadata that identifies the product and classifies the event as client diagnostic data.
+These values do not identify a user or device. Diagnostic data remains optional and off by default.
+
 ### Success story: Fixing FancyZones bugs with your help
 
 FancyZones had numerous bug reports related to virtual desktop interactions. Initially, these were considered lower priority, since the assumption was that virtual desktops were not widely used, so we chose to focus on more urgent issues. However, the volume of bug reports suggested otherwise, prompting us to add additional diagnostics to see virtual desktop usage with FancyZones. We discovered that virtual desktop usage was much higher among FancyZones users. This new understanding led us to prioritize this class of bugs and get them fixed.
@@ -469,6 +472,7 @@ Thank you for using PowerToys!
 
 | Event Name | Description |
 | --- | --- |
+| Microsoft.PowerToys.Workspaces_CLICommand | Triggered once per Workspaces CLI invocation when optional diagnostics are enabled. Records only a fixed command category (list, launch, help, version, none, or unknown) and success status. Workspace names and IDs, application paths, arguments, and error text are not collected. |
 | Microsoft.PowerToys.Workspaces_CreateEvent | Triggered when a new workspace is created. |
 | Microsoft.PowerToys.Workspaces_DeleteEvent | Triggered when a workspace is deleted. |
 | Microsoft.PowerToys.Workspaces_EditEvent | Triggered when a workspace is edited or modified. |

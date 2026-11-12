@@ -1070,6 +1070,8 @@ public sealed partial class MainWindow : WindowEx,
 
     public void Receive(QuitMessage message)
     {
+        Logger.LogInfo("Command Palette exit requested: QuitMessage received.");
+
         // Always defer, even on the UI thread. This can be sent from the window procedure and
         // is broadcast to multiple windows. MainWindow_Closed exits the process, so closing
         // inline could terminate while the window procedure or message broadcast is still active.
@@ -1241,6 +1243,7 @@ public sealed partial class MainWindow : WindowEx,
 
     internal void MainWindow_Closed(object sender, WindowEventArgs args)
     {
+        Logger.LogInfo("Command Palette exiting: main window closed.");
         _keyboardListener.Dispose();
         _copilotKeyRegistration?.Dispose();
         SaveWindowPosition();
@@ -1271,6 +1274,7 @@ public sealed partial class MainWindow : WindowEx,
             return AppRestartFailureReason.RestartPending;
         }
 
+        Logger.LogInfo("Command Palette restart requested.");
         SaveWindowPosition();
         var services = App.Current.Services;
         var trayIcon = services.GetRequiredService<TrayIconService>();
@@ -1946,6 +1950,7 @@ public sealed partial class MainWindow : WindowEx,
                     if (command == PInvoke.SC_CLOSE)
                     {
                         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+                        Logger.LogInfo($"Command Palette exit requested: system close command (Alt+F4 or window close); AllowAltF4={settings.AllowAltF4}.");
                         if (settings.AllowAltF4)
                         {
                             WeakReferenceMessenger.Default.Send<QuitMessage>();

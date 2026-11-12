@@ -454,11 +454,11 @@ public sealed partial class DockBandViewModel : ExtensionObjectViewModel
                 }
                 else
                 {
-                    QueueCleanup([dockItem]);
+                    QueueCleanup(new[] { dockItem });
                 }
             }))
             {
-                QueueCleanup([dockItem]);
+                QueueCleanup(new[] { dockItem });
             }
         }
     }

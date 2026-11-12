@@ -136,6 +136,7 @@ Describe 'runUiTestAsUser' {
             useInstallerForTest = 'true'
             POWERTOYS_INSTALL_DIR = 'C:\PowerToys'
             POWERTOYS_MWB_RUN_ROOT = 'C:\Results\mwb-run'
+            POWERTOYS_POWERDISPLAY_IDD_PROBE = 'C:\Fixtures\driver\IddProbe.exe'
         }
         $request | ConvertTo-Json | Set-Content -LiteralPath $requestPath
 
@@ -539,6 +540,8 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         @{ Suite = 'AdvancedPaste.UITests.Next' }
         @{ Suite = 'AltWindowCycle.UITests' }
         @{ Suite = 'CropAndLock.UITests' }
+        @{ Suite = 'GrabAndMove.UITests' }
+        @{ Suite = 'PowerOCR.UITests.Next' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
         param($Suite)
@@ -591,6 +594,8 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
         @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $true }
         @{ Modules = @('CropAndLock.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @('GrabAndMove.UITests'); AllModules = $false; Expected = $true }
+        @{ Modules = @('PowerOCR.UITests.Next'); AllModules = $false; Expected = $true }
         @{ Modules = @(); AllModules = $true; Expected = $true }
     ) {
         param($Modules, $AllModules, $Expected)

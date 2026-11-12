@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Timer = System.Timers.Timer;
 
@@ -10,6 +12,12 @@ namespace CoreWidgetProvider.Helpers;
 
 internal sealed partial class DataManager : IDisposable
 {
+    // Pages and dock bands that show the same metric share its stats, so it's sampled at most once
+    // per interval to keep one sample per second. The interval leaves room for timer jitter.
+    internal const long MinimumSampleIntervalMilliseconds = 750;
+
+    private static readonly ConditionalWeakTable<object, StrongBox<long>> LastSampleTimes = new();
+
     private readonly SystemData _systemData = SystemData.Shared;
     private readonly DataType _dataType;
     private readonly Timer _updateTimer;
@@ -33,7 +41,10 @@ internal sealed partial class DataManager : IDisposable
     {
         lock (_systemData.MemoryStats)
         {
-            _systemData.MemoryStats.GetData();
+            if (ShouldSample(_systemData.MemoryStats))
+            {
+                _systemData.MemoryStats.GetData();
+            }
         }
     }
 
@@ -41,7 +52,10 @@ internal sealed partial class DataManager : IDisposable
     {
         lock (_systemData.NetworkStats)
         {
-            _systemData.NetworkStats.GetData();
+            if (ShouldSample(_systemData.NetworkStats))
+            {
+                _systemData.NetworkStats.GetData();
+            }
         }
     }
 
@@ -49,7 +63,10 @@ internal sealed partial class DataManager : IDisposable
     {
         lock (_systemData.DiskStats)
         {
-            _systemData.DiskStats.GetData();
+            if (ShouldSample(_systemData.DiskStats))
+            {
+                _systemData.DiskStats.GetData();
+            }
         }
     }
 
@@ -57,15 +74,21 @@ internal sealed partial class DataManager : IDisposable
     {
         lock (_systemData.GPUStats)
         {
-            _systemData.GPUStats.GetData();
+            if (ShouldSample(_systemData.GPUStats))
+            {
+                _systemData.GPUStats.GetData();
+            }
         }
     }
 
-    private void GetCPUData(bool includeTopProcesses)
+    private void GetCPUData()
     {
         lock (_systemData.CpuStats)
         {
-            _systemData.CpuStats.GetData(includeTopProcesses);
+            if (ShouldSample(_systemData.CpuStats))
+            {
+                _systemData.CpuStats.GetData();
+            }
         }
     }
 
@@ -73,9 +96,30 @@ internal sealed partial class DataManager : IDisposable
     {
         lock (_systemData.BatteryStats)
         {
-            _systemData.BatteryStats.GetData();
+            if (ShouldSample(_systemData.BatteryStats))
+            {
+                _systemData.BatteryStats.GetData();
+            }
         }
     }
+
+    /// <summary>
+    /// Returns whether <paramref name="stats"/> is due for a sample, and if so records
+    /// <paramref name="nowMilliseconds"/> as its sample time. Call it under the stats lock.
+    /// </summary>
+    internal static bool ShouldSample(object stats, long nowMilliseconds)
+    {
+        var lastSample = LastSampleTimes.GetValue(stats, static _ => new StrongBox<long>(long.MinValue));
+        if (lastSample.Value != long.MinValue && nowMilliseconds - lastSample.Value < MinimumSampleIntervalMilliseconds)
+        {
+            return false;
+        }
+
+        lastSample.Value = nowMilliseconds;
+        return true;
+    }
+
+    private static bool ShouldSample(object stats) => ShouldSample(stats, Environment.TickCount64);
 
     private void UpdateTimer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
     {
@@ -87,10 +131,9 @@ internal sealed partial class DataManager : IDisposable
             switch (_dataType)
             {
                 case DataType.CPU:
-                case DataType.CpuWithTopProcesses:
                     {
                         // CPU
-                        GetCPUData(_dataType == DataType.CpuWithTopProcesses);
+                        GetCPUData();
                         break;
                     }
 
@@ -157,7 +200,6 @@ internal sealed partial class DataManager : IDisposable
         return _dataType switch
         {
             DataType.CPU => "CPU.FirstUpdate",
-            DataType.CpuWithTopProcesses => "CPU.FirstUpdate",
             DataType.GPU => "GPU.FirstUpdate",
             DataType.Memory => "Memory.FirstUpdate",
             DataType.Network => "Network.FirstUpdate",
@@ -218,6 +260,9 @@ internal sealed partial class DataManager : IDisposable
     public void Start()
     {
         _updateTimer.Start();
+
+        // Show current values as soon as the page opens, instead of after the first interval.
+        ThreadPool.QueueUserWorkItem(static manager => manager.UpdateTimer_Elapsed(null, null!), this, preferLocal: false);
     }
 
     public void Stop()

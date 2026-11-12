@@ -9,17 +9,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace KeyboardManagerEditorUI.UnitTests
 {
     /// <summary>
-    /// App-specific duplicates must compare process names the way Windows does:
-    /// ordinally and case-insensitively. The overlap predicate is deliberately
-    /// independently testable without loading the native keyboard hook library.
+    /// Global and application-specific shortcut mappings belong to separate
+    /// engine tables. Application names within the same table are compared
+    /// ordinally and case-insensitively, independent of the current culture.
     /// </summary>
     [TestClass]
     public class ValidationAppScopeTests
     {
         [DataTestMethod]
         [DataRow("", "", true)]
-        [DataRow("", "notepad.exe", true)]
-        [DataRow("notepad.exe", "", true)]
+        [DataRow("", "notepad.exe", false)]
+        [DataRow("notepad.exe", "", false)]
         [DataRow("notepad.exe", "notepad.exe", true)]
         [DataRow("notepad.exe", "NOTEPAD.EXE", true)]
         [DataRow("NOTEPAD.EXE", "notepad.exe", true)]
@@ -33,38 +33,45 @@ namespace KeyboardManagerEditorUI.UnitTests
         [DataRow("notepad.exe.bak", "notepad.exe", false)]
         [DataRow("notepad.exe", " notepad.exe", false)]
         [DataRow("notepad.exe ", "notepad.exe", false)]
-        public void ApplicationScopeOverlapUsesWindowsExecutableSemantics(
+        public void ApplicationScopeEqualityUsesWindowsExecutableSemantics(
             string existingApp,
             string requestedApp,
             bool expected)
         {
             Assert.AreEqual(
                 expected,
-                ValidationHelper.DoApplicationScopesOverlap(existingApp, requestedApp));
+                DuplicateMappingHelper.IsSameAppScope(existingApp, requestedApp));
         }
 
         [TestMethod]
         public void NullExistingApplicationRepresentsAGlobalMapping()
         {
-            Assert.IsTrue(
-                ValidationHelper.DoApplicationScopesOverlap(null, "notepad.exe"),
-                "An absent existing app must overlap any candidate app.");
+            Assert.IsFalse(
+                DuplicateMappingHelper.IsSameAppScope(null, "notepad.exe"),
+                "Global and app-specific shortcut mappings use separate engine tables.");
         }
 
         [TestMethod]
         public void NullRequestedApplicationRepresentsAGlobalMapping()
         {
-            Assert.IsTrue(
-                ValidationHelper.DoApplicationScopesOverlap("notepad.exe", null),
-                "An absent requested app must overlap any existing app.");
+            Assert.IsFalse(
+                DuplicateMappingHelper.IsSameAppScope("notepad.exe", null),
+                "An app-specific shortcut mapping does not duplicate a global override.");
         }
 
         [TestMethod]
-        public void TwoNullApplicationsOverlap()
+        public void NullAndEmptyNamesAreEquivalentGlobalScopes()
+        {
+            Assert.IsTrue(DuplicateMappingHelper.IsSameAppScope(null, string.Empty));
+            Assert.IsTrue(DuplicateMappingHelper.IsSameAppScope(string.Empty, null));
+        }
+
+        [TestMethod]
+        public void TwoNullApplicationsRepresentTheSameGlobalScope()
         {
             Assert.IsTrue(
-                ValidationHelper.DoApplicationScopesOverlap(null, null),
-                "Two global scopes must conflict.");
+                DuplicateMappingHelper.IsSameAppScope(null, null),
+                "Two global scopes have the same effective scope.");
         }
 
         [DataTestMethod]
@@ -73,11 +80,11 @@ namespace KeyboardManagerEditorUI.UnitTests
         [DataRow("Calc.Exe", "CALC.EXE")]
         [DataRow("wordpad.exe", "notepad.exe")]
         [DataRow("", "notepad.exe")]
-        public void OverlapIsSymmetricForEveryApplicationScope(string first, string second)
+        public void ScopeEqualityIsSymmetricForEveryApplicationScope(string first, string second)
         {
-            var forwards = ValidationHelper.DoApplicationScopesOverlap(first, second);
-            var backwards = ValidationHelper.DoApplicationScopesOverlap(second, first);
-            Assert.AreEqual(forwards, backwards, "Reversing the mapping's existing/candidate roles changed overlap.");
+            var forwards = DuplicateMappingHelper.IsSameAppScope(first, second);
+            var backwards = DuplicateMappingHelper.IsSameAppScope(second, first);
+            Assert.AreEqual(forwards, backwards, "Scope equality must be symmetric.");
         }
 
         [DataTestMethod]
@@ -87,8 +94,8 @@ namespace KeyboardManagerEditorUI.UnitTests
         public void CaseVariantMappingsCannotBypassDuplicateDetection(string existing, string candidate)
         {
             Assert.IsTrue(
-                ValidationHelper.DoApplicationScopesOverlap(existing, candidate),
-                "Application scope matching must reject duplicate executables with different casing.");
+                DuplicateMappingHelper.IsSameAppScope(existing, candidate),
+                "Case differences must not create a different application scope.");
         }
 
         [DataTestMethod]
@@ -98,7 +105,7 @@ namespace KeyboardManagerEditorUI.UnitTests
         public void DistinctExecutableNamesRemainIndependent(string existing, string candidate)
         {
             Assert.IsFalse(
-                ValidationHelper.DoApplicationScopesOverlap(existing, candidate),
+                DuplicateMappingHelper.IsSameAppScope(existing, candidate),
                 "Unrelated app-specific mappings should be able to share the same shortcut.");
         }
 
@@ -119,11 +126,11 @@ namespace KeyboardManagerEditorUI.UnitTests
                 CultureInfo.CurrentUICulture = testCulture;
 
                 Assert.IsTrue(
-                    ValidationHelper.DoApplicationScopesOverlap("FILE.EXE", "file.exe"),
+                    DuplicateMappingHelper.IsSameAppScope("FILE.EXE", "file.exe"),
                     "Executable matching must not vary with the user's regional settings.");
 
                 Assert.IsFalse(
-                    ValidationHelper.DoApplicationScopesOverlap("FILE.EXE", "filter.exe"),
+                    DuplicateMappingHelper.IsSameAppScope("FILE.EXE", "filter.exe"),
                     "Different executables must remain distinct in every culture.");
             }
             finally

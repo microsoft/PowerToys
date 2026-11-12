@@ -1,0 +1,15 @@
+This opt-in CI experiment fetches microsoft/Windows-driver-samples at:
+bb68ed5e770bce04dc5395ec9258dafab034184d
+
+The vhidmini2 driver is licensed under the Microsoft Public License (MS-PL),
+not the PowerToys MIT license. MS-PL.txt preserves its upstream license.
+vhidmini-input.patch modifies that sample to expose keyboard and absolute
+mouse reports through a vendor-defined feature-report control collection.
+That derived patch remains under MS-PL. Built driver artifacts include the
+upstream license and this attribution. No driver is shipped with PowerToys.
+
+The C# probe, build/deployment scripts and pipeline templates are PowerToys
+test infrastructure under the repository license.
+CreateUmdfHidDevice.exe is built from the repository's MIT-licensed source
+and only creates the fixed test hardware ID. Installation uses inbox pnputil.
+No WDK utility executables are redistributed in the test artifacts.
