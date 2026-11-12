@@ -553,7 +553,7 @@ public partial class ParametersPageViewModel : PageViewModel, IDisposable
         }
     }
 
-    public List<ParameterRunViewModel> Items { get; set; } = [];
+    public List<ParameterRunViewModel> Items { get; } = [];
 
     /// <summary>
     /// Gets the command shown once every parameter has a value.

@@ -54,7 +54,7 @@ public partial class ContextMenuViewModel : ObservableObject
     }
 
     [ObservableProperty]
-    public partial ObservableCollection<IContextItemViewModel> FilteredItems { get; set; } = [];
+    public partial ObservableCollection<IContextItemViewModel> FilteredItems { get; private set; } = [];
 
     [ObservableProperty]
     public partial bool FilterOnTop { get; set; } = false;

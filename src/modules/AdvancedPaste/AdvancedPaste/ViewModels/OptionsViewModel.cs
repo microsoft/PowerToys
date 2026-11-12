@@ -580,7 +580,7 @@ namespace AdvancedPaste.ViewModels
         }
 
         // List to store generated responses
-        public ObservableCollection<string> GeneratedResponses { get; set; } = [];
+        public ObservableCollection<string> GeneratedResponses { get; } = [];
 
         // Index to keep track of the current response
         private int _currentResponseIndex;
