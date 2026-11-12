@@ -24,6 +24,7 @@
     <Compile Include="..\..\modules\AdvancedPaste\AdvancedPaste.UITests.Next\TestFileCleanup.cs" Link="AdvancedPaste\TestFileCleanup.cs" />
     <Compile Include="..\..\modules\EnvironmentVariables\EnvironmentVariables.UITests\TestState.cs" Link="EnvironmentVariables\TestState.cs" />
     <Compile Include="..\..\modules\powerdisplay\PowerDisplay.UITests\PowerDisplayInventory.cs" Link="PowerDisplay\PowerDisplayInventory.cs" />
+    <Compile Include="..\..\modules\previewpane\PreviewPane.UITests\ThumbnailProviderLog.cs" Link="PreviewPane\ThumbnailProviderLog.cs" />
     <Compile Include="..\..\modules\Workspaces\Tests\Workspaces.UITests.Next\WorkspacesDisplay.cs" Link="Workspaces\WorkspacesDisplay.cs" />
     <Compile Include="..\..\modules\Workspaces\Tests\Workspaces.UITests.Next\PackagedFixturePrerequisites.cs" Link="Workspaces\PackagedFixturePrerequisites.cs" />
   </ItemGroup>
