@@ -101,6 +101,7 @@ public record ProviderSettings
                 if (!string.IsNullOrEmpty(fallback.Id) && !builder.ContainsKey(fallback.Id))
                 {
                     var enableGlobalResults = (wrapper.Extension is null)
+                        && !fallback.HasFallbackQueryHandler
                         && !_excludedBuiltInFallbacks.Contains(fallback.Id);
                     uint? maximumVisibleItemCount = fallback.HasFallbackQueryHandler
                         ? FallbackResultQueryManager.InitialRequestedItemCount
