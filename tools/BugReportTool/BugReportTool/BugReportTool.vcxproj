@@ -58,6 +58,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DiagnosticPrivacy.h" />
     <ClInclude Include="EventViewer.h" />
     <ClInclude Include="InstallationFolder.h" />
     <ClInclude Include="Package.h" />
