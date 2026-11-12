@@ -971,7 +971,7 @@ Describe 'MWB image servicing diagnosis' {
         ($report | ConvertTo-Json -Depth 8) | Should Not Match 'private-provider-output'
     }
 
-    It 'records a baseline before CI setup and leaves the privileged reboot rejection intact' {
+    It 'records a baseline before CI setup and retains the Windows Update reboot rejection' {
         $job = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
         $baseline = $job.IndexOf('image-servicing-job-start.json')
         $baseline | Should BeGreaterThan 0
@@ -982,6 +982,37 @@ Describe 'MWB image servicing diagnosis' {
         ($body.IndexOf('ImageServicing = Get-MwbImageServicingReport') -lt $body.IndexOf('Get-WindowsOptionalFeature')) | Should Be $true
         $initialize = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\Initialize-AutonomousHost.ps1') -Raw
         $initialize | Should Match "Write-ProvisioningPhase 'Pending image reboot confirmed'\r?\n\s*throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot"
+    }
+
+    It 'temporarily excludes only CBS from the provisioning reboot gate' -TestCases @(
+        @{ CBS = $true; WindowsUpdate = $false }
+        @{ CBS = $false; WindowsUpdate = $true }
+        @{ CBS = $true; WindowsUpdate = $true }
+    ) {
+        param($CBS, $WindowsUpdate)
+        $script:cbsPending = $CBS
+        $script:wuPending = $WindowsUpdate
+        Mock Test-Path {
+            param($Path)
+            if ($Path -like '*Component Based Servicing*') { return $script:cbsPending }
+            if ($Path -like '*WindowsUpdate*') { return $script:wuPending }
+            throw 'Unexpected registry query.'
+        }
+        $tokens = $null
+        $errors = $null
+        $path = Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\Initialize-AutonomousHost.ps1'
+        $ast = [Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
+        if ($errors) { throw 'Initializer contains parse errors.' }
+        $guard = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.IfStatementAst] -and
+                $node.Extent.Text -like "*throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot*"
+        }, $true)
+        $condition = [scriptblock]::Create($guard.Clauses[0].Item1.Extent.Text)
+        (& $condition) | Should Be $WindowsUpdate
+        Assert-MockCalled Test-Path -Times 0 -Exactly -Scope It -ParameterFilter {
+            $Path -like '*Component Based Servicing*'
+        }
     }
 }
 
