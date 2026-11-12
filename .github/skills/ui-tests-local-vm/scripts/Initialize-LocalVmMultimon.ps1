@@ -115,7 +115,11 @@ $standardUser = [string]$configuration.StandardUser
 $driverPackage = Get-MultimonDriverPackage -Configuration $configuration -VmRoot $vmRootPath -Override $DriverPath
 $driverRoot = $driverPackage.Path
 $layoutPreset = Get-MultimonSetting -Configuration $configuration -Name 'Preset' -Override $Preset -Default 'SideBySide'
-$wallpaperSource = Get-MultimonSetting -Configuration $configuration -Name 'WallpaperPath' -Override $WallpaperPath -Default ''
+$wallpaperSource = if ($PSBoundParameters.ContainsKey('WallpaperPath') -and $WallpaperPath -ceq '') {
+    ''
+} else {
+    Get-MultimonSetting -Configuration $configuration -Name 'WallpaperPath' -Override $WallpaperPath -Default ''
+}
 $platform = Get-MultimonPlatform -Configuration $configuration
 $defaultReportTool = Join-Path $repositoryRoot "$platform\Release\MonitorReportTool\PowerToys.MonitorReportTool.exe"
 $reportTool = Get-MultimonSetting -Configuration $configuration -Name 'MonitorReportToolPath' -Override $MonitorReportToolPath -Default $defaultReportTool
