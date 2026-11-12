@@ -984,7 +984,7 @@ Describe 'MWB image servicing diagnosis' {
         $initialize | Should Match "Write-ProvisioningPhase 'Pending image reboot confirmed'\r?\n\s*throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot"
     }
 
-    It 'temporarily excludes only CBS from the provisioning reboot gate' -TestCases @(
+    It 'does not block solely on CBS while retaining the Windows Update reboot gate' -TestCases @(
         @{ CBS = $true; WindowsUpdate = $false }
         @{ CBS = $false; WindowsUpdate = $true }
         @{ CBS = $true; WindowsUpdate = $true }
