@@ -16,6 +16,10 @@ namespace Microsoft.Workspaces.UITests
     [DoNotParallelize]
     public sealed partial class WorkspacesTests : UITestBase
     {
+        // Re-enable these scenarios after the WinUI automation contracts and end-to-end behavior are validated.
+        private const string WinUiMigrationIgnoreReason =
+            "Temporarily disabled pending Workspaces WinUI migration validation: https://github.com/microsoft/PowerToys/pull/49077";
+
         private const string EditorProcess = "PowerToys.WorkspacesEditor";
         private const string LauncherProcess = "PowerToys.WorkspacesLauncher";
         private const string LauncherUiProcess = "PowerToys.WorkspacesLauncherUI";

@@ -1,4 +1,7 @@
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: configuration
     type: string
     default: "Release"
@@ -40,6 +43,12 @@ parameters:
   - name: jobSuffix
     type: string
     default: ''
+  - name: routeUmdfHidArm64
+    type: boolean
+    default: false
+  - name: umdfHidArm64Dedicated
+    type: boolean
+    default: false
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
@@ -60,20 +69,27 @@ jobs:
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       AutoUiTestModules: $[ dependencies.Resolve.outputs['resolve.uiTestModules'] ]
   pool:
-    ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-INT-Testing-x64
-        ${{ if eq(parameters.platform, 'x64Win11') }}:
-          demands: ImageOverride -equals SHINE-W11-Testing
-      ${{ else }}:
+    ${{ if eq(parameters.umdfHidArm64Dedicated, true) }}:
+      ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
         name: SHINE-INT-Testing-arm64
-    ${{ else }}:
-      ${{ if ne(parameters.platform, 'ARM64') }}:
-        name: SHINE-OSS-Testing-x64
-        ${{ if eq(parameters.platform, 'x64Win11') }}:
-          demands: ImageOverride -equals SHINE-W11-Testing
       ${{ else }}:
         name: SHINE-OSS-Testing-arm64
+      demands: ImageOverride -equals ${{ parameters.umdfHidArm64Image }}
+    ${{ else }}:
+      ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
+        ${{ if ne(parameters.platform, 'ARM64') }}:
+          name: SHINE-INT-Testing-x64
+          ${{ if eq(parameters.platform, 'x64Win11') }}:
+            demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ else }}:
+          name: SHINE-INT-Testing-arm64
+      ${{ else }}:
+        ${{ if ne(parameters.platform, 'ARM64') }}:
+          name: SHINE-OSS-Testing-x64
+          ${{ if eq(parameters.platform, 'x64Win11') }}:
+            demands: ImageOverride -equals SHINE-W11-Testing
+        ${{ else }}:
+          name: SHINE-OSS-Testing-arm64
   steps:
   - checkout: self
     submodules: false
@@ -87,6 +103,38 @@ jobs:
       if ('${{ parameters.autoSelectUiTests }}' -eq 'True') {
         $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       }
+      . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
+      $hidSelection = Get-UmdfUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
+        -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
+        -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
+        -DedicatedArm64 ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True')
+      $displaySelection = Get-UmdfUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
+        -FixtureModule 'PowerDisplay.UITests' `
+        -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
+        -RouteArm64 ('${{ parameters.routeUmdfHidArm64 }}' -eq 'True') `
+        -DedicatedArm64 ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True')
+      if ('${{ parameters.umdfHidArm64Dedicated }}' -eq 'True') {
+        $bootConfiguration = & bcdedit.exe /enum '{current}'
+        if ($LASTEXITCODE) { throw 'BLOCKED_INFRASTRUCTURE: cannot read the dedicated image boot configuration.' }
+        Assert-UmdfArm64TestEnvironment `
+          -OsArchitecture ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()) `
+          -BootConfiguration ($bootConfiguration -join "`n")
+        Write-Host "Dedicated ARM64 UMDF image: $env:UMDF_HID_ARM64_IMAGE (TESTSIGNING is preconfigured; no boot settings are changed)."
+      }
+      Write-Host "##vso[task.setvariable variable=ExcludeUmdfHidSuite]$($hidSelection.Exclude.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=UmdfHidSelectionBlocked]$($hidSelection.Blocked.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=ExcludeUmdfDisplaySuite]$($displaySelection.Exclude.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=UmdfDisplaySelectionBlocked]$($displaySelection.Blocked.ToString().ToLowerInvariant())"
+      Write-Host "##vso[task.setvariable variable=PowerDisplayUiTestFilter]$($displaySelection.Filter)"
+      if ($displaySelection.Filter) {
+        Write-Host 'PowerDisplay.UITests runs its eight hardware-optional cases on the ordinary ARM64 image. Driver-backed cases require the isolated image.'
+      }
+      if ($hidSelection.Skipped) {
+        Write-Host "##vso[task.logissue type=warning]Skipping implicitly selected GrabAndMove.UITests on $(TestPlatform): the dedicated ARM64 UMDF image is not configured. Other suites remain selected."
+      }
+      if ($hidSelection.Routed) {
+        Write-Host 'GrabAndMove.UITests runs only in the separate ARM64 UMDF job; this job keeps the other selected suites.'
+      }
       $selection = Get-MwbUiTestSelection -Modules $modules `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
         -Platform '$(TestPlatform)' -Configuration '$(BuildConfiguration)' `
@@ -97,6 +145,8 @@ jobs:
       Write-Host "##vso[task.setvariable variable=MwbSelectionBlocked]$($selection.Blocked.ToString().ToLowerInvariant())"
       Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]false"
       Write-Host "##vso[task.setvariable variable=UiTestCleanupComplete]false"
+      Write-Host "##vso[task.setvariable variable=UmdfHidRequested]false"
+      Write-Host "##vso[task.setvariable variable=UmdfDisplayRequested]false"
       if ($selection.Reason -eq 'SkippedRequiresCurrentBuildBundle') {
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
@@ -117,6 +167,7 @@ jobs:
     displayName: Select UI test suites
     env:
       SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      UMDF_HID_ARM64_IMAGE: ${{ parameters.umdfHidArm64Image }}
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
@@ -215,6 +266,8 @@ jobs:
             **/PowerToysSetup*.exe
             $(UiTestArtifactPattern)
             mwb-sandbox-ci/**
+            umdf-hid/**
+            powerdisplay-idd/**
   - ${{ else }}:
       # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
       # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The
@@ -225,9 +278,6 @@ jobs:
           artifactName: $(TestArtifactsName)
 
   - template: steps-ensure-dotnet-version.yml
-    parameters:
-      sdk: true
-      version: '10.0'
 
   - pwsh: |-
       & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
@@ -319,17 +369,22 @@ jobs:
         'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
         'AltWindowCycle.UITests',
+        'Awake.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
+        'GrabAndMove.UITests',
         'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
+        'Microsoft.CmdPal.UITests.Next',
         'MouseWithoutBorders.UITests',
         'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'PowerAccent.UITests',
+        'PowerDisplay.UITests',
+        'PowerOCR.UITests.Next',
         'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
@@ -374,6 +429,10 @@ jobs:
           'PowerToys.WorkspacesLauncherUI.exe'
       }
 
+      if ($allModules -or $selectedModules -contains 'Microsoft.CmdPal.UITests.Next') {
+        $requiredPackages += 'SamplePagesExtension.msix'
+      }
+
       if ($requiresAuthenticatedSettingsIpc) {
         $requiredAuthenticodeFiles += 'PowerToys.exe', 'PowerToys.Settings.exe'
       }
@@ -404,6 +463,46 @@ jobs:
         }
       }
     displayName: "Sign sparse MSIX packages (test trust)"
+    condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
+    ${{ if eq(parameters.autoSelectUiTests, true) }}:
+      env:
+        AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      Write-Host '##vso[task.setvariable variable=PowerOcrLanguagesReady]false'
+      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
+        $modulesRaw = $env:AUTO_UI_TEST_MODULES
+      }
+      $modules = @($modulesRaw -split ';' | Where-Object { $_ })
+      if ($modules.Count -gt 0 -and $modules -notcontains 'PowerOCR.UITests.Next') {
+        Write-Host 'The migrated PowerOCR suite is not selected; OCR provisioning is unnecessary.'
+        return
+      }
+      foreach ($name in @(
+        'Language.Basic~~~en-US~0.0.1.0',
+        'Language.Basic~~~en-GB~0.0.1.0',
+        'Language.OCR~~~en-US~0.0.1.0',
+        'Language.OCR~~~en-GB~0.0.1.0')) {
+        $capability = Get-WindowsCapability -Online -Name $name -ErrorAction Stop
+        if ($capability.State -ne 'Installed') {
+          Write-Host "Installing OCR capability: $name"
+          $result = Add-WindowsCapability -Online -Name $name -ErrorAction Stop
+          if ($result.RestartNeeded) {
+            throw "OCR capability $name requires a restart before UI tests can run."
+          }
+        }
+        $capability = Get-WindowsCapability -Online -Name $name -ErrorAction Stop
+        if ($capability.State -ne 'Installed') {
+          throw "Required OCR capability $name is not installed: $($capability.State)"
+        }
+        Write-Host "Verified OCR capability: $name"
+      }
+      Write-Host '##vso[task.setvariable variable=PowerOcrLanguagesReady]true'
+    displayName: "Provision PowerOCR test languages"
+    continueOnError: true
+    timeoutInMinutes: 90
     condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       env:
@@ -485,16 +584,25 @@ jobs:
 
       # Run each test assembly once (a project reference can copy a runner into a sibling's output).
       $entries = $entries | Sort-Object FullName | Group-Object Name | ForEach-Object { $_.Group[0] }
+      $matchedEntries = @($entries).Count
+      if ($env:EXCLUDE_UMDF_HID_SUITE -eq 'true') {
+        $entries = @($entries | Where-Object Name -ne 'GrabAndMove.UITests.runtimeconfig.json')
+      }
+      if ($env:EXCLUDE_UMDF_DISPLAY_SUITE -eq 'true') {
+        $entries = @($entries | Where-Object Name -ne 'PowerDisplay.UITests.runtimeconfig.json')
+      }
 
-      if ($runGenericUiTests -and -not $entries) {
+      if ($runGenericUiTests -and -not $entries -and ($matchedEntries -eq 0 -or
+          ($env:EXCLUDE_UMDF_HID_SUITE -ne 'true' -and $env:EXCLUDE_UMDF_DISPLAY_SUITE -ne 'true'))) {
         Write-Host "##vso[task.logissue type=error]No UI test runners matched (modules: '$modulesRaw') under $artifactRoot"
         exit 1
       }
 
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
+      . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'Microsoft.CmdPal.UITests.Next', 'PowerOCR.UITests.Next', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
@@ -504,9 +612,22 @@ jobs:
         $exe = Join-Path $dir "$base.exe"
         $dll = Join-Path $dir "$base.dll"
         $suiteFailed = $false
+        $fixtureContext = $null
+        $testFilter = if ($base -eq 'PowerDisplay.UITests') { $env:POWERDISPLAY_UI_TEST_FILTER } else { '' }
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
+          if ($base -eq 'PowerOCR.UITests.Next' -and $env:POWER_OCR_LANGUAGES_READY -ne 'true') {
+            Write-Host '##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerOCR language provisioning did not complete; other selected suites run independently.'
+            $suiteFailed = $true
+            continue
+          }
+          if ($base -in (Get-UmdfFixtures).Suite -and -not $testFilter) {
+            $fixtureContext = Get-UmdfFixtureContext -Suite $base -RepositoryRoot "$(Build.SourcesDirectory)" `
+              -ArtifactRoot $artifactRoot -Platform "$(BuildPlatform)" `
+              -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory $resultsDir
+            Start-UmdfFixture -Context $fixtureContext
+          }
           if ($base -eq 'LightSwitch.UITests.Next') {
             try {
               Enable-LightSwitchLocation -StatePath $locationStatePath
@@ -521,7 +642,7 @@ jobs:
               throw "$base requires its staged executable for non-elevated dispatch; missing runner: $exe"
             }
             & "$(build.sourcesdirectory)\.pipelines\runUiTestAsUser.ps1" `
-              -TestExecutable $exe -ResultsDirectory $resultsDir
+              -TestExecutable $exe -ResultsDirectory $resultsDir -Filter $testFilter
           } elseif (Test-Path $exe) {
             & $exe --report-trx --results-directory $resultsDir
           } elseif (Test-Path $dll) {
@@ -538,6 +659,14 @@ jobs:
           $suiteFailed = $true
         } finally {
           try {
+            if ($null -ne $fixtureContext) {
+              try {
+                Stop-UmdfFixture -Context $fixtureContext
+              } catch {
+                Write-Host "##vso[task.logissue type=error]UMDF fixture cleanup failed for ${base}: $($_.Exception.Message)"
+                $suiteFailed = $true
+              }
+            }
             if ($base -eq 'LightSwitch.UITests.Next') {
               try {
                 Restore-LightSwitchLocation -StatePath $locationStatePath
@@ -577,6 +706,14 @@ jobs:
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: MWB requires the selected revision's shared Release runtime bundle (buildNow or buildNowSlim). Older official/installed builds are not substituted; other selected suites run independently."
         $failed++
       }
+      if ($env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
+        Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires the configured dedicated ARM64 UMDF pool/image. No boot policies are changed; other selected suites run independently."
+        $failed++
+      }
+      if ($env:UMDF_DISPLAY_SELECTION_BLOCKED -eq 'true') {
+        Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerDisplay.UITests requires the isolated architecture-matched UMDF image. No boot policies are changed."
+        $failed++
+      }
       if ($failed -gt 0) {
         Write-Host "##vso[task.logissue type=error]$failed UI test project(s) reported failures."
         exit 1
@@ -592,12 +729,27 @@ jobs:
       RUN_GENERIC_UI_TESTS: $(RunGenericUiTests)
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
       MWB_SELECTION_BLOCKED: $(MwbSelectionBlocked)
+      EXCLUDE_UMDF_HID_SUITE: $(ExcludeUmdfHidSuite)
+      UMDF_HID_SELECTION_BLOCKED: $(UmdfHidSelectionBlocked)
+      EXCLUDE_UMDF_DISPLAY_SUITE: $(ExcludeUmdfDisplaySuite)
+      UMDF_DISPLAY_SELECTION_BLOCKED: $(UmdfDisplaySelectionBlocked)
+      POWERDISPLAY_UI_TEST_FILTER: $(PowerDisplayUiTestFilter)
+      POWER_OCR_LANGUAGES_READY: $(PowerOcrLanguagesReady)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
   - pwsh: |
       $ErrorActionPreference = 'Stop'
       $failures = 0
+      . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
+      try {
+        Restore-UmdfFixtures -RepositoryRoot "$(Build.SourcesDirectory)" `
+          -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" -Platform "$(BuildPlatform)" `
+          -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory "$(Common.TestResultsDirectory)"
+      } catch {
+        Write-Host "##vso[task.logissue type=error]$($_.Exception.Message)"
+        $failures++
+      }
       if ($env:RUN_MWB_SANDBOX -eq 'true') {
         try {
           . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
@@ -623,6 +775,14 @@ jobs:
       RUN_MWB_SANDBOX: $(RunMwbSandbox)
 
   # Preserve pre-TRX/cancellation evidence before potentially lengthy recording uploads.
+  - ${{ each fixture in split('Display,Hid', ',') }}:
+    - task: PublishPipelineArtifact@1
+      displayName: Publish UMDF ${{ fixture }} readiness and cleanup evidence
+      condition: and(always(), eq(variables['Umdf${{ fixture }}Requested'], 'true'))
+      inputs:
+        targetPath: '$(Common.TestResultsDirectory)\umdf-${{ lower(fixture) }}'
+        artifactName: umdf-${{ lower(fixture) }}-$(TestPlatform)-$(System.JobId)
+
   - task: PublishPipelineArtifact@1
     displayName: Publish UI-test diagnostics
     condition: and(always(), eq(variables['RunMwbSandbox'], 'true'), or(failed(), canceled(), ne(variables['MwbUiTestsPassed'], 'true'), ne(variables['UiTestCleanupComplete'], 'true')))

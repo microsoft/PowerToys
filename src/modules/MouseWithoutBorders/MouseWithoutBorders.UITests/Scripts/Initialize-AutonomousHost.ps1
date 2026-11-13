@@ -133,11 +133,19 @@ if (Test-Path -LiteralPath $testCertificatePath) {
         (Get-FileHash -LiteralPath $testCertificatePath -Algorithm SHA256).Hash -ine $ExpectedTestSigningCertificateSha256) {
         throw 'The public signing certificate does not match the approved staged archive.'
     }
+    Write-ProvisioningPhase 'Inspecting public test trust'
     $testSigningTrust = Get-MwbTestSigningTrust $testCertificatePath
 }
 elseif ($ExpectedTestSigningCertificateSha256) {
     throw 'The approved MWB public signing certificate is missing from the staged product.'
 }
+Write-ProvisioningPhase 'Hashing MWB executable'
+$executableHash = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash
+Write-ProvisioningPhase 'Hashing MWB assembly'
+$libraryHash = (Get-FileHash -LiteralPath $library -Algorithm SHA256).Hash
+Write-ProvisioningPhase 'Hashing Sandbox runtime archive'
+$archiveHash = (Get-FileHash -LiteralPath $guestArchive -Algorithm SHA256).Hash
+Write-ProvisioningPhase 'Recording provisioning ownership'
 $state = [ordered]@{
     FormatVersion = 1
     RunId = $RunId.ToString()
@@ -145,10 +153,10 @@ $state = [ordered]@{
     Configuration = $Configuration
     TestSigningTrust = $testSigningTrust
     Executable = $executable
-    ExecutableSha256 = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash
-    LibrarySha256 = (Get-FileHash -LiteralPath $library -Algorithm SHA256).Hash
+    ExecutableSha256 = $executableHash
+    LibrarySha256 = $libraryHash
     GuestArchivePath = $guestArchive
-    GuestArchiveSha256 = (Get-FileHash -LiteralPath $guestArchive -Algorithm SHA256).Hash
+    GuestArchiveSha256 = $archiveHash
     SandboxBackend = $SandboxBackend
     SandboxWinAppPath = $SandboxWinAppPath
     SandboxWinAppSha256 = $sandboxWinAppHash
@@ -169,6 +177,7 @@ $state = [ordered]@{
 }
 # Complete the potentially slow hashes before creating a directory that requires
 # an ownership marker for recovery.
+Write-ProvisioningPhase 'Writing provisioning marker'
 $acl = New-Object Security.AccessControl.DirectorySecurity
 $acl.SetAccessRuleProtection($true, $false)
 $inheritance = [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'

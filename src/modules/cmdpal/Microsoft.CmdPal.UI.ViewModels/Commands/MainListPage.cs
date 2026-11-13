@@ -651,9 +651,8 @@ public sealed partial class MainListPage : DynamicListPage,
             }
 
             // prefilter fallbacks
-            var configuredGlobalFallbackIds = _settingsService.Settings.GetGlobalFallbacks();
-            var specialFallbacks = new List<TopLevelViewModel>(configuredGlobalFallbackIds.Length);
-            var commonFallbacks = new List<TopLevelViewModel>(Math.Max(commands.Count - configuredGlobalFallbackIds.Length, 0));
+            var specialFallbacks = new List<TopLevelViewModel>();
+            var commonFallbacks = new List<TopLevelViewModel>(commands.Count);
 
             foreach (var s in commands)
             {
@@ -662,7 +661,7 @@ public sealed partial class MainListPage : DynamicListPage,
                     continue;
                 }
 
-                if (configuredGlobalFallbackIds.Contains(s.Id))
+                if (s.IncludeInGlobalResults)
                 {
                     specialFallbacks.Add(s);
                 }
@@ -672,7 +671,8 @@ public sealed partial class MainListPage : DynamicListPage,
                 }
             }
 
-            _fallbackUpdateManager.BeginUpdate(SearchText, [.. specialFallbacks, .. commonFallbacks], token);
+            TopLevelViewModel[] fallbacks = [.. specialFallbacks, .. commonFallbacks];
+            _fallbackUpdateManager.BeginUpdate(SearchText, fallbacks, token);
 
             if (token.IsCancellationRequested)
             {
@@ -1021,7 +1021,11 @@ public sealed partial class MainListPage : DynamicListPage,
 
         if (topLevelOrAppItem.Safe is TopLevelViewModel topLevelViewModel)
         {
-            var index = Array.IndexOf(fallbackRanks, topLevelViewModel.Id);
+            var index = Array.IndexOf(fallbackRanks, topLevelViewModel.FallbackKey);
+            if (index < 0)
+            {
+                index = Array.IndexOf(fallbackRanks, topLevelViewModel.Id);
+            }
 
             if (index >= 0)
             {

@@ -29,6 +29,37 @@ function New-UITestProject {
 }
 
 Describe 'resolveUiTestModules' {
+    It 'selects both driver suites for a shared fixture change <File>' -TestCases @(
+        @{ File = '.pipelines/umdf/UmdfBuild.Common.ps1' }
+        @{ File = '.pipelines\umdf\UmdfDriver.Common.ps1' }
+        @{ File = '.pipelines/v2/templates/job-test-arm64.yml' }
+    ) {
+        param($File)
+        New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
+        New-UITestProject 'src\modules\GrabAndMove\Tests\GrabAndMove.UITests\GrabAndMove.UITests.csproj'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $File
+        $result.UiTestModules | Should Be @('GrabAndMove.UITests', 'PowerDisplay.UITests')
+    }
+
+    It 'selects Grab and Move for its driver-only change' {
+        New-UITestProject 'src\modules\GrabAndMove\Tests\GrabAndMove.UITests\GrabAndMove.UITests.csproj'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile '.pipelines/umdf-hid-smoke/Manage-SmokeDriver.ps1'
+        $result.UiTestModules | Should Be @('GrabAndMove.UITests')
+    }
+
+    It 'selects Power Display for a fixture-only change <File>' -TestCases @(
+        @{ File = '.pipelines/powerdisplay-idd-poc/Fixture.cpp' }
+        @{ File = '.pipelines\powerdisplay-idd-poc\Manage-Poc.ps1' }
+        @{ File = '.pipelines/v2/templates/steps-build-umdf-display.yml' }
+    ) {
+        param($File)
+        New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
+        $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $File
+        $result.TouchedModules | Should Be @('powerdisplay')
+        $result.UiTestModules | Should Be @('PowerDisplay.UITests')
+        $result.InfrastructureChanged | Should Be $false
+    }
+
     It 'selects the UI tests for a touched module' {
         New-UITestProject 'src\modules\FileLocksmith\Tests\FileLocksmith.UITests\FileLocksmith.UITests.csproj'
 
@@ -69,7 +100,7 @@ Describe 'resolveUiTestModules' {
         @($result.UiTestModules).Count | Should Be 0
     }
 
-    It 'selects MWB alongside other affected Release suites' {
+    It 'skips the temporarily disabled MWB suite but keeps other affected suites' {
         New-UITestProject 'src\modules\MouseWithoutBorders\Tests\MouseWithoutBorders.UITests\MouseWithoutBorders.UITests.csproj'
         New-UITestProject 'src\modules\FileLocksmith\Tests\FileLocksmith.UITests\FileLocksmith.UITests.csproj'
 
@@ -79,13 +110,15 @@ Describe 'resolveUiTestModules' {
         )
 
         $result.TouchedModules | Should Be @('FileLocksmith', 'MouseWithoutBorders')
-        $result.UiTestModules | Should Be @('FileLocksmith.UITests', 'MouseWithoutBorders.UITests')
+        $result.UiTestModules | Should Be @('FileLocksmith.UITests')
     }
 
     It 'selects the smoke set when UI-test infrastructure changes' {
         New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
         New-UITestProject 'src\modules\Hosts\Hosts.UITests.Next\Hosts.UITests.Next.csproj'
         New-UITestProject 'src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj'
+        New-UITestProject 'src\modules\GrabAndMove\Tests\GrabAndMove.UITests\GrabAndMove.UITests.csproj'
+        New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
 
         foreach ($file in @(
             '.pipelines/v2/templates/job-test-project.yml',
@@ -95,7 +128,11 @@ Describe 'resolveUiTestModules' {
             $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $file
 
             $result.InfrastructureChanged | Should Be $true
-            $result.UiTestModules | Should Be @('CropAndLock.UITests', 'Hosts.UITests.Next')
+            $expected = @('CropAndLock.UITests', 'Hosts.UITests.Next')
+            if ($file -eq '.pipelines/v2/templates/job-test-project.yml') {
+                $expected = @('CropAndLock.UITests', 'GrabAndMove.UITests', 'Hosts.UITests.Next', 'PowerDisplay.UITests')
+            }
+            $result.UiTestModules | Should Be $expected
         }
     }
 

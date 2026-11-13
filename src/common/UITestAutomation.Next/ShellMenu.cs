@@ -204,7 +204,9 @@ public static class ShellMenu
         exception is AssertFailedException &&
         (exception.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase) ||
          exception.Message.Contains("element_not_found", StringComparison.OrdinalIgnoreCase) ||
-         exception.Message.Contains("window_not_found", StringComparison.OrdinalIgnoreCase));
+         exception.Message.Contains("window_not_found", StringComparison.OrdinalIgnoreCase) ||
+         (exception.Message.Contains("RuntimeId hash", StringComparison.OrdinalIgnoreCase) &&
+          exception.Message.Contains("the UI may have changed", StringComparison.OrdinalIgnoreCase)));
 
     internal static bool WindowClassMatches(string actual, string expected) =>
         expected.Equals(ModernWindowClassName, StringComparison.OrdinalIgnoreCase)

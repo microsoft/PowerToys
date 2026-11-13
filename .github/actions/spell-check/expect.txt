@@ -218,6 +218,7 @@ CHILDWINDOW
 CHOOSEFONT
 chu
 CIBUILD
+cifhbcnohmdccbgoicgdjpfamggdegmo
 cidl
 CIELCh
 cim
@@ -337,6 +338,7 @@ cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
+cw5n1h2txyewy
 cvd
 CWMO
 CXSCREEN
@@ -504,7 +506,9 @@ ENABLETAB
 ENABLETEMPLATE
 encodedlaunch
 encryptor
+endfacet
 ENDSESSION
+endsolid
 ENSUREVISIBLE
 ENTERIDLE
 ENTERMENULOOP
@@ -570,6 +574,7 @@ fffffffzzz
 FFh
 Figma
 figma
+fmgjjmmmlfnkbppncijlocphclkkleod
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -823,6 +828,7 @@ imagingdevices
 ime
 IMEAceept
 imgflip
+immersivecontrolpanel
 inapp
 inbox
 INCONTACT
@@ -1791,6 +1797,7 @@ sourced
 sourcedoc
 SOURCEHEADER
 sourcesdirectory
+sparkline
 spdisp
 spdlog
 spdo
@@ -1980,6 +1987,7 @@ tstoi
 tsv
 tweakable
 TWF
+txyewy
 tymed
 TYPEKEYBOARD
 TYPEMOUSE
@@ -2126,6 +2134,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WDA
+wdk
 wdm
 wdp
 wdupenv
@@ -2224,6 +2233,7 @@ wprp
 wql
 wregex
 WResize
+WRITEFAULT
 WRITEOBJECTS
 Wrk
 wrl
