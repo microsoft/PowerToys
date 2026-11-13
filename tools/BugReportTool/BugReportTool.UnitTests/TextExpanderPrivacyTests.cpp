@@ -338,6 +338,25 @@ namespace BugReportToolUnitTests
                            { L"Shared\\other.json", L"FancyZones\\settings.json", L"TextExpander\\settings.json" });
         }
 
+        TEST_METHOD(EarlierDatabaseWithoutTriggersIsExcluded)
+        {
+            // SnippetFile.Read preserves replacement-only entries so their triggers can be repaired in the editor.
+            const char database[] = R"({"snippets":[{"replacement":"private team snippet"}]})";
+            Assert::IsTrue(WriteText(configuredFolder / L"team.json", database) &&
+                               WriteText(configuredFolder / L"team.json.backup-20261031", database) &&
+                               WriteText(configuredFolder / L"other.json", R"({"replacement":"an unrelated setting"})"),
+                           L"Could not create the replacement-only database fixture");
+
+            const std::vector<SettingsCase> cases{
+                { L"new database elsewhere", "{\"snippets_path\":{\"value\":" + JsonString((root / L"elsewhere" / L"current.json").wstring()) + "}}" },
+                { L"default database", "{}" },
+            };
+            AssertExcluded(cases,
+                           { L"Shared\\team.json", L"Shared\\team.json.backup-20261031" },
+                           L"An earlier replacement-only database was in the report",
+                           { L"Shared\\other.json", L"TextExpander\\settings.json" });
+        }
+
         // A sync service's keep-both copy of an earlier database, deeper in the settings, in a form the engine also
         // reads: a byte order mark, keys in any case and trailing commas.
         TEST_METHOD(EarlierDatabaseCopyInSubfolderIsExcluded)
@@ -382,6 +401,7 @@ namespace BugReportToolUnitTests
                 EscapedDatabase,
                 R"({"snippets":[{"tri\u0067ger":"!team","replacement":"private"}]})",
                 R"({"snip\u0070ets":[{"trigger":"!team","replacement":"private"}]})",
+                R"({"snip\u0070ets":[{"replacem\u0065nt":"private"}]})",
                 R"({"\u0053\u006E\u0049\u0070\u0050\u0065\u0054\u0073":[{"\u0054\u0072\u0049\u0067\u0047\u0065\u0052":"!team","replacement":"private"}]})",
                 std::string("\xEF\xBB\xBF// A copy from before moving the database\n") +
                     R"({"snip\u0070ets":[{"tri\u0067ger":"!team","replacement":"private",},],})",
@@ -409,6 +429,7 @@ namespace BugReportToolUnitTests
             const std::vector<MarkerCase> cases{
                 { "{", R"("\u0053\u006E\u0049\u0070\u0050\u0065\u0054\u0073")", ":[{\"trigger\":\"!team\",\"replacement\":\"private\"}]}" },
                 { "{\"snippets\":[{", R"("\u0054\u0072\u0049\u0067\u0047\u0065\u0052")", ":\"!team\",\"replacement\":\"private\"}]}" },
+                { "{\"snippets\":[{", R"("\u0072\u0065\u0070\u006C\u0061\u0063\u0065\u006D\u0065\u006E\u0074")", ":\"private\"}]}" },
             };
             const fs::path file = configuredFolder / L"escaped-boundary.json";
             for (const MarkerCase& testCase : cases)

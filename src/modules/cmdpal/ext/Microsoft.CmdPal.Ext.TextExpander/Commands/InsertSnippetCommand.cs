@@ -81,7 +81,7 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
         {
             Message = clipboardLost ? string.Concat(message, " ", Resources.toast_clipboard_not_restored) : message,
             Result = CommandResult.KeepOpen(),
-            Command = new CopySnippetCommand(() => text, _inserter.Clipboard, _inserted),
+            Command = new CopySnippetCommand(() => _source.GetState().IsOn ? text : null, _inserter.Clipboard, _inserted),
         });
     }
 

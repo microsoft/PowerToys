@@ -16,7 +16,7 @@ internal enum HostInputKind
     /// </summary>
     Unmatched,
 
-    /// <summary>Not the user's input: our own, the runner's replay, or a key event Keyboard Manager swallows.</summary>
+    /// <summary>Not the user's input: our own or a key event Keyboard Manager swallows.</summary>
     Ignored,
 }
 
@@ -41,8 +41,8 @@ internal static class HostInputTags
     public const int KeyboardManagerSuppressed = 0x111;
 
     /// <summary>
-    /// Tags input replayed by the runner's centralized keyboard hook
-    /// (<c>PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG</c>).
+    /// Bypasses the runner's hotkeys (<c>PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG</c>).
+    /// Quick Accent's edits and Advanced Paste's shortcuts use it too, so it remains ordinary input here.
     /// </summary>
     public const int CentralizedHookDontTrigger = 0x110;
 
@@ -85,13 +85,6 @@ internal static class HostInputTags
         }
 
         long tag = extraInfo.ToInt64();
-
-        // The runner consumed a hotkey chord, decided not to act on it, and put the keystrokes
-        // back. That is a replay of an event we have already been offered, not new typing.
-        if (tag == CentralizedHookDontTrigger)
-        {
-            return HostInputKind.Ignored;
-        }
 
         // Keyboard Manager swallows these itself, but a hook that runs before its own still sees them.
         if (tag == KeyboardManagerSuppressed)

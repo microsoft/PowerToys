@@ -26,52 +26,54 @@ internal static class PromptHost
     /// shown, so the caller can fall back to the classic box. Otherwise <paramref name="answer"/> is
     /// the answer, or null when the user cancelled.
     /// </summary>
-    public static bool TryAsk(PromptRequest request, IntPtr target, Action? accepted, out string? answer)
-        => TryShow(done => new PromptWindow(request, target, done).Open(), accepted, out answer);
+    public static bool TryAsk(PromptRequest request, IntPtr target, Action? accepted, out string? answer, CancellationToken cancellationToken = default)
+        => TryShow(done => new PromptWindow(request, target, done).Open(), accepted, out answer, cancellationToken);
 
     /// <summary>
     /// Asks for <paramref name="choice"/> in the choice window. Returns false when the window can't be shown. Otherwise
     /// <paramref name="chosen"/> is what was picked, or null when the user cancelled.
     /// </summary>
-    public static bool TryChoose(ClipboardChoice choice, IntPtr target, Action? accepted, out string? chosen)
-        => TryShow(done => new ClipboardChoiceWindow(choice, target, done).Open(), accepted, out chosen);
+    public static bool TryChoose(ClipboardChoice choice, IntPtr target, Action? accepted, out string? chosen, CancellationToken cancellationToken = default)
+        => TryShow(done => new ClipboardChoiceWindow(choice, target, done).Open(), accepted, out chosen, cancellationToken);
 
     /// <summary>
     /// Opens a window on the prompt thread with <paramref name="open"/>, which passes the window what to call, once, with
     /// its result, and waits for it. <paramref name="accepted"/> runs on the prompt thread when the result isn't null.
     /// </summary>
-    private static bool TryShow(Action<Action<string?>> open, Action? accepted, out string? answer)
+    private static bool TryShow(Action<Action<string?>> open, Action? accepted, out string? answer, CancellationToken cancellationToken)
     {
         answer = null;
-        DispatcherQueue? dispatcher = EnsureStarted();
+        DispatcherQueue? dispatcher = EnsureStarted(cancellationToken);
         if (dispatcher is null)
         {
             return false;
         }
 
-        using var done = new ManualResetEventSlim();
-        string? result = null;
-        bool opened = false;
+        // A window can complete after shutdown released the worker. Its callback must not signal a disposed wait handle.
+        var done = new TaskCompletionSource<(bool Opened, string? Answer)>(TaskCreationOptions.RunContinuationsAsynchronously);
         bool queued = dispatcher.TryEnqueue(() =>
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             try
             {
                 open(typed =>
                 {
-                    if (typed is not null)
+                    if (typed is not null && !cancellationToken.IsCancellationRequested)
                     {
                         accepted?.Invoke();
                     }
 
-                    result = typed;
-                    done.Set();
+                    done.TrySetResult((Opened: true, Answer: typed));
                 });
-                opened = true;
             }
             catch (Exception)
             {
                 // A window that can't open falls back to the classic box rather than losing the snippet.
-                done.Set();
+                done.TrySetResult((Opened: false, Answer: null));
             }
         });
 
@@ -80,18 +82,14 @@ internal static class PromptHost
             return false;
         }
 
-        done.Wait();
-        if (!opened)
-        {
-            return false;
-        }
-
+        (bool opened, string? result) = done.Task.WaitAsync(cancellationToken).GetAwaiter().GetResult();
         answer = result;
-        return true;
+        return opened;
     }
 
-    private static DispatcherQueue? EnsureStarted()
+    private static DispatcherQueue? EnsureStarted(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         lock (StartLock)
         {
             if (_dispatcher is not null || _unavailable)
@@ -99,8 +97,7 @@ internal static class PromptHost
                 return _dispatcher;
             }
 
-            // Not disposed: if starting takes longer than the timeout, the thread still sets it later.
-            var ready = new ManualResetEventSlim();
+            var ready = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
             var thread = new Thread(() =>
             {
                 try
@@ -112,7 +109,7 @@ internal static class PromptHost
                         SynchronizationContext.SetSynchronizationContext(new DispatcherQueueSynchronizationContext(queue));
                         _ = new PromptApp();
                         _dispatcher = queue;
-                        ready.Set();
+                        ready.TrySetResult(true);
                     });
                 }
                 catch (Exception)
@@ -121,7 +118,7 @@ internal static class PromptHost
                 }
                 finally
                 {
-                    ready.Set();
+                    ready.TrySetResult(true);
                 }
             })
             {
@@ -131,7 +128,12 @@ internal static class PromptHost
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
 
-            if (!ready.Wait(StartTimeoutMs) || _dispatcher is null)
+            try
+            {
+                _ = ready.Task.WaitAsync(TimeSpan.FromMilliseconds(StartTimeoutMs), cancellationToken).GetAwaiter().GetResult();
+                _unavailable = _dispatcher is null;
+            }
+            catch (TimeoutException)
             {
                 _unavailable = true;
             }

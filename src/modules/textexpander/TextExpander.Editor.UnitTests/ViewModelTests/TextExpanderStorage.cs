@@ -522,6 +522,29 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        public void SettingsChangedBeforeWatcherRegistrationAreAppliedWithoutAnotherEvent()
+        {
+            Write(_local, Current, SnippetJson.Of("!Hello=Original"));
+            TextExpanderSettings latest = EditorSettings.For(string.Empty);
+            Mock<TextExpanderSettingsUtils> store = EditorSettings.Store(EditorSettings.For(string.Empty), () => latest);
+            _environment.SettingsWatchFolder = Path.GetDirectoryName(store.Object.GetSettingsFilePath(TextExpanderSettings.ModuleName));
+            using var model = new TextExpanderViewModel(store.Object, false, key => key, _environment);
+            model.Dispatch = action => action();
+            Assert.IsTrue(model.CaseSensitive);
+            Assert.IsNull(model.ValidateSnippet(null, "!HELLO"));
+
+            // Settings publishes new rules while the page is being constructed, before its Loaded handler watches them.
+            latest = EditorSettings.For(string.Empty);
+            latest.Properties.CaseSensitive = false;
+            latest.Properties.RequireWordBoundary = false;
+            model.WatchSettings();
+
+            Assert.IsFalse(model.CaseSensitive);
+            Assert.IsFalse(model.RequireWordBoundary);
+            Assert.IsNotNull(model.ValidateSnippet(null, "!HELLO"), "Validation must use the rules the engine now uses.");
+        }
+
+        [TestMethod]
         public void UnrelatedEngineOptionsDoNotInvalidateAnOpenEditor()
         {
             Write(_local, Current, SnippetJson.Of("!old=Old"));
@@ -710,6 +733,8 @@ namespace ViewModelTests
 
             public bool PollFiles { get; set; }
 
+            public string SettingsWatchFolder { get; set; }
+
             public string ExpandEnvironmentVariables(string value) => value;
 
             public bool FileExists(string path) => File.Exists(Guard(path));
@@ -748,7 +773,12 @@ namespace ViewModelTests
                     return new TextExpanderStorageEnvironment(TimeSpan.FromMilliseconds(20)).WatchForFiles(Guard(folder), fileNames, changed, needsRetry);
                 }
 
-                Guard(folder);
+                // This watch only keeps a callback; a settings watch must not access the user's actual folder.
+                if (!string.Equals(folder, SettingsWatchFolder, StringComparison.OrdinalIgnoreCase))
+                {
+                    Guard(folder);
+                }
+
                 _filesChanged = changed;
                 return new CallbackDisposable(() =>
                 {

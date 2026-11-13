@@ -1646,6 +1646,9 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 Path.GetDirectoryName(path),
                 new[] { Path.GetFileName(path) },
                 () => _dispatch?.Invoke(RefreshSettings));
+
+            // Settings may have changed since construction, before the watcher could observe them.
+            RefreshSettings();
         }
 
         public void RefreshSettings()

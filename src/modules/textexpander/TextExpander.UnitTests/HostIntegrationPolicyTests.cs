@@ -72,7 +72,7 @@ public sealed class HostIntegrationPolicyTests
             (HostInputTags.KeyboardManagerInjected, HostInputKind.Typing, HostInputKind.Unmatched),
             (0xFFC3D44F, HostInputKind.Typing, HostInputKind.Unmatched), // another app's tag with the same bit
             (0x111, HostInputKind.Ignored, HostInputKind.Ignored), // swallowed by Keyboard Manager itself
-            (HostInputTags.CentralizedHookDontTrigger, HostInputKind.Ignored, HostInputKind.Ignored),
+            (HostInputTags.CentralizedHookDontTrigger, HostInputKind.Typing, HostInputKind.Typing), // Quick Accent edits and Advanced Paste shortcuts
             (InputTags.CommandPalette, HostInputKind.Unmatched, HostInputKind.Unmatched), // Command Palette's extension, with the bit
             (own.ToInt64(), HostInputKind.Ignored, HostInputKind.Ignored),
             (HostInputTags.ReturnedTriggerTag(own).ToInt64(), HostInputKind.Unmatched, HostInputKind.Unmatched),

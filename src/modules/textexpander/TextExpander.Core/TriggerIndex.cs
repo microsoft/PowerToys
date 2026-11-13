@@ -185,6 +185,13 @@ public sealed class TriggerIndex
     /// with none of them. Allocates nothing.
     /// </summary>
     public string? MatchLongestSuffix(ReadOnlySpan<char> tail)
+        => MatchLongestSuffix(tail, requireWordBoundary: false);
+
+    /// <summary>
+    /// The longest suffix eligible at a word start when <paramref name="requireWordBoundary"/> is true.
+    /// Pass the preceding text too, so a match at the lookup limit can still check its word boundary. Allocates nothing.
+    /// </summary>
+    internal string? MatchLongestSuffix(ReadOnlySpan<char> tail, bool requireWordBoundary)
     {
         if (tail.Length == 0 || MaxTriggerLength == 0)
         {
@@ -209,11 +216,12 @@ public sealed class TriggerIndex
             node = next;
 
             // Each step leftwards is one character more of trigger matched, so a terminal found
-            // later is strictly longer than one found earlier. Keeping the latest gives the
-            // longest match without any comparison of lengths.
-            if (node.Trigger is not null)
+            // later is strictly longer than one found earlier. Keep the latest eligible match:
+            // "on call" inside "Python call" must not hide the valid "call" suffix.
+            if (node.Trigger is { } trigger
+                && (!requireWordBoundary || WordBoundaryRules.StartsAtWordBoundary(tail[..end], trigger)))
             {
-                best = node.Trigger;
+                best = trigger;
             }
         }
 

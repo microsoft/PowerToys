@@ -677,13 +677,9 @@ public sealed class InsertionGuardTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void AfterTheHoldCapTheHeldKeysGoBackAndTheRestIsTypedUnguarded(bool typeAfter)
+    public void HeldKeysReturnedAtTheTypingLimitStopTheRestOfTheInsertion()
     {
-        // A refused paste of a long snippet falls back to typing, which held the keyboard for over 25 s. The keys going
-        // back don't stop the rest. A key typed once the guard has let go reaches the app and may move the caret: the
-        // character on its way still goes in, and nothing after it.
+        // Once held keys go back, they can change the text or caret just as fresh input does.
         long now = 0;
         using var box = new FakeTextBox(string.Empty);
         box.Guard.Clock = () => now;
@@ -693,25 +689,120 @@ public sealed class InsertionGuardTests
             {
                 box.UserTypes("u");
             }
-            else if (calls == 90 && typeAfter)
+        };
+
+        bool completed = Run(box, 0, new string('x', 100), sleep: ms => now += ms);
+        Assert.AreEqual(new string('x', 80) + "u|", box.ToString());
+        Assert.IsFalse(completed);
+        Assert.AreEqual("Mark", FakeTextBox.Describe(box.Batches[81]), "Ended after 2 s of typing.");
+        Assert.AreEqual("u Mark", FakeTextBox.Describe(box.Batches[82]));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void WithoutHeldKeysTypingContinuesUntilFreshInputArrives(bool typeAfter)
+    {
+        long now = 0;
+        using var box = new FakeTextBox(string.Empty);
+        box.Guard.Clock = () => now;
+        box.BeforeCall = _ =>
+        {
+            if (typeAfter && box.Text.Length == 90)
             {
                 box.UserTypes("v");
             }
         };
 
         bool completed = Run(box, 0, new string('x', 100), sleep: ms => now += ms);
-        Assert.AreEqual(new string('x', 80) + "u" + (typeAfter ? new string('x', 7) + "vx" : new string('x', 20)) + "|", box.ToString());
+        Assert.AreEqual(typeAfter ? new string('x', 90) + "vx|" : new string('x', 100) + "|", box.ToString());
         Assert.AreEqual(!typeAfter, completed);
-        Assert.AreEqual("Mark", FakeTextBox.Describe(box.Batches[81]), "Ended after 2 s of typing.");
-        Assert.AreEqual("u Mark", FakeTextBox.Describe(box.Batches[82]));
+    }
+
+    [TestMethod]
+    [DataRow(Native.VK_LEFT, "PREFIX |a")]
+    [DataRow(Native.VK_BACK, "PREFIX |")]
+    public void ReplayedNavigationOrEditingNeverRedirectsTheRestOfTheSnippet(int key, string expected)
+    {
+        long now = 0;
+        bool queued = false;
+        bool recorded = false;
+        using var box = new FakeTextBox("PREFIX ");
+        box.Guard.Clock = () => now;
+
+        bool completed = Run(box, 0, "abc", inserted: (_, _) => recorded = true, sleep: _ =>
+        {
+            if (!queued)
+            {
+                queued = true;
+                box.UserPresses((key, false), (key, true));
+                now = InsertionGuard.HoldCapMs;
+            }
+        });
+
+        Assert.IsFalse(completed);
+        Assert.IsFalse(recorded, "A partial insertion must not create an undo record.");
+        Assert.AreEqual(expected, box.ToString());
+    }
+
+    [TestMethod]
+    [DataRow(Native.VK_LSHIFT, false)]
+    [DataRow(Native.VK_LSHIFT, true)]
+    [DataRow(Native.VK_LCONTROL, false)]
+    [DataRow(Native.VK_LCONTROL, true)]
+    public void CursorPlacementAfterTheTypingLimitReleasesAndRestoresModifiers(int modifier, bool heldAtStart)
+    {
+        long now = 0;
+        bool queued = false;
+        bool modifierDown = false;
+        int leftPresses = 0;
+        using var box = new FakeTextBox("PREFIX ");
+        box.Guard.Clock = () => now;
+        box.AfterKey = key =>
+        {
+            bool down = (key.Flags & Native.LLKHF_UP) == 0;
+            if (key.VkCode == modifier)
+            {
+                modifierDown = down;
+            }
+
+            if (key.VkCode == Native.VK_LEFT && down)
+            {
+                Assert.IsFalse(modifierDown, "Cursor positioning must not select text or move by words.");
+                leftPresses++;
+            }
+        };
+
+        if (heldAtStart)
+        {
+            box.UserPresses((modifier, false));
+        }
+
+        bool completed = Run(box, 0, "abc", cursorLeft: 2, keys: vk => vk == modifier && modifierDown ? unchecked((short)0x8000) : (short)0, sleep: _ =>
+        {
+            if (!queued)
+            {
+                queued = true;
+                if (!heldAtStart)
+                {
+                    box.UserPresses((modifier, false));
+                }
+
+                now = InsertionGuard.HoldCapMs;
+            }
+        });
+
+        Assert.IsTrue(completed);
+        Assert.AreEqual("PREFIX a|bc", box.ToString());
+        Assert.AreEqual(2, leftPresses);
+        Assert.IsTrue(modifierDown, "The user's held modifier must be restored after positioning.");
+        box.UserPresses((modifier, true));
     }
 
     [TestMethod]
     public void AClickWhileHeldKeysGoBackMidTypingStillStopsTheRest()
     {
-        // Past the hold cap the held keys go back, and the input generation they move is taken again after them. A click
-        // as they went back moved it too, and was taken in with them: the rest went in where it put the caret, and
-        // counted as typed. Clicks are counted apart, from the start.
+        // A click while held keys go back must stop the rest even though the same window is still in front.
         long now = 0;
         bool recorded = false;
         using var box = new FakeTextBox(string.Empty);

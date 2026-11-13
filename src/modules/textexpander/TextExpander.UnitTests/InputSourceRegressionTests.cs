@@ -125,6 +125,91 @@ public sealed class InputSourceRegressionTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
+    public void QuickAccentReplacementUpdatesTheTriggerInsteadOfKeepingTheBaseLetter(bool accentedTrigger)
+    {
+        string[] snippets = accentedTrigger ? ["!c=base", "!ç=accented"] : ["!c=base"];
+        With(true, snippets, (hook, box) =>
+        {
+            box.UserTypes("!c");
+            TakeQuickAccentKey(box, FakeTextBox.UserVk(Native.VK_BACK, up: false));
+            TakeQuickAccentKey(box, FakeTextBox.UserKey('ç', up: false));
+            Assert.AreEqual("PREFIX!ç", box.Text);
+
+            box.UserTypes(" ");
+            Assert.AreEqual(accentedTrigger, hook.Pending.TryTake(out PendingExpansion work), "The old !c trigger no longer matches.");
+            if (accentedTrigger)
+            {
+                Assert.AreEqual("!ç", work.Trigger, "The character Quick Accent inserted can form its own trigger.");
+                Assert.IsTrue(Expand(hook, box, work));
+                Assert.AreEqual("PREFIXaccented ", box.Text);
+            }
+            else
+            {
+                Assert.AreEqual("PREFIX!ç ", box.Text);
+            }
+        });
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public unsafe void QuickAccentReturnedSpaceExpandsOnceInEitherHookOrder(bool quickAccentFirst)
+    {
+        With(true, ["!c=expanded"], (hook, box) =>
+        {
+            box.UserTypes("!c");
+            if (!quickAccentFirst)
+            {
+                Native.HookProc next = hook.NextHook;
+                hook.NextHook = (code, message, data) =>
+                    message == new IntPtr(Native.WM_KEYDOWN) && ((Native.KBDLLHOOKSTRUCT*)data)->VkCode == 0x20
+                        ? new IntPtr(1)
+                        : next(code, message, data);
+                box.UserPresses((0x20, false));
+            }
+
+            // Quick Accent consumes the physical Space, then returns its text when C was released too quickly.
+            box.UserPresses((0x20, true));
+            TakeQuickAccentKey(box, FakeTextBox.UserKey(' ', up: false));
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work), "The returned Space releases the trigger now.");
+            Assert.AreEqual("!c", work.TypedPrefix);
+            Assert.IsTrue(Expand(hook, box, work));
+            Assert.AreEqual("PREFIXexpanded ", box.Text);
+
+            box.UserTypes(" ");
+            Assert.AreEqual(0, hook.Pending.Count, "A later Space cannot match the old trigger again.");
+            Assert.AreEqual("PREFIXexpanded  ", box.Text);
+        });
+    }
+
+    [TestMethod]
+    public void RunnerDummyKeyUpsLeaveMatchingAndUndoIntact()
+    {
+        With(true, ["!c=expanded"], (hook, box) =>
+        {
+            Native.KBDLLHOOKSTRUCT marker = FakeTextBox.UserVk(InsertionGuard.MarkerVk, up: true) with
+            {
+                Flags = 0x10 | Native.LLKHF_UP,
+                DwExtraInfo = HostInputTags.CentralizedHookDontTrigger,
+            };
+            box.UserTypes("!");
+            box.Take(marker);
+            box.UserTypes("c ");
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
+            Assert.IsTrue(Expand(hook, box, work));
+            Assert.AreEqual("PREFIXexpanded ", box.Text);
+
+            box.Take(marker);
+            Assert.IsTrue(hook.ProcessKey(Native.VK_Z, 0, ctrl: true, alt: false, shift: false, win: false));
+            Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
+            Assert.IsTrue(Expand(hook, box, undo));
+            Assert.AreEqual("PREFIX!c ", box.Text);
+        });
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     public void ACancelledSingleCharacterIsReturnedOnceWithoutDisablingLaterTyping(bool remapped)
     {
         With(false, ["x=EXP"], (hook, box) =>
@@ -173,7 +258,7 @@ public sealed class InputSourceRegressionTests
     [DataRow(false, true)]
     [DataRow(true, false)]
     [DataRow(true, true)]
-    public void ATriggerReplayedDuringLongTypingStaysLiteral(bool missingDrainMarker, bool remapped)
+    public void ATriggerReplayedAtTheTypingLimitStaysLiteralAndStopsTheInsertion(bool missingDrainMarker, bool remapped)
     {
         With(true, ["!long=" + new string('x', 100), "!b=SECOND"], (hook, box) =>
         {
@@ -209,18 +294,23 @@ public sealed class InputSourceRegressionTests
 
             box.UserTypes(" ");
             Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion work));
-            Assert.AreEqual(!missingDrainMarker, Expand(hook, box, work, sleep: ms => now += ms));
-            Assert.AreEqual(0, hook.Pending.Count, "The intermediate replay cannot queue a match at a position the remaining text changes.");
+            Assert.IsFalse(Expand(hook, box, work, sleep: ms => now += ms));
+            Assert.AreEqual(0, hook.Pending.Count, "Returning held input must not start another expansion inside the partial snippet.");
             Assert.IsTrue(box.Text.Contains("!b ", StringComparison.Ordinal));
-            if (missingDrainMarker)
-            {
-                Assert.IsTrue(box.Text.Count(ch => ch == 'x') < 100, "An unconfirmed drain stops the remaining text.");
-            }
-            else
-            {
-                Assert.AreEqual("PREFIX" + new string('x', 100) + " ", box.Text.Replace("!b ", string.Empty, StringComparison.Ordinal));
-            }
+            Assert.IsTrue(box.Text.Count(ch => ch == 'x') is > 0 and < 100, "Returned input stops the rest, whether or not its drain marker arrives.");
         });
+    }
+
+    private static void TakeQuickAccentKey(FakeTextBox box, Native.KBDLLHOOKSTRUCT key)
+    {
+        foreach (bool up in KeyDownThenUp)
+        {
+            box.Take(key with
+            {
+                Flags = key.Flags | 0x10 | (up ? Native.LLKHF_UP : 0),
+                DwExtraInfo = HostInputTags.CentralizedHookDontTrigger,
+            });
+        }
     }
 
     private static void With(bool wordMode, string[] snippets, Action<KeyboardHook, FakeTextBox> test, KeyboardHook.KeyDecoder? decode = null)

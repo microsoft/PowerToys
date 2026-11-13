@@ -23,6 +23,7 @@ internal sealed partial class SnippetFallbackItem : FallbackCommandItem
     private readonly SnippetActions _actions;
     private readonly Lock _lock = new();
     private Snippet? _shown;
+    private int _queryVersion;
 
     public SnippetFallbackItem(SnippetActions actions)
         : base(new NoOpCommand(), Resources.fallback_display_title, FallbackId)
@@ -36,6 +37,7 @@ internal sealed partial class SnippetFallbackItem : FallbackCommandItem
 
     public override void UpdateQuery(string query)
     {
+        var queryVersion = Interlocked.Increment(ref _queryVersion);
         Snippet? match = null;
         if (!string.IsNullOrWhiteSpace(query))
         {
@@ -48,6 +50,12 @@ internal sealed partial class SnippetFallbackItem : FallbackCommandItem
 
         lock (_lock)
         {
+            // The host can overlap lookups: an older query must not replace a newer result when it finishes later.
+            if (queryVersion != Volatile.Read(ref _queryVersion))
+            {
+                return;
+            }
+
             if (match is null)
             {
                 if (_shown is not null || !string.IsNullOrEmpty(Title))

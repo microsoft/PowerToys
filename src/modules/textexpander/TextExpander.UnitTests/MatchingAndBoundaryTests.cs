@@ -25,6 +25,16 @@ public sealed class MatchingAndBoundaryTests
     }
 
     [TestMethod]
+    public void TriggerIndexChoosesTheLongestEligibleWordStart()
+    {
+        TriggerIndex index = TriggerIndex.Build(["call", "on call"]);
+        Assert.AreEqual("on call", index.MatchLongestSuffix("Python call"), "Without word boundaries, the longest suffix still wins.");
+        Assert.AreEqual("call", index.MatchLongestSuffix("Python call", requireWordBoundary: true));
+        Assert.AreEqual("on call", index.MatchLongestSuffix("on call", requireWordBoundary: true));
+        Assert.IsNull(index.MatchLongestSuffix("recall", requireWordBoundary: true));
+    }
+
+    [TestMethod]
     public void CaseInsensitiveIndexMatchesAnyCapitalizationAndKeepsLongestMatch()
     {
         TriggerIndex index = TriggerIndex.Build(["!Hi", "!HiThere"], caseSensitive: false);
@@ -58,6 +68,42 @@ public sealed class MatchingAndBoundaryTests
         Assert.IsTrue(WordBoundary.StartsAtWordBoundary("hello ".AsSpan(), "btw"));
         Assert.IsFalse(WordBoundary.StartsAtWordBoundary("hello".AsSpan(), "btw"));
         Assert.IsTrue(WordBoundary.StartsAtWordBoundary("hello".AsSpan(), "#sig"));
+    }
+
+    [TestMethod]
+    [DataRow(false, "Python call ", "call")]
+    [DataRow(true, "Python call ", "call")]
+    [DataRow(true, "on call ", "on call")]
+    [DataRow(true, "recall ", null)]
+    public void TheHookAndEditorSkipAnIneligibleLongerSuffix(bool includeLonger, string typed, string? expected)
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string path = Path.Combine(scratch.Path, "snippets.json");
+        File.WriteAllText(path, includeLonger ? SnippetJson.Of("call=PHONE", "on call=ON CALL") : SnippetJson.Of("call=PHONE"));
+        using var store = new SnippetStore(path);
+        Assert.AreEqual(includeLonger ? 2 : 1, store.Load().Count);
+        using var hook = new KeyboardHook(store);
+
+        bool original = WordBoundary.Required;
+        try
+        {
+            WordBoundary.Required = true;
+            Assert.AreEqual(expected is not null, Type(hook, typed));
+            Assert.AreEqual(expected is not null, hook.Pending.TryTake(out PendingExpansion expansion));
+            Assert.AreEqual(expected, expansion.Trigger);
+        }
+        finally
+        {
+            WordBoundary.Required = original;
+        }
+
+        var triggers = new TextExpanderTriggerSet(store.Current.Map.Keys);
+        Assert.AreEqual(expected is not null ? (expected, ' ') : null, TextExpanderTriggerReach.FindBlocker(typed, triggers, wordMode: true));
+
+        // The editor also checks a proposed trigger in a separate index before adding it to the set.
+        var existing = new TextExpanderTriggerSet(["call"]);
+        TriggerIndex added = includeLonger ? TriggerIndex.Build(["on call"]) : TriggerIndex.Empty;
+        Assert.AreEqual(expected is not null ? (expected, ' ') : null, TextExpanderTriggerReach.FindBlocker(typed, existing, wordMode: true, out _, added));
     }
 
     [TestMethod]
@@ -334,13 +380,8 @@ public sealed class MatchingAndBoundaryTests
             return null;
         }
 
-        string? trigger = index.MatchLongestSuffix(typed.AsSpan(0, usable));
+        string? trigger = index.MatchLongestSuffix(typed.AsSpan(0, usable), wordMode);
         if (trigger is null)
-        {
-            return null;
-        }
-
-        if (wordMode && !WordBoundary.StartsAtWordBoundary(typed.AsSpan(0, usable - trigger.Length), trigger))
         {
             return null;
         }

@@ -244,7 +244,7 @@ internal sealed class SnippetStore : IDisposable
     private int _recovering;
     private string? _missingFileLogged;
 
-    // The file the last read was for, so a read of another file is the store starting on it. Guarded by _transitionLock.
+    // The last attempted file, so retries and watcher handoff reads don't initialize it twice. Guarded by _transitionLock.
     private string? _lastReadPath;
     private int _disposed;
 
@@ -442,7 +442,11 @@ internal sealed class SnippetStore : IDisposable
     private Snapshot ReadSnippets(TransitionTarget target)
     {
         string path = target.FilePath;
-        bool starting = !string.Equals(_lastReadPath, path, StringComparison.OrdinalIgnoreCase);
+        PublishedState published = _published;
+
+        // A failed transition may have read another file while this library remained active.
+        bool starting = !string.Equals(_lastReadPath, path, StringComparison.OrdinalIgnoreCase)
+            && (!published.HasLoadedState || !string.Equals(published.State.FilePath, path, StringComparison.OrdinalIgnoreCase));
         _lastReadPath = path;
         if (target.IsDefault)
         {

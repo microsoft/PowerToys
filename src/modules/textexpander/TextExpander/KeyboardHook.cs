@@ -635,17 +635,9 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        int tailLength = Math.Min(usable, snapshot.MaxTriggerLength);
-        string? trigger = snapshot.Triggers.MatchLongestSuffix(_buffer.AsSpan(usable - tailLength, tailLength));
+        // The index bounds its own walk, but needs the preceding text to choose the longest suffix at a word start.
+        string? trigger = snapshot.Triggers.MatchLongestSuffix(_buffer.AsSpan(0, usable), wordMode);
         if (trigger is null)
-        {
-            return false;
-        }
-
-        // A trigger sitting inside a longer word is not the word the user typed. Only checked in
-        // word mode: without it, holding back the expansion until a space would still let "btw"
-        // fire at the end of "abtw", which is the exact accident this setting exists to prevent.
-        if (wordMode && !WordBoundary.StartsAtWordBoundary(_buffer.AsSpan(0, usable - trigger.Length), trigger))
         {
             return false;
         }

@@ -65,8 +65,8 @@ public sealed class SharedRulesTests
                             continue;
                         }
 
-                        string winner = runtime.MatchLongestSuffix(candidate.AsSpan(0, typed));
-                        if (winner is not null && (!wordMode || WordBoundaryRules.StartsAtWordBoundary(candidate.AsSpan(0, typed - winner.Length), winner)))
+                        string winner = runtime.MatchLongestSuffix(candidate.AsSpan(0, typed), wordMode);
+                        if (winner is not null)
                         {
                             expected = (candidate.Substring(typed - winner.Length, winner.Length), candidate[typed]);
                             break;
