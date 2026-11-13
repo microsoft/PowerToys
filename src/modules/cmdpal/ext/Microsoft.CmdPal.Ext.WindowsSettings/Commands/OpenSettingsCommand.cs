@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Resources;
 using System.Text;
@@ -32,9 +31,8 @@ internal sealed partial class OpenSettingsCommand : InvokableCommand
 
     private static bool DoOpenSettingsAction(WindowsSetting entry)
     {
-        ProcessStartInfo processStartInfo;
-
         var command = entry.Command;
+        var arguments = string.Empty;
 
         // Control Panel task items enumerated from the shell have no
         // executable command line and cannot be re-parsed by name — they are
@@ -54,34 +52,20 @@ internal sealed partial class OpenSettingsCommand : InvokableCommand
         {
             var commandSplit = command.Split(' ');
             var file = commandSplit.FirstOrDefault() ?? string.Empty;
-            var arguments = command[file.Length..].TrimStart();
-
-            processStartInfo = new ProcessStartInfo(file, arguments)
-            {
-                UseShellExecute = false,
-            };
-        }
-        else
-        {
-            processStartInfo = new ProcessStartInfo(command)
-            {
-                UseShellExecute = true,
-            };
+            arguments = command[file.Length..].TrimStart();
+            command = file;
         }
 
         try
         {
-            Process.Start(processStartInfo);
+            ShellHelpers.OpenInShellOrThrow(command, arguments);
             return true;
         }
-#pragma warning disable CS0168, IDE0059
         catch (Exception exception)
         {
-            // TODO GH #108 Logging is something we have to take care of
-            // Log.Exception("can't open settings", exception, typeof(ResultHelper));
+            ExtensionHost.LogMessage($"Unable to open {command}: {exception}");
             return false;
         }
-#pragma warning restore CS0168, IDE0059
     }
 
     public override CommandResult Invoke()

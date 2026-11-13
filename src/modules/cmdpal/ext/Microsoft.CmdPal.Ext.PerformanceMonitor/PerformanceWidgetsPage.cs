@@ -1593,11 +1593,7 @@ internal sealed partial class OpenTaskManagerCommand : InvokableCommand
     {
         try
         {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "taskmgr.exe",
-                UseShellExecute = true,
-            });
+            ShellHelpers.OpenInShellOrThrow("taskmgr.exe");
         }
         catch (Exception e)
         {

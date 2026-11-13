@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
-using System.Diagnostics;
 using Microsoft.CommandPalette.Extensions.Toolkit.Properties;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
@@ -28,20 +26,9 @@ public partial class OpenInConsoleCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        using (var process = new Process())
-        {
-            process.StartInfo.WorkingDirectory = _isDirectory ? _path : Path.GetDirectoryName(_path);
-            process.StartInfo.FileName = "cmd.exe";
-
-            try
-            {
-                process.Start();
-            }
-            catch (Win32Exception ex)
-            {
-                ExtensionHost.LogMessage(new LogMessage($"Unable to open '{_path}'\n{ex.Message}\n{ex.StackTrace}") { State = MessageState.Error });
-            }
-        }
+        ShellHelpers.OpenInShell(
+            Path.Combine(Environment.SystemDirectory, "cmd.exe"),
+            workingDir: _isDirectory ? _path : Path.GetDirectoryName(_path));
 
         return CommandResult.Dismiss();
     }

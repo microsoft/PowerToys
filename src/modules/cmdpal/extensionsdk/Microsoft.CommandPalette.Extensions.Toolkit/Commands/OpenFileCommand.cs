@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
-using System.Diagnostics;
 using Microsoft.CommandPalette.Extensions.Toolkit.Properties;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
@@ -25,21 +23,7 @@ public partial class OpenFileCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
-        using (var process = new Process())
-        {
-            process.StartInfo.FileName = _fullPath;
-            process.StartInfo.UseShellExecute = true;
-
-            try
-            {
-                process.Start();
-            }
-            catch (Win32Exception ex)
-            {
-                ExtensionHost.LogMessage($"Unable to open {_fullPath}\n{ex}");
-            }
-        }
-
+        ShellHelpers.OpenInShell(_fullPath);
         return Result;
     }
 }
