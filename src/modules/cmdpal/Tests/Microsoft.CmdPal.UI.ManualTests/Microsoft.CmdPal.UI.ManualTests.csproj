@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
     <!-- Manual component checks, excluded from CI and UI automation test execution. -->
     <RunVSTest>false</RunVSTest>
     <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
@@ -23,6 +25,10 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <ItemGroup>
+    <ApplicationDefinition Include="TestApp.xaml" />
+    <Page Remove="TestApp.xaml" />
+  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MSTest" />
     <PackageReference Include="Moq" />

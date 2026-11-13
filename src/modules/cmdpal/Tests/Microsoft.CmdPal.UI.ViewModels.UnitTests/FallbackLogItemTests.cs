@@ -13,6 +13,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class FallbackLogItemTests
 {
@@ -32,7 +33,7 @@ public sealed class FallbackLogItemTests
         Assert.AreEqual(item.Id, item.Command.Id);
         Assert.AreEqual(Resources.builtin_log_folder_command_name, item.DisplayTitle);
         Assert.AreEqual(Resources.builtin_log_folder_command_name, item.Subtitle);
-        Assert.AreEqual(1, item.MoreCommands.Length);
+        Assert.HasCount(1, item.MoreCommands);
         var openLogFileItem = item.MoreCommands[0] as CommandContextItem;
         Assert.IsNotNull(openLogFileItem);
         Assert.IsInstanceOfType<InvokableCommand>(openLogFileItem.Command);

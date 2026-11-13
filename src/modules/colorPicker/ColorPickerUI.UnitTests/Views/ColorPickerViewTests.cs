@@ -8,10 +8,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Views
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ColorPickerViewTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(nameof(IMainViewModel.ColorName))]
         [DataRow(nameof(IMainViewModel.ShowColorName))]
         public void InvalidatesDesiredSize_returns_true_for_sizing_properties(string propertyName)
@@ -19,7 +20,7 @@ namespace ColorPicker.UnitTests.Views
             Assert.IsTrue(ColorPickerView.InvalidatesDesiredSize(propertyName));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(nameof(IMainViewModel.ColorText))]
         [DataRow(nameof(IMainViewModel.ColorBrush))]
         [DataRow(null)]

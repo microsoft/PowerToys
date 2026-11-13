@@ -8,6 +8,7 @@ using PowerDisplay.Cli.Properties;
 
 namespace PowerDisplay.Cli.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ResourcesTests
 {
@@ -16,21 +17,30 @@ public class ResourcesTests
     [TestMethod]
     public void CommandHints_ReferenceShippedExecutable()
     {
-        StringAssert.Contains(Resources.Hint_UseSetForAbsolute, ExecutableName);
-        StringAssert.Contains(Resources.Hint_UseHexVcp, ExecutableName);
-        StringAssert.Contains(Resources.Hint_RunList, ExecutableName);
-        StringAssert.Contains(Resources.Hint_SelectorMissing, ExecutableName);
-        StringAssert.Contains(Resources.Hint_RunProfiles, ExecutableName);
+        Assert.Contains(ExecutableName, Resources.Hint_UseSetForAbsolute);
+        Assert.Contains(ExecutableName, Resources.Hint_UseHexVcp);
+        Assert.Contains(ExecutableName, Resources.Hint_RunList);
+        Assert.Contains(ExecutableName, Resources.Hint_SelectorMissing);
+        Assert.Contains(ExecutableName, Resources.Hint_RunProfiles);
     }
 
     [TestMethod]
     public void OptionDescriptions_ReferenceShippedExecutable()
     {
-        StringAssert.Contains(CliOptions.MonitorNumber.Description, ExecutableName);
-        StringAssert.Contains(CliOptions.ColorTemperature.Description, ExecutableName);
-        StringAssert.Contains(CliOptions.InputSource.Description, ExecutableName);
-        StringAssert.Contains(CliOptions.PowerState.Description, ExecutableName);
-        StringAssert.Contains(CliOptions.ProfileId.Description, ExecutableName);
+        string?[] descriptions =
+        [
+            CliOptions.MonitorNumber.Description,
+            CliOptions.ColorTemperature.Description,
+            CliOptions.InputSource.Description,
+            CliOptions.PowerState.Description,
+            CliOptions.ProfileId.Description,
+        ];
+
+        foreach (var description in descriptions)
+        {
+            Assert.IsNotNull(description);
+            Assert.Contains(ExecutableName, description);
+        }
     }
 
     [TestMethod]

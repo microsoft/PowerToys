@@ -13,6 +13,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AppStateServiceTests
 {
@@ -55,7 +56,7 @@ public class AppStateServiceTests
 
         // Assert
         Assert.IsNotNull(service.State);
-        Assert.AreEqual(2, service.State.RunHistory.Count);
+        Assert.HasCount(2, service.State.RunHistory);
         Assert.AreEqual("command1", service.State.RunHistory[0]);
         _mockPersistence.Verify(
             p => p.Load(
@@ -173,33 +174,39 @@ public class AppStateServiceTests
         var barrier = new System.Threading.Barrier(2);
 
         // Act
-        var t1 = System.Threading.Tasks.Task.Run(() =>
+        var t1 = System.Threading.Tasks.Task.Run(
+            () =>
         {
-            barrier.SignalAndWait();
+            barrier.SignalAndWait(TestContext.CancellationToken);
             for (var i = 0; i < iterations; i++)
             {
                 service.UpdateState(s => s with { RunHistory = s.RunHistory.Add($"t1-{i}") });
             }
-        });
+        },
+            TestContext.CancellationToken);
 
-        var t2 = System.Threading.Tasks.Task.Run(() =>
+        var t2 = System.Threading.Tasks.Task.Run(
+            () =>
         {
-            barrier.SignalAndWait();
+            barrier.SignalAndWait(TestContext.CancellationToken);
             for (var i = 0; i < iterations; i++)
             {
                 service.UpdateState(s => s with { RunHistory = s.RunHistory.Add($"t2-{i}") });
             }
-        });
+        },
+            TestContext.CancellationToken);
 
         System.Threading.Tasks.Task.WaitAll(t1, t2);
 
         // Assert — all 100 items must be present (no lost updates)
-        Assert.AreEqual(iterations * 2, service.State.RunHistory.Count, "All concurrent updates should be preserved");
+        Assert.HasCount(iterations * 2, service.State.RunHistory, "All concurrent updates should be preserved");
 
         for (var i = 0; i < iterations; i++)
         {
-            Assert.IsTrue(service.State.RunHistory.Contains($"t1-{i}"), $"Missing t1-{i}");
-            Assert.IsTrue(service.State.RunHistory.Contains($"t2-{i}"), $"Missing t2-{i}");
+            Assert.Contains($"t1-{i}", service.State.RunHistory, $"Missing t1-{i}");
+            Assert.Contains($"t2-{i}", service.State.RunHistory, $"Missing t2-{i}");
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

@@ -16,6 +16,7 @@ namespace MouseWithoutBorders.UnitTests.Core;
 
 public static class LoggerTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class GetStackTraceTests
     {
@@ -27,7 +28,8 @@ public static class LoggerTests
             // full MSTest call stack so we'll create a Task to capture a
             // much shallower stack trace from inside the task
             var stackTrace = default(StackTrace);
-            Task.Run(() =>
+            Task.Run(
+                () =>
             {
                 void MyMethod1()
                 {
@@ -40,7 +42,8 @@ public static class LoggerTests
                 }
 
                 MyMethod1();
-            }).Wait();
+            },
+                TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             /*
             // even with the above, the stack trace can still vary depending on the test runner host
@@ -102,8 +105,11 @@ public static class LoggerTests
 
             Assert.AreEqual(expected, actual);
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class PrivateDumpTests
     {

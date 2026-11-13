@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.KeyboardManager.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
@@ -42,7 +43,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
     [TestCleanup]
     public Task CleanupTest() => CleanupKeyboardManagerTestAsync();
 
-    [TestMethod("KeyboardManager.Editor.CreateEditPersistDelete")]
+    [TestMethod(DisplayName = "KeyboardManager.Editor.CreateEditPersistDelete")]
     [TestCategory("Keyboard Manager")]
     public void CreatesEditsPersistsAndDeletesRemapping()
     {
@@ -130,9 +131,9 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         editor = OpenEditor();
         editorProcess = Session.FromProcess(KeyboardManagerTestConstants.EditorProcessName);
         Assert.IsNotNull(FindExact<Element>(editorProcess, "A", timeoutMS: 5_000), "The reopened editor did not show source key A after editing.");
-        Assert.IsTrue(
-            editorProcess.FindAll<Element>(By.Name("C"), timeoutMS: 5_000)
-                .Any(element => element.Name.Equals("C", StringComparison.OrdinalIgnoreCase)),
+        Assert.Contains(
+            element => element.Name.Equals("C", StringComparison.OrdinalIgnoreCase),
+            editorProcess.FindAll<Element>(By.Name("C"), timeoutMS: 5_000),
             "The reopened editor did not show target key C after editing.");
         Assert.AreEqual(
             2,
@@ -252,7 +253,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
             $"The editor did not create a fresh A to B profile while retaining inactive D to E metadata. Profile: {KeyboardManagerSettings.ReadProfile().ToJsonString()}; editor settings: {KeyboardManagerSettings.ReadEditorSettings().ToJsonString()}");
     }
 
-    [TestMethod("KeyboardManager.Editor.InputAndValidation")]
+    [TestMethod(DisplayName = "KeyboardManager.Editor.InputAndValidation")]
     [TestCategory("Keyboard Manager")]
     public void DialogSupportsRecordingDropdownsKeyboardAndValidation()
     {
@@ -287,7 +288,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         RecordKeys(editorProcess, "ActionKeyToggleBtn", C);
 
         var keyButtons = VisibleKeyButtons(editorProcess);
-        Assert.AreEqual(2, keyButtons.Count, "A single-key mapping should expose one trigger and one action key dropdown.");
+        Assert.HasCount(2, keyButtons, "A single-key mapping should expose one trigger and one action key dropdown.");
 
         Step("Scrolling the trigger dropdown and selecting numeric key 1 with the mouse");
         keyButtons[0].Click(msPostAction: 300);
@@ -325,7 +326,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Step("Picking physically absent media keys from the empty-slot dropdowns of a fresh dialog");
         editor.Find<Button>(By.AccessibilityId("NewRemappingBtn"), timeoutMS: 10_000).Invoke(msPostAction: 300);
         keyButtons = VisibleKeyButtons(editorProcess);
-        Assert.AreEqual(2, keyButtons.Count, "A fresh dialog should expose an empty-slot key dropdown in each column.");
+        Assert.HasCount(2, keyButtons, "A fresh dialog should expose an empty-slot key dropdown in each column.");
         SelectKeyFromSearch(editorProcess, keyButtons[0], Key.M, Key.U, Key.T, Key.E);
         keyButtons = VisibleKeyButtons(editorProcess);
         SelectKeyFromSearch(editorProcess, keyButtons[^1], Key.V, Key.O, Key.L, Key.U, Key.M, Key.E, Key.Space, Key.U, Key.P);
@@ -374,7 +375,7 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
             "Enter did not save the valid app-specific Ctrl+B to D mapping.");
     }
 
-    [TestMethod("KeyboardManager.Editor.ActionPersistence")]
+    [TestMethod(DisplayName = "KeyboardManager.Editor.ActionPersistence")]
     [TestCategory("Keyboard Manager")]
     public void PersistsAndReloadsSpecialActions()
     {

@@ -15,6 +15,7 @@ using Moq;
 
 namespace QoiPreviewHandlerUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "new Exception() is fine in test projects.")]
     public class QoiPreviewHandlerTest

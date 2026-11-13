@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public sealed class PrecomputedFuzzyMatcherUnicodeTests
 {
@@ -67,7 +68,7 @@ public sealed class PrecomputedFuzzyMatcherUnicodeTests
         var t = _defaultMatcher.PrecomputeTarget(haystack);
         var score = _defaultMatcher.Score(q, t);
 
-        Assert.IsTrue(score > 0, "Expected emoji to produce a match score > 0.");
+        Assert.IsGreaterThan(0, score, "Expected emoji to produce a match score > 0.");
     }
 
     [TestMethod]

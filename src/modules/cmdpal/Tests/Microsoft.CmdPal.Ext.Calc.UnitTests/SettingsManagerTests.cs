@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsManagerTests
 {
@@ -31,7 +32,7 @@ public class SettingsManagerTests
 
         // Assert
         Assert.IsNotNull(settings);
-        Assert.IsTrue(settings.TrigUnit == CalculateEngine.TrigMode.Radians);
+        Assert.AreEqual(CalculateEngine.TrigMode.Radians, settings.TrigUnit);
         Assert.IsFalse(settings.InputUseEnglishFormat);
         Assert.IsFalse(settings.OutputUseEnglishFormat);
         Assert.IsTrue(settings.CloseOnEnter);
@@ -67,14 +68,14 @@ public class SettingsManagerTests
         var historyItem = new HistoryItem("1+1", "2", DateTime.UtcNow);
         settingsManager.AddHistoryItem(historyItem);
 
-        Assert.AreEqual(1, settingsManager.HistoryItems.Count);
+        Assert.HasCount(1, settingsManager.HistoryItems);
 
         settingsManager.RemoveHistoryItem(historyItem.Id);
-        Assert.AreEqual(0, settingsManager.HistoryItems.Count);
+        Assert.IsEmpty(settingsManager.HistoryItems);
 
         settingsManager.AddHistoryItem(new HistoryItem("2+2", "4", DateTime.UtcNow));
         settingsManager.ClearHistory();
-        Assert.AreEqual(0, settingsManager.HistoryItems.Count);
+        Assert.IsEmpty(settingsManager.HistoryItems);
     }
 
     [TestMethod]
@@ -88,7 +89,7 @@ public class SettingsManagerTests
             settingsManager.AddHistoryItem(new HistoryItem($"{i}+{i}", (i + i).ToString(CultureInfo.InvariantCulture), DateTime.UtcNow));
         }
 
-        Assert.AreEqual(100, settingsManager.HistoryItems.Count);
+        Assert.HasCount(100, settingsManager.HistoryItems);
         settingsManager.ClearHistory();
     }
 }

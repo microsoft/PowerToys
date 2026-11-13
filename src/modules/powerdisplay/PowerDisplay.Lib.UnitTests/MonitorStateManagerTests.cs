@@ -12,6 +12,7 @@ using PowerDisplay.Common.Services;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class MonitorStateManagerTests
 {
@@ -69,7 +70,7 @@ public sealed class MonitorStateManagerTests
         using var reloaded = new MonitorStateManager(_statePath);
         var features = reloaded.GetKnownGoodFeatures(MonitorA);
 
-        Assert.AreEqual(1, features.Count);
+        Assert.HasCount(1, features);
         Assert.AreEqual(30, features[0x10].Current);
         Assert.AreEqual(100, features[0x10].Maximum);
     }
@@ -95,8 +96,8 @@ public sealed class MonitorStateManagerTests
         using var manager = new MonitorStateManager(_statePath);
         manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 40));
 
-        Assert.AreEqual(1, manager.GetKnownGoodFeatures(MonitorA.ToLowerInvariant()).Count);
-        Assert.AreEqual(0, manager.GetKnownGoodFeatures(MonitorB).Count);
+        Assert.HasCount(1, manager.GetKnownGoodFeatures(MonitorA.ToLowerInvariant()));
+        Assert.IsEmpty(manager.GetKnownGoodFeatures(MonitorB));
     }
 
     [TestMethod]
@@ -108,7 +109,7 @@ public sealed class MonitorStateManagerTests
         manager.UpsertKnownGoodFeature(MonitorA, Feature(0x10, current: 35));
 
         var features = manager.GetKnownGoodFeatures(MonitorA);
-        Assert.AreEqual(2, features.Count);
+        Assert.HasCount(2, features);
         Assert.AreEqual(35, features[0x10].Current);
         Assert.AreEqual(60, features[0x12].Current);
     }
@@ -136,11 +137,11 @@ public sealed class MonitorStateManagerTests
         Assert.AreEqual(25, parameters?.Volume);
 
         var features = manager.GetKnownGoodFeatures(MonitorA);
-        Assert.AreEqual(2, features.Count);
+        Assert.HasCount(2, features);
         Assert.AreEqual(55, features[0x10].Current);
         Assert.AreEqual(65, features[0x12].Current);
         Assert.IsNull(manager.GetMonitorParameters(legacyId));
-        Assert.AreEqual(0, manager.GetKnownGoodFeatures(legacyId).Count);
+        Assert.IsEmpty(manager.GetKnownGoodFeatures(legacyId));
     }
 
     [TestMethod]
@@ -154,7 +155,7 @@ public sealed class MonitorStateManagerTests
 
         using var manager = new MonitorStateManager(_statePath);
 
-        Assert.AreEqual(0, manager.GetKnownGoodFeatures("MONITOR-A").Count);
+        Assert.IsEmpty(manager.GetKnownGoodFeatures("MONITOR-A"));
         Assert.AreEqual(42, manager.GetMonitorParameters("MONITOR-A")?.Brightness);
     }
 

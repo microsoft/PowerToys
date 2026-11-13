@@ -45,7 +45,7 @@ internal static class FileLocksmithUi
 
     public static Session Launch(int loadTimeoutMS, bool elevated, params string[] paths)
     {
-        Assert.IsTrue(paths.Length > 0, "At least one path must be handed to File Locksmith.");
+        Assert.IsNotEmpty(paths, "At least one path must be handed to File Locksmith.");
         Close();
         WritePathsFile(paths);
         StartProcess(elevated);

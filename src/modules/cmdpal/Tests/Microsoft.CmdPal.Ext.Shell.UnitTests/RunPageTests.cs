@@ -27,6 +27,7 @@ namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 /// count-based assertions from the OsClient tests are adjusted by
 /// <see cref="ExeItemCount"/> to account for this.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class RunPageTests : CommandPaletteUnitTestBase
 {
@@ -106,7 +107,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows\\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInWindows.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInWindows.Count() + ExeItemCount, commandList);
     }
 
     [TestMethod]
@@ -120,7 +121,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInC.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInC.Count() + ExeItemCount, commandList);
 
         // First navigate to c:\Windows. This should match everything that matches "windows" inside of C:\
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
@@ -134,7 +135,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         // now go back to c:\windows. This should match the results from the last time we entered this string
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
         var cWindowsCommandsPost = page.GetItems();
-        Assert.AreEqual(cWindowsCommandsPre.Length, cWindowsCommandsPost.Length);
+        Assert.HasCount(cWindowsCommandsPre.Length, cWindowsCommandsPost);
     }
 
     [TestMethod]
@@ -148,7 +149,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInC.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInC.Count() + ExeItemCount, commandList);
 
         // First navigate to c:\Program Files. This should match everything that matches "Program Files" inside of C:\
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Program Files"; });
@@ -162,7 +163,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         // now go back to c:\Program Files. This should match the results from the last time we entered this string
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Program Files"; });
         var cWindowsCommandsPost = page.GetItems();
-        Assert.AreEqual(cWindowsCommandsPre.Length, cWindowsCommandsPost.Length);
+        Assert.HasCount(cWindowsCommandsPre.Length, cWindowsCommandsPost);
     }
 
     [TestMethod]
@@ -178,7 +179,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInC.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInC.Count() + ExeItemCount, commandList);
 
         // First navigate to c:\Windows. This should match everything that matches "windows" inside of C:\
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows"; });
@@ -192,7 +193,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         // now go to c:\windows\s. This should only have the results with an 'S' in them
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\Windows\\s"; });
         var postFilterOnS = page.GetItems();
-        Assert.AreEqual(inWindowsWithS.Count() + ExeItemCount, postFilterOnS.Length);
+        Assert.HasCount(inWindowsWithS.Count() + ExeItemCount, postFilterOnS);
     }
 
     [TestMethod]
@@ -222,13 +223,13 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(ExeItemCount, commandList.Length);
+        Assert.HasCount(ExeItemCount, commandList);
 
         // Navigate to a different dir, then to c:\  — this SHOULD list directory contents
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\windows\\"; });
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "c:\\"; });
         var withSlashCommands = page.GetItems();
-        Assert.AreEqual(numFilesInC + ExeItemCount, withSlashCommands.Length);
+        Assert.HasCount(numFilesInC + ExeItemCount, withSlashCommands);
     }
 
     [TestMethod]
@@ -253,7 +254,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = searchText; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInSystemRoot.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInSystemRoot.Count() + ExeItemCount, commandList);
     }
 
     [TestMethod]
@@ -272,7 +273,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = commandline; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(ExeItemCount, commandList.Length);
+        Assert.HasCount(ExeItemCount, commandList);
     }
 
     [TestMethod]
@@ -315,7 +316,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = searchText; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInUserProfile.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInUserProfile.Count() + ExeItemCount, commandList);
     }
 
     [TestMethod]
@@ -348,7 +349,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
 
         // There should be two results here: our two directories (+ the exe item)
         var commandList = page.GetItems();
-        Assert.AreEqual(2 + ExeItemCount, commandList.Length);
+        Assert.HasCount(2 + ExeItemCount, commandList);
 
         // Now, navigate to "<tempDir>\Thing One". There should just be the single result for "Thing One" (+ exe item)
         // TODO: In pt, ParseCommandline splits at the space in "Thing One",
@@ -363,7 +364,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         // Finally, navigate to "<tempDir>\Thing One\". That should list the two files inside (+ exe item)
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = dirWithSpaces + "\\"; });
         commandList = page.GetItems();
-        Assert.AreEqual(2 + ExeItemCount, commandList.Length);
+        Assert.HasCount(2 + ExeItemCount, commandList);
     }
 
     [TestMethod]
@@ -385,7 +386,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(3, result.Count);
+        Assert.HasCount(3, result);
     }
 
     [TestMethod]
@@ -408,9 +409,9 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(2, result.Count);
-        Assert.IsTrue(result.Any(item => item.Title == "file1.txt"));
-        Assert.IsTrue(result.Any(item => item.Title == "file2.exe"));
+        Assert.HasCount(2, result);
+        Assert.Contains(item => item.Title == "file1.txt", result);
+        Assert.Contains(item => item.Title == "file2.exe", result);
     }
 
     [TestMethod]
@@ -432,7 +433,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual("document.txt", result[0].Title);
     }
 
@@ -454,7 +455,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(0, result.Count);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -475,7 +476,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual("Document.TXT", result[0].Title);
     }
 
@@ -497,7 +498,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(2, result.Count);
+        Assert.HasCount(2, result);
     }
 
     [TestMethod]
@@ -513,7 +514,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(0, result.Count);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -535,10 +536,10 @@ public class RunPageTests : CommandPaletteUnitTestBase
             currentPathItems: new ReadOnlyDictionary<string, RunExeItem>(items),
             telemetryService: null);
 
-        Assert.AreEqual(2, result.Count);
-        Assert.IsTrue(result.Any(item => item.Title == "application.exe"));
-        Assert.IsTrue(result.Any(item => item.Title == "app_config.json"));
-        Assert.IsFalse(result.Any(item => item.Title == "deploy.bat"));
+        Assert.HasCount(2, result);
+        Assert.Contains(item => item.Title == "application.exe", result);
+        Assert.Contains(item => item.Title == "app_config.json", result);
+        Assert.DoesNotContain(item => item.Title == "deploy.bat", result);
     }
 
     [TestMethod]
@@ -553,13 +554,13 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = @"\\?\c:\Windows\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInWindows.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInWindows.Count() + ExeItemCount, commandList);
 
         // all the items should have "\\?\" at the start of their TextToSuggest
         foreach (var item in commandList)
         {
             var suggestion = item.TextToSuggest;
-            StringAssert.StartsWith(suggestion, @"\\?\");
+            Assert.StartsWith(@"\\?\", suggestion);
         }
     }
 
@@ -576,13 +577,13 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = @"\\?\c:\Windows\s"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(inWindowsWithS.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(inWindowsWithS.Count() + ExeItemCount, commandList);
 
         // all the items should have "\\?\" at the start of their TextToSuggest
         foreach (var item in commandList)
         {
             var suggestion = item.TextToSuggest;
-            StringAssert.StartsWith(suggestion, @"\\?\");
+            Assert.StartsWith(@"\\?\", suggestion);
         }
     }
 
@@ -600,7 +601,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "~\\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInUserProfile.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInUserProfile.Count() + ExeItemCount, commandList);
     }
 
     [TestMethod]
@@ -626,7 +627,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "~\\Documents\\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInDocuments.Count(), commandList.Length);
+        Assert.HasCount(filesInDocuments.Count(), commandList);
     }
 
     [TestMethod]
@@ -645,12 +646,12 @@ public class RunPageTests : CommandPaletteUnitTestBase
         var filteredItems = page.GetItems();
 
         // Filtered items should be less than or equal to all items
-        Assert.IsTrue(filteredItems.Length <= allItems.Length);
+        Assert.IsLessThanOrEqualTo(allItems.Length, filteredItems.Length);
 
         // All filtered items should contain 'D' (case-insensitive)
         foreach (var item in filteredItems)
         {
-            StringAssert.Contains(item.Title, "D", StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("D", item.Title, StringComparison.OrdinalIgnoreCase);
         }
     }
 
@@ -718,8 +719,8 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "~\\"; });
         var secondResult = page.GetItems();
 
-        Assert.AreEqual(firstResult.Length, secondResult.Length);
-        Assert.AreEqual(filesInUserProfile.Count() + ExeItemCount, secondResult.Length);
+        Assert.HasCount(firstResult.Length, secondResult);
+        Assert.HasCount(filesInUserProfile.Count() + ExeItemCount, secondResult);
     }
 
     [TestMethod]
@@ -774,7 +775,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.AreEqual(files.Count(), results.Length);
+        Assert.HasCount(files.Count(), results);
     }
 
     [TestMethod]
@@ -792,10 +793,10 @@ public class RunPageTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(results);
         foreach (var result in results)
         {
-            StringAssert.StartsWith(result, "C:\\Windows", StringComparison.InvariantCultureIgnoreCase);
+            Assert.StartsWith("C:\\Windows", result, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        Assert.AreEqual(filesInWindows.Count(), results.Length);
+        Assert.HasCount(filesInWindows.Count(), results);
     }
 
     [TestMethod]
@@ -811,10 +812,10 @@ public class RunPageTests : CommandPaletteUnitTestBase
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.AreEqual(filesInWindows.Count(), results.Length);
+        Assert.HasCount(filesInWindows.Count(), results);
         foreach (var result in results)
         {
-            StringAssert.StartsWith(result, "C:\\Windows\\");
+            Assert.StartsWith("C:\\Windows\\", result);
         }
     }
 
@@ -831,7 +832,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.AreEqual(filesInWindows.Count(), results.Length);
+        Assert.HasCount(filesInWindows.Count(), results);
     }
 
     [TestMethod]
@@ -859,7 +860,7 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = tildePathWithSlash; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(1 + ExeItemCount, commandList.Length);
+        Assert.HasCount(1 + ExeItemCount, commandList);
         Assert.AreEqual("testfile.txt", commandList[ExeItemCount].Title, true, CultureInfo.InvariantCulture);
     }
 
@@ -878,12 +879,12 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "~\\."; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(dotFiles.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(dotFiles.Count() + ExeItemCount, commandList);
 
         // All returned items (except the exe item) should start with '.'
         foreach (var item in commandList.Skip(ExeItemCount))
         {
-            StringAssert.StartsWith(item.Title, ".");
+            Assert.StartsWith(".", item.Title);
         }
     }
 
@@ -899,12 +900,12 @@ public class RunPageTests : CommandPaletteUnitTestBase
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "C:\\Program Files\\"; });
 
         var commandList = page.GetItems();
-        Assert.AreEqual(filesInProgramFiles.Count() + ExeItemCount, commandList.Length);
+        Assert.HasCount(filesInProgramFiles.Count() + ExeItemCount, commandList);
 
         // now go to c:\Program Files\m. This should only have the results with an 'M' in them
         await UpdatePageAndWaitForItems(page, () => { page.SearchText = "C:\\Program Files\\m"; });
         var postFilterOnM = page.GetItems();
-        Assert.AreEqual(inProgramFilesWithM.Count() + ExeItemCount, postFilterOnM.Length);
+        Assert.HasCount(inProgramFilesWithM.Count() + ExeItemCount, postFilterOnM);
         Assert.AreNotEqual(commandList.Length, inProgramFilesWithM.Count());
     }
 }

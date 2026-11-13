@@ -258,7 +258,7 @@ public sealed partial class ZoomItTests
     public async Task MicrophoneDropdownMatchesWindowsAudioCaptureDevices()
     {
         ui.SetCheck("ZoomItRecordCaptureAudio", true, "CaptureAudio");
-        var devices = await DeviceInformation.FindAllAsync(DeviceClass.AudioCapture).AsTask().WaitAsync(TimeSpan.FromSeconds(30));
+        var devices = await DeviceInformation.FindAllAsync(DeviceClass.AudioCapture).AsTask().WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
         var expected = devices.Select(device => device.Name).Prepend("Default").Order(StringComparer.Ordinal).ToArray();
         var combo = ui.Control<ComboBox>("ZoomItRecordMicrophone", "ComboBox");
         combo.ScrollIntoView();
@@ -289,7 +289,7 @@ public sealed partial class ZoomItTests
             }));
             TestContext.AddResultFile(path);
             SaveDesktop("microphone-dropdown");
-            CollectionAssert.AreEqual(expected, listed.LastObservation ?? [], "The actual dropdown must list Default plus every Windows AudioCapture device, including duplicate display names.");
+            Assert.AreSequenceEqual(expected, listed.LastObservation ?? [], "The actual dropdown must list Default plus every Windows AudioCapture device, including duplicate display names.");
             Assert.IsTrue(listed.Succeeded, "The microphone list did not remain stable.");
             if (devices.Count == 0)
             {
@@ -508,7 +508,7 @@ public sealed partial class ZoomItTests
         Assert.AreEqual((uint)encodedSize.Width, encoding.Width, $"Full-screen recording has the wrong even-aligned width for display {desktop.ScreenSize} at 100% recording scale.");
         Assert.AreEqual((uint)encodedSize.Height, encoding.Height, $"Full-screen recording has the wrong even-aligned height for display {desktop.ScreenSize} at 100% recording scale.");
         Assert.IsTrue(encoding.FrameRate.Numerator > 0 && encoding.FrameRate.Denominator > 0, "The saved video has no valid frame rate.");
-        Assert.IsTrue(clip.OriginalDuration >= TimeSpan.FromSeconds(1), $"The saved recording is too short: {clip.OriginalDuration}.");
+        Assert.IsGreaterThanOrEqualTo(TimeSpan.FromSeconds(1), clip.OriginalDuration, $"The saved recording is too short: {clip.OriginalDuration}.");
         var composition = new MediaComposition();
         composition.Clips.Add(clip);
         foreach (var fraction in new[] { 0.25, 0.75 })

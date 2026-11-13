@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class KeyboardManager
     {
@@ -38,7 +39,7 @@ namespace ViewModelTests
             // Assert
             var expectedResult = new List<AppSpecificKeysDataModel>();
 
-            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.HasCount(expectedResult.Count, result);
         }
 
         [TestMethod]
@@ -50,7 +51,7 @@ namespace ViewModelTests
             // Assert
             var expectedResult = new List<AppSpecificKeysDataModel>();
 
-            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.HasCount(expectedResult.Count, result);
         }
 
         [TestMethod]
@@ -75,7 +76,7 @@ namespace ViewModelTests
             expectedEntry.TargetApp = entry.TargetApp;
             expectedResult.Add(expectedEntry);
 
-            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.HasCount(expectedResult.Count, result);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
         }
 
@@ -100,7 +101,7 @@ namespace ViewModelTests
             expectedEntry.TargetApp = "All apps";
             expectedResult.Add(expectedEntry);
 
-            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.HasCount(expectedResult.Count, result);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
         }
 
@@ -126,7 +127,7 @@ namespace ViewModelTests
             expectedEntry.TargetApp = "All apps";
             expectedResult.Add(expectedEntry);
             var x = expectedResult[0].Equals(result[0]);
-            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.HasCount(expectedResult.Count, result);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
         }
 
@@ -153,7 +154,7 @@ namespace ViewModelTests
             expectedEntry.TargetApp = entry.TargetApp;
             expectedResult.Add(expectedEntry);
 
-            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.HasCount(expectedResult.Count, result);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
         }
 
@@ -189,7 +190,7 @@ namespace ViewModelTests
             expectedSecondEntry.TargetApp = secondListEntry.TargetApp;
             expectedResult.Add(expectedSecondEntry);
 
-            Assert.AreEqual(expectedResult.Count, result.Count);
+            Assert.HasCount(expectedResult.Count, result);
             Assert.IsTrue(expectedResult[0].Compare(result[0]));
             Assert.IsTrue(expectedResult[1].Compare(result[1]));
         }

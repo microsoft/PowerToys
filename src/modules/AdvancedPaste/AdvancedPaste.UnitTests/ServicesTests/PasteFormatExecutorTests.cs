@@ -17,6 +17,7 @@ using Windows.ApplicationModel.DataTransfer;
 namespace AdvancedPaste.UnitTests.ServicesTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class PasteFormatExecutorTests
 {
     [TestMethod]
@@ -33,7 +34,7 @@ public sealed class PasteFormatExecutorTests
         var output = await executor.ExecutePasteFormatAsync(format, package.GetView(), PasteActionSource.CommandLine, CancellationToken.None, null);
 
         Assert.IsTrue(format.IsEnabled);
-        StringAssert.Contains(await output.GetView().GetTextAsync(), "**HTML-only text**");
+        Assert.Contains("**HTML-only text**", await output.GetView().GetTextAsync());
     }
 
     [TestMethod]

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Awake.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class AwakeStateCalculatorTests
 {
     [TestMethod]

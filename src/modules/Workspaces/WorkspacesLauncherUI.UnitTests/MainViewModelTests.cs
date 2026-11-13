@@ -22,6 +22,7 @@ using WorkspacesLauncherUI.ViewModels;
 
 namespace WorkspacesLauncherUI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class MainViewModelTests
     {
@@ -36,7 +37,7 @@ namespace WorkspacesLauncherUI.UnitTests
             Assert.IsFalse(notified);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void ConfirmationOnlyUsesExistingDialogWithoutShowingStatusWindow(bool allow)
@@ -65,9 +66,9 @@ namespace WorkspacesLauncherUI.UnitTests
                     };
                     session.Receive(Warning(FirstId));
                     session.Drain();
-                    Assert.AreEqual(1, session.Windows.Count);
+                    Assert.HasCount(1, session.Windows);
                     Assert.IsFalse(session.Owner.IsVisible);
-                    CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, allow ? "run" : "skip") }, session.Messages);
+                    Assert.AreSequenceEqual(new[] { Shown(FirstId), Response(FirstId, allow ? "run" : "skip") }, session.Messages);
                 },
                 confirmationOnly: true);
         }
@@ -90,8 +91,8 @@ namespace WorkspacesLauncherUI.UnitTests
                     session.Drain();
                     session.Receive(Warning(FirstId));
                     session.Drain();
-                    Assert.AreEqual(1, session.Windows.Count);
-                    CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
+                    Assert.HasCount(1, session.Windows);
+                    Assert.AreSequenceEqual(new[] { Shown(FirstId) }, session.Messages);
                 },
                 confirmationOnly: true);
         }
@@ -124,15 +125,15 @@ namespace WorkspacesLauncherUI.UnitTests
 
                 Assert.IsTrue(changed);
                 Assert.AreSame(appsListed, session.ViewModel.AppsListed);
-                CollectionAssert.AreEqual(Enumerable.Range(0, 6).ToArray(), session.ViewModel.AppsListed.Select(app => (int)app.LaunchState).ToArray());
+                Assert.AreSequenceEqual(Enumerable.Range(0, 6).ToArray(), session.ViewModel.AppsListed.Select(app => (int)app.LaunchState).ToArray());
                 Assert.IsTrue(session.ViewModel.AppsListed.All(app => app.Name == "Example" && app.AppPath == @"C:\Apps\Example.exe"));
                 var skipped = session.ViewModel.AppsListed.Single(app => app.LaunchState == LaunchingState.Skipped);
                 Assert.IsTrue(skipped.IsSkipped);
                 Assert.IsFalse(skipped.Loading);
                 Assert.IsFalse(skipped.ShowStateGlyph);
                 Assert.AreEqual(Resources.LaunchStateSkipped, skipped.StateDescription);
-                Assert.AreEqual(0, session.Windows.Count);
-                Assert.AreEqual(0, session.Messages.Count);
+                Assert.IsEmpty(session.Windows);
+                Assert.IsEmpty(session.Messages);
             });
         }
 
@@ -146,12 +147,12 @@ namespace WorkspacesLauncherUI.UnitTests
                     Assert.IsFalse(window.RunButton.IsEnabled);
                     window.ClickRun();
                     Assert.IsTrue(window.IsVisible);
-                    Assert.AreEqual(0, session.Messages.Count);
+                    Assert.IsEmpty(session.Messages);
 
                     window.Render();
                     window.Render();
                     Assert.IsTrue(window.RunButton.IsEnabled);
-                    CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
+                    Assert.AreSequenceEqual(new[] { Shown(FirstId) }, session.Messages);
                     window.ClickRun();
                 };
                 ExceptionDispatchInfo failure = null;
@@ -173,14 +174,14 @@ namespace WorkspacesLauncherUI.UnitTests
                 pipeThread.Start();
                 Assert.IsTrue(pipeThread.Join(TimeSpan.FromSeconds(2)), "The pipe callback must not wait for the UI dispatcher or modal dialog.");
                 failure?.Throw();
-                Assert.AreEqual(0, session.Windows.Count);
+                Assert.IsEmpty(session.Windows);
                 session.Drain();
 
-                CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
+                Assert.AreSequenceEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("close")]
         [DataRow("cancel")]
         [DataRow("unrendered-result")]
@@ -213,7 +214,7 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(FirstId));
                 session.Drain();
 
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
+                Assert.AreSequenceEqual(new[] { Response(FirstId, "skip") }, session.Messages);
             });
         }
 
@@ -228,16 +229,16 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(Guid.Parse(FirstId).ToString("D")));
                 session.Drain();
 
-                Assert.AreEqual(0, session.Windows.Count);
-                Assert.AreEqual(0, session.Messages.Count);
+                Assert.IsEmpty(session.Windows);
+                Assert.IsEmpty(session.Messages);
                 session.Receive(Warning(SecondId));
                 session.Drain();
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(SecondId, "skip") }, session.Messages);
+                Assert.HasCount(1, session.Windows);
+                Assert.AreSequenceEqual(new[] { Response(SecondId, "skip") }, session.Messages);
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void DismissClosesTheWarningEvenInsideAnotherModalDispatcher(bool nestedDialog)
@@ -287,8 +288,8 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(FirstId));
                 session.Drain();
 
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
+                Assert.HasCount(1, session.Windows);
+                Assert.AreSequenceEqual(new[] { Shown(FirstId) }, session.Messages);
             });
         }
 
@@ -309,8 +310,8 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(FirstId));
                 session.Drain();
 
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
+                Assert.HasCount(1, session.Windows);
+                Assert.AreSequenceEqual(new[] { Shown(FirstId) }, session.Messages);
             });
         }
 
@@ -326,7 +327,7 @@ namespace WorkspacesLauncherUI.UnitTests
                     session.Receive(Warning(SecondId));
                     session.Drain();
                     Assert.IsTrue(window.IsVisible);
-                    CollectionAssert.AreEqual(new[] { Response(SecondId, "skip") }, session.Messages);
+                    Assert.AreSequenceEqual(new[] { Response(SecondId, "skip") }, session.Messages);
                     window.Render();
                     window.ClickRun();
                 };
@@ -336,8 +337,8 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(SecondId));
                 session.Drain();
 
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(SecondId, "skip"), Shown(FirstId), Response(FirstId, "run") }, session.Messages);
+                Assert.HasCount(1, session.Windows);
+                Assert.AreSequenceEqual(new[] { Response(SecondId, "skip"), Shown(FirstId), Response(FirstId, "run") }, session.Messages);
             });
         }
 
@@ -359,8 +360,8 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(SecondId));
                 session.Drain();
 
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
+                Assert.HasCount(1, session.Windows);
+                Assert.AreSequenceEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
             });
         }
 
@@ -388,14 +389,14 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(SecondId));
                 session.Drain();
 
-                Assert.AreEqual(2, session.Windows.Count);
-                CollectionAssert.AreEqual(
+                Assert.HasCount(2, session.Windows);
+                Assert.AreSequenceEqual(
                     new[] { Shown(FirstId), Response(FirstId, "run"), Shown(SecondId), Response(SecondId, "run") },
                     session.Messages);
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(false, true)]
         [DataRow(true, false)]
@@ -437,7 +438,7 @@ namespace WorkspacesLauncherUI.UnitTests
                 }
 
                 session.Drain();
-                Assert.AreEqual(rendered ? 1 : 0, session.Windows.Count);
+                Assert.HasCount(rendered ? 1 : 0, session.Windows);
                 var expected = new List<string>();
                 if (rendered)
                 {
@@ -445,11 +446,11 @@ namespace WorkspacesLauncherUI.UnitTests
                 }
 
                 expected.Add(cancel ? "cancel" : Response(FirstId, "skip"));
-                CollectionAssert.AreEqual(expected, session.Messages);
+                Assert.AreSequenceEqual(expected, session.Messages);
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false)]
         [DataRow(false, true)]
         [DataRow(true, false)]
@@ -484,7 +485,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
                 session.Drain();
                 Assert.IsTrue(session.Windows.All(window => !window.WasLoaded));
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
+                Assert.AreSequenceEqual(new[] { Response(FirstId, "skip") }, session.Messages);
             });
         }
 
@@ -500,12 +501,12 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(Warning(SecondId));
                 session.Drain();
 
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip"), Response(SecondId, "skip") }, session.Messages);
+                Assert.HasCount(1, session.Windows);
+                Assert.AreSequenceEqual(new[] { Response(FirstId, "skip"), Response(SecondId, "skip") }, session.Messages);
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("not json")]
         [DataRow("[]")]
         [DataRow("{}")]
@@ -524,12 +525,12 @@ namespace WorkspacesLauncherUI.UnitTests
                 session.Receive(message);
                 session.Drain();
 
-                Assert.AreEqual(0, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
+                Assert.IsEmpty(session.Windows);
+                Assert.AreSequenceEqual(new[] { Response(FirstId, "skip") }, session.Messages);
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void SendFailureClosesTheOwnerInsteadOfLeavingTheParentWaiting(bool responseFails)
@@ -558,7 +559,7 @@ namespace WorkspacesLauncherUI.UnitTests
 
                 Assert.IsFalse(session.Owner.IsVisible, "The owned UI must exit if its response cannot be queued.");
                 Assert.IsNull(App.IPCMessageReceivedCallback);
-                CollectionAssert.AreEqual(
+                Assert.AreSequenceEqual(
                     new[] { Shown(FirstId), Response(FirstId, responseFails ? "run" : "skip") },
                     session.Messages,
                     "These are send attempts, including the injected failure; there must be no retry or stale response.");

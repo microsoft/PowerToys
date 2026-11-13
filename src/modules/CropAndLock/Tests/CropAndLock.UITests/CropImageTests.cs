@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CropAndLock.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     [DoNotParallelize]
     [TestCategory("CropAndLock")]
@@ -22,7 +23,7 @@ namespace Microsoft.CropAndLock.UITests
             var comparison = CropImage.Compare(new CropImage(expected), new CropImage(actual));
 
             Assert.IsFalse(comparison.Matches);
-            Assert.AreEqual(expected.Size, comparison.ExpectedSize);
+            Assert.AreEqual(comparison.ExpectedSize, expected.Size);
             Assert.AreEqual(actual.Size, comparison.ActualSize);
         }
 
@@ -61,7 +62,7 @@ namespace Microsoft.CropAndLock.UITests
 
             var comparison = CropImage.Compare(new CropImage(expected), new CropImage(actual));
 
-            Assert.IsTrue(comparison.ContentCount >= 100);
+            Assert.IsGreaterThanOrEqualTo(100, comparison.ContentCount);
             Assert.IsFalse(comparison.Matches);
         }
 

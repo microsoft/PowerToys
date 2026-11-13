@@ -15,10 +15,11 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class QuickAccessShelfResolverTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-1, "")]
     [DataRow(0, "1")]
     [DataRow(8, "9")]
@@ -29,7 +30,7 @@ public partial class QuickAccessShelfResolverTests
         Assert.AreEqual(expectedDigit, QuickAccessShelfResolver.IndexToShortcutDigit(index));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)VirtualKey.Number1, 0)]
     [DataRow((int)VirtualKey.Number5, 4)]
     [DataRow((int)VirtualKey.Number9, 8)]
@@ -40,7 +41,7 @@ public partial class QuickAccessShelfResolverTests
         Assert.AreEqual(expectedIndex, QuickAccessShelfShortcuts.GetTopRowShortcutIndex((VirtualKey)key));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)VirtualKey.Number4, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
     [DataRow((int)VirtualKey.Number4, (int)VirtualKeyModifiers.Menu, 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
     [DataRow((int)VirtualKey.Number4, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), 3, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable)]
@@ -61,7 +62,7 @@ public partial class QuickAccessShelfResolverTests
         Assert.AreEqual((QuickAccessShelfShortcuts.SelectionShortcutTarget)expectedTarget, target);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)VirtualKeyModifiers.None, 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
     [DataRow((int)VirtualKeyModifiers.Shift, 4, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Visible)]
     [DataRow((int)VirtualKeyModifiers.None, 3, (int)QuickAccessShelfShortcuts.SelectionShortcutTarget.Unavailable)]
@@ -106,7 +107,7 @@ public partial class QuickAccessShelfResolverTests
         var iconReadCount = icon.ReadCount;
         var reused = QuickAccessShelfItem.CreateOrReuse([original], new(item), shortcutIndex: -1, startsNewSection: false);
 
-        Assert.IsTrue(iconReadCount > 0);
+        Assert.IsGreaterThan(0, iconReadCount);
         Assert.AreSame(original, reused);
         Assert.AreEqual(iconReadCount, icon.ReadCount);
     }
@@ -219,10 +220,10 @@ public partial class QuickAccessShelfResolverTests
         int[] expectedShortcutIndexes = [0, 1, 2, 3];
         bool[] expectedSectionStarts = [false, false, true, false];
         bool[] expectedPinnedState = [true, true, false, false];
-        CollectionAssert.AreEqual(expectedItems, result.Select(item => item.Item).ToArray());
-        CollectionAssert.AreEqual(expectedShortcutIndexes, result.Select(item => item.ShortcutIndex).ToArray());
-        CollectionAssert.AreEqual(expectedSectionStarts, result.Select(item => item.StartsNewSection).ToArray());
-        CollectionAssert.AreEqual(expectedPinnedState, result.Select(item => item.IsPinned).ToArray());
+        Assert.AreSequenceEqual(expectedItems, result.Select(item => item.Item).ToArray());
+        Assert.AreSequenceEqual(expectedShortcutIndexes, result.Select(item => item.ShortcutIndex).ToArray());
+        Assert.AreSequenceEqual(expectedSectionStarts, result.Select(item => item.StartsNewSection).ToArray());
+        Assert.AreSequenceEqual(expectedPinnedState, result.Select(item => item.IsPinned).ToArray());
     }
 
     [TestMethod]
@@ -237,10 +238,10 @@ public partial class QuickAccessShelfResolverTests
         int[] expectedShortcutIndexes = [0, 1, 2, 3];
         bool[] expectedSectionStarts = [false, false, true, false];
         bool[] expectedPinnedState = [false, false, true, true];
-        CollectionAssert.AreEqual(expectedItems, result.Select(item => item.Item).ToArray());
-        CollectionAssert.AreEqual(expectedShortcutIndexes, result.Select(item => item.ShortcutIndex).ToArray());
-        CollectionAssert.AreEqual(expectedSectionStarts, result.Select(item => item.StartsNewSection).ToArray());
-        CollectionAssert.AreEqual(expectedPinnedState, result.Select(item => item.IsPinned).ToArray());
+        Assert.AreSequenceEqual(expectedItems, result.Select(item => item.Item).ToArray());
+        Assert.AreSequenceEqual(expectedShortcutIndexes, result.Select(item => item.ShortcutIndex).ToArray());
+        Assert.AreSequenceEqual(expectedSectionStarts, result.Select(item => item.StartsNewSection).ToArray());
+        Assert.AreSequenceEqual(expectedPinnedState, result.Select(item => item.IsPinned).ToArray());
     }
 
     [TestMethod]
@@ -251,7 +252,7 @@ public partial class QuickAccessShelfResolverTests
             ["recent-1"],
             RecentCommandsPlacement.Hidden);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual("pinned-1", result[0].Item);
         Assert.IsTrue(result[0].IsPinned);
         Assert.AreEqual(0, result[0].ShortcutIndex);
@@ -268,13 +269,13 @@ public partial class QuickAccessShelfResolverTests
 
         string[] expectedItems = ["recent-1", "recent-2"];
         int[] expectedShortcutIndexes = [0, 1];
-        CollectionAssert.AreEqual(expectedItems, result.Select(item => item.Item).ToArray());
-        CollectionAssert.AreEqual(expectedShortcutIndexes, result.Select(item => item.ShortcutIndex).ToArray());
+        Assert.AreSequenceEqual(expectedItems, result.Select(item => item.Item).ToArray());
+        Assert.AreSequenceEqual(expectedShortcutIndexes, result.Select(item => item.ShortcutIndex).ToArray());
         Assert.IsTrue(result.All(item => !item.IsPinned));
         Assert.IsTrue(result.All(item => !item.StartsNewSection));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0, 300, 0)]
     [DataRow(1, 40, 1)]
     [DataRow(3, 128, 3)]

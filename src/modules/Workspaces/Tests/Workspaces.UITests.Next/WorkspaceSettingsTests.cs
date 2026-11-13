@@ -78,7 +78,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(save.IsEnabled, "The replacement shortcut was rejected.");
             save.Invoke(msPostAction: 0);
             Assert.IsTrue(save.WaitForGone(15_000), "The shortcut dialog did not close.");
-            CollectionAssert.AreEquivalent(replacement, ReadActivationShortcut(), "Settings did not display the saved shortcut.");
+            Assert.AreSequenceEqual(replacement, ReadActivationShortcut(), SequenceOrder.InAnyOrder, "Settings did not display the saved shortcut.");
             ActivateWithShortcut(replacement);
             CloseEditor();
             KeyboardHelper.SendKeys(original);

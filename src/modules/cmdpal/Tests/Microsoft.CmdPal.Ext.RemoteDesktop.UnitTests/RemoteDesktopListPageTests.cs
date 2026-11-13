@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class RemoteDesktopListPageTests
 {
@@ -31,7 +32,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert — only the 2 preexisting connections, no arbitrary host item
-        Assert.AreEqual(2, items.Length);
+        Assert.HasCount(2, items);
     }
 
     [TestMethod]
@@ -45,7 +46,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert
-        Assert.AreEqual(1, items.Length);
+        Assert.HasCount(1, items);
     }
 
     [TestMethod]
@@ -59,7 +60,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert — arbitrary item prepended, then the existing connection
-        Assert.AreEqual(2, items.Length);
+        Assert.HasCount(2, items);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem, "First item should be a ConnectionListItem for the arbitrary host");
         Assert.AreEqual("test.corp", firstItem.ConnectionName);
@@ -76,7 +77,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert — no extra item; count stays at 1
-        Assert.AreEqual(1, items.Length);
+        Assert.HasCount(1, items);
         var item = items[0] as ConnectionListItem;
         Assert.IsNotNull(item);
         Assert.AreEqual("rdp-server", item.ConnectionName);
@@ -93,7 +94,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert — no arbitrary item for an invalid hostname
-        Assert.AreEqual(1, items.Length);
+        Assert.HasCount(1, items);
     }
 
     [TestMethod]
@@ -107,7 +108,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert — full host:port string preserved as the ConnectionName
-        Assert.AreEqual(2, items.Length);
+        Assert.HasCount(2, items);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
         Assert.AreEqual("localhost:3389", firstItem.ConnectionName);
@@ -124,7 +125,7 @@ public class RemoteDesktopListPageTests
         var itemsAfterValid = page.GetItems();
 
         // Assert — arbitrary item present
-        Assert.AreEqual(2, itemsAfterValid.Length);
+        Assert.HasCount(2, itemsAfterValid);
         var firstItem = itemsAfterValid[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
         Assert.AreEqual("test.corp", firstItem.ConnectionName);
@@ -134,7 +135,7 @@ public class RemoteDesktopListPageTests
         var itemsAfterEmpty = page.GetItems();
 
         // Assert — back to only existing connections
-        Assert.AreEqual(1, itemsAfterEmpty.Length);
+        Assert.HasCount(1, itemsAfterEmpty);
     }
 
     [TestMethod]
@@ -148,7 +149,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert
-        Assert.AreEqual(1, items.Length);
+        Assert.HasCount(1, items);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
         Assert.AreEqual("alpha.corp", firstItem.ConnectionName);
@@ -165,7 +166,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert
-        Assert.AreEqual(1, items.Length);
+        Assert.HasCount(1, items);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
         Assert.AreEqual("192.168.1.100", firstItem.ConnectionName);
@@ -182,7 +183,7 @@ public class RemoteDesktopListPageTests
         var items = page.GetItems();
 
         // Assert — full IP:port string preserved
-        Assert.AreEqual(1, items.Length);
+        Assert.HasCount(1, items);
         var firstItem = items[0] as ConnectionListItem;
         Assert.IsNotNull(firstItem);
         Assert.AreEqual("192.168.1.100:3390", firstItem.ConnectionName);
@@ -200,7 +201,7 @@ public class RemoteDesktopListPageTests
 
         // Assert — the non-matching connection is filtered out of the results
         var names = items.OfType<ConnectionListItem>().Select(i => i.ConnectionName).ToList();
-        CollectionAssert.Contains(names, "alpha-server");
-        CollectionAssert.DoesNotContain(names, "qwxyz");
+        Assert.Contains("alpha-server", names);
+        Assert.DoesNotContain("qwxyz", names);
     }
 }

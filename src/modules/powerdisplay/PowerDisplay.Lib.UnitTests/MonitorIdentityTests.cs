@@ -7,6 +7,7 @@ using PowerDisplay.Common.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MonitorIdentityTests
 {

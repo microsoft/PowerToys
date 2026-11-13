@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class UriHelperTests
 {
@@ -16,7 +17,7 @@ public class UriHelperTests
         return UriHelper.TryGetScheme(input, out scheme, out remainder);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("http://example.com", "http", "//example.com")]
     [DataRow("ftp:", "ftp", "")]
     [DataRow("my-app:payload", "my-app", "payload")]
@@ -43,7 +44,7 @@ public class UriHelperTests
         Assert.AreEqual(string.Empty, remainder);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("123:http")] // starts with digit
     [DataRow(":nope")] // colon at start
     [DataRow("noColon")] // no colon at all
@@ -87,7 +88,7 @@ public class UriHelperTests
         Assert.IsFalse(TryGetScheme(":".AsSpan(), out _, out _), "Colon at start; no scheme.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("HTTP://x", "HTTP", "//x")]
     [DataRow("hTtP:rest", "hTtP", "rest")]
     public void TryGetScheme_CaseIsPreserved(string input, string expectedScheme, string expectedRemainder)

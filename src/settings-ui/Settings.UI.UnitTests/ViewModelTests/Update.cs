@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class Update
     {
@@ -32,7 +33,7 @@ namespace ViewModelTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(UpdatingSettings.UpdatingState.UpToDate, (int)UpdateViewModel.TransientUpdateOperation.None, UpdateViewModel.UpdateUIState.UpToDate)]
         [DataRow(UpdatingSettings.UpdatingState.NetworkError, (int)UpdateViewModel.TransientUpdateOperation.None, UpdateViewModel.UpdateUIState.NetworkError)]
         [DataRow(UpdatingSettings.UpdatingState.ReadyToDownload, (int)UpdateViewModel.TransientUpdateOperation.None, UpdateViewModel.UpdateUIState.ReadyToDownload)]
@@ -57,7 +58,7 @@ namespace ViewModelTests
                     (UpdateViewModel.TransientUpdateOperation)activeUpdateOperation));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(UpdatingSettings.UpdatingState.UpToDate)]
         [DataRow(UpdatingSettings.UpdatingState.ReadyToDownload)]
         [DataRow(UpdatingSettings.UpdatingState.ReadyToInstall)]

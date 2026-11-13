@@ -8,6 +8,7 @@ using MouseJump.Common.Telemetry;
 
 namespace MouseJump.Common.UnitTests.Telemetry;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class TelemetryContextTests
 {
@@ -73,7 +74,7 @@ public sealed class TelemetryContextTests
 
         TelemetryContextTests.WithinTimeout(telemetry.Flush);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             Enumerable.Range(0, 100).ToList(),
             writer.Records.Select(record => (int)record.Properties["index"]!).ToList());
 
@@ -89,15 +90,15 @@ public sealed class TelemetryContextTests
 
         telemetry.PauseWriting();
         telemetry.WriteEvent(new { }, "pausedEvent");
-        var flush = Task.Run(telemetry.Flush);
+        var flush = Task.Run(telemetry.Flush, TestContext.CancellationToken);
 
         // a negative check, so it can only ever wait "a while" - long enough that a flush
         // which ignored the pause would almost certainly have finished by now
-        Assert.IsFalse(flush.Wait(TimeSpan.FromMilliseconds(250)), "flush should block while writing is paused");
-        Assert.AreEqual(0, writer.Records.Count, "nothing should reach the writer while paused");
+        Assert.IsFalse(flush.Wait(TimeSpan.FromMilliseconds(250), TestContext.CancellationToken), "flush should block while writing is paused");
+        Assert.IsEmpty(writer.Records, "nothing should reach the writer while paused");
 
         telemetry.ResumeWriting();
-        Assert.IsTrue(flush.Wait(TelemetryContextTests.Timeout), "flush should complete once writing resumes");
+        Assert.IsTrue(flush.Wait(TelemetryContextTests.Timeout, TestContext.CancellationToken), "flush should complete once writing resumes");
         Assert.AreEqual("pausedEvent", writer.Records.Single().Operation);
 
         TelemetryContextTests.WithinTimeout(telemetry.Stop);
@@ -114,7 +115,8 @@ public sealed class TelemetryContextTests
         telemetry.Start(writer);
 
         var workers = Enumerable.Range(0, threadCount)
-            .Select(thread => Task.Run(() =>
+            .Select(thread => Task.Run(
+                () =>
             {
                 for (var index = 0; index < eventsPerThread; index++)
                 {
@@ -124,16 +126,17 @@ public sealed class TelemetryContextTests
                         telemetry.Flush();
                     }
                 }
-            }))
+            },
+                TestContext.CancellationToken))
             .ToArray();
 
-        TelemetryContextTests.WithinTimeout(() => Task.WaitAll(workers));
+        TelemetryContextTests.WithinTimeout(() => Task.WaitAll(workers, TestContext.CancellationToken));
         TelemetryContextTests.WithinTimeout(telemetry.Stop);
 
-        Assert.AreEqual(threadCount * eventsPerThread, writer.Records.Count);
+        Assert.HasCount(threadCount * eventsPerThread, writer.Records);
         foreach (var group in writer.Records.GroupBy(record => (int)record.Properties["thread"]!))
         {
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 Enumerable.Range(0, eventsPerThread).ToList(),
                 group.Select(record => (int)record.Properties["index"]!).ToList(),
                 $"thread {group.Key}'s records should arrive in the order it recorded them");
@@ -153,7 +156,7 @@ public sealed class TelemetryContextTests
 
         // telemetry is diagnostic - a broken writer mustn't hang flush/stop or throw into the app
         TelemetryContextTests.WithinTimeout(telemetry.Flush);
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new List<string> { "goodEvent1", "goodEvent2" },
             writer.Written.Select(record => record.Operation).ToList());
 
@@ -168,7 +171,7 @@ public sealed class TelemetryContextTests
         telemetry.WriteEvent(new { }, "eventBeforeStop");
 
         // the failed final flush is reported to whoever called Stop...
-        var stop = Task.Run(telemetry.Stop);
+        var stop = Task.Run(telemetry.Stop, TestContext.CancellationToken);
         Assert.AreEqual(0, Task.WaitAny([stop], TelemetryContextTests.Timeout), "timed out waiting for Stop");
         Assert.IsInstanceOfType<InvalidOperationException>(stop.Exception?.InnerException);
 
@@ -197,11 +200,11 @@ public sealed class TelemetryContextTests
 
         // the writer is still busy, so pausing (e.g. to time something without telemetry I/O
         // in the way) has to wait for it - a negative check, so it can only wait "a while"
-        var pause = Task.Run(telemetry.PauseWriting);
-        Assert.IsFalse(pause.Wait(TimeSpan.FromMilliseconds(250)), "pause returned while a write was still in progress");
+        var pause = Task.Run(telemetry.PauseWriting, TestContext.CancellationToken);
+        Assert.IsFalse(pause.Wait(TimeSpan.FromMilliseconds(250), TestContext.CancellationToken), "pause returned while a write was still in progress");
 
         writer.BlockWrites = false;
-        Assert.IsTrue(pause.Wait(TelemetryContextTests.Timeout), "pause should return once the write finishes");
+        Assert.IsTrue(pause.Wait(TelemetryContextTests.Timeout, TestContext.CancellationToken), "pause should return once the write finishes");
 
         telemetry.ResumeWriting();
         TelemetryContextTests.WithinTimeout(telemetry.Stop);
@@ -214,7 +217,7 @@ public sealed class TelemetryContextTests
         var writer = new ControllableTelemetryWriter { BlockFlushes = true };
         telemetry.Start(writer);
 
-        var flush = Task.Run(telemetry.Flush);
+        var flush = Task.Run(telemetry.Flush, TestContext.CancellationToken);
         writer.WaitForFlushes(1);
 
         // a record arriving while the writer is mid-flush has to wait for the flush to finish -
@@ -224,7 +227,7 @@ public sealed class TelemetryContextTests
         Assert.AreEqual(0, writer.WritesStarted, "a write started while the writer was still flushing");
 
         writer.BlockFlushes = false;
-        Assert.IsTrue(flush.Wait(TelemetryContextTests.Timeout), "flush should complete once released");
+        Assert.IsTrue(flush.Wait(TelemetryContextTests.Timeout, TestContext.CancellationToken), "flush should complete once released");
         writer.WaitForWrites(1);
 
         TelemetryContextTests.WithinTimeout(telemetry.Stop);
@@ -380,4 +383,6 @@ public sealed class TelemetryContextTests
         public void Flush()
             => throw new InvalidOperationException("simulated flush failure");
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

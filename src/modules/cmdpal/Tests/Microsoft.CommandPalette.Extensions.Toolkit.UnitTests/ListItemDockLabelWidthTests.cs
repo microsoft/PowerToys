@@ -11,6 +11,7 @@ using Windows.Foundation.Collections;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ListItemDockLabelWidthTests
 {
@@ -67,14 +68,14 @@ public partial class ListItemDockLabelWidthTests
     [DataRow(double.MaxValue)]
     public void NumericFactories_RejectUnsupportedValues(double value)
     {
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => DockLabelWidth.Dips(value));
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => DockLabelWidth.Characters(value));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DockLabelWidth.Dips(value));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => DockLabelWidth.Characters(value));
     }
 
     [TestMethod]
     public void Sample_RejectsNull()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => DockLabelWidth.Sample(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => DockLabelWidth.Sample(null!));
     }
 
     [TestMethod]
@@ -93,9 +94,9 @@ public partial class ListItemDockLabelWidthTests
         SetWidths(item, DockLabelWidth.Sample("100%"), DockLabelWidth.Characters(12), limits);
 
         Assert.AreSame(item, configured);
-        Assert.AreEqual(1, notifications.Count);
+        Assert.HasCount(1, notifications);
         Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)"text:100%", (object?)"12ch"), notifications[0]);
-        Assert.AreEqual(0, item.GetProperties().Count);
+        Assert.IsEmpty(item.GetProperties());
     }
 
     [TestMethod]
@@ -112,7 +113,7 @@ public partial class ListItemDockLabelWidthTests
         SetWidths(item, DockLabelWidth.Sample(string.Empty), null, limits);
         SetWidths(item, DockLabelWidth.Sample(string.Empty), null, limits);
 
-        Assert.AreEqual(2, notifications.Count);
+        Assert.HasCount(2, notifications);
         Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)null, (object?)80d), notifications[0]);
         Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)"text:", (object?)null), notifications[1]);
     }
@@ -149,12 +150,12 @@ public partial class ListItemDockLabelWidthTests
         SetWidths(item, null, null, limits);
 
         Assert.AreSame(item, cleared);
-        Assert.AreEqual(1, notifications.Count);
+        Assert.HasCount(1, notifications);
         Assert.AreEqual((WellKnownExtensionAttributes.DockLabelWidthPropertyName, (object?)null, (object?)null), notifications[0]);
         Assert.AreEqual("text:CPU", properties[otherFirst]);
         Assert.AreEqual("12ch", properties[otherSecond]);
         Assert.AreEqual("Keep me", properties["Unrelated"]);
-        Assert.AreEqual(0, item.GetProperties().Count);
+        Assert.IsEmpty(item.GetProperties());
     }
 
     [TestMethod]
@@ -183,11 +184,11 @@ public partial class ListItemDockLabelWidthTests
         var item = new ListItem().SetDockLabelReservations(DockLabelWidth.Dips(20), DockLabelWidth.Dips(80));
         var notifications = CaptureWidthNotifications(item, limits: false);
 
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => item.SetDockLabelReservations(DockLabelWidth.Dips(40), DockLabelWidth.Dips(-1)));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => item.SetDockLabelReservations(DockLabelWidth.Dips(40), DockLabelWidth.Dips(-1)));
 
         Assert.AreEqual(20d, item.GetProperties()[WellKnownExtensionAttributes.DockTitleWidth]);
         Assert.AreEqual(80d, item.GetProperties()[WellKnownExtensionAttributes.DockSubtitleWidth]);
-        Assert.AreEqual(0, notifications.Count);
+        Assert.IsEmpty(notifications);
     }
 
     [TestMethod]
@@ -195,10 +196,10 @@ public partial class ListItemDockLabelWidthTests
     {
         ListItem item = null!;
 
-        Assert.ThrowsException<ArgumentNullException>(() => item.SetDockLabelReservations(null, null));
-        Assert.ThrowsException<ArgumentNullException>(() => item.SetDockLabelWidthLimits(null, null));
-        Assert.ThrowsException<ArgumentNullException>(() => item.ClearDockLabelReservations());
-        Assert.ThrowsException<ArgumentNullException>(() => item.ClearDockLabelWidthLimits());
+        Assert.ThrowsExactly<ArgumentNullException>(() => item.SetDockLabelReservations(null, null));
+        Assert.ThrowsExactly<ArgumentNullException>(() => item.SetDockLabelWidthLimits(null, null));
+        Assert.ThrowsExactly<ArgumentNullException>(() => item.ClearDockLabelReservations());
+        Assert.ThrowsExactly<ArgumentNullException>(() => item.ClearDockLabelWidthLimits());
     }
 
     [TestMethod]
@@ -213,10 +214,10 @@ public partial class ListItemDockLabelWidthTests
         var notifications = 0;
         item.PropChanged += (_, _) => notifications++;
 
-        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelReservations(DockLabelWidth.Dips(80), null));
-        Assert.ThrowsException<InvalidOperationException>(() => item.SetDockLabelWidthLimits(null, DockLabelWidth.Characters(12)));
-        Assert.ThrowsException<InvalidOperationException>(() => item.ClearDockLabelReservations());
-        Assert.ThrowsException<InvalidOperationException>(() => item.ClearDockLabelWidthLimits());
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.SetDockLabelReservations(DockLabelWidth.Dips(80), null));
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.SetDockLabelWidthLimits(null, DockLabelWidth.Characters(12)));
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.ClearDockLabelReservations());
+        Assert.ThrowsExactly<InvalidOperationException>(() => item.ClearDockLabelWidthLimits());
 
         Assert.AreEqual(0, notifications);
     }

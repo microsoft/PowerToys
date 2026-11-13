@@ -14,10 +14,11 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
     /// band) and the ISO 8601 custom format tokens, with a focus on the year boundary
     /// (week 52/53 vs. week 1) on different weekdays.
     /// </summary>
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WeekOfYearTests
     {
-        [DataTestMethod]
+        [TestMethod]
 
         // Regression for the known Calendar.GetWeekOfYear defect: it returns 53 for
         // 2012-12-31 (a Monday) although ISO 8601 says week 1 of 2013.
@@ -64,7 +65,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             Assert.AreEqual(1, TimeAndDateHelper.GetWeekOfYear(new DateTime(2021, 1, 1), usSettings));
         }
 
-        [DataTestMethod]
+        [TestMethod]
 
         // US system = Excel WEEKNUM option 1: the week containing January 1st is
         // always week 1, weeks start on Sunday.
@@ -80,7 +81,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             Assert.AreEqual(expectedWeek, week);
         }
 
-        [DataTestMethod]
+        [TestMethod]
 
         // Excel WEEKNUM option 2: the week containing January 1st is week 1, weeks
         // start on Monday.
@@ -104,7 +105,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             Assert.AreEqual(expected, TimeAndDateHelper.GetWeekOfYear(date, CalendarWeekRule.FirstFourDayWeek, DayOfWeek.Sunday));
         }
 
-        [DataTestMethod]
+        [TestMethod]
 
         // The IWOY/IWYR/IDOW tokens always render the ISO 8601 week date, including
         // the week-based year at the boundary and the zero-padded week number.
@@ -122,7 +123,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
 
         // IWYY renders the two-digit ISO week-based year, correctly paired with the
         // ISO week number at the boundary.
@@ -204,7 +205,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             Assert.AreEqual("W28", dateLine);
         }
 
-        [DataTestMethod]
+        [TestMethod]
 
         // Single-token values must stay literal, including one-digit values.
         [DataRow("IDOW", "1")]
@@ -221,7 +222,7 @@ namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests
             Assert.AreEqual(expected, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("\\IWOY IWOY", "IWOY 28")]
         [DataRow("\\IWYR IWYR", "IWYR 2026")]
         [DataRow("\\IWYY IWYY", "IWYY 26")]

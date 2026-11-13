@@ -10,6 +10,7 @@ using PowerDisplay.Common.Services;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MonitorSettingsRebuilderTests
 {
@@ -40,7 +41,7 @@ public class MonitorSettingsRebuilderTests
 
         var result = MonitorSettingsRebuilder.Rebuild(current, existing, new FixedClock(Now), retentionDays: 30);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual("new-id-1", result[0].Id);
         Assert.AreEqual(Now, result[0].LastSeenUtc);
     }
@@ -53,7 +54,7 @@ public class MonitorSettingsRebuilderTests
 
         var result = MonitorSettingsRebuilder.Rebuild(current, existing, new FixedClock(Now), retentionDays: 30);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual("missing-1", result[0].Id);
         Assert.IsTrue(result[0].EnableInputSource);
     }
@@ -66,7 +67,7 @@ public class MonitorSettingsRebuilderTests
 
         var result = MonitorSettingsRebuilder.Rebuild(current, existing, new FixedClock(Now), retentionDays: 30);
 
-        Assert.AreEqual(0, result.Count);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -80,7 +81,7 @@ public class MonitorSettingsRebuilderTests
 
         var result = MonitorSettingsRebuilder.Rebuild(current, existing, new FixedClock(Now), retentionDays: 30);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual("hidden-1", result[0].Id);
     }
 
@@ -92,7 +93,7 @@ public class MonitorSettingsRebuilderTests
 
         var result = MonitorSettingsRebuilder.Rebuild(current, existing, new FixedClock(Now), retentionDays: 30);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual(Now, result[0].LastSeenUtc);
     }
 
@@ -113,7 +114,7 @@ public class MonitorSettingsRebuilderTests
 
         var result = MonitorSettingsRebuilder.Rebuild(current, existing, new FixedClock(Now), retentionDays: 30);
 
-        Assert.AreEqual(1, result.Count, "Ids differing only by case denote the same monitor and must dedupe to one entry");
+        Assert.HasCount(1, result, "Ids differing only by case denote the same monitor and must dedupe to one entry");
         Assert.AreEqual(@"\\?\DISPLAY#BOE0900#4&ABC&0&UID111", result[0].Id);
     }
 
@@ -134,7 +135,7 @@ public class MonitorSettingsRebuilderTests
             afterA,
             new FixedClock(Now.AddSeconds(1)),
             retentionDays: 30);
-        Assert.AreEqual(1, afterB.Count, "missing-but-recent entry must survive");
+        Assert.HasCount(1, afterB, "missing-but-recent entry must survive");
         Assert.IsTrue(afterB[0].EnableInputSource, "Enable* flags must survive across revocation");
 
         // Step C: monitor reappears
@@ -145,7 +146,7 @@ public class MonitorSettingsRebuilderTests
             new FixedClock(Now.AddSeconds(2)),
             retentionDays: 30);
 
-        Assert.AreEqual(1, afterC.Count);
+        Assert.HasCount(1, afterC);
         Assert.AreEqual("x", afterC[0].Id);
         Assert.IsTrue(afterC[0].EnableInputSource);
     }

@@ -8,6 +8,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.LightSwitch.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("Unit")]
 [DoNotParallelize]
@@ -24,8 +25,8 @@ public sealed class LightSwitchHelperTests
                 return name == "PowerToys.Settings";
             }));
 
-        CollectionAssert.AreEqual(new[] { "PowerToys", "PowerToys.Settings", TestHelper.ServiceProcess }, attempts);
-        StringAssert.Contains(error.Message, "PowerToys, " + TestHelper.ServiceProcess);
+        Assert.AreSequenceEqual(new[] { "PowerToys", "PowerToys.Settings", TestHelper.ServiceProcess }, attempts);
+        Assert.Contains("PowerToys, " + TestHelper.ServiceProcess, error.Message);
     }
 
     [TestMethod]
@@ -41,11 +42,11 @@ public sealed class LightSwitchHelperTests
                 _ => 99,
                 () => broadcast = true));
 
-        CollectionAssert.AreEqual(originals.Keys.ToArray(), attempts);
+        Assert.AreSequenceEqual(originals.Keys.ToArray(), attempts);
         Assert.IsTrue(broadcast, "A readback mismatch must not suppress the theme notification.");
         foreach (string name in originals.Keys)
         {
-            StringAssert.Contains(error.Message, name);
+            Assert.Contains(name, error.Message);
         }
     }
 
@@ -69,9 +70,9 @@ public sealed class LightSwitchHelperTests
                 name => originals[name].Value,
                 () => broadcast = true));
 
-        CollectionAssert.AreEqual(originals.Keys.ToArray(), attempts);
+        Assert.AreSequenceEqual(originals.Keys.ToArray(), attempts);
         Assert.IsTrue(broadcast);
-        StringAssert.Contains(error.Message, "SystemUsesLightTheme: Registry access denied.");
+        Assert.Contains("SystemUsesLightTheme: Registry access denied.", error.Message);
     }
 
     [TestMethod]
@@ -112,7 +113,7 @@ public sealed class LightSwitchHelperTests
         else
         {
             var error = Assert.ThrowsExactly<AssertFailedException>(check);
-            StringAssert.Contains(error.Message, "English");
+            Assert.Contains("English", error.Message);
         }
     }
 

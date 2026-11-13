@@ -8,18 +8,19 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class UmdfHidInputTests
 {
     [TestMethod]
     public void EmptyKeyboardReportReleasesAllKeys()
     {
-        CollectionAssert.AreEqual(new byte[] { 2, 0, 0, 0, 0, 0, 0, 0, 0 }, UmdfHidInput.CreateKeyboardReport(0, []));
+        Assert.AreSequenceEqual(new byte[] { 2, 0, 0, 0, 0, 0, 0, 0, 0 }, UmdfHidInput.CreateKeyboardReport(0, []));
     }
 
     [TestMethod]
     public void KeyboardReportPreservesModifiersAndDeduplicatesUsages()
     {
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new byte[] { 2, 0x0c, 0, 4, 5, 6, 0, 0, 0 },
             UmdfHidInput.CreateKeyboardReport(0x0c, [6, 4, 5, 4]));
     }
@@ -27,7 +28,7 @@ public class UmdfHidInputTests
     [TestMethod]
     public void KeyboardReportAcceptsSixKeys()
     {
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new byte[] { 2, 0, 0, 4, 5, 6, 7, 8, 9 },
             UmdfHidInput.CreateKeyboardReport(0, [4, 5, 6, 7, 8, 9]));
     }

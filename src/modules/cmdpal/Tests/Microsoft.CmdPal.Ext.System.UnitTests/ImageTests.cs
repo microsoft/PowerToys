@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.System.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ImageTests
 {

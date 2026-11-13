@@ -10,11 +10,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BaseConverterTests
 {
     // Hex tests
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0L, "0x0")]
     [DataRow(1L, "0x1")]
     [DataRow(16L, "0x10")]
@@ -36,7 +37,7 @@ public class BaseConverterTests
     }
 
     // Binary tests
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0L, "0b0")]
     [DataRow(1L, "0b1")]
     [DataRow(10L, "0b1010")]
@@ -54,11 +55,11 @@ public class BaseConverterTests
         var large = BigInteger.Parse("99999999999999999999", CultureInfo.InvariantCulture);
         var result = BaseConverter.Convert(large, 2);
         Assert.IsTrue(result.StartsWith("0b", StringComparison.Ordinal));
-        Assert.IsTrue(result.Length > 60);
+        Assert.IsGreaterThan(60, result.Length);
     }
 
     // Octal tests
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0L, "0o0")]
     [DataRow(1L, "0o1")]
     [DataRow(8L, "0o10")]
@@ -133,13 +134,13 @@ public class BaseConverterTests
     }
 
     // Invalid base
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0)]
     [DataRow(1)]
     [DataRow(17)]
     [DataRow(-1)]
     public void Convert_ThrowsArgumentOutOfRange_WhenBaseInvalid(int toBase)
     {
-        Assert.ThrowsException<ArgumentOutOfRangeException>(() => BaseConverter.Convert(BigInteger.One, toBase));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => BaseConverter.Convert(BigInteger.One, toBase));
     }
 }

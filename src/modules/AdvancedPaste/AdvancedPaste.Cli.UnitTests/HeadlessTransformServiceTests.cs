@@ -12,38 +12,40 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AdvancedPaste.Cli.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class HeadlessTransformServiceTests
 {
     [TestMethod]
     public void PlainText_PreservesContent()
-        => Assert.AreEqual("hello", HeadlessTransformService.Transform(HeadlessTransformFormat.PlainText, "hello"));
+        => Assert.AreEqual("hello", HeadlessTransformService.Transform(HeadlessTransformFormat.PlainText, "hello", TestContext.CancellationToken));
 
     [TestMethod]
     public void Markdown_ConvertsHtmlAndRemovesScripts()
     {
         var result = HeadlessTransformService.Transform(
             HeadlessTransformFormat.Markdown,
-            "<p style=\"color:red\">Hello <strong>world</strong></p><script>ignored</script>");
+            "<p style=\"color:red\">Hello <strong>world</strong></p><script>ignored</script>",
+            TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "Hello **world**");
+        Assert.Contains("Hello **world**", result);
         Assert.IsFalse(result.Contains("ignored", System.StringComparison.Ordinal));
     }
 
     [TestMethod]
     public void Json_ConvertsCsv()
     {
-        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,age\r\nAda,37");
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,age\r\nAda,37", TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "\"name\"");
-        StringAssert.Contains(result, "\"Ada\"");
+        Assert.Contains("\"name\"", result);
+        Assert.Contains("\"Ada\"", result);
     }
 
     [TestMethod]
     public void Json_ConvertsLfDelimitedCsv()
     {
-        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,age\nAda,37");
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,age\nAda,37", TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "\"Ada\"");
+        Assert.Contains("\"Ada\"", result);
         Assert.IsFalse(result.Contains("age\\nAda", System.StringComparison.Ordinal));
     }
 
@@ -52,9 +54,9 @@ public class HeadlessTransformServiceTests
     {
         var input = string.Join(',', Enumerable.Repeat("value", 10_000));
 
-        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, input);
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, input, TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "\"value\"");
+        Assert.Contains("\"value\"", result);
     }
 
     [TestMethod]
@@ -62,18 +64,19 @@ public class HeadlessTransformServiceTests
     {
         var result = HeadlessTransformService.Transform(
             HeadlessTransformFormat.Json,
-            "name,note\nAda,\"Hello, \"\"PowerToys\"\"\"");
+            "name,note\nAda,\"Hello, \"\"PowerToys\"\"\"",
+            TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "\"Hello, \\\"PowerToys\\\"\"");
+        Assert.Contains("\"Hello, \\\"PowerToys\\\"\"", result);
     }
 
     [TestMethod]
     public void Json_UsesCustomCsvSeparatorAsLiteral()
     {
-        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "sep=|\nname|age\nAda|37");
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "sep=|\nname|age\nAda|37", TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "\"Ada\"");
-        StringAssert.Contains(result, "\"37\"");
+        Assert.Contains("\"Ada\"", result);
+        Assert.Contains("\"37\"", result);
     }
 
     [TestMethod]
@@ -81,33 +84,33 @@ public class HeadlessTransformServiceTests
     {
         var input = new string('x', 100_000);
 
-        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, input);
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, input, TestContext.CancellationToken);
 
         Assert.IsTrue(result.StartsWith('['));
-        StringAssert.Contains(result, input);
+        Assert.Contains(input, result);
     }
 
     [TestMethod]
     public void Json_ConvertsXml()
     {
-        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "<note><title>Hello</title></note>");
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "<note><title>Hello</title></note>", TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "\"note\"");
-        StringAssert.Contains(result, "\"title\": \"Hello\"");
+        Assert.Contains("\"note\"", result);
+        Assert.Contains("\"title\": \"Hello\"", result);
     }
 
     [TestMethod]
     public void Json_ConvertsIni()
     {
-        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "[section]\nname=value");
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "[section]\nname=value", TestContext.CancellationToken);
 
-        StringAssert.Contains(result, "\"section\"");
-        StringAssert.Contains(result, "\"name\": \"value\"");
+        Assert.Contains("\"section\"", result);
+        Assert.Contains("\"name\": \"value\"", result);
     }
 
     [TestMethod]
     public void Json_PreservesJson()
-        => Assert.AreEqual("{\"name\":\"Ada\"}", HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "{\"name\":\"Ada\"}"));
+        => Assert.AreEqual("{\"name\":\"Ada\"}", HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "{\"name\":\"Ada\"}", TestContext.CancellationToken));
 
     [TestMethod]
     public void Markdown_HonorsCancellation()
@@ -128,4 +131,6 @@ public class HeadlessTransformServiceTests
         Assert.ThrowsExactly<OperationCanceledException>(
             () => HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,value", cancellation.Token));
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

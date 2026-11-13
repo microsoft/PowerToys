@@ -11,6 +11,7 @@ using Forms = System.Windows.Forms;
 
 namespace PowerOCR.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public class PowerOCRTests : UITestBase
@@ -218,7 +219,7 @@ public class PowerOCRTests : UITestBase
         Step("Opening the Settings OCR language dropdown");
         Find<ComboBox>(By.AccessibilityId("TextExtractorLanguageComboBox")).Click(msPostAction: 0);
         var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess("PowerToys.Settings");
-        Assert.IsTrue(ReadLanguageItems(settings).Count > 0, "Settings should offer OCR languages.");
+        Assert.IsNotEmpty(ReadLanguageItems(settings), "Settings should offer OCR languages.");
         KeyboardHelper.SendKeys(Key.Esc);
     }
 
@@ -233,7 +234,7 @@ public class PowerOCRTests : UITestBase
         combo.Click(msPostAction: 0);
         var languages = ReadLanguageItems(process);
         int selectedIndex = ReadSelectedLanguageIndex(languages);
-        Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify changing languages.");
+        Assert.IsGreaterThanOrEqualTo(2, languages.Count, "Install at least two OCR languages to verify changing languages.");
         string selectedName = languages[selectedIndex].Name;
         string targetName = languages[selectedIndex == 0 ? 1 : 0].Name;
         KeyboardHelper.SendKeys(Key.Esc);
@@ -358,7 +359,7 @@ public class PowerOCRTests : UITestBase
         int completedSteps = 0;
         try
         {
-            Assert.IsTrue(samplingStarted.Wait(TimeSpan.FromSeconds(2)), "Cursor sampling should start before pointer movement.");
+            Assert.IsTrue(samplingStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken), "Cursor sampling should start before pointer movement.");
             Step("Dwelling for hover timers, then sampling three complete pointer sweeps");
             _ = sampler.Join(TimeSpan.FromMilliseconds(1500));
             for (int sweep = 0; sweep < sweepCount && sampler.IsAlive; sweep++)
@@ -381,8 +382,8 @@ public class PowerOCRTests : UITestBase
 
         Assert.IsNull(samplingFailure, samplingFailure);
         Assert.AreEqual(sweepCount * (stepsPerSweep + 1), completedSteps, "All three pointer sweeps should finish before the sampling deadline.");
-        Assert.IsTrue(sampleCount >= 100, $"The pointer sweep should collect enough visible cursor samples; observed {sampleCount}.");
-        Assert.IsTrue(sampledPositions.Count >= 20, $"Cursor samples should cover moving positions, not just the final frame; observed {sampledPositions.Count}.");
+        Assert.IsGreaterThanOrEqualTo(100, sampleCount, $"The pointer sweep should collect enough visible cursor samples; observed {sampleCount}.");
+        Assert.IsGreaterThanOrEqualTo(20, sampledPositions.Count, $"Cursor samples should cover moving positions, not just the final frame; observed {sampledPositions.Count}.");
     }
 
     [TestMethod]
@@ -423,7 +424,7 @@ public class PowerOCRTests : UITestBase
             {
                 var control = overlay.Find<Element>(By.AccessibilityId(id));
                 Assert.IsTrue(control.Width > 0 && control.Height > 0, $"{id} should expose its bounds.");
-                Assert.IsTrue(error.Y >= control.Y + control.Height, $"The error InfoBar must be below {id}, not overlap it.");
+                Assert.IsGreaterThanOrEqualTo(control.Y + control.Height, error.Y, $"The error InfoBar must be below {id}, not overlap it.");
             }
 
             // Focusing a toolbar control here would mask the failed-capture focus regression.
@@ -451,7 +452,7 @@ public class PowerOCRTests : UITestBase
             combo.Click(msPostAction: 0);
             var languages = ReadLanguageItems(process);
             int selectedIndex = ReadSelectedLanguageIndex(languages);
-            Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify the language shortcut.");
+            Assert.IsGreaterThanOrEqualTo(2, languages.Count, "Install at least two OCR languages to verify the language shortcut.");
             string selectedName = languages[selectedIndex].Name;
             KeyboardHelper.SendKeys(Key.Esc);
 
@@ -462,7 +463,7 @@ public class PowerOCRTests : UITestBase
                 .Where(item => item.Name != selectedName && item.Index < 9)
                 .OrderBy(item => item.Index)
                 .ToList();
-            Assert.IsTrue(targets.Count > 0, "A different OCR language should have a number shortcut.");
+            Assert.IsNotEmpty(targets, "A different OCR language should have a number shortcut.");
             var target = targets[0];
             KeyboardHelper.SendKeys(Key.Esc);
             CaptureBlankRegion(overlay);
@@ -587,9 +588,9 @@ public class PowerOCRTests : UITestBase
     private static int ReadSelectedLanguageIndex(List<LanguageItem> languages)
     {
         var selectedIndices = languages.Select((item, index) => (item, index)).Where(pair => pair.item.Selected).Select(pair => pair.index).ToList();
-        Assert.AreEqual(
+        Assert.HasCount(
             1,
-            selectedIndices.Count,
+            selectedIndices,
             $"The language ComboBox should have exactly one selected language. Items: {string.Join(", ", languages)}");
         return selectedIndices[0];
     }
@@ -657,8 +658,9 @@ public class PowerOCRTests : UITestBase
 
     private Element CaptureBlankRegion(Session overlay)
     {
-        Assert.IsFalse(
-            overlay.FindAll<Element>(By.AccessibilityId("ErrorInfoBar"), 500).Any(item => item.Displayed),
+        Assert.DoesNotContain(
+            item => item.Displayed,
+            overlay.FindAll<Element>(By.AccessibilityId("ErrorInfoBar"), 500),
             "Overlay activation must succeed before testing a blank capture.");
         Step("Capturing a blank region and waiting for the error InfoBar");
         DragCenter(overlay, 150, 100);

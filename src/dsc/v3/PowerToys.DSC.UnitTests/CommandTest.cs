@@ -9,6 +9,7 @@ using PowerToys.DSC.DSCResources;
 namespace PowerToys.DSC.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class CommandTest : BaseDscTest
 {
     [TestMethod]

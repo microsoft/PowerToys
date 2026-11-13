@@ -16,6 +16,7 @@ namespace FancyZones.UITests;
 /// no runner behind it (no lifecycle owner), so the port asserts the same thing the original cared
 /// about — the module process runs — through the supported path: the runner starts it when enabled.
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class RunFancyZonesTests : UITestBase
 {

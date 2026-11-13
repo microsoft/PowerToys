@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BookmarkManagerTests
 {
@@ -32,7 +33,7 @@ public class BookmarkManagerTests
 
         // Assert
         Assert.IsNotNull(bookmarks);
-        Assert.AreEqual(0, bookmarks.Count);
+        Assert.IsEmpty(bookmarks);
     }
 
     [TestMethod]
@@ -47,7 +48,7 @@ public class BookmarkManagerTests
 
         // Assert
         Assert.IsNotNull(bookmarks);
-        Assert.AreEqual(0, bookmarks.Count);
+        Assert.IsEmpty(bookmarks);
     }
 
     [TestMethod]
@@ -69,7 +70,7 @@ public class BookmarkManagerTests
 
         // Assert
         Assert.IsNotNull(bookmarks);
-        Assert.AreEqual(2, bookmarks.Count);
+        Assert.HasCount(2, bookmarks);
 
         Assert.AreEqual("Bookmark1", bookmarks[0].Name);
         Assert.AreEqual("C:\\Path1", bookmarks[0].Bookmark);
@@ -100,7 +101,7 @@ public class BookmarkManagerTests
 
         // Assert
         Assert.IsNotNull(bookmarks);
-        Assert.AreEqual(2, bookmarks.Count);
+        Assert.HasCount(2, bookmarks);
 
         Assert.AreEqual("Bookmark1", bookmarks[0].Name);
         Assert.AreEqual("C:\\Path1", bookmarks[0].Bookmark);
@@ -131,7 +132,7 @@ public class BookmarkManagerTests
 
         // Assert
         var bookmarks = bookmarkManager.Bookmarks;
-        Assert.AreEqual(1, bookmarks.Count);
+        Assert.HasCount(1, bookmarks);
         Assert.AreEqual(addedBookmark, bookmarks.First());
         Assert.IsTrue(bookmarkAddedEventFired);
     }
@@ -155,7 +156,7 @@ public class BookmarkManagerTests
         // Assert
         var bookmarks = bookmarkManager.Bookmarks;
         Assert.IsTrue(removeResult);
-        Assert.AreEqual(0, bookmarks.Count);
+        Assert.IsEmpty(bookmarks);
         Assert.IsTrue(bookmarkRemovedEventFired);
     }
 
@@ -180,7 +181,7 @@ public class BookmarkManagerTests
         // Assert
         var bookmarks = bookmarkManager.Bookmarks;
         Assert.IsNotNull(updatedBookmark);
-        Assert.AreEqual(1, bookmarks.Count);
+        Assert.HasCount(1, bookmarks);
         Assert.AreEqual(updatedBookmark, bookmarks.First());
         Assert.AreEqual("UpdatedBookmark", updatedBookmark.Name);
         Assert.AreEqual("D:\\UpdatedPath", updatedBookmark.Bookmark);
@@ -206,7 +207,7 @@ public class BookmarkManagerTests
         // First load: IDs should be generated for legacy entries
         var manager1 = new BookmarksManager(dataSource);
         var firstLoad = manager1.Bookmarks.ToList();
-        Assert.AreEqual(2, firstLoad.Count);
+        Assert.HasCount(2, firstLoad);
         Assert.AreNotEqual(Guid.Empty, firstLoad[0].Id);
         Assert.AreNotEqual(Guid.Empty, firstLoad[1].Id);
 
@@ -220,7 +221,7 @@ public class BookmarkManagerTests
         // Second load: should read back the same IDs from persisted data
         var manager2 = new BookmarksManager(dataSource);
         var secondLoad = manager2.Bookmarks.ToList();
-        Assert.AreEqual(2, secondLoad.Count);
+        Assert.HasCount(2, secondLoad);
 
         var secondIdsByName = secondLoad.ToDictionary(b => b.Name, b => b.Id);
 

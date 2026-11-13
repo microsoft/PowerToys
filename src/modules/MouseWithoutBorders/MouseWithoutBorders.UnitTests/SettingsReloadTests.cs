@@ -11,6 +11,7 @@ using MwbSettings = MouseWithoutBorders.Class.Settings;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class SettingsReloadTests
@@ -51,23 +52,23 @@ public sealed class SettingsReloadTests
 
         // Exercise the production setter path while its replacement is being built.
         // No watcher, sockets, UI, or real settings-file writes are involved.
-        var update = Task.Run(() => settings.SetMachineMatrix(PausingMatrix()));
+        var update = Task.Run(() => settings.SetMachineMatrix(PausingMatrix()), TestContext.CancellationToken);
         try
         {
-            Assert.IsTrue(enumerationPaused.Wait(TimeSpan.FromSeconds(10)), "Matrix update did not reach the barrier.");
+            Assert.IsTrue(enumerationPaused.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken), "Matrix update did not reach the barrier.");
             Assert.IsTrue(ApplySettings(settings, loaded));
-            CollectionAssert.AreEqual(OriginalMatrix, previousList);
-            CollectionAssert.AreEqual(ReloadedMatrix, loadedList);
+            Assert.AreSequenceEqual(OriginalMatrix, previousList);
+            Assert.AreSequenceEqual(ReloadedMatrix, loadedList);
         }
         finally
         {
             resumeEnumeration.Set();
-            Assert.IsTrue(update.Wait(TimeSpan.FromSeconds(10)), "Matrix update did not finish.");
+            Assert.IsTrue(update.Wait(TimeSpan.FromSeconds(10), System.Threading.CancellationToken.None), "Matrix update did not finish.");
         }
 
-        CollectionAssert.AreEqual(OriginalMatrix, previousList);
-        CollectionAssert.AreEqual(UpdatedMatrix, previous.MachineMatrixString);
-        CollectionAssert.AreEqual(ReloadedMatrix, loaded.MachineMatrixString);
+        Assert.AreSequenceEqual(OriginalMatrix, previousList);
+        Assert.AreSequenceEqual(UpdatedMatrix, previous.MachineMatrixString);
+        Assert.AreSequenceEqual(ReloadedMatrix, loaded.MachineMatrixString);
         Assert.HasCount(4, loaded.MachineMatrixString);
         Assert.AreEqual(string.Join(",", ReloadedMatrix), settings.MachineMatrixString);
 
@@ -78,7 +79,7 @@ public sealed class SettingsReloadTests
                 if (i == (pauseAfterFirstValue ? 1 : 0))
                 {
                     enumerationPaused.Set();
-                    if (!resumeEnumeration.Wait(TimeSpan.FromSeconds(10)))
+                    if (!resumeEnumeration.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken))
                     {
                         throw new TimeoutException("Settings adoption did not release the matrix update.");
                     }
@@ -100,9 +101,9 @@ public sealed class SettingsReloadTests
         Assert.IsTrue(ApplySettings(settings, loaded));
         settings.MachineMatrixString = string.Join(",", UpdatedMatrix);
 
-        CollectionAssert.AreEqual(OriginalMatrix, previous.MachineMatrixString);
-        CollectionAssert.AreEqual(ReloadedMatrix, loadedList);
-        CollectionAssert.AreEqual(UpdatedMatrix, loaded.MachineMatrixString);
+        Assert.AreSequenceEqual(OriginalMatrix, previous.MachineMatrixString);
+        Assert.AreSequenceEqual(ReloadedMatrix, loadedList);
+        Assert.AreSequenceEqual(UpdatedMatrix, loaded.MachineMatrixString);
         Assert.HasCount(4, loaded.MachineMatrixString);
         Assert.AreEqual(string.Join(",", UpdatedMatrix), settings.MachineMatrixString);
     }
@@ -114,10 +115,10 @@ public sealed class SettingsReloadTests
         var snapshot = properties.MachineMatrixString;
         var settings = CreateSettings(properties);
 
-        Assert.ThrowsException<InvalidOperationException>(() => settings.SetMachineMatrix(FailingMatrix()));
+        Assert.ThrowsExactly<InvalidOperationException>(() => settings.SetMachineMatrix(FailingMatrix()));
 
         Assert.AreSame(snapshot, properties.MachineMatrixString);
-        CollectionAssert.AreEqual(OriginalMatrix, properties.MachineMatrixString);
+        Assert.AreSequenceEqual(OriginalMatrix, properties.MachineMatrixString);
         Assert.AreEqual(string.Join(",", OriginalMatrix), settings.MachineMatrixString);
 
         static IEnumerable<string> FailingMatrix()
@@ -137,8 +138,8 @@ public sealed class SettingsReloadTests
         Assert.IsTrue(ApplySettings(settings, loaded));
 
         Assert.AreEqual(string.Join(",", ReloadedMatrix), settings.MachineMatrixString);
-        CollectionAssert.AreEqual(ReloadedMatrix, loaded.MachineMatrixString);
-        CollectionAssert.AreEqual(OriginalMatrix, previous.MachineMatrixString);
+        Assert.AreSequenceEqual(ReloadedMatrix, loaded.MachineMatrixString);
+        Assert.AreSequenceEqual(OriginalMatrix, previous.MachineMatrixString);
     }
 
     [TestMethod]
@@ -150,7 +151,7 @@ public sealed class SettingsReloadTests
 
         Assert.IsFalse(ApplySettings(settings, loaded));
         Assert.AreEqual(string.Join(",", TwoMachines), settings.MachineMatrixString);
-        CollectionAssert.AreEqual(TwoMachines, loaded.MachineMatrixString);
+        Assert.AreSequenceEqual(TwoMachines, loaded.MachineMatrixString);
     }
 
     [TestMethod]
@@ -161,7 +162,7 @@ public sealed class SettingsReloadTests
 
         Assert.IsFalse(ApplySettings(settings, loaded));
         Assert.IsFalse(ApplySettings(settings, loaded));
-        CollectionAssert.AreEqual(TwoMachines, loaded.MachineMatrixString);
+        Assert.AreSequenceEqual(TwoMachines, loaded.MachineMatrixString);
         Assert.AreEqual(string.Join(",", TwoMachines), settings.MachineMatrixString);
     }
 
@@ -186,11 +187,12 @@ public sealed class SettingsReloadTests
         // SetMachineMatrix holds the real settings lock and captures the old properties
         // before enumerating. Model the runtime cache already containing the writer's M1.
         var runtimeMatrix = UpdatedMatrix;
-        var update = Task.Run(() => settings.SetMachineMatrix(PausingMatrix()));
+        var update = Task.Run(() => settings.SetMachineMatrix(PausingMatrix()), TestContext.CancellationToken);
         try
         {
-            Assert.IsTrue(enumerationPaused.Wait(TimeSpan.FromSeconds(10)), "Writer did not capture the old properties.");
-            reload = Task.Run(() => settings.ApplyLoadedSettings(
+            Assert.IsTrue(enumerationPaused.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken), "Writer did not capture the old properties.");
+            reload = Task.Run(
+                () => settings.ApplyLoadedSettings(
                 new MouseWithoutBordersSettings { Properties = loaded },
                 () =>
                 {
@@ -216,26 +218,27 @@ public sealed class SettingsReloadTests
                 {
                     savedMatrix = settings.MachineMatrixString;
                     effects.Add("save");
-                }));
+                }),
+                TestContext.CancellationToken);
 
-            Assert.IsTrue(cursorEntered.Wait(TimeSpan.FromSeconds(10)), "Reload did not adopt properties and enter the cursor path.");
-            CollectionAssert.AreEqual(OriginalMatrix, previous.MachineMatrixString);
-            CollectionAssert.AreEqual(OriginalMatrix, loaded.MachineMatrixString);
+            Assert.IsTrue(cursorEntered.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken), "Reload did not adopt properties and enter the cursor path.");
+            Assert.AreSequenceEqual(OriginalMatrix, previous.MachineMatrixString);
+            Assert.AreSequenceEqual(OriginalMatrix, loaded.MachineMatrixString);
         }
         finally
         {
             resumeEnumeration.Set();
-            Assert.IsTrue(Task.WhenAll(update, reload ?? Task.CompletedTask).Wait(TimeSpan.FromSeconds(10)), "Writer/reload did not finish after releasing the settings lock.");
+            Assert.IsTrue(Task.WhenAll(update, reload ?? Task.CompletedTask).Wait(TimeSpan.FromSeconds(10), System.Threading.CancellationToken.None), "Writer/reload did not finish after releasing the settings lock.");
         }
 
-        CollectionAssert.AreEqual(UpdatedMatrix, previous.MachineMatrixString);
-        CollectionAssert.AreEqual(OriginalMatrix, loaded.MachineMatrixString);
+        Assert.AreSequenceEqual(UpdatedMatrix, previous.MachineMatrixString);
+        Assert.AreSequenceEqual(OriginalMatrix, loaded.MachineMatrixString);
         Assert.IsNotNull(invalidatedMatrix, "Reload must invalidate the writer's now-stale runtime cache.");
-        CollectionAssert.AreEqual(UpdatedMatrix, invalidatedMatrix);
-        CollectionAssert.AreEqual(OriginalMatrix, runtimeMatrix);
+        Assert.AreSequenceEqual(UpdatedMatrix, invalidatedMatrix);
+        Assert.AreSequenceEqual(OriginalMatrix, runtimeMatrix);
         Assert.AreEqual(string.Join(",", OriginalMatrix), sentMatrix);
         Assert.AreEqual(string.Join(",", OriginalMatrix), savedMatrix);
-        CollectionAssert.AreEqual(MatrixReloadEffects, effects);
+        Assert.AreSequenceEqual(MatrixReloadEffects, effects);
 
         IEnumerable<string> PausingMatrix()
         {
@@ -244,7 +247,7 @@ public sealed class SettingsReloadTests
                 if (i == (pauseAfterFirstValue ? 1 : 0))
                 {
                     enumerationPaused.Set();
-                    if (!resumeEnumeration.Wait(TimeSpan.FromSeconds(10)))
+                    if (!resumeEnumeration.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken))
                     {
                         throw new TimeoutException("Reload did not release the matrix writer.");
                     }
@@ -305,8 +308,8 @@ public sealed class SettingsReloadTests
             expected.Add("save");
         }
 
-        CollectionAssert.AreEqual(expected, effects);
-        CollectionAssert.AreEqual(OriginalMatrix, previous.MachineMatrixString);
+        Assert.AreSequenceEqual(expected, effects);
+        Assert.AreSequenceEqual(OriginalMatrix, previous.MachineMatrixString);
         Assert.AreEqual(string.Join(",", loaded.MachineMatrixString), settings.MachineMatrixString);
     }
 
@@ -333,4 +336,6 @@ public sealed class SettingsReloadTests
             PauseInstantSaving = true,
         };
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

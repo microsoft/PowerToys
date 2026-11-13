@@ -17,7 +17,7 @@ namespace Microsoft.PowerToys.PowerRename.UITests;
 /// </remarks>
 public sealed partial class PowerRenameTests
 {
-    [TestMethod("PowerRename.RegEx.ToggleChangesMatching")]
+    [TestMethod(DisplayName = "PowerRename.RegEx.ToggleChangesMatching")]
     [TestCategory("PowerRename")]
     public void RegularExpressionToggleChangesWhatMatches()
     {
@@ -37,7 +37,7 @@ public sealed partial class PowerRenameTests
         WaitForPreviewName(window, "matched.txt");
     }
 
-    [TestMethod("PowerRename.RegEx.CaptureGroup")]
+    [TestMethod(DisplayName = "PowerRename.RegEx.CaptureGroup")]
     [TestCategory("PowerRename")]
     public void RegularExpressionSearchAndReplaceUsesCaptureGroups()
     {
@@ -57,7 +57,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, "foo_photo.png", "notes.txt");
     }
 
-    [TestMethod("PowerRename.RegEx.FileCreationDateTime")]
+    [TestMethod(DisplayName = "PowerRename.RegEx.FileCreationDateTime")]
     [TestCategory("PowerRename")]
     public void ReplaceTermCanUseFileCreationDateAndTime()
     {
@@ -81,7 +81,7 @@ public sealed partial class PowerRenameTests
         ApplyRenameAndAssertEntries(window, folder, expectedName);
     }
 
-    [TestMethod("PowerRename.RegEx.BoostPerlSyntax")]
+    [TestMethod(DisplayName = "PowerRename.RegEx.BoostPerlSyntax")]
     [TestCategory("PowerRename")]
     public void BoostLibraryEnablesPerlRegularExpressionSyntax()
     {

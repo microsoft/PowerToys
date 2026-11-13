@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ThumbnailHelperTests
 {
@@ -39,7 +40,7 @@ public class ThumbnailHelperTests
         Assert.AreEqual(modeBefore, ShellThreadErrorModeScope.CurrentMode);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task MissingShortcutDoesNotReturnAnIcon(bool jumbo)
@@ -51,7 +52,7 @@ public class ThumbnailHelperTests
         Assert.IsNull(result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(@"C:\Files\image.jfif")]
     [DataRow(@"C:\Files\image.dib")]
     [DataRow(@"C:\Files\image.avif")]
@@ -85,12 +86,13 @@ public class ThumbnailHelperTests
         var allocated = GC.GetAllocatedBytesForCurrentThread() - allocatedBefore;
 
         Assert.IsTrue(allRecognized);
-        Assert.IsTrue(
-            allocated < 1_000,
+        Assert.IsLessThan(
+            1_000,
+            allocated,
             $"Image-path classification allocated {allocated} bytes across 1,000 calls.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow(@"C:\Files\document.txt")]

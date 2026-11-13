@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class UIInitializeAppliedLayoutsCustomLayoutsAppliedLayoutIdNotFoundTests : UIInitializeTestBase
 {

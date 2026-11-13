@@ -605,7 +605,7 @@ public static class EditorUiTestHelper
             slider.GetProperty("Value.Value"));
 
         var numbers = Regex.Matches(description, @"-?\d+");
-        Assert.IsTrue(numbers.Count > 0, $"The '{sliderId}' slider exposed no numeric value. Raw: '{description}'.");
+        Assert.IsNotEmpty(numbers, $"The '{sliderId}' slider exposed no numeric value. Raw: '{description}'.");
         return int.Parse(numbers[^1].Value, CultureInfo.InvariantCulture);
     }
 

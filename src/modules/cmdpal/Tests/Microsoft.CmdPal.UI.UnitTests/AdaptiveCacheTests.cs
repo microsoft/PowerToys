@@ -12,11 +12,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AdaptiveCacheTests
 {
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task LookupOverlappingEvictionDoesNotObserveAnotherKeysValue()
     {
         using var comparisonStarted = new ManualResetEventSlim();
@@ -32,7 +33,7 @@ public class AdaptiveCacheTests
             return (Found: found, Value: value);
         });
 
-        Assert.IsTrue(comparisonStarted.Wait(TimeSpan.FromSeconds(2)), "The lookup did not reach its key comparison.");
+        Assert.IsTrue(comparisonStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken), "The lookup did not reach its key comparison.");
         try
         {
             Assert.IsTrue(cache.TryRemove(new BlockingKey(1)));
@@ -98,7 +99,7 @@ public class AdaptiveCacheTests
     }
 
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task GetOrAddRetriesWhenCompetingEntryDisappears()
     {
         using var factoryStarted = new ManualResetEventSlim();
@@ -120,7 +121,7 @@ public class AdaptiveCacheTests
             static (_, state) =>
             {
                 state.FactoryStarted.Set();
-                if (!state.ContinueFactory.Wait(TimeSpan.FromSeconds(2)))
+                if (!state.ContinueFactory.Wait(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None))
                 {
                     throw new TimeoutException("The competing cache entry was not inserted.");
                 }
@@ -129,11 +130,11 @@ public class AdaptiveCacheTests
             },
             (FactoryStarted: factoryStarted, ContinueFactory: continueFactory)));
 
-        Assert.IsTrue(factoryStarted.Wait(TimeSpan.FromSeconds(2)), "The value factory did not start.");
+        Assert.IsTrue(factoryStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken), "The value factory did not start.");
         cache.Add(new BlockingHashKey(1), 202);
         continueFactory.Set();
 
-        Assert.IsTrue(lookupStarted.Wait(TimeSpan.FromSeconds(2)), "The follow-up cache lookup did not start.");
+        Assert.IsTrue(lookupStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken), "The follow-up cache lookup did not start.");
         Assert.IsTrue(cache.TryRemove(new BlockingHashKey(1)));
         continueLookup.Set();
 
@@ -142,8 +143,9 @@ public class AdaptiveCacheTests
         Assert.AreEqual(101, cached);
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = false)]
     public void RemovalCallbackReportsReasonValueAndRemainingCount()
     {
         var removals = new ConcurrentQueue<(int Key, int Value, AdaptiveCacheRemovalReason Reason, int Count, int Capacity)>();
@@ -170,21 +172,22 @@ public class AdaptiveCacheTests
         var remainingKey = cache.TryGet(1, out _) ? 1 : 2;
         var replacedValue = remainingKey == 1 ? 101 : 202;
         cache.Add(remainingKey, 303);
-        Assert.IsTrue(removals.Any(
+        Assert.Contains(
             removal =>
                 removal.Reason == AdaptiveCacheRemovalReason.Replaced &&
                 removal.Key == remainingKey &&
                 removal.Value == replacedValue &&
-                removal.Count == 1));
+                removal.Count == 1,
+            removals);
         Assert.IsTrue(cache.TryGet(remainingKey, out var replacement));
         Assert.AreEqual(303, replacement);
 
         Assert.IsTrue(cache.TryRemove(remainingKey));
-        Assert.IsTrue(removals.Any(removal => removal.Reason == AdaptiveCacheRemovalReason.Explicit));
+        Assert.Contains(removal => removal.Reason == AdaptiveCacheRemovalReason.Explicit, removals);
     }
 
     [TestMethod]
-    [Timeout(15_000)]
+    [Timeout(15_000, CooperativeCancellation = true)]
     public async Task ConcurrentCleanupAndFailedLoadsKeepApproximateCountConsistent()
     {
         const int capacity = 1;
@@ -201,7 +204,8 @@ public class AdaptiveCacheTests
             "Capacity cleanup did not run.");
 
         var workers = Enumerable.Range(0, workerCount)
-            .Select(worker => Task.Run(() =>
+            .Select(worker => Task.Run(
+                () =>
             {
                 for (var item = 0; item < itemsPerWorker; item++)
                 {
@@ -231,7 +235,8 @@ public class AdaptiveCacheTests
 
                     _ = cache.TryGet(key, out _);
                 }
-            }))
+            },
+                TestContext.CancellationToken))
             .ToArray();
 
         await Task.WhenAll(workers);
@@ -327,4 +332,6 @@ public class AdaptiveCacheTests
             return Value;
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

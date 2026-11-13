@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BasicTests : CommandPaletteTestBase
 {
@@ -245,7 +246,7 @@ public class BasicTests : CommandPaletteTestBase
         this.Find<NavigationViewItem>("General", global: true).Click();
         this.Find<TextBox>("Search settings, commands, and extensions", global: true).SetText("preview");
         var showAll = this.Find(By.AccessibilityId("SettingsSearchShowAllResults"), global: true);
-        StringAssert.StartsWith(showAll.Name, "Show ");
+        Assert.StartsWith("Show ", showAll.Name);
 
         if (showAllResults)
         {

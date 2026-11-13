@@ -12,6 +12,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class QueryTests
     {
@@ -21,7 +22,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             StringMatcher.Instance = new StringMatcher();
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("shutdown", "Shutdown computer")]
         [DataRow("restart", "Restart computer")]
         [DataRow("sign out", "Sign out of computer")]
@@ -43,7 +44,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             Assert.IsTrue(result.StartsWith(expectedResult, StringComparison.OrdinalIgnoreCase));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ip", "IPv4 address of")]
         [DataRow("address", "IPv4 address of")] // searching for address should show ipv4 first
         [DataRow("ip v4", "IPv4 address of")]

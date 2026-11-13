@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ExternalCommandPermissionStoreTests
 {
@@ -43,18 +44,18 @@ public class ExternalCommandPermissionStoreTests
 
         using (var writer = new ExternalCommandPermissionStore(protector, _filePath))
         {
-            Assert.IsTrue(await writer.RememberAsync(permission));
+            Assert.IsTrue(await writer.RememberAsync(permission, TestContext.CancellationToken));
         }
 
-        var protectedText = Encoding.UTF8.GetString(await File.ReadAllBytesAsync(_filePath));
+        var protectedText = Encoding.UTF8.GetString(await File.ReadAllBytesAsync(_filePath, TestContext.CancellationToken));
         Assert.IsFalse(protectedText.Contains(permission.CommandName, StringComparison.Ordinal));
         Assert.AreEqual(1, protector.ProtectCalls);
 
         using var reader = new ExternalCommandPermissionStore(protector, _filePath);
-        Assert.IsTrue(await reader.IsAllowedAsync(permission.Key));
+        Assert.IsTrue(await reader.IsAllowedAsync(permission.Key, TestContext.CancellationToken));
 
-        var permissions = await reader.GetAllAsync();
-        Assert.AreEqual(1, permissions.Count);
+        var permissions = await reader.GetAllAsync(TestContext.CancellationToken);
+        Assert.HasCount(1, permissions);
         Assert.AreEqual(permission, permissions[0]);
         Assert.AreEqual(1, protector.UnprotectCalls);
     }
@@ -62,13 +63,13 @@ public class ExternalCommandPermissionStoreTests
     [TestMethod]
     public async Task GetAllAsync_CorruptProtectedData_FailsClosed()
     {
-        await File.WriteAllBytesAsync(_filePath, [0x01, 0x02, 0x03]);
+        await File.WriteAllBytesAsync(_filePath, [0x01, 0x02, 0x03], TestContext.CancellationToken);
         using var store = new ExternalCommandPermissionStore(new TestDataProtector(), _filePath);
 
-        var permissions = await store.GetAllAsync();
+        var permissions = await store.GetAllAsync(TestContext.CancellationToken);
 
-        Assert.AreEqual(0, permissions.Count);
-        Assert.IsFalse(await store.IsAllowedAsync(CreatePermission("command.one").Key));
+        Assert.IsEmpty(permissions);
+        Assert.IsFalse(await store.IsAllowedAsync(CreatePermission("command.one").Key, TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -85,12 +86,12 @@ public class ExternalCommandPermissionStoreTests
         foreach (var invalidState in invalidStates)
         {
             var protector = new TestDataProtector();
-            var protectedData = await protector.ProtectAsync(Encoding.UTF8.GetBytes(invalidState));
-            await File.WriteAllBytesAsync(_filePath, protectedData);
+            var protectedData = await protector.ProtectAsync(Encoding.UTF8.GetBytes(invalidState), TestContext.CancellationToken);
+            await File.WriteAllBytesAsync(_filePath, protectedData, TestContext.CancellationToken);
 
             using var store = new ExternalCommandPermissionStore(protector, _filePath);
-            Assert.AreEqual(0, (await store.GetAllAsync()).Count, invalidState);
-            Assert.IsFalse(await store.IsAllowedAsync(CreatePermission("command.one").Key), invalidState);
+            Assert.IsEmpty(await store.GetAllAsync(TestContext.CancellationToken), invalidState);
+            Assert.IsFalse(await store.IsAllowedAsync(CreatePermission("command.one").Key, TestContext.CancellationToken), invalidState);
         }
     }
 
@@ -103,14 +104,14 @@ public class ExternalCommandPermissionStoreTests
         var eventCount = 0;
         store.PermissionsChanged += (_, _) => eventCount++;
 
-        await store.RememberAsync(first);
-        await store.RememberAsync(second);
-        Assert.IsTrue(await store.RevokeAsync(first.Key));
-        Assert.IsFalse(await store.IsAllowedAsync(first.Key));
-        Assert.IsTrue(await store.IsAllowedAsync(second.Key));
-        Assert.IsTrue(await store.ClearAsync());
+        await store.RememberAsync(first, TestContext.CancellationToken);
+        await store.RememberAsync(second, TestContext.CancellationToken);
+        Assert.IsTrue(await store.RevokeAsync(first.Key, TestContext.CancellationToken));
+        Assert.IsFalse(await store.IsAllowedAsync(first.Key, TestContext.CancellationToken));
+        Assert.IsTrue(await store.IsAllowedAsync(second.Key, TestContext.CancellationToken));
+        Assert.IsTrue(await store.ClearAsync(TestContext.CancellationToken));
 
-        Assert.AreEqual(0, (await store.GetAllAsync()).Count);
+        Assert.IsEmpty(await store.GetAllAsync(TestContext.CancellationToken));
         Assert.AreEqual(4, eventCount);
     }
 
@@ -121,8 +122,8 @@ public class ExternalCommandPermissionStoreTests
         var permission = CreatePermission("command.one");
         using var store = new ExternalCommandPermissionStore(protector, _filePath);
 
-        Assert.IsFalse(await store.RememberAsync(permission));
-        Assert.IsFalse(await store.IsAllowedAsync(permission.Key));
+        Assert.IsFalse(await store.RememberAsync(permission, TestContext.CancellationToken));
+        Assert.IsFalse(await store.IsAllowedAsync(permission.Key, TestContext.CancellationToken));
         Assert.IsFalse(File.Exists(_filePath));
     }
 
@@ -139,8 +140,8 @@ public class ExternalCommandPermissionStoreTests
             "Provider");
         using var store = new ExternalCommandPermissionStore(new TestDataProtector(), _filePath);
 
-        Assert.IsFalse(await store.RememberAsync(permission));
-        Assert.AreEqual(0, (await store.GetAllAsync()).Count);
+        Assert.IsFalse(await store.RememberAsync(permission, TestContext.CancellationToken));
+        Assert.IsEmpty(await store.GetAllAsync(TestContext.CancellationToken));
         Assert.IsFalse(File.Exists(_filePath));
     }
 
@@ -150,16 +151,16 @@ public class ExternalCommandPermissionStoreTests
         var protector = new BlockingDataProtector();
         var store = new ExternalCommandPermissionStore(protector, _filePath);
 
-        var activeOperation = store.RememberAsync(CreatePermission("command.one"));
-        await protector.ProtectionStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        var activeOperation = store.RememberAsync(CreatePermission("command.one"), TestContext.CancellationToken);
+        await protector.ProtectionStarted.Task.WaitAsync(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
 
-        var queuedOperation = store.GetAllAsync();
+        var queuedOperation = store.GetAllAsync(TestContext.CancellationToken);
         store.Dispose();
         protector.ContinueProtection.TrySetResult();
 
         Assert.IsTrue(await activeOperation);
-        await Assert.ThrowsExceptionAsync<ObjectDisposedException>(async () => await queuedOperation);
-        await Assert.ThrowsExceptionAsync<ObjectDisposedException>(async () => await store.GetAllAsync());
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await queuedOperation);
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await store.GetAllAsync(TestContext.CancellationToken));
     }
 
     private static ExternalCommandPermission CreatePermission(string commandId) =>
@@ -240,4 +241,6 @@ public class ExternalCommandPermissionStoreTests
             return Task.FromResult(protectedData.ToArray());
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

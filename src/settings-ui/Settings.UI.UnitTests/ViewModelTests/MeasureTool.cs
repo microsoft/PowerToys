@@ -15,6 +15,7 @@ using Moq;
 
 namespace ViewModelTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class MeasureTool
     {

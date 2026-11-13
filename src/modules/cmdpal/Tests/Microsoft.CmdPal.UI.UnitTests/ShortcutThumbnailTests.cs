@@ -13,6 +13,7 @@ using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ShortcutThumbnailTests
 {
@@ -51,8 +52,8 @@ public partial class ShortcutThumbnailTests
             Assert.IsNotNull(actual.SoftwareBitmap);
             Assert.AreEqual(expected.SoftwareBitmap.PixelWidth, actual.SoftwareBitmap.PixelWidth);
             Assert.AreEqual(expected.SoftwareBitmap.PixelHeight, actual.SoftwareBitmap.PixelHeight);
-            CollectionAssert.AreEqual(GetPixels(expected.SoftwareBitmap), GetPixels(actual.SoftwareBitmap), "App shortcut icons must contain the base icon rather than the shortcut overlay.");
-            CollectionAssert.AreEqual(originalShortcut, File.ReadAllBytes(shortcutPath), "Loading an icon must leave the shortcut unchanged.");
+            Assert.AreSequenceEqual(GetPixels(expected.SoftwareBitmap), GetPixels(actual.SoftwareBitmap), "App shortcut icons must contain the base icon rather than the shortcut overlay.");
+            Assert.AreSequenceEqual(originalShortcut, File.ReadAllBytes(shortcutPath), "Loading an icon must leave the shortcut unchanged.");
         }
         finally
         {
@@ -78,8 +79,8 @@ public partial class ShortcutThumbnailTests
             using var actual = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
             Assert.AreEqual(expected.PixelWidth, actual.PixelWidth);
             Assert.AreEqual(expected.PixelHeight, actual.PixelHeight);
-            CollectionAssert.AreEqual(GetPixels(expected), GetPixels(actual), "Public shortcut thumbnails must preserve the decorated Shell icon.");
-            CollectionAssert.AreEqual(originalShortcut, File.ReadAllBytes(shortcutPath), "Loading a thumbnail must leave the shortcut unchanged.");
+            Assert.AreSequenceEqual(GetPixels(expected), GetPixels(actual), "Public shortcut thumbnails must preserve the decorated Shell icon.");
+            Assert.AreSequenceEqual(originalShortcut, File.ReadAllBytes(shortcutPath), "Loading a thumbnail must leave the shortcut unchanged.");
         }
         finally
         {

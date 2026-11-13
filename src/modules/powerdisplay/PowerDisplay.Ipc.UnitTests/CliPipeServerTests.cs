@@ -19,6 +19,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 /// Unit tests for <see cref="CliPipeServer.ReadBoundedLineAsync"/>, the length-bounded line reader
 /// that protects the single-threaded accept loop from oversized / never-terminated requests.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CliPipeServerTests
 {
@@ -73,7 +74,7 @@ public class CliPipeServerTests
     [TestMethod]
     public async Task ReadBoundedLine_OverMaxChars_Throws()
     {
-        await Assert.ThrowsExceptionAsync<InvalidDataException>(
+        await Assert.ThrowsExactlyAsync<InvalidDataException>(
             () => Read("abcdef\n", maxChars: 5));
     }
 
@@ -82,7 +83,7 @@ public class CliPipeServerTests
     {
         using var cts = new CancellationTokenSource();
         cts.Cancel();
-        await Assert.ThrowsExceptionAsync<System.OperationCanceledException>(
+        await Assert.ThrowsExactlyAsync<System.OperationCanceledException>(
             () => CliPipeServer.ReadBoundedLineAsync(new StringReader("x\n"), 1024, cts.Token));
     }
 
@@ -233,7 +234,7 @@ public class CliPipeServerTests
             var replacement = await CliPipeServer.CreateReplacementWithRetryAsync(Factory, Delay, CancellationToken.None);
 
             Assert.AreSame(created, replacement);
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 DelayThenCreateOrder,
                 callOrder,
                 "The delay must be awaited before the create attempt, even when that first attempt succeeds.");
@@ -264,7 +265,7 @@ public class CliPipeServerTests
             return Task.CompletedTask;
         }
 
-        await Assert.ThrowsExceptionAsync<InvalidOperationException>(
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => CliPipeServer.CreateReplacementWithRetryAsync(Factory, Delay, CancellationToken.None));
 
         Assert.AreEqual(1, attempts, "A non-recoverable exception must not be retried.");

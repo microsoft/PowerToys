@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AppIconProtocolTests
 {
@@ -23,7 +24,7 @@ public class AppIconProtocolTests
         Assert.IsTrue(AppIconProtocol.IsProtocol(value));
         Assert.IsTrue(parsed);
         Assert.IsFalse(jumbo);
-        CollectionAssert.AreEqual(new[] { primary, fallback }, candidates);
+        Assert.AreSequenceEqual(new[] { primary, fallback }, candidates);
     }
 
     [TestMethod]
@@ -38,10 +39,10 @@ public class AppIconProtocolTests
 
         Assert.IsTrue(parsed);
         Assert.IsTrue(jumbo);
-        CollectionAssert.AreEqual(new[] { primary, fallback, finalFallback }, candidates);
+        Assert.AreSequenceEqual(new[] { primary, fallback, finalFallback }, candidates);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("😀", "|AppIcon|v1;2:😀")]
     [DataRow("👩‍💻", "|AppIcon|v1;5:👩‍💻")]
     [DataRow("😀👩‍💻❤️", "|AppIcon|v1;9:😀👩‍💻❤️")]
@@ -52,7 +53,7 @@ public class AppIconProtocolTests
         Assert.AreEqual(expectedValue, value);
         Assert.IsTrue(AppIconProtocol.TryParse(value, out var candidates, out var jumbo));
         Assert.IsFalse(jumbo);
-        CollectionAssert.AreEqual(new[] { candidate }, candidates);
+        Assert.AreSequenceEqual(new[] { candidate }, candidates);
     }
 
     [TestMethod]
@@ -64,7 +65,7 @@ public class AppIconProtocolTests
 
         Assert.IsTrue(AppIconProtocol.TryParse(value, out var candidates, out var jumbo));
         Assert.IsTrue(jumbo);
-        CollectionAssert.AreEqual(new[] { primary }, candidates);
+        Assert.AreSequenceEqual(new[] { primary }, candidates);
     }
 
     [TestMethod]
@@ -79,7 +80,7 @@ public class AppIconProtocolTests
         Assert.AreSame(data, info.Dark);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("|AppIcon|")]
@@ -96,11 +97,11 @@ public class AppIconProtocolTests
         var parsed = AppIconProtocol.TryParse(value, out var candidates, out var jumbo);
 
         Assert.IsFalse(parsed);
-        Assert.AreEqual(0, candidates.Length);
+        Assert.IsEmpty(candidates);
         Assert.IsFalse(jumbo);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|AppIcon|")]
     [DataRow("|JumboAppIcon|")]
     public void MalformedPayloadIsStillClaimedByProtocol(string value)
@@ -112,7 +113,7 @@ public class AppIconProtocolTests
     [TestMethod]
     public void EncoderRequiresPrimaryCandidate()
     {
-        Assert.ThrowsException<ArgumentException>(() => AppIconProtocol.Create(string.Empty));
-        Assert.ThrowsException<ArgumentNullException>(() => AppIconProtocol.CreateJumbo(null!));
+        Assert.ThrowsExactly<ArgumentException>(() => AppIconProtocol.Create(string.Empty));
+        Assert.ThrowsExactly<ArgumentNullException>(() => AppIconProtocol.CreateJumbo(null!));
     }
 }

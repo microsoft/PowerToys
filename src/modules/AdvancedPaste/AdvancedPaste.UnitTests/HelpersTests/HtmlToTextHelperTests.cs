@@ -13,6 +13,7 @@ using Windows.ApplicationModel.DataTransfer;
 namespace AdvancedPaste.UnitTests.HelpersTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class HtmlToTextHelperTests
 {
     [TestMethod]
@@ -65,7 +66,7 @@ public sealed class HtmlToTextHelperTests
         var expected = "caf\u00e9 \u4e2d\u6587 \U0001f680 &\nnext\nline".ReplaceLineEndings(Environment.NewLine);
 
         Assert.AreEqual(expected, await data.GetView().GetTextOrHtmlTextAsync());
-        Assert.AreEqual(expected, await data.GetView().GetClipboardTextOrThrowAsync());
+        Assert.AreEqual(expected, await data.GetView().GetClipboardTextOrThrowAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -77,7 +78,7 @@ public sealed class HtmlToTextHelperTests
         data.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat("<p>Do not use the HTML alternative</p>"));
 
         Assert.AreEqual(original, await data.GetView().GetTextOrHtmlTextAsync());
-        Assert.AreEqual(original, await data.GetView().GetClipboardTextOrThrowAsync());
+        Assert.AreEqual(original, await data.GetView().GetClipboardTextOrThrowAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
@@ -87,13 +88,13 @@ public sealed class HtmlToTextHelperTests
         data.SetHtmlFormat(HtmlFormatHelper.CreateHtmlFormat("<p></p>"));
 
         Assert.AreEqual(string.Empty, await data.GetView().GetTextOrHtmlTextAsync());
-        Assert.AreEqual(string.Empty, await data.GetView().GetClipboardTextOrThrowAsync());
+        Assert.AreEqual(string.Empty, await data.GetView().GetClipboardTextOrThrowAsync(TestContext.CancellationToken));
     }
 
     [TestMethod]
     public void NullHtmlIsRejected()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => HtmlToTextHelper.ToPlainText(null!));
+        Assert.ThrowsExactly<ArgumentNullException>(() => HtmlToTextHelper.ToPlainText(null!));
     }
 
     [TestMethod]
@@ -102,6 +103,8 @@ public sealed class HtmlToTextHelperTests
         var data = new DataPackage();
 
         Assert.AreEqual(string.Empty, await data.GetView().GetTextOrHtmlTextAsync());
-        await Assert.ThrowsExceptionAsync<PasteActionException>(() => data.GetView().GetClipboardTextOrThrowAsync());
+        await Assert.ThrowsExactlyAsync<PasteActionException>(() => data.GetView().GetClipboardTextOrThrowAsync(TestContext.CancellationToken));
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class HostModuleTests : UITestBase
     {
@@ -31,7 +32,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.EmptyViewShouldWork")]
+        [TestMethod(DisplayName = "Hosts.Basic.EmptyViewShouldWork")]
         [TestCategory("Hosts File Editor #4")]
         public void TestEmptyView()
         {
@@ -63,7 +64,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.AddEntryButtonShouldWork")]
+        [TestMethod(DisplayName = "Hosts.Basic.AddEntryButtonShouldWork")]
         [TestCategory("Hosts File Editor #4")]
         public void TestAddingEntry()
         {
@@ -90,7 +91,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.CanNotAddMoreThenNighHosts")]
+        [TestMethod(DisplayName = "Hosts.Basic.CanNotAddMoreThenNighHosts")]
         [TestCategory("Hosts File Editor #5")]
         public void TestTooManyHosts()
         {
@@ -125,7 +126,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
+        [TestMethod(DisplayName = "Hosts.Basic.ErrorMessageShowupIfNotRunAsAdmin")]
         [TestCategory("Hosts File Editor #8")]
         public void TestErrorMessageWithNonAdminPermission()
         {
@@ -137,8 +138,9 @@ namespace Hosts.UITests
                 // Add new URL override and a warning tip should be shown
                 this.AddEntry("192.168.0.1", "localhost", true);
 
-                Assert.IsTrue(
-                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count == 1,
+                Assert.HasCount(
+                    1,
+                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator."),
                     "Should display host-file saving error if not run as administrator");
             }
         }
@@ -151,7 +153,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.NoErrorMessageShowupIfRunAsAdmin")]
+        [TestMethod(DisplayName = "Hosts.Basic.NoErrorMessageShowupIfRunAsAdmin")]
         [TestCategory("Hosts File Editor #8")]
         public void TestNoErrorMessageWithNonAdminPermission()
         {
@@ -163,8 +165,8 @@ namespace Hosts.UITests
                 // Add new URL override and a warning tip should be shown
                 this.AddEntry("192.168.0.1", "localhost", true);
 
-                Assert.IsFalse(
-                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator.").Count > 0,
+                Assert.IsEmpty(
+                    this.FindAll<TextBlock>("The hosts file cannot be saved because the program isn't running as administrator."),
                     "Should display host-file saving error if not run as administrator");
             }
         }
@@ -183,7 +185,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Basic.FiltersControlShouldWork")]
+        [TestMethod(DisplayName = "Hosts.Basic.FiltersControlShouldWork")]
         [TestCategory("Hosts File Editor #6")]
         public void TestFilterControl()
         {
@@ -197,7 +199,7 @@ namespace Hosts.UITests
 
             // Open-filter-panel
             this.Find<Button>("Filters").Click();
-            Assert.IsTrue(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be opened after click Filter Button");
+            Assert.HasCount(1, this.FindAll<Button>("Clear filters"), "Filter panel should be opened after click Filter Button");
 
             var addressFilterCases = new KeyValuePair<string, int>[]
             {
@@ -223,7 +225,7 @@ namespace Hosts.UITests
             foreach (var (addressFilter, expectedCount) in addressFilterCases)
             {
                 this.Find<TextBox>("Address").SetText(addressFilter);
-                Assert.IsTrue(this.Find("Entries").FindAll<Button>("Delete").Count == expectedCount);
+                Assert.HasCount(expectedCount, this.Find("Entries").FindAll<Button>("Delete"));
             }
 
             var hostFilterCases = new KeyValuePair<string, int>[]
@@ -247,12 +249,12 @@ namespace Hosts.UITests
             foreach (var (hostFilterCase, expectedCount) in hostFilterCases)
             {
                 this.Find<TextBox>("Hosts").SetText(hostFilterCase);
-                Assert.IsTrue(this.Find("Entries").FindAll<Button>("Delete").Count == expectedCount);
+                Assert.HasCount(expectedCount, this.Find("Entries").FindAll<Button>("Delete"));
             }
 
             // Close-filter-panel
             this.Find<Button>("Filters").Click();
-            Assert.IsFalse(this.FindAll<Button>("Clear filters").Count == 1, "Filter panel should be closed after clicking Filter Button");
+            Assert.AreNotEqual(1, this.FindAll<Button>("Clear filters").Count, "Filter panel should be closed after clicking Filter Button");
         }
 
         private void AddEntry(string ip, string host, bool active = true, bool clickAddEntryButton = true)
@@ -266,8 +268,8 @@ namespace Hosts.UITests
             // Adding a new host override localhost -> 192.168.0.1
             Assert.IsFalse(this.Find<Button>("Add").Enabled, "Add button should be Disabled by default");
 
-            Assert.IsTrue(this.Find<TextBox>("Address").SetText(ip).Text == ip);
-            Assert.IsTrue(this.Find<TextBox>("Hosts").SetText(host).Text == host);
+            Assert.AreEqual(ip, this.Find<TextBox>("Address").SetText(ip).Text);
+            Assert.AreEqual(host, this.Find<TextBox>("Hosts").SetText(host).Text);
 
             this.Find<ToggleSwitch>("Active").Toggle(active);
 
@@ -301,7 +303,7 @@ namespace Hosts.UITests
             }
 
             // Should have no row left, and no more delete button
-            Assert.IsTrue(this.FindAll<Button>("Delete", 1000).Count == 0);
+            Assert.IsEmpty(this.FindAll<Button>("Delete", 1000));
         }
     }
 }

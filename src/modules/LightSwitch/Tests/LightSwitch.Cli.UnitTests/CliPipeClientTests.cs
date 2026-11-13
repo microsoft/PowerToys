@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.Cli.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class CliPipeClientTests
 {
@@ -37,14 +38,15 @@ public sealed class CliPipeClientTests
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     public async Task ResponseSplitAtEveryBytePreservesUtf16AndTheRequestHasNoBom()
     {
         string name = NewPipeName();
         using var server = CreateServer(name);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         const string Response = "{\"version\":1,\"success\":false,\"error\":{\"code\":\"EXECUTION_FAILED\",\"message\":\"主题 🌙\"}}";
-        var serverTask = Task.Run(async () =>
+        var serverTask = Task.Run(
+            async () =>
         {
             await server.WaitForConnectionAsync(cancellation.Token);
             string? actualRequest = await ReadRequestAsync(server, cancellation.Token);
@@ -56,7 +58,8 @@ public sealed class CliPipeClientTests
             }
 
             await WaitForClientCloseAsync(server, cancellation.Token);
-        });
+        },
+            TestContext.CancellationToken);
 
         var client = CreateClient(name);
         Assert.AreEqual(Response, await client.SendAsync(Request, cancellation.Token));
@@ -64,7 +67,7 @@ public sealed class CliPipeClientTests
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     [DataRow(510, "\n")]
     [DataRow(511, "\n")]
     [DataRow(512, "\n")]
@@ -101,7 +104,7 @@ public sealed class CliPipeClientTests
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     public async Task UntrustedServerReceivesNoRequestBytes()
     {
         string name = NewPipeName();
@@ -112,23 +115,23 @@ public sealed class CliPipeClientTests
         Task connected = server.WaitForConnectionAsync(cancellation.Token);
 
         var client = new CliPipeClient(name, static _ => false, TimeSpan.FromSeconds(2));
-        var error = await Assert.ThrowsExceptionAsync<CliException>(() => client.SendAsync(Request, cancellation.Token));
+        var error = await Assert.ThrowsExactlyAsync<CliException>(() => client.SendAsync(Request, cancellation.Token));
         Assert.AreEqual("SERVICE_UNAVAILABLE", error.Code);
         await connected;
         await WaitForClientCloseAsync(server, cancellation.Token);
     }
 
     [TestMethod]
-    [Timeout(5000)]
+    [Timeout(5000, CooperativeCancellation = true)]
     public async Task MissingServiceIsUnavailableWithinTheConnectDeadline()
     {
         var client = new CliPipeClient(NewPipeName(), static _ => true, TimeSpan.FromMilliseconds(100));
-        var error = await Assert.ThrowsExceptionAsync<CliException>(() => client.SendAsync(Request, CancellationToken.None));
+        var error = await Assert.ThrowsExactlyAsync<CliException>(() => client.SendAsync(Request, CancellationToken.None));
         Assert.AreEqual("SERVICE_UNAVAILABLE", error.Code);
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     [DataRow("")]
     [DataRow("{\"version\":1,\"success\":false}")]
     public async Task DisconnectAfterRequestIsAnUnknownOutcomeEvenForParseableTail(string incompleteResponse)
@@ -136,7 +139,8 @@ public sealed class CliPipeClientTests
         string name = NewPipeName();
         using var server = CreateServer(name);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var serverTask = Task.Run(async () =>
+        var serverTask = Task.Run(
+            async () =>
         {
             await server.WaitForConnectionAsync(cancellation.Token);
             Assert.AreEqual(Request, await ReadRequestAsync(server, cancellation.Token));
@@ -146,36 +150,39 @@ public sealed class CliPipeClientTests
             }
 
             server.Dispose();
-        });
+        },
+            TestContext.CancellationToken);
 
-        var error = await Assert.ThrowsExceptionAsync<CliException>(() => CreateClient(name).SendAsync(Request, cancellation.Token));
+        var error = await Assert.ThrowsExactlyAsync<CliException>(() => CreateClient(name).SendAsync(Request, cancellation.Token));
         Assert.AreEqual("TIMEOUT", error.Code);
-        StringAssert.Contains(error.Message, "may already have taken effect");
+        Assert.Contains("may already have taken effect", error.Message);
         await serverTask;
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     public async Task InvalidUtf16IsAProtocolError()
     {
         string name = NewPipeName();
         using var server = CreateServer(name);
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-        var serverTask = Task.Run(async () =>
+        var serverTask = Task.Run(
+            async () =>
         {
             await server.WaitForConnectionAsync(cancellation.Token);
             _ = await ReadRequestAsync(server, cancellation.Token);
             await server.WriteAsync(InvalidUtf16Line, cancellation.Token);
             await WaitForClientCloseAsync(server, cancellation.Token);
-        });
+        },
+            TestContext.CancellationToken);
 
-        var error = await Assert.ThrowsExceptionAsync<CliException>(() => CreateClient(name).SendAsync(Request, cancellation.Token));
+        var error = await Assert.ThrowsExactlyAsync<CliException>(() => CreateClient(name).SendAsync(Request, cancellation.Token));
         Assert.AreEqual("PROTOCOL_ERROR", error.Code);
         await serverTask;
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     public async Task CancellingAConnectedRequestClosesTheConnection()
     {
         string name = NewPipeName();
@@ -183,13 +190,15 @@ public sealed class CliPipeClientTests
         using var serverDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
         using var clientCancellation = new CancellationTokenSource();
         var requestRead = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var serverTask = Task.Run(async () =>
+        var serverTask = Task.Run(
+            async () =>
         {
             await server.WaitForConnectionAsync(serverDeadline.Token);
             _ = await ReadRequestAsync(server, serverDeadline.Token);
             requestRead.SetResult();
             await WaitForClientCloseAsync(server, serverDeadline.Token);
-        });
+        },
+            TestContext.CancellationToken);
 
         var exchange = CreateClient(name).SendAsync(Request, clientCancellation.Token);
         await requestRead.Task.WaitAsync(serverDeadline.Token);
@@ -218,7 +227,7 @@ public sealed class CliPipeClientTests
     public async Task BoundedReaderRejectsMoreThanTheLimit()
     {
         using var reader = new StringReader(new string('a', CliProtocol.MaxMessageChars + 1) + "\n");
-        var error = await Assert.ThrowsExceptionAsync<CliException>(() => CliPipeClient.ReadResponseLineAsync(reader, CancellationToken.None));
+        var error = await Assert.ThrowsExactlyAsync<CliException>(() => CliPipeClient.ReadResponseLineAsync(reader, CancellationToken.None));
         Assert.AreEqual("PROTOCOL_ERROR", error.Code);
     }
 
@@ -241,11 +250,11 @@ public sealed class CliPipeClientTests
     [TestMethod]
     public void ServerIdentityUsesTheServiceSubfolderOfTheInstallationRoot()
     {
-        Assert.AreEqual(Path.Combine(AppContext.BaseDirectory, "LightSwitchService", "PowerToys.LightSwitchService.exe"), PipeServerIdentity.ExpectedServerPath);
+        Assert.AreEqual(PipeServerIdentity.ExpectedServerPath, Path.Combine(AppContext.BaseDirectory, "LightSwitchService", "PowerToys.LightSwitchService.exe"));
     }
 
     [TestMethod]
-    [Timeout(10000)]
+    [Timeout(10000, CooperativeCancellation = true)]
     public async Task ServerIdentityChecksTheProcessAtTheOtherEndOfThePipe()
     {
         string name = NewPipeName();
@@ -280,4 +289,6 @@ public sealed class CliPipeClientTests
         var buffer = new byte[1];
         Assert.AreEqual(0, await stream.ReadAsync(buffer, cancellationToken));
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

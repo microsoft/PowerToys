@@ -16,6 +16,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class DockBandsCollectionTests
 {
@@ -69,8 +70,8 @@ public sealed partial class DockBandsCollectionTests
         collection.AddRange([a, b, c]);
         collection.AddRange([]);
 
-        CollectionAssert.AreEqual(new[] { a, b, c }, collection);
-        CollectionAssert.AreEqual(new[] { NotifyCollectionChangedAction.Reset }, events);
+        Assert.AreSequenceEqual(new[] { a, b, c }, collection);
+        Assert.AreSequenceEqual(new[] { NotifyCollectionChangedAction.Reset }, events);
     }
 
     [TestMethod]
@@ -89,8 +90,8 @@ public sealed partial class DockBandsCollectionTests
         collection.RemoveRange([a, c]);
         collection.RemoveRange([a]);
 
-        CollectionAssert.AreEqual(new[] { b }, collection);
-        CollectionAssert.AreEqual(new[] { NotifyCollectionChangedAction.Reset }, events);
+        Assert.AreSequenceEqual(new[] { b }, collection);
+        Assert.AreSequenceEqual(new[] { NotifyCollectionChangedAction.Reset }, events);
     }
 
     private static ServiceProvider CreateServiceProvider()

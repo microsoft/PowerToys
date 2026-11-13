@@ -12,6 +12,7 @@ using Monitor = PowerDisplay.Common.Models.Monitor;
 
 namespace PowerDisplay.Ipc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MonitorDtoProjectorTests
 {
@@ -46,7 +47,7 @@ public class MonitorDtoProjectorTests
 
         var result = MonitorDtoProjector.BuildListResult(monitors, hidden);
 
-        Assert.AreEqual(1, result.Monitors.Count);
+        Assert.HasCount(1, result.Monitors);
         Assert.AreEqual("A", result.Monitors[0].Id);
     }
 
@@ -62,7 +63,7 @@ public class MonitorDtoProjectorTests
 
         var result = MonitorDtoProjector.BuildListResult(monitors, hidden);
 
-        Assert.AreEqual(0, result.Monitors.Count);
+        Assert.IsEmpty(result.Monitors);
     }
 
     [TestMethod]
@@ -76,7 +77,7 @@ public class MonitorDtoProjectorTests
 
         var result = MonitorDtoProjector.BuildListResult(monitors, EmptyHidden);
 
-        Assert.AreEqual(2, result.Monitors.Count);
+        Assert.HasCount(2, result.Monitors);
     }
 
     // ─── List entry projection ────────────────────────────────────────────────
@@ -112,7 +113,7 @@ public class MonitorDtoProjectorTests
 
         Assert.IsNull(error);
         Assert.IsNotNull(result);
-        Assert.AreEqual(2, result!.Monitors.Count);
+        Assert.HasCount(2, result!.Monitors);
     }
 
     [TestMethod]
@@ -175,7 +176,7 @@ public class MonitorDtoProjectorTests
         var (result, error) = MonitorDtoProjector.BuildGetResult(monitors, EmptyHidden, number: 2, id: null, settingFilter: null);
 
         Assert.IsNull(error);
-        Assert.AreEqual(1, result!.Monitors.Count);
+        Assert.HasCount(1, result!.Monitors);
         Assert.AreEqual(2, result.Monitors[0].Monitor.Number);
     }
 
@@ -187,7 +188,7 @@ public class MonitorDtoProjectorTests
         var (result, error) = MonitorDtoProjector.BuildGetResult(monitors, EmptyHidden, number: null, id: "B", settingFilter: null);
 
         Assert.IsNull(error);
-        Assert.AreEqual(1, result!.Monitors.Count);
+        Assert.HasCount(1, result!.Monitors);
         Assert.AreEqual("B", result.Monitors[0].Monitor.Id);
     }
 
@@ -222,7 +223,7 @@ public class MonitorDtoProjectorTests
 
         var (result, _) = MonitorDtoProjector.BuildGetResult(monitors, EmptyHidden, number: null, id: null, settingFilter: null);
 
-        Assert.AreEqual(CliSettingNames.All.Length, result!.Monitors[0].Settings.Count);
+        Assert.HasCount(CliSettingNames.All.Length, result!.Monitors[0].Settings);
     }
 
     [TestMethod]
@@ -302,7 +303,7 @@ public class MonitorDtoProjectorTests
         var (result, error) = MonitorDtoProjector.BuildGetResult(monitors, EmptyHidden, number: null, id: null, settingFilter: "Brightness");
 
         Assert.IsNull(error);
-        Assert.AreEqual(1, result!.Monitors[0].Settings.Count);
+        Assert.HasCount(1, result!.Monitors[0].Settings);
         Assert.AreEqual("brightness", result.Monitors[0].Settings[0].Setting);
     }
 
@@ -341,7 +342,7 @@ public class MonitorDtoProjectorTests
 
         Assert.IsNull(error);
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result!.VcpCodes.Count);
+        Assert.IsEmpty(result!.VcpCodes);
     }
 
     [TestMethod]
@@ -372,7 +373,7 @@ public class MonitorDtoProjectorTests
         var (result, error) = MonitorDtoProjector.BuildCapabilitiesResult(monitors, EmptyHidden, number: 1, id: null);
 
         Assert.IsNull(error);
-        Assert.AreEqual(2, result!.VcpCodes.Count);
+        Assert.HasCount(2, result!.VcpCodes);
 
         var brightness = result.VcpCodes[0]; // sorted: 0x10 comes before 0x14
         Assert.AreEqual("0x10", brightness.Code);
@@ -383,7 +384,7 @@ public class MonitorDtoProjectorTests
         Assert.AreEqual("0x14", colorTemp.Code);
         Assert.IsFalse(colorTemp.Continuous);
         Assert.IsNotNull(colorTemp.DiscreteValues);
-        Assert.AreEqual(1, colorTemp.DiscreteValues!.Count);
+        Assert.HasCount(1, colorTemp.DiscreteValues);
 
         // FormatDiscrete(0x14, 0x05) → "6500K (0x05)"
         Assert.AreEqual("6500K (0x05)", colorTemp.DiscreteValues[0]);
@@ -403,7 +404,7 @@ public class MonitorDtoProjectorTests
             monitors, EmptyHidden, number: 1, id: null, settingFilter: "input-source", customMappings: null);
 
         Assert.IsNull(error);
-        Assert.AreEqual(1, result!.VcpCodes.Count);
+        Assert.HasCount(1, result!.VcpCodes);
         Assert.AreEqual("0x60", result.VcpCodes[0].Code);
     }
 

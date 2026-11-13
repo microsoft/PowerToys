@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ChartScaleTests
 {
@@ -16,7 +17,7 @@ public class ChartScaleTests
 
         Assert.AreEqual(0, range.Min);
         Assert.AreEqual(100, range.Max);
-        CollectionAssert.AreEqual(new[] { 0d, 25, 50, 75, 100 }, range.GetTicks().ToArray());
+        Assert.AreSequenceEqual(new[] { 0d, 25, 50, 75, 100 }, range.GetTicks().ToArray());
     }
 
     [TestMethod]
@@ -47,8 +48,8 @@ public class ChartScaleTests
     {
         var range = ChartScale.Compute(null, null, -7, 12);
 
-        Assert.IsTrue(range.Min <= -7);
-        Assert.IsTrue(range.Max >= 12);
+        Assert.IsLessThanOrEqualTo(-7, range.Min);
+        Assert.IsGreaterThanOrEqualTo(12, range.Max);
         Assert.AreEqual(0, range.Min % range.Step, 1e-9);
     }
 
@@ -57,7 +58,7 @@ public class ChartScaleTests
     {
         var range = ChartScale.Compute(null, null, 0, 0);
 
-        Assert.IsTrue(range.Max > range.Min);
+        Assert.IsGreaterThan(range.Min, range.Max);
     }
 
     [TestMethod]

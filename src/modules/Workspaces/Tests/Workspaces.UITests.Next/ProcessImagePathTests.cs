@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Workspaces.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class ProcessImagePathTests
     {

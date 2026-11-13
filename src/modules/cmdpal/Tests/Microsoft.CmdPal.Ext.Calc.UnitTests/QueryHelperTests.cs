@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Calc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class QueryHelperTests
 {
@@ -30,7 +31,7 @@ public class QueryHelperTests
         CultureInfo.CurrentUICulture = originalUiCulture;
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("2²", "4")]
     [DataRow("2³", "8")]
     [DataRow("2！", "2")]

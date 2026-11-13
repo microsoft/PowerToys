@@ -44,13 +44,15 @@ public static class FileSystemAssert
             pollIntervalMS: 100);
         Assert.IsTrue(copied.Succeeded, $"The complete directory tree from '{source}' did not appear at '{destination}'.");
 
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             files.Select(path => Path.GetRelativePath(source, path)).ToArray(),
             Directory.GetFiles(destination, "*", SearchOption.AllDirectories).Select(path => Path.GetRelativePath(destination, path)).ToArray(),
+            SequenceOrder.InAnyOrder,
             "The destination file inventory differs from the source.");
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             directories.Select(path => Path.GetRelativePath(source, path)).ToArray(),
             Directory.GetDirectories(destination, "*", SearchOption.AllDirectories).Select(path => Path.GetRelativePath(destination, path)).ToArray(),
+            SequenceOrder.InAnyOrder,
             "The destination directory inventory differs from the source.");
         foreach (var file in files)
         {

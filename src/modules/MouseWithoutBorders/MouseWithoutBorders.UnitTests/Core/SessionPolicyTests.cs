@@ -7,10 +7,11 @@ using MouseWithoutBorders.Core;
 
 namespace MouseWithoutBorders.UnitTests.Core;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SessionPolicyTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("0")]
@@ -27,7 +28,7 @@ public sealed class SessionPolicyTests
         Assert.IsFalse(policy.IsSessionAllowed(1, uint.MaxValue));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("default")]
     [DataRow("Default")]
     public void EnvironmentOptInOnlyEnablesDebugUserDesktop(string desktopName)
@@ -46,7 +47,7 @@ public sealed class SessionPolicyTests
         Assert.IsFalse(policy.IsSessionAllowed(-1, uint.MaxValue));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("default")]
     [DataRow("Default")]
     [DataRow("DEFAULT")]
@@ -76,7 +77,7 @@ public sealed class SessionPolicyTests
         Assert.IsFalse(policy.IsSessionAllowed(1, uint.MaxValue));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true, false, "default", false)]
     [DataRow(true, false, "default", true)]
     [DataRow(false, true, "default", false)]
@@ -103,7 +104,7 @@ public sealed class SessionPolicyTests
         Assert.IsTrue(policy.IsSessionAllowed(1, 1));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(-1, false)]
     [DataRow(-1, true)]
     [DataRow(-2, false)]

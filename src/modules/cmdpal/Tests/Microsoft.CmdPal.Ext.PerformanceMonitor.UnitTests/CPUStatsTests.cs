@@ -8,6 +8,7 @@ using Windows.Win32.System.Power;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CPUStatsTests
 {

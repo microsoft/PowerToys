@@ -16,6 +16,7 @@ using Wox.Plugin;
 
 namespace Wox.Test.Plugins
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WindowsIndexerTest
     {
@@ -187,9 +188,9 @@ namespace Wox.Test.Plugins
             var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
 
             // Assert
-            Assert.IsTrue(windowsSearchAPIResults.Count() == 2);
-            Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
-            Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
+            Assert.HasCount(2, windowsSearchAPIResults);
+            Assert.Contains(x => x.Title == "file1.txt", windowsSearchAPIResults);
+            Assert.Contains(x => x.Title == "file2.txt", windowsSearchAPIResults);
         }
 
         [TestMethod]
@@ -208,9 +209,9 @@ namespace Wox.Test.Plugins
             var windowsSearchAPIResults = api.Search("FilePath", mockSearchManager);
 
             // Assert
-            Assert.IsTrue(windowsSearchAPIResults.Count() == 1);
-            Assert.IsFalse(windowsSearchAPIResults.Any(x => x.Title == "file1.txt"));
-            Assert.IsTrue(windowsSearchAPIResults.Any(x => x.Title == "file2.txt"));
+            Assert.HasCount(1, windowsSearchAPIResults);
+            Assert.DoesNotContain(x => x.Title == "file1.txt", windowsSearchAPIResults);
+            Assert.Contains(x => x.Title == "file2.txt", windowsSearchAPIResults);
         }
 
         [TestMethod]
@@ -270,7 +271,7 @@ namespace Wox.Test.Plugins
             Assert.IsFalse(queryHelper.QueryWhereRestrictions.Contains("AND System.FileAttributes <> SOME BITWISE 2", StringComparison.Ordinal));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("item.exe")]
         [DataRow("item.bat")]
         [DataRow("item.appref-ms")]
@@ -292,7 +293,7 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(5, contextMenuItems.Count);
+            Assert.HasCount(5, contextMenuItems);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder, contextMenuItems[0].Title);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_run_as_administrator, contextMenuItems[1].Title);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_run_as_user, contextMenuItems[2].Title);
@@ -300,7 +301,7 @@ namespace Wox.Test.Plugins
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[4].Title);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("item.pdf")]
         [DataRow("item.xls")]
         [DataRow("item.ppt")]
@@ -322,13 +323,13 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(3, contextMenuItems.Count);
+            Assert.HasCount(3, contextMenuItems);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_containing_folder, contextMenuItems[0].Title);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path, contextMenuItems[1].Title);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[2].Title);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("C:/DummyFolder")]
         [DataRow("TestFolder")]
         public void LoadContextMenusMustNotLoadRunAsAdminAndOpenContainingFolderForFolder(string path)
@@ -348,12 +349,12 @@ namespace Wox.Test.Plugins
             List<ContextMenuResult> contextMenuItems = contextMenuLoader.LoadContextMenus(result);
 
             // Assert
-            Assert.AreEqual(2, contextMenuItems.Count);
+            Assert.HasCount(2, contextMenuItems);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_copy_path, contextMenuItems[0].Title);
             Assert.AreEqual(Microsoft.Plugin.Indexer.Properties.Resources.Microsoft_plugin_indexer_open_in_console, contextMenuItems[1].Title);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0, 2, false, true)]
         [DataRow(0, 3, true, false)]
         [DataRow(1, 2, false, false)]

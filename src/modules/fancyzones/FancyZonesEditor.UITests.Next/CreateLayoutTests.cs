@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CreateLayoutTests : FancyZonesEditorTestBase
 {
@@ -32,11 +33,11 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(name));
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(1, data.CustomLayouts.Count);
+        Assert.HasCount(1, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CreateWithCustomName")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CreateWithCustomName")]
     [TestCategory("FancyZones Editor #3")]
     public void CreateWithCustomName()
     {
@@ -60,11 +61,11 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         Assert.IsNotNull(Session.Find<Element>(name));
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(1, data.CustomLayouts.Count);
+        Assert.HasCount(1, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CreateGrid")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CreateGrid")]
     [TestCategory("FancyZones Editor #3")]
     public void CreateGrid()
     {
@@ -80,11 +81,11 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(1, data.CustomLayouts.Count);
+        Assert.HasCount(1, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CreateCanvas")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CreateCanvas")]
     [TestCategory("FancyZones Editor #3")]
     public void CreateCanvas()
     {
@@ -100,11 +101,11 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Save).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(1, data.CustomLayouts.Count);
+        Assert.HasCount(1, data.CustomLayouts);
         Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CancelGridCreation")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CancelGridCreation")]
     [TestCategory("FancyZones Editor #3")]
     public void CancelGridCreation()
     {
@@ -119,10 +120,10 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(0, data.CustomLayouts.Count);
+        Assert.IsEmpty(data.CustomLayouts);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.CancelCanvasCreation")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.CancelCanvasCreation")]
     [TestCategory("FancyZones Editor #3")]
     public void CancelCanvasCreation()
     {
@@ -137,6 +138,6 @@ public class CreateLayoutTests : FancyZonesEditorTestBase
         layoutEditor.Find<Button>(EditorUiTestHelper.ElementName.Cancel).Click();
 
         var data = EditorUiTestHelper.ReadCustomLayouts();
-        Assert.AreEqual(0, data.CustomLayouts.Count);
+        Assert.IsEmpty(data.CustomLayouts);
     }
 }

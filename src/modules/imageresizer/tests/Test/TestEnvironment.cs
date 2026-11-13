@@ -9,8 +9,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
-    public sealed class TestEnvironment
+    public static class TestEnvironment
     {
         private static TestDirectory _settingsDirectory;
 

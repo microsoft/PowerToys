@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Helpers
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class SerializationHelperTests
     {
@@ -26,7 +27,7 @@ namespace ColorPicker.UnitTests.Helpers
         {
             string content = ExportedColors.ToFileContent(".txt");
 
-            StringAssert.Contains(content, "color1;HEX#123456");
+            Assert.Contains("color1;HEX#123456", content);
         }
 
         [TestMethod]
@@ -34,14 +35,14 @@ namespace ColorPicker.UnitTests.Helpers
         {
             string content = ExportedColors.ToFileContent(".JSON");
 
-            StringAssert.Contains(content, "\"color1\"");
-            StringAssert.Contains(content, "\"#123456\"");
+            Assert.Contains("\"color1\"", content);
+            Assert.Contains("\"#123456\"", content);
         }
 
         [TestMethod]
         public void Unsupported_extension_is_rejected_before_writing()
         {
-            Assert.ThrowsException<InvalidOperationException>(() => ExportedColors.ToFileContent(".docx"));
+            Assert.ThrowsExactly<InvalidOperationException>(() => ExportedColors.ToFileContent(".docx"));
         }
     }
 }

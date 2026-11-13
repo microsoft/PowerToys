@@ -16,6 +16,7 @@ using Microsoft.Web.WebView2.WinForms;
 
 namespace MarkdownPreviewHandlerUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     public class MarkdownPreviewHandlerTest
     {
@@ -164,7 +165,7 @@ namespace MarkdownPreviewHandlerUnitTests
                 Assert.AreEqual(DockStyle.Top, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Dock);
                 Assert.AreEqual(BorderStyle.None, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BorderStyle);
                 Assert.AreEqual(Color.LightYellow, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).BackColor);
-                Assert.AreEqual(true, ((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Multiline);
+                Assert.IsTrue(((RichTextBox)markdownPreviewHandlerControl.Controls[1]).Multiline);
             }
         }
 
@@ -173,8 +174,8 @@ namespace MarkdownPreviewHandlerUnitTests
         {
             string content = new string('漢', 700_000);
 
-            Assert.IsTrue(content.Length < NavigateToStringUtf8LimitInBytes);
-            Assert.IsTrue(Encoding.UTF8.GetByteCount(content) > OversizedUtf8FileThresholdInBytes);
+            Assert.IsLessThan(NavigateToStringUtf8LimitInBytes, content.Length);
+            Assert.IsGreaterThan(OversizedUtf8FileThresholdInBytes, Encoding.UTF8.GetByteCount(content));
 
             string filePath = CreateMarkdownFile(content);
 
@@ -200,8 +201,8 @@ namespace MarkdownPreviewHandlerUnitTests
         {
             string content = new string('a', 10_000);
 
-            Assert.IsTrue(content.Length < NavigateToStringUtf8LimitInBytes);
-            Assert.IsTrue(Encoding.UTF8.GetByteCount(content) < NavigateToStringUtf8LimitInBytes);
+            Assert.IsLessThan(NavigateToStringUtf8LimitInBytes, content.Length);
+            Assert.IsLessThan(NavigateToStringUtf8LimitInBytes, Encoding.UTF8.GetByteCount(content));
 
             string filePath = CreateMarkdownFile(content);
 
@@ -227,8 +228,8 @@ namespace MarkdownPreviewHandlerUnitTests
         {
             string content = new string('a', 1_600_000);
 
-            Assert.IsTrue(content.Length > NavigateToStringUtf8LimitInBytes);
-            Assert.IsTrue(Encoding.UTF8.GetByteCount(content) > NavigateToStringUtf8LimitInBytes);
+            Assert.IsGreaterThan(NavigateToStringUtf8LimitInBytes, content.Length);
+            Assert.IsGreaterThan(NavigateToStringUtf8LimitInBytes, Encoding.UTF8.GetByteCount(content));
 
             string filePath = CreateMarkdownFile(content);
 

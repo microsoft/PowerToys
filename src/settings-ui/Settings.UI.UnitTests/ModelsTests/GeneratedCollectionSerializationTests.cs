@@ -9,6 +9,7 @@ using PowerDisplay.Models;
 
 namespace CommonLibTest;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class GeneratedCollectionSerializationTests
 {
@@ -109,7 +110,7 @@ public class GeneratedCollectionSerializationTests
         properties.ReplaceMachineMatrixString(snapshot);
 
         Assert.AreNotSame(snapshot, properties.MachineMatrixString);
-        CollectionAssert.AreEqual(snapshot, properties.MachineMatrixString);
+        Assert.AreSequenceEqual(snapshot, properties.MachineMatrixString);
         Assert.HasCount(4, properties.MachineMatrixString);
     }
 

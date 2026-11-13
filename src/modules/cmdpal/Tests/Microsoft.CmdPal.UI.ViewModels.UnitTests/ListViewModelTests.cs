@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class ListViewModelTests
 {
@@ -263,7 +264,7 @@ public partial class ListViewModelTests
             Assert.AreEqual("running", page.FilterAtFirstGetItems);
             Assert.AreEqual("ssh", viewModel.SearchTextBox);
             Assert.AreEqual("ssh", viewModel.InitialSearchText);
-            Assert.AreEqual(1, viewModel.FilteredItems.Count);
+            Assert.HasCount(1, viewModel.FilteredItems);
             Assert.AreEqual("SSH server", viewModel.FilteredItems[0].Title);
         }
         finally
@@ -302,7 +303,7 @@ public partial class ListViewModelTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, -1, false, true)]
     [DataRow(false, 1, false, true)]
     [DataRow(false, 2, false, false)]
@@ -384,7 +385,7 @@ public partial class ListViewModelTests
         {
             viewModel.InitializeProperties();
 
-            var completed = await Task.WhenAny(errorObserved.Task, Task.Delay(TimeSpan.FromSeconds(2)));
+            var completed = await Task.WhenAny(errorObserved.Task, Task.Delay(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
             Assert.AreSame(errorObserved.Task, completed);
             Assert.IsFalse(string.IsNullOrWhiteSpace(viewModel.ErrorMessage));
             Assert.AreEqual(0, page.GetItemsCallCount);
@@ -412,7 +413,7 @@ public partial class ListViewModelTests
 
         page.TriggerItemsChanged();
 
-        var completed = await Task.WhenAny(page.DeferredFetchObserved, Task.Delay(TimeSpan.FromSeconds(2)));
+        var completed = await Task.WhenAny(page.DeferredFetchObserved, Task.Delay(TimeSpan.FromSeconds(2), TestContext.CancellationToken));
         Assert.AreSame(page.DeferredFetchObserved, completed);
         Assert.AreEqual(2, page.GetItemsCallCount);
 
@@ -518,7 +519,7 @@ public partial class ListViewModelTests
 
             // The change-notification re-read captures "no more items", then stalls.
             page.ReportExhaustionWithSlowRead();
-            Assert.IsTrue(readStarted.Wait(TimeSpan.FromSeconds(5)));
+            Assert.IsTrue(readStarted.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
 
             // A newer fetch resets availability to unknown before that read finishes.
             await ObserveNextItemsUpdateAsync(viewModel, page.StartQueryWithMoreItems);
@@ -554,7 +555,7 @@ public partial class ListViewModelTests
         var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
         while (!condition())
         {
-            Assert.IsTrue(DateTime.UtcNow < deadline, "Condition was not met in time.");
+            Assert.IsLessThan(deadline, DateTime.UtcNow, "Condition was not met in time.");
             await Task.Delay(10);
         }
     }
@@ -579,4 +580,6 @@ public partial class ListViewModelTests
             viewModel.ItemsUpdated -= OnItemsUpdated;
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

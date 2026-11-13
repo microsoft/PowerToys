@@ -14,10 +14,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace BgcodeThumbnailProviderUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     public class BgcodeThumbnailProviderTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("HelperFiles/sample.bgcode")]
         public void GetThumbnailValidStreamBgcode(string filePath)
         {
@@ -26,7 +27,7 @@ namespace BgcodeThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -39,7 +40,7 @@ namespace BgcodeThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(0);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -52,7 +53,7 @@ namespace BgcodeThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(10001);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -61,7 +62,7 @@ namespace BgcodeThumbnailProviderUnitTests
             using (var reader = new BinaryReader(new MemoryStream()))
             {
                 Bitmap? thumbnail = BgcodeThumbnailProvider.GetThumbnail(reader, 256);
-                Assert.IsTrue(thumbnail == null);
+                Assert.IsNull(thumbnail);
             }
         }
 
@@ -69,7 +70,7 @@ namespace BgcodeThumbnailProviderUnitTests
         public void CheckNoBgcodeNullStringShouldReturnNullBitmap()
         {
             Bitmap? thumbnail = BgcodeThumbnailProvider.GetThumbnail(null, 256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
 
         [TestMethod]
@@ -86,7 +87,7 @@ namespace BgcodeThumbnailProviderUnitTests
             Assert.ThrowsExactly<InvalidDataException>(() => BgcodeHelper.GetBestThumbnail(reader));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(BgcodeBlockType.FileMetadataBlock)]
         [DataRow(BgcodeBlockType.PrinterMetadataBlock)]
         [DataRow(BgcodeBlockType.PrintMetadataBlock)]
@@ -100,7 +101,7 @@ namespace BgcodeThumbnailProviderUnitTests
             Assert.ThrowsExactly<InvalidDataException>(() => BgcodeHelper.GetBestThumbnail(reader));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(BgcodeCompressionType.NoCompression)]
         [DataRow(BgcodeCompressionType.DeflateAlgorithm)]
         public void ThumbnailStoredSizeAboveAllocationLimitShouldBeRejected(BgcodeCompressionType compression)
@@ -156,7 +157,7 @@ namespace BgcodeThumbnailProviderUnitTests
             var thumbnails = BgcodeHelper.GetThumbnails(reader).ToList();
 
             Assert.HasCount(1, thumbnails);
-            CollectionAssert.AreEqual(expected, thumbnails[0].Data);
+            Assert.AreSequenceEqual(expected, thumbnails[0].Data);
         }
 
         [TestMethod]
@@ -192,7 +193,7 @@ namespace BgcodeThumbnailProviderUnitTests
             var thumbnails = BgcodeHelper.GetThumbnails(reader).ToList();
 
             Assert.HasCount(1, thumbnails);
-            CollectionAssert.AreEqual(expected, thumbnails[0].Data);
+            Assert.AreSequenceEqual(expected, thumbnails[0].Data);
             Assert.AreEqual(reader.BaseStream.Length, reader.BaseStream.Position);
         }
 
@@ -222,7 +223,7 @@ namespace BgcodeThumbnailProviderUnitTests
             var thumbnails = BgcodeHelper.GetThumbnails(reader).ToList();
 
             Assert.HasCount(1, thumbnails);
-            CollectionAssert.AreEqual(expected, thumbnails[0].Data);
+            Assert.AreSequenceEqual(expected, thumbnails[0].Data);
             Assert.AreEqual(reader.BaseStream.Length, reader.BaseStream.Position);
         }
 
@@ -233,7 +234,7 @@ namespace BgcodeThumbnailProviderUnitTests
             using var reader = new BinaryReader(stream);
 
             Assert.ThrowsExactly<InvalidDataException>(() => BgcodeHelper.GetBestThumbnail(reader));
-            Assert.IsTrue(stream.ReadCallCount <= 8, $"Parser performed {stream.ReadCallCount} reads.");
+            Assert.IsLessThanOrEqualTo(8, stream.ReadCallCount, $"Parser performed {stream.ReadCallCount} reads.");
         }
 
         [TestMethod]

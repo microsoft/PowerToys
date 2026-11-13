@@ -20,6 +20,7 @@ using WyHash;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 {
@@ -47,7 +48,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         history = history.WithHistoryItem("com.microsoft.cmdpal.shell");
 
         // Assert
-        Assert.IsTrue(history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell") > 0);
+        Assert.IsGreaterThan(0, history.GetCommandHistoryWeight("com.microsoft.cmdpal.shell"));
     }
 
     [TestMethod]
@@ -56,10 +57,10 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var history = CreateHistory(["oldest", "middle", "newest"]);
         string[] expected = ["newest", "middle"];
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             expected,
             history.EnumerateRecentCommandIds().Take(2).ToArray());
-        Assert.AreEqual(3, history.EnumerateRecentCommandIds().Count());
+        Assert.HasCount(3, history.EnumerateRecentCommandIds());
     }
 
     [TestMethod]
@@ -86,10 +87,10 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var nonExistentWeight = history.GetCommandHistoryWeight("non.existent.command", now);
 
         // Assert
-        Assert.IsTrue(shellWeight > windowWalkerWeight, "Shell is both the most-used and most-recent command");
-        Assert.IsTrue(vsWeight > windowWalkerWeight, "Visual Studio was used more recently than Window Walker");
-        Assert.IsTrue(reloadWeight > vsWeight, "Reload was used more recently than Visual Studio");
-        Assert.IsTrue(shellWeight > vsWeight, "Shell is both more recent and more frequently used than Visual Studio");
+        Assert.IsGreaterThan(windowWalkerWeight, shellWeight, "Shell is both the most-used and most-recent command");
+        Assert.IsGreaterThan(windowWalkerWeight, vsWeight, "Visual Studio was used more recently than Window Walker");
+        Assert.IsGreaterThan(vsWeight, reloadWeight, "Reload was used more recently than Visual Studio");
+        Assert.IsGreaterThan(vsWeight, shellWeight, "Shell is both more recent and more frequently used than Visual Studio");
         Assert.AreEqual(0, nonExistentWeight, "Nonexistent command should have zero weight");
     }
 
@@ -158,15 +159,15 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         foreach (var item in items)
         {
             var weight = history.GetCommandHistoryWeight(item.Id);
-            Assert.IsTrue(weight > 0, $"Item {item.Title} should have a weight greater than zero.");
+            Assert.IsGreaterThan(0, weight, $"Item {item.Title} should have a weight greater than zero.");
         }
 
         // Check that the duplicate item has a higher weight due to increased uses
         var weightA = history.GetCommandHistoryWeight("idA");
         var weightB = history.GetCommandHistoryWeight("idB");
         var weightC = history.GetCommandHistoryWeight(items[2].Id); // providerC generated ID
-        Assert.IsTrue(weightA > weightB, "Item A should have a higher weight than Item B due to more uses.");
-        Assert.IsTrue(weightA > weightC, "Item A should have a higher weight than Item C due to more uses.");
+        Assert.IsGreaterThan(weightB, weightA, "Item A should have a higher weight than Item B due to more uses.");
+        Assert.IsGreaterThan(weightC, weightA, "Item A should have a higher weight than Item C due to more uses.");
         Assert.AreEqual(weightC, weightB, "Item C and Item B were used in the last 3 commands");
     }
 
@@ -188,10 +189,10 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var tenDays = history.GetCommandHistoryWeight("ten-days", now);
         var thirtyDays = history.GetCommandHistoryWeight("thirty-days", now);
 
-        Assert.IsTrue(today > threeDays, "A more recent use must weigh more than an older one");
-        Assert.IsTrue(threeDays > tenDays, "Decay must be monotonic with age");
-        Assert.IsTrue(tenDays > thirtyDays, "Older uses keep decaying toward zero");
-        Assert.IsTrue(thirtyDays >= 0, "Weight must never go negative");
+        Assert.IsGreaterThan(threeDays, today, "A more recent use must weigh more than an older one");
+        Assert.IsGreaterThan(tenDays, threeDays, "Decay must be monotonic with age");
+        Assert.IsGreaterThan(thirtyDays, tenDays, "Older uses keep decaying toward zero");
+        Assert.IsGreaterThanOrEqualTo(0, thirtyDays, "Weight must never go negative");
 
         // The half-life is 3 days, so a 3-day-old single use is about half of a fresh one.
         Assert.AreEqual(today / 2.0, threeDays, 1.0, "Three days should be a single half-life");
@@ -212,8 +213,8 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var once = history.GetCommandHistoryWeight("once", now);
         var many = history.GetCommandHistoryWeight("many", now);
 
-        Assert.IsTrue(many > once, "At equal recency, a more frequently used command weighs more");
-        Assert.IsTrue(many <= RecentCommandsManager.MaxWeight, "Weight stays within the documented cap");
+        Assert.IsGreaterThan(once, many, "At equal recency, a more frequently used command weighs more");
+        Assert.IsLessThanOrEqualTo(RecentCommandsManager.MaxWeight, many, "Weight stays within the documented cap");
     }
 
     [TestMethod]
@@ -228,7 +229,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         // Read once to build the cached index on 'first'.
         var alphaFirst = first.GetCommandHistoryWeight("alpha", now);
-        Assert.IsTrue(alphaFirst > 0, "alpha should have weight on the first instance");
+        Assert.IsGreaterThan(0, alphaFirst, "alpha should have weight on the first instance");
         Assert.AreEqual(0, first.GetCommandHistoryWeight("beta", now), "beta is not in the first instance");
 
         // Add a use of alpha and a brand-new beta, producing a new instance.
@@ -237,11 +238,13 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             .WithHistoryItem("beta", now.AddDays(1));
 
         // The new instance sees the newer alpha (more recent + higher use) and the new beta.
-        Assert.IsTrue(
-            second.GetCommandHistoryWeight("alpha", now.AddDays(1)) > 0,
+        Assert.IsGreaterThan(
+            0,
+            second.GetCommandHistoryWeight("alpha", now.AddDays(1)),
             "alpha should still resolve on the updated instance");
-        Assert.IsTrue(
-            second.GetCommandHistoryWeight("beta", now.AddDays(1)) > 0,
+        Assert.IsGreaterThan(
+            0,
+            second.GetCommandHistoryWeight("beta", now.AddDays(1)),
             "beta should resolve on the updated instance after its index rebuilds");
 
         // The original instance is unchanged - its index never gained beta.
@@ -257,8 +260,8 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         string[] expectedUpdated = ["gamma", "alpha"];
         string[] expectedOriginal = ["gamma", "beta", "alpha"];
-        CollectionAssert.AreEqual(expectedUpdated, updated.EnumerateRecentCommandIds().ToArray());
-        CollectionAssert.AreEqual(expectedOriginal, original.EnumerateRecentCommandIds().ToArray());
+        Assert.AreSequenceEqual(expectedUpdated, updated.EnumerateRecentCommandIds().ToArray());
+        Assert.AreSequenceEqual(expectedOriginal, original.EnumerateRecentCommandIds().ToArray());
         Assert.AreSame(updated, updated.WithoutHistoryItem("missing"));
     }
 
@@ -270,9 +273,9 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var cleared = original.ClearHistory();
 
         Assert.IsTrue(cleared.IsEmpty);
-        Assert.AreEqual(0, cleared.EnumerateRecentCommandIds().Count());
+        Assert.IsEmpty(cleared.EnumerateRecentCommandIds());
         Assert.AreSame(cleared, cleared.ClearHistory());
-        Assert.AreEqual(2, original.EnumerateRecentCommandIds().Count());
+        Assert.HasCount(2, original.EnumerateRecentCommandIds());
     }
 
     [TestMethod]
@@ -335,16 +338,18 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         var evaluatedAt = now.AddMinutes(total);
 
-        Assert.IsTrue(
-            history.History.Count <= RecentCommandsManager.MaxHistoryEntries,
+        Assert.IsLessThanOrEqualTo(
+            RecentCommandsManager.MaxHistoryEntries,
+            history.History.Count,
             "History should be capped at MaxHistoryEntries");
 
         // The earliest (now-evicted) entries have fallen out of the store.
         Assert.AreEqual(0, history.GetCommandHistoryWeight("cmd-0", evaluatedAt), "The oldest entry should have been evicted");
 
         // The most-recent entries survive and still carry weight.
-        Assert.IsTrue(
-            history.GetCommandHistoryWeight($"cmd-{total - 1}", evaluatedAt) > 0,
+        Assert.IsGreaterThan(
+            0,
+            history.GetCommandHistoryWeight($"cmd-{total - 1}", evaluatedAt),
             "The most recent entry should be retained");
     }
 
@@ -365,13 +370,13 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var rare = legacy.GetCommandHistoryWeight("rare", now);
         var common = legacy.GetCommandHistoryWeight("common", now);
 
-        Assert.IsTrue(rare > 0, "Legacy items should be mildly backdated, not zeroed out");
-        Assert.IsTrue(common > rare, "Legacy ordering should fall back to Uses (frequency)");
+        Assert.IsGreaterThan(0, rare, "Legacy items should be mildly backdated, not zeroed out");
+        Assert.IsGreaterThan(rare, common, "Legacy ordering should fall back to Uses (frequency)");
 
         // A brand-new, single real use should outrank a backdated single-use legacy item.
         var withFresh = legacy.WithHistoryItem("brand-new", now);
         var fresh = withFresh.GetCommandHistoryWeight("brand-new", now);
-        Assert.IsTrue(fresh > rare, "A just-used command should outrank a backdated single-use legacy item");
+        Assert.IsGreaterThan(rare, fresh, "A just-used command should outrank a backdated single-use legacy item");
     }
 
     [TestMethod]
@@ -388,7 +393,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.RecentCommandsManager);
 
         Assert.IsNotNull(restored, "Round-tripped history should not be null");
-        Assert.AreEqual(2, restored!.History.Count, "All history entries should round-trip");
+        Assert.HasCount(2, restored!.History, "All history entries should round-trip");
 
         var beta = restored.History.First(h => h.CommandId == "beta");
         Assert.AreEqual(now.AddMinutes(5), beta.LastUsed, "The LastUsed timestamp should round-trip");
@@ -499,7 +504,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var q = fuzzyMatcher.PrecomputeQuery("C");
         var unweightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), emptyHistory, fuzzyMatcher)).ToList();
         var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
-        Assert.AreEqual(unweightedScores.Count, weightedScores.Count, "Both score lists should have the same number of items");
+        Assert.HasCount(unweightedScores.Count, weightedScores, "Both score lists should have the same number of items");
         for (var i = 0; i < unweightedScores.Count; i++)
         {
             var unweighted = unweightedScores[i];
@@ -507,18 +512,18 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
             var item = items[i];
             if (item.Title.Contains('C', System.StringComparison.CurrentCultureIgnoreCase))
             {
-                Assert.IsTrue(unweighted >= 0, $"Item {item.Title} didn't match the query, so should have a weighted score of zero");
-                Assert.IsTrue(weighted > unweighted, $"Item {item.Title} should have a higher weighted ({weighted}) score than unweighted ({unweighted})");
+                Assert.IsGreaterThanOrEqualTo(0, unweighted, $"Item {item.Title} didn't match the query, so should have a weighted score of zero");
+                Assert.IsGreaterThan(unweighted, weighted, $"Item {item.Title} should have a higher weighted ({weighted}) score than unweighted ({unweighted})");
             }
             else
             {
-                Assert.AreEqual(unweighted, 0, $"Item {item.Title} didn't match the query, so should have a weighted score of zero");
+                Assert.AreEqual(0, unweighted, $"Item {item.Title} didn't match the query, so should have a weighted score of zero");
                 Assert.AreEqual(unweighted, weighted);
             }
         }
 
         var unweightedMatches = GetMatches(items, unweightedScores).ToList();
-        Assert.AreEqual(4, unweightedMatches.Count);
+        Assert.HasCount(4, unweightedMatches);
         Assert.AreEqual("Command Prompt", unweightedMatches[0].Title, "Command Prompt should be the top match");
         Assert.AreEqual("Visual Studio Code", unweightedMatches[1].Title, "Visual Studio Code should be the second match");
         Assert.AreEqual("Terminal Canary", unweightedMatches[2].Title);
@@ -526,7 +531,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         // Even after weighting for 1 use, Command Prompt should still be the top match.
         var weightedMatches = GetMatches(items, weightedScores).ToList();
-        Assert.AreEqual(4, weightedMatches.Count);
+        Assert.HasCount(4, weightedMatches);
         Assert.AreEqual("Command Prompt", weightedMatches[0].Title);
         Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title);
         Assert.AreEqual("Terminal Canary", weightedMatches[2].Title);
@@ -545,7 +550,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
-        Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
+        Assert.HasCount(3, weightedMatches, "Find Terminal, VsCode and Run commands");
 
         // Terminal is in bucket 1, VS Code is in bucket 0, but Terminal matches
         // the title better
@@ -572,7 +577,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
         var weightedMatches = GetMatches(items, weightedScores).ToList();
 
-        Assert.AreEqual(3, weightedMatches.Count, "Find Terminal, VsCode and Run commands");
+        Assert.HasCount(3, weightedMatches, "Find Terminal, VsCode and Run commands");
 
         // Terminal is in bucket 1, VS Code is in bucket 0, but Terminal matches
         // the title better
@@ -600,7 +605,7 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
             var weightedScores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
             var weightedMatches = GetMatches(items, weightedScores).ToList();
-            Assert.AreEqual(4, weightedMatches.Count);
+            Assert.HasCount(4, weightedMatches);
 
             Assert.AreEqual("Command Prompt", weightedMatches[0].Title, "A prefix match must stay above a word-boundary match regardless of usage");
             Assert.AreEqual("Visual Studio Code", weightedMatches[1].Title, "VS Code should be the top of the word-boundary tier once used");
@@ -632,10 +637,11 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
         var scores = items.Select(item => MainListPage.ScoreTopLevelItem(q, new(item), history, fuzzyMatcher)).ToList();
 
         // Same tier for both, so the frequently-used one should not be below the other.
-        Assert.IsTrue(
-            MainListRanker.TierOf(scores[0]) == MainListRanker.TierOf(scores[1]),
+        Assert.AreEqual(
+            MainListRanker.TierOf(scores[1]),
+            MainListRanker.TierOf(scores[0]),
             "Both items should be classified into the same tier");
-        Assert.IsTrue(scores[1] >= scores[0], "The frequently-used item should reorder up within its tier");
+        Assert.IsGreaterThanOrEqualTo(scores[0], scores[1], "The frequently-used item should reorder up within its tier");
     }
 
     [TestMethod]
@@ -657,8 +663,9 @@ public partial class RecentCommandsTests : CommandPaletteUnitTestBase
 
         Assert.AreNotEqual(RankTier.None, tier, "A partial-alias-only match must not be classified as None");
         Assert.AreEqual(RankTier.Fuzzy, tier, "A partial-alias-only match should floor to the Fuzzy tier");
-        Assert.IsTrue(
-            MainListRanker.Pack(tier, 0.0) > 0,
+        Assert.IsGreaterThan(
+            0,
+            MainListRanker.Pack(tier, 0.0),
             "The packed score must be positive so the item survives the score > 0 filter");
     }
 

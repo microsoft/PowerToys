@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class UIInitializeEditorParamsVerifySelectedMonitorTests : UIInitializeTestBase
 {
@@ -16,7 +17,7 @@ public class UIInitializeEditorParamsVerifySelectedMonitorTests : UIInitializeTe
     {
     }
 
-    [TestMethod("FancyZonesEditor.Basic.EditorParams_VerifySelectedMonitor")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.EditorParams_VerifySelectedMonitor")]
     [TestCategory("FancyZones Editor #10")]
     public void EditorParams_VerifySelectedMonitor()
     {

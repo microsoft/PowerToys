@@ -13,6 +13,7 @@ using PowerToys.Settings.Cli.Helpers;
 
 namespace Settings.UI.UnitTests.Cmd;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsCliTests
 {
@@ -32,7 +33,7 @@ public class SettingsCliTests
         var modules = SettingsCliHelper.GetModulesAndStatus(settingsUtils, _ => null);
 
         Assert.IsNotNull(modules);
-        Assert.IsTrue(modules.Count > 0);
+        Assert.IsNotEmpty(modules);
         Assert.IsTrue(modules.ContainsKey("FancyZones"));
         Assert.IsTrue(modules.ContainsKey("AlwaysOnTop"));
         Assert.IsFalse(settingsUtils.SettingsExists());
@@ -45,7 +46,7 @@ public class SettingsCliTests
         var settingsFilePath = settingsUtils.GetSettingsFilePath();
         mockFileSystem.AddFile(settingsFilePath, new MockFileData(corruptSettings));
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             SettingsCliHelper.GetModulesAndStatus(settingsUtils, _ => null));
 
         Assert.AreEqual(corruptSettings, mockFileSystem.File.ReadAllText(settingsFilePath));
@@ -109,14 +110,14 @@ public class SettingsCliTests
     [TestMethod]
     public void TestSetModuleEnabledRejectsGroupPolicyLockedModule()
     {
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             SettingsCliHelper.SetModuleEnabled(
                 "FancyZones",
                 enabled: true,
                 settingsUtils,
                 _ => false,
                 () => EmptyDisposable.Instance));
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsExactly<InvalidOperationException>(() =>
             SettingsCliHelper.SetModuleEnabled(
                 "FancyZones",
                 enabled: false,
@@ -130,7 +131,7 @@ public class SettingsCliTests
     {
         var failingSettingsUtils = new FailingSaveSettingsUtils();
 
-        Assert.ThrowsException<IOException>(() =>
+        Assert.ThrowsExactly<IOException>(() =>
             SettingsCliHelper.SetModuleEnabled(
                 "FancyZones",
                 enabled: false,
@@ -142,7 +143,7 @@ public class SettingsCliTests
     [TestMethod]
     public void TestSetModuleEnabledRejectsWhenSettingsAreLocked()
     {
-        Assert.ThrowsException<IOException>(() =>
+        Assert.ThrowsExactly<IOException>(() =>
             SettingsCliHelper.SetModuleEnabled(
                 "FancyZones",
                 enabled: false,
@@ -161,7 +162,7 @@ public class SettingsCliTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("enable")]
     [DataRow("disable")]
     [DataRow("status")]
@@ -169,10 +170,10 @@ public class SettingsCliTests
     {
         var parseResult = Program.CreateRootCommand().Parse([command]);
 
-        Assert.IsTrue(parseResult.Errors.Count > 0);
+        Assert.IsNotEmpty(parseResult.Errors);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(new string[] { "list" }, "list")]
     [DataRow(new string[] { "status", "FancyZones" }, "status")]
     [DataRow(new string[] { "enable", "FancyZones" }, "enable")]

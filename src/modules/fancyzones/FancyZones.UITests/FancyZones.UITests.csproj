@@ -3,6 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <ProjectGuid>{69D76A76-6EF6-4846-94CD-EAAF0CAC9F15}</ProjectGuid>
     <RootNamespace>Microsoft.FancyZones.UITests</RootNamespace>
     <IsPackable>false</IsPackable>

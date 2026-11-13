@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace SvgThumbnailProviderUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     public class SvgThumbnailProviderTests
     {
@@ -32,8 +33,8 @@ namespace SvgThumbnailProviderUnitTests
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
 
             Assert.IsNotNull(thumbnail);
-            Assert.IsTrue(thumbnail.Width > 0);
-            Assert.IsTrue(thumbnail.Height > 0);
+            Assert.IsGreaterThan(0, thumbnail.Width);
+            Assert.IsGreaterThan(0, thumbnail.Height);
         }
 
         [TestMethod]
@@ -50,7 +51,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContents = svgBuilder.ToString();
             svgThumbnailProvider.SvgContentsReady.Set();
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail != null);
+            Assert.IsNotNull(thumbnail);
         }
 
         [TestMethod]
@@ -71,7 +72,7 @@ namespace SvgThumbnailProviderUnitTests
 
             svgThumbnailProvider.SvgContentsReady.Set();
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail != null);
+            Assert.IsNotNull(thumbnail);
         }
 
         [TestMethod]
@@ -93,7 +94,7 @@ namespace SvgThumbnailProviderUnitTests
 
             svgThumbnailProvider.SvgContentsReady.Set();
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail != null);
+            Assert.IsNotNull(thumbnail);
         }
 
         [TestMethod]
@@ -114,7 +115,7 @@ namespace SvgThumbnailProviderUnitTests
 ";
             svgThumbnailProvider.SvgContentsReady.Set();
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail != null);
+            Assert.IsNotNull(thumbnail);
         }
 
         [TestMethod]
@@ -127,7 +128,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContents = svgBuilder.ToString();
             svgThumbnailProvider.SvgContentsReady.Set();
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
 
         [TestMethod]
@@ -137,7 +138,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContents = string.Empty;
             svgThumbnailProvider.SvgContentsReady.Set();
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
 
         [TestMethod]
@@ -148,7 +149,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContentsReady.Set();
 
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
 
         [TestMethod]
@@ -159,7 +160,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContents = content;
             svgThumbnailProvider.SvgContentsReady.Set();
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(0);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
 
         [TestMethod]
@@ -184,7 +185,7 @@ namespace SvgThumbnailProviderUnitTests
             svgThumbnailProvider.SvgContentsReady.Set();
 
             Bitmap? thumbnail = svgThumbnailProvider.GetThumbnail(256);
-            Assert.IsTrue(thumbnail != null);
+            Assert.IsNotNull(thumbnail);
         }
 
         [TestMethod]
@@ -196,7 +197,7 @@ namespace SvgThumbnailProviderUnitTests
 
             Bitmap? bitmap = svgThumbnailProvider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -208,7 +209,7 @@ namespace SvgThumbnailProviderUnitTests
 
             Bitmap? bitmap = svgThumbnailProvider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -220,7 +221,7 @@ namespace SvgThumbnailProviderUnitTests
 
             Bitmap? bitmap = svgThumbnailProvider.GetThumbnail(8);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]

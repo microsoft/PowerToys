@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.KeyboardManager.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
@@ -48,7 +49,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     [TestCleanup]
     public Task CleanupTest() => CleanupKeyboardManagerTestAsync();
 
-    [TestMethod("KeyboardManager.Remapping.SingleKey")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.SingleKey")]
     [TestCategory("Keyboard Manager")]
     [DataRow("A", A, "B", B)]
     [DataRow("Left Ctrl", LeftControl, "A", A)]
@@ -113,7 +114,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
-    [TestMethod("KeyboardManager.Remapping.Disable")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.Disable")]
     [TestCategory("Keyboard Manager")]
     [DataRow("A", A)]
     [DataRow("Left Win", LeftWindows)]
@@ -151,7 +152,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
             "A disabled Windows key opened a Shell surface or moved foreground.");
     }
 
-    [TestMethod("KeyboardManager.Remapping.KeyToShortcut")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.KeyToShortcut")]
     [TestCategory("Keyboard Manager")]
     [DataRow("A", A, "Ctrl+V", LeftControl, V)]
     [DataRow("B", B, "Win+A", LeftWindows, A)]
@@ -213,7 +214,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
-    [TestMethod("KeyboardManager.Remapping.ShortcutToShortcut")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.ShortcutToShortcut")]
     [TestCategory("Keyboard Manager")]
     [DataRow("Ctrl+A to Ctrl+V", LeftControl, A, LeftControl, V, false)]
     [DataRow("Ctrl+A to Ctrl+V, modifier first", LeftControl, A, LeftControl, V, true)]
@@ -296,7 +297,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
-    [TestMethod("KeyboardManager.Remapping.ShortcutToKey")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.ShortcutToKey")]
     [TestCategory("Keyboard Manager")]
     [DataRow("Ctrl+A to B", LeftControl, A, B, false)]
     [DataRow("Ctrl+A to B, modifier first", LeftControl, A, B, true)]
@@ -349,7 +350,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
-    [TestMethod("KeyboardManager.Remapping.AppSpecific")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.AppSpecific")]
     [TestCategory("Keyboard Manager")]
     [DataRow(true)]
     [DataRow(false)]
@@ -396,7 +397,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         Assert.AreEqual(matchingTarget ? "b" : string.Empty, input.Text, "The app-specific remap produced the wrong Notepad file content.");
     }
 
-    [TestMethod("KeyboardManager.Remapping.HeldModifierSwitch")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.HeldModifierSwitch")]
     [TestCategory("Keyboard Manager")]
     [DataRow("Ctrl", LeftControl)]
     [DataRow("Win", LeftWindows)]
@@ -471,7 +472,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
-    [TestMethod("KeyboardManager.Remapping.AltTabTarget")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.AltTabTarget")]
     [TestCategory("Keyboard Manager")]
     public void AltTabTargetChangesForegroundAndReleasesModifier()
     {
@@ -504,7 +505,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         Assert.IsTrue(WaitForKeyState(LeftAlt, expected: false, timeoutMS: 1_000), "Alt remained down after Alt+Tab.");
     }
 
-    [TestMethod("KeyboardManager.Remapping.AltF4Target")]
+    [TestMethod(DisplayName = "KeyboardManager.Remapping.AltF4Target")]
     [TestCategory("Keyboard Manager")]
     public void AltF4TargetClosesNotepadAndReleasesModifier()
     {

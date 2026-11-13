@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class FuzzyMatcherComplexEmojiTests
 {
@@ -21,9 +22,9 @@ public sealed class FuzzyMatcherComplexEmojiTests
         var result = FuzzyStringMatcher.ScoreFuzzyWithPositions(needle, haystack, allowNonContiguousMatches: true);
 
         // Should have a positive score because of the base emoji match
-        Assert.IsTrue(result.Score > 0, "Expected partial match based on base emoji");
+        Assert.IsGreaterThan(0, result.Score, "Expected partial match based on base emoji");
 
         // Should match the base emoji (2 chars)
-        Assert.AreEqual(2, result.Positions.Count, "Expected match on base emoji only");
+        Assert.HasCount(2, result.Positions, "Expected match on base emoji only");
     }
 }

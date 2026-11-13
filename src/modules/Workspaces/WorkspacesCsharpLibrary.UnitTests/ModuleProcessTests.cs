@@ -9,6 +9,7 @@ using WorkspacesCsharpLibrary.Utils;
 
 namespace WorkspacesCsharpLibrary.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public class ModuleProcessTests

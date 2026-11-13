@@ -8,10 +8,11 @@ using Wox.Plugin;
 
 namespace Microsoft.Plugin.Program.UnitTests.ProgramArgumentParser
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ProgramArgumentParserTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Microsoft Edge", "Microsoft Edge", null)]
         [DataRow("Microsoft Edge ---inprivate", "Microsoft Edge ---inprivate", null)]
         [DataRow("Microsoft Edge -- -inprivate", "Microsoft Edge", "-inprivate")]

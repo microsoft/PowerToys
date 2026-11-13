@@ -320,15 +320,15 @@ public partial class CommandItemViewModelLifecycleTests
         item.ReadIcon = () =>
         {
             entered.Signal();
-            Assert.IsTrue(resume.Wait(TestTimeout * 2), "Initialization was not released.");
+            Assert.IsTrue(resume.Wait(TestTimeout * 2, TestContext.CancellationToken), "Initialization was not released.");
         };
 
-        var initialization = Task.WhenAll(Task.Run(viewModel.InitializeProperties), Task.Run(viewModel.InitializeProperties));
+        var initialization = Task.WhenAll(Task.Run(viewModel.InitializeProperties, TestContext.CancellationToken), Task.Run(viewModel.InitializeProperties, TestContext.CancellationToken));
         try
         {
-            Assert.IsTrue(entered.Wait(TestTimeout), "Both initializers did not reach the blocking getter.");
+            Assert.IsTrue(entered.Wait(TestTimeout, TestContext.CancellationToken), "Both initializers did not reach the blocking getter.");
             resume.Set();
-            await initialization.WaitAsync(TestTimeout);
+            await initialization.WaitAsync(TestTimeout, TestContext.CancellationToken);
 
             Assert.AreEqual(1, item.SubscriberCount);
             viewModel.SafeCleanup();
@@ -337,7 +337,7 @@ public partial class CommandItemViewModelLifecycleTests
         finally
         {
             resume.Set();
-            await initialization.WaitAsync(TestTimeout);
+            await initialization.WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
             viewModel.SafeCleanup();
             GC.KeepAlive(context);
         }
@@ -387,8 +387,11 @@ public partial class CommandItemViewModelLifecycleTests
             .GetField(nameof(ObservableObject.PropertyChanged), BindingFlags.Instance | BindingFlags.NonPublic);
         Assert.IsNotNull(commandEvent, "ObservableObject event storage changed; update the subscription assertion.");
         var commandHandlers = (Delegate?)commandEvent.GetValue(viewModel.Command);
-        Assert.IsFalse(
-            commandHandlers?.GetInvocationList().Any(handler => ReferenceEquals(handler.Target, viewModel)) == true,
+        Assert.AreNotEqual(
+            true,
+            commandHandlers?.GetInvocationList().Any(handler => ReferenceEquals(handler.Target, viewModel)),
             "The command still retains the cleaned item.");
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

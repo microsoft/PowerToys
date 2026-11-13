@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace QoiThumbnailProviderUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     public class QoiThumbnailProviderTests
     {
@@ -22,7 +23,7 @@ namespace QoiThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(256);
 
-            Assert.IsTrue(bitmap != null);
+            Assert.IsNotNull(bitmap);
         }
 
         [TestMethod]
@@ -35,7 +36,7 @@ namespace QoiThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(0);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
@@ -48,14 +49,14 @@ namespace QoiThumbnailProviderUnitTests
 
             Bitmap? bitmap = provider.GetThumbnail(10001);
 
-            Assert.IsTrue(bitmap == null);
+            Assert.IsNull(bitmap);
         }
 
         [TestMethod]
         public void CheckNoQoiNullStringShouldReturnNullBitmap()
         {
             Bitmap? thumbnail = QoiThumbnailProvider.GetThumbnail(null, 256);
-            Assert.IsTrue(thumbnail == null);
+            Assert.IsNull(thumbnail);
         }
     }
 }

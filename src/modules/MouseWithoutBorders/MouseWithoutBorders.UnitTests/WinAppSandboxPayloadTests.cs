@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class WinAppSandboxPayloadTests
 {
@@ -39,7 +40,7 @@ public sealed class WinAppSandboxPayloadTests
             Assert.AreEqual("native-text-library", File.ReadAllText(Path.Combine(bundle, "Tools", "libHarfBuzzSharp.dll")));
             Assert.AreEqual("localized-resource", File.ReadAllText(Path.Combine(bundle, "Tools", "en-US", "resources.mui")));
             Assert.IsFalse(File.Exists(Path.Combine(bundle, "Tools", "winapp.pdb")));
-            CollectionAssert.AreEqual(File.ReadAllBytes(archive), File.ReadAllBytes(Path.Combine(bundle, "Runtime", "product.zip")));
+            Assert.AreSequenceEqual(File.ReadAllBytes(archive), File.ReadAllBytes(Path.Combine(bundle, "Runtime", "product.zip")));
             Assert.IsTrue(File.Exists(Path.Combine(tools, "winapp.pdb")), "Source inputs must not be changed.");
 
             var error = Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxPayload.Create(archive, payload, tools, bundle));

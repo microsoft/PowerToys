@@ -9,6 +9,7 @@ using ClassificationMode = Peek.Common.Helpers.LaunchArgumentsClassifier.Classif
 
 namespace Peek.Common.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class LaunchArgumentsClassifierTests
     {
@@ -76,7 +77,7 @@ namespace Peek.Common.UnitTests
             var result = LaunchArgumentsClassifier.Classify(["C:\\temp\\file.png"]);
 
             Assert.AreEqual(ClassificationMode.Cli, result.Mode);
-            Assert.AreEqual(1, result.CliArguments.Count);
+            Assert.HasCount(1, result.CliArguments);
             Assert.AreEqual("C:\\temp\\file.png", result.CliArguments[0]);
         }
 
@@ -86,7 +87,7 @@ namespace Peek.Common.UnitTests
             var result = LaunchArgumentsClassifier.Classify(["one.png", "two.png", "three.png"]);
 
             Assert.AreEqual(ClassificationMode.Cli, result.Mode);
-            Assert.AreEqual(3, result.CliArguments.Count);
+            Assert.HasCount(3, result.CliArguments);
             Assert.AreEqual("one.png", result.CliArguments[0]);
             Assert.AreEqual("two.png", result.CliArguments[1]);
             Assert.AreEqual("three.png", result.CliArguments[2]);
@@ -98,7 +99,7 @@ namespace Peek.Common.UnitTests
             var result = LaunchArgumentsClassifier.Classify(["1234"]);
 
             Assert.AreEqual(ClassificationMode.Cli, result.Mode);
-            Assert.AreEqual(1, result.CliArguments.Count);
+            Assert.HasCount(1, result.CliArguments);
             Assert.AreEqual("1234", result.CliArguments[0]);
         }
 
@@ -108,7 +109,7 @@ namespace Peek.Common.UnitTests
             var result = LaunchArgumentsClassifier.Classify(["image.png", "1234"]);
 
             Assert.AreEqual(ClassificationMode.Cli, result.Mode);
-            Assert.AreEqual(2, result.CliArguments.Count);
+            Assert.HasCount(2, result.CliArguments);
             Assert.AreEqual("image.png", result.CliArguments[0]);
             Assert.AreEqual("1234", result.CliArguments[1]);
         }

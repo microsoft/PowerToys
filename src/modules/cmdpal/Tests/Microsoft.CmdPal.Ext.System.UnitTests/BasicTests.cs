@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.System.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BasicTests
 {
@@ -109,33 +110,14 @@ public class BasicTests
     [TestMethod]
     public void NetworkConnectionPropertiesTest()
     {
-        // Test that network connection properties can be accessed without throwing exceptions
-        try
+        var networkPropertiesList = NetworkConnectionProperties.GetList();
+        Assert.IsNotNull(networkPropertiesList);
+
+        foreach (var networkProperties in networkPropertiesList)
         {
-            var networkPropertiesList = NetworkConnectionProperties.GetList();
-
-            // If we have network connections, test accessing their properties
-            if (networkPropertiesList.Count > 0)
-            {
-                var networkProperties = networkPropertiesList[0];
-
-                // Access properties (these used to be methods)
-                var ipv4 = networkProperties.IPv4;
-                var ipv6 = networkProperties.IPv6Primary;
-                var macAddress = networkProperties.PhysicalAddress;
-
-                // Test passes if no exceptions are thrown
-                Assert.IsTrue(true);
-            }
-            else
-            {
-                // If no network connections, test still passes
-                Assert.IsTrue(true);
-            }
-        }
-        catch
-        {
-            Assert.Fail("Network properties should not throw exceptions");
+            Assert.IsNotNull(networkProperties.IPv4);
+            Assert.IsNotNull(networkProperties.IPv6Primary);
+            Assert.IsNotNull(networkProperties.PhysicalAddress);
         }
     }
 }

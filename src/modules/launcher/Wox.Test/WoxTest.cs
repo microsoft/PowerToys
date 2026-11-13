@@ -11,6 +11,7 @@ using Wox.Plugin;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WoxTest
     {

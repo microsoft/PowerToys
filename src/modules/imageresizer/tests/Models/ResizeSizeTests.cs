@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Models
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResizeSizeTests
     {
@@ -58,8 +59,9 @@ namespace ImageResizer.Models
                 () => size.Fit = ResizeFit.Stretch);
 
             Assert.AreEqual(ResizeFit.Stretch, size.Fit);
-            Assert.IsTrue(
-                events.Any(e => e.Arguments.PropertyName == nameof(ResizeSize.Fit)),
+            Assert.Contains(
+                e => e.Arguments.PropertyName == nameof(ResizeSize.Fit),
+                events,
                 "Expected PropertyChanged for Fit");
         }
 
@@ -138,8 +140,9 @@ namespace ImageResizer.Models
                 () => size.Unit = ResizeUnit.Inch);
 
             Assert.AreEqual(ResizeUnit.Inch, size.Unit);
-            Assert.IsTrue(
-                events.Any(e => e.Arguments.PropertyName == nameof(ResizeSize.Unit)),
+            Assert.Contains(
+                e => e.Arguments.PropertyName == nameof(ResizeSize.Unit),
+                events,
                 "Expected PropertyChanged for Unit");
         }
 
@@ -171,7 +174,7 @@ namespace ImageResizer.Models
             Assert.AreEqual(96, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(ResizeFit.Fit)]
         [DataRow(ResizeFit.Fill)]
         public void GetPixelHeightUsesWidthWhenScaleByPercent(ResizeFit fit)
@@ -273,7 +276,7 @@ namespace ImageResizer.Models
             Assert.AreEqual(50, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(ResizeFit.Fill, ResizeUnit.Centimeter)]
         [DataRow(ResizeFit.Fill, ResizeUnit.Inch)]
         [DataRow(ResizeFit.Fill, ResizeUnit.Pixel)]
@@ -295,7 +298,7 @@ namespace ImageResizer.Models
             Assert.IsTrue(size.ShowHeight);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(ResizeFit.Fill, ResizeUnit.Percent)]
         [DataRow(ResizeFit.Fit, ResizeUnit.Percent)]
         public void HeightNotVisible(ResizeFit fit, ResizeUnit unit)

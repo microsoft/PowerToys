@@ -14,6 +14,7 @@ using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Models
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResizeMetadataTests
     {
@@ -85,14 +86,14 @@ namespace ImageResizer.Models
             var lowOutput = await ResizeAsync(input, Path.Combine(directory, "low"), lowQuality);
             var highOutput = await ResizeAsync(input, Path.Combine(directory, "high"), highQuality);
 
-            Assert.IsTrue(new FileInfo(highOutput).Length > new FileInfo(lowOutput).Length, "Higher quality should retain more of the textured image data.");
+            Assert.IsGreaterThan(new FileInfo(lowOutput).Length, new FileInfo(highOutput).Length, "Higher quality should retain more of the textured image data.");
             await AssertMetadataAsync(lowOutput, expected, removeMetadata: false);
             await AssertMetadataAsync(highOutput, expected, removeMetadata: false);
             await AssertEx.ImageAsync(lowOutput, decoder => Assert.AreEqual(96u, decoder.PixelWidth));
             await AssertEx.ImageAsync(highOutput, decoder => Assert.AreEqual(96u, decoder.PixelWidth));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(6, false)]
         [DataRow(6, true)]
         [DataRow(8, false)]
@@ -235,7 +236,7 @@ namespace ImageResizer.Models
                         Assert.IsTrue(result.ContainsKey(name), $"The source fixture must contain {name} before testing preservation or removal.");
                     }
 
-                    CollectionAssert.AreEqual(Authors, (string[])result["System.Author"].Value);
+                    Assert.AreSequenceEqual(Authors, (string[])result["System.Author"].Value);
                     Assert.AreEqual(Title, result["System.Title"].Value);
                     Assert.AreEqual(Comment, result["System.Comment"].Value);
                     Assert.AreEqual(CameraModel, result["System.Photo.CameraModel"].Value);
@@ -281,7 +282,7 @@ namespace ImageResizer.Models
             Assert.AreEqual(expected[name].Type, actual[name].Type, $"{name} should retain its metadata type.");
             if (expected[name].Value is string[] strings)
             {
-                CollectionAssert.AreEqual(strings, (string[])actual[name].Value, $"{name} should retain every value.");
+                Assert.AreSequenceEqual(strings, (string[])actual[name].Value, $"{name} should retain every value.");
             }
             else
             {

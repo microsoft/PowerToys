@@ -10,6 +10,7 @@ using EditorNativeMethods = EnvironmentVariables.Win32.NativeMethods;
 
 namespace EnvironmentVariablesUILib.UnitTests.Helpers;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class WindowProcedureTests
 {

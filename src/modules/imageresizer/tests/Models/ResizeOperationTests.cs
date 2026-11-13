@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Models
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResizeOperationTests : IDisposable
     {
@@ -140,7 +141,7 @@ namespace ImageResizer.Models
 
             await operation.ExecuteAsync();
 
-            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test).png");
+            Assert.Contains("Test (Test).png", _directory.FileNames.ToList());
         }
 
         [TestMethod]
@@ -353,7 +354,7 @@ namespace ImageResizer.Models
 
             await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(() => operation.ExecuteAsync());
 
-            Assert.AreEqual(0, _directory.FileNames.Count());
+            Assert.IsEmpty(_directory.FileNames);
         }
 
         [TestMethod]
@@ -372,7 +373,7 @@ namespace ImageResizer.Models
 
             await Assert.ThrowsExactlyAsync<ArgumentOutOfRangeException>(() => operation.ExecuteAsync());
 
-            Assert.AreEqual(0, _directory.FileNames.Count());
+            Assert.IsEmpty(_directory.FileNames);
         }
 
         [TestMethod]
@@ -568,7 +569,7 @@ namespace ImageResizer.Models
 
             await operation.ExecuteAsync();
 
-            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test) (1).png");
+            Assert.Contains("Test (Test) (1).png", _directory.FileNames.ToList());
         }
 
         [TestMethod]
@@ -581,7 +582,7 @@ namespace ImageResizer.Models
 
             await operation.ExecuteAsync();
 
-            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test (Test) (2).png");
+            Assert.Contains("Test (Test) (2).png", _directory.FileNames.ToList());
         }
 
         [TestMethod]
@@ -594,7 +595,7 @@ namespace ImageResizer.Models
 
             await operation.ExecuteAsync();
 
-            CollectionAssert.Contains(_directory.FileNames.ToList(), "Test_Test_96_96_96_48.png");
+            Assert.Contains("Test_Test_96_96_96_48.png", _directory.FileNames.ToList());
         }
 
         [TestMethod]

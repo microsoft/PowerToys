@@ -259,7 +259,7 @@ public sealed class Session
         where T : Element, new()
     {
         var collection = FindAll<T>(by, timeoutMS);
-        Assert.IsTrue(collection.Count > 0, $"UI-Element({typeof(T).Name}) not found using selector: {by}");
+        Assert.IsNotEmpty(collection, $"UI-Element({typeof(T).Name}) not found using selector: {by}");
         return collection[0];
     }
 

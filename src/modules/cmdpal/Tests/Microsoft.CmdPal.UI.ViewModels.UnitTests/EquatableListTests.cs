@@ -12,6 +12,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// Tests for <see cref="EquatableList{T}"/> — the value-equality wrapper used as the backing
 /// field for record list properties so record equality compares list contents, not references.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class EquatableListTests
 {
@@ -76,7 +77,7 @@ public class EquatableListTests
         // A default(struct) has a null inner list; List must still surface an empty list
         // (never null) and compare equal to an explicitly-empty instance.
         Assert.IsNotNull(defaulted.List);
-        Assert.AreEqual(0, defaulted.List.Count);
+        Assert.IsEmpty(defaulted.List);
         Assert.IsTrue(defaulted.Equals(new EquatableList<string>(ImmutableList<string>.Empty)));
     }
 

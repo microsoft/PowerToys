@@ -14,6 +14,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class DockItemActionsTests
 {
@@ -73,7 +74,7 @@ public partial class DockItemActionsTests
             invocations.Add,
             _ => Assert.Fail("Button activation must not open the menu.")));
 
-        CollectionAssert.AreEqual(new[] { item }, invocations);
+        Assert.AreSequenceEqual(new[] { item }, invocations);
         var message = DockItemActions.CreateInvocationMessage(invocations[0]);
         Assert.AreSame(item.Command, message.Command);
         Assert.IsNull(message.CommandContext, "Direct dock activation must not change the sender or enter home-page history.");
@@ -119,7 +120,7 @@ public partial class DockItemActionsTests
 
         Assert.IsTrue(DockItemActions.TryHandleKey(item, chord, invocations.Add, _ => Assert.Fail("Ctrl+Enter executes the secondary action.")));
 
-        CollectionAssert.AreEqual(new[] { item.SecondaryCommand }, invocations);
+        Assert.AreSequenceEqual(new[] { item.SecondaryCommand }, invocations);
         var message = DockItemActions.CreateInvocationMessage(invocations[0]);
         Assert.AreSame(secondary, message.CommandContext);
         Assert.IsFalse(message.WithAnimation);

@@ -13,6 +13,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CopyLayoutTests : UITestBase
     {
@@ -173,7 +174,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
         [TestCategory("FancyZones Editor #4")]
         public void CopyTemplate_FromEditLayoutWindow()
         {
@@ -187,11 +188,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyTemplate_FromEditLayoutWindow")]
         [TestCategory("FancyZones Editor #4")]
         public void CopyTemplate_FromContextMenu()
         {
@@ -204,11 +205,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyTemplate_DefaultLayout")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyTemplate_DefaultLayout")]
         [TestCategory("FancyZones Editor #13")]
         public void CopyTemplate_DefaultLayout()
         {
@@ -222,7 +223,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts);
 
             // verify the default layout wasn't changed
             Session.Find<Element>(TestConstants.TemplateLayoutNames[LayoutType.PriorityGrid]).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -241,7 +242,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(defaultLayouts.Serialize(DefaultLayouts), defaultLayouts.Serialize(defaultLayoutData));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_FromEditLayoutWindow")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_FromEditLayoutWindow")]
         [TestCategory("FancyZones Editor #4")]
         public void CopyCustomLayout_FromEditLayoutWindow()
         {
@@ -255,11 +256,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_FromContextMenu")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_FromContextMenu")]
         [TestCategory("FancyZones Editor #4")]
         public void CopyCustomLayout_FromContextMenu()
         {
@@ -272,11 +273,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == copiedLayoutName));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_DefaultLayout")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_DefaultLayout")]
         [TestCategory("FancyZones Editor #13")]
         public void CopyCustomLayout_DefaultLayout()
         {
@@ -290,7 +291,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts);
 
             // verify the default layout wasn't changed
             Session.Find<Element>(CustomLayouts.CustomLayouts[0].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();
@@ -309,7 +310,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             Assert.AreEqual(defaultLayouts.Serialize(DefaultLayouts), defaultLayouts.Serialize(defaultLayoutData));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CopyCustomLayout_Hotkey")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CopyCustomLayout_Hotkey")]
         [TestCategory("FancyZones Editor #4")]
         public void CopyCustomLayout_Hotkey()
         {
@@ -323,7 +324,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts.Count);
+            Assert.HasCount(CustomLayouts.CustomLayouts.Count + 1, data.CustomLayouts);
 
             // verify the hotkey wasn't changed
             Session.Find<Element>(CustomLayouts.CustomLayouts[0].Name).Find<Button>(By.AccessibilityId(AccessibilityId.EditLayoutButton)).Click();

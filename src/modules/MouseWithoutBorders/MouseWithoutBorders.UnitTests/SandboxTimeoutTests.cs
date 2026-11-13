@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SandboxTimeoutTests
 {
@@ -19,32 +20,35 @@ public sealed class SandboxTimeoutTests
         Assert.AreEqual(TimeSpan.FromMinutes(65), SandboxTimeouts.LegacyRun);
         Assert.AreEqual(TimeSpan.FromMinutes(90), SandboxTimeouts.ModernRun);
         Assert.AreEqual(TimeSpan.FromMinutes(15), SandboxTimeouts.ModernStart);
-        Assert.IsTrue(SandboxTimeouts.ModernStart < SandboxTimeouts.ModernBootstrap);
-        Assert.IsTrue(SandboxTimeouts.ModernBootstrap + SandboxTimeouts.LegacyBootstrap < SandboxTimeouts.ModernRun);
+        Assert.IsLessThan(SandboxTimeouts.ModernBootstrap, SandboxTimeouts.ModernStart);
+        Assert.IsLessThan(SandboxTimeouts.ModernRun, SandboxTimeouts.ModernBootstrap + SandboxTimeouts.LegacyBootstrap);
     }
 
     [TestMethod]
-    public void EndpointStartupHasFifteenMinutesAndSeparateReplyHeadroom()
+    [DataRow(SandboxTimeouts.EndpointStartupMinutes, SandboxTimeouts.EndpointStartRequestSeconds)]
+    public void EndpointStartupHasFifteenMinutesAndSeparateReplyHeadroom(int startupMinutes, int requestSeconds)
     {
-        Assert.AreEqual(15, SandboxTimeouts.EndpointStartupMinutes);
-        Assert.AreEqual(1200, SandboxTimeouts.EndpointStartRequestSeconds);
-        Assert.IsTrue(SandboxTimeouts.EndpointStartRequestSeconds > SandboxTimeouts.EndpointStartupMinutes * 60);
+        Assert.AreEqual(15, startupMinutes);
+        Assert.AreEqual(1200, requestSeconds);
+        Assert.IsGreaterThan(startupMinutes * 60, requestSeconds);
         Assert.AreEqual(TimeSpan.FromMinutes(23), SandboxTimeouts.RecoveryRun);
     }
 
     [TestMethod]
-    public void GuestCleanupAndLegacyViewerHaveIndependentReadinessBudgets()
+    [DataRow(SandboxTimeouts.GuestStopRequestSeconds)]
+    public void GuestCleanupAndLegacyViewerHaveIndependentReadinessBudgets(int guestStopRequestSeconds)
     {
-        Assert.AreEqual(300, SandboxTimeouts.GuestStopRequestSeconds);
+        Assert.AreEqual(300, guestStopRequestSeconds);
         Assert.AreEqual(TimeSpan.FromMinutes(3), SandboxTimeouts.LegacyViewerStart);
-        Assert.IsTrue(SandboxTimeouts.LegacyViewerStart < SandboxTimeouts.LegacyBootstrap);
+        Assert.IsLessThan(SandboxTimeouts.LegacyBootstrap, SandboxTimeouts.LegacyViewerStart);
     }
 
     [TestMethod]
-    public void EvidenceCollectionHasItsOwnBoundedRequestBudget()
+    [DataRow(SandboxTimeouts.EndpointEvidenceRequestSeconds, SandboxTimeouts.GuestStopRequestSeconds)]
+    public void EvidenceCollectionHasItsOwnBoundedRequestBudget(int evidenceRequestSeconds, int guestStopRequestSeconds)
     {
-        Assert.AreEqual(180, SandboxTimeouts.EndpointEvidenceRequestSeconds);
-        Assert.IsTrue(SandboxTimeouts.EndpointEvidenceRequestSeconds < SandboxTimeouts.GuestStopRequestSeconds);
+        Assert.AreEqual(180, evidenceRequestSeconds);
+        Assert.IsLessThan(guestStopRequestSeconds, evidenceRequestSeconds);
     }
 
     [TestMethod]
@@ -54,7 +58,7 @@ public sealed class SandboxTimeoutTests
     {
         var bootstrap = modern ? SandboxTimeouts.ModernBootstrap : SandboxTimeouts.LegacyBootstrap;
         var run = modern ? SandboxTimeouts.ModernRun : SandboxTimeouts.LegacyRun;
-        Assert.IsTrue(run > bootstrap + TimeSpan.FromSeconds(2 * SandboxTimeouts.EndpointStartRequestSeconds));
+        Assert.IsGreaterThan(bootstrap + TimeSpan.FromSeconds(2 * SandboxTimeouts.EndpointStartRequestSeconds), run);
     }
 
     [TestMethod]

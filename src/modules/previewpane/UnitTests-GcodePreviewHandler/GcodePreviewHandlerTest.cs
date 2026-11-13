@@ -15,11 +15,12 @@ using Moq;
 
 namespace GcodePreviewHandlerUnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [STATestClass]
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "new Exception() is fine in test projects.")]
     public class GcodePreviewHandlerTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("HelperFiles/sample.gcode")]
         [DataRow("HelperFiles/sample_JPG.gcode")]
         [DataRow("HelperFiles/sample_QOI.gcode")]

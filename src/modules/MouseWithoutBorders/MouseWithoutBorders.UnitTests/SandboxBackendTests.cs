@@ -7,12 +7,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SandboxBackendTests
 {
     private static readonly string[] LegacyMappedPaths = [@"C:\MwbArchive", @"C:\MwbPayload", @"C:\MwbTools", @"C:\MwbInput", @"C:\MwbOutput"];
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null, 19045, "Legacy")]
     [DataRow(null, 26200, "Legacy")]
     [DataRow("Legacy", 19045, "Legacy")]
@@ -32,7 +33,7 @@ public sealed class SandboxBackendTests
         Assert.ThrowsExactly<ArgumentException>(() => SandboxBackendSelection.Resolve(string.Empty, 26200));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void BothBackendsKeepClipboardAndDeviceIsolation(bool legacy)
@@ -56,9 +57,9 @@ public sealed class SandboxBackendTests
             Assert.AreEqual("Enable", configuration.Element("Networking")!.Value);
             Assert.AreEqual("4096", configuration.Element("MemoryInMB")!.Value);
             var mappings = configuration.Element("MappedFolders")!.Elements("MappedFolder").ToArray();
-            Assert.AreEqual(legacy ? 5 : 0, mappings.Length);
+            Assert.HasCount(legacy ? 5 : 0, mappings);
             var channels = SandboxConfiguration.EndpointMappings(channel);
-            Assert.AreEqual(2, channels.Length);
+            Assert.HasCount(2, channels);
             Assert.AreEqual((channel.InputRoot, @"C:\MwbInput", true), channels[0]);
             Assert.AreEqual((channel.OutputRoot, @"C:\MwbOutput", false), channels[1]);
             Assert.AreEqual(legacy, configuration.Element("LogonCommand") is not null);
@@ -70,10 +71,10 @@ public sealed class SandboxBackendTests
                 var output = mappings.Single(item => item.Element("SandboxFolder")!.Value == @"C:\MwbOutput");
                 Assert.AreEqual(channel.OutputRoot, output.Element("HostFolder")!.Value);
                 Assert.AreEqual("false", output.Element("ReadOnly")!.Value);
-                CollectionAssert.AreEqual(
+                Assert.AreSequenceEqual(
                     LegacyMappedPaths,
                     mappings.Select(item => item.Element("SandboxFolder")!.Value).ToArray());
-                StringAssert.Contains(configuration.Element("LogonCommand")!.Value, "EndpointWorker.ps1");
+                Assert.Contains("EndpointWorker.ps1", configuration.Element("LogonCommand")!.Value);
                 Assert.IsTrue(mappings.Where(item => item != output).All(item => item.Element("ReadOnly")!.Value == "true"));
             }
         }

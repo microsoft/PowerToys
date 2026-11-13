@@ -16,6 +16,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class DefaultLayoutsTest : UITestBase
     {
@@ -238,7 +239,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             this.RestartScopeExe();
         }
 
-        [TestMethod("FancyZonesEditor.Basic.Default_Initialize")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.Default_Initialize")]
         [TestCategory("FancyZones Editor #12")]
         public void Initialize()
         {
@@ -246,7 +247,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
-        [TestMethod("FancyZonesEditor.Basic.Default_Assign_Cancel")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.Default_Assign_Cancel")]
         [TestCategory("FancyZones Editor #12")]
         public void Assign_Cancel()
         {
@@ -263,7 +264,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             CheckCustomLayouts(string.Empty, CustomLayouts.CustomLayouts[0].Uuid);
         }
 
-        [TestMethod("FancyZonesEditor.Basic.Default_Assign_Save")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.Default_Assign_Save")]
         [TestCategory("FancyZones Editor #12")]
         public void Assign_Save()
         {

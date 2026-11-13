@@ -11,6 +11,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.PowerToys.NewPlus.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 public sealed partial class NewPlusTests
 {
     private const string ModuleName = "NewPlus";
@@ -95,7 +96,7 @@ public sealed partial class NewPlusTests
         CloseExplorerWindows();
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreNewPlusState()
     {
         // Stop the shared Runner before restoring bytes; otherwise shutdown can overwrite them.
@@ -210,7 +211,7 @@ public sealed partial class NewPlusTests
             pollIntervalMS: 200);
         Assert.IsTrue(created.Succeeded, "Make New Folder did not create exactly one folder beneath the selected test directory.");
         var templates = created.LastObservation!.Single();
-        Assert.AreEqual(0, Directory.GetFileSystemEntries(templates).Length, "The newly created folder is not empty.");
+        Assert.IsEmpty(Directory.GetFileSystemEntries(templates), "The newly created folder is not empty.");
 
         // Finish the tree's inline rename before accepting the selected folder.
         KeyboardHelper.SendKeys(Key.Enter);
@@ -444,7 +445,7 @@ public sealed partial class NewPlusTests
         var processes = Process.GetProcessesByName("PowerToys.Settings");
         try
         {
-            Assert.AreEqual(1, processes.Length, "Expected exactly one Settings process.");
+            Assert.HasCount(1, processes, "Expected exactly one Settings process.");
             return processes[0].MainModule!.FileName;
         }
         finally

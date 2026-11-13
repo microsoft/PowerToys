@@ -15,7 +15,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
 public sealed partial class PageCleanupTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, false)]
     [DataRow(false, true)]
     [DataRow(true, false)]
@@ -40,7 +40,7 @@ public sealed partial class PageCleanupTests
             Assert.AreEqual(string.Empty, viewModel.ErrorMessage);
             if (discardPage)
             {
-                await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+                await viewModel.CleanupAsync().WaitAsync(TestTimeout, TestContext.CancellationToken);
             }
             else
             {
@@ -54,12 +54,12 @@ public sealed partial class PageCleanupTests
             }
             else
             {
-                StringAssert.Contains(viewModel.ErrorMessage, errorMessage);
+                Assert.Contains(errorMessage, viewModel.ErrorMessage);
             }
         }
         finally
         {
-            await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+            await viewModel.CleanupAsync().WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
         }
     }
 
@@ -82,11 +82,11 @@ public sealed partial class PageCleanupTests
             Assert.AreSame(failure, Assert.ThrowsExactly<InvalidOperationException>(viewModel.InitializeProperties));
             scheduler.Drain();
             Assert.AreEqual(0, publications);
-            Assert.AreEqual(0, viewModel.Content.Count);
+            Assert.IsEmpty(viewModel.Content);
         }
         finally
         {
-            await viewModel.CleanupAsync().WaitAsync(TestTimeout);
+            await viewModel.CleanupAsync().WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
         }
 
         Assert.IsTrue(viewModel.IsDiscarded);
@@ -98,7 +98,7 @@ public sealed partial class PageCleanupTests
         page.VerifyRemove(p => p.PropChanged -= It.IsAny<TypedEventHandler<object, IPropChangedEventArgs>>(), Times.Once);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public async Task CleanupCompletesAndRemainsTerminalWhenTeardownThrows(bool failStopHook)
@@ -125,11 +125,11 @@ public sealed partial class PageCleanupTests
             return "Updated title";
         });
 
-        var update = Task.Run(() => notification(page.Object, new PropChangedEventArgs(nameof(IPage.Title))));
+        var update = Task.Run(() => notification(page.Object, new PropChangedEventArgs(nameof(IPage.Title))), TestContext.CancellationToken);
         Task? cleanup = null;
         try
         {
-            await entered.Task.WaitAsync(TestTimeout);
+            await entered.Task.WaitAsync(TestTimeout, TestContext.CancellationToken);
             cleanup = viewModel.CleanupAsync();
             Assert.IsTrue(viewModel.IsDiscarded);
             Assert.IsFalse(cleanup.IsCompleted);
@@ -139,12 +139,12 @@ public sealed partial class PageCleanupTests
         finally
         {
             release.Set();
-            await update.WaitAsync(TestTimeout);
-            await (cleanup ?? viewModel.CleanupAsync()).WaitAsync(TestTimeout);
+            await update.WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
+            await (cleanup ?? viewModel.CleanupAsync()).WaitAsync(TestTimeout, System.Threading.CancellationToken.None);
         }
 
         Assert.AreSame(cleanup, viewModel.CleanupAsync());
-        await viewModel.ResumeAfterNavigation().WaitAsync(TestTimeout);
+        await viewModel.ResumeAfterNavigation().WaitAsync(TestTimeout, TestContext.CancellationToken);
         viewModel.InitializeProperties();
         notification(page.Object, new PropChangedEventArgs(nameof(IPage.Title)));
         scheduler.Drain();

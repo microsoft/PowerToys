@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.CmdPal.Common.UnitTests.ExtensionGallery.Services;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class ExtensionGalleryServiceTests
 {
@@ -45,17 +46,17 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var initialResult = await serviceHandle.Service.FetchExtensionsAsync();
+        var initialResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(initialResult.FromCache);
-        Assert.AreEqual(1, initialResult.Extensions.Count);
+        Assert.HasCount(1, initialResult.Extensions);
         Assert.AreEqual("Sample extension", initialResult.Extensions[0].Title);
-        var refreshedResult = await serviceHandle.Service.RefreshAsync();
+        var refreshedResult = await serviceHandle.Service.RefreshAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(refreshedResult.FromCache);
         Assert.IsTrue(refreshedResult.UsedFallbackCache);
         Assert.IsFalse(refreshedResult.HasError);
-        Assert.AreEqual(1, refreshedResult.Extensions.Count);
+        Assert.HasCount(1, refreshedResult.Extensions);
         Assert.AreEqual("Sample extension", refreshedResult.Extensions[0].Title);
         Assert.AreEqual(2, handler.CallCount);
     }
@@ -75,15 +76,15 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var initialResult = await serviceHandle.Service.FetchExtensionsAsync();
-        var cachedResult = await serviceHandle.Service.FetchExtensionsAsync();
+        var initialResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
+        var cachedResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(initialResult.FromCache);
         Assert.IsFalse(initialResult.UsedFallbackCache);
         Assert.IsTrue(cachedResult.FromCache);
         Assert.IsFalse(cachedResult.UsedFallbackCache);
         Assert.IsFalse(cachedResult.HasError);
-        Assert.AreEqual(1, cachedResult.Extensions.Count);
+        Assert.HasCount(1, cachedResult.Extensions);
         Assert.AreEqual(1, handler.CallCount);
     }
 
@@ -105,12 +106,12 @@ public class ExtensionGalleryServiceTests
             handler);
         var service = new ExtensionGalleryService(galleryHttpClient, NullLogger<ExtensionGalleryService>.Instance, new GalleryFeedUrlProvider(() => feedUrl));
 
-        var result = await service.FetchExtensionsAsync();
+        var result = await service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(result.HasError);
-        Assert.AreEqual(1, result.Extensions.Count);
+        Assert.HasCount(1, result.Extensions);
         var cachedFeedFiles = Directory.GetFiles(Path.Combine(appCacheDirectory, "GalleryCache"), "extensions.json", SearchOption.AllDirectories);
-        Assert.AreEqual(1, cachedFeedFiles.Length);
+        Assert.HasCount(1, cachedFeedFiles);
     }
 
     [TestMethod]
@@ -122,12 +123,12 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var result = await serviceHandle.Service.FetchExtensionsAsync();
+        var result = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsTrue(result.HasError);
         Assert.IsTrue(result.IsRateLimited);
         Assert.IsNull(result.ErrorMessage);
-        Assert.AreEqual(0, result.Extensions.Count);
+        Assert.IsEmpty(result.Extensions);
     }
 
     [TestMethod]
@@ -139,12 +140,12 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedDirectory, cacheDirectory, innerHandler: null);
 
-        var result = await serviceHandle.Service.FetchExtensionsAsync();
+        var result = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(result.HasError);
         Assert.IsFalse(result.FromCache);
         Assert.IsFalse(result.UsedFallbackCache);
-        Assert.AreEqual(1, result.Extensions.Count);
+        Assert.HasCount(1, result.Extensions);
         Assert.AreEqual("sample-extension", result.Extensions[0].Id);
     }
 
@@ -170,12 +171,12 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var result = await serviceHandle.Service.FetchExtensionsAsync();
+        var result = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(result.HasError);
         Assert.IsFalse(result.FromCache);
         Assert.IsFalse(result.UsedFallbackCache);
-        Assert.AreEqual(1, result.Extensions.Count);
+        Assert.HasCount(1, result.Extensions);
         Assert.AreEqual("Sample extension", result.Extensions[0].Title);
         var localizedIconUri = new Uri(result.Extensions[0].IconUrl!);
         Assert.IsTrue(localizedIconUri.IsFile);
@@ -199,10 +200,10 @@ public class ExtensionGalleryServiceTests
         var feedUrl = ToFeedUri(feedDirectory);
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, innerHandler: null);
 
-        var result = await serviceHandle.Service.FetchExtensionsAsync();
+        var result = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(result.HasError);
-        Assert.AreEqual(1, result.Extensions.Count);
+        Assert.HasCount(1, result.Extensions);
         Assert.AreEqual(new Uri(expectedIconPath).AbsoluteUri, result.Extensions[0].IconUrl);
     }
 
@@ -227,11 +228,11 @@ public class ExtensionGalleryServiceTests
         var feedUrl = ToFeedUri(feedDirectory);
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, innerHandler: null);
 
-        var result = await serviceHandle.Service.FetchExtensionsAsync();
+        var result = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(result.HasError);
-        Assert.AreEqual(1, result.Extensions.Count);
-        CollectionAssert.AreEqual(
+        Assert.HasCount(1, result.Extensions);
+        Assert.AreSequenceEqual(
             new[]
             {
                 new Uri(expectedFirstScreenshotPath).AbsoluteUri,
@@ -272,11 +273,11 @@ public class ExtensionGalleryServiceTests
         var feedUrl = ToFeedUri(feedDirectory);
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, innerHandler: null);
 
-        var result = await serviceHandle.Service.FetchExtensionsAsync();
+        var result = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(result.HasError);
         Assert.IsFalse(result.UsedFallbackCache);
-        Assert.AreEqual(1, result.Extensions.Count);
+        Assert.HasCount(1, result.Extensions);
         Assert.AreEqual("test-extension", result.Extensions[0].Id);
         Assert.AreEqual("Test Extension", result.Extensions[0].Title);
         Assert.AreEqual("A test extension", result.Extensions[0].Description);
@@ -312,9 +313,9 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var firstResult = await serviceHandle.Service.FetchExtensionsAsync();
-        await Task.Delay(50);
-        var secondResult = await serviceHandle.Service.FetchExtensionsAsync();
+        var firstResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
+        await Task.Delay(50, TestContext.CancellationToken);
+        var secondResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         var firstCachedIconUri = new Uri(firstResult.Extensions[0].IconUrl!);
         var secondCachedIconUri = new Uri(secondResult.Extensions[0].IconUrl!);
@@ -360,9 +361,9 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var firstResult = await serviceHandle.Service.FetchExtensionsAsync();
-        await Task.Delay(50);
-        var secondResult = await serviceHandle.Service.FetchExtensionsAsync();
+        var firstResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
+        await Task.Delay(50, TestContext.CancellationToken);
+        var secondResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
 
         var firstCachedIconUri = new Uri(firstResult.Extensions[0].IconUrl!);
         var secondCachedIconUri = new Uri(secondResult.Extensions[0].IconUrl!);
@@ -426,7 +427,7 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var initialResult = await serviceHandle.Service.FetchExtensionsAsync();
+        var initialResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
         Assert.IsFalse(initialResult.HasError);
 
         var retainedCachedIconUri = new Uri(initialResult.Extensions.Single(entry => entry.Id == "current-extension").IconUrl!);
@@ -445,11 +446,11 @@ public class ExtensionGalleryServiceTests
                 InstallSources = [],
             });
 
-        var refreshedResult = await serviceHandle.Service.RefreshAsync();
+        var refreshedResult = await serviceHandle.Service.RefreshAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(refreshedResult.HasError);
         Assert.IsFalse(refreshedResult.UsedFallbackCache);
-        Assert.AreEqual(1, refreshedResult.Extensions.Count);
+        Assert.HasCount(1, refreshedResult.Extensions);
         Assert.IsTrue(File.Exists(retainedCachedIconUri.LocalPath));
         Assert.IsFalse(File.Exists(obsoleteCachedIconUri.LocalPath));
         Assert.IsFalse(Directory.Exists(Path.GetDirectoryName(obsoleteCachedIconUri.LocalPath)!));
@@ -496,13 +497,13 @@ public class ExtensionGalleryServiceTests
 
         using var serviceHandle = CreateService(() => feedUrl, cacheDirectory, handler);
 
-        var initialResult = await serviceHandle.Service.FetchExtensionsAsync();
+        var initialResult = await serviceHandle.Service.FetchExtensionsAsync(TestContext.CancellationToken);
         Assert.IsFalse(initialResult.HasError);
 
         var cachedIconUri = new Uri(initialResult.Extensions[0].IconUrl!);
         Assert.IsTrue(File.Exists(cachedIconUri.LocalPath));
 
-        var refreshedResult = await serviceHandle.Service.RefreshAsync();
+        var refreshedResult = await serviceHandle.Service.RefreshAsync(TestContext.CancellationToken);
 
         Assert.IsFalse(refreshedResult.HasError);
         Assert.IsTrue(refreshedResult.UsedFallbackCache);
@@ -672,4 +673,6 @@ public class ExtensionGalleryServiceTests
             galleryHttpClient.Dispose();
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

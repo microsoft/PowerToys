@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 /// literals here must match what Microsoft.CommandPalette.Extensions.Toolkit emits and accepts —
 /// see ListSettingTests in the toolkit's own test project.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AdaptiveListValueCodecTests
 {
@@ -26,7 +27,7 @@ public class AdaptiveListValueCodecTests
     {
         Assert.IsTrue(AdaptiveListValueCodec.TryParseItems("""[{"value":"alpha"},{"value":"beta"}]""", out var parsed));
 
-        CollectionAssert.AreEqual(_items, parsed.Select(static item => item.Value).ToArray());
+        Assert.AreSequenceEqual(_items, parsed.Select(static item => item.Value).ToArray());
         Assert.AreEqual(
             """[{"value":"alpha"},{"value":"beta"}]""",
             AdaptiveListValueCodec.ToItemsValue(parsed));
@@ -37,7 +38,7 @@ public class AdaptiveListValueCodecTests
     {
         Assert.IsTrue(AdaptiveListValueCodec.TryParseItems("""["alpha","beta"]""", out var parsed));
 
-        CollectionAssert.AreEqual(_items, parsed.Select(static item => item.Value).ToArray());
+        Assert.AreSequenceEqual(_items, parsed.Select(static item => item.Value).ToArray());
     }
 
     [TestMethod]
@@ -45,7 +46,7 @@ public class AdaptiveListValueCodecTests
     {
         Assert.IsTrue(AdaptiveListValueCodec.TryParseItems(string.Empty, out var parsed));
 
-        Assert.AreEqual(0, parsed.Count);
+        Assert.IsEmpty(parsed);
         Assert.AreEqual("[]", AdaptiveListValueCodec.ToItemsValue(parsed));
     }
 
@@ -78,7 +79,7 @@ public class AdaptiveListValueCodecTests
     public void Items_MalformedValueIsRejected()
     {
         Assert.IsFalse(AdaptiveListValueCodec.TryParseItems("not an array", out var parsed));
-        Assert.AreEqual(0, parsed.Count);
+        Assert.IsEmpty(parsed);
 
         Assert.IsFalse(AdaptiveListValueCodec.TryParseItems("""{"value":"alpha"}""", out _));
     }
@@ -90,8 +91,8 @@ public class AdaptiveListValueCodecTests
             """[{"key":"alpha","value":"one"},{"key":"beta","value":"two=three"}]""",
             out var parsed));
 
-        CollectionAssert.AreEqual(_pairKeys, parsed.Select(static pair => pair.Key).ToArray());
-        CollectionAssert.AreEqual(_pairValues, parsed.Select(static pair => pair.Value).ToArray());
+        Assert.AreSequenceEqual(_pairKeys, parsed.Select(static pair => pair.Key).ToArray());
+        Assert.AreSequenceEqual(_pairValues, parsed.Select(static pair => pair.Value).ToArray());
         Assert.AreEqual(
             """[{"key":"alpha","value":"one"},{"key":"beta","value":"two=three"}]""",
             AdaptiveListValueCodec.ToPairsValue(parsed));
@@ -116,7 +117,7 @@ public class AdaptiveListValueCodecTests
             """[{"key":"same","value":"one"},{"key":"same","value":""}]""",
             out var parsed));
 
-        Assert.AreEqual(2, parsed.Count);
+        Assert.HasCount(2, parsed);
         Assert.AreEqual(
             """[{"key":"same","value":"one"},{"key":"same","value":""}]""",
             AdaptiveListValueCodec.ToPairsValue(parsed));
@@ -126,7 +127,7 @@ public class AdaptiveListValueCodecTests
     public void Pairs_MalformedValueIsRejected()
     {
         Assert.IsFalse(AdaptiveListValueCodec.TryParsePairs("{not an array}", out var parsed));
-        Assert.AreEqual(0, parsed.Count);
+        Assert.IsEmpty(parsed);
     }
 
     [TestMethod]

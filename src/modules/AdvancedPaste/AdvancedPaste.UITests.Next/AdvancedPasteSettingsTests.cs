@@ -21,6 +21,7 @@ namespace AdvancedPaste.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
 {
     private const string EnableCard = "AdvancedPasteEnableToggleControlHeaderText";
@@ -576,7 +577,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
 
     private static void AssertNoProviders()
     {
-        Assert.HasCount(0, ReadProperties()["paste-ai-configuration"]!["providers"]!.AsArray(), "Offline Settings tests must not configure any AI provider.");
+        Assert.IsEmpty(ReadProperties()["paste-ai-configuration"]!["providers"]!.AsArray(), "Offline Settings tests must not configure any AI provider.");
     }
 
     private static void AssertAIUnavailable(Session window)
@@ -655,12 +656,12 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                     : throw new AssertFailedException($"Unrecognized shortcut component '{part}' in {card}."),
             })
             .ToArray();
-        Assert.IsTrue(keys.Length >= 2, $"The {card} accessible shortcut is not a valid chord.");
+        Assert.IsGreaterThanOrEqualTo(2, keys.Length, $"The {card} accessible shortcut is not a valid chord.");
         return keys;
     }
 
     private void AssertShortcutOnUI(string card, Key[] expected) =>
-        CollectionAssert.AreEquivalent(expected, ReadShortcutFromUI(card), $"The {card} shortcut display does not match the saved binding.");
+        Assert.AreSequenceEqual(expected, ReadShortcutFromUI(card), SequenceOrder.InAnyOrder, $"The {card} shortcut display does not match the saved binding.");
 
     private static bool IsUnassignedShortcut(JsonNode shortcut) =>
         shortcut["code"]!.GetValue<int>() == 0 &&

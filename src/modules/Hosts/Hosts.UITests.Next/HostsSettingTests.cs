@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class HostsSettingTests : UITestBase
     {
@@ -92,7 +93,7 @@ namespace Hosts.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("Hosts.Next.Settings.ShowWarningDialogIfRunAsAdmin")]
+        [TestMethod(DisplayName = "Hosts.Next.Settings.ShowWarningDialogIfRunAsAdmin")]
         [TestCategory("Hosts File Editor #1")]
         [TestCategory("Hosts File Editor #9")]
         public void TestWarningDialog()
@@ -121,7 +122,7 @@ namespace Hosts.UITests
                     var buttons = hostsSession.FindAll<Button>(By.Name("Quit"), 0)
                         .Where(button => string.Equals(button.Name, "Quit", StringComparison.Ordinal))
                         .ToArray();
-                    Assert.IsTrue(buttons.Length <= 1, $"Expected at most one startup Quit button, found {buttons.Length}.");
+                    Assert.IsLessThanOrEqualTo(1, buttons.Length, $"Expected at most one startup Quit button, found {buttons.Length}.");
                     if (buttons.Length == 1 && buttons[0].IsEnabled)
                     {
                         quitAttempts++;
@@ -175,7 +176,7 @@ namespace Hosts.UITests
         /// Verifies the Open as administrator setting and, on an elevated test agent, confirms that
         /// the launched editor can save without the non-admin error.
         /// </summary>
-        [TestMethod("Hosts.Next.Settings.OpenAsAdministratorSignalsAdminEvent")]
+        [TestMethod(DisplayName = "Hosts.Next.Settings.OpenAsAdministratorSignalsAdminEvent")]
         [TestCategory("Hosts File Editor #8")]
         public void TestOpenAsAdministrator()
         {
@@ -184,7 +185,7 @@ namespace Hosts.UITests
                 // Keep a Hosts process alive: the admin event only launches with the "runas" verb
                 // when no process exists, which would raise a UAC prompt the test cannot dismiss.
                 var baselineHostsSession = LaunchFromSetting(showWarning: false, openAsAdmin: false);
-                Assert.AreEqual(false, baselineHostsSession.IsElevated, "The standard-user baseline Hosts process should not be elevated.");
+                Assert.IsFalse(baselineHostsSession.IsElevated, "The standard-user baseline Hosts process should not be elevated.");
 
                 var settingsSession = NavigateToHostsSettings();
                 var openAsAdminToggle = settingsSession.FindExact<ToggleSwitch>("Open as administrator");
@@ -197,8 +198,8 @@ namespace Hosts.UITests
 
                     string moduleLogPath = GetLatestModuleInterfaceLogPath();
                     long originalLogLength = new FileInfo(moduleLogPath).Length;
-                    Assert.IsTrue(
-                        WindowsFinder.ListByApp("PowerToys.Hosts").Count > 0,
+                    Assert.IsNotEmpty(
+                        WindowsFinder.ListByApp("PowerToys.Hosts"),
                         "Baseline Hosts process must still be running; otherwise Open as administrator raises a UAC prompt that blocks CI.");
                     settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
                     Assert.IsTrue(
@@ -229,7 +230,7 @@ namespace Hosts.UITests
                 "Open as administrator should be disabled when PowerToys is already elevated.");
 
             var hostsSession = LaunchFromSetting(showWarning: false, openAsAdmin: false);
-            Assert.AreEqual(true, hostsSession.IsElevated, "Hosts launched from elevated PowerToys should remain elevated.");
+            Assert.IsTrue(hostsSession.IsElevated, "Hosts launched from elevated PowerToys should remain elevated.");
 
             CloseWarningDialogOn(hostsSession);
             RemoveAllEntriesOn(hostsSession);
@@ -304,7 +305,7 @@ namespace Hosts.UITests
         /// Writing the hosts file requires the module to run elevated; the file-position assertions only run
         /// when the current session is elevated (mirrors <see cref="TestOpenAsAdministrator"/>).
         /// </summary>
-        [TestMethod("Hosts.Next.Settings.AdditionalLinesPositionShouldBeApplied")]
+        [TestMethod(DisplayName = "Hosts.Next.Settings.AdditionalLinesPositionShouldBeApplied")]
         [TestCategory("Hosts File Editor #10")]
         public void TestAdditionalLinesPosition()
         {

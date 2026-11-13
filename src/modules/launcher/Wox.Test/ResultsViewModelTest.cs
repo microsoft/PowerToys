@@ -17,10 +17,11 @@ using Wox.Plugin;
 
 namespace Wox.Test
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ResultsViewModelTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(5000, true, false, false)]
         [DataRow(10500, false, true, false)]
         [DataRow(10500, true, true, false)]

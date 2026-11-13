@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class FuzzyMatcherDiacriticsTests
 {
@@ -14,11 +15,11 @@ public class FuzzyMatcherDiacriticsTests
     {
         // "eco" should match "école" when diacritics are removed (é -> E)
         var score = FuzzyStringMatcher.ScoreFuzzy("eco", "école", allowNonContiguousMatches: true, removeDiacritics: true);
-        Assert.IsTrue(score > 0, "Should match 'école' with 'eco' when diacritics are removed");
+        Assert.IsGreaterThan(0, score, "Should match 'école' with 'eco' when diacritics are removed");
 
         // "uber" should match "über"
         score = FuzzyStringMatcher.ScoreFuzzy("uber", "über", allowNonContiguousMatches: true, removeDiacritics: true);
-        Assert.IsTrue(score > 0, "Should match 'über' with 'uber' when diacritics are removed");
+        Assert.IsGreaterThan(0, score, "Should match 'über' with 'uber' when diacritics are removed");
     }
 
     [TestMethod]
@@ -46,10 +47,10 @@ public class FuzzyMatcherDiacriticsTests
     {
         // Now default is true, so "eco" vs "école" should match
         var score = FuzzyStringMatcher.ScoreFuzzy("eco", "école");
-        Assert.IsTrue(score > 0, "Default should remove diacritics and match 'école'");
+        Assert.IsGreaterThan(0, score, "Default should remove diacritics and match 'école'");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("a", "à", true)]
     [DataRow("e", "é", true)]
     [DataRow("i", "ï", true)]
@@ -63,7 +64,7 @@ public class FuzzyMatcherDiacriticsTests
         var score = FuzzyStringMatcher.ScoreFuzzy(needle, haystack, allowNonContiguousMatches: true, removeDiacritics: true);
         if (expectingMatch)
         {
-            Assert.IsTrue(score > 0, $"Expected match for '{needle}' in '{haystack}' with diacritics removal");
+            Assert.IsGreaterThan(0, score, $"Expected match for '{needle}' in '{haystack}' with diacritics removal");
         }
         else
         {

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class KeyboardHelperTests
 {
     [TestMethod]
@@ -17,7 +18,7 @@ public class KeyboardHelperTests
         var (chord, heldKeys) = KeyboardHelper.CreateChordPlan(Key.LCtrl, Key.A);
 
         Assert.AreEqual("a", chord);
-        CollectionAssert.AreEqual(new[] { Key.LCtrl }, heldKeys.ToArray());
+        Assert.AreSequenceEqual(new[] { Key.LCtrl }, heldKeys.ToArray());
     }
 
     [TestMethod]
@@ -26,7 +27,7 @@ public class KeyboardHelperTests
         var (chord, heldKeys) = KeyboardHelper.CreateChordPlan(Key.RCtrl, Key.A);
 
         Assert.AreEqual("a", chord);
-        CollectionAssert.AreEqual(new[] { Key.RCtrl }, heldKeys.ToArray());
+        Assert.AreSequenceEqual(new[] { Key.RCtrl }, heldKeys.ToArray());
     }
 
     [TestMethod]
@@ -52,10 +53,10 @@ public class KeyboardHelperTests
     {
         var inputs = KeyboardHelper.CreateChordInputPlan(Key.LWin, Key.Ctrl, Key.Shift, Key.V);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new ushort[] { 0x5B, 0x11, 0x10, 0x56, 0x56, 0x10, 0x11, 0x5B },
             inputs.Select(input => input.Data.Keyboard.VirtualKey).ToArray());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new uint[] { 1, 0, 0, 0, 2, 2, 2, 3 },
             inputs.Select(input => input.Data.Keyboard.Flags).ToArray());
         foreach (var input in inputs)
@@ -91,7 +92,7 @@ public class KeyboardHelperTests
     {
         var inputs = KeyboardHelper.CreateChordInputPlan(key);
 
-        Assert.AreEqual(2, inputs.Length);
+        Assert.HasCount(2, inputs);
         Assert.AreEqual(expectedKeyDownFlags, inputs[0].Data.Keyboard.Flags);
         Assert.AreEqual(expectedKeyDownFlags | 2u, inputs[1].Data.Keyboard.Flags);
     }

@@ -12,6 +12,7 @@ namespace Microsoft.CmdPal.Ext.WindowsSettings.UnitTests;
 /// Functional test for the shell enumeration of Control Panel tasks. Runs
 /// against the real shell of the test machine.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ControlPanelTasksEnumerationTest
 {
@@ -40,7 +41,7 @@ public class ControlPanelTasksEnumerationTest
 
             // every enumerated task must carry the id list used to launch it
             Assert.IsNotNull(task.TaskIdList);
-            Assert.IsTrue(task.TaskIdList.Length > 0);
+            Assert.IsNotEmpty(task.TaskIdList);
 
             // The settings path shown as the result subtitle (and searched by
             // ">" path queries) must be consistent with the task's areas: with
@@ -51,8 +52,8 @@ public class ControlPanelTasksEnumerationTest
             }
             else
             {
-                Assert.IsTrue(task.Areas.Count > 0);
-                Assert.IsFalse(task.Areas.Any(string.IsNullOrWhiteSpace));
+                Assert.IsNotEmpty(task.Areas);
+                Assert.DoesNotContain(string.IsNullOrWhiteSpace, task.Areas);
                 Assert.AreEqual(
                     $"{task.Type}{PathDelimiterSequence}{string.Join(PathDelimiterSequence, task.Areas)}",
                     task.JoinedFullSettingsPath);
@@ -62,8 +63,8 @@ public class ControlPanelTasksEnumerationTest
             // but when present they must be usable for search matching
             if (task.AltNames is not null)
             {
-                Assert.IsTrue(task.AltNames.Any());
-                Assert.IsFalse(task.AltNames.Any(string.IsNullOrWhiteSpace));
+                Assert.IsNotEmpty(task.AltNames);
+                Assert.DoesNotContain(string.IsNullOrWhiteSpace, task.AltNames);
             }
         }
 
@@ -71,7 +72,7 @@ public class ControlPanelTasksEnumerationTest
         // merge dedupes by name, so a name collapse (e.g. a localization
         // fallback bug) would silently drop most of the tasks from search.
         var distinctNames = tasks.Select(x => x.Name).Distinct(System.StringComparer.OrdinalIgnoreCase).Count();
-        Assert.IsTrue(distinctNames > tasks.Count / 2);
+        Assert.IsGreaterThan(tasks.Count / 2, distinctNames);
 
         // Control Panel tasks belong to an applet (e.g. "Devices and
         // Printers") and carry the keywords Control Panel's own search uses.

@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsManagerTests
 {
@@ -56,7 +57,7 @@ public class SettingsManagerTests
             var formatsChanged = false;
             settings.DockClockFormatsChanged += (_, _) => formatsChanged = true;
 
-            Assert.ThrowsException<ArgumentException>(() => settings.SetDockClockFormats("UTC:%", "d", string.Empty));
+            Assert.ThrowsExactly<ArgumentException>(() => settings.SetDockClockFormats("UTC:%", "d", string.Empty));
             Assert.AreEqual("T", settings.DockClockTitleFormat);
             Assert.AreEqual("REL", settings.DockClockSubtitleFormat);
             Assert.AreEqual("s", settings.DockClockCopyFormat);
@@ -93,7 +94,7 @@ public class SettingsManagerTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("\"true\"", "T")]
     [DataRow("\"false\"", "t")]
     [DataRow("true", "t")]

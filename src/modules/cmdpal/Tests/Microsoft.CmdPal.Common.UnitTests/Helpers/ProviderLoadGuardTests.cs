@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.Helpers;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Helpers;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class ProviderLoadGuardTests
 {
@@ -27,7 +28,7 @@ public class ProviderLoadGuardTests
 
         Assert.IsNotNull(entry);
         Assert.AreEqual("Provider", entry[ExtensionLoadState.ProviderIdKey]?.GetValue<string>());
-        Assert.AreEqual(true, entry[ExtensionLoadState.LoadingKey]?.GetValue<bool>());
+        Assert.IsTrue(entry[ExtensionLoadState.LoadingKey]?.GetValue<bool>());
         Assert.AreEqual(0, entry[ExtensionLoadState.CrashCountKey]?.GetValue<int>());
 
         guard.Exit("Provider.Block");
@@ -56,7 +57,7 @@ public class ProviderLoadGuardTests
         var entry = state["Provider.Block"] as JsonObject;
 
         Assert.IsNotNull(entry);
-        Assert.AreEqual(false, entry[ExtensionLoadState.LoadingKey]?.GetValue<bool>());
+        Assert.IsFalse(entry[ExtensionLoadState.LoadingKey]?.GetValue<bool>());
         Assert.AreEqual(2, entry[ExtensionLoadState.CrashCountKey]?.GetValue<int>());
     }
 
@@ -89,7 +90,7 @@ public class ProviderLoadGuardTests
         Assert.IsTrue(state.ContainsKey("OtherProvider.Block"));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow("{")]
     [DataRow("[]")]

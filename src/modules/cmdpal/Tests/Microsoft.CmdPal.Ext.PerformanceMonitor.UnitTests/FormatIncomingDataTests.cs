@@ -6,10 +6,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.PerformanceMonitor.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class FormatIncomingDataTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0f, "0.0 Kbps")]
     [DataRow(6400f, "50.0 Kbps")]
     [DataRow(12793f, "99.9 Kbps")]
@@ -26,7 +27,7 @@ public class FormatIncomingDataTests
         Assert.AreEqual(expected, FormatIncomingData.AsBitsPerSecString(bytesPerSecond));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0f, "0.0 KB/s")]
     [DataRow(50000f, "50.0 KB/s")]
     [DataRow(100000f, "100 KB/s")]
@@ -51,7 +52,7 @@ public class FormatIncomingDataTests
         Assert.AreEqual("50.0 KiB/s", FormatIncomingData.AsBinaryBytesPerSecString(bytesPerSecond));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(0f, "0.0 KiB/s")]
     [DataRow(51200f, "50.0 KiB/s")]
     [DataRow(102400f, "100 KiB/s")]

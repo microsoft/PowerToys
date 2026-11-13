@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class UriBreadcrumbsTests
 {
@@ -23,7 +24,7 @@ public class UriBreadcrumbsTests
             out var breadcrumbs);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(DecodedExtensionBreadcrumbs, breadcrumbs);
+        Assert.AreSequenceEqual(DecodedExtensionBreadcrumbs, breadcrumbs);
     }
 
     [TestMethod]
@@ -35,10 +36,10 @@ public class UriBreadcrumbsTests
             out var breadcrumbs);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(SingleDecodedExtensionBreadcrumbs, breadcrumbs);
+        Assert.AreSequenceEqual(SingleDecodedExtensionBreadcrumbs, breadcrumbs);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("x-cmdpal://extensions/gallery/sample%2Fextension")]
     [DataRow("x-cmdpal://extensions/gallery/sample%5Cextension")]
     [DataRow("x-cmdpal://extensions/gallery/sample%0Aextension")]
@@ -47,6 +48,6 @@ public class UriBreadcrumbsTests
         var result = UriBreadcrumbs.TryParse(new Uri(uri), "x-cmdpal", out var breadcrumbs);
 
         Assert.IsFalse(result);
-        Assert.AreEqual(0, breadcrumbs.Length);
+        Assert.IsEmpty(breadcrumbs);
     }
 }

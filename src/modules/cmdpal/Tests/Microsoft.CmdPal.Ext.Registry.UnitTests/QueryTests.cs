@@ -11,10 +11,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Registry.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class QueryTests : CommandPaletteUnitTestBase
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("HKLM", "HKEY_LOCAL_MACHINE")]
     [DataRow("HKCU", "HKEY_CURRENT_USER")]
     [DataRow("HKCR", "HKEY_CLASSES_ROOT")]
@@ -27,7 +28,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var results = page.Query(input);
 
         Assert.IsNotNull(results);
-        Assert.IsTrue(results.Count > 0, "No items matched the query.");
+        Assert.IsNotEmpty(results, "No items matched the query.");
 
         var firstItem = results.FirstOrDefault();
         Assert.IsNotNull(firstItem, "No items matched the query.");
@@ -46,7 +47,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         Assert.IsNotNull(results);
 
         // Empty query should return all base keys
-        Assert.IsTrue(results.Count >= 5, "Expected at least 5 base registry keys.");
+        Assert.IsGreaterThanOrEqualTo(5, results.Count, "Expected at least 5 base registry keys.");
     }
 
     [TestMethod]
@@ -57,7 +58,7 @@ public class QueryTests : CommandPaletteUnitTestBase
         var results = page.Query(null);
 
         Assert.IsNotNull(results);
-        Assert.AreEqual(0, results.Count, "Null query should return empty results.");
+        Assert.IsEmpty(results, "Null query should return empty results.");
     }
 
     [TestMethod]
@@ -69,6 +70,6 @@ public class QueryTests : CommandPaletteUnitTestBase
 
         Assert.IsNotNull(results);
 
-        Assert.AreEqual(0, results.Count, "Invalid query should return empty results.");
+        Assert.IsEmpty(results, "Invalid query should return empty results.");
     }
 }

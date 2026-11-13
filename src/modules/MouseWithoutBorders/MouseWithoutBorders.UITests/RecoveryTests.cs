@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class RecoveryTests
 {
@@ -96,8 +97,8 @@ public sealed class RecoveryTests
             {
                 using var fixture = new TwoEndpointFixture(TestContext, report, attachments.Add);
                 var refusal = Assert.ThrowsExactly<AssertFailedException>(fixture.Run);
-                StringAssert.Contains(refusal.Message, "Run directory must be new; preserve old recovery journals.");
-                Assert.AreEqual(0, fixture.Cleanup().Count, "Refusal cleanup must not act on the stale directory.");
+                Assert.Contains("Run directory must be new; preserve old recovery journals.", refusal.Message);
+                Assert.IsEmpty(fixture.Cleanup(), "Refusal cleanup must not act on the stale directory.");
             });
         }
         finally
@@ -105,11 +106,11 @@ public sealed class RecoveryTests
             Environment.SetEnvironmentVariable("POWERTOYS_MWB_RUN_ROOT", previousRoot);
         }
 
-        CollectionAssert.AreEqual(filesBefore, Directory.GetFiles(root).Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray());
-        Assert.AreEqual(0, attachments.Count, "The refused fixture must not collect another owner's evidence.");
+        Assert.AreSequenceEqual(filesBefore, Directory.GetFiles(root).Select(Path.GetFileName).Order(StringComparer.Ordinal).ToArray());
+        Assert.IsEmpty(attachments, "The refused fixture must not collect another owner's evidence.");
         foreach (var (name, bytes) in snapshots)
         {
-            CollectionAssert.AreEqual(bytes, File.ReadAllBytes(Path.Combine(root, name)), "Refusal/finally/cleanup modified a prior-owner file: " + name);
+            Assert.AreSequenceEqual(bytes, File.ReadAllBytes(Path.Combine(root, name)), "Refusal/finally/cleanup modified a prior-owner file: " + name);
             Assert.AreEqual("prior publication", File.ReadAllText(Path.Combine(root, name + ".ready")));
         }
 
@@ -185,11 +186,11 @@ public sealed class RecoveryTests
                     "The owned legacy startup did not create its viewer.",
                     legacy.Discover);
                 identity = legacy.Processes.ToArray();
-                Assert.IsTrue(identity.Any(record => record.IsCurrent()));
+                Assert.Contains(record => record.IsCurrent(), identity);
             }
             else
             {
-                CollectionAssert.AreEqual(new[] { Guid.Parse(runId) }, ((WinAppSandbox)owned).RecoveryInventory());
+                Assert.AreSequenceEqual(new[] { Guid.Parse(runId) }, ((WinAppSandbox)owned).RecoveryInventory());
                 Assert.IsTrue(owned.RecoveryState!["CreationConfirmed"]!.GetValue<bool>());
             }
 
@@ -198,8 +199,8 @@ public sealed class RecoveryTests
             {
                 var refusal = Assert.ThrowsExactly<InvalidOperationException>(() =>
                     rejected.Start(Path.Combine(refusingRoot, "run.wsb"), archive, payload, tools, refusingGuest));
-                StringAssert.Contains(refusal.Message, "pre-existing Windows Sandbox");
-                Assert.AreEqual(0, rejected.Processes.Count);
+                Assert.Contains("pre-existing Windows Sandbox", refusal.Message);
+                Assert.IsEmpty(rejected.Processes);
                 ownedIdentityPreserved = identity.All(record => record.IsCurrent());
             }
             else
@@ -207,7 +208,7 @@ public sealed class RecoveryTests
                 var refusal = Assert.ThrowsExactly<AggregateException>(() =>
                     rejected.Start(Path.Combine(refusingRoot, "run.wsb"), archive, payload, tools, refusingGuest));
                 var errors = refusal.Flatten().InnerExceptions;
-                Assert.AreEqual(1, errors.Count, "Only the expected unowned-instance refusal may be accepted.");
+                Assert.HasCount(1, errors, "Only the expected unowned-instance refusal may be accepted.");
                 Assert.IsInstanceOfType<WinAppSandboxException>(errors[0]);
                 Assert.AreEqual("preexisting_sandbox", ((WinAppSandboxException)errors[0]).Code);
                 Assert.IsFalse(rejected.RecoveryState!["CreationAttempted"]!.GetValue<bool>());
@@ -239,7 +240,7 @@ public sealed class RecoveryTests
             rejected!.Stop();
             if (owned is WinAppSandbox modern)
             {
-                Assert.AreEqual(0, modern.RecoveryInventory().Length);
+                Assert.IsEmpty(modern.RecoveryInventory());
                 Assert.IsTrue(modern.RecoveryState["Stopped"]!.GetValue<bool>());
             }
             else
@@ -248,7 +249,7 @@ public sealed class RecoveryTests
                 LegacySandbox.AssertNoneRunning();
             }
 
-            CollectionAssert.AreEquivalent(originalSettings.ToArray(), EndpointRecoveryFixture.SettingsFingerprint().ToArray());
+            Assert.AreSequenceEqual(originalSettings.ToArray(), EndpointRecoveryFixture.SettingsFingerprint().ToArray(), SequenceOrder.InAnyOrder);
             recovered = true;
             RunFiles.Write(Path.Combine(root, "recovery-scenario.json"), new
             {

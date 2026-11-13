@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class GUIDGeneratorTests
     {
@@ -83,14 +84,14 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator.UnitTests
                 Assert.IsNotNull(guid);
                 Assert.AreEqual(0x7000, GetGUIDVersion(guid));
                 ulong timestampWithTrailingRandomData = BinaryPrimitives.ReadUInt64BigEndian(guid.AsSpan());
-                Assert.IsTrue(timestampWithTrailingRandomData > previousTimestampWithTrailingRandomData, "UUIDv7 wasn't time-ordered");
+                Assert.IsGreaterThan(previousTimestampWithTrailingRandomData, timestampWithTrailingRandomData, "UUIDv7 wasn't time-ordered");
 
                 // ensure at least one millisecond passes for consistent time-ordering. we wait 10 ms just to be sure.
                 Thread.Sleep(10);
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(3, "ns:DNS", "abc", "5bd670ce-29c8-3369-a8a1-10ce44c7259e")]
         [DataRow(3, "ns:URL", "abc", "874a8cb4-4e91-3055-a476-3d3e2ffe375f")]
         [DataRow(3, "ns:OID", "abc", "5557cd36-6b67-38ac-83fe-825f5905fc15")]

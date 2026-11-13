@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class GuestUiDiagnosticsTests
 {
@@ -78,14 +79,15 @@ public sealed class GuestUiDiagnosticsTests
             Assert.IsTrue(snapshot.GetProperty("RecordingOwnsTurn").GetBoolean());
             Assert.IsFalse(output.Contains("private-", StringComparison.Ordinal));
             Assert.AreEqual(JsonValueKind.Null, snapshot.GetProperty("QueryErrorHResult").ValueKind);
-            CollectionAssert.AreEquivalent(
+            Assert.AreSequenceEqual(
                 AllowedSnapshotProperties,
                 snapshot.EnumerateObject().Select(property => property.Name).ToArray(),
+                SequenceOrder.InAnyOrder,
                 "Diagnostics must contain exactly the fixed allowlisted fields.");
-            Assert.IsTrue(snapshot.GetProperty("SettingsProcessId").GetInt32() > 0);
-            Assert.IsTrue(snapshot.GetProperty("SettingsThreadCount").GetInt32() > 0);
-            Assert.IsTrue(snapshot.GetProperty("SettingsWorkingSetBytes").GetInt64() > 0);
-            Assert.IsTrue(snapshot.GetProperty("SettingsPrivateMemoryBytes").GetInt64() > 0);
+            Assert.IsGreaterThan(0, snapshot.GetProperty("SettingsProcessId").GetInt32());
+            Assert.IsGreaterThan(0, snapshot.GetProperty("SettingsThreadCount").GetInt32());
+            Assert.IsGreaterThan(0, snapshot.GetProperty("SettingsWorkingSetBytes").GetInt64());
+            Assert.IsGreaterThan(0, snapshot.GetProperty("SettingsPrivateMemoryBytes").GetInt64());
         }
         finally
         {

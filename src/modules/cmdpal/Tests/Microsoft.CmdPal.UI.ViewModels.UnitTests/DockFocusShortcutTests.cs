@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DockFocusShortcutTests
 {
@@ -174,7 +175,7 @@ public class DockFocusShortcutTests
             ["secondary-id", "primary-id", "left-id"],
             currentId);
 
-        CollectionAssert.AreEqual(new[] { firstId, secondId, thirdId }, result.ToArray());
+        Assert.AreSequenceEqual(new[] { firstId, secondId, thirdId }, result.ToArray());
     }
 
     [TestMethod]
@@ -191,7 +192,7 @@ public class DockFocusShortcutTests
             currentId,
             reverse: true);
 
-        CollectionAssert.AreEqual(new[] { firstId, secondId, thirdId }, result.ToArray());
+        Assert.AreSequenceEqual(new[] { firstId, secondId, thirdId }, result.ToArray());
     }
 
     [TestMethod]
@@ -207,7 +208,7 @@ public class DockFocusShortcutTests
             "secondary-id",
             reverse);
 
-        CollectionAssert.AreEqual(expected, result.ToArray());
+        Assert.AreSequenceEqual(expected, result.ToArray());
     }
 
     [TestMethod]
@@ -224,7 +225,7 @@ public class DockFocusShortcutTests
             ["primary-id", "secondary-id", "left-id"],
             "left-id");
 
-        CollectionAssert.AreEqual(expected, result.ToArray());
+        Assert.AreSequenceEqual(expected, result.ToArray());
     }
 
     [TestMethod]
@@ -237,7 +238,7 @@ public class DockFocusShortcutTests
             ["PRIMARY-ID", "SECONDARY-ID"],
             "secondary-id");
 
-        CollectionAssert.AreEqual(expected, result.ToArray());
+        Assert.AreSequenceEqual(expected, result.ToArray());
     }
 
     [TestMethod]
@@ -247,7 +248,7 @@ public class DockFocusShortcutTests
     {
         var result = DockFocusTargetResolver.GetTraversalOrder(BothMonitors, ["disconnected-id"], "disconnected-id", reverse);
 
-        Assert.AreEqual(0, result.Count);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]

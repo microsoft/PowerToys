@@ -14,6 +14,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsLinkCoverageTests
 {
@@ -72,7 +73,7 @@ public class SettingsLinkCoverageTests
         }
 
         var generalPage = LoadPage(SettingsPages[0]);
-        Assert.AreEqual(1, generalPage.Descendants().Count(control => control.Attribute("AllowWindowsKey") is not null));
+        Assert.ContainsSingle(control => control.Attribute("AllowWindowsKey") is not null, generalPage.Descendants());
     }
 
     [TestMethod]
@@ -114,32 +115,35 @@ public class SettingsLinkCoverageTests
             }
 
             var pageDestinations = destinations.Where(destination => BelongsToPage(destination, page)).ToArray();
-            Assert.IsTrue(
-                pageDestinations.Any(destination => destination.ElementId is null),
+            Assert.Contains(
+                destination => destination.ElementId is null,
+                pageDestinations,
                 $"{page.FileName} has no page-level settings link.");
 
             foreach (var anchor in anchors)
             {
-                Assert.IsTrue(
-                    pageDestinations.Any(destination =>
-                        string.Equals(destination.ElementId, anchor.Id, StringComparison.OrdinalIgnoreCase)),
+                Assert.Contains(
+                    destination =>
+                        string.Equals(destination.ElementId, anchor.Id, StringComparison.OrdinalIgnoreCase),
+                    pageDestinations,
                     $"{GetLocation(page, anchor.Element)} target '{anchor.Id}' is not registered.");
             }
 
             foreach (var destination in pageDestinations.Where(destination => destination.ElementId is not null))
             {
-                Assert.IsTrue(
-                    anchors.Any(anchor =>
-                        string.Equals(anchor.Id, destination.ElementId, StringComparison.OrdinalIgnoreCase)),
+                Assert.Contains(
+                    anchor =>
+                        string.Equals(anchor.Id, destination.ElementId, StringComparison.OrdinalIgnoreCase),
+                    anchors,
                     $"Settings link '{destination.LinkId}' points to missing target '{destination.ElementId}' in {page.FileName}.");
             }
         }
 
         foreach (var destination in destinations)
         {
-            Assert.AreEqual(
-                1,
-                SettingsPages.Count(page => BelongsToPage(destination, page)),
+            Assert.ContainsSingle(
+                page => BelongsToPage(destination, page),
+                SettingsPages,
                 $"Settings link '{destination.LinkId}' does not map to exactly one tested settings page.");
         }
     }
@@ -200,11 +204,12 @@ public class SettingsLinkCoverageTests
                     location.Key.RequiresExtensionProvider,
                     out var destination),
                 $"Settings location '{location.Key.PageTag}/{location.Key.ElementId}' has no preferred link.");
-            Assert.IsTrue(
-                location.Any(candidate => string.Equals(
+            Assert.Contains(
+                candidate => string.Equals(
                     candidate.LinkId,
                     destination.LinkId,
-                    StringComparison.Ordinal)),
+                    StringComparison.Ordinal),
+                location,
                 $"Settings location '{location.Key.PageTag}/{location.Key.ElementId}' resolved outside its aliases.");
         }
     }

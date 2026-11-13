@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.Cli.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class CliLocalizationTests
 {
@@ -59,7 +60,7 @@ public sealed class CliLocalizationTests
             using var stdout = new StringWriter();
             using var stderr = new StringWriter();
 
-            Assert.AreEqual(0, await application.RunAsync((command.Arguments + " --json").Split(' '), stdout, stderr));
+            Assert.AreEqual(0, await application.RunAsync((command.Arguments + " --json").Split(' '), stdout, stderr, TestContext.CancellationToken));
             Assert.IsNotNull(sentRequest);
             using var request = JsonDocument.Parse(sentRequest);
             Assert.AreEqual(command.Command, request.RootElement.GetProperty("command").GetString());
@@ -110,7 +111,7 @@ public sealed class CliLocalizationTests
             using var stdout = new StringWriter();
             using var stderr = new StringWriter();
 
-            Assert.AreEqual(error.ExitCode, await application.RunAsync(JsonStatusArguments, stdout, stderr));
+            Assert.AreEqual(error.ExitCode, await application.RunAsync(JsonStatusArguments, stdout, stderr, TestContext.CancellationToken));
             using var response = JsonDocument.Parse(stdout.ToString());
             Assert.AreEqual(1, response.RootElement.GetProperty("version").GetInt32());
             Assert.IsFalse(response.RootElement.GetProperty("success").GetBoolean());
@@ -138,7 +139,7 @@ public sealed class CliLocalizationTests
         {
             using var stdout = new StringWriter();
             using var stderr = new StringWriter();
-            Assert.AreEqual(exitCode, await application.RunAsync(arguments.Split(' '), stdout, stderr));
+            Assert.AreEqual(exitCode, await application.RunAsync(arguments.Split(' '), stdout, stderr, TestContext.CancellationToken));
             using var response = JsonDocument.Parse(stdout.ToString());
             Assert.AreEqual(1, response.RootElement.GetProperty("version").GetInt32());
             Assert.AreEqual(exitCode == 0, response.RootElement.GetProperty("success").GetBoolean());
@@ -168,7 +169,7 @@ public sealed class CliLocalizationTests
         using var stdout = new StringWriter();
         using var stderr = new StringWriter();
 
-        Assert.AreEqual(0, await application.RunAsync(StatusArguments, stdout, stderr));
+        Assert.AreEqual(0, await application.RunAsync(StatusArguments, stdout, stderr, TestContext.CancellationToken));
         string expected = string.Join(
             Environment.NewLine,
             Resources.Text_SystemTheme(Resources.Value_Light),
@@ -192,7 +193,7 @@ public sealed class CliLocalizationTests
         var application = new CliApplication(static (_, _) => throw new InvalidOperationException("Invalid input must not contact the service."));
         using var stdout = new StringWriter();
         using var stderr = new StringWriter();
-        Assert.AreEqual(2, await application.RunAsync(InvalidCommandArguments, stdout, stderr));
+        Assert.AreEqual(2, await application.RunAsync(InvalidCommandArguments, stdout, stderr, TestContext.CancellationToken));
         using var response = JsonDocument.Parse(stdout.ToString());
         Assert.IsFalse(response.RootElement.GetProperty("success").GetBoolean());
         var error = response.RootElement.GetProperty("error");
@@ -219,4 +220,6 @@ public sealed class CliLocalizationTests
             CultureInfo.CurrentUICulture = previousUICulture;
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

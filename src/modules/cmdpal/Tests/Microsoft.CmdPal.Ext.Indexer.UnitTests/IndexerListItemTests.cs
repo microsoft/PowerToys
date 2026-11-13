@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Indexer.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IndexerListItemTests
 {
@@ -52,7 +53,7 @@ public class IndexerListItemTests
     [TestMethod]
     public void DirectoryCommands_DoNotOfferRunAsAdministrator()
     {
-        Assert.IsFalse(IndexerListItem.FileCommands(Environment.SystemDirectory).Any(command => command.Command is RunAsAdministratorCommand));
+        Assert.DoesNotContain(command => command.Command is RunAsAdministratorCommand, IndexerListItem.FileCommands(Environment.SystemDirectory));
     }
 
     [TestMethod]

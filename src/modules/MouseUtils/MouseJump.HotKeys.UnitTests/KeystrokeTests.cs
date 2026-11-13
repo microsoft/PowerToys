@@ -8,6 +8,7 @@ namespace MouseJump.HotKeys.UnitTests;
 
 public static class KeystrokeTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class ParseTests
     {

@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Common.WinGet.Services;
 
 namespace Microsoft.CmdPal.Common.UnitTests.WinGet.Services;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class WinGetOperationTrackerServiceTests
 {
@@ -20,7 +21,7 @@ public class WinGetOperationTrackerServiceTests
         var operation = service.StartOperation("Microsoft.PowerToys", "PowerToys", WinGetPackageOperationKind.Install);
 
         Assert.AreEqual(operation, raisedOperation);
-        Assert.AreEqual(1, service.Operations.Count);
+        Assert.HasCount(1, service.Operations);
         Assert.AreEqual(operation, service.Operations[0]);
         Assert.AreEqual(WinGetPackageOperationState.Queued, operation.State);
         Assert.AreEqual(WinGetPackageOperationSource.Unspecified, operation.Source);

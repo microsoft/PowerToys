@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Settings.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
@@ -56,7 +57,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         }
     }
 
-    [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+    [ClassCleanup]
     public static void RestoreProfiles()
     {
         try
@@ -197,7 +198,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         KeyboardHelper.SendKeys(Key.Alt, Key.Shift, direction);
 
         AssertStableOrder(InitialOrder);
-        CollectionAssert.AreEqual(originalFile, File.ReadAllBytes(ProfilesPath), "A boundary shortcut rewrote the profiles file.");
+        Assert.AreSequenceEqual(originalFile, File.ReadAllBytes(ProfilesPath), "A boundary shortcut rewrote the profiles file.");
     }
 
     [TestMethod]
@@ -218,7 +219,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
                 KeyboardHelper.SendKeys(keys);
 
                 AssertStableOrder(InitialOrder);
-                CollectionAssert.AreEqual(originalFile, File.ReadAllBytes(ProfilesPath), $"{string.Join("+", keys)} rewrote the profiles file.");
+                Assert.AreSequenceEqual(originalFile, File.ReadAllBytes(ProfilesPath), $"{string.Join("+", keys)} rewrote the profiles file.");
             }
         }
     }
@@ -318,7 +319,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
                 element.X + element.Width <= firstRow.X + firstRow.Width && element.Y + element.Height <= firstRow.Y + firstRow.Height &&
                 element.X + element.Width < applyButton.X && string.Equals(element.GetProperty("IsOffscreen"), "False", StringComparison.OrdinalIgnoreCase))
             .ToArray();
-        Assert.AreEqual(1, headers.Length, "The drag setup requires one visible profile header TextBlock inside row 1 and to the left of Apply.");
+        Assert.HasCount(1, headers, "The drag setup requires one visible profile header TextBlock inside row 1 and to the left of Apply.");
         var header = headers[0];
         var startX = header.X + (header.Width / 2);
         var startY = header.Y + (header.Height / 2);
@@ -421,7 +422,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             .Where(element => string.Equals(element.ControlType, "ListItem", StringComparison.OrdinalIgnoreCase))
             .Select(element => element.Name)
             .ToArray();
-        CollectionAssert.AreEquivalent(expectedNames, itemNames, "Every profile ListItem must expose its DisplayName as its automation Name.");
+        Assert.AreSequenceEqual(expectedNames, itemNames, SequenceOrder.InAnyOrder, "Every profile ListItem must expose its DisplayName as its automation Name.");
     }
 
     [DllImport("user32.dll", SetLastError = true)]
@@ -600,7 +601,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     private void NavigateToProfiles(bool useVirtualizedList = false)
     {
         Step("Opening Power Display profiles");
-        Assert.IsTrue(Session.IsElevated == false, "Keyboard reordering must be tested with a non-elevated Settings process, where native reordering is enabled.");
+        Assert.IsFalse(Session.IsElevated, "Keyboard reordering must be tested with a non-elevated Settings process, where native reordering is enabled.");
         if (!Session.Has(By.AccessibilityId("PowerDisplayNavItem"), 500))
         {
             Find<NavigationViewItem>(By.AccessibilityId("InputOutputNavItem")).Click(msPostAction: 0);
@@ -631,7 +632,7 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
         var buttons = Session.FindAll<Button>(By.AccessibilityId(buttonId))
             .Where(button => button.HelpText.Contains(ProfileName(profileId), StringComparison.Ordinal))
             .ToArray();
-        Assert.AreEqual(1, buttons.Length, $"Expected one {buttonId} for profile {profileId}.");
+        Assert.HasCount(1, buttons, $"Expected one {buttonId} for profile {profileId}.");
         return buttons[0];
     }
 

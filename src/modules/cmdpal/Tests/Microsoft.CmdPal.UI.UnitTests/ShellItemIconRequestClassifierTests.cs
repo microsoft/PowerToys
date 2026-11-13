@@ -8,10 +8,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ShellItemIconRequestClassifierTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("C:\\Files\\report.txt")]
     [DataRow("C:\\Files\\README")]
     [DataRow("C:\\Files\\Folder")]
@@ -24,7 +25,7 @@ public class ShellItemIconRequestClassifierTests
         Assert.IsFalse(request.Jumbo);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Assets\\icon.png")]
     [DataRow("C:\\Files\\image.png")]
     [DataRow("file:///C:/Files/image.png")]

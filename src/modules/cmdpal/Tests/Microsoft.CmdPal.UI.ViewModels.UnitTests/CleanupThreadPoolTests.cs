@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CleanupThreadPoolTests
 {
@@ -18,18 +19,20 @@ public class CleanupThreadPoolTests
     {
         using var release = new ManualResetEventSlim();
         var description = Guid.NewGuid().ToString();
-        var completion = CleanupThreadPool.Queue(() => release.Wait(TimeSpan.FromSeconds(10)), description);
+        var completion = CleanupThreadPool.Queue(() => release.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken), description);
         try
         {
             Assert.IsFalse(completion.IsCompleted);
-            Assert.IsTrue(CleanupThreadPool.Pending.Any(work => work.Description == description));
+            Assert.Contains(work => work.Description == description, CleanupThreadPool.Pending);
         }
         finally
         {
             release.Set();
-            await completion.WaitAsync(TimeSpan.FromSeconds(2));
+            await completion.WaitAsync(TimeSpan.FromSeconds(2), System.Threading.CancellationToken.None);
         }
 
-        Assert.IsFalse(CleanupThreadPool.Pending.Any(work => work.Description == description));
+        Assert.DoesNotContain(work => work.Description == description, CleanupThreadPool.Pending);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

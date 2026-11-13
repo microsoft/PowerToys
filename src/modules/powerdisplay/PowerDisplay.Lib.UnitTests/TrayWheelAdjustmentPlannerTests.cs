@@ -10,6 +10,7 @@ using static PowerDisplay.Common.Services.TrayWheelAdjustmentPlanner;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TrayWheelAdjustmentPlannerTests
 {
@@ -30,7 +31,7 @@ public class TrayWheelAdjustmentPlannerTests
             @"\\.\DISPLAY1",
             5);
 
-        Assert.AreEqual(0, result.Count);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -48,7 +49,7 @@ public class TrayWheelAdjustmentPlannerTests
             @"\\.\display7",
             5);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual(new Adjustment("primary", 65), result[0]);
     }
 
@@ -68,7 +69,7 @@ public class TrayWheelAdjustmentPlannerTests
             @"\\.\DISPLAY1",
             -10);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { new Adjustment("mirror-a", 20), new Adjustment("mirror-b", 60) },
             result.ToArray());
     }
@@ -82,7 +83,7 @@ public class TrayWheelAdjustmentPlannerTests
             null,
             5);
 
-        Assert.AreEqual(0, result.Count);
+        Assert.IsEmpty(result);
     }
 
     [TestMethod]
@@ -100,7 +101,7 @@ public class TrayWheelAdjustmentPlannerTests
             null,
             5);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { new Adjustment("a", 25), new Adjustment("b", 85) },
             result.ToArray());
     }
@@ -118,7 +119,7 @@ public class TrayWheelAdjustmentPlannerTests
 
         var result = Plan(MouseWheelControlMode.AllDisplays, targets, null, 5);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual(new Adjustment("valid", 55), result[0]);
     }
 
@@ -133,7 +134,7 @@ public class TrayWheelAdjustmentPlannerTests
 
         var result = Plan(MouseWheelControlMode.AllDisplays, targets, null, 10);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[] { new Adjustment("low", 12), new Adjustment("high", 100) },
             result.ToArray());
     }
@@ -147,7 +148,7 @@ public class TrayWheelAdjustmentPlannerTests
             null,
             long.MaxValue);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual(new Adjustment("a", 100), result[0]);
     }
 
@@ -160,7 +161,7 @@ public class TrayWheelAdjustmentPlannerTests
             null,
             long.MinValue);
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.AreEqual(new Adjustment("a", 0), result[0]);
     }
 
@@ -242,7 +243,7 @@ public class TrayWheelAdjustmentPlannerTests
                 .Select(target => target.Id)
                 .ToArray();
 
-            CollectionAssert.AreEqual(planned, eligible, $"mode {mode}");
+            Assert.AreSequenceEqual(planned, eligible, $"mode {mode}");
         }
     }
 }

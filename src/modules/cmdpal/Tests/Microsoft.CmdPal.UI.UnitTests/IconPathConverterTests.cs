@@ -10,11 +10,13 @@ using Windows.Graphics.Imaging;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IconPathConverterTests
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "MSTEST0045:Use cooperative cancellation for timeout", Justification = "Synchronous and native operations require the independent MSTest timeout watchdog.")]
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = false)]
     public void IndexedShellIconIsPreparedAsSoftwareBitmap()
     {
         var shell32Path = Path.Combine(
@@ -26,8 +28,8 @@ public class IconPathConverterTests
         Assert.AreEqual(IconPathConverter.PreparedIconKind.Binary, prepared.Kind);
         Assert.IsNotNull(prepared.SoftwareBitmap);
         var bitmap = prepared.SoftwareBitmap;
-        Assert.IsTrue(bitmap.PixelWidth > 0);
-        Assert.IsTrue(bitmap.PixelHeight > 0);
+        Assert.IsGreaterThan(0, bitmap.PixelWidth);
+        Assert.IsGreaterThan(0, bitmap.PixelHeight);
         Assert.AreEqual(BitmapPixelFormat.Bgra8, bitmap.BitmapPixelFormat);
         Assert.AreEqual(BitmapAlphaMode.Premultiplied, bitmap.BitmapAlphaMode);
     }
@@ -81,7 +83,7 @@ public class IconPathConverterTests
         Assert.AreEqual(24, prepared.TargetSize);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(".ico")]
     [DataRow(".png")]
     [DataRow(".svg")]
@@ -152,8 +154,8 @@ public class IconPathConverterTests
         Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, prepared.Kind);
         Assert.AreEqual(20, prepared.TargetSize);
         var svg = Encoding.UTF8.GetString(prepared.SvgData!);
-        StringAssert.Contains(svg, "fill=\"#FFFFFF\"");
-        StringAssert.Contains(svg, "fill=\"#FCE100\"");
+        Assert.Contains("fill=\"#FFFFFF\"", svg);
+        Assert.Contains("fill=\"#FCE100\"", svg);
     }
 
     [TestMethod]
@@ -166,8 +168,8 @@ public class IconPathConverterTests
         Assert.AreEqual(IconPathConverter.PreparedIconKind.SvgData, prepared.Kind);
         Assert.AreEqual(20, prepared.TargetSize);
         var svg = Encoding.UTF8.GetString(prepared.SvgData!);
-        StringAssert.Contains(svg, "fill=\"{{ThemeColor}}\"");
-        StringAssert.Contains(svg, "fill=\"{{AccentColor}}\"");
+        Assert.Contains("fill=\"{{ThemeColor}}\"", svg);
+        Assert.Contains("fill=\"{{AccentColor}}\"", svg);
     }
 
     [TestMethod]

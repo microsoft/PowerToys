@@ -32,7 +32,7 @@ internal sealed class WindowFixture : IDisposable
             OtherWindow = Open(otherExecutable, "Window Hopper different application", OtherColor);
             Assert.HasCount(4, processes.Select(process => process.Id).Distinct().ToArray(), "Every source must have its own live process.");
             Assert.IsTrue(processes.All(process => !process.HasExited), "A fixture process exited before the test began.");
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new[] { executable, executable, executable, otherExecutable },
                 processes.Select(process => process.MainModule!.FileName).ToArray(),
                 "The fixture must provide three same-image processes and one different-image process.");

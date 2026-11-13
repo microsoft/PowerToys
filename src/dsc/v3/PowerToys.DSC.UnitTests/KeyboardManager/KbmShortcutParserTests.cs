@@ -8,6 +8,7 @@ using PowerToys.DSC.Models.KeyboardManager;
 namespace PowerToys.DSC.UnitTests.KeyboardManager;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class KbmShortcutParserTests
 {
     [TestMethod]
@@ -56,7 +57,7 @@ public sealed class KbmShortcutParserTests
     public void ParseKeyOrShortcut_InvalidInput_Fails(string input, string expectedErrorFragment)
     {
         Assert.IsFalse(KbmShortcutParser.TryParseKeyOrShortcut(input, out _, out var error));
-        StringAssert.Contains(error, expectedErrorFragment);
+        Assert.Contains(expectedErrorFragment, error);
     }
 
     [TestMethod]

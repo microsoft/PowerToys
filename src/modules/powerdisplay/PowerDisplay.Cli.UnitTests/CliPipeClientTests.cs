@@ -16,6 +16,7 @@ namespace PowerDisplay.Cli.UnitTests;
 /// <summary>
 /// Tests for <see cref="CliPipeClient"/>.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CliPipeClientTests
 {
@@ -25,7 +26,7 @@ public class CliPipeClientTests
 
     // ── Happy-path: in-proc fake server, trusted verifier ─────────────────────
     [TestMethod]
-    [Timeout(10_000)]
+    [Timeout(10_000, CooperativeCancellation = true)]
     public async Task SendAsync_WithFakeServerAndTrustedVerifier_ReturnsCannedResponse()
     {
         const string RequestJson = @"{""command"":""list""}";
@@ -33,7 +34,8 @@ public class CliPipeClientTests
 
         // Start a one-shot in-proc server on the same pipe name
         using var serverReady = new SemaphoreSlim(0, 1);
-        var serverTask = Task.Run(async () =>
+        var serverTask = Task.Run(
+            async () =>
         {
             using var server = new NamedPipeServerStream(
                 PipeNames.CliServer(),
@@ -43,21 +45,22 @@ public class CliPipeClientTests
                 PipeOptions.Asynchronous);
 
             serverReady.Release(); // signal: server is now listening
-            await server.WaitForConnectionAsync();
+            await server.WaitForConnectionAsync(TestContext.CancellationToken);
 
             // Mirror the server protocol: BOM-less UTF-16 LE (same as CliPipeClient / CliPipeServer).
             // Use the shared pipe encoding/buffer so the fake server stays byte-compatible with the client.
             using var reader = new StreamReader(server, CliPipeProtocol.PipeEncoding, false, CliPipeProtocol.BufferSize, leaveOpen: true);
             using var writer = new StreamWriter(server, CliPipeProtocol.PipeEncoding, CliPipeProtocol.BufferSize, leaveOpen: true) { AutoFlush = true };
 
-            _ = await reader.ReadLineAsync();
+            _ = await reader.ReadLineAsync(TestContext.CancellationToken);
 
             // Echo back the canned response regardless of what was sent
             await writer.WriteLineAsync(ResponseJson);
-        });
+        },
+            TestContext.CancellationToken);
 
         // Wait until the server is listening before connecting
-        await serverReady.WaitAsync(TimeSpan.FromSeconds(5));
+        await serverReady.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         // The in-proc fake server is not the real sibling PowerToys.PowerDisplay.exe, so the
         // real production verifier would reject it. Inject a trusted stub via the internal
@@ -72,14 +75,15 @@ public class CliPipeClientTests
 
     // ── Untrusted server: verifier rejects, no request body is ever sent ─────
     [TestMethod]
-    [Timeout(10_000)]
+    [Timeout(10_000, CooperativeCancellation = true)]
     public async Task SendAsync_WithUntrustedVerifier_ReturnsNullAndSendsNoRequestBody()
     {
         const string RequestJson = @"{""command"":""list""}";
 
         using var serverReady = new SemaphoreSlim(0, 1);
         string? receivedLine = "not-read-yet";
-        var serverTask = Task.Run(async () =>
+        var serverTask = Task.Run(
+            async () =>
         {
             using var server = new NamedPipeServerStream(
                 PipeNames.CliServer(),
@@ -89,16 +93,17 @@ public class CliPipeClientTests
                 PipeOptions.Asynchronous);
 
             serverReady.Release();
-            await server.WaitForConnectionAsync();
+            await server.WaitForConnectionAsync(TestContext.CancellationToken);
 
             using var reader = new StreamReader(server, CliPipeProtocol.PipeEncoding, false, CliPipeProtocol.BufferSize, leaveOpen: true);
 
             // The client must close the connection right after a failed verification and before
             // writing anything, so the read reaches end-of-stream (null) instead of returning a line.
-            receivedLine = await reader.ReadLineAsync();
-        });
+            receivedLine = await reader.ReadLineAsync(TestContext.CancellationToken);
+        },
+            TestContext.CancellationToken);
 
-        await serverReady.WaitAsync(TimeSpan.FromSeconds(5));
+        await serverReady.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         var client = new CliPipeClient(static _ => false);
         var result = await client.SendAsync(RequestJson, ConnectTimeout, CancellationToken.None);
@@ -111,7 +116,7 @@ public class CliPipeClientTests
 
     // ── No-server path: returns null within short timeout ────────────────────
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SendAsync_NoServer_ReturnsNullWithinShortTimeout()
     {
         // There is no server listening on this pipe, so ConnectAsync will throw TimeoutException.
@@ -124,7 +129,7 @@ public class CliPipeClientTests
 
     // ── Cancellation propagates ───────────────────────────────────────────────
     [TestMethod]
-    [Timeout(5_000)]
+    [Timeout(5_000, CooperativeCancellation = true)]
     public async Task SendAsync_CancelledToken_ThrowsOperationCanceledException()
     {
         using var cts = new CancellationTokenSource();
@@ -132,7 +137,7 @@ public class CliPipeClientTests
 
         var client = new CliPipeClient();
 
-        // Assert.ThrowsExceptionAsync<T> matches the exact type, so TaskCanceledException
+        // Assert.ThrowsExactlyAsync<T> matches the exact type, so TaskCanceledException
         // (which derives from OperationCanceledException) would fail it.  Use a manual
         // try/catch so any subclass of OperationCanceledException is accepted.
         try
@@ -185,7 +190,7 @@ public class CliPipeClientTests
 
     // ── PipeServerIdentity: real GetNamedPipeServerProcessId + QueryFullProcessImageNameW round trip ──
     [TestMethod]
-    [Timeout(10_000)]
+    [Timeout(10_000, CooperativeCancellation = true)]
     public async Task IsTrustedServer_SelfConnectedPipeWithMatchingExpectedPath_ReturnsTrue()
     {
         string selfPipeName = $"PowerDisplay_Cli_UnitTests_{Guid.NewGuid():N}";
@@ -195,7 +200,7 @@ public class CliPipeClientTests
         using var server = new NamedPipeServerStream(selfPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         using var client = new NamedPipeClientStream(".", selfPipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
-        var acceptTask = server.WaitForConnectionAsync();
+        var acceptTask = server.WaitForConnectionAsync(TestContext.CancellationToken);
         await client.ConnectAsync((int)ConnectTimeout.TotalMilliseconds, CancellationToken.None);
         await acceptTask;
 
@@ -205,7 +210,7 @@ public class CliPipeClientTests
     }
 
     [TestMethod]
-    [Timeout(10_000)]
+    [Timeout(10_000, CooperativeCancellation = true)]
     public async Task IsTrustedServer_SelfConnectedPipeWithMismatchedExpectedPath_ReturnsFalse()
     {
         string selfPipeName = $"PowerDisplay_Cli_UnitTests_{Guid.NewGuid():N}";
@@ -213,10 +218,12 @@ public class CliPipeClientTests
         using var server = new NamedPipeServerStream(selfPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous);
         using var client = new NamedPipeClientStream(".", selfPipeName, PipeDirection.InOut, PipeOptions.Asynchronous);
 
-        var acceptTask = server.WaitForConnectionAsync();
+        var acceptTask = server.WaitForConnectionAsync(TestContext.CancellationToken);
         await client.ConnectAsync((int)ConnectTimeout.TotalMilliseconds, CancellationToken.None);
         await acceptTask;
 
         Assert.IsFalse(PipeServerIdentity.IsTrustedServer(client, @"C:\definitely\not\the\real\process.exe"));
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

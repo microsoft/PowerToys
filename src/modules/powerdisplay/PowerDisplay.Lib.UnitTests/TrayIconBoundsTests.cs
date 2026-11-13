@@ -7,6 +7,7 @@ using PowerDisplay.Common.Services;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TrayIconBoundsTests
 {

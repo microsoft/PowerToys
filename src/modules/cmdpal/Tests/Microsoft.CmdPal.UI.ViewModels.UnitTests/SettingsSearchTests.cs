@@ -19,6 +19,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public partial class SettingsSearchTests
 {
@@ -35,15 +36,16 @@ public partial class SettingsSearchTests
         var expectedLinks = SettingsLinkResolver.Destinations.ToArray()
             .Where(destination => !destination.RequiresExtensionProvider && !navigationOnlyLinks.Contains(destination.LinkId))
             .Select(destination => destination.LinkId).ToArray();
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             expectedLinks,
             indexedLinks,
+            SequenceOrder.InAnyOrder,
             $"Missing: {string.Join(", ", expectedLinks.Except(indexedLinks))}. Unexpected: {string.Join(", ", indexedLinks.Except(expectedLinks))}.");
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.Title) && !string.IsNullOrWhiteSpace(entry.Breadcrumb)));
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.IconGlyph)));
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.GroupName)));
         Assert.IsTrue(entries.All(entry => !string.IsNullOrWhiteSpace(entry.Category)));
-        Assert.AreEqual(1, entries.Count(entry => entry.Destination!.SettingsPageTag == SettingsPageTags.Gallery));
+        Assert.ContainsSingle(entry => entry.Destination!.SettingsPageTag == SettingsPageTags.Gallery, entries);
 
         var results = new SettingsSearchCatalog(entries).Search("DOCK theme", _matcher);
         Assert.AreEqual(SettingsLinkIds.Dock.Theme, results[0].Destination!.SettingsLinkId);
@@ -56,7 +58,7 @@ public partial class SettingsSearchTests
         Assert.AreEqual("Personalization › Interaction", entries.Single(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.ShowAppDetails).Breadcrumb);
         Assert.AreEqual("Personalization", entries.Single(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.Interaction).Breadcrumb);
         Assert.AreEqual("Pages", entries.Single(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.General.Page).GroupName);
-        Assert.IsTrue(new SettingsSearchCatalog(entries).Search("background image", _matcher).Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.Background));
+        Assert.Contains(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.Background, new SettingsSearchCatalog(entries).Search("background image", _matcher));
     }
 
     [TestMethod]
@@ -89,8 +91,8 @@ public partial class SettingsSearchTests
     {
         var results = new SettingsSearchCatalog(SettingsSearchCatalog.CreateEntries(LoadResources())).Search(query, _matcher);
 
-        Assert.IsTrue(results.Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.LaunchPosition));
-        Assert.IsFalse(results.Any(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.CompactPosition));
+        Assert.Contains(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.LaunchPosition, results);
+        Assert.DoesNotContain(entry => entry.Destination!.SettingsLinkId == SettingsLinkIds.Appearance.CompactPosition, results);
     }
 
     [TestMethod]
@@ -125,7 +127,7 @@ public partial class SettingsSearchTests
     {
         var entries = SettingsSearchCatalog.CreateEntries(LoadResources());
 
-        Assert.IsTrue(new SettingsSearchCatalog(entries).Search(query, _matcher).Any(entry => entry.Destination!.SettingsLinkId == expectedLink));
+        Assert.Contains(entry => entry.Destination!.SettingsLinkId == expectedLink, new SettingsSearchCatalog(entries).Search(query, _matcher));
     }
 
     [TestMethod]
@@ -137,22 +139,22 @@ public partial class SettingsSearchTests
         var results = new SettingsSearchCatalog(entries).Search("setting", _matcher);
         var suggestions = SettingsSearchCatalog.CreateSuggestions(results, "Show all {0} results", "No results found");
 
-        Assert.AreEqual(8, results.Length);
-        Assert.AreEqual(6, suggestions.Length);
-        CollectionAssert.AreEqual(results.Take(5).ToArray(), suggestions.Take(5).ToArray());
+        Assert.HasCount(8, results);
+        Assert.HasCount(6, suggestions);
+        Assert.AreSequenceEqual(results.Take(5).ToArray(), suggestions.Take(5).ToArray());
         Assert.IsTrue(suggestions[^1].IsShowAllResults);
         Assert.IsNull(suggestions[^1].Destination);
         Assert.AreEqual("Show all 8 results", suggestions[^1].ToString());
 
         var singleSuggestion = SettingsSearchCatalog.CreateSuggestions([results[0]], "Show {0} result", "No results found");
-        Assert.AreEqual(2, singleSuggestion.Length);
+        Assert.HasCount(2, singleSuggestion);
         Assert.AreEqual("Show 1 result", singleSuggestion[^1].Title);
 
         var localizedSuggestions = SettingsSearchCatalog.CreateSuggestions(results, "Alle {0} Ergebnisse anzeigen", "Keine Ergebnisse");
         Assert.AreEqual("Alle 8 Ergebnisse anzeigen", localizedSuggestions[^1].Title);
 
         var emptySuggestions = SettingsSearchCatalog.CreateSuggestions([], "Show all {0} results", "No results found");
-        Assert.AreEqual(1, emptySuggestions.Length);
+        Assert.HasCount(1, emptySuggestions);
         Assert.AreEqual("No results found", emptySuggestions[0].Title);
         Assert.IsNull(emptySuggestions[0].Destination);
         Assert.IsFalse(emptySuggestions[0].IsShowAllResults);
@@ -173,11 +175,11 @@ public partial class SettingsSearchTests
             new("The menu", "General", new(SettingsLinkId: SettingsLinkIds.General.Page)),
         ];
 
-        CollectionAssert.AreEqual(new[] { provider, entries[2], entries[1], entries[4], entries[0], entries[6], entries[5] }, new SettingsSearchCatalog(entries).Search("theme", _matcher));
+        Assert.AreSequenceEqual(new[] { provider, entries[2], entries[1], entries[4], entries[0], entries[6], entries[5] }, new SettingsSearchCatalog(entries).Search("theme", _matcher));
         Assert.AreSame(provider, new SettingsSearchCatalog(entries).Search("theme extensions", _matcher).Single());
         Assert.AreEqual("com.example.provider", new SettingsSearchCatalog(entries).Search("theme", _matcher)[0].Destination!.ExtensionProviderId);
-        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search(" \t\r\n", _matcher).Length);
-        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("no matching setting", _matcher).Length);
+        Assert.IsEmpty(new SettingsSearchCatalog(entries).Search(" \t\r\n", _matcher));
+        Assert.IsEmpty(new SettingsSearchCatalog(entries).Search("no matching setting", _matcher));
     }
 
     [TestMethod]
@@ -196,7 +198,7 @@ public partial class SettingsSearchTests
 
         var results = new SettingsSearchCatalog(entries).Search(query, _matcher);
         Assert.AreSame(entries[3], results[0]);
-        CollectionAssert.AreEquivalent(entries, results);
+        Assert.AreSequenceEqual(entries, results, SequenceOrder.InAnyOrder);
     }
 
     [TestMethod]
@@ -213,12 +215,12 @@ public partial class SettingsSearchTests
 
         var groups = SettingsSearchCatalog.GroupResults(results);
         string[] expectedGroups = ["Dock", "Extensions", "Pages"];
-        CollectionAssert.AreEqual(expectedGroups, groups.Select(group => group.Title).ToArray());
-        CollectionAssert.AreEqual(new[] { results[0], results[3] }, groups[0].Results);
+        Assert.AreSequenceEqual(expectedGroups, groups.Select(group => group.Title).ToArray());
+        Assert.AreSequenceEqual(new[] { results[0], results[3] }, groups[0].Results);
         Assert.AreSame(results[1], groups[1].Results[0]);
         Assert.AreSame(results[4], groups[1].Results[1]);
-        CollectionAssert.AreEquivalent(results, groups.SelectMany(group => group.Results).ToArray());
-        Assert.AreEqual(0, SettingsSearchCatalog.GroupResults([]).Length);
+        Assert.AreSequenceEqual(results, groups.SelectMany(group => group.Results).ToArray(), SequenceOrder.InAnyOrder);
+        Assert.IsEmpty(SettingsSearchCatalog.GroupResults([]));
     }
 
     [TestMethod]
@@ -227,10 +229,10 @@ public partial class SettingsSearchTests
         var entry = new SettingsSearchResult("Zoom", "View", new(SettingsLinkId: SettingsLinkIds.General.Page), Description: "axbycz", Keywords: "apricot banana cherry");
         SettingsSearchResult[] entries = [entry, new("abc", "View", null)];
 
-        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("abc", _matcher).Length);
+        Assert.IsEmpty(new SettingsSearchCatalog(entries).Search("abc", _matcher));
         Assert.AreSame(entry, new SettingsSearchCatalog(entries).Search("axbycz", _matcher).Single());
         Assert.AreSame(entry, new SettingsSearchCatalog(entries).Search("aprc axbycz", _matcher).Single());
-        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("aprc zqx", _matcher).Length);
+        Assert.IsEmpty(new SettingsSearchCatalog(entries).Search("aprc zqx", _matcher));
     }
 
     [TestMethod]
@@ -264,9 +266,9 @@ public partial class SettingsSearchTests
         ];
 
         Assert.AreSame(entries[3], new SettingsSearchCatalog(entries).Search("Control + Windows + P", _matcher).Single());
-        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("ctl+win+p", _matcher).Length);
-        Assert.AreEqual(0, new SettingsSearchCatalog(entries).Search("ctrl+p", _matcher).Length);
-        Assert.AreEqual(0, new SettingsSearchCatalog([entries[3] with { AssignedHotkey = string.Empty }]).Search("win+ctrl+p", _matcher).Length);
+        Assert.IsEmpty(new SettingsSearchCatalog(entries).Search("ctl+win+p", _matcher));
+        Assert.IsEmpty(new SettingsSearchCatalog(entries).Search("ctrl+p", _matcher));
+        Assert.IsEmpty(new SettingsSearchCatalog([entries[3] with { AssignedHotkey = string.Empty }]).Search("win+ctrl+p", _matcher));
     }
 
     [TestMethod]
@@ -278,8 +280,8 @@ public partial class SettingsSearchTests
         SettingsSearchResult[] entries = [extension, localized];
         var catalog = new SettingsSearchCatalog(entries);
 
-        Assert.AreEqual(0, catalog.Search("cafe", provider.Current).Length);
-        Assert.AreEqual(0, catalog.Search("beijing", provider.Current).Length);
+        Assert.IsEmpty(catalog.Search("cafe", provider.Current));
+        Assert.IsEmpty(catalog.Search("beijing", provider.Current));
 
         provider.UpdateSettings(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions { Mode = PinyinMode.On });
 
@@ -309,7 +311,7 @@ public partial class SettingsSearchTests
 
         catalog.Search("zzzzz", matcher);
         var initialCount = matcher.TargetCount;
-        Assert.IsTrue(initialCount > 0);
+        Assert.IsGreaterThan(0, initialCount);
         catalog.Search("zzzzzx", matcher);
         Assert.AreEqual(initialCount, matcher.TargetCount);
 
@@ -327,11 +329,11 @@ public partial class SettingsSearchTests
         var extension = new SettingsSearchResult("Theme editor", "Extensions", new(SettingsLinkId: SettingsLinkIds.Extensions.Extension.Page, ExtensionProviderId: "theme.provider"));
         var catalog = new SettingsSearchCatalog([page, setting]);
 
-        CollectionAssert.AreEqual(new[] { page, extension, setting }, catalog.Search("theme", _matcher, [extension]));
+        Assert.AreSequenceEqual(new[] { page, extension, setting }, catalog.Search("theme", _matcher, [extension]));
 
         var renamed = extension with { Title = "Theme" };
-        CollectionAssert.AreEqual(new[] { renamed, page, setting }, catalog.Search("theme", _matcher, [renamed, renamed with { Destination = null }]));
-        CollectionAssert.AreEqual(new[] { page, setting }, catalog.Search("theme", _matcher));
+        Assert.AreSequenceEqual(new[] { renamed, page, setting }, catalog.Search("theme", _matcher, [renamed, renamed with { Destination = null }]));
+        Assert.AreSequenceEqual(new[] { page, setting }, catalog.Search("theme", _matcher));
     }
 
     [TestMethod]
@@ -363,7 +365,7 @@ public partial class SettingsSearchTests
             };
             var dynamicEntries = SettingsSearchCatalog.CreateExtensionEntries(providers, settings, getString);
             var catalog = new SettingsSearchCatalog(SettingsSearchCatalog.CreateEntries(getString));
-            Assert.IsTrue(catalog.Search("plugins", _matcher, dynamicEntries).Take(5).Any(result => result.Destination!.SettingsLinkId == SettingsLinkIds.Extensions.Page));
+            Assert.Contains(result => result.Destination!.SettingsLinkId == SettingsLinkIds.Extensions.Page, catalog.Search("plugins", _matcher, dynamicEntries).Take(5));
             Assert.AreEqual(5, dynamicEntries.Count(result => result.Category == "Extension"));
             Assert.IsTrue(dynamicEntries.Where(result => result.Category == "Extension").All(result => result.Keywords.Length == 0 && result.GroupName == "Extensions"));
             var command = dynamicEntries.Single(result => result.Category == "Command");
@@ -405,7 +407,7 @@ public partial class SettingsSearchTests
             try
             {
                 item.Title = "Renamed command";
-                await renamed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                await renamed.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
                 var renamedEntries = SettingsSearchCatalog.CreateExtensionEntries(providers, settings, getString);
                 var renamedEntry = renamedEntries.Single(result => result.Category == "Command");
                 Assert.AreEqual("Renamed command", renamedEntry.Title);
@@ -465,4 +467,6 @@ public partial class SettingsSearchTests
 
         public int Score(scoped in FuzzyQuery query, scoped in FuzzyTarget target) => Matcher.Score(query, target);
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

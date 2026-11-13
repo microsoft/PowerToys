@@ -21,6 +21,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ExtensionGalleryViewModelTests
 {
@@ -71,11 +72,11 @@ public class ExtensionGalleryViewModelTests
             uiScheduler: _uiScheduler);
 
         var loadTask = viewModel.LoadAsync();
-        var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1)));
+        var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken));
 
         Assert.AreSame(loadTask, completedTask);
         Assert.IsTrue(loadTask.IsCompletedSuccessfully);
-        Assert.AreEqual(1, viewModel.FilteredEntries.Count);
+        Assert.HasCount(1, viewModel.FilteredEntries);
         Assert.AreEqual("Feed Extension", viewModel.FilteredEntries[0].Title);
     }
 
@@ -133,7 +134,7 @@ public class ExtensionGalleryViewModelTests
 
         await viewModel.RefreshCommand.ExecuteAsync(null);
 
-        Assert.AreEqual(1, viewModel.FilteredEntries.Count);
+        Assert.HasCount(1, viewModel.FilteredEntries);
         Assert.AreEqual("Feed Extension", viewModel.FilteredEntries[0].Title);
 
         await WaitForConditionAsync(() =>
@@ -217,11 +218,11 @@ public class ExtensionGalleryViewModelTests
             uiScheduler: _uiScheduler);
 
         var refreshTask = viewModel.RefreshCommand.ExecuteAsync(null);
-        var completedTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(1)));
+        var completedTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(1), TestContext.CancellationToken));
 
         Assert.AreSame(refreshTask, completedTask);
         Assert.IsTrue(refreshTask.IsCompletedSuccessfully);
-        Assert.AreEqual(1, viewModel.FilteredEntries.Count);
+        Assert.HasCount(1, viewModel.FilteredEntries);
         Assert.AreEqual("Feed Extension", viewModel.FilteredEntries[0].Title);
     }
 
@@ -369,7 +370,7 @@ public class ExtensionGalleryViewModelTests
         Assert.IsTrue(viewModel.ShowErrorSurface);
         Assert.IsFalse(viewModel.ShowErrorInfoBar);
         Assert.AreEqual("The gallery is taking a breather", viewModel.ErrorDisplayTitle);
-        Assert.AreEqual(0, viewModel.FilteredEntries.Count);
+        Assert.IsEmpty(viewModel.FilteredEntries);
     }
 
     [TestMethod]
@@ -406,7 +407,7 @@ public class ExtensionGalleryViewModelTests
         Assert.IsFalse(viewModel.ShowErrorInfoBar);
         Assert.AreEqual("Failed to load extensions", viewModel.ErrorDisplayTitle);
         Assert.AreEqual("Service unavailable", viewModel.ErrorDisplayMessage);
-        Assert.AreEqual(0, viewModel.FilteredEntries.Count);
+        Assert.IsEmpty(viewModel.FilteredEntries);
     }
 
     [TestMethod]
@@ -439,19 +440,19 @@ public class ExtensionGalleryViewModelTests
             _uiScheduler.ExecuteAllAvailable();
         }
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             FeaturedOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
 
         viewModel.SortByNameCommand.Execute(null);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             NameOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
 
         _uiScheduler.ExecuteAllAvailable();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             NameOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
     }
@@ -488,13 +489,13 @@ public class ExtensionGalleryViewModelTests
 
         viewModel.SortByAuthorCommand.Execute(null);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             AuthorOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
 
         _uiScheduler.ExecuteAllAvailable();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             AuthorOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
     }
@@ -574,13 +575,13 @@ public class ExtensionGalleryViewModelTests
 
         viewModel.SortByInstallationStatusCommand.Execute(null);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             InstallationStatusOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
 
         _uiScheduler.ExecuteAllAvailable();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             InstallationStatusOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
     }
@@ -684,4 +685,6 @@ public class ExtensionGalleryViewModelTests
             }
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

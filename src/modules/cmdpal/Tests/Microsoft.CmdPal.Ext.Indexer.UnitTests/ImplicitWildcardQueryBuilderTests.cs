@@ -7,10 +7,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Indexer.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ImplicitWildcardQueryBuilderTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("term", null, "((CONTAINS(System.ItemNameDisplay, '\"term\"') OR CONTAINS(System.ItemNameDisplay, '\"term*\"')) OR System.FileName LIKE '%term%')", "System.FileName LIKE '%term%'")]
     [DataRow("term Kind:Folder", "Kind:Folder", "((CONTAINS(System.ItemNameDisplay, '\"term\"') OR CONTAINS(System.ItemNameDisplay, '\"term*\"')) OR System.FileName LIKE '%term%')", "System.FileName LIKE '%term%'")]
     [DataRow("System.Kind:folders term", "System.Kind:folders", "((CONTAINS(System.ItemNameDisplay, '\"term\"') OR CONTAINS(System.ItemNameDisplay, '\"term*\"')) OR System.FileName LIKE '%term%')", "System.FileName LIKE '%term%'")]
@@ -59,7 +60,7 @@ public class ImplicitWildcardQueryBuilderTests
         Assert.IsFalse(expandedQuery.HasFallbackRestriction);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("kind:folder")]
     [DataRow("name:term")]
     [DataRow("name: term")]

@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Foundation
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class FatalExceptionHandlerTests
     {

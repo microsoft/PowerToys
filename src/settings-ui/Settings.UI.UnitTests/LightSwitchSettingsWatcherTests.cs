@@ -16,13 +16,14 @@ using Moq;
 
 namespace Microsoft.PowerToys.Settings.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LightSwitchSettingsWatcherTests
 {
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task InitialSettingsReadIncludesReplacementsBeforeAndDuringInitializationAsync(bool replaceDuringRead)
     {
         var directory = Directory.CreateTempSubdirectory("PowerToys-LightSwitchInitialRead-");
@@ -78,7 +79,7 @@ public class LightSwitchSettingsWatcherTests
 
             // A replacement during the initial reload is observed because the
             // production helper subscribes before reading the current snapshot.
-            await changed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await changed.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
         }
         finally
         {
@@ -115,7 +116,7 @@ public class LightSwitchSettingsWatcherTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    [Timeout(15000)]
+    [Timeout(15000, CooperativeCancellation = true)]
     public async Task SettingsWritesNotifyReloadAsync(bool replaceFile)
     {
         var directory = Directory.CreateTempSubdirectory("PowerToys-LightSwitchWatcher-");
@@ -140,7 +141,7 @@ public class LightSwitchSettingsWatcherTests
                 File.WriteAllText(settingsPath, updatedSettings);
             }
 
-            await changed.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await changed.Task.WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
             Assert.AreEqual(updatedSettings, File.ReadAllText(settingsPath));
         }
         finally
@@ -162,4 +163,6 @@ public class LightSwitchSettingsWatcherTests
     [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool MoveFileExW(string existingFileName, string newFileName, uint flags);
+
+    public TestContext TestContext { get; set; } = null!;
 }

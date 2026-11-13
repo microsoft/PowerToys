@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class OpenSettingsCommandTests
 {
@@ -30,7 +31,7 @@ public class OpenSettingsCommandTests
 
             command.Invoke();
 
-            Assert.AreEqual(1, recipient.Messages.Count);
+            Assert.HasCount(1, recipient.Messages);
             Assert.AreEqual(string.Empty, recipient.Messages[0].SettingsPageTag);
         }
         finally
@@ -51,7 +52,7 @@ public class OpenSettingsCommandTests
 
             command.Invoke();
 
-            Assert.AreEqual(1, recipient.Messages.Count);
+            Assert.HasCount(1, recipient.Messages);
             Assert.AreEqual("Gallery", recipient.Messages[0].SettingsPageTag);
         }
         finally

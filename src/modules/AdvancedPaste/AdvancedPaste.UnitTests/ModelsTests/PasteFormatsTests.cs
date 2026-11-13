@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AdvancedPaste.UnitTests.ModelsTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class PasteFormatsTests
 {
     // PasteFormats values are written to telemetry as numbers, so they must never change.
@@ -47,7 +48,7 @@ public sealed class PasteFormatsTests
     {
         var unpinned = Enum.GetValues<PasteFormats>().Where(format => !ExpectedValues.ContainsKey(format)).ToList();
 
-        Assert.AreEqual(0, unpinned.Count, $"Add these members to {nameof(ExpectedValues)} with new, unused values: {string.Join(", ", unpinned)}");
+        Assert.IsEmpty(unpinned, $"Add these members to {nameof(ExpectedValues)} with new, unused values: {string.Join(", ", unpinned)}");
     }
 
     [TestMethod]
@@ -55,6 +56,6 @@ public sealed class PasteFormatsTests
     {
         var values = Enum.GetValues<PasteFormats>().Select(format => (int)format).ToList();
 
-        Assert.AreEqual(values.Count, values.Distinct().Count(), "Two PasteFormats members share a numeric value.");
+        Assert.HasCount(values.Count, values.Distinct(), "Two PasteFormats members share a numeric value.");
     }
 }

@@ -12,6 +12,7 @@ using Windows.Devices.Printers;
 
 namespace MouseUtils.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class FindMyMouseTests : UITestBase
     {
@@ -32,7 +33,7 @@ namespace MouseUtils.UITests
         /// </item>
         /// </list>
         /// </summary>
-        [TestMethod("MouseUtils.FindMyMouse.EnableFindMyMouse")]
+        [TestMethod(DisplayName = "MouseUtils.FindMyMouse.EnableFindMyMouse")]
         [TestCategory("Mouse Utils #1")]
         [TestCategory("Mouse Utils #2")]
         [TestCategory("Mouse Utils #3")]
@@ -92,14 +93,14 @@ namespace MouseUtils.UITests
             VerifySpotlightSettings(ref settings);
 
             // [Test Case]Enable FindMyMouse. Then, without moving your mouse: Press a mouse button and verify the overlay disappears.
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
             Session.PerformMouseAction(MouseActionType.LeftClick, 500, 1000);
 
             VerifySpotlightDisappears(ref settings);
         }
 
-        [TestMethod("MouseUtils.FindMyMouse.FindMyMouseDifferentSettings")]
+        [TestMethod(DisplayName = "MouseUtils.FindMyMouse.FindMyMouseDifferentSettings")]
         [TestCategory("Mouse Utils #10")]
         [TestCategory("Mouse Utils #11")]
         [TestCategory("Mouse Utils #12")]
@@ -156,7 +157,7 @@ namespace MouseUtils.UITests
             VerifySpotlightDisappears(ref settings);
         }
 
-        [TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse")]
+        [TestMethod(DisplayName = "MouseUtils.FindMyMouse.DisableFindMyMouse")]
         [TestCategory("Mouse Utils #5")]
         [TestCategory("Mouse Utils #6")]
         public void TestDisableFindMyMouse()
@@ -213,21 +214,21 @@ namespace MouseUtils.UITests
 
             // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
             foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             ActivateSpotlight(ref settings);
 
             VerifySpotlightDisappears(ref settings);
 
             // [Test Case] Press Left Ctrl twice and verify the overlay appears
             foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
-            Task.Delay(2000).Wait();
+            Task.Delay(2000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             ActivateSpotlight(ref settings);
             VerifySpotlightAppears(ref settings);
 
             Session.PerformMouseAction(MouseActionType.LeftClick);
         }
 
-        [TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse3")]
+        [TestMethod(DisplayName = "MouseUtils.FindMyMouse.DisableFindMyMouse3")]
         [TestCategory("Mouse Utils #6")]
         public void TestDisableFindMyMouse3()
         {
@@ -283,21 +284,21 @@ namespace MouseUtils.UITests
 
             // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
             foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
-            Task.Delay(1000).Wait();
+            Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             ActivateSpotlight(ref settings);
 
             VerifySpotlightDisappears(ref settings);
 
             // [Test Case] Press Left Ctrl twice and verify the overlay appears
             foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(true);
-            Task.Delay(2000).Wait();
+            Task.Delay(2000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             ActivateSpotlight(ref settings);
             VerifySpotlightAppears(ref settings);
 
             Session.PerformMouseAction(MouseActionType.LeftClick);
         }
 
-        [TestMethod("MouseUtils.FindMyMouse.DisableFindMyMouse2")]
+        [TestMethod(DisplayName = "MouseUtils.FindMyMouse.DisableFindMyMouse2")]
         [TestCategory("Mouse Utils #5")]
         public void TestDisableFindMyMouse2()
         {
@@ -341,9 +342,9 @@ namespace MouseUtils.UITests
 
             // [Test Case] Disable FindMyMouse. Verify the overlay no longer appears when you press Left Ctrl twice
             foundCustom.Find<ToggleSwitch>(By.AccessibilityId(MouseUtilsSettings.AccessibilityIds.FindMyMouseToggle)).Toggle(false);
-            Task.Delay(2000).Wait();
+            Task.Delay(2000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             Session.SendKey(Key.LCtrl, 0, 0);
-            Task.Delay(100).Wait();
+            Task.Delay(100, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
             Session.SendKey(Key.LCtrl, 0, 0);
 
             VerifySpotlightDisappears(ref settings);
@@ -441,7 +442,7 @@ namespace MouseUtils.UITests
                 }
                 else
                 {
-                    Assert.IsTrue(false, "ComboBox is not found in the setting page.");
+                    Assert.Fail("ComboBox is not found in the setting page.");
                 }
             }
             else

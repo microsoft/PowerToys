@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class AvailableResultsListTests
 {
@@ -47,7 +48,7 @@ public class AvailableResultsListTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time", "10:30 PM")]
     [DataRow("date", "3/2/2022")]
     [DataRow("date and time", "3/2/2022 10:30 PM")]
@@ -94,7 +95,7 @@ public class AvailableResultsListTests
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.IsTrue(results.Count > 0, "Should return at least some results for keyword search");
+        Assert.IsNotEmpty(results, "Should return at least some results for keyword search");
     }
 
     [TestMethod]
@@ -108,7 +109,7 @@ public class AvailableResultsListTests
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.IsTrue(results.Count > 0, "Should return at least some results for non-keyword search");
+        Assert.IsNotEmpty(results, "Should return at least some results for non-keyword search");
     }
 
     [TestMethod]
@@ -123,7 +124,7 @@ public class AvailableResultsListTests
 
         // Assert
         Assert.IsNotNull(results);
-        Assert.IsTrue(results.Count > 0, "Should return results for specific datetime");
+        Assert.IsNotEmpty(results, "Should return results for specific datetime");
 
         // Verify that all results have values
         foreach (var result in results)
@@ -143,7 +144,7 @@ public class AvailableResultsListTests
         var results = AvailableResultsList.GetList(true, settings);
 
         // Assert
-        Assert.IsTrue(results.Count > 0, "Should have results");
+        Assert.IsNotEmpty(results, "Should have results");
 
         foreach (var result in results)
         {
@@ -163,15 +164,15 @@ public class AvailableResultsListTests
         // Act & Assert - Test with different settings
         var results1 = AvailableResultsList.GetList(true, settings);
         Assert.IsNotNull(results1);
-        Assert.IsTrue(results1.Count > 0);
+        Assert.IsNotEmpty(results1);
 
         // Test that the method can handle different calendar settings
         var results2 = AvailableResultsList.GetList(false, settings);
         Assert.IsNotNull(results2);
-        Assert.IsTrue(results2.Count > 0);
+        Assert.IsNotEmpty(results2);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time", "10:30 PM")]
     [DataRow("date", "Wednesday, March 2, 2022")]
     [DataRow("date and time", "Wednesday, March 2, 2022 10:30 PM")]
@@ -207,7 +208,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedResult, result?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time", "10:30:45 PM")]
     [DataRow("date", "3/2/2022")]
     [DataRow("date and time", "3/2/2022 10:30:45 PM")]
@@ -243,7 +244,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedResult, result?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time", "10:30:45 PM")]
     [DataRow("date", "Wednesday, March 2, 2022")]
     [DataRow("date and time", "Wednesday, March 2, 2022 10:30:45 PM")]
@@ -279,7 +280,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedResult, result?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time utc", "t")]
     [DataRow("date and time utc", "g")]
     [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -300,7 +301,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedResult, result?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time utc", "t")]
     [DataRow("date and time utc", "f")]
     [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -321,7 +322,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedResult, result?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time utc", "T")]
     [DataRow("date and time utc", "G")]
     [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -342,7 +343,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedResult, result?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("time utc", "T")]
     [DataRow("date and time utc", "F")]
     [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -470,7 +471,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedResult, result?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(CalendarWeekRule.FirstDay, "3")]
     [DataRow(CalendarWeekRule.FirstFourDayWeek, "2")]
     [DataRow(CalendarWeekRule.FirstFullWeek, "2")]
@@ -488,7 +489,7 @@ public class AvailableResultsListTests
         Assert.AreEqual(expectedWeekOfYear, resultWeekOfYear?.Value);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(DayOfWeek.Monday, "2", "2", "5")]
     [DataRow(DayOfWeek.Tuesday, "3", "3", "4")]
     [DataRow(DayOfWeek.Wednesday, "3", "3", "3")]

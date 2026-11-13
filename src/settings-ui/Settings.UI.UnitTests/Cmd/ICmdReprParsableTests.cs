@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Settings.UI.UnitTests.Settings;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ICmdReprParsableTests
 {

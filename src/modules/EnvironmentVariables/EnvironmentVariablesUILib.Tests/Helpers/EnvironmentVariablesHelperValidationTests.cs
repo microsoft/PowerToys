@@ -6,6 +6,7 @@ using EnvironmentVariablesUILib.Helpers;
 
 namespace EnvironmentVariablesUILib.UnitTests.Helpers;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class EnvironmentVariablesHelperValidationTests
 {
@@ -138,6 +139,6 @@ public class EnvironmentVariablesHelperValidationTests
         string name, string expectedFragment)
     {
         EnvironmentVariablesHelper.TryValidateVariableName(name, out string errorMessage);
-        StringAssert.Contains(errorMessage, expectedFragment, System.StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(expectedFragment, errorMessage, System.StringComparison.OrdinalIgnoreCase);
     }
 }

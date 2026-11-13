@@ -9,6 +9,7 @@ using PowerToys.DSC.Models.KeyboardManager;
 namespace PowerToys.DSC.UnitTests.KeyboardManager;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class KbmKeyNamesTests
 {
     private static readonly uint[] _numpadExtendedBaseCodes = [13, 33, 34, 35, 36, 37, 38, 39, 40, 45, 46, 111];

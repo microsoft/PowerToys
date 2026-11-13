@@ -18,6 +18,7 @@ namespace ViewModelTests;
 
 // SA1649: file is named PowerDisplay.cs to match the module naming convention used throughout
 // ViewModelTests (FancyZones.cs, ColorPicker.cs, etc.).
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PowerDisplay
 {
@@ -84,9 +85,9 @@ public class PowerDisplay
         Assert.AreEqual(
             MouseWheelControlMode.Disabled,
             settings.Properties.MouseWheelControlMode);
-        CollectionAssert.Contains(
-            changedProperties,
-            nameof(PowerDisplayViewModel.MouseWheelControlModeIndex));
+        Assert.Contains(
+            nameof(PowerDisplayViewModel.MouseWheelControlModeIndex),
+            changedProperties);
     }
 
     [TestMethod]
@@ -110,8 +111,8 @@ public class PowerDisplay
         settingsUtils.Verify(
             utils => utils.SaveSettings(It.IsAny<string>(), PowerDisplaySettings.ModuleName, SettingsUtils.DefaultFileName),
             Times.Once);
-        Assert.AreEqual(1, ipcMessages.Count);
-        Assert.AreEqual(1, namedEvents.Count);
+        Assert.HasCount(1, ipcMessages);
+        Assert.HasCount(1, namedEvents);
         Assert.AreEqual("save,ipc,signal", string.Join(',', operationOrder));
         Assert.IsTrue((bool)property.GetValue(GetSavedSettings(settingsUtils).Properties.Monitors.Single()));
     }
@@ -133,8 +134,8 @@ public class PowerDisplay
         settingsUtils.Verify(
             utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
-        Assert.AreEqual(0, ipcMessages.Count);
-        Assert.AreEqual(0, namedEvents.Count);
+        Assert.IsEmpty(ipcMessages);
+        Assert.IsEmpty(namedEvents);
     }
 
     [TestMethod]
@@ -168,8 +169,8 @@ public class PowerDisplay
         settingsUtils.Verify(
             utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
-        Assert.AreEqual(0, ipcMessages.Count);
-        Assert.AreEqual(0, namedEvents.Count);
+        Assert.IsEmpty(ipcMessages);
+        Assert.IsEmpty(namedEvents);
     }
 
     [TestMethod]
@@ -187,7 +188,7 @@ public class PowerDisplay
         Assert.IsTrue(saved.Properties.LinkedLevelsActive);
         Assert.AreEqual("MON1", settings.Properties.ExcludedFromSyncMonitorIds.Single());
         Assert.AreEqual("MON1", saved.Properties.ExcludedFromSyncMonitorIds.Single());
-        Assert.AreEqual(1, ipcMessages.Count);
+        Assert.HasCount(1, ipcMessages);
     }
 
     [TestMethod]
@@ -211,20 +212,20 @@ public class PowerDisplay
 
         Assert.AreSame(monitors, viewModel.Monitors);
         Assert.AreSame(monitor, viewModel.Monitors.Single());
-        Assert.AreEqual(2, settings.Properties.Monitors.Count);
-        Assert.IsTrue(settings.Properties.Monitors.Contains(legacy));
+        Assert.HasCount(2, settings.Properties.Monitors);
+        Assert.Contains(legacy, settings.Properties.Monitors);
         settingsUtils.Verify(
             utils => utils.SaveSettings(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()),
             Times.Never);
-        Assert.AreEqual(0, ipcMessages.Count);
+        Assert.IsEmpty(ipcMessages);
 
         monitor.EnableContrast = true;
 
         var saved = GetSavedSettings(settingsUtils);
-        Assert.AreEqual(2, saved.Properties.Monitors.Count);
-        Assert.IsTrue(saved.Properties.Monitors.Any(item => item.Id == legacy.Id));
+        Assert.HasCount(2, saved.Properties.Monitors);
+        Assert.Contains(item => item.Id == legacy.Id, saved.Properties.Monitors);
         Assert.IsTrue(saved.Properties.Monitors.Single(item => item.Id == monitor.Id).EnableContrast);
-        Assert.AreEqual(1, ipcMessages.Count);
+        Assert.HasCount(1, ipcMessages);
     }
 
     [TestMethod]
@@ -239,7 +240,7 @@ public class PowerDisplay
 
         Assert.AreSame(persistedMappings, settings.Properties.CustomVcpMappings);
         Assert.AreEqual(first.CustomName, GetSavedSettings(settingsUtils).Properties.CustomVcpMappings.Single().CustomName);
-        Assert.AreEqual(1, ipcMessages.Count);
+        Assert.HasCount(1, ipcMessages);
         settingsUtils.Invocations.Clear();
         ipcMessages.Clear();
 
@@ -247,16 +248,16 @@ public class PowerDisplay
 
         Assert.AreSame(persistedMappings, settings.Properties.CustomVcpMappings);
         Assert.AreEqual(replacement.CustomName, GetSavedSettings(settingsUtils).Properties.CustomVcpMappings.Single().CustomName);
-        Assert.AreEqual(1, ipcMessages.Count);
+        Assert.HasCount(1, ipcMessages);
         settingsUtils.Invocations.Clear();
         ipcMessages.Clear();
 
         viewModel.DeleteCustomVcpMapping(replacement);
 
         Assert.AreSame(persistedMappings, settings.Properties.CustomVcpMappings);
-        Assert.AreEqual(0, GetSavedSettings(settingsUtils).Properties.CustomVcpMappings.Count);
-        Assert.AreEqual(0, viewModel.CustomVcpMappings.Count);
-        Assert.AreEqual(1, ipcMessages.Count);
+        Assert.IsEmpty(GetSavedSettings(settingsUtils).Properties.CustomVcpMappings);
+        Assert.IsEmpty(viewModel.CustomVcpMappings);
+        Assert.HasCount(1, ipcMessages);
     }
 
     private static MonitorInfo CreateMonitor()

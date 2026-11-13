@@ -13,6 +13,7 @@ using MwbSettings = MouseWithoutBorders.Class.Settings;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class SettingsPersistenceTests
@@ -56,7 +57,7 @@ public sealed class SettingsPersistenceTests
         scheduler.RunNext(newest: olderRunsLast);
         scheduler.RunNext();
 
-        Assert.AreEqual(olderRunsLast ? 1 : 2, writer.Writes.Count);
+        Assert.HasCount(olderRunsLast ? 1 : 2, writer.Writes);
         using var saved = JsonDocument.Parse(writer.Writes.Last());
         Assert.AreEqual(RequestedKey, GetKey(saved));
     }
@@ -77,7 +78,7 @@ public sealed class SettingsPersistenceTests
         scheduler.RunNext(newest: olderRunsLast);
         scheduler.RunNext();
 
-        Assert.AreEqual(olderRunsLast ? 1 : 2, writer.Writes.Count);
+        Assert.HasCount(olderRunsLast ? 1 : 2, writer.Writes);
         foreach (var json in writer.Writes)
         {
             Assert.IsFalse(json.Contains(PreviousKey, StringComparison.Ordinal));

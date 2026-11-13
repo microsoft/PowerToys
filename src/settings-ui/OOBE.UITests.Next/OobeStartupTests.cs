@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.OOBE.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class OobeStartupTests : UITestBase
 {

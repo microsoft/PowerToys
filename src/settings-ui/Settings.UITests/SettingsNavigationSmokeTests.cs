@@ -36,6 +36,7 @@ namespace Microsoft.Settings.UITests;
 /// call works for both navigation-y leaves and expand-y groups.
 /// </para>
 /// </remarks>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SettingsNavigationSmokeTests : UITestBase
 {

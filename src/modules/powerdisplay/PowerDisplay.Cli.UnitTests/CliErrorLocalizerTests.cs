@@ -15,6 +15,7 @@ namespace PowerDisplay.Cli.UnitTests;
 /// structured data; these pin that the CLI composes the human text from them, and falls back to the
 /// app's English message for an unrecognized id.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CliErrorLocalizerTests
 {
@@ -57,7 +58,7 @@ public class CliErrorLocalizerTests
 
         Assert.AreEqual("unknown setting foo", message);
         Assert.IsNotNull(hint);
-        StringAssert.Contains(hint, "brightness");
+        Assert.Contains("brightness", hint);
     }
 
     [TestMethod]
@@ -121,8 +122,8 @@ public class CliErrorLocalizerTests
         });
 
         var text = stderr.ToString();
-        StringAssert.Contains(text, "150 is out of range for brightness");
-        StringAssert.Contains(text, "[0, 100]");
+        Assert.Contains("150 is out of range for brightness", text);
+        Assert.Contains("[0, 100]", text);
     }
 
     [TestMethod]
@@ -143,7 +144,7 @@ public class CliErrorLocalizerTests
         });
 
         var text = stderr.ToString();
-        StringAssert.Contains(text, "hardware write failed");
-        StringAssert.Contains(text, "DDC write timed out");
+        Assert.Contains("hardware write failed", text);
+        Assert.Contains("DDC write timed out", text);
     }
 }

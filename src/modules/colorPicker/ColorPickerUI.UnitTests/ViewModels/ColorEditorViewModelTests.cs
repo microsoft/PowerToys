@@ -20,6 +20,7 @@ using Windows.UI;
 
 namespace ColorPicker.UnitTests.ViewModels
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ColorEditorViewModelTests
     {
@@ -99,7 +100,7 @@ namespace ColorPicker.UnitTests.ViewModels
 
             viewModel.Initialize();
 
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new[]
                 {
                     new Color { A = 255, R = 10, G = 20, B = 30 },
@@ -125,14 +126,14 @@ namespace ColorPicker.UnitTests.ViewModels
 
             viewModel.Initialize();
 
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new[]
                 {
                     new Color { A = 255, R = 40, G = 50, B = 60 },
                     new Color { A = 255, R = 10, G = 20, B = 30 },
                 },
                 viewModel.ColorsHistory.ToArray());
-            Assert.IsTrue(collectionChangedCount > 0);
+            Assert.IsGreaterThan(0, collectionChangedCount);
         }
 
         [TestMethod]
@@ -146,7 +147,7 @@ namespace ColorPicker.UnitTests.ViewModels
 
             viewModel.Initialize();
 
-            Assert.AreEqual(0, viewModel.ColorsHistory.Count);
+            Assert.IsEmpty(viewModel.ColorsHistory);
         }
 
         // ─── RemoveColorsCommand – null input ────────────────────────
@@ -163,7 +164,7 @@ namespace ColorPicker.UnitTests.ViewModels
         {
             int before = _vm!.ColorsHistory.Count;
             _vm.RemoveColorsCommand.Execute(null);
-            Assert.AreEqual(before, _vm.ColorsHistory.Count);
+            Assert.HasCount(before, _vm.ColorsHistory);
         }
 
         [TestMethod]
@@ -238,7 +239,7 @@ namespace ColorPicker.UnitTests.ViewModels
 
             _vm.RemoveColorsCommand.Execute(new List<Color> { middle });
 
-            CollectionAssert.AreEqual(new[] { first, last }, _vm.ColorsHistory.ToArray());
+            Assert.AreSequenceEqual(new[] { first, last }, _vm.ColorsHistory.ToArray());
             Assert.AreEqual(1, _vm.SelectedColorIndex);
             Assert.AreEqual(last, _vm.SelectedColor);
             Assert.IsTrue(SessionEventHelper.Event.EditorHistoryColorRemoved);
@@ -255,7 +256,7 @@ namespace ColorPicker.UnitTests.ViewModels
 
             _vm.RemoveColorsCommand.Execute(new List<Color> { first, second });
 
-            Assert.AreEqual(0, _vm.ColorsHistory.Count);
+            Assert.IsEmpty(_vm.ColorsHistory);
             Assert.AreEqual(-1, _vm.SelectedColorIndex);
         }
 
@@ -333,8 +334,8 @@ namespace ColorPicker.UnitTests.ViewModels
             viewModel.SelectedColorChangedCommand.Execute(AnyColor);
 
             var expectedHistory = new[] { AnyColor }.Concat(history.Take(historyLimit - 1)).ToArray();
-            CollectionAssert.AreEqual(expectedHistory, viewModel.ColorsHistory.ToArray());
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(expectedHistory, viewModel.ColorsHistory.ToArray());
+            Assert.AreSequenceEqual(
                 expectedHistory.Select(color => color.A + "|" + color.R + "|" + color.G + "|" + color.B).ToArray(),
                 settings.ColorHistory.ToArray());
             Assert.AreEqual(0, viewModel.SelectedColorIndex);
@@ -362,8 +363,8 @@ namespace ColorPicker.UnitTests.ViewModels
             viewModel.SelectedColorChangedCommand.Execute(selected);
 
             var expectedHistory = new[] { selected }.Concat(history.Where(color => color != selected)).ToArray();
-            CollectionAssert.AreEqual(expectedHistory, viewModel.ColorsHistory.ToArray());
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(expectedHistory, viewModel.ColorsHistory.ToArray());
+            Assert.AreSequenceEqual(
                 expectedHistory.Select(color => color.A + "|" + color.R + "|" + color.G + "|" + color.B).ToArray(),
                 settings.ColorHistory.ToArray());
             Assert.AreEqual(0, viewModel.SelectedColorIndex);
@@ -382,7 +383,7 @@ namespace ColorPicker.UnitTests.ViewModels
 
             _vm.SelectedColorChangedCommand.Execute(selected);
 
-            CollectionAssert.AreEqual(new[] { selected, first, last }, _vm.ColorsHistory.ToArray());
+            Assert.AreSequenceEqual(new[] { selected, first, last }, _vm.ColorsHistory.ToArray());
             Assert.AreEqual(0, _vm.SelectedColorIndex);
         }
 
@@ -392,7 +393,7 @@ namespace ColorPicker.UnitTests.ViewModels
         {
             int before = _vm!.ColorsHistory.Count;
             _vm.RemoveColorsCommand.Execute(new List<string> { "color" });
-            Assert.AreEqual(before, _vm.ColorsHistory.Count);
+            Assert.HasCount(before, _vm.ColorsHistory);
         }
 
         [TestMethod]
@@ -453,7 +454,7 @@ namespace ColorPicker.UnitTests.ViewModels
 
             _vm.RemoveColorsCommand.Execute(42);
 
-            Assert.AreEqual(before, _vm.ColorsHistory.Count);
+            Assert.HasCount(before, _vm.ColorsHistory);
             Assert.AreEqual(indexBefore, _vm.SelectedColorIndex);
             Assert.IsFalse(SessionEventHelper.Event.EditorHistoryColorRemoved);
         }
@@ -497,8 +498,8 @@ namespace ColorPicker.UnitTests.ViewModels
             _vm.RemoveColorsCommand.Execute(mixed);
 
             // Color must still be present at its original position.
-            Assert.AreEqual(countBefore, _vm.ColorsHistory.Count);
-            Assert.IsTrue(_vm.ColorsHistory.Contains(AnyColor));
+            Assert.HasCount(countBefore, _vm.ColorsHistory);
+            Assert.Contains(AnyColor, _vm.ColorsHistory);
             Assert.AreEqual(AnyColor, _vm.ColorsHistory[0]);
             Assert.AreEqual(indexBefore, _vm.SelectedColorIndex);
             Assert.IsFalse(SessionEventHelper.Event.EditorHistoryColorRemoved);

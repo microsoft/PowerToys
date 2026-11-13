@@ -146,7 +146,7 @@ internal sealed class TestState
             broadcast();
         }
 
-        Assert.HasCount(0, failures, $"Could not completely restore the user's theme: {string.Join("; ", failures)}");
+        Assert.IsEmpty(failures, $"Could not completely restore the user's theme: {string.Join("; ", failures)}");
     }
 
     private static JsonObject Value<T>(T value) => new() { ["value"] = JsonValue.Create(value) };

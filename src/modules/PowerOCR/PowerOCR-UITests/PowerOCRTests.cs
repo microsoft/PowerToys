@@ -11,6 +11,7 @@ using static Microsoft.PowerToys.UITest.UITestBase;
 
 namespace PowerOCR.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class PowerOCRTests : UITestBase
 {
@@ -62,7 +63,7 @@ public class PowerOCRTests : UITestBase
         }
     }
 
-    [TestMethod("PowerOCR.DetectTextExtractor")]
+    [TestMethod(DisplayName = "PowerOCR.DetectTextExtractor")]
     [TestCategory("PowerOCR Detection")]
     public void DetectTextExtractorTest()
     {
@@ -76,7 +77,7 @@ public class PowerOCRTests : UITestBase
         Thread.Sleep(3000);
 
         var windowsAfterEscape = FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 2000, true);
-        Assert.AreEqual(0, windowsAfterEscape.Count, "TextExtractor window should be dismissed after pressing Escape");
+        Assert.IsEmpty(windowsAfterEscape, "TextExtractor window should be dismissed after pressing Escape");
 
         // Step 3: Press the activation shortcut again and verify the overlay appears
         SendKeys(Key.Win, Key.Shift, Key.T);
@@ -96,10 +97,10 @@ public class PowerOCRTests : UITestBase
         Thread.Sleep(3000);
 
         var windowsAfterCancel = FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 2000, true);
-        Assert.AreEqual(0, windowsAfterCancel.Count, "TextExtractor window should be dismissed after clicking Cancel");
+        Assert.IsEmpty(windowsAfterCancel, "TextExtractor window should be dismissed after clicking Cancel");
     }
 
-    [TestMethod("PowerOCR.DisableTextExtractorTest")]
+    [TestMethod(DisplayName = "PowerOCR.DisableTextExtractorTest")]
     [TestCategory("PowerOCR Settings")]
     public void DisableTextExtractorTest()
     {
@@ -109,10 +110,10 @@ public class PowerOCRTests : UITestBase
 
         // Verify that no TextExtractor window appears
         var windowsWhenDisabled = FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 10000, true);
-        Assert.AreEqual(0, windowsWhenDisabled.Count, "TextExtractor window should not appear when the utility is disabled");
+        Assert.IsEmpty(windowsWhenDisabled, "TextExtractor window should not appear when the utility is disabled");
     }
 
-    [TestMethod("PowerOCR.ActivationShortcutSettingsTest")]
+    [TestMethod(DisplayName = "PowerOCR.ActivationShortcutSettingsTest")]
     [TestCategory("PowerOCR Settings")]
     public void ActivationShortcutSettingsTest()
     {
@@ -139,10 +140,10 @@ public class PowerOCRTests : UITestBase
         Thread.Sleep(3000);
 
         var textExtractorWindow = FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 3000, true);
-        Assert.IsTrue(textExtractorWindow.Count > 0, "TextExtractor should activate with new shortcut Ctrl+Shift+T");
+        Assert.IsNotEmpty(textExtractorWindow, "TextExtractor should activate with new shortcut Ctrl+Shift+T");
     }
 
-    [TestMethod("PowerOCR.OCRLanguageSettingsTest")]
+    [TestMethod(DisplayName = "PowerOCR.OCRLanguageSettingsTest")]
     [TestCategory("PowerOCR Settings")]
     public void OCRLanguageSettingsTest()
     {
@@ -155,13 +156,13 @@ public class PowerOCRTests : UITestBase
 
         // Verify dropdown is opened by checking if dropdown items are available
         var dropdownItems = FindAll<Element>(By.ClassName("ComboBoxItem"), 2000);
-        Assert.IsTrue(dropdownItems.Count > 0, "Dropdown should contain language options");
+        Assert.IsNotEmpty(dropdownItems, "Dropdown should contain language options");
 
         // Close dropdown by pressing Escape
         SendKeys(Key.Esc);
     }
 
-    [TestMethod("PowerOCR.OCRLanguageSelectionTest")]
+    [TestMethod(DisplayName = "PowerOCR.OCRLanguageSelectionTest")]
     [TestCategory("PowerOCR Language")]
     public void OCRLanguageSelectionTest()
     {
@@ -184,10 +185,10 @@ public class PowerOCRTests : UITestBase
             var comboBoxItems = FindAll<Element>(By.ClassName("ComboBoxItem"), 3000, true)
                 .Where(item => item.Displayed)
                 .ToList();
-            Assert.IsTrue(comboBoxItems.Count > 0, "The overlay language ComboBox should contain OCR languages.");
+            Assert.IsNotEmpty(comboBoxItems, "The overlay language ComboBox should contain OCR languages.");
 
             var selectedItems = comboBoxItems.Where(item => item.Selected).ToList();
-            Assert.AreEqual(1, selectedItems.Count, "The overlay language ComboBox should have one selected language.");
+            Assert.HasCount(1, selectedItems, "The overlay language ComboBox should have one selected language.");
 
             int selectedLanguageIndex = comboBoxItems.FindIndex(item => item.Selected);
             var selectedItem = comboBoxItems[selectedLanguageIndex];
@@ -247,7 +248,7 @@ public class PowerOCRTests : UITestBase
                 .Where(item => item.Displayed)
                 .Where(item => item.Selected)
                 .ToList();
-            Assert.AreEqual(1, updatedSelectedItems.Count, "The overlay language ComboBox should keep one selected language.");
+            Assert.HasCount(1, updatedSelectedItems, "The overlay language ComboBox should keep one selected language.");
             Assert.AreEqual(
                 targetLanguageName,
                 updatedSelectedItems[0].Name,
@@ -267,7 +268,7 @@ public class PowerOCRTests : UITestBase
         }
     }
 
-    [TestMethod("PowerOCR.ToolbarModes")]
+    [TestMethod(DisplayName = "PowerOCR.ToolbarModes")]
     [TestCategory("PowerOCR Toolbar")]
     public void ToolbarModesTest()
     {
@@ -319,10 +320,10 @@ public class PowerOCRTests : UITestBase
         Thread.Sleep(3000);
 
         var windowsAfterEscape = FindAll<Element>(By.AccessibilityId("TextExtractorWindow"), 2000, true);
-        Assert.AreEqual(0, windowsAfterEscape.Count, "TextExtractor window should be dismissed after pressing Escape");
+        Assert.IsEmpty(windowsAfterEscape, "TextExtractor window should be dismissed after pressing Escape");
     }
 
-    [TestMethod("PowerOCR.CursorStaysCrossDuringPointerMovement")]
+    [TestMethod(DisplayName = "PowerOCR.CursorStaysCrossDuringPointerMovement")]
     [TestCategory("PowerOCR Selection")]
     [DoNotParallelize]
     public void CursorStaysCrossDuringPointerMovementTest()
@@ -399,7 +400,7 @@ public class PowerOCRTests : UITestBase
             int completedSteps = 0;
             try
             {
-                Assert.IsTrue(samplingStarted.Wait(TimeSpan.FromSeconds(2)), "Cursor sampling should start before pointer movement.");
+                Assert.IsTrue(samplingStarted.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken), "Cursor sampling should start before pointer movement.");
 
                 // Keep sampling while hover timers elapse, including the root accelerator's automatic tooltip.
                 // Join returns early if sampling detects a failure; otherwise the pointer dwells for 1.5 seconds.
@@ -424,8 +425,8 @@ public class PowerOCRTests : UITestBase
 
             Assert.IsNull(samplingFailure, samplingFailure);
             Assert.AreEqual(sweepCount * (stepsPerSweep + 1), completedSteps, "All three pointer sweeps should finish before the sampling deadline.");
-            Assert.IsTrue(sampleCount >= 100, $"The pointer sweep should collect enough visible cursor samples; observed {sampleCount}.");
-            Assert.IsTrue(sampledPositions.Count >= 20, $"Cursor samples should cover moving positions, not just the final frame; observed {sampledPositions.Count}.");
+            Assert.IsGreaterThanOrEqualTo(100, sampleCount, $"The pointer sweep should collect enough visible cursor samples; observed {sampleCount}.");
+            Assert.IsGreaterThanOrEqualTo(20, sampledPositions.Count, $"Cursor samples should cover moving positions, not just the final frame; observed {sampledPositions.Count}.");
         }
         finally
         {
@@ -443,7 +444,7 @@ public class PowerOCRTests : UITestBase
         }
     }
 
-    [TestMethod("PowerOCR.TextSelectionAndClipboardTest")]
+    [TestMethod(DisplayName = "PowerOCR.TextSelectionAndClipboardTest")]
     [TestCategory("PowerOCR Selection")]
     public void TextSelectionAndClipboardTest()
     {
@@ -480,7 +481,7 @@ public class PowerOCRTests : UITestBase
         Thread.Sleep(1000);
     }
 
-    [TestMethod("PowerOCR.BlankCaptureKeepsToolbarShortcuts")]
+    [TestMethod(DisplayName = "PowerOCR.BlankCaptureKeepsToolbarShortcuts")]
     [TestCategory("PowerOCR Toolbar")]
     public void BlankCaptureKeepsToolbarShortcutsTest()
     {
@@ -502,7 +503,7 @@ public class PowerOCRTests : UITestBase
             {
                 var control = overlay.Find<Element>(By.AccessibilityId(automationId));
                 Assert.IsNotNull(control.Rect, $"{automationId} should expose its bounds.");
-                Assert.IsTrue(errorBounds.Top >= control.Rect.Value.Bottom, $"The error InfoBar must be below {automationId}, not overlap it.");
+                Assert.IsGreaterThanOrEqualTo(control.Rect.Value.Bottom, errorBounds.Top, $"The error InfoBar must be below {automationId}, not overlap it.");
             }
 
             // Do not click or focus a toolbar control after capture: that hides the regression.
@@ -517,7 +518,7 @@ public class PowerOCRTests : UITestBase
         });
     }
 
-    [TestMethod("PowerOCR.BlankCaptureKeepsLanguageShortcut")]
+    [TestMethod(DisplayName = "PowerOCR.BlankCaptureKeepsLanguageShortcut")]
     [TestCategory("PowerOCR Language")]
     public void BlankCaptureKeepsLanguageShortcutTest()
     {
@@ -530,7 +531,7 @@ public class PowerOCRTests : UITestBase
             var languages = FindAll<Element>(By.ClassName("ComboBoxItem"), 3000, true)
                 .Where(item => item.Displayed)
                 .ToList();
-            Assert.AreEqual(1, languages.Count(item => item.Selected), "The language ComboBox should have one selected language.");
+            Assert.ContainsSingle(item => item.Selected, languages, "The language ComboBox should have one selected language.");
             if (languages.Count < 2)
             {
                 Assert.Inconclusive("At least two installed OCR languages are required to verify the language shortcut changes selection.");
@@ -567,8 +568,9 @@ public class PowerOCRTests : UITestBase
 
     private static Element CaptureBlankRegion(Pane overlay)
     {
-        Assert.IsFalse(
-            overlay.FindAll<Element>(By.AccessibilityId("ErrorInfoBar"), 500).Any(item => item.Displayed),
+        Assert.DoesNotContain(
+            item => item.Displayed,
+            overlay.FindAll<Element>(By.AccessibilityId("ErrorInfoBar"), 500),
             "Overlay activation must succeed before testing a blank capture.");
         Assert.IsNotNull(overlay.Rect, "The overlay should expose selection bounds.");
         var bounds = overlay.Rect.Value;

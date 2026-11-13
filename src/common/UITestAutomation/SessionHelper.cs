@@ -102,15 +102,19 @@ namespace Microsoft.PowerToys.UITest
             Process[] processes = Process.GetProcessesByName(processName);
             foreach (Process process in processes)
             {
+                Exception terminationFailure;
                 try
                 {
                     process.Kill();
                     process.WaitForExit(); // Optional: Wait for the process to exit
+                    continue;
                 }
                 catch (Exception ex)
                 {
-                    Assert.Fail($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {ex.Message}");
+                    terminationFailure = ex;
                 }
+
+                throw new AssertFailedException($"Failed to terminate process {process.ProcessName} (ID: {process.Id}): {terminationFailure.Message}", terminationFailure);
             }
         }
 

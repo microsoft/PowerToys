@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.RemoteDesktop.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class RdpConnectionsManagerTests
 {
@@ -19,7 +20,7 @@ public class RdpConnectionsManagerTests
         var manager = new RdpConnectionsManager(new MockSettingsManager(["test.local"]));
 
         // Assert
-        Assert.IsTrue(manager.Connections.Any(item => string.IsNullOrEmpty(item.ConnectionName)));
+        Assert.Contains(item => string.IsNullOrEmpty(item.ConnectionName), manager.Connections);
     }
 
     [TestMethod]

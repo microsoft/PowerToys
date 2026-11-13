@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Settings.UI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ScoobeReleaseTests
     {
@@ -25,7 +26,7 @@ namespace Settings.UI.UnitTests
         {
             var groups = ScoobeWindow.CreateReleaseGroups(CreateReleases(), false);
 
-            Assert.AreEqual(2, groups.Count);
+            Assert.HasCount(2, groups);
             Assert.IsTrue(groups.SelectMany(group => group).All(release => !release.IsPrerelease));
         }
 
@@ -34,7 +35,7 @@ namespace Settings.UI.UnitTests
         {
             var groups = ScoobeWindow.CreateReleaseGroups(CreateReleases(), true);
 
-            Assert.AreEqual(3, groups.Count);
+            Assert.HasCount(3, groups);
             Assert.IsTrue(groups[0].All(release => release.IsPrerelease));
             Assert.IsTrue(groups.Skip(1).SelectMany(group => group).All(release => !release.IsPrerelease));
         }
@@ -70,7 +71,7 @@ namespace Settings.UI.UnitTests
 
             Assert.AreEqual("ok", result);
             Assert.AreEqual(ScoobeWindow.MaxReleaseFetchAttempts, calls);
-            CollectionAssert.AreEqual(
+            Assert.AreSequenceEqual(
                 new[] { ScoobeWindow.InitialReleaseFetchRetryDelay, ScoobeWindow.InitialReleaseFetchRetryDelay * 2 },
                 delays);
         }
@@ -80,7 +81,7 @@ namespace Settings.UI.UnitTests
         {
             int calls = 0;
 
-            await Assert.ThrowsExceptionAsync<HttpRequestException>(() => ScoobeWindow.RetryWithBackoffAsync<string>(
+            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => ScoobeWindow.RetryWithBackoffAsync<string>(
                 () =>
                 {
                     calls++;
@@ -96,7 +97,7 @@ namespace Settings.UI.UnitTests
         {
             int calls = 0;
 
-            await Assert.ThrowsExceptionAsync<HttpRequestException>(() => ScoobeWindow.RetryWithBackoffAsync<string>(
+            await Assert.ThrowsExactlyAsync<HttpRequestException>(() => ScoobeWindow.RetryWithBackoffAsync<string>(
                 () =>
                 {
                     calls++;

@@ -11,6 +11,7 @@ using Wox.Plugin;
 
 namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ImageTests
     {
@@ -20,7 +21,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             StringMatcher.Instance = new StringMatcher();
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("shutdown", "Images\\shutdown.dark.png")]
         [DataRow("restart", "Images\\restart.dark.png")]
         [DataRow("sign out", "Images\\logoff.dark.png")]
@@ -47,7 +48,7 @@ namespace Microsoft.PowerToys.Run.Plugin.System.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("shutdown", "Images\\shutdown.light.png")]
         [DataRow("restart", "Images\\restart.light.png")]
         [DataRow("sign out", "Images\\logoff.light.png")]

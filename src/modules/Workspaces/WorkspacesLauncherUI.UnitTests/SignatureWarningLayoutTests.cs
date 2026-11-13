@@ -20,10 +20,11 @@ using WorkspacesLauncherUI.Properties;
 
 namespace WorkspacesLauncherUI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class SignatureWarningLayoutTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en-US", FlowDirection.LeftToRight)]
         [DataRow("fr-FR", FlowDirection.LeftToRight)]
         [DataRow("ar-SA", FlowDirection.RightToLeft)]
@@ -52,8 +53,8 @@ namespace WorkspacesLauncherUI.UnitTests
                     var app = FindTextField(root, "SignatureWarningApp");
                     Assert.AreEqual(request.AppName, app.Text);
                     Assert.AreEqual(direction, app.FlowDirection);
-                    Assert.IsTrue(app.ActualWidth > 0);
-                    Assert.AreEqual(0, VisualDescendants<TextBox>(root).Count(), "Read-only details must not look like editable inputs.");
+                    Assert.IsGreaterThan(0, app.ActualWidth);
+                    Assert.IsEmpty(VisualDescendants<TextBox>(root), "Read-only details must not look like editable inputs.");
                     AssertStaticTextPeer(app, request.AppLabel, request.AppName);
 
                     var copy = VisualDescendants<Button>(root).Single(button => AutomationProperties.GetAutomationId(button) == "CopySignatureDetails");
@@ -69,7 +70,7 @@ namespace WorkspacesLauncherUI.UnitTests
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en-US")]
         [DataRow("ar-SA")]
         public void WarningAndAutomationExposeEscapedDisplayValues(string cultureName)
@@ -102,8 +103,8 @@ namespace WorkspacesLauncherUI.UnitTests
                     Assert.AreEqual(Visibility.Visible, explanation.Visibility);
                     Assert.AreEqual(request.EscapedDisplayExplanation, explanation.Text);
                     Assert.IsTrue(explanation.ActualWidth > 0 && explanation.ActualHeight > 0);
-                    StringAssert.Contains(request.DetailsText, request.Path);
-                    StringAssert.Contains(request.DetailsText, request.Arguments);
+                    Assert.Contains(request.Path, request.DetailsText);
+                    Assert.Contains(request.Arguments, request.DetailsText);
                 }
                 finally
                 {
@@ -112,7 +113,7 @@ namespace WorkspacesLauncherUI.UnitTests
             });
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("fr-FR", 600)]
         [DataRow("fr-FR", 360)]
         [DataRow("ar-SA", 600)]
@@ -189,7 +190,7 @@ namespace WorkspacesLauncherUI.UnitTests
             root.UpdateLayout();
 
             Assert.IsTrue(root.ActualWidth > 0 && root.ActualHeight > 0, "The real content must have completed layout.");
-            Assert.IsTrue(root.ActualWidth <= width);
+            Assert.IsLessThanOrEqualTo(width, root.ActualWidth);
             Assert.IsFalse(window.IsVisible, "Unit tests must never display the warning.");
             return root;
         }
@@ -231,16 +232,16 @@ namespace WorkspacesLauncherUI.UnitTests
         {
             Assert.IsInstanceOfType<string>(button.Content);
             Assert.AreEqual(expectedText, button.Content);
-            StringAssert.StartsWith(expectedText, $"[TEST {CultureInfo.CurrentUICulture.Name}]");
+            Assert.StartsWith($"[TEST {CultureInfo.CurrentUICulture.Name}]", expectedText);
             AssertFitsInside(root, button);
             AssertFitsInside(actions, button);
 
             var text = VisualDescendants<TextBlock>(button).Single(block => block.Text == expectedText);
             Assert.AreEqual(TextWrapping.Wrap, text.TextWrapping);
             Assert.AreEqual(TextTrimming.None, text.TextTrimming);
-            Assert.IsTrue(text.ActualHeight > 2 * text.FontSize, "Expanded text must actually occupy multiple lines.");
-            Assert.IsTrue(text.DesiredSize.Width <= text.ActualWidth + 0.5, "Text must not be horizontally clipped.");
-            Assert.IsTrue(text.DesiredSize.Height <= text.ActualHeight + 0.5, "Text must not be vertically clipped.");
+            Assert.IsGreaterThan(2 * text.FontSize, text.ActualHeight, "Expanded text must actually occupy multiple lines.");
+            Assert.IsLessThanOrEqualTo(text.ActualWidth + 0.5, text.DesiredSize.Width, "Text must not be horizontally clipped.");
+            Assert.IsLessThanOrEqualTo(text.ActualHeight + 0.5, text.DesiredSize.Height, "Text must not be vertically clipped.");
             AssertFitsInside(button, text);
             AssertFitsInside(root, text);
         }

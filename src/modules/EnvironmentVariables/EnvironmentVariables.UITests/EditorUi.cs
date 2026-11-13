@@ -135,7 +135,7 @@ internal sealed class EditorUi(Session session, TestContext context)
         var card = VariableCard(Expand(profile), "PATH");
         var text = Nodes(Inspect(card)).Where(node => Property(node, "type") == "Text")
             .Select(node => Property(node, "name")).Where(name => name != "PATH").ToArray();
-        CollectionAssert.AreEqual(expected, text, "PATH must be displayed as separate ordered entries, not a semicolon-delimited value.");
+        Assert.AreSequenceEqual(expected, text, "PATH must be displayed as separate ordered entries, not a semicolon-delimited value.");
     }
 
     internal Element Expander(string name)
@@ -290,7 +290,7 @@ internal sealed class EditorUi(Session session, TestContext context)
         Wait(
             () => !ReadProfiles().EnumerateArray().Any(profile => profile.GetProperty("Name").GetString() == name),
             $"Profile {name} was not removed from profiles.json.");
-        Assert.IsFalse(Session.FindAll<Element>(By.Name(name), 0).Any(element => element.ClassName == "SettingsExpander"), $"Profile {name} remains in the UI.");
+        Assert.DoesNotContain(element => element.ClassName == "SettingsExpander", Session.FindAll<Element>(By.Name(name), 0), $"Profile {name} remains in the UI.");
     }
 
     internal void AssertProfile(string name, bool enabled, params (string Name, string Value)[] variables)

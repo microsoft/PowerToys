@@ -15,6 +15,7 @@ namespace AdvancedPaste.UITests;
 [TestClass]
 [DoNotParallelize]
 [TestCategory("AdvancedPaste")]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
 {
     [TestMethod]

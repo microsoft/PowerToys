@@ -17,6 +17,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 /// implementations to cover all structured error categories (exit codes 1–5) and the
 /// success path (exit code 0 with before→after values).
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SetCommandExecutorTests
 {
@@ -107,7 +108,7 @@ public class SetCommandExecutorTests
         Assert.AreEqual(CliErrorCodes.OutOfRange, error!.Error.Code);
         Assert.AreEqual(CliExitCodes.OutOfRange, error.Error.ExitCode);
         Assert.IsNotNull(error.Error.ExpectedRange);
-        StringAssert.Contains(error.Error.ExpectedRange, "100");
+        Assert.Contains("100", error.Error.ExpectedRange);
     }
 
     [TestMethod]

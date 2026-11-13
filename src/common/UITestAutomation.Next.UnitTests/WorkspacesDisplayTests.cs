@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 // These exercise the pure resolution helpers only (no live topology), so they run deterministically on any
 // host and CI, including where the host reports sparse/non-1 numbering, mixed DPI, or a numberless display.
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class WorkspacesDisplayTests
 {
     private const uint Active = 0x1;
@@ -76,8 +77,8 @@ public sealed class WorkspacesDisplayTests
         var exception = Assert.ThrowsExactly<InvalidOperationException>(
             () => WorkspacesDisplay.ResolveNumberAndId("WinDisc", System.Array.Empty<DisplayDeviceInfo>()));
 
-        StringAssert.Contains(exception.Message, "WinDisc");
-        StringAssert.Contains(exception.Message, "Connect and unlock");
+        Assert.Contains("WinDisc", exception.Message);
+        Assert.Contains("Connect and unlock", exception.Message);
     }
 
     [TestMethod]
@@ -166,11 +167,11 @@ public sealed class WorkspacesDisplayTests
 
         var (x, y, width, height) = WorkspacesDisplay.DefaultApplicationPosition(target);
 
-        Assert.IsTrue(x >= 0, $"x={x}");
-        Assert.IsTrue(y >= 0, $"y={y}");
+        Assert.IsGreaterThanOrEqualTo(0, x, $"x={x}");
+        Assert.IsGreaterThanOrEqualTo(0, y, $"y={y}");
         Assert.IsTrue(width > 0 && height > 0, $"size={width}x{height}");
-        Assert.IsTrue(x + width <= 1024, $"right={x + width}");
-        Assert.IsTrue(y + height <= 600, $"bottom={y + height}");
+        Assert.IsLessThanOrEqualTo(1024, x + width, $"right={x + width}");
+        Assert.IsLessThanOrEqualTo(600, y + height, $"bottom={y + height}");
     }
 
     [TestMethod]

@@ -10,11 +10,12 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [DoNotParallelize]
 public sealed class ClipboardHelperPipeTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task MatchedAppAndHelperExchangeSyntheticData(bool startClientBeforeServer)
@@ -23,11 +24,11 @@ public sealed class ClipboardHelperPipeTests
 
         Assert.AreEqual(0, result.ServerExit, result.ServerOutput);
         Assert.AreEqual(0, result.ClientExit, result.ClientOutput);
-        StringAssert.Contains(result.ServerOutput, "accepted;calls:1");
-        StringAssert.Contains(result.ClientOutput, "synthetic-handoff");
+        Assert.Contains("accepted;calls:1", result.ServerOutput);
+        Assert.Contains("synthetic-handoff", result.ClientOutput);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("OtherHelper.exe", null, null, "wrong-image")]
     [DataRow("PowerToys.MouseWithoutBordersHelper.exe", "S-1-5-18", null, "wrong-user")]
     [DataRow("PowerToys.MouseWithoutBordersHelper.exe", null, "-1", "wrong-session")]
@@ -38,7 +39,7 @@ public sealed class ClipboardHelperPipeTests
         var result = await RunPairAsync("PowerToys.MouseWithoutBorders.exe", helperName, user, session);
 
         Assert.AreEqual(3, result.ServerExit, result.ServerOutput);
-        StringAssert.Contains(result.ServerOutput, $"rejected:{reason};calls:0");
+        Assert.Contains($"rejected:{reason};calls:0", result.ServerOutput);
         Assert.AreNotEqual(0, result.ClientExit, result.ClientOutput);
     }
 
@@ -48,9 +49,9 @@ public sealed class ClipboardHelperPipeTests
         var result = await RunPairAsync("OtherApp.exe", "PowerToys.MouseWithoutBordersHelper.exe", capture: true);
 
         Assert.AreNotEqual(0, result.ClientExit, result.ClientOutput);
-        StringAssert.Contains(result.ClientOutput, "connection rejected: wrong-image");
+        Assert.Contains("connection rejected: wrong-image", result.ClientOutput);
         Assert.AreEqual(0, result.ServerExit, result.ServerOutput);
-        StringAssert.Contains(result.ServerOutput, "bytes:0");
+        Assert.Contains("bytes:0", result.ServerOutput);
     }
 
     [TestMethod]
@@ -62,20 +63,20 @@ public sealed class ClipboardHelperPipeTests
         Process? secondServer = null;
         try
         {
-            Assert.AreEqual("ready", await server.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(10)));
+            Assert.AreEqual("ready", await server.StandardOutput.ReadLineAsync(TestContext.CancellationToken).AsTask().WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken));
             secondServer = StartFixture(executable, "capture", pipe);
-            var secondOutput = secondServer.StandardOutput.ReadToEndAsync();
-            await secondServer.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            var secondOutput = secondServer.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
+            await secondServer.WaitForExitAsync(TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
             Assert.AreEqual(4, secondServer.ExitCode, await secondOutput);
-            StringAssert.Contains(await secondOutput, "Win32Exception");
+            Assert.Contains("Win32Exception", await secondOutput);
 
             using (var client = new NamedPipeClientStream(".", pipe, PipeDirection.InOut, PipeOptions.Asynchronous))
             {
-                await client.ConnectAsync(5000);
+                await client.ConnectAsync(5000, TestContext.CancellationToken);
             }
 
-            await server.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(10));
-            Assert.AreEqual(0, server.ExitCode, await server.StandardOutput.ReadToEndAsync());
+            await server.WaitForExitAsync(TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
+            Assert.AreEqual(0, server.ExitCode, await server.StandardOutput.ReadToEndAsync(TestContext.CancellationToken));
         }
         finally
         {
@@ -166,4 +167,6 @@ public sealed class ClipboardHelperPipeTests
             }
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

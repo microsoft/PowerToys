@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class PrecomputedFuzzyMatcherTests
 {
@@ -44,7 +45,7 @@ public class PrecomputedFuzzyMatcherTests
         var target = _matcher.PrecomputeTarget(haystack);
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, $"Expected positive score for needle='{needle}', haystack='{haystack}'");
+        Assert.IsGreaterThan(0, score, $"Expected positive score for needle='{needle}', haystack='{haystack}'");
     }
 
     [TestMethod]
@@ -127,7 +128,7 @@ public class PrecomputedFuzzyMatcherTests
         var target = _matcher.PrecomputeTarget("PowerPoint");
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected 'Power Point' to match 'PowerPoint'");
+        Assert.IsGreaterThan(0, score, "Expected 'Power Point' to match 'PowerPoint'");
     }
 
     [TestMethod]
@@ -138,7 +139,7 @@ public class PrecomputedFuzzyMatcherTests
         var target = _matcher.PrecomputeTarget("hello-world");
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected 'hello_world' to match 'hello-world'");
+        Assert.IsGreaterThan(0, score, "Expected 'hello_world' to match 'hello-world'");
     }
 
     [TestMethod]
@@ -149,7 +150,7 @@ public class PrecomputedFuzzyMatcherTests
         var target = _matcher.PrecomputeTarget("my-file.name");
         var score = _matcher.Score(query, target);
 
-        Assert.IsTrue(score > 0, "Expected mixed separators to match");
+        Assert.IsGreaterThan(0, score, "Expected mixed separators to match");
     }
 
     [TestMethod]
@@ -165,8 +166,8 @@ public class PrecomputedFuzzyMatcherTests
         var score2 = _matcher.Score(query, target2);
         var score3 = _matcher.Score(query, target3);
 
-        Assert.IsTrue(score1 > 0, "Expected query to match first target");
-        Assert.IsTrue(score2 > 0, "Expected query to match second target");
+        Assert.IsGreaterThan(0, score1, "Expected query to match first target");
+        Assert.IsGreaterThan(0, score2, "Expected query to match second target");
         Assert.AreEqual(0, score3, "Expected query not to match third target");
     }
 
@@ -183,8 +184,8 @@ public class PrecomputedFuzzyMatcherTests
         var score2 = _matcher.Score(query2, target);
         var score3 = _matcher.Score(query3, target);
 
-        Assert.IsTrue(score1 > 0, "Expected first query to match target");
-        Assert.IsTrue(score2 > 0, "Expected second query to match target");
+        Assert.IsGreaterThan(0, score1, "Expected first query to match target");
+        Assert.IsGreaterThan(0, score2, "Expected second query to match target");
         Assert.AreEqual(0, score3, "Expected third query not to match target");
     }
 
@@ -202,8 +203,8 @@ public class PrecomputedFuzzyMatcherTests
         var score2 = _matcher.Score(query2, target);
         var score3 = _matcher.Score(query3, target);
 
-        Assert.IsTrue(score1 > 0, "Expected lowercase query to match");
-        Assert.IsTrue(score2 > 0, "Expected uppercase query to match");
-        Assert.IsTrue(score3 > 0, "Expected mixed case query to match");
+        Assert.IsGreaterThan(0, score1, "Expected lowercase query to match");
+        Assert.IsGreaterThan(0, score2, "Expected uppercase query to match");
+        Assert.IsGreaterThan(0, score3, "Expected mixed case query to match");
     }
 }

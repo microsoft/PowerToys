@@ -18,6 +18,7 @@ using StreamJsonRpc;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class SettingsIpcIdentityTests
 {
@@ -89,7 +90,7 @@ public sealed class SettingsIpcIdentityTests
     {
         using var identity = WindowsIdentity.GetCurrent();
 
-        Assert.ThrowsException<ArgumentNullException>(() =>
+        Assert.ThrowsExactly<ArgumentNullException>(() =>
             IpcChannel<TestRpcTarget>.StartVerifiedIpcServer(
                 $"PowerToys.MWB.v2.UnitTest.{Guid.NewGuid():N}",
                 identity.User!,
@@ -135,7 +136,7 @@ public sealed class SettingsIpcIdentityTests
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(5)]
     [DataRow(87)]
     public async Task CallerInspectionFailurePreservesVerifiedRpc(int errorCode)
@@ -173,8 +174,8 @@ public sealed class SettingsIpcIdentityTests
                 identity.User!.Value,
                 sessionId);
             using var rpc = JsonRpc.Attach(client);
-            await rpc.InvokeAsync(nameof(TestRpcTarget.Ping)).WaitAsync(TimeSpan.FromSeconds(5));
-            Assert.AreEqual(unchecked((uint)Environment.ProcessId), await inspectedProcessId.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+            await rpc.InvokeAsync(nameof(TestRpcTarget.Ping)).WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            Assert.AreEqual(unchecked((uint)Environment.ProcessId), await inspectedProcessId.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken));
         }
         finally
         {
@@ -237,7 +238,7 @@ public sealed class SettingsIpcIdentityTests
 
         await using (var rejectedClient = new NamedPipeClientStream(".", pipeName, PipeDirection.InOut, PipeOptions.Asynchronous))
         {
-            await rejectedClient.ConnectAsync(5000);
+            await rejectedClient.ConnectAsync(5000, TestContext.CancellationToken);
             Assert.IsTrue(SpinWait.SpinUntil(() => Volatile.Read(ref verifyCallCount) == 1, TimeSpan.FromSeconds(5)));
             Assert.AreEqual(0, TestRpcTarget.InstanceCount);
         }
@@ -270,7 +271,7 @@ public sealed class SettingsIpcIdentityTests
                 stream => VerifyCurrentProcessClient(stream, Path.GetFileName(executablePath), identity.User!.Value, sessionId),
                 _ => initialCreationFailure.TrySetResult(),
                 cancellation.Token);
-            await initialCreationFailure.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            await initialCreationFailure.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
         }
 
         await using var client = await ConnectVerifiedClientAsync(
@@ -356,4 +357,6 @@ public sealed class SettingsIpcIdentityTests
         {
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

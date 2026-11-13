@@ -8,8 +8,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
-    public class Init
+    public static class Init
     {
         private static Process? appDriver;
 

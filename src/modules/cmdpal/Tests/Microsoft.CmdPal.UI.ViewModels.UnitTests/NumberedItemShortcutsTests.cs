@@ -9,12 +9,13 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class NumberedItemShortcutsTests
 {
     private static readonly int[] ExpectedTargetIndexes = [1, 2, 4, 5, 6, 7, 8, 9, 10];
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)VirtualKey.Number1, (int)VirtualKeyModifiers.Menu, (int)NumberedItemShortcuts.ShortcutAction.Invoke, 0, (int)NumberedItemShortcuts.ShortcutAction.Invoke)]
     [DataRow((int)VirtualKey.Number1, (int)VirtualKeyModifiers.Menu, (int)NumberedItemShortcuts.ShortcutAction.Select, 0, (int)NumberedItemShortcuts.ShortcutAction.Select)]
     [DataRow((int)VirtualKey.Number9, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Shift), (int)NumberedItemShortcuts.ShortcutAction.Invoke, 8, (int)NumberedItemShortcuts.ShortcutAction.Select)]
@@ -36,7 +37,7 @@ public class NumberedItemShortcutsTests
         Assert.AreEqual((NumberedItemShortcuts.ShortcutAction)expectedAction, shortcut.Value.Action);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)VirtualKey.Number1, (int)(VirtualKeyModifiers.Control | VirtualKeyModifiers.Menu))]
     [DataRow((int)VirtualKey.Number1, (int)VirtualKeyModifiers.None)]
     [DataRow((int)VirtualKey.Number1, (int)(VirtualKeyModifiers.Menu | VirtualKeyModifiers.Windows))]
@@ -50,7 +51,7 @@ public class NumberedItemShortcutsTests
             isAccessKeyModeActive: false));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)VirtualKeyModifiers.None, (int)NumberedItemShortcuts.ShortcutAction.Invoke)]
     [DataRow((int)VirtualKeyModifiers.Shift, (int)NumberedItemShortcuts.ShortcutAction.Select)]
     public void Resolve_MapsLatchedAccessKeySequence(int modifiers, int expectedAction)
@@ -65,7 +66,7 @@ public class NumberedItemShortcutsTests
         Assert.AreEqual((NumberedItemShortcuts.ShortcutAction)expectedAction, shortcut.Value.Action);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)VirtualKeyModifiers.Control)]
     [DataRow((int)VirtualKeyModifiers.Windows)]
     public void Resolve_RejectsModifiedLatchedAccessKeySequence(int modifiers)
@@ -85,7 +86,7 @@ public class NumberedItemShortcutsTests
 
         var targets = NumberedItemShortcuts.GetTargets(items, static item => item.IsEligible);
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             ExpectedTargetIndexes,
             targets.Select(item => item.Index).ToArray());
     }

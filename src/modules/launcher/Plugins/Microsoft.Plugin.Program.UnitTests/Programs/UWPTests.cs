@@ -12,6 +12,7 @@ using Moq;
 
 namespace Microsoft.Plugin.Program.UnitTests.Programs
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class UWPTests
     {
@@ -53,9 +54,9 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var applications = UWP.All();
 
             // Assert
-            Assert.AreEqual(2, applications.Length);
-            Assert.IsTrue(Array.FindAll(applications, x => x.Name == "DevelopmentApp").Length > 0);
-            Assert.IsTrue(Array.FindAll(applications, x => x.Name == "PackagedApp").Length > 0);
+            Assert.HasCount(2, applications);
+            Assert.IsNotEmpty(Array.FindAll(applications, x => x.Name == "DevelopmentApp"));
+            Assert.IsNotEmpty(Array.FindAll(applications, x => x.Name == "PackagedApp"));
         }
 
         [TestMethod]
@@ -72,8 +73,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var applications = UWP.All();
 
             // Assert
-            Assert.AreEqual(1, applications.Length);
-            Assert.IsTrue(Array.FindAll(applications, x => x.Name == "PackagedApp").Length > 0);
+            Assert.HasCount(1, applications);
+            Assert.IsNotEmpty(Array.FindAll(applications, x => x.Name == "PackagedApp"));
         }
 
         [TestMethod]
@@ -91,7 +92,7 @@ namespace Microsoft.Plugin.Program.UnitTests.Programs
             var applications = UWP.All();
 
             // Assert
-            Assert.AreEqual(0, applications.Length);
+            Assert.IsEmpty(applications);
         }
     }
 }

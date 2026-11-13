@@ -17,6 +17,7 @@ namespace PowerDisplay.Cli.UnitTests;
 /// Tests the JSON Lines renderer's stream routing and source-generated serialization for every
 /// result envelope accepted by <see cref="ICliOutput"/>.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class JsonCliOutputTests
 {
@@ -75,7 +76,7 @@ public class JsonCliOutputTests
 
         Assert.AreEqual(string.Empty, stderr.ToString());
         var lines = Lines(stdout.ToString());
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             new[]
             {
                 CliCommandNames.List,
@@ -87,7 +88,7 @@ public class JsonCliOutputTests
             },
             lines.Select(CommandFromJson).ToArray());
 
-        Assert.AreEqual(6, lines.Count);
+        Assert.HasCount(6, lines);
         Assert.IsTrue(lines.All(line => line.StartsWith('{') && line.EndsWith('}')));
         Assert.IsTrue(lines.All(line => !line.Contains('\r') && !line.Contains('\n')));
     }
@@ -108,7 +109,7 @@ public class JsonCliOutputTests
         });
 
         var lines = Lines(stdout.ToString());
-        Assert.AreEqual(1, lines.Count, "an embedded newline must be JSON-escaped");
+        Assert.HasCount(1, lines, "an embedded newline must be JSON-escaped");
         var roundTripped = JsonSerializer.Deserialize(
             lines[0],
             ContractsJsonContext.Default.CliProfileListResult);
@@ -136,7 +137,7 @@ public class JsonCliOutputTests
 
         Assert.AreEqual(string.Empty, stdout.ToString());
         var lines = Lines(stderr.ToString());
-        Assert.AreEqual(1, lines.Count);
+        Assert.HasCount(1, lines);
         var error = JsonSerializer.Deserialize(lines[0], ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error);
         Assert.IsTrue(error.IsError);
@@ -169,7 +170,7 @@ public class JsonCliOutputTests
         Assert.IsNull(source.Error.Hint, "the source envelope must not be mutated");
 
         var lines = Lines(stderr.ToString());
-        Assert.AreEqual(1, lines.Count);
+        Assert.HasCount(1, lines);
         var error = JsonSerializer.Deserialize(lines[0], ContractsJsonContext.Default.CliErrorResult);
         Assert.IsNotNull(error);
         Assert.AreEqual(CliErrorCodes.ArgumentError, error.Error.Code);

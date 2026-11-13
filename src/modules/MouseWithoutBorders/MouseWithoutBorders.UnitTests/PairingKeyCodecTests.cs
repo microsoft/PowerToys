@@ -13,6 +13,7 @@ using Windows.Security.Cryptography.DataProtection;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class PairingKeyCodecTests
 {
@@ -22,7 +23,7 @@ public sealed class PairingKeyCodecTests
         return new(identity.User!);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("mwb-dpapi:v1:TEST", true)]
     [DataRow("mwb-dpapi:v1:", true)]
     [DataRow("mwb-dpapi:v1:!", true)]
@@ -45,10 +46,10 @@ public sealed class PairingKeyCodecTests
     {
         var codec = CreateCodec();
         var encrypted = codec.Encrypt("TEST-KEY");
-        StringAssert.StartsWith(encrypted, PairingKeyCodec.EncryptedPrefix + PairingKeyCodec.EncryptedVersion);
+        Assert.StartsWith(PairingKeyCodec.EncryptedPrefix + PairingKeyCodec.EncryptedVersion, encrypted);
         Assert.AreEqual("TEST-KEY", codec.Decrypt(encrypted));
         Assert.IsTrue(codec.IsEncrypted(encrypted));
-        Assert.ThrowsException<ArgumentException>(() => codec.Encrypt(encrypted));
+        Assert.ThrowsExactly<ArgumentException>(() => codec.Encrypt(encrypted));
         var passthrough = new PassthroughPairingKeyCodec();
         Assert.AreEqual(encrypted, passthrough.Encrypt(encrypted));
         Assert.AreEqual(encrypted, passthrough.Decrypt(encrypted));
@@ -77,14 +78,14 @@ public sealed class PairingKeyCodecTests
     {
         var encrypted = CreateCodec().Encrypt("TEST-KEY");
         var other = new DpapiPairingKeyCodec(new SecurityIdentifier("S-1-5-21-1-2-3-1001"));
-        Assert.ThrowsException<CryptographicException>(() => other.Decrypt(encrypted));
+        Assert.ThrowsExactly<CryptographicException>(() => other.Decrypt(encrypted));
     }
 
     [TestMethod]
     public void WrongScopeIsRejected()
     {
         var payload = ProtectWithWindowsProvider("LOCAL=machine", CreatePayload("TEST-KEY"));
-        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+        Assert.ThrowsExactly<CryptographicException>(() => CreateCodec().Decrypt(payload));
     }
 
     [TestMethod]
@@ -94,10 +95,10 @@ public sealed class PairingKeyCodecTests
         var sid = identity.User!;
         var entropy = Encoding.UTF8.GetBytes("PowerToys.MouseWithoutBorders.Pairing.v1:" + sid.Value);
         var payload = ProtectedData.Protect(Encoding.UTF8.GetBytes("TEST-KEY"), entropy, DataProtectionScope.LocalMachine);
-        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(PairingKeyCodec.EncryptedPrefix + PairingKeyCodec.EncryptedVersion + Convert.ToBase64String(payload)));
+        Assert.ThrowsExactly<CryptographicException>(() => CreateCodec().Decrypt(PairingKeyCodec.EncryptedPrefix + PairingKeyCodec.EncryptedVersion + Convert.ToBase64String(payload)));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow(" ")]
@@ -110,10 +111,10 @@ public sealed class PairingKeyCodecTests
     [DataRow("mwb-dpapi:v1:A QID")]
     public void MissingMalformedOrInvalidProtectedDataIsRejected(string value)
     {
-        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(value));
+        Assert.ThrowsExactly<CryptographicException>(() => CreateCodec().Decrypt(value));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow(" ")]
     [DataRow("mwb-dpapi:v1:TEST")]
@@ -121,16 +122,16 @@ public sealed class PairingKeyCodecTests
     [DataRow("MWB-DPAPI:v1:TEST")]
     public void NonKeysAreRejectedByProtectedCodec(string value)
     {
-        Assert.ThrowsException<ArgumentException>(() => CreateCodec().Encrypt(value));
+        Assert.ThrowsExactly<ArgumentException>(() => CreateCodec().Encrypt(value));
     }
 
     [TestMethod]
     public void NullKeysAreRejectedByProtectedCodec()
     {
-        Assert.ThrowsException<ArgumentNullException>(() => CreateCodec().Encrypt(null));
+        Assert.ThrowsExactly<ArgumentNullException>(() => CreateCodec().Encrypt(null));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(" Original-Key ")]
     [DataRow("mwb-dpapi:v1:TEST")]
     [DataRow("mwb-dpapi:v2:invalid")]
@@ -145,13 +146,13 @@ public sealed class PairingKeyCodecTests
         Assert.AreEqual(value, codec.Decrypt(value));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow("mwb-dpapi:v1:TEST")]
     public void ProtectedNonKeyPlaintextIsRejected(string value)
     {
         var payload = ProtectWithWindowsProvider("LOCAL=user", CreatePayload(value));
-        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+        Assert.ThrowsExactly<CryptographicException>(() => CreateCodec().Decrypt(payload));
     }
 
     [TestMethod]
@@ -167,7 +168,7 @@ public sealed class PairingKeyCodecTests
         foreach (var plaintext in new[] { new byte[] { 0 }, new byte[] { 255, 1, 2 }, Encoding.UTF8.GetBytes("TEST-KEY") })
         {
             var payload = ProtectWithWindowsProvider("LOCAL=user", plaintext);
-            Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+            Assert.ThrowsExactly<CryptographicException>(() => CreateCodec().Decrypt(payload));
         }
     }
 
@@ -177,7 +178,7 @@ public sealed class PairingKeyCodecTests
         var plaintext = CreatePayload("X");
         plaintext[^1] = 0xff;
         var payload = ProtectWithWindowsProvider("LOCAL=user", plaintext);
-        Assert.ThrowsException<CryptographicException>(() => CreateCodec().Decrypt(payload));
+        Assert.ThrowsExactly<CryptographicException>(() => CreateCodec().Decrypt(payload));
     }
 
     private static byte[] CreatePayload(string value)

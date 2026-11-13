@@ -15,6 +15,7 @@ using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 public partial class DockItemViewModelTests
 {
     [TestMethod]
@@ -200,8 +201,8 @@ public partial class DockItemViewModelTests
             Assert.IsTrue(dockItem.UseTabularDigits);
             Assert.IsTrue(dockItem.UseTrailingLabelAlignment);
             Assert.AreSame(dockItem, fixture.Band.Items[0]);
-            Assert.AreEqual(true, fixture.TopLevel.GetProperties()[WellKnownExtensionAttributes.DockLabelTabularDigits]);
-            Assert.AreEqual(true, fixture.TopLevel.GetProperties()[WellKnownExtensionAttributes.DockLabelTrailingAlignment]);
+            Assert.IsTrue((bool?)fixture.TopLevel.GetProperties()[WellKnownExtensionAttributes.DockLabelTabularDigits]);
+            Assert.IsTrue((bool?)fixture.TopLevel.GetProperties()[WellKnownExtensionAttributes.DockLabelTrailingAlignment]);
         }
         finally
         {
@@ -252,7 +253,7 @@ public partial class DockItemViewModelTests
         var fixture = CreatePinnedBandFixture(item);
         try
         {
-            Assert.AreEqual(0, fixture.TopLevel.GetProperties().Count);
+            Assert.IsEmpty(fixture.TopLevel.GetProperties());
             Assert.AreSame(DockLabelWidthConstraints.Default, fixture.Band.Items[0].LabelWidthConstraints);
             Assert.IsNull(fixture.Band.Items[0].DataPackage);
         }

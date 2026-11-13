@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Settings.UI.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WelcomeHeroWarpTests
     {
@@ -76,9 +77,9 @@ namespace Settings.UI.UnitTests
             const float warpMs = 1634f;
             var stars = WelcomeHeroWarp.CreateStars(70, FunnelCenter, warpMs);
 
-            Assert.AreEqual(70, stars.Length);
-            CollectionAssert.AreEqual(stars, WelcomeHeroWarp.CreateStars(70, FunnelCenter, warpMs));
-            Assert.IsTrue(stars.Select(s => s.Ray.Angle).Distinct().Count() > 60, "Stars should be spread around the vanishing point.");
+            Assert.HasCount(70, stars);
+            Assert.AreSequenceEqual(stars, WelcomeHeroWarp.CreateStars(70, FunnelCenter, warpMs));
+            Assert.IsGreaterThan(60, stars.Select(s => s.Ray.Angle).Distinct().Count(), "Stars should be spread around the vanishing point.");
 
             foreach (var star in stars)
             {
@@ -97,8 +98,8 @@ namespace Settings.UI.UnitTests
         [TestMethod]
         public void EmptyStarFieldIsAllowed()
         {
-            Assert.AreEqual(0, WelcomeHeroWarp.CreateStars(0, FunnelCenter, 1000f).Length);
-            Assert.AreEqual(0, WelcomeHeroWarp.CreateStars(-5, FunnelCenter, 1000f).Length);
+            Assert.IsEmpty(WelcomeHeroWarp.CreateStars(0, FunnelCenter, 1000f));
+            Assert.IsEmpty(WelcomeHeroWarp.CreateStars(-5, FunnelCenter, 1000f));
         }
     }
 }

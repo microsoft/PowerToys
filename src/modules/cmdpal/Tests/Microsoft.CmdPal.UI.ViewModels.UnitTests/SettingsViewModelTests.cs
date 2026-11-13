@@ -20,6 +20,7 @@ using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class SettingsViewModelTests
 {
@@ -44,8 +45,8 @@ public class SettingsViewModelTests
 
         Assert.AreEqual(featureEnabled || savedPreference, viewModel.UseLowLevelGlobalHotkey);
         Assert.AreEqual(!featureEnabled, viewModel.CanEditLowLevelGlobalHotkey);
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseLowLevelGlobalHotkey));
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey));
+        Assert.Contains(nameof(SettingsViewModel.UseLowLevelGlobalHotkey), properties);
+        Assert.Contains(nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey), properties);
         if (featureEnabled)
         {
             viewModel.UseLowLevelGlobalHotkey = true;
@@ -67,8 +68,8 @@ public class SettingsViewModelTests
 
         Assert.AreEqual(savedPreference, viewModel.UseLowLevelGlobalHotkey);
         Assert.IsTrue(viewModel.CanEditLowLevelGlobalHotkey);
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseLowLevelGlobalHotkey));
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey));
+        Assert.Contains(nameof(SettingsViewModel.UseLowLevelGlobalHotkey), properties);
+        Assert.Contains(nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey), properties);
         viewModel.UseLowLevelGlobalHotkey = !savedPreference;
         Assert.AreEqual(!savedPreference, service.Object.Settings.UseLowLevelGlobalHotkey);
     }
@@ -123,10 +124,10 @@ public class SettingsViewModelTests
         service.Object.UpdateSettings(settings => settings with { UseWindowsKey = true });
         scheduler.ExecuteAllAvailable();
 
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseWindowsKey));
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.UseLowLevelGlobalHotkey));
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey));
-        CollectionAssert.Contains(properties, nameof(SettingsViewModel.Hotkey));
+        Assert.Contains(nameof(SettingsViewModel.UseWindowsKey), properties);
+        Assert.Contains(nameof(SettingsViewModel.UseLowLevelGlobalHotkey), properties);
+        Assert.Contains(nameof(SettingsViewModel.CanEditLowLevelGlobalHotkey), properties);
+        Assert.Contains(nameof(SettingsViewModel.Hotkey), properties);
         Assert.AreEqual(SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, viewModel.UseWindowsKey);
         Assert.AreEqual(SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, viewModel.UseLowLevelGlobalHotkey);
         Assert.AreEqual(!SettingsModel.IsWindowsKeyHotkeyFeatureEnabled, viewModel.CanEditLowLevelGlobalHotkey);
@@ -216,8 +217,10 @@ public class SettingsViewModelTests
             var previousCompactMode = boundCompactMode;
             var previousOpeningModeIndex = boundOpeningModeIndex;
             var previousShowShelf = boundShowShelf;
-            await Task.Run(() => settingsService.Object.UpdateSettings(
-                settings => settings with { CompactMode = compactMode, ShowQuickAccessShelf = showShelf }));
+            await Task.Run(
+                () => settingsService.Object.UpdateSettings(
+                settings => settings with { CompactMode = compactMode, ShowQuickAccessShelf = showShelf }),
+                TestContext.CancellationToken);
             expectedSaves++;
 
             Assert.AreEqual(previousCompactMode, boundCompactMode);
@@ -258,8 +261,8 @@ public class SettingsViewModelTests
         settingsService.Object.UpdateSettings(settings => settings with { ShowQuickAccessShelf = false });
         scheduler.ExecuteAllAvailable();
 
-        Assert.AreEqual(2, shelfValues.Count);
-        CollectionAssert.DoesNotContain(shelfValues, true);
+        Assert.HasCount(2, shelfValues);
+        Assert.DoesNotContain(true, shelfValues);
     }
 
     [TestMethod]
@@ -341,7 +344,7 @@ public class SettingsViewModelTests
 
         var eventField = typeof(CommandProviderWrapper).GetField(nameof(CommandProviderWrapper.CommandsChanged), BindingFlags.Instance | BindingFlags.NonPublic)!;
         var pendingNotification = (TypedEventHandler<CommandProviderWrapper, IItemsChangedEventArgs>)eventField.GetValue(provider)!;
-        Assert.AreEqual(2, pendingNotification.GetInvocationList().Length);
+        Assert.HasCount(2, pendingNotification.GetInvocationList());
 
         viewModel.Dispose();
         var remainingHandler = (Delegate)eventField.GetValue(provider)!;
@@ -415,4 +418,6 @@ public class SettingsViewModelTests
             }
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

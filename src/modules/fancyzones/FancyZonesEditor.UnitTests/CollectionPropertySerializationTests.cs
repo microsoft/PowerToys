@@ -8,6 +8,7 @@ using FancyZonesEditorCommon.Data;
 
 namespace UnitTestsFancyZonesEditor;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class CollectionPropertySerializationTests
 {

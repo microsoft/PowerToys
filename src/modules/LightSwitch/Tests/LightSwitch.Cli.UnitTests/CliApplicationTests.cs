@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace LightSwitch.Cli.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class CliApplicationTests
 {
@@ -65,7 +66,7 @@ public sealed class CliApplicationTests
 
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
-        int exit = await application.RunAsync((arguments + " --json").Split(' '), stdout, stderr);
+        int exit = await application.RunAsync((arguments + " --json").Split(' '), stdout, stderr, TestContext.CancellationToken);
 
         Assert.AreEqual(0, exit);
         Assert.AreEqual(1, calls);
@@ -107,7 +108,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' '), stdout, stderr));
+        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' '), stdout, stderr, TestContext.CancellationToken));
         using var response = JsonDocument.Parse(stdout.ToString());
         Assert.IsTrue(response.RootElement.GetProperty("success").GetBoolean());
     }
@@ -154,7 +155,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        int exit = await application.RunAsync((arguments + " --json").Split(' '), stdout, stderr);
+        int exit = await application.RunAsync((arguments + " --json").Split(' '), stdout, stderr, TestContext.CancellationToken);
 
         Assert.AreEqual(2, exit);
         Assert.AreEqual(0, calls);
@@ -192,11 +193,11 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        int exit = await application.RunAsync(arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries), stdout, stderr);
+        int exit = await application.RunAsync(arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries), stdout, stderr, TestContext.CancellationToken);
 
         Assert.AreEqual(0, exit);
-        StringAssert.Contains(stdout.ToString(), "schedule enable");
-        StringAssert.Contains(stdout.ToString(), "--mode");
+        Assert.Contains("schedule enable", stdout.ToString());
+        Assert.Contains("--mode", stdout.ToString());
         Assert.AreEqual(string.Empty, stderr.ToString());
     }
 
@@ -228,7 +229,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' '), stdout, stderr));
+        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' '), stdout, stderr, TestContext.CancellationToken));
 
         using var information = JsonDocument.Parse(stdout.ToString());
         Assert.AreEqual(1, information.RootElement.GetProperty("version").GetInt32());
@@ -246,7 +247,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(0, await application.RunAsync(VersionArguments, stdout, stderr));
+        Assert.AreEqual(0, await application.RunAsync(VersionArguments, stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(CliApplication.CliVersion, stdout.ToString().Trim());
     }
 
@@ -275,9 +276,9 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' '), stdout, stderr));
+        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' '), stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(1, calls);
-        StringAssert.StartsWith(stdout.ToString(), "System theme:");
+        Assert.StartsWith("System theme:", stdout.ToString());
         Assert.AreEqual(string.Empty, stderr.ToString());
     }
 
@@ -290,9 +291,9 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(2, await application.RunAsync(arguments.Split(' '), stdout, stderr));
+        Assert.AreEqual(2, await application.RunAsync(arguments.Split(' '), stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(string.Empty, stdout.ToString());
-        StringAssert.Contains(stderr.ToString(), "INVALID_ARGUMENT");
+        Assert.Contains("INVALID_ARGUMENT", stderr.ToString());
     }
 
     [TestMethod]
@@ -318,7 +319,7 @@ public sealed class CliApplicationTests
             using var stdout = new StringWriter(CultureInfo.InvariantCulture);
             using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-            Assert.AreEqual(expectedExit, await application.RunAsync(new[] { "@" + path }, stdout, stderr));
+            Assert.AreEqual(expectedExit, await application.RunAsync(new[] { "@" + path }, stdout, stderr, TestContext.CancellationToken));
             Assert.AreEqual(expectedCalls, calls);
             using var response = JsonDocument.Parse(stdout.ToString());
             Assert.IsTrue(response.RootElement.TryGetProperty(outputField, out _));
@@ -355,7 +356,7 @@ public sealed class CliApplicationTests
             using var stdout = new StringWriter(CultureInfo.InvariantCulture);
             using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-            Assert.AreEqual(expectedExit, await application.RunAsync(new[] { "schedule", "enable", "@" + path }, stdout, stderr));
+            Assert.AreEqual(expectedExit, await application.RunAsync(new[] { "schedule", "enable", "@" + path }, stdout, stderr, TestContext.CancellationToken));
             Assert.AreEqual(expectedCalls, calls);
             using var response = JsonDocument.Parse(stdout.ToString());
             Assert.IsTrue(response.RootElement.TryGetProperty(outputField, out _));
@@ -380,10 +381,10 @@ public sealed class CliApplicationTests
             using var stdout = new StringWriter(CultureInfo.InvariantCulture);
             using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-            Assert.AreEqual(expectedExit, await application.RunAsync(new[] { "light", before, "@" + path, after }, stdout, stderr));
+            Assert.AreEqual(expectedExit, await application.RunAsync(new[] { "light", before, "@" + path, after }, stdout, stderr, TestContext.CancellationToken));
             if (expectedExit == 0)
             {
-                StringAssert.StartsWith(stdout.ToString(), "PowerToys Light Switch");
+                Assert.StartsWith("PowerToys Light Switch", stdout.ToString());
             }
             else
             {
@@ -414,7 +415,7 @@ public sealed class CliApplicationTests
             File.WriteAllText(path, "--mode follow-night-light");
             var commandLine = new CliCommandLine();
             var parsed = commandLine.Parse(presentation.Arguments);
-            Assert.AreEqual(0, parsed.Errors.Count);
+            Assert.IsEmpty(parsed.Errors);
             Assert.AreEqual("FixedHours", commandLine.CreateRequest(parsed).Mode);
         }
         finally
@@ -430,9 +431,9 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(2, await application.RunAsync(TerminatorArguments, stdout, stderr));
+        Assert.AreEqual(2, await application.RunAsync(TerminatorArguments, stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(string.Empty, stdout.ToString());
-        StringAssert.Contains(stderr.ToString(), "INVALID_ARGUMENT");
+        Assert.Contains("INVALID_ARGUMENT", stderr.ToString());
     }
 
     [TestMethod]
@@ -458,10 +459,10 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(2, await application.RunAsync(arguments.Split(' '), stdout, stderr));
+        Assert.AreEqual(2, await application.RunAsync(arguments.Split(' '), stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(0, calls);
         Assert.AreEqual(string.Empty, stdout.ToString());
-        StringAssert.Contains(stderr.ToString(), "INVALID_ARGUMENT");
+        Assert.Contains("INVALID_ARGUMENT", stderr.ToString());
     }
 
     [TestMethod]
@@ -475,7 +476,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(2, await application.RunAsync(arguments.Split(' '), stdout, stderr));
+        Assert.AreEqual(2, await application.RunAsync(arguments.Split(' '), stdout, stderr, TestContext.CancellationToken));
         using var response = JsonDocument.Parse(stdout.ToString());
         Assert.AreEqual("INVALID_ARGUMENT", response.RootElement.GetProperty("error").GetProperty("code").GetString());
         Assert.AreEqual(string.Empty, stderr.ToString());
@@ -491,9 +492,9 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(2, await application.RunAsync(TerminatorArguments, stdout, stderr));
+        Assert.AreEqual(2, await application.RunAsync(TerminatorArguments, stdout, stderr, TestContext.CancellationToken));
         Assert.IsNotNull(logged);
-        StringAssert.Contains(logged, "INVALID_ARGUMENT");
+        Assert.Contains("INVALID_ARGUMENT", logged);
     }
 
     [TestMethod]
@@ -512,7 +513,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries), stdout, stderr));
+        Assert.AreEqual(0, await application.RunAsync(arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries), stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(0, logCalls);
     }
 
@@ -523,11 +524,11 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(0, await application.RunAsync(StatusArguments, stdout, stderr));
-        StringAssert.Contains(stdout.ToString(), "System theme: light");
-        StringAssert.Contains(stdout.ToString(), "Apps theme: dark");
-        StringAssert.Contains(stdout.ToString(), "App theme changes: disabled");
-        StringAssert.Contains(stdout.ToString(), "Manual override: active");
+        Assert.AreEqual(0, await application.RunAsync(StatusArguments, stdout, stderr, TestContext.CancellationToken));
+        Assert.Contains("System theme: light", stdout.ToString());
+        Assert.Contains("Apps theme: dark", stdout.ToString());
+        Assert.Contains("App theme changes: disabled", stdout.ToString());
+        Assert.Contains("Manual override: active", stdout.ToString());
         Assert.AreEqual(string.Empty, stderr.ToString());
     }
 
@@ -538,9 +539,9 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(3, await application.RunAsync(LightArguments, stdout, stderr));
+        Assert.AreEqual(3, await application.RunAsync(LightArguments, stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(string.Empty, stdout.ToString());
-        StringAssert.Contains(stderr.ToString(), "SERVICE_UNAVAILABLE");
+        Assert.Contains("SERVICE_UNAVAILABLE", stderr.ToString());
     }
 
     [TestMethod]
@@ -559,7 +560,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(expectedExit, await application.RunAsync(ToggleJsonArguments, stdout, stderr));
+        Assert.AreEqual(expectedExit, await application.RunAsync(ToggleJsonArguments, stdout, stderr, TestContext.CancellationToken));
         using var response = JsonDocument.Parse(stdout.ToString());
         Assert.AreEqual(code, response.RootElement.GetProperty("error").GetProperty("code").GetString());
         Assert.AreEqual(string.Empty, stderr.ToString());
@@ -572,7 +573,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(1, await application.RunAsync(StatusJsonArguments, stdout, stderr));
+        Assert.AreEqual(1, await application.RunAsync(StatusJsonArguments, stdout, stderr, TestContext.CancellationToken));
         using var response = JsonDocument.Parse(stdout.ToString());
         Assert.IsFalse(response.RootElement.GetProperty("success").GetBoolean());
         Assert.AreEqual("PROTOCOL_ERROR", response.RootElement.GetProperty("error").GetProperty("code").GetString());
@@ -580,7 +581,7 @@ public sealed class CliApplicationTests
     }
 
     [TestMethod]
-    [Timeout(5000)]
+    [Timeout(5000, CooperativeCancellation = true)]
     public async Task OverallDeadlineDoesNotRetryAMutation()
     {
         int calls = 0;
@@ -595,11 +596,11 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(4, await application.RunAsync(ToggleJsonArguments, stdout, stderr));
+        Assert.AreEqual(4, await application.RunAsync(ToggleJsonArguments, stdout, stderr, TestContext.CancellationToken));
         Assert.AreEqual(1, calls);
         using var response = JsonDocument.Parse(stdout.ToString());
         Assert.AreEqual("TIMEOUT", response.RootElement.GetProperty("error").GetProperty("code").GetString());
-        StringAssert.Contains(response.RootElement.GetProperty("error").GetProperty("message").GetString()!, "may already have taken effect");
+        Assert.Contains("may already have taken effect", response.RootElement.GetProperty("error").GetProperty("message").GetString()!);
     }
 
     [TestMethod]
@@ -625,7 +626,7 @@ public sealed class CliApplicationTests
         using var stdout = new StringWriter(CultureInfo.InvariantCulture);
         using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-        Assert.AreEqual(1, await application.RunAsync(StatusJsonArguments, stdout, stderr));
+        Assert.AreEqual(1, await application.RunAsync(StatusJsonArguments, stdout, stderr, TestContext.CancellationToken));
         using var response = JsonDocument.Parse(stdout.ToString());
         Assert.AreEqual("EXECUTION_FAILED", response.RootElement.GetProperty("error").GetProperty("code").GetString());
         Assert.IsFalse(stdout.ToString().Contains("Private diagnostic detail", StringComparison.Ordinal));
@@ -644,7 +645,7 @@ public sealed class CliApplicationTests
         var application = new CliApplication(static (_, _) => Task.FromResult(SuccessfulResponse));
         using var output = new FailingWriter();
 
-        await Assert.ThrowsExceptionAsync<IOException>(() => application.RunAsync(arguments.Split(' '), output, output));
+        await Assert.ThrowsExactlyAsync<IOException>(() => application.RunAsync(arguments.Split(' '), output, output, TestContext.CancellationToken));
 
         Assert.AreEqual(1, output.Attempts);
     }
@@ -664,7 +665,7 @@ public sealed class CliApplicationTests
             using var stdout = new StringWriter(CultureInfo.InvariantCulture);
             using var stderr = new StringWriter(CultureInfo.InvariantCulture);
 
-            Assert.AreEqual(1, await application.RunAsync(new[] { "@" + path }, stdout, stderr));
+            Assert.AreEqual(1, await application.RunAsync(new[] { "@" + path }, stdout, stderr, TestContext.CancellationToken));
 
             using var response = JsonDocument.Parse(stdout.ToString());
             Assert.AreEqual("EXECUTION_FAILED", response.RootElement.GetProperty("error").GetProperty("code").GetString());
@@ -686,4 +687,6 @@ public sealed class CliApplicationTests
             throw new IOException("Output unavailable.");
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

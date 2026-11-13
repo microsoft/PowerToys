@@ -16,6 +16,7 @@ using Moq;
 
 namespace Microsoft.CmdPal.Ext.Shell.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class RunItemShortcutTests
 {

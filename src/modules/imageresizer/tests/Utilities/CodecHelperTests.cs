@@ -13,6 +13,7 @@ using Windows.Graphics.Imaging;
 
 namespace ImageResizer.Utilities
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CodecHelperTests
     {
@@ -33,7 +34,7 @@ namespace ImageResizer.Utilities
             Assert.AreEqual(BitmapEncoder.PngEncoderId, CodecHelper.GetEncoderIdFromLegacyGuid(Guid.Empty));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public async Task WmPhotoFallbackEncodesDecodableJpegXr(bool removeMetadata)
@@ -95,7 +96,7 @@ namespace ImageResizer.Utilities
                         new BitmapTransform(),
                         ExifOrientationMode.IgnoreExifOrientation,
                         ColorManagementMode.DoNotColorManage);
-                    Assert.AreEqual(32 * 32 * 4, pixels.DetachPixelData().Length);
+                    Assert.HasCount(32 * 32 * 4, pixels.DetachPixelData());
                 });
         }
     }

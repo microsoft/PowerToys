@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Helpers
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ThrottledActionInvokerTests
     {
@@ -17,7 +18,7 @@ namespace ColorPicker.UnitTests.Helpers
             // MSTest runs on a worker thread that has no DispatcherQueue, so the
             // ctor's GetForCurrentThread() guard must throw. This also proves the
             // timer is bound at construction time (not lazily).
-            Assert.ThrowsException<InvalidOperationException>(() => new ThrottledActionInvoker());
+            Assert.ThrowsExactly<InvalidOperationException>(() => new ThrottledActionInvoker());
         }
     }
 }

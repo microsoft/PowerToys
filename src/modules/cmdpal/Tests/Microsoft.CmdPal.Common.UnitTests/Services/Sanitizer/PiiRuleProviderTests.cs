@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.UnitTests.TestUtils;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Services.Sanitizer;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class PiiRuleProviderTests
 {
@@ -22,14 +23,14 @@ public class PiiRuleProviderTests
 
         // Assert
         var ruleList = new List<SanitizationRule>(rules);
-        Assert.AreEqual(4, ruleList.Count);
+        Assert.HasCount(4, ruleList);
         Assert.AreEqual("Email addresses", ruleList[0].Description);
         Assert.AreEqual("Social Security Numbers", ruleList[1].Description);
         Assert.AreEqual("Credit card numbers", ruleList[2].Description);
         Assert.AreEqual("Phone numbers", ruleList[3].Description);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Contact me at john.doe@contoso.com", "Contact me at [EMAIL_REDACTED]")]
     [DataRow("Contact me at a_b-c%2@foo-bar.example.co.uk", "Contact me at [EMAIL_REDACTED]")]
     [DataRow("My email is john@sub-domain.contoso.com.", "My email is [EMAIL_REDACTED].")]
@@ -47,7 +48,7 @@ public class PiiRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Call me at 123-456-7890", "Call me at [PHONE_REDACTED]")]
     [DataRow("My number is (123) 456-7890.", "My number is [PHONE_REDACTED].")]
     [DataRow("Office: +1 123 456 7890", "Office: [PHONE_REDACTED]")]
@@ -69,7 +70,7 @@ public class PiiRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("My SSN is 123-45-6789", "My SSN is [SSN_REDACTED]")]
     [DataRow("No SSN here", "No SSN here")]
     public void SsnRules_ShouldMaskSsn(string input, string expected)
@@ -84,7 +85,7 @@ public class PiiRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("My credit card number is 1234-5678-9012-3456", "My credit card number is [CARD_REDACTED]")]
     [DataRow("My credit card number is 1234567890123456", "My credit card number is [CARD_REDACTED]")]
     [DataRow("No credit card here", "No credit card here")]
@@ -100,7 +101,7 @@ public class PiiRuleProviderTests
         Assert.AreEqual(expected, result);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Error code: 0x80070005", "Error code: 0x80070005")]
     [DataRow("Error code: -2147467262", "Error code: -2147467262")]
     [DataRow("GUID: 123e4567-e89b-12d3-a456-426614174000", "GUID: 123e4567-e89b-12d3-a456-426614174000")]

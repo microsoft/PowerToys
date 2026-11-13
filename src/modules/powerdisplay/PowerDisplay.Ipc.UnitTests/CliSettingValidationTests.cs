@@ -12,6 +12,7 @@ namespace PowerDisplay.Ipc.UnitTests;
 /// Tests for <see cref="CliSettingValidation"/> — the single source of the discrete supported-value
 /// rule shared by the <c>set</c> command and the <c>apply-profile</c> outcomes path.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class CliSettingValidationTests
 {

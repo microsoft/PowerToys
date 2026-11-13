@@ -13,6 +13,7 @@ namespace PowerDisplay.UnitTests;
 /// Behavior tests for pure linked-brightness decision logic. These cover review-flagged seed
 /// cases without needing a WinUI DispatcherQueue.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class LinkedBrightnessPlannerTests
 {

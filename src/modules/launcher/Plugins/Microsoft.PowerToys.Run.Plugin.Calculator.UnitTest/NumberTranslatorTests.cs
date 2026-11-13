@@ -9,10 +9,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class NumberTranslatorTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null, "en-US")]
         [DataRow("de-DE", null)]
         public void Create_ThrowError_WhenCalledNullOrEmpty(string sourceCultureName, string targetCultureName)
@@ -22,10 +23,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             CultureInfo targetCulture = targetCultureName != null ? new CultureInfo(targetCultureName) : null;
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
+            Assert.ThrowsExactly<ArgumentNullException>(() => NumberTranslator.Create(sourceCulture, targetCulture));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en-US", "en-US")]
         [DataRow("en-EN", "en-US")]
         [DataRow("de-DE", "en-US")]
@@ -42,7 +43,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsNotNull(translator);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         public void Translate_ThrowError_WhenCalledNull(string input)
         {
@@ -50,10 +51,10 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             var translator = NumberTranslator.Create(new CultureInfo("de-DE", false), new CultureInfo("en-US", false));
 
             // Act
-            Assert.ThrowsException<ArgumentNullException>(() => translator.Translate(input));
+            Assert.ThrowsExactly<ArgumentNullException>(() => translator.Translate(input));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("")]
         [DataRow(" ")]
         public void Translate_WhenCalledEmpty(string input)
@@ -68,7 +69,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(input, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("2,0 * 2", "2.0 * 2")]
         [DataRow("4 * 3,6 + 9", "4 * 3.6 + 9")]
         [DataRow("5,2+6", "5.2+6")]
@@ -88,7 +89,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("2.0 * 2", "2,0 * 2")]
         [DataRow("4 * 3.6 + 9", "4 * 3,6 + 9")]
         [DataRow("5.2+6", "5,2+6")]
@@ -107,7 +108,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(".", ",", "2,000,000", "2000000")]
         [DataRow(".", ",", "2,000,000.6", "2000000.6")]
         [DataRow(",", ".", "2.000.000", "2000000")]
@@ -133,7 +134,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("de-DE", "12,0004", "12.0004")]
         [DataRow("de-DE", "0xF000", "0xF000")]
         [DataRow("de-DE", "0", "0")]
@@ -165,7 +166,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(expectedResult, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en-US", "0xF000", "0xF000")]
         [DataRow("en-US", "0xf4572220", "4099351072")]
         [DataRow("en-US", "0x12345678", "305419896")]

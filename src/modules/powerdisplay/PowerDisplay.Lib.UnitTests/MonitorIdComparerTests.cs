@@ -7,6 +7,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class MonitorIdComparerTests
 {
@@ -43,7 +44,7 @@ public class MonitorIdComparerTests
     {
         var set = new System.Collections.Generic.HashSet<string>(MonitorIdComparer.Instance) { Upper };
 
-        Assert.IsTrue(set.Contains(Lower), "A monitor-Id-keyed set must match regardless of casing");
-        Assert.IsFalse(set.Contains(DifferentUid));
+        Assert.Contains(Lower, set, "A monitor-Id-keyed set must match regardless of casing");
+        Assert.DoesNotContain(DifferentUid, set);
     }
 }

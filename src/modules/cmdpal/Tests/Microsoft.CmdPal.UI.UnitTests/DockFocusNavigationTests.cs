@@ -11,6 +11,7 @@ using Windows.System;
 
 namespace Microsoft.CmdPal.UI.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class DockFocusNavigationTests
 {
@@ -183,7 +184,7 @@ public class DockFocusNavigationTests
         });
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(new[] { expectedIndex }, attempts);
+        Assert.AreSequenceEqual(new[] { expectedIndex }, attempts);
     }
 
     [TestMethod]
@@ -227,7 +228,7 @@ public class DockFocusNavigationTests
             reverse: reverse);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -243,7 +244,7 @@ public class DockFocusNavigationTests
         });
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -259,7 +260,7 @@ public class DockFocusNavigationTests
         });
 
         Assert.IsFalse(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -297,7 +298,7 @@ public class DockFocusNavigationTests
             wrap: false);
 
         Assert.IsFalse(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -317,7 +318,7 @@ public class DockFocusNavigationTests
             wrap: false);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -341,7 +342,7 @@ public class DockFocusNavigationTests
             reverse: true);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(new[] { expectedIndex }, attempts);
+        Assert.AreSequenceEqual(new[] { expectedIndex }, attempts);
     }
 
     [TestMethod]
@@ -361,7 +362,7 @@ public class DockFocusNavigationTests
             reverse: true);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -381,7 +382,7 @@ public class DockFocusNavigationTests
             reverse: true);
 
         Assert.IsFalse(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -421,7 +422,7 @@ public class DockFocusNavigationTests
             reverse: true);
 
         Assert.IsFalse(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -442,7 +443,7 @@ public class DockFocusNavigationTests
             reverse: true);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]
@@ -467,7 +468,7 @@ public class DockFocusNavigationTests
             rememberedIndex: rememberedIndex);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(new[] { rememberedIndex }, attempts);
+        Assert.AreSequenceEqual(new[] { rememberedIndex }, attempts);
     }
 
     [TestMethod]
@@ -489,7 +490,7 @@ public class DockFocusNavigationTests
             rememberedIndex: 1);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(new[] { expectedIndex }, attempts);
+        Assert.AreSequenceEqual(new[] { expectedIndex }, attempts);
     }
 
     [TestMethod]
@@ -514,7 +515,7 @@ public class DockFocusNavigationTests
             rememberedIndex: rememberedIndex);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(new[] { expectedIndex }, attempts);
+        Assert.AreSequenceEqual(new[] { expectedIndex }, attempts);
     }
 
     [TestMethod]
@@ -537,7 +538,7 @@ public class DockFocusNavigationTests
             rememberedIndex: 1);
 
         Assert.IsTrue(result);
-        CollectionAssert.AreEqual(new[] { 1, expectedIndex }, attempts);
+        Assert.AreSequenceEqual(new[] { 1, expectedIndex }, attempts);
     }
 
     [TestMethod]
@@ -563,7 +564,7 @@ public class DockFocusNavigationTests
             rememberedIndex: 1);
 
         Assert.IsFalse(result);
-        CollectionAssert.AreEqual(expectedAttempts, attempts);
+        Assert.AreSequenceEqual(expectedAttempts, attempts);
     }
 
     [TestMethod]

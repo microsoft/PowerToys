@@ -6,10 +6,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class BracketHelperTests
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("\t \r\n")]
@@ -31,7 +32,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.IsTrue(result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("((((", "only opening brackets")]
         [DataRow("]]]", "only closing brackets")]
         [DataRow("([)(])", "inner bracket mismatch")]

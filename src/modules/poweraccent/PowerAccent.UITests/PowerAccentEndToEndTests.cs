@@ -9,6 +9,7 @@ using static PowerAccent.UITests.PowerAccentTestHelper;
 
 namespace PowerAccent.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class PowerAccentEndToEndTests : UITestBase
 {
@@ -79,8 +80,9 @@ public sealed class PowerAccentEndToEndTests : UITestBase
         // List height is a proxy for the visibility-bound spacer, not the scrollbar's
         // pixels.
         const double roundingToleranceDip = 1;
-        Assert.IsTrue(
-            heights[0] > heights[1] + roundingToleranceDip,
+        Assert.IsGreaterThan(
+            heights[1] + roundingToleranceDip,
+            heights[0],
             $"Scrollbar spacing should collapse for the short list: long={heights[0]} DIPs, short={heights[1]} DIPs.");
         Assert.AreEqual(
             heights[0],
@@ -171,7 +173,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
             "The new selection must use the French list, not the retained two-item Currency list.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Left", "è")]
     [DataRow("Right", "ê")]
     [TestCategory("PowerAccent")]
@@ -270,7 +272,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
             });
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow((int)ActivationKey.LeftRightArrow, "Right")]
     [DataRow((int)ActivationKey.Space, "Space")]
     [DataRow((int)ActivationKey.Both, "Right")]
@@ -341,7 +343,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
             toolbar =>
             {
                 Assert.AreEqual("$", GetSelectedCharacter(toolbar, CurrencySCharacters));
-                CollectionAssert.AreEqual(
+                Assert.AreSequenceEqual(
                     CurrencySCharacters,
                     GetCharactersInVisualOrder(toolbar, CurrencySCharacters).ToArray(),
                     "Currency should expose only the configured S mappings in source order.");
@@ -349,7 +351,7 @@ public sealed class PowerAccentEndToEndTests : UITestBase
         Assert.AreEqual("$", result, "Currency should commit the first S currency character.");
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("Top center", "Center", "Top")]
     [DataRow("Bottom center", "Center", "Bottom")]
     [DataRow("Left", "Left", "Center")]

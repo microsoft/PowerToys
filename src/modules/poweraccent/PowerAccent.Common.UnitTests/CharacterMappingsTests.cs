@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace PowerAccent.Common.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class CharacterMappingsTests
 {
@@ -43,12 +44,13 @@ public sealed class CharacterMappingsTests
                     mappings,
                     $"Language.{entry.Id} has a null mappings array for key {key}.");
 
-                Assert.IsTrue(
-                    mappings.Length > 0,
+                Assert.IsNotEmpty(
+                    mappings,
                     $"Language.{entry.Id} has an empty mappings array for key {key}.");
 
-                Assert.IsFalse(
-                    mappings.Any(c => string.IsNullOrEmpty(c)),
+                Assert.DoesNotContain(
+                    c => string.IsNullOrEmpty(c),
+                    mappings,
                     $"Language.{entry.Id} has null or empty string(s) in its mappings array for key {key}.");
             }
         }
@@ -138,8 +140,9 @@ public sealed class CharacterMappingsTests
                 continue;
             }
 
-            Assert.IsTrue(
-                usedGroups.Contains(group),
+            Assert.Contains(
+                group,
+                usedGroups,
                 $"LanguageGroup.{group} is defined in the enum but no entry in CharacterMappings.All uses it.");
         }
     }
@@ -150,7 +153,7 @@ public sealed class CharacterMappingsTests
     public void GetCharacters_EmptyLanguages_ReturnsEmpty()
     {
         var result = CharacterMappings.GetCharacters(LetterKey.VK_A, []);
-        Assert.AreEqual(0, result.Length);
+        Assert.IsEmpty(result);
     }
 
     // GetCharacters with all languages must return a non-empty result for a key that is
@@ -160,7 +163,7 @@ public sealed class CharacterMappingsTests
     {
         var allLangs = Enum.GetValues<Language>();
         var result = CharacterMappings.GetCharacters(LetterKey.VK_A, allLangs);
-        Assert.IsTrue(result.Length > 0, "Expected at least one character for VK_A across all languages.");
+        Assert.IsNotEmpty(result, "Expected at least one character for VK_A across all languages.");
     }
 
     // GetCharacters must deduplicate characters that appear in multiple languages.
@@ -171,9 +174,10 @@ public sealed class CharacterMappingsTests
         var allLangs = Enum.GetValues<Language>();
         var result = CharacterMappings.GetCharacters(LetterKey.VK_A, allLangs);
         var distinct = result.Distinct().ToArray();
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             distinct,
             result,
+            SequenceOrder.InAnyOrder,
             "GetCharacters returned duplicate characters. Results should be deduplicated.");
     }
 
@@ -185,7 +189,7 @@ public sealed class CharacterMappingsTests
         var allLangs = Enum.GetValues<Language>();
         var first = CharacterMappings.GetCharacters(LetterKey.VK_E, allLangs);
         var second = CharacterMappings.GetCharacters(LetterKey.VK_E, allLangs);
-        CollectionAssert.AreEqual(first, second, "Cached and non-cached results for VK_E differ.");
+        Assert.AreSequenceEqual(first, second, "Cached and non-cached results for VK_E differ.");
     }
 
     // GetCharacters for a single language should return exactly that language's
@@ -199,9 +203,10 @@ public sealed class CharacterMappingsTests
 
         var result = CharacterMappings.GetCharacters(key, [langInfo.Id]);
 
-        CollectionAssert.AreEquivalent(
+        Assert.AreSequenceEqual(
             expected,
             result,
+            SequenceOrder.InAnyOrder,
             $"GetCharacters for Language.{langInfo.Id} / LetterKey.{key} did not match the mapped characters.");
     }
 
@@ -239,7 +244,7 @@ public sealed class CharacterMappingsTests
             .Distinct()
             .ToArray();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             expectedOrder,
             result,
             "GetCharacters did not return characters in the expected order based on GroupDisplayOrder and DisplayOrder.");
@@ -256,8 +261,9 @@ public sealed class CharacterMappingsTests
         var displayOrderSet = CharacterMappings.DisplayOrder.ToHashSet();
         foreach (var entry in CharacterMappings.All)
         {
-            Assert.IsTrue(
-                displayOrderSet.Contains(entry.Id),
+            Assert.Contains(
+                entry.Id,
+                displayOrderSet,
                 $"Language.{entry.Id} is in All but missing from DisplayOrder. Add it to DisplayOrder to prevent a KeyNotFoundException at runtime.");
         }
     }
@@ -274,9 +280,8 @@ public sealed class CharacterMappingsTests
 
         var result = CharacterMappings.GetCharacters(absentKey, [langInfo.Id]);
 
-        Assert.AreEqual(
-            0,
-            result.Length,
+        Assert.IsEmpty(
+            result,
             $"Expected empty result for Language.{langInfo.Id} / LetterKey.{absentKey}, which has no mapping.");
     }
 
@@ -294,7 +299,7 @@ public sealed class CharacterMappingsTests
 
         var sorted = spokenLangs.OrderBy(l => l, StringComparer.OrdinalIgnoreCase).ToList();
 
-        CollectionAssert.AreEqual(
+        Assert.AreSequenceEqual(
             sorted,
             spokenLangs,
             "Spoken languages in DisplayOrder should be sorted alphabetically by their enum names.");

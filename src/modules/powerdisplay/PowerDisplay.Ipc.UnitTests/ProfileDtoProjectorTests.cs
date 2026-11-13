@@ -11,6 +11,7 @@ using PowerDisplay.Models;
 
 namespace PowerDisplay.Ipc.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ProfileDtoProjectorTests
 {
@@ -23,7 +24,7 @@ public class ProfileDtoProjectorTests
         var result = ProfileDtoProjector.BuildProfileListResult(profiles);
 
         Assert.IsNotNull(result);
-        Assert.AreEqual(0, result.Profiles.Count);
+        Assert.IsEmpty(result.Profiles);
         Assert.AreEqual("profiles", result.Command);
     }
 
@@ -49,7 +50,7 @@ public class ProfileDtoProjectorTests
 
         var result = ProfileDtoProjector.BuildProfileListResult(profiles);
 
-        Assert.AreEqual(1, result.Profiles.Count);
+        Assert.HasCount(1, result.Profiles);
         var info = result.Profiles[0];
         Assert.AreEqual("Night", info.Name);
         Assert.AreEqual(2, info.MonitorCount);
@@ -61,7 +62,7 @@ public class ProfileDtoProjectorTests
     [TestMethod]
     public void BuildProfileListResult_NullProfiles_ThrowsArgumentNullException()
     {
-        Assert.ThrowsException<ArgumentNullException>(
+        Assert.ThrowsExactly<ArgumentNullException>(
             () => ProfileDtoProjector.BuildProfileListResult(null!));
     }
 
@@ -96,7 +97,7 @@ public class ProfileDtoProjectorTests
 
         var result = ProfileDtoProjector.BuildProfileListResult(profiles);
 
-        Assert.AreEqual(2, result.Profiles.Count);
+        Assert.HasCount(2, result.Profiles);
         Assert.AreEqual(4, result.Profiles[0].Id);
         Assert.AreEqual(1, result.Profiles[1].Id);
     }

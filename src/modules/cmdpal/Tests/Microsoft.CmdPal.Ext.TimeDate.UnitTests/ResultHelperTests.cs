@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.TimeDate.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ResultHelperTests
 {
@@ -60,7 +61,7 @@ public class ResultHelperTests
         AvailableResult? availableResult = null;
 
         // Act & Assert
-        Assert.ThrowsException<System.NullReferenceException>(() => availableResult!.ToListItem());
+        Assert.ThrowsExactly<System.NullReferenceException>(() => availableResult!.ToListItem());
     }
 
     [TestMethod]

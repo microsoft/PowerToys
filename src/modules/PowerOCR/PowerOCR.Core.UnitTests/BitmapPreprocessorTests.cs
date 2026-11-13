@@ -9,6 +9,7 @@ using PowerOCR.Core.Imaging;
 
 namespace PowerOCR.Core.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class BitmapPreprocessorTests
 {

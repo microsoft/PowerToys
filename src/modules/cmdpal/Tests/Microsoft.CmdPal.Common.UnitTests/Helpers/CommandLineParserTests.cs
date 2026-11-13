@@ -8,6 +8,7 @@ using Microsoft.CmdPal.Common.Helpers;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Helpers;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public class CommandLineParserTests
 {
@@ -40,7 +41,7 @@ public class CommandLineParserTests
             """);
 
         string[] expected = ["app.exe", "two words", string.Empty, "C:\\path with spaces\\", "a\"b", "příliš žluťoučký"];
-        CollectionAssert.AreEqual(expected, arguments);
+        Assert.AreSequenceEqual(expected, arguments);
     }
 
     [TestMethod]
@@ -49,6 +50,6 @@ public class CommandLineParserTests
         var arguments = CommandLineParser.ParseArguments("a\\\"b \"\"");
 
         string[] expected = ["a\"b", string.Empty];
-        CollectionAssert.AreEqual(expected, arguments);
+        Assert.AreSequenceEqual(expected, arguments);
     }
 }

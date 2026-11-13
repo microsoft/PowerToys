@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class WinAppSandboxProtocolTests
 {
@@ -15,7 +16,7 @@ public sealed class WinAppSandboxProtocolTests
     private static readonly Guid Instance = Guid.Parse("d2b96d2f-5b49-42d1-9576-227250294fb0");
     private static readonly Guid UnrelatedInstance = Guid.Parse("638638e2-b7c3-4f31-b779-cb7715cb0145");
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(nameof(WinAppSandboxPrerequisite.UserPackageRegistration), "Exactly one", "registered for this user")]
     [DataRow(nameof(WinAppSandboxPrerequisite.UserExecutionAlias), "WindowsApps", "reparse point")]
     [DataRow(nameof(WinAppSandboxPrerequisite.PackageExecutable), "registered modern Sandbox package", "wsb.exe")]
@@ -26,11 +27,11 @@ public sealed class WinAppSandboxProtocolTests
         var error = new WinAppSandboxException(Enum.Parse<WinAppSandboxPrerequisite>(prerequisite));
         Assert.AreEqual("trusted_provider_unavailable", error.Code);
         Assert.IsNull(error.ExitCode);
-        StringAssert.StartsWith(error.Message, "BLOCKED_INFRASTRUCTURE:");
-        StringAssert.Contains(error.Message, "current interactive test user");
-        StringAssert.Contains(error.Message, expectedEvidence);
-        StringAssert.Contains(error.Message, expectedRequirement);
-        StringAssert.Contains(error.Message, "No fallback was attempted");
+        Assert.StartsWith("BLOCKED_INFRASTRUCTURE:", error.Message);
+        Assert.Contains("current interactive test user", error.Message);
+        Assert.Contains(expectedEvidence, error.Message);
+        Assert.Contains(expectedRequirement, error.Message);
+        Assert.Contains("No fallback was attempted", error.Message);
     }
 
     [TestMethod]
@@ -43,7 +44,8 @@ public sealed class WinAppSandboxProtocolTests
     }
 
     [TestMethod]
-    public void GuestLoginProbeRequiresAnExplicitSuccessfulGuestExitCode()
+    [DataRow(unchecked((int)0x80070520), WinAppSandboxProtocol.NoSuchLogonSession)]
+    public void GuestLoginProbeRequiresAnExplicitSuccessfulGuestExitCode(int expectedNoSuchLogonSession, int actualNoSuchLogonSession)
     {
         WinAppSandboxProtocol.RequireGuestCommandSuccess("""{"ExitCode":0}""");
         foreach (var invalid in new[] { "{}", """{"ExitCode":null}""", """{"ExitCode":"0"}""", """{"ExitCode":0,"ExitCode":1}""" })
@@ -54,7 +56,7 @@ public sealed class WinAppSandboxProtocolTests
         var error = Assert.ThrowsExactly<WinAppSandboxException>(() =>
             WinAppSandboxProtocol.RequireGuestCommandSuccess("""{"ExitCode":7}"""));
         Assert.AreEqual(7, error.ExitCode);
-        Assert.AreEqual(unchecked((int)0x80070520), WinAppSandboxProtocol.NoSuchLogonSession);
+        Assert.AreEqual(expectedNoSuchLogonSession, actualNoSuchLogonSession);
     }
 
     [TestMethod]
@@ -91,7 +93,7 @@ public sealed class WinAppSandboxProtocolTests
         Assert.IsFalse(unconfirmed);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void ContradictoryOrMalformedInventoryRequiresPreservingOwnershipEvidence(bool malformed)
@@ -105,7 +107,7 @@ public sealed class WinAppSandboxProtocolTests
         Assert.IsTrue(unconfirmed);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("")]
     [DataRow("null")]
     [DataRow("{}")]
@@ -146,7 +148,7 @@ public sealed class WinAppSandboxProtocolTests
         Assert.ThrowsExactly<WinAppSandboxException>(() => WinAppSandboxProtocol.RequireAdoptedState([state.ToJsonString()], Instance));
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("instanceId", "638638e2-b7c3-4f31-b779-cb7715cb0145")]
     [DataRow("instanceOrigin", "Created")]
     [DataRow("instanceOrigin", "RecoveredStart")]
@@ -232,12 +234,16 @@ public sealed class WinAppSandboxProtocolTests
     [TestMethod]
     public void StructuredErrorsExportOnlyAllowlistedCodesNeverMessagesOrTokens()
     {
-        Assert.AreEqual("sandbox_unsupported", WinAppSandboxProtocol.SafeErrorCode(
+        Assert.AreEqual(
+            "sandbox_unsupported",
+            WinAppSandboxProtocol.SafeErrorCode(
             """{"error":{"code":"sandbox_unsupported","message":"secret","context":{"psk":"secret"}}}"""));
         Assert.AreEqual("command_failed", WinAppSandboxProtocol.SafeErrorCode("""{"error":{"code":"secret"}}"""));
         Assert.AreEqual("command_failed", WinAppSandboxProtocol.SafeErrorCode("worker wrote a secret"));
         Assert.AreEqual("command_failed", WinAppSandboxProtocol.SafeErrorCode("""{"error":"secret"}"""));
-        Assert.AreEqual("command_failed", WinAppSandboxProtocol.SafeErrorCode(
+        Assert.AreEqual(
+            "command_failed",
+            WinAppSandboxProtocol.SafeErrorCode(
             """{"error":{"code":"sandbox_unsupported","code":"secret"}}"""));
     }
 

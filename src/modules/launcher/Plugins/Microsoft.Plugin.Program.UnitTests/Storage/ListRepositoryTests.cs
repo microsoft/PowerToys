@@ -9,6 +9,7 @@ using Wox.Infrastructure.Storage;
 
 namespace Microsoft.Plugin.Program.UnitTests.Storage
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ListRepositoryTests
     {
@@ -68,7 +69,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             }
 
             // Act - Begin iterating on one thread
-            var iterationTask = Task.Run(() =>
+            var iterationTask = Task.Run(
+                () =>
             {
                 var remainingIterations = 10000;
                 while (remainingIterations > 0)
@@ -80,16 +82,19 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
                     --remainingIterations;
                 }
-            });
+            },
+                TestContext.CancellationToken);
 
             // Act - Insert on another thread
-            var addTask = Task.Run(() =>
+            var addTask = Task.Run(
+                () =>
            {
                for (var i = 0; i < numItems; ++i)
                {
                    repository.Add($"NewItem_{i}");
                }
-           });
+           },
+                TestContext.CancellationToken);
 
             // Assert that this does not throw.  Collections that aren't synchronized will throw an invalidoperatioexception if the list is modified while enumerating
             await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
@@ -107,7 +112,8 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
             }
 
             // Act - Begin iterating on one thread
-            var iterationTask = Task.Run(() =>
+            var iterationTask = Task.Run(
+                () =>
             {
                 var remainingIterations = 10000;
                 while (remainingIterations > 0)
@@ -119,19 +125,24 @@ namespace Microsoft.Plugin.Program.UnitTests.Storage
 
                     --remainingIterations;
                 }
-            });
+            },
+                TestContext.CancellationToken);
 
             // Act - Remove on another thread
-            var addTask = Task.Run(() =>
+            var addTask = Task.Run(
+                () =>
             {
                 for (var i = 0; i < numItems; ++i)
                 {
                     repository.Remove($"OriginalItem_{i}");
                 }
-            });
+            },
+                TestContext.CancellationToken);
 
             // Assert that this does not throw.  Collections that aren't synchronized will throw an invalidoperatioexception if the list is modified while enumerating
             await Task.WhenAll(new Task[] { iterationTask, addTask }).ConfigureAwait(false);
         }
+
+        public TestContext TestContext { get; set; } = null!;
     }
 }

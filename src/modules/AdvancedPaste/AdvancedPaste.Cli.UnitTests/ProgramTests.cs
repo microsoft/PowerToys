@@ -18,13 +18,14 @@ using Windows.ApplicationModel.DataTransfer;
 namespace AdvancedPaste.Cli.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class ProgramTests
 {
     [TestMethod]
     public async Task RootVersionOption_PrintsVersionAndSucceedsWithoutRunningAnAction()
     {
         var clipboard = new TestClipboardAdapter("clipboard input");
-        var result = await RunAsync(["--version"], clipboard: clipboard);
+        var result = await RunAsync(["--version"], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(Program.SuccessExitCode, result.ExitCode);
         Assert.IsFalse(string.IsNullOrWhiteSpace(result.Stdout));
@@ -37,25 +38,25 @@ public class ProgramTests
     [TestMethod]
     public async Task VersionOption_IsRootOnly()
     {
-        var result = await RunAsync(["transform", "--version"]);
+        var result = await RunAsync(["transform", "--version"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(Program.ArgumentErrorExitCode, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "version");
+        Assert.Contains("version", result.Stderr);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("--action")]
     [DataRow("--format")]
     public async Task StdinToStdout_TransformsJson(string actionOption)
     {
-        var result = await RunAsync(["transform", actionOption, "json", "--stdin", "--stdout"], "name,age\r\nAda,37");
+        var result = await RunAsync(["transform", actionOption, "json", "--stdin", "--stdout"], "name,age\r\nAda,37", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
-        StringAssert.Contains(result.Stdout, "\"Ada\"");
+        Assert.Contains("\"Ada\"", result.Stdout);
         Assert.AreEqual(string.Empty, result.Stderr);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("--input", "--output")]
     [DataRow("-i", "-o")]
     public async Task FileInputAndOutput_TransformsMarkdown(string inputOption, string outputOption)
@@ -64,11 +65,11 @@ public class ProgramTests
         var outputPath = Path.GetTempFileName();
         try
         {
-            await File.WriteAllTextAsync(inputPath, "<p>Hello <strong>world</strong></p>");
-            var result = await RunAsync(["transform", "--format", "markdown", inputOption, inputPath, outputOption, outputPath]);
+            await File.WriteAllTextAsync(inputPath, "<p>Hello <strong>world</strong></p>", TestContext.CancellationToken);
+            var result = await RunAsync(["transform", "--format", "markdown", inputOption, inputPath, outputOption, outputPath], cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(0, result.ExitCode);
-            StringAssert.Contains(await File.ReadAllTextAsync(outputPath), "Hello **world**");
+            Assert.Contains("Hello **world**", await File.ReadAllTextAsync(outputPath, TestContext.CancellationToken));
         }
         finally
         {
@@ -87,10 +88,11 @@ public class ProgramTests
         {
             var result = await RunAsync(
                 ["transform", "--format", "plain-text", "--stdin", "--output", outputPath],
-                "hello");
+                "hello",
+                cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(0, result.ExitCode);
-            Assert.AreEqual("hello", await File.ReadAllTextAsync(outputPath));
+            Assert.AreEqual("hello", await File.ReadAllTextAsync(outputPath, TestContext.CancellationToken));
         }
         finally
         {
@@ -105,7 +107,7 @@ public class ProgramTests
     public async Task ClipboardInputAndOutput_UsesClipboardAdapter()
     {
         var clipboard = new TestClipboardAdapter("text");
-        var result = await RunAsync(["transform", "--format", "plain-text", "--clipboard"], clipboard: clipboard);
+        var result = await RunAsync(["transform", "--format", "plain-text", "--clipboard"], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual("text", await clipboard.WrittenContent!.GetView().GetTextAsync());
@@ -115,14 +117,14 @@ public class ProgramTests
     public async Task DefaultOutput_WritesClipboardAndNotStdout()
     {
         var clipboard = new TestClipboardAdapter();
-        var result = await RunAsync(["transform", "--action", "plain-text", "--stdin"], "hello", clipboard);
+        var result = await RunAsync(["transform", "--action", "plain-text", "--stdin"], "hello", clipboard, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual(string.Empty, result.Stdout);
         Assert.AreEqual("hello", await clipboard.WrittenContent!.GetView().GetTextAsync());
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("json", ".csv", "name,age\r\nAda,37", "\"Ada\"", true)]
     [DataRow("json", ".csv", "name,age\r\nAda,37", "\"Ada\"", false)]
     [DataRow("markdown", ".html", "<p>Hello <strong>world</strong></p>", "Hello **world**", true)]
@@ -133,7 +135,7 @@ public class ProgramTests
         var path = Path.Combine(directory.FullName, $"clipboard{extension}");
         try
         {
-            await File.WriteAllTextAsync(path, text);
+            await File.WriteAllTextAsync(path, text, TestContext.CancellationToken);
             Directory.SetCreationTimeUtc(directory.FullName, DateTime.UtcNow.AddDays(-2));
             var clipboard = new TestClipboardAdapter();
             clipboard.Content.SetStorageItems([await Windows.Storage.StorageFile.GetFileFromPathAsync(path)]);
@@ -144,12 +146,12 @@ public class ProgramTests
                 args.Add("--clipboard");
             }
 
-            var result = await RunAsync(args.ToArray(), clipboard: clipboard);
+            var result = await RunAsync(args.ToArray(), clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(0, result.ExitCode, result.Stderr);
-            StringAssert.Contains(result.Stdout, expected);
+            Assert.Contains(expected, result.Stdout);
             Assert.AreEqual(string.Empty, result.Stderr);
-            Assert.AreEqual(text, await File.ReadAllTextAsync(path));
+            Assert.AreEqual(text, await File.ReadAllTextAsync(path, TestContext.CancellationToken));
             Assert.AreEqual(1, clipboard.ReadCount);
             Assert.IsNull(clipboard.WrittenContent);
             Assert.AreEqual(path, (await clipboard.Content.GetView().GetStorageItemsAsync())[0].Path);
@@ -163,23 +165,23 @@ public class ProgramTests
     [TestMethod]
     public async Task PasteWithAi_RequiresPrompt()
     {
-        var result = await RunAsync(["transform", "--action", "paste-with-ai", "--stdin"], "hello");
+        var result = await RunAsync(["transform", "--action", "paste-with-ai", "--stdin"], "hello", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "prompt");
+        Assert.Contains("prompt", result.Stderr);
     }
 
     [TestMethod]
     public async Task ActionsListJson_IsMachineReadable()
     {
-        var result = await RunAsync(["actions", "list", "--json"]);
+        var result = await RunAsync(["actions", "list", "--json"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stdout);
         Assert.AreEqual("plain-text", document.RootElement[0].GetProperty("name").GetString());
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("--json")]
     [DataRow("--json=true")]
     public async Task ProvidersListJson_ListsConfiguredIdsWithoutReadingClipboard(string jsonOption)
@@ -187,7 +189,7 @@ public class ProgramTests
         var clipboard = new TestClipboardAdapter("unused clipboard");
         var runtime = new TestRuntime(providers: [new("provider-id", "local model", "Ollama", "llama3.2:3b", true, true)]);
 
-        var result = await RunAsync(["providers", "list", jsonOption], clipboard: clipboard, runtime: runtime);
+        var result = await RunAsync(["providers", "list", jsonOption], clipboard: clipboard, runtime: runtime, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual(0, clipboard.ReadCount);
@@ -205,47 +207,49 @@ public class ProgramTests
     [TestMethod]
     public async Task ProvidersList_ExplainsEmptyConfigurationAndPolicyStatus()
     {
-        var empty = await RunAsync(["providers", "list"]);
+        var empty = await RunAsync(["providers", "list"], cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(0, empty.ExitCode);
-        StringAssert.Contains(empty.Stdout, "PowerToys Settings > Advanced Paste");
+        Assert.Contains("PowerToys Settings > Advanced Paste", empty.Stdout);
 
-        var json = await RunAsync(["providers", "list", "--json"]);
+        var json = await RunAsync(["providers", "list", "--json"], cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual("[]", json.Stdout.Trim());
 
         var runtime = new TestRuntime(providers: [new("blocked-id", "model", "OpenAI", "model", true, false)]);
-        var blocked = await RunAsync(["providers", "list"], runtime: runtime);
-        StringAssert.Contains(blocked.Stdout, "blocked-id");
-        StringAssert.Contains(blocked.Stdout, "[default]");
-        StringAssert.Contains(blocked.Stdout, "[disabled by policy]");
+        var blocked = await RunAsync(["providers", "list"], runtime: runtime, cancellationToken: TestContext.CancellationToken);
+        Assert.Contains("blocked-id", blocked.Stdout);
+        Assert.Contains("[default]", blocked.Stdout);
+        Assert.Contains("[disabled by policy]", blocked.Stdout);
     }
 
     [TestMethod]
     public async Task ProvidersCommand_RequiresListAndReportsMatchingUsage()
     {
-        var incomplete = await RunAsync(["providers"]);
+        var incomplete = await RunAsync(["providers"], cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(2, incomplete.ExitCode);
-        StringAssert.Contains(incomplete.Stderr, "providers list");
+        Assert.Contains("providers list", incomplete.Stderr);
 
-        var invalid = await RunAsync(["providers", "list", "--json", "--invalid"]);
+        var invalid = await RunAsync(["providers", "list", "--json", "--invalid"], cancellationToken: TestContext.CancellationToken);
         Assert.AreEqual(2, invalid.ExitCode);
         using var document = JsonDocument.Parse(invalid.Stderr);
-        StringAssert.Contains(document.RootElement.GetProperty("usage").GetString(), "providers list [--json]");
+        var usage = document.RootElement.GetProperty("usage").GetString();
+        Assert.IsNotNull(usage);
+        Assert.Contains("providers list [--json]", usage);
         Assert.AreEqual(string.Empty, invalid.Stdout);
     }
 
     [TestMethod]
     public async Task TransformHelp_ExplainsProviderPurposeAndIdDiscovery()
     {
-        var result = await RunAsync(["transform", "--help"]);
+        var result = await RunAsync(["transform", "--help"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         var help = string.Join(" ", result.Stdout.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
-        StringAssert.Contains(help, "AI actions only");
-        StringAssert.Contains(help, "providers list");
-        StringAssert.Contains(help, "service name");
+        Assert.Contains("AI actions only", help);
+        Assert.Contains("providers list", help);
+        Assert.Contains("service name", help);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(new[] { "--help" })]
     [DataRow(new[] { "-h" })]
     [DataRow(new[] { "-?" })]
@@ -254,7 +258,7 @@ public class ProgramTests
     [DataRow(new[] { "actions", "list", "--help" })]
     public async Task Help_DescribesEverySupportedBuiltInAction(string[] args)
     {
-        var result = await RunAsync(args, runtime: new TestRuntime(isEnabled: false));
+        var result = await RunAsync(args, runtime: new TestRuntime(isEnabled: false), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual(string.Empty, result.Stderr);
@@ -262,12 +266,12 @@ public class ProgramTests
         foreach (var action in AdvancedPasteRuntime.GetBuiltInActions())
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(action.Description), action.Name);
-            StringAssert.Contains(help, action.Name);
-            StringAssert.Contains(help, action.Description);
+            Assert.Contains(action.Name, help);
+            Assert.Contains(action.Description, help);
         }
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("plain-text", "provider-id")]
     [DataRow("markdown", "provider-id")]
     [DataRow("json", "provider-id")]
@@ -277,7 +281,8 @@ public class ProgramTests
         var clipboard = new TestClipboardAdapter("unused");
         var result = await RunAsync(
             ["transform", "--action", action, "--provider", provider, "--json"],
-            clipboard: clipboard);
+            clipboard: clipboard,
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
         Assert.AreEqual(0, clipboard.ReadCount);
@@ -288,7 +293,7 @@ public class ProgramTests
     [TestMethod]
     public async Task ActionsListJson_ExplicitTrue_IsMachineReadable()
     {
-        var result = await RunAsync(["actions", "list", "--json=true"]);
+        var result = await RunAsync(["actions", "list", "--json=true"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stdout);
@@ -300,7 +305,8 @@ public class ProgramTests
     {
         var result = await RunAsync(
             ["transform", "--format", "plain-text", "--stdin", "--stdout", "--json", "false"],
-            "hello");
+            "hello",
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual("hello", result.Stdout);
@@ -310,28 +316,30 @@ public class ProgramTests
     [TestMethod]
     public async Task ActionsParentCommand_RequiresListSubcommand()
     {
-        var result = await RunAsync(["actions"]);
+        var result = await RunAsync(["actions"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "actions list");
+        Assert.Contains("actions list", result.Stderr);
     }
 
     [TestMethod]
     public async Task ActionsListJson_ParseErrorIsMachineReadable()
     {
-        var result = await RunAsync(["actions", "list", "--json", "--invalid"]);
+        var result = await RunAsync(["actions", "list", "--json", "--invalid"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
         Assert.AreEqual("error", document.RootElement.GetProperty("status").GetString());
-        StringAssert.Contains(document.RootElement.GetProperty("usage").GetString(), "actions list [--json]");
-        Assert.IsFalse(document.RootElement.GetProperty("usage").GetString()!.Contains(" transform ", StringComparison.Ordinal));
+        var usage = document.RootElement.GetProperty("usage").GetString();
+        Assert.IsNotNull(usage);
+        Assert.Contains("actions list [--json]", usage);
+        Assert.IsFalse(usage.Contains(" transform ", StringComparison.Ordinal));
     }
 
     [TestMethod]
     public async Task PasteWithAi_WithPromptReachesRuntime()
     {
-        var result = await RunAsync(["transform", "--action", "paste-with-ai", "--prompt", "Summarize", "--stdin", "--stdout"], "hello");
+        var result = await RunAsync(["transform", "--action", "paste-with-ai", "--prompt", "Summarize", "--stdin", "--stdout"], "hello", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual("hello", result.Stdout);
@@ -340,7 +348,7 @@ public class ProgramTests
     [TestMethod]
     public async Task SavedCustomAction_ReachesRuntime()
     {
-        var result = await RunAsync(["transform", "--custom-action", "7", "--stdin", "--stdout"], "hello");
+        var result = await RunAsync(["transform", "--custom-action", "7", "--stdin", "--stdout"], "hello", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual("hello", result.Stdout);
@@ -353,34 +361,35 @@ public class ProgramTests
         var result = await RunAsync(
             ["transform", "--action", "paste-as-txt-file", "--stdin", "--stdout", "--json"],
             "hello",
-            runtime: runtime);
+            runtime: runtime,
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "unsupported_output");
+        Assert.Contains("unsupported_output", result.Stderr);
         File.Delete(runtime.OutputPath);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(new[] { "--stdin", "--clipboard" })]
     [DataRow(new[] { "--input", "unused.csv", "--clipboard" })]
     [DataRow(new[] { "--input", "unused.csv", "--stdin" })]
     public async Task ConflictingInputModes_ReturnArgumentError(string[] inputOptions)
     {
         var clipboard = new TestClipboardAdapter("do not read");
-        var result = await RunAsync(["transform", "--format", "json", "--json", .. inputOptions], clipboard: clipboard);
+        var result = await RunAsync(["transform", "--format", "json", "--json", .. inputOptions], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "invalid_input_mode");
+        Assert.Contains("invalid_input_mode", result.Stderr);
         Assert.AreEqual(0, clipboard.ReadCount);
     }
 
     [TestMethod]
     public async Task ConflictingOutputModes_ReturnArgumentError()
     {
-        var result = await RunAsync(["transform", "--format", "json", "--stdin", "--stdout", "--output-clipboard", "--json"]);
+        var result = await RunAsync(["transform", "--format", "json", "--stdin", "--stdout", "--output-clipboard", "--json"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "invalid_");
+        Assert.Contains("invalid_", result.Stderr);
     }
 
     [TestMethod]
@@ -392,7 +401,7 @@ public class ProgramTests
             var clipboard = new TestClipboardAdapter();
             clipboard.Content.SetStorageItems([await Windows.Storage.StorageFile.GetFileFromPathAsync(path)]);
 
-            var result = await RunAsync(["transform", "--action", "json", "--stdout", "--json"], clipboard: clipboard);
+            var result = await RunAsync(["transform", "--action", "json", "--stdout", "--json"], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(1, result.ExitCode);
             using var document = JsonDocument.Parse(result.Stderr);
@@ -409,7 +418,7 @@ public class ProgramTests
     public async Task DefaultInput_EmptyClipboardReturnsRuntimeError()
     {
         var clipboard = new TestClipboardAdapter();
-        var result = await RunAsync(["transform", "--format", "json", "--stdout", "--json"], clipboard: clipboard);
+        var result = await RunAsync(["transform", "--format", "json", "--stdout", "--json"], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         Assert.AreEqual(1, clipboard.ReadCount);
@@ -417,7 +426,7 @@ public class ProgramTests
         Assert.AreEqual("empty_input", document.RootElement.GetProperty("code").GetString());
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public async Task DefaultInput_UsesClipboardEvenWithRedirectedStdin(bool stdout)
@@ -429,7 +438,7 @@ public class ProgramTests
             args.Add("--stdout");
         }
 
-        var result = await RunAsync(args.ToArray(), "unused stdin", clipboard);
+        var result = await RunAsync(args.ToArray(), "unused stdin", clipboard, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode, result.Stderr);
         Assert.AreEqual(1, clipboard.ReadCount);
@@ -448,40 +457,42 @@ public class ProgramTests
     [TestMethod]
     public async Task MissingFormat_ReturnsArgumentError()
     {
-        var result = await RunAsync(["transform", "--stdin", "--json"]);
+        var result = await RunAsync(["transform", "--stdin", "--json"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
         Assert.AreEqual("invalid_action", document.RootElement.GetProperty("code").GetString());
-        StringAssert.Contains(document.RootElement.GetProperty("usage").GetString(), "PowerToys.AdvancedPaste.CLI.exe transform");
+        var usage = document.RootElement.GetProperty("usage").GetString();
+        Assert.IsNotNull(usage);
+        Assert.Contains("PowerToys.AdvancedPaste.CLI.exe transform", usage);
     }
 
     [TestMethod]
     public async Task MissingFile_ReturnsRuntimeError()
     {
-        var result = await RunAsync(["transform", "--format", "json", "--input", Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), "--json"]);
+        var result = await RunAsync(["transform", "--format", "json", "--input", Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")), "--json"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "io_error");
+        Assert.Contains("io_error", result.Stderr);
     }
 
     [TestMethod]
     public async Task EmptyInput_ReturnsRuntimeError()
     {
-        var result = await RunAsync(["transform", "--format", "json", "--stdin", "--json"]);
+        var result = await RunAsync(["transform", "--format", "json", "--stdin", "--json"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "empty_input");
+        Assert.Contains("empty_input", result.Stderr);
     }
 
     [TestMethod]
     public async Task EmptyHtmlFile_ReturnsRuntimeError()
     {
         var inputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.html");
-        await File.WriteAllTextAsync(inputPath, string.Empty);
+        await File.WriteAllTextAsync(inputPath, string.Empty, TestContext.CancellationToken);
         try
         {
-            var result = await RunAsync(["transform", "--format", "plain-text", "--input", inputPath, "--json"]);
+            var result = await RunAsync(["transform", "--format", "plain-text", "--input", inputPath, "--json"], cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(1, result.ExitCode);
             using var document = JsonDocument.Parse(result.Stderr);
@@ -497,7 +508,7 @@ public class ProgramTests
     public async Task OversizedClipboardInput_ReturnsSpecificRuntimeError()
     {
         var clipboard = new TestClipboardAdapter(new string('x', (16 * 1024 * 1024) + 1));
-        var result = await RunAsync(["transform", "--format", "plain-text", "--clipboard", "--json"], clipboard: clipboard);
+        var result = await RunAsync(["transform", "--format", "plain-text", "--clipboard", "--json"], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
@@ -511,7 +522,7 @@ public class ProgramTests
         Directory.CreateDirectory(outputDirectory);
         try
         {
-            var result = await RunAsync(["transform", "--format", "json", "--stdin", "--output", outputDirectory, "--json"], "hello");
+            var result = await RunAsync(["transform", "--format", "json", "--stdin", "--output", outputDirectory, "--json"], "hello", cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(1, result.ExitCode);
             using var document = JsonDocument.Parse(result.Stderr);
@@ -530,8 +541,8 @@ public class ProgramTests
         Directory.CreateDirectory(directory);
         var sourcePath = Path.Combine(directory, "source.txt");
         var outputPath = Path.Combine(directory, "output.txt");
-        await File.WriteAllTextAsync(sourcePath, "generated content");
-        await File.WriteAllTextAsync(outputPath, "existing content");
+        await File.WriteAllTextAsync(sourcePath, "generated content", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(outputPath, "existing content", TestContext.CancellationToken);
 
         try
         {
@@ -550,8 +561,8 @@ public class ProgramTests
                     stdout: TextWriter.Null,
                     cancellationToken: cancellation.Token));
 
-            Assert.AreEqual("existing content", await File.ReadAllTextAsync(outputPath));
-            Assert.AreEqual(0, Directory.GetFiles(directory, ".output.txt.*.tmp").Length);
+            Assert.AreEqual("existing content", await File.ReadAllTextAsync(outputPath, TestContext.CancellationToken));
+            Assert.IsEmpty(Directory.GetFiles(directory, ".output.txt.*.tmp"));
         }
         finally
         {
@@ -565,7 +576,7 @@ public class ProgramTests
         var sourceDirectory = AdvancedPasteTempFileManager.CreateDirectory();
         var sourcePath = Path.Combine(sourceDirectory.FullName, "generated.txt");
         var outputPath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.txt");
-        await File.WriteAllTextAsync(sourcePath, "generated content");
+        await File.WriteAllTextAsync(sourcePath, "generated content", TestContext.CancellationToken);
         var source = await Windows.Storage.StorageFile.GetFileFromPathAsync(sourcePath);
         var package = new DataPackage();
         package.SetStorageItems([source]);
@@ -604,7 +615,7 @@ public class ProgramTests
     {
         var sourceDirectory = AdvancedPasteTempFileManager.CreateDirectory();
         var sourcePath = Path.Combine(sourceDirectory.FullName, "generated.txt");
-        await File.WriteAllTextAsync(sourcePath, "generated content");
+        await File.WriteAllTextAsync(sourcePath, "generated content", TestContext.CancellationToken);
         var source = await Windows.Storage.StorageFile.GetFileFromPathAsync(sourcePath);
         var package = new DataPackage();
         package.SetStorageItems([source]);
@@ -637,7 +648,7 @@ public class ProgramTests
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
         var outputPath = Path.Combine(directory, "output.txt");
-        await File.WriteAllTextAsync(outputPath, "existing content");
+        await File.WriteAllTextAsync(outputPath, "existing content", TestContext.CancellationToken);
 
         try
         {
@@ -655,8 +666,8 @@ public class ProgramTests
                     stdout: TextWriter.Null,
                     cancellationToken: cancellation.Token));
 
-            Assert.AreEqual("existing content", await File.ReadAllTextAsync(outputPath));
-            Assert.AreEqual(0, Directory.GetFiles(directory, ".output.txt.*.tmp").Length);
+            Assert.AreEqual("existing content", await File.ReadAllTextAsync(outputPath, TestContext.CancellationToken));
+            Assert.IsEmpty(Directory.GetFiles(directory, ".output.txt.*.tmp"));
         }
         finally
         {
@@ -707,7 +718,7 @@ public class ProgramTests
     [TestMethod]
     public async Task UnsupportedFormat_ReturnsStableJsonError()
     {
-        var result = await RunAsync(["transform", "--format", "ocr", "--stdin", "--json"]);
+        var result = await RunAsync(["transform", "--format", "ocr", "--stdin", "--json"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
@@ -717,7 +728,7 @@ public class ProgramTests
     [TestMethod]
     public async Task JsonSuccess_IsParseableAndStable()
     {
-        var result = await RunAsync(["transform", "--format", "plain-text", "--stdin", "--json"], "hello");
+        var result = await RunAsync(["transform", "--format", "plain-text", "--stdin", "--json"], "hello", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stdout);
@@ -729,10 +740,10 @@ public class ProgramTests
     [TestMethod]
     public async Task Format_IsCaseInsensitive()
     {
-        var result = await RunAsync(["transform", "--format", "JSON", "--stdin", "--stdout"], "hello");
+        var result = await RunAsync(["transform", "--format", "JSON", "--stdin", "--stdout"], "hello", cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
-        StringAssert.Contains(result.Stdout, "hello");
+        Assert.Contains("hello", result.Stdout);
     }
 
     [TestMethod]
@@ -743,7 +754,7 @@ public class ProgramTests
         var result = await RunAsync(["transform", "--format", "json", "--stdin"], "hello", cancellationToken: cancellation.Token);
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "cancelled");
+        Assert.Contains("cancelled", result.Stderr);
     }
 
     [TestMethod]
@@ -752,7 +763,8 @@ public class ProgramTests
         var result = await RunAsync(
             ["transform", "--action", "plain-text", "--stdin", "--json"],
             "hello",
-            runtime: new ExceptionRuntime(new ArgumentException("Transformation input was invalid.")));
+            runtime: new ExceptionRuntime(new ArgumentException("Transformation input was invalid.")),
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
@@ -765,7 +777,8 @@ public class ProgramTests
         var result = await RunAsync(
             ["transform", "--action", "plain-text", "--stdin", "--json"],
             "hello",
-            runtime: new ExceptionRuntime(new CliActionResolutionException("Custom action was not found.")));
+            runtime: new ExceptionRuntime(new CliActionResolutionException("Custom action was not found.")),
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(2, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
@@ -778,7 +791,8 @@ public class ProgramTests
         var result = await RunAsync(
             ["transform", "--action", "plain-text", "--stdin", "--json"],
             "hello",
-            runtime: new ExceptionRuntime(new CliActionUnavailableException("Action is unavailable.")));
+            runtime: new ExceptionRuntime(new CliActionUnavailableException("Action is unavailable.")),
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
@@ -791,7 +805,8 @@ public class ProgramTests
         var result = await RunAsync(
             ["transform", "--action", "paste-with-ai", "--prompt", "prompt", "--stdin", "--stdout", "--json"],
             "input",
-            runtime: new ExceptionRuntime(new AdvancedPaste.Services.ProviderPolicyDisabledException()));
+            runtime: new ExceptionRuntime(new AdvancedPaste.Services.ProviderPolicyDisabledException()),
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         Assert.AreEqual(string.Empty, result.Stdout);
@@ -806,7 +821,8 @@ public class ProgramTests
         var result = await RunAsync(
             ["transform", "--action", "plain-text", "--stdin", "--json"],
             "hello",
-            runtime: new ExceptionRuntime(new InvalidOperationException("Internal transform detail.")));
+            runtime: new ExceptionRuntime(new InvalidOperationException("Internal transform detail.")),
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
@@ -832,7 +848,7 @@ public class ProgramTests
 
         Program.WriteStartupError(["transform", "--json", "false"], stderr);
 
-        StringAssert.Contains(stderr.ToString(), "Error: Advanced Paste CLI failed.");
+        Assert.Contains("Error: Advanced Paste CLI failed.", stderr.ToString());
     }
 
     [TestMethod]
@@ -841,14 +857,15 @@ public class ProgramTests
         var result = await RunAsync(
             ["transform", "--action", "plain-text", "--stdin", "--json"],
             "hello",
-            runtime: new ExceptionRuntime(new CliPolicyDisabledException()));
+            runtime: new ExceptionRuntime(new CliPolicyDisabledException()),
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         using var document = JsonDocument.Parse(result.Stderr);
         Assert.AreEqual("disabled_by_policy", document.RootElement.GetProperty("code").GetString());
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(new[] { "actions", "list", "--json" })]
     [DataRow(new[] { "providers", "list", "--json" })]
     [DataRow(new[] { "transform", "--action", "plain-text", "--clipboard", "--json" })]
@@ -857,7 +874,7 @@ public class ProgramTests
     {
         var clipboard = new TestClipboardAdapter("private input");
         var runtime = new TestRuntime(isEnabled: false);
-        var result = await RunAsync(args, clipboard: clipboard, runtime: runtime);
+        var result = await RunAsync(args, clipboard: clipboard, runtime: runtime, cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(1, result.ExitCode);
         Assert.AreEqual(string.Empty, result.Stdout);
@@ -879,7 +896,7 @@ public class ProgramTests
     [TestMethod]
     public async Task Help_RemainsAvailableWhenPolicyIsDisabled()
     {
-        var result = await RunAsync(["transform", "--help"], runtime: new TestRuntime(isEnabled: false));
+        var result = await RunAsync(["transform", "--help"], runtime: new TestRuntime(isEnabled: false), cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(0, result.ExitCode);
         Assert.AreEqual(string.Empty, result.Stderr);
@@ -890,12 +907,12 @@ public class ProgramTests
     {
         var directory = AdvancedPasteTempFileManager.CreateDirectory();
         var path = Path.Combine(directory.FullName, "input.txt");
-        await File.WriteAllTextAsync(path, "preserve input");
+        await File.WriteAllTextAsync(path, "preserve input", TestContext.CancellationToken);
         Directory.SetCreationTimeUtc(directory.FullName, DateTime.UtcNow.AddDays(-2));
         var clipboard = new TestClipboardAdapter();
         try
         {
-            var result = await RunAsync(["transform", "--action", "plain-text", "--input", path, "--stdout"], clipboard: clipboard);
+            var result = await RunAsync(["transform", "--action", "plain-text", "--input", path, "--stdout"], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(0, result.ExitCode);
             Assert.AreEqual("preserve input", result.Stdout);
@@ -915,19 +932,19 @@ public class ProgramTests
         var outputDirectory = AdvancedPasteTempFileManager.CreateDirectory();
         var inputPath = Path.Combine(inputDirectory.FullName, "clipboard.txt");
         var outputPath = Path.Combine(outputDirectory.FullName, "output.txt");
-        await File.WriteAllTextAsync(inputPath, "existing clipboard file");
-        await File.WriteAllTextAsync(outputPath, "existing output");
+        await File.WriteAllTextAsync(inputPath, "existing clipboard file", TestContext.CancellationToken);
+        await File.WriteAllTextAsync(outputPath, "existing output", TestContext.CancellationToken);
         Directory.SetCreationTimeUtc(inputDirectory.FullName, DateTime.UtcNow.AddDays(-2));
         Directory.SetCreationTimeUtc(outputDirectory.FullName, DateTime.UtcNow.AddDays(-2));
         var clipboard = new TestClipboardAdapter("result");
         clipboard.Content.SetStorageItems([await Windows.Storage.StorageFile.GetFileFromPathAsync(inputPath)]);
         try
         {
-            var result = await RunAsync(["transform", "--action", "plain-text", "--clipboard", "--output", outputPath], clipboard: clipboard);
+            var result = await RunAsync(["transform", "--action", "plain-text", "--clipboard", "--output", outputPath], clipboard: clipboard, cancellationToken: TestContext.CancellationToken);
 
             Assert.AreEqual(0, result.ExitCode);
-            Assert.AreEqual("existing clipboard file", await File.ReadAllTextAsync(inputPath));
-            Assert.AreEqual("result", await File.ReadAllTextAsync(outputPath));
+            Assert.AreEqual("existing clipboard file", await File.ReadAllTextAsync(inputPath, TestContext.CancellationToken));
+            Assert.AreEqual("result", await File.ReadAllTextAsync(outputPath, TestContext.CancellationToken));
         }
         finally
         {
@@ -952,7 +969,7 @@ public class ProgramTests
         Assert.AreEqual(input, reader.ReadToEnd());
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(new string[] { }, "help")]
     [DataRow(new[] { "transform", "--help" }, "help")]
     [DataRow(new[] { "transform", "--action", "plain-text", "--input", "-h", "--stdout" }, "transform")]
@@ -980,13 +997,13 @@ public class ProgramTests
     [TestMethod]
     public async Task HelpLikeOptionValue_WithParseError_ReturnsArgumentError()
     {
-        var result = await RunAsync(["transform", "--input", "-h", "--invalid"]);
+        var result = await RunAsync(["transform", "--input", "-h", "--invalid"], cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(Program.ArgumentErrorExitCode, result.ExitCode);
-        StringAssert.Contains(result.Stderr, "Usage:");
+        Assert.Contains("Usage:", result.Stderr);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("--help")]
     [DataRow("-h")]
     [DataRow("-?")]
@@ -995,7 +1012,8 @@ public class ProgramTests
     {
         var result = await RunAsync(
             ["transform", "--action", "paste-with-ai", "--prompt", prompt, "--stdin", "--stdout"],
-            "hello");
+            "hello",
+            cancellationToken: TestContext.CancellationToken);
 
         Assert.AreEqual(Program.SuccessExitCode, result.ExitCode);
         Assert.AreEqual("hello", result.Stdout);
@@ -1108,4 +1126,6 @@ public class ProgramTests
             return output;
         }
     }
+
+    public TestContext TestContext { get; set; } = null!;
 }

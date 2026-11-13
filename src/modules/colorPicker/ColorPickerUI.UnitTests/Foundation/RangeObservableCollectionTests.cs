@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ColorPicker.UnitTests.Foundation
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class RangeObservableCollectionTests
     {
@@ -27,7 +28,7 @@ namespace ColorPicker.UnitTests.Foundation
 
             sut.AddRange(_inputItems);
 
-            CollectionAssert.AreEqual(_expectedItems, sut);
+            Assert.AreSequenceEqual(_expectedItems, sut);
             Assert.AreEqual(1, notifications);
         }
     }

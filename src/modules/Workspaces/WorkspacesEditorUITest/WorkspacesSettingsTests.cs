@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace WorkspacesEditorUITest;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class WorkspacesSettingsTests : UITestBase
 {
@@ -15,14 +16,14 @@ public class WorkspacesSettingsTests : UITestBase
     {
     }
 
-    [TestMethod("WorkspacesSettings.LaunchFromSettings")]
+    [TestMethod(DisplayName = "WorkspacesSettings.LaunchFromSettings")]
     [TestCategory("Workspaces Settings UI")]
     public void TestLaunchEditorFromSettingsPage()
     {
         GoToSettingsPageAndEnable();
     }
 
-    [TestMethod("WorkspacesSettings.ActivationShortcut")]
+    [TestMethod(DisplayName = "WorkspacesSettings.ActivationShortcut")]
     [TestCategory("Workspaces Settings UI")]
     public void TestActivationShortcutCustomization()
     {
@@ -35,7 +36,7 @@ public class WorkspacesSettingsTests : UITestBase
         // Test customizing the shortcut
         shortcutButton.Click();
 
-        Task.Delay(1000).Wait();
+        Task.Delay(1000, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         // Send new key combination (Win+Ctrl+W)
         SendKeys(Key.Win, Key.Ctrl, Key.W);
@@ -50,7 +51,7 @@ public class WorkspacesSettingsTests : UITestBase
         Assert.AreEqual("Win + Ctrl + W", helpText, "Activation shortcut should be updated to Win + Ctrl + W");
     }
 
-    [TestMethod("WorkspacesSettings.EnableToggle")]
+    [TestMethod(DisplayName = "WorkspacesSettings.EnableToggle")]
     [TestCategory("Workspaces Settings UI")]
     public void TestEnableDisableModule()
     {
@@ -64,7 +65,7 @@ public class WorkspacesSettingsTests : UITestBase
 
         // Toggle the state
         enableToggle.Click();
-        Task.Delay(500).Wait();
+        Task.Delay(500, TestContext.CancellationToken).Wait(TestContext.CancellationToken);
 
         // Verify state changed
         Assert.IsFalse(enableToggle.IsOn, "Toggle state should change");
@@ -74,7 +75,7 @@ public class WorkspacesSettingsTests : UITestBase
         Assert.IsFalse(launchButton.Enabled, "Launch editor button should be disabled when module is disabled");
     }
 
-    [TestMethod("WorkspacesSettings.LaunchByActivationShortcut")]
+    [TestMethod(DisplayName = "WorkspacesSettings.LaunchByActivationShortcut")]
     [TestCategory("Workspaces Settings UI")]
     [Ignore("Wait until settings & runner can be connected in framework")]
     public void TestLaunchEditorByActivationShortcut()
@@ -103,7 +104,7 @@ public class WorkspacesSettingsTests : UITestBase
         NavigateToWorkspacesSettings();
     }
 
-    [TestMethod("WorkspacesSettings.DisableModuleNoLaunch")]
+    [TestMethod(DisplayName = "WorkspacesSettings.DisableModuleNoLaunch")]
     [TestCategory("Workspaces Settings UI")]
     [Ignore("Wait until settings & runner can be connected in framework")]
     public void TestDisabledModuleDoesNotLaunchByShortcut()
@@ -139,7 +140,7 @@ public class WorkspacesSettingsTests : UITestBase
         }
     }
 
-    [TestMethod("WorkspacesSettings.QuickAccessLaunch")]
+    [TestMethod(DisplayName = "WorkspacesSettings.QuickAccessLaunch")]
     [TestCategory("Workspaces Settings UI")]
     [Ignore("Wait until tray icon supported is in framework")]
     public void TestLaunchFromQuickAccess()
@@ -150,7 +151,7 @@ public class WorkspacesSettingsTests : UITestBase
 
         if (quickAccessInfo.Count > 0)
         {
-            Assert.IsTrue(quickAccessInfo.Count > 0, "Quick access information should be present in settings");
+            Assert.IsNotEmpty(quickAccessInfo, "Quick access information should be present in settings");
         }
 
         // Note: Actual system tray/quick access interaction would require

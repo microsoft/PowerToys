@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace MouseWithoutBorders.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class LeasePublisherTests
 {
@@ -68,7 +69,7 @@ public sealed class LeasePublisherTests
                 Assert.AreEqual(expectedSequence, lease["Sequence"]!.GetValue<int>());
             }
 
-            CollectionAssert.AreEqual(original, File.ReadAllBytes(first));
+            Assert.AreSequenceEqual(original, File.ReadAllBytes(first));
         }
 
         publisher.Stop();
@@ -98,7 +99,7 @@ public sealed class LeasePublisherTests
         snapshot.Position = 0;
         using var after = new MemoryStream();
         snapshot.CopyTo(after);
-        CollectionAssert.AreEqual(before.ToArray(), after.ToArray(), "Status publication must not truncate an already-open reader's snapshot.");
+        Assert.AreSequenceEqual(before.ToArray(), after.ToArray(), "Status publication must not truncate an already-open reader's snapshot.");
     }
 
     [TestMethod]
@@ -168,7 +169,7 @@ public sealed class LeasePublisherTests
             Assert.ThrowsExactly<InvalidOperationException>(publisher.WaitForReady);
             var state = RunFiles.Read(Path.Combine(root, "Host-lease-publisher.json"));
             Assert.AreEqual("Failed", state["Stage"]!.GetValue<string>());
-            StringAssert.Contains(state["Error"]!.GetValue<string>(), "hard deadline");
+            Assert.Contains("hard deadline", state["Error"]!.GetValue<string>());
         }
         finally
         {
@@ -221,7 +222,7 @@ public sealed class LeasePublisherTests
             if (matchingRun)
             {
                 var error = Assert.ThrowsExactly<InvalidOperationException>(publisher.ThrowIfFailed);
-                StringAssert.Contains(error.Message, "synthetic publisher failure");
+                Assert.Contains("synthetic publisher failure", error.Message);
             }
             else
             {

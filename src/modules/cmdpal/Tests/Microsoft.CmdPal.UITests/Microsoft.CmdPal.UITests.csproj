@@ -2,6 +2,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <RootNamespace>Microsoft.CmdPal.UITests</RootNamespace>
     <AssemblyName>Microsoft.CmdPal.UITests</AssemblyName>
     <IsPackable>false</IsPackable>

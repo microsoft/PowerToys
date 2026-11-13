@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ManagedCommon.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed class WindowHelpersTests
 {
@@ -28,18 +29,20 @@ public sealed class WindowHelpersTests
     // Generous so slow CI agents can't flake; a regression blocks until the faked SendInput is released.
     private static readonly TimeSpan Deadline = TimeSpan.FromSeconds(10);
 
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void BringToForegroundReturnsWhenSendInputNeverReturns()
     {
         // Reproduces an AppHang in win32u!NtUserSendInput: the Settings UI thread called BringToForeground from
         // App.OnLaunchedFromRunner and never got out of SendInput, so Settings hung on startup.
         using var release = new ManualResetEventSlim(false);
-        var injector = new ForegroundInputInjector(() => release.Wait());
+        var injector = new ForegroundInputInjector(() => release.Wait(CancellationToken.None));
 
         try
         {
             Assert.IsTrue(
-                Task.Run(() => WindowHelpers.BringToForeground(NoWindow, injector, InputTimeout)).Wait(Deadline),
+                Task.Run(() => WindowHelpers.BringToForeground(NoWindow, injector, InputTimeout), TestContext.CancellationToken).Wait(Deadline, TestContext.CancellationToken),
                 "BringToForeground blocked its caller on a SendInput call that never returns.");
         }
         finally
@@ -57,7 +60,7 @@ public sealed class WindowHelpersTests
         var injector = new ForegroundInputInjector(() =>
         {
             Interlocked.Increment(ref sends);
-            release.Wait();
+            release.Wait(CancellationToken.None);
         });
 
         try
@@ -65,7 +68,7 @@ public sealed class WindowHelpersTests
             for (int i = 0; i < 3; i++)
             {
                 Assert.IsTrue(
-                    Task.Run(() => WindowHelpers.BringToForeground(NoWindow, injector, InputTimeout)).Wait(Deadline),
+                    Task.Run(() => WindowHelpers.BringToForeground(NoWindow, injector, InputTimeout), TestContext.CancellationToken).Wait(Deadline, TestContext.CancellationToken),
                     $"Call {i} blocked on a stuck SendInput call.");
             }
 
@@ -112,7 +115,7 @@ public sealed class WindowHelpersTests
         var injector = new ForegroundInputInjector(() =>
         {
             sending.Set();
-            release.Wait();
+            release.Wait(CancellationToken.None);
         });
 
         IntPtr window = IntPtr.Zero;
@@ -144,8 +147,8 @@ public sealed class WindowHelpersTests
 
         try
         {
-            Assert.IsTrue(windowCreated.Wait(Deadline) && window != IntPtr.Zero, "Couldn't create the test window.");
-            Assert.IsTrue(sending.Wait(Deadline), "BringToForeground didn't send input.");
+            Assert.IsTrue(windowCreated.Wait(Deadline, TestContext.CancellationToken) && window != IntPtr.Zero, "Couldn't create the test window.");
+            Assert.IsTrue(sending.Wait(Deadline, TestContext.CancellationToken), "BringToForeground didn't send input.");
 
             IntPtr handled = SendMessageTimeout(window, WmNull, IntPtr.Zero, IntPtr.Zero, SmtoNormal, (uint)Deadline.TotalMilliseconds, out _);
             bool returnedFirst = Volatile.Read(ref returned);

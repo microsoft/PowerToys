@@ -10,10 +10,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Hosts.Tests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ValidationHelperTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("0.0.0.0")]
         [DataRow("127.0.0.1")]
         [DataRow("192.168.1.1")]
@@ -28,7 +29,7 @@ namespace Hosts.Tests
             Assert.IsTrue(ValidationHelper.ValidIPv4(address));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("256.0.0.0")]
         [DataRow("0.256.0.0")]
         [DataRow("0.0.256.0")]
@@ -49,7 +50,7 @@ namespace Hosts.Tests
             Assert.IsFalse(ValidationHelper.ValidIPv4(address));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("   ")]
@@ -60,7 +61,7 @@ namespace Hosts.Tests
             Assert.IsFalse(ValidationHelper.ValidIPv4(address));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("::1")]
         [DataRow("::")]
         [DataRow("2001:0db8:85a3:0000:0000:8a2e:0370:7334")]
@@ -76,7 +77,7 @@ namespace Hosts.Tests
             Assert.IsTrue(ValidationHelper.ValidIPv6(address));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("2001:db8:85a3:0:0:8a2e:370:7334:extra")]
         [DataRow("gggg::1")]
         [DataRow("12345::1")]
@@ -89,7 +90,7 @@ namespace Hosts.Tests
             Assert.IsFalse(ValidationHelper.ValidIPv6(address));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("   ")]
@@ -99,7 +100,7 @@ namespace Hosts.Tests
             Assert.IsFalse(ValidationHelper.ValidIPv6(address));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("localhost")]
         [DataRow("example.com")]
         [DataRow("sub.domain.example.com")]
@@ -112,7 +113,7 @@ namespace Hosts.Tests
             Assert.IsTrue(ValidationHelper.ValidHosts(hosts, validateHostsLength: false));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("   ")]

@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace PowerToys.DSC.UnitTests.SettingsResourceTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public sealed class SettingsResourceAlwaysOnTopModuleTest : SettingsResourceModuleTest<AlwaysOnTopSettings>
 {
     public SettingsResourceAlwaysOnTopModuleTest()

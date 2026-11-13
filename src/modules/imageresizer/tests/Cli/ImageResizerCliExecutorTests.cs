@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ImageResizer.Cli
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ImageResizerCliExecutorTests
     {
@@ -95,7 +96,7 @@ namespace ImageResizer.Cli
 
             var error = ImageResizerCliExecutor.GetSizeIndexValidationError(options, settings);
 
-            StringAssert.Contains(error, "999");
+            Assert.Contains("999", error);
         }
 
         [TestMethod]
@@ -121,11 +122,11 @@ namespace ImageResizer.Cli
             var exitCode = new ImageResizerCliExecutor().Run(["--size", "999", "--replace", source]);
 
             Assert.AreEqual(1, exitCode);
-            CollectionAssert.AreEqual(hashBefore, File.ReadAllBytes(source));
-            Assert.AreEqual(1, directory.FileNames.Count());
+            Assert.AreSequenceEqual(hashBefore, File.ReadAllBytes(source));
+            Assert.HasCount(1, directory.FileNames);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("--unit", "99", false)]
         [DataRow("--unit", "99", true)]
         [DataRow("--fit", "99", false)]
@@ -154,12 +155,12 @@ namespace ImageResizer.Cli
 
             Assert.AreEqual(1, exitCode);
             Assert.AreEqual("error", executor.CommandName);
-            CollectionAssert.AreEqual(bytesBefore, File.ReadAllBytes(source));
-            Assert.AreEqual(1, directory.FileNames.Count());
+            Assert.AreSequenceEqual(bytesBefore, File.ReadAllBytes(source));
+            Assert.HasCount(1, directory.FileNames);
         }
 
         [TestMethod]
-        [Timeout(10000)]
+        [Timeout(10000, CooperativeCancellation = true)]
         public async Task Run_WithEmptyNamedPipe_ReturnsError()
         {
             var pipeName = $"ImageResizer-{Guid.NewGuid():N}";

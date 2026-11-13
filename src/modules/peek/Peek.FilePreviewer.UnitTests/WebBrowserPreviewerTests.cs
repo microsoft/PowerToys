@@ -10,6 +10,7 @@ using Peek.FilePreviewer.Previewers;
 
 namespace Peek.FilePreviewer.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class WebBrowserPreviewerTests
     {

@@ -64,7 +64,7 @@ namespace Microsoft.Workspaces.UITests
             EditWorkspace(WorkspaceTestState.Text(project, "name"), useMenu);
             Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("SaveButton")).IsEnabled);
             Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("CancelButton")).IsEnabled);
-            CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Opening the editing page changed stored data.");
+            Assert.AreSequenceEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Opening the editing page changed stored data.");
         }
 
         [TestMethod]
@@ -79,9 +79,10 @@ namespace Microsoft.Workspaces.UITests
             Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess)
                 .Find<Button>(By.Name("Remove"), 10_000).Invoke(msPostAction: 0);
             AssertWorkspaceNames(names[0], names[2]);
-            CollectionAssert.AreEquivalent(
+            Assert.AreSequenceEqual(
                 new[] { WorkspaceTestState.Text(projects[0], "id"), WorkspaceTestState.Text(projects[2], "id") },
                 WorkspaceTestState.ReadProjects().Select(project => WorkspaceTestState.Text(project!, "id")).ToArray(),
+                SequenceOrder.InAnyOrder,
                 "Deleting a workspace removed the wrong stored project.");
         }
 
@@ -138,7 +139,7 @@ namespace Microsoft.Workspaces.UITests
             row.Find<TextBox>(By.AccessibilityId("CommandLineTextBox")).SetText("--payload discarded");
             Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox")).SetText(State.Prefix + "-discarded");
             CancelEditing(useBreadcrumb);
-            CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Discarding edits changed stored workspace data.");
+            Assert.AreSequenceEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Discarding edits changed stored workspace data.");
             AssertWorkspaceNames(name);
             EditWorkspace(name);
             row = ExpandApplication("Primary fixture");

@@ -8,10 +8,11 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ShellItemIconProtocolTests
 {
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("C:\\Files\\report.txt")]
     [DataRow("C:\\Files\\name|with:separators.txt")]
     [DataRow("C:\\Files\\😀.txt")]
@@ -50,7 +51,7 @@ public class ShellItemIconProtocolTests
         Assert.AreSame(data, info.Dark);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(null)]
     [DataRow("")]
     [DataRow("|ShellItemIcon|")]
@@ -74,7 +75,7 @@ public class ShellItemIconProtocolTests
         Assert.IsFalse(jumbo);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("|ShellItemIcon|")]
     [DataRow("|JumboShellItemIcon|")]
     public void MalformedPayloadIsStillClaimedByProtocol(string value)
@@ -86,7 +87,7 @@ public class ShellItemIconProtocolTests
     [TestMethod]
     public void EncoderRequiresItemPath()
     {
-        Assert.ThrowsException<ArgumentException>(() => ShellItemIconProtocol.Create(string.Empty));
-        Assert.ThrowsException<ArgumentNullException>(() => ShellItemIconProtocol.CreateJumbo(null!));
+        Assert.ThrowsExactly<ArgumentException>(() => ShellItemIconProtocol.Create(string.Empty));
+        Assert.ThrowsExactly<ArgumentNullException>(() => ShellItemIconProtocol.CreateJumbo(null!));
     }
 }

@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Plugin.WindowWalker.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class PluginSettingsTests
     {
@@ -26,7 +27,7 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
             Assert.AreEqual(8, result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ResultsFromVisibleDesktopOnly")]
         [DataRow("SubtitleShowPid")]
         [DataRow("SubtitleShowDesktopName")]
@@ -47,7 +48,7 @@ namespace Microsoft.Plugin.WindowWalker.UnitTests
             Assert.IsNotNull(result);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ResultsFromVisibleDesktopOnly", false)]
         [DataRow("SubtitleShowPid", false)]
         [DataRow("SubtitleShowDesktopName", true)]

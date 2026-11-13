@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TopLevelCommandResolverTests
 {
@@ -35,9 +36,9 @@ public class TopLevelCommandResolverTests
             static command => command.CommandId,
             static command => command.IsEligible);
 
-        CollectionAssert.AreEqual(new[] { commands[2], commands[0] }, sections.Pinned.ToArray());
-        Assert.AreEqual(0, sections.Recent.Count);
-        Assert.AreEqual(0, sections.Regular.Count);
+        Assert.AreSequenceEqual(new[] { commands[2], commands[0] }, sections.Pinned.ToArray());
+        Assert.IsEmpty(sections.Recent);
+        Assert.IsEmpty(sections.Regular);
     }
 
     [TestMethod]
@@ -65,9 +66,9 @@ public class TopLevelCommandResolverTests
             pinnedCommandLimit: 1,
             recentCommandLimit: 2);
 
-        CollectionAssert.AreEqual(new[] { commands[0] }, sections.Pinned.ToArray());
-        CollectionAssert.AreEqual(new[] { commands[1] }, sections.Recent.ToArray());
-        Assert.AreEqual(0, sections.Regular.Count);
+        Assert.AreSequenceEqual(new[] { commands[0] }, sections.Pinned.ToArray());
+        Assert.AreSequenceEqual(new[] { commands[1] }, sections.Recent.ToArray());
+        Assert.IsEmpty(sections.Regular);
     }
 
     [TestMethod]
@@ -98,9 +99,9 @@ public class TopLevelCommandResolverTests
             recentCommandLimit: 2,
             recentCommandsFirst: true);
 
-        CollectionAssert.AreEqual(new[] { commands[0], commands[3] }, sections.Recent.ToArray());
-        CollectionAssert.AreEqual(new[] { commands[1], commands[2] }, sections.Pinned.ToArray());
-        Assert.AreEqual(0, sections.Regular.Count);
+        Assert.AreSequenceEqual(new[] { commands[0], commands[3] }, sections.Recent.ToArray());
+        Assert.AreSequenceEqual(new[] { commands[1], commands[2] }, sections.Pinned.ToArray());
+        Assert.IsEmpty(sections.Regular);
     }
 
     [TestMethod]
@@ -124,9 +125,9 @@ public class TopLevelCommandResolverTests
             static command => command.IsEligible,
             recentCommandLimit: 2);
 
-        CollectionAssert.AreEqual(new[] { commands[1] }, sections.Pinned.ToArray());
-        CollectionAssert.AreEqual(new[] { commands[3], commands[2] }, sections.Recent.ToArray());
-        CollectionAssert.AreEqual(new[] { commands[0], commands[4] }, sections.Regular.ToArray());
+        Assert.AreSequenceEqual(new[] { commands[1] }, sections.Pinned.ToArray());
+        Assert.AreSequenceEqual(new[] { commands[3], commands[2] }, sections.Recent.ToArray());
+        Assert.AreSequenceEqual(new[] { commands[0], commands[4] }, sections.Regular.ToArray());
     }
 
     [TestMethod]
@@ -144,8 +145,8 @@ public class TopLevelCommandResolverTests
             static command => command.IsEligible,
             commandId => commandId == recentApp.CommandId ? recentApp : null);
 
-        CollectionAssert.AreEqual(new[] { recentApp }, sections.Recent.ToArray());
-        CollectionAssert.AreEqual(new[] { regular }, sections.Regular.ToArray());
+        Assert.AreSequenceEqual(new[] { recentApp }, sections.Recent.ToArray());
+        Assert.AreSequenceEqual(new[] { regular }, sections.Regular.ToArray());
     }
 
     [TestMethod]
@@ -163,11 +164,11 @@ public class TopLevelCommandResolverTests
             static command => command.IsEligible);
 
         Assert.AreEqual(1, providerIdReads);
-        CollectionAssert.AreEqual(new[] { command }, sections.Pinned.ToArray());
-        Assert.AreEqual(0, sections.Regular.Count);
+        Assert.AreSequenceEqual(new[] { command }, sections.Pinned.ToArray());
+        Assert.IsEmpty(sections.Regular);
     }
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(false, "Command", true)]
     [DataRow(true, "Command", false)]
     [DataRow(false, "", false)]

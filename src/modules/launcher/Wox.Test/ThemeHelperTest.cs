@@ -12,6 +12,7 @@ using PowerLauncher.Services;
 
 namespace Wox.Test;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ThemeHelperTest
 {
@@ -52,7 +53,7 @@ public class ThemeHelperTest
     /// <param name="registryValue">The mocked value for the AppsUseLightTheme registry key.</param>
     /// <param name="expectedTheme">The expected <see cref="Theme"/> output from the call to
     /// <see cref="ThemeHelper.GetAppsTheme"/>.</param>
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(ThemeHelper.AppsUseLightThemeLight, Theme.Light)]
     [DataRow(ThemeHelper.AppsUseLightThemeDark, Theme.Dark)]
     [DataRow(int.MaxValue, Theme.Light)] // Out of range values should default to Light
@@ -74,7 +75,7 @@ public class ThemeHelperTest
     /// <param name="registryValue">The mocked value for the CurrentTheme registry key.</param>
     /// <param name="expectedTheme">The expected <see cref="Theme"/> output from the call to
     /// <see cref="ThemeHelper.GetHighContrastTheme"/>.</param>
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(HighContrastThemePath, HighContrastTheme)] // Valid High Contrast theme
     [DataRow(NonHighContrastThemePath, null)] // Non-High Contrast theme should return null
     [DataRow(null, null)] // Missing keys or values should default to null
@@ -99,7 +100,7 @@ public class ThemeHelperTest
     /// <see cref="ThemeHelper.DetermineTheme"/>.</param>
     /// <param name="appsUseLightTheme">The mocked value for the AppsUseLightTheme registry key,
     /// representing the system preference for Light or Dark mode.</param>
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(HighContrastThemePath, Theme.System, HighContrastTheme)] // High Contrast theme active
     [DataRow(HighContrastThemePath, Theme.Light, HighContrastTheme)] // High Contrast theme active - Light mode override ignored
     [DataRow(HighContrastThemePath, Theme.Dark, HighContrastTheme)] // High Contrast theme active - Dark mode override ignored

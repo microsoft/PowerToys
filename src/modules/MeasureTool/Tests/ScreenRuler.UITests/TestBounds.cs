@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ScreenRuler.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TestBounds : UITestBase
     {
@@ -15,7 +16,7 @@ namespace ScreenRuler.UITests
         {
         }
 
-        [TestMethod("ScreenRuler.BoundsTool")]
+        [TestMethod(DisplayName = "ScreenRuler.BoundsTool")]
         [TestCategory("Spacing")]
         public void TestScreenRulerBoundsTool()
         {
@@ -24,7 +25,7 @@ namespace ScreenRuler.UITests
             TestHelper.CleanupTest(this);
         }
 
-        [TestMethod("ScreenRuler.BoundsToolDipClipboard")]
+        [TestMethod(DisplayName = "ScreenRuler.BoundsToolDipClipboard")]
         [TestCategory("Spacing")]
         public void TestScreenRulerBoundsToolDipClipboard()
         {

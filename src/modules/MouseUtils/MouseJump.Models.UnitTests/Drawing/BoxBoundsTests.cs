@@ -12,6 +12,7 @@ namespace MouseJump.Models.UnitTests.Drawing;
 
 public static class BoxBoundsTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class CreateFromContentBounds
     {
@@ -58,11 +59,12 @@ public static class BoxBoundsTests
             var actual = BoxBounds.CreateFromContentBounds(data.ContentBounds, data.BoxStyle);
             var expected = data.ExpectedResult;
             Assert.AreEqual(
-            JsonSerializer.Serialize(expected),
-            JsonSerializer.Serialize(actual));
+                JsonSerializer.Serialize(expected),
+                JsonSerializer.Serialize(actual));
         }
     }
 
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public sealed class CreateFromOuterBounds
     {

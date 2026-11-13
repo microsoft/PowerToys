@@ -12,6 +12,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class CreateLayoutTests : UITestBase
     {
@@ -148,11 +149,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.HasCount(1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CreateWithCustomName")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CreateWithCustomName")]
         [TestCategory("FancyZones Editor #3")]
         public void CreateWithCustomName()
         {
@@ -170,11 +171,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.HasCount(1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Name == name));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CreateGrid")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CreateGrid")]
         [TestCategory("FancyZones Editor #3")]
         public void CreateGrid()
         {
@@ -187,11 +188,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.HasCount(1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CreateCanvas")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CreateCanvas")]
         [TestCategory("FancyZones Editor #3")]
         public void CreateCanvas()
         {
@@ -204,11 +205,11 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(1, data.CustomLayouts.Count);
+            Assert.HasCount(1, data.CustomLayouts);
             Assert.IsTrue(data.CustomLayouts.Exists(x => x.Type == type.TypeToString()));
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CancelGridCreation")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CancelGridCreation")]
         [TestCategory("FancyZones Editor #3")]
         public void CancelGridCreation()
         {
@@ -220,10 +221,10 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(0, data.CustomLayouts.Count);
+            Assert.IsEmpty(data.CustomLayouts);
         }
 
-        [TestMethod("FancyZonesEditor.Basic.CancelCanvasCreation")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.CancelCanvasCreation")]
         [TestCategory("FancyZones Editor #3")]
         public void CancelCanvasCreation()
         {
@@ -235,7 +236,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var customLayouts = new CustomLayouts();
             var data = customLayouts.Read(customLayouts.File);
-            Assert.AreEqual(0, data.CustomLayouts.Count);
+            Assert.IsEmpty(data.CustomLayouts);
         }
     }
 }

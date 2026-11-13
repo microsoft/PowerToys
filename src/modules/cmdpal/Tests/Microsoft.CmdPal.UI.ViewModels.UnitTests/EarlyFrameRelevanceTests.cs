@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public sealed partial class EarlyFrameRelevanceTests
 {
@@ -98,7 +99,7 @@ public sealed partial class EarlyFrameRelevanceTests
 
         // With no history, some app is at rank 1 purely on lexical quality.
         var noHistory = Score(apps, "x", new RecentCommandsManager(), matcher);
-        Assert.IsTrue(noHistory.Length > 0, "The fuzzy-only catalog must still match 'x'.");
+        Assert.IsNotEmpty(noHistory, "The fuzzy-only catalog must still match 'x'.");
         foreach (var s in noHistory)
         {
             Assert.AreEqual(
@@ -133,12 +134,12 @@ public sealed partial class EarlyFrameRelevanceTests
         var history = SeedUses(new RecentCommandsManager(), seededId, 40);
 
         var scored = Score(apps, "x", history, matcher);
-        Assert.IsTrue(scored.Length > 0, "Precondition: the ungated result surfaces weak fuzzy matches.");
+        Assert.IsNotEmpty(scored, "Precondition: the ungated result surfaces weak fuzzy matches.");
 
         var filtered = MainListPage.FilterAppsForShortQueries(scored, queryLength: 1);
 
         Assert.IsNotNull(filtered);
-        Assert.AreEqual(0, filtered!.Count, "A one-character query should filter fuzzy-only app matches.");
+        Assert.IsEmpty(filtered, "A one-character query should filter fuzzy-only app matches.");
     }
 
     /// <summary>
@@ -155,17 +156,18 @@ public sealed partial class EarlyFrameRelevanceTests
         var fuzzyCount = scored.Count(s => MainListRanker.TierOf(s.Score) == RankTier.Fuzzy);
         var confidentCount = scored.Count(s => (int)MainListRanker.TierOf(s.Score) >= (int)RankTier.AcronymWordBoundary);
 
-        Assert.IsTrue(fuzzyCount > 0, "Precondition: the mixed catalog produces some fuzzy-tail matches for 'c'.");
-        Assert.IsTrue(confidentCount > 0, "Precondition: the mixed catalog produces some confident matches for 'c'.");
+        Assert.IsGreaterThan(0, fuzzyCount, "Precondition: the mixed catalog produces some fuzzy-tail matches for 'c'.");
+        Assert.IsGreaterThan(0, confidentCount, "Precondition: the mixed catalog produces some confident matches for 'c'.");
 
         var filtered = MainListPage.FilterAppsForShortQueries(scored, queryLength: 1);
         Assert.IsNotNull(filtered);
 
-        Assert.AreEqual(confidentCount, filtered!.Count, "Only word-boundary or stronger matches should remain.");
+        Assert.HasCount(confidentCount, filtered, "Only word-boundary or stronger matches should remain.");
         foreach (var s in filtered)
         {
-            Assert.IsTrue(
-                (int)MainListRanker.TierOf(s.Score) >= (int)RankTier.AcronymWordBoundary,
+            Assert.IsGreaterThanOrEqualTo(
+                (int)RankTier.AcronymWordBoundary,
+                (int)MainListRanker.TierOf(s.Score),
                 $"Filtered item '{s.Item.Safe.Title}' must be word-boundary tier or higher, was {MainListRanker.TierOf(s.Score)}.");
         }
 
@@ -203,10 +205,14 @@ public sealed partial class EarlyFrameRelevanceTests
         var matcher = CreateMatcher();
         var apps = BuildFuzzyOnlyCatalogForX();
         var scored = Score(apps, "x", new RecentCommandsManager(), matcher);
-        Assert.IsTrue(scored.Length > 0, "Precondition: 'x' matches fuzzily.");
+        Assert.IsNotEmpty(scored, "Precondition: 'x' matches fuzzily.");
 
-        Assert.AreEqual(0, MainListPage.FilterAppsForShortQueries(scored, 1)!.Count, "Length 1 should be filtered.");
-        Assert.AreEqual(0, MainListPage.FilterAppsForShortQueries(scored, 2)!.Count, "Length 2 should be filtered.");
+        var lengthOne = MainListPage.FilterAppsForShortQueries(scored, 1);
+        var lengthTwo = MainListPage.FilterAppsForShortQueries(scored, 2);
+        Assert.IsNotNull(lengthOne);
+        Assert.IsNotNull(lengthTwo);
+        Assert.IsEmpty(lengthOne, "Length 1 should be filtered.");
+        Assert.IsEmpty(lengthTwo, "Length 2 should be filtered.");
         Assert.AreSame(scored, MainListPage.FilterAppsForShortQueries(scored, 3), "Length 3 should not be filtered.");
     }
 
@@ -266,7 +272,7 @@ public sealed partial class EarlyFrameRelevanceTests
 
         var filteredByPublished = MainListPage.FilterAppsForShortQueries(scored, queryLength: 2);
         Assert.IsNotNull(filteredByPublished);
-        Assert.AreEqual(0, filteredByPublished!.Count, "The published short length should filter fuzzy matches.");
+        Assert.IsEmpty(filteredByPublished, "The published short length should filter fuzzy matches.");
 
         Assert.AreSame(scored, MainListPage.FilterAppsForShortQueries(scored, queryLength: 5), "A longer published length should return the original array.");
     }
@@ -283,7 +289,7 @@ public sealed partial class EarlyFrameRelevanceTests
 
         var full = scored.Length;
         var confident = scored.Count(s => (int)MainListRanker.TierOf(s.Score) >= (int)RankTier.AcronymWordBoundary);
-        Assert.IsTrue(confident < full, "Precondition: fuzzy matches make the filtered count smaller.");
+        Assert.IsLessThan(full, confident, "Precondition: fuzzy matches make the filtered count smaller.");
 
         const int NoCap = 1000;
 
@@ -303,11 +309,11 @@ public sealed partial class EarlyFrameRelevanceTests
         var matcher = CreateMatcher();
 
         var fuzzyOnly = Score(BuildFuzzyOnlyCatalogForX(), "x", new RecentCommandsManager(), matcher);
-        Assert.IsTrue(fuzzyOnly.Length > 0, "Precondition: 'x' matches fuzzily.");
+        Assert.IsNotEmpty(fuzzyOnly, "Precondition: 'x' matches fuzzily.");
         Assert.AreEqual(0, MainListPage.GetVisibleAppCount(fuzzyOnly, queryLength: 1, appResultLimit: 1000));
 
         var mixed = Score(BuildMixedCatalogForC(), "c", new RecentCommandsManager(), matcher);
-        Assert.IsTrue(mixed.Length > 2, "Precondition: the mixed catalog has more than two matches so the cap bites.");
+        Assert.IsGreaterThan(2, mixed.Length, "Precondition: the mixed catalog has more than two matches so the cap bites.");
         Assert.AreEqual(2, MainListPage.GetVisibleAppCount(mixed, queryLength: 3, appResultLimit: 2), "The app result limit should cap the count.");
 
         Assert.AreEqual(0, MainListPage.GetVisibleAppCount(null, 1, 1000));

@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FancyZonesEditor.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class ApplyLayoutTests : FancyZonesEditorTestBase
 {
@@ -61,7 +62,7 @@ public class ApplyLayoutTests : FancyZonesEditorTestBase
         Assert.AreEqual(FirstMonitorNumber, firstMonitorLayout.Device.MonitorNumber);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.ApplyLayoutsOnEachMonitor")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.ApplyLayoutsOnEachMonitor")]
     [TestCategory("FancyZones Editor #10")]
     public void ApplyLayoutsOnEachMonitor()
     {
@@ -102,7 +103,7 @@ public class ApplyLayoutTests : FancyZonesEditorTestBase
         Assert.AreEqual(CustomLayoutUuid, secondMonitorLayout.AppliedLayout.Uuid);
     }
 
-    [TestMethod("FancyZonesEditor.Basic.ApplyTemplateWithDifferentParametersOnEachMonitor")]
+    [TestMethod(DisplayName = "FancyZonesEditor.Basic.ApplyTemplateWithDifferentParametersOnEachMonitor")]
     [TestCategory("FancyZones Editor #10")]
     public void ApplyTemplateWithDifferentParametersOnEachMonitor()
     {
@@ -197,7 +198,7 @@ public class ApplyLayoutTests : FancyZonesEditorTestBase
         }
 
         var numbers = Regex.Matches(value, @"-?\d+");
-        Assert.IsTrue(numbers.Count > 0, $"The zone-count slider exposed no numeric value: '{value}'.");
+        Assert.IsNotEmpty(numbers, $"The zone-count slider exposed no numeric value: '{value}'.");
         return int.Parse(numbers[^1].Value, CultureInfo.InvariantCulture);
     }
 }

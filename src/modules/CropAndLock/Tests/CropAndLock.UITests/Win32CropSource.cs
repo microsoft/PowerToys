@@ -41,7 +41,7 @@ namespace Microsoft.CropAndLock.UITests
             thread.IsBackground = true;
             thread.SetApartmentState(ApartmentState.STA);
             thread.Start();
-            ready.Task.WaitAsync(TimeSpan.FromSeconds(20)).GetAwaiter().GetResult();
+            ready.Task.WaitAsync(TimeSpan.FromSeconds(20), context.CancellationToken).GetAwaiter().GetResult();
             context.WriteLine($"Win32 source: HWND=0x{Window:X}, PID={Environment.ProcessId}, package=<none>.");
         }
 

@@ -23,6 +23,7 @@ namespace PowerDisplay.Cli.UnitTests;
 /// dispatch/aggregation for the write commands (set/up/down), timeout scaling, and the single-monitor
 /// guard for the read commands (get/capabilities).
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class BatchMonitorTests
 {
@@ -35,8 +36,8 @@ public class BatchMonitorTests
     {
         var parsed = Parse("set", "-n", "1,2,3", "--brightness", "50");
         var expected = new[] { 1, 2, 3 };
-        Assert.AreEqual(0, parsed.Errors.Count);
-        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
+        Assert.IsEmpty(parsed.Errors);
+        Assert.AreSequenceEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
@@ -44,7 +45,7 @@ public class BatchMonitorTests
     {
         var parsed = Parse("set", "-n", "3", "--brightness", "50");
         var expected = new[] { 3 };
-        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
+        Assert.AreSequenceEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
@@ -52,8 +53,8 @@ public class BatchMonitorTests
     {
         var parsed = Parse("up", "--brightness", "-n", "2,1,2");
         var expected = new[] { 2, 1 };
-        Assert.AreEqual(0, parsed.Errors.Count);
-        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
+        Assert.IsEmpty(parsed.Errors);
+        Assert.AreSequenceEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
@@ -61,25 +62,25 @@ public class BatchMonitorTests
     {
         var parsed = Parse("set", "-n", " 1 , 2 ", "--brightness", "50");
         var expected = new[] { 1, 2 };
-        Assert.AreEqual(0, parsed.Errors.Count);
-        CollectionAssert.AreEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
+        Assert.IsEmpty(parsed.Errors);
+        Assert.AreSequenceEqual(expected, parsed.GetValue(CliOptions.MonitorNumber));
     }
 
     [TestMethod]
     public void MonitorNumber_NonInteger_ProducesParseError()
-        => Assert.IsTrue(Parse("set", "-n", "1,abc", "--brightness", "50").Errors.Count > 0);
+        => Assert.IsNotEmpty(Parse("set", "-n", "1,abc", "--brightness", "50").Errors);
 
     [TestMethod]
     public void MonitorNumber_TrailingComma_ProducesParseError()
-        => Assert.IsTrue(Parse("set", "-n", "1,", "--brightness", "50").Errors.Count > 0);
+        => Assert.IsNotEmpty(Parse("set", "-n", "1,", "--brightness", "50").Errors);
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("0")]
     [DataRow("-1")]
     [DataRow("1,0,2")]
     [DataRow("1,-2,3")]
     public void MonitorNumber_NonPositive_ProducesParseError(string monitorNumbers)
-        => Assert.IsTrue(Parse("set", "-n", monitorNumbers, "--brightness", "50").Errors.Count > 0);
+        => Assert.IsNotEmpty(Parse("set", "-n", monitorNumbers, "--brightness", "50").Errors);
 
     [TestMethod]
     public void MonitorNumber_Absent_IsNullOrEmpty()
@@ -117,7 +118,7 @@ public class BatchMonitorTests
     }
 
     // ── WorseBatchExit aggregation ────────────────────────────────────────────
-    [DataTestMethod]
+    [TestMethod]
     [DataRow(CliExitCodes.Ok, CliExitCodes.Ok, CliExitCodes.Ok)]
     [DataRow(CliExitCodes.Ok, CliExitCodes.UnsupportedFeature, CliExitCodes.Ok)]
     [DataRow(CliExitCodes.OutOfRange, CliExitCodes.UnsupportedFeature, CliExitCodes.OutOfRange)]
@@ -145,7 +146,7 @@ public class BatchMonitorTests
             });
 
         var expected = new int?[] { 5 };
-        CollectionAssert.AreEqual(expected, seen);
+        Assert.AreSequenceEqual(expected, seen);
         Assert.AreEqual(CliExitCodes.Ok, exit);
     }
 
@@ -163,7 +164,7 @@ public class BatchMonitorTests
             });
 
         var expected = new int?[] { null };
-        CollectionAssert.AreEqual(expected, seen);
+        Assert.AreSequenceEqual(expected, seen);
         Assert.AreEqual(CliExitCodes.SelectorMissing, exit);
     }
 
@@ -183,7 +184,7 @@ public class BatchMonitorTests
 
         // A monitor id wins and collapses the batch to a single id-based dispatch (null number).
         var expected = new int?[] { null };
-        CollectionAssert.AreEqual(expected, seen);
+        Assert.AreSequenceEqual(expected, seen);
         Assert.AreEqual(CliExitCodes.Ok, exit);
     }
 
@@ -209,7 +210,7 @@ public class BatchMonitorTests
             });
 
         var expected = new int?[] { 1, 2, 3 };
-        CollectionAssert.AreEqual(expected, seen);
+        Assert.AreSequenceEqual(expected, seen);
         Assert.AreEqual(CliExitCodes.HardwareFailure, exit);
     }
 
@@ -247,7 +248,7 @@ public class BatchMonitorTests
 
         var expected = new int?[] { 1 };
         Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
-        CollectionAssert.AreEqual(expected, seen, "must abort after the first PROVIDER_UNAVAILABLE");
+        Assert.AreSequenceEqual(expected, seen, "must abort after the first PROVIDER_UNAVAILABLE");
     }
 
     // ── WarnIfMonitorNumberIgnored: complete ignored list, formatted invariantly ──────────────
@@ -258,8 +259,8 @@ public class BatchMonitorTests
         int[] monitorNumbers = { 1, 2, 3 };
         Program.WarnIfMonitorNumberIgnored(output, monitorNumbers, "MON-X");
 
-        Assert.AreEqual(1, output.StderrLines.Count);
-        StringAssert.Contains(output.StderrLines[0], "1,2,3");
+        Assert.HasCount(1, output.StderrLines);
+        Assert.Contains("1,2,3", output.StderrLines[0]);
 
         // Regression guard: the old single-number message must not appear on its own.
         Assert.IsFalse(output.StderrLines[0].EndsWith(" 1 ignored because --monitor-id was also provided", StringComparison.Ordinal));
@@ -271,7 +272,7 @@ public class BatchMonitorTests
         var output = new RecordingCliOutput();
         int[] monitorNumbers = { 1, 2, 3 };
         Program.WarnIfMonitorNumberIgnored(output, monitorNumbers, null);
-        Assert.AreEqual(0, output.StderrLines.Count);
+        Assert.IsEmpty(output.StderrLines);
     }
 
     [TestMethod]
@@ -279,7 +280,7 @@ public class BatchMonitorTests
     {
         var output = new RecordingCliOutput();
         Program.WarnIfMonitorNumberIgnored(output, Array.Empty<int>(), "MON-X");
-        Assert.AreEqual(0, output.StderrLines.Count);
+        Assert.IsEmpty(output.StderrLines);
     }
 
     [TestMethod]
@@ -297,8 +298,8 @@ public class BatchMonitorTests
         await Program.DispatchAsync(root, args, parseResult, dispatcher, output, CancellationToken.None);
 
         var warnings = output.StderrLines.Where(l => l.StartsWith("warn:", StringComparison.Ordinal)).ToList();
-        Assert.AreEqual(1, warnings.Count);
-        StringAssert.Contains(warnings[0], "1,2,3");
+        Assert.HasCount(1, warnings);
+        Assert.Contains("1,2,3", warnings[0]);
     }
 
     // ── get/capabilities reject a comma-separated batch ───────────────────────

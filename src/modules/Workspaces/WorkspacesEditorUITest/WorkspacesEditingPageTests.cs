@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace WorkspacesEditorUITest;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [Ignore("not stable")]
 public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
@@ -17,7 +18,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
     {
     }
 
-    [TestMethod("WorkspacesEditingPage.RemoveApp")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.RemoveApp")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestRemoveAppFromWorkspace()
     {
@@ -46,10 +47,10 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         // Verify preview updated
         var previewPane = Find<Pane>("Preview");
         var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
-        Assert.AreEqual(finalAppCount, windowPreviews.Count, "Preview should show correct number of windows");
+        Assert.HasCount(finalAppCount, windowPreviews, "Preview should show correct number of windows");
     }
 
-    [TestMethod("WorkspacesEditingPage.RemoveAndAddBackApp")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.RemoveAndAddBackApp")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestRemoveAndAddBackApp()
     {
@@ -87,10 +88,10 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         var previewPane = Find<Pane>("Preview");
         var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
         var currentAppCount = appList.FindAll<Custom>(By.ClassName("AppItem")).Count;
-        Assert.AreEqual(currentAppCount, windowPreviews.Count, "Preview should show all windows again");
+        Assert.HasCount(currentAppCount, windowPreviews, "Preview should show all windows again");
     }
 
-    [TestMethod("WorkspacesEditingPage.SetAppMinimized")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.SetAppMinimized")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSetAppMinimized()
     {
@@ -131,7 +132,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         }
     }
 
-    [TestMethod("WorkspacesEditingPage.SetAppMaximized")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.SetAppMaximized")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSetAppMaximized()
     {
@@ -176,7 +177,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         }
     }
 
-    [TestMethod("WorkspacesEditingPage.LaunchAsAdmin")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.LaunchAsAdmin")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSetLaunchAsAdmin()
     {
@@ -216,7 +217,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         }
     }
 
-    [TestMethod("WorkspacesEditingPage.AddCLIArgs")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.AddCLIArgs")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestAddCommandLineArguments()
     {
@@ -249,7 +250,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         Assert.AreEqual(testArgs, cliArgsTextBox.Text, "Command line arguments should be set");
     }
 
-    [TestMethod("WorkspacesEditingPage.ChangeAppPosition")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.ChangeAppPosition")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestManuallyChangeAppPosition()
     {
@@ -292,7 +293,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
             // Verify preview updated
             var previewPane = Find<Pane>("Preview");
             var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
-            Assert.IsTrue(windowPreviews.Count > 0, "Preview should show window at new position");
+            Assert.IsNotEmpty(windowPreviews, "Preview should show window at new position");
         }
         else
         {
@@ -300,7 +301,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         }
     }
 
-    [TestMethod("WorkspacesEditingPage.ChangeWorkspaceName")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.ChangeWorkspaceName")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestChangeWorkspaceName()
     {
@@ -327,7 +328,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         Assert.IsNotNull(renamedWorkspace, "Workspace should be renamed in the list");
     }
 
-    [TestMethod("WorkspacesEditingPage.SaveAndCancelWork")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.SaveAndCancelWork")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSaveAndCancelButtons()
     {
@@ -371,7 +372,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         Assert.IsNotNull(savedWorkspace, "Workspace should be saved with new name");
     }
 
-    [TestMethod("WorkspacesEditingPage.NavigateWithoutSaving")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.NavigateWithoutSaving")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestNavigateToMainPageWithoutSaving()
     {
@@ -412,7 +413,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         Assert.IsNull(unsavedWorkspace, "Unsaved changes should not persist");
     }
 
-    [TestMethod("WorkspacesEditingPage.CreateDesktopShortcut")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.CreateDesktopShortcut")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestCreateDesktopShortcut()
     {
@@ -456,7 +457,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         }
     }
 
-    [TestMethod("WorkspacesEditingPage.DesktopShortcutState")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.DesktopShortcutState")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestDesktopShortcutCheckboxState()
     {
@@ -505,7 +506,7 @@ public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
         Assert.IsFalse(shortcutCheckbox.IsChecked, "Checkbox should be unchecked when shortcut doesn't exist");
     }
 
-    [TestMethod("WorkspacesEditingPage.LaunchAndEdit")]
+    [TestMethod(DisplayName = "WorkspacesEditingPage.LaunchAndEdit")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestLaunchAndEditCapture()
     {

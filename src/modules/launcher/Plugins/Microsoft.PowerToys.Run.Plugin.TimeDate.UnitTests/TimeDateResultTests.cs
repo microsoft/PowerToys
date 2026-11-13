@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class TimeDateResultTests
     {
@@ -40,7 +41,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", "10:30 PM")]
         [DataRow("date", "3/2/2022")]
         [DataRow("date and time", "3/2/2022 10:30 PM")]
@@ -75,7 +76,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value, $"Culture {CultureInfo.CurrentCulture.Name}, Culture UI: {CultureInfo.CurrentUICulture.Name}, Calendar: {CultureInfo.CurrentCulture.Calendar}, Region: {RegionInfo.CurrentRegion.Name}");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", "10:30 PM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
         [DataRow("date and time", "Wednesday, March 2, 2022 10:30 PM")]
@@ -110,7 +111,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", "10:30:45 PM")]
         [DataRow("date", "3/2/2022")]
         [DataRow("date and time", "3/2/2022 10:30:45 PM")]
@@ -145,7 +146,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time", "10:30:45 PM")]
         [DataRow("date", "Wednesday, March 2, 2022")]
         [DataRow("date and time", "Wednesday, March 2, 2022 10:30:45 PM")]
@@ -180,7 +181,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time utc", "t")]
         [DataRow("date and time utc", "g")]
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -200,7 +201,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time utc", "t")]
         [DataRow("date and time utc", "f")]
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -220,7 +221,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time utc", "T")]
         [DataRow("date and time utc", "G")]
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -240,7 +241,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("time utc", "T")]
         [DataRow("date and time utc", "F")]
         [DataRow("ISO 8601 UTC", "yyyy-MM-ddTHH:mm:ss")]
@@ -340,7 +341,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedResult, result?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(CalendarWeekRule.FirstDay, "3")]
         [DataRow(CalendarWeekRule.FirstFourDayWeek, "2")]
         [DataRow(CalendarWeekRule.FirstFullWeek, "2")]
@@ -357,7 +358,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.UnitTests
             Assert.AreEqual(expectedWeekOfYear, resultWeekOfYear?.Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(DayOfWeek.Monday, "2", "2", "5")]
         [DataRow(DayOfWeek.Tuesday, "3", "3", "4")]
         [DataRow(DayOfWeek.Wednesday, "3", "3", "3")]

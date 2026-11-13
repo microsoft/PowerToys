@@ -6,6 +6,7 @@ using Microsoft.CmdPal.Common.Text;
 
 namespace Microsoft.CmdPal.Common.UnitTests.Text;
 
+[Microsoft.VisualStudio.TestTools.UnitTesting.OSCondition(Microsoft.VisualStudio.TestTools.UnitTesting.OperatingSystems.Windows)]
 [TestClass]
 public sealed class PrecomputedFuzzyMatcherOptionsTests
 {
@@ -27,7 +28,7 @@ public sealed class PrecomputedFuzzyMatcherOptionsTests
             withoutDiacriticsRemoved.PrecomputeQuery(needle),
             withoutDiacriticsRemoved.PrecomputeTarget(haystack));
 
-        Assert.IsTrue(scoreWithRemoval > 0, "Expected match when diacritics are removed.");
+        Assert.IsGreaterThan(0, scoreWithRemoval, "Expected match when diacritics are removed.");
         Assert.AreEqual(0, scoreWithoutRemoval, "Expected no match when diacritics are preserved.");
     }
 
@@ -49,7 +50,7 @@ public sealed class PrecomputedFuzzyMatcherOptionsTests
             keepSeparators.PrecomputeQuery(needle),
             keepSeparators.PrecomputeTarget(haystack));
 
-        Assert.IsTrue(scoreSkip > 0, "Expected match when word separators are skipped.");
+        Assert.IsGreaterThan(0, scoreSkip, "Expected match when word separators are skipped.");
         Assert.AreEqual(0, scoreKeep, "Expected no match when word separators are preserved.");
     }
 
@@ -79,6 +80,6 @@ public sealed class PrecomputedFuzzyMatcherOptionsTests
             applySameCase.PrecomputeQuery(needle),
             applySameCase.PrecomputeTarget(haystack));
 
-        Assert.IsTrue(scoreApply > scoreIgnore, "Expected same-case bonus to apply when not ignored.");
+        Assert.IsGreaterThan(scoreIgnore, scoreApply, "Expected same-case bonus to apply when not ignored.");
     }
 }

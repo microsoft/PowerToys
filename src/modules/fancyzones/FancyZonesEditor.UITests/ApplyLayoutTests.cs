@@ -15,6 +15,7 @@ using static Microsoft.FancyZonesEditor.UnitTests.Utils.FancyZonesEditorHelper;
 
 namespace Microsoft.FancyZonesEditor.UITests
 {
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ApplyLayoutTests : UITestBase
     {
@@ -207,7 +208,7 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
+            Assert.HasCount(Parameters.Monitors.Count, data.AppliedLayouts);
             Assert.AreEqual(layout.Uuid, data.AppliedLayouts[0].AppliedLayout.Uuid);
             Assert.AreEqual(Parameters.Monitors[0].MonitorNumber, data.AppliedLayouts[0].Device.MonitorNumber);
         }
@@ -224,12 +225,12 @@ namespace Microsoft.FancyZonesEditor.UITests
 
             AppliedLayouts appliedLayouts = new AppliedLayouts();
             var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
+            Assert.HasCount(Parameters.Monitors.Count, data.AppliedLayouts);
             Assert.AreEqual(layoutType.TypeToString(), data.AppliedLayouts[0].AppliedLayout.Type);
             Assert.AreEqual(Parameters.Monitors[0].MonitorNumber, data.AppliedLayouts[0].Device.MonitorNumber);
         }
 
-        [TestMethod("FancyZonesEditor.Basic.ApplyLayoutsOnEachMonitor")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.ApplyLayoutsOnEachMonitor")]
         [TestCategory("FancyZones Editor #10")]
         public void ApplyLayoutsOnEachMonitor()
         {
@@ -252,12 +253,12 @@ namespace Microsoft.FancyZonesEditor.UITests
             // verify the file
             var appliedLayouts = new AppliedLayouts();
             var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
+            Assert.HasCount(Parameters.Monitors.Count, data.AppliedLayouts);
             Assert.AreEqual(firstLayoutType.TypeToString(), data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 1).AppliedLayout.Type);
             Assert.AreEqual(secondLayout.Uuid, data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 2).AppliedLayout.Uuid);
         }
 
-        [TestMethod("FancyZonesEditor.Basic.ApplyTemplateWithDifferentParametersOnEachMonitor")]
+        [TestMethod(DisplayName = "FancyZonesEditor.Basic.ApplyTemplateWithDifferentParametersOnEachMonitor")]
         [TestCategory("FancyZones Editor #10")]
         public void ApplyTemplateWithDifferentParametersOnEachMonitor()
         {
@@ -295,7 +296,7 @@ namespace Microsoft.FancyZonesEditor.UITests
             // check the file
             var appliedLayouts = new AppliedLayouts();
             var data = appliedLayouts.Read(appliedLayouts.File);
-            Assert.AreEqual(Parameters.Monitors.Count, data.AppliedLayouts.Count);
+            Assert.HasCount(Parameters.Monitors.Count, data.AppliedLayouts);
             Assert.AreEqual(layoutType.TypeToString(), data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 1).AppliedLayout.Type);
             Assert.AreEqual(expectedFirstLayoutZoneCount, data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 1).AppliedLayout.ZoneCount);
             Assert.AreEqual(layoutType.TypeToString(), data.AppliedLayouts.Find(x => x.Device.MonitorNumber == 2).AppliedLayout.Type);

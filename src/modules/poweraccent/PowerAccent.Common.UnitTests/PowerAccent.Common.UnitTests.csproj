@@ -3,6 +3,7 @@
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
 
   <PropertyGroup>
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <AssemblyName>PowerToys.PowerAccent.Common.UnitTests</AssemblyName>
     <OutputType>Exe</OutputType>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerAccent.Common.UnitTests\</OutputPath>

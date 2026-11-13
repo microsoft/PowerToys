@@ -21,6 +21,7 @@ namespace PowerDisplay.Cli.UnitTests;
 /// success response → rendered and exit 0, and error response → rendered and
 /// correct exit code.
 /// </summary>
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class IpcDispatchTests
 {
@@ -49,9 +50,9 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.ProviderUnavailable, exit);
-        Assert.AreEqual(1, output.StderrLines.Count);
-        StringAssert.Contains(output.StderrLines[0], CliErrorCodes.ProviderUnavailable);
-        StringAssert.Contains(output.StderrLines[0], "10");
+        Assert.HasCount(1, output.StderrLines);
+        Assert.Contains(CliErrorCodes.ProviderUnavailable, output.StderrLines[0]);
+        Assert.Contains("10", output.StderrLines[0]);
     }
 
     // ── Success responses rendered, exit 0 ───────────────────────────────────
@@ -67,8 +68,8 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendSetAsync(CliRequestBuilder.BuildSet(inputs), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.Ok, exit);
-        Assert.AreEqual(1, output.StdoutLines.Count);
-        StringAssert.Contains(output.StdoutLines[0], "brightness");
+        Assert.HasCount(1, output.StdoutLines);
+        Assert.Contains("brightness", output.StdoutLines[0]);
     }
 
     // ── Error responses rendered, correct exit code ───────────────────────────
@@ -90,12 +91,12 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.MonitorNotFound, exit);
-        Assert.AreEqual(1, output.StderrLines.Count);
-        StringAssert.Contains(output.StderrLines[0], CliErrorCodes.MonitorNotFound);
+        Assert.HasCount(1, output.StderrLines);
+        Assert.Contains(CliErrorCodes.MonitorNotFound, output.StderrLines[0]);
 
         // An error envelope (isError=true) routes through the error renderer (stderr) only and must
         // never leak to the success path (stdout).
-        Assert.AreEqual(0, output.StdoutLines.Count, "error envelope must not render via the success path");
+        Assert.IsEmpty(output.StdoutLines, "error envelope must not render via the success path");
     }
 
     [TestMethod]
@@ -147,8 +148,8 @@ public class IpcDispatchTests
 
         // apply-profile is a success envelope (isError=false): it must route through the success
         // renderer (stdout) and never WriteError.
-        Assert.AreEqual(1, output.StdoutLines.Count, "rendered via the success path");
-        Assert.AreEqual(0, output.StderrLines.Count, "must not go through WriteError");
+        Assert.HasCount(1, output.StdoutLines, "rendered via the success path");
+        Assert.IsEmpty(output.StderrLines, "must not go through WriteError");
     }
 
     // ── schema-mismatch / undeserializable response → InternalError (9) ────────
@@ -160,8 +161,8 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendListAsync(CliRequestBuilder.BuildList(), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.InternalError, exit);
-        Assert.AreEqual(1, output.StderrLines.Count);
-        StringAssert.Contains(output.StderrLines[0], CliErrorCodes.InternalError);
+        Assert.HasCount(1, output.StderrLines);
+        Assert.Contains(CliErrorCodes.InternalError, output.StderrLines[0]);
     }
 
     [TestMethod]
@@ -205,7 +206,7 @@ public class IpcDispatchTests
     public void BuildSet_NoSetting_Throws()
     {
         var inputs = new SetCommandInputs();
-        Assert.ThrowsException<InvalidOperationException>(() => CliRequestBuilder.BuildSet(inputs));
+        Assert.ThrowsExactly<InvalidOperationException>(() => CliRequestBuilder.BuildSet(inputs));
     }
 
     [TestMethod]
@@ -254,7 +255,7 @@ public class IpcDispatchTests
     [TestMethod]
     public void BuildAdjust_NoSetting_Throws()
     {
-        Assert.ThrowsException<InvalidOperationException>(
+        Assert.ThrowsExactly<InvalidOperationException>(
             () => CliRequestBuilder.BuildAdjust(CliCommandNames.Up, new AdjustCommandInputs()));
     }
 
@@ -271,7 +272,7 @@ public class IpcDispatchTests
         var exit = await dispatcher.SendAdjustAsync(CliRequestBuilder.BuildAdjust(CliCommandNames.Up, inputs), CancellationToken.None);
 
         Assert.AreEqual(CliExitCodes.Ok, exit);
-        Assert.AreEqual(1, output.StdoutLines.Count);
-        StringAssert.Contains(output.StdoutLines[0], "brightness");
+        Assert.HasCount(1, output.StdoutLines);
+        Assert.Contains("brightness", output.StdoutLines[0]);
     }
 }

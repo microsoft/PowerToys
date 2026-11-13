@@ -20,6 +20,7 @@ using FormsDataObject = System.Windows.Forms.DataObject;
 namespace AdvancedPaste.Cli.UnitTests;
 
 [TestClass]
+[OSCondition(OperatingSystems.Windows)]
 public class SystemClipboardAdapterTests
 {
     [TestMethod]
@@ -45,7 +46,7 @@ public class SystemClipboardAdapterTests
             Assert.IsTrue(roundTripped.TryGetData<string>(FormsDataFormats.Html, out var roundTrippedHtml));
             Assert.AreEqual(html, roundTrippedHtml);
             Assert.AreEqual(path, storageItems.Single().Path);
-            CollectionAssert.Contains(roundTripped.GetFileDropList(), path);
+            Assert.Contains(path, roundTripped.GetFileDropList());
             Assert.IsNotNull(roundTripped.GetImage());
         }
         finally

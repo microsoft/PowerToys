@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
 
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 [TestCategory("ZoomIt")]
 public sealed class ZoomItDialogReadinessTests
@@ -40,8 +41,8 @@ public sealed class ZoomItDialogReadinessTests
 
         Assert.IsTrue(ready.Succeeded);
         Assert.AreEqual("fresh", ready.LastObservation);
-        CollectionAssert.AreEqual(ReacquiredTargets, prepared);
-        CollectionAssert.AreEqual(ReacquiredObservations, observations);
+        Assert.AreSequenceEqual(ReacquiredTargets, prepared);
+        Assert.AreSequenceEqual(ReacquiredObservations, observations);
         Assert.AreEqual(2, ready.ConsecutiveMatches);
     }
 
@@ -72,8 +73,8 @@ public sealed class ZoomItDialogReadinessTests
             pollIntervalMS: 1);
 
         Assert.IsTrue(ready.Succeeded);
-        CollectionAssert.AreEqual(ReacquiredTargets, prepared);
-        CollectionAssert.AreEqual(StableObservations, observed);
+        Assert.AreSequenceEqual(ReacquiredTargets, prepared);
+        Assert.AreSequenceEqual(StableObservations, observed);
     }
 
     [TestMethod]
@@ -190,6 +191,6 @@ public sealed class ZoomItDialogReadinessTests
         Assert.IsFalse(ready.Succeeded);
         Assert.AreSame(expected, ready.LastException);
         Assert.AreEqual(0, ready.ConsecutiveMatches);
-        Assert.IsTrue(resolved > 0);
+        Assert.IsGreaterThan(0, resolved);
     }
 }
