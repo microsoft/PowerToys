@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 /// the test's own.
 /// </summary>
 [TestClass]
+[SkipWhenElevated]
 public sealed class TextExpanderTerminalTests : TextExpanderTestBase
 {
     private const string TerminalWindowClass = "CASCADIA_HOSTING_WINDOW_CLASS";

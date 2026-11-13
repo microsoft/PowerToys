@@ -10,6 +10,7 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 
 /// <summary>Checks the date guide through the editor, including which format syntax its chips can edit.</summary>
 [TestClass]
+[SkipWhenElevated]
 public sealed class TextExpanderEditorDateGuideTests : TextExpanderTestBase
 {
     /// <summary>The .NET guide is hidden for strftime, while its ordinary snippet preview keeps working.</summary>

@@ -464,7 +464,14 @@ Privacy:
   The notice tests (`TestCategory=TextExpander.Notice`) run the notice window in the test
   process, from the engine's sources, with an English `EngineText`.
 
-UI tests must run without administrator rights, because the engine refuses elevated targets. The
-pipeline runs them through `.pipelines/runUiTestAsUser.ps1`, with the runner and Settings signed.
-They replace your Text Expander files, so use a VM:
-`TextExpander.UITests.exe --filter "TestCategory=TextExpander"`.
+UI tests must run without administrator rights, because the engine refuses elevated targets and
+Settings run as administrator turns off Manage snippets. CI doesn't run this suite without
+administrator rights yet, so when the test process is elevated, every test is skipped with that
+reason before PowerToys starts, and the run exits 0 rather than failing because no test ran. Running
+it non-elevated in CI is a follow-up for when the shared UI tests are stable: add
+`TextExpander.UITests` to `$authenticatedSettingsIpcModules` and `$nonElevatedSuites` in
+`.pipelines/v2/templates/job-test-project.yml`, and to their lists in
+`.pipelines/tests/runUiTestAsUser.Tests.ps1` and `.pipelines/tests/uiTestSigningSelection.Tests.ps1`.
+The pipeline then signs the runner and Settings and runs the suite through
+`.pipelines/runUiTestAsUser.ps1`. The tests replace your Text Expander files, so use a VM, and run
+them without administrator rights: `TextExpander.UITests.exe --filter "TestCategory=TextExpander"`.

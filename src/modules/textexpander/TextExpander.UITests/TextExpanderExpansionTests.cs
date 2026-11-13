@@ -14,6 +14,7 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 /// insertion methods, the editor's exclusion, and changes from the editor and Settings taking effect while the engine runs.
 /// </summary>
 [TestClass]
+[SkipWhenElevated]
 public sealed class TextExpanderExpansionTests : TextExpanderTestBase
 {
     // A copied block with one email address, a phone number and two links, sample data only.

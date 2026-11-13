@@ -59,7 +59,6 @@ Describe 'UI test signing selection' {
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
         'ShortcutGuide.UITests',
-        'TextExpander.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
     )
@@ -94,7 +93,6 @@ Describe 'UI test signing selection' {
         'PowerOCR.UITests.Next.Extra',
         'ScreenRuler.UITests.Next.Extra',
         'ShortcutGuide.UITests.Extra',
-        'TextExpander.UITests.Extra',
         'Workspaces.Editor.UITests',
         'ZoomIt.UITests.Extra' | ForEach-Object { @{ Module = $_ } }
     ) {

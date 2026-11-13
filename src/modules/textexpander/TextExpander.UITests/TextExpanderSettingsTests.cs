@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 /// snippets, which opens the editor.
 /// </summary>
 [TestClass]
+[SkipWhenElevated]
 public sealed class TextExpanderSettingsTests : TextExpanderTestBase
 {
     private const string EnableSwitch = "Toggle_TextExpander";

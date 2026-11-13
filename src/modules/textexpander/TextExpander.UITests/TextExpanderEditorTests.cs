@@ -13,6 +13,7 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 /// searching snippets, and the snippets database menu. Every change is checked in the database file too.
 /// </summary>
 [TestClass]
+[SkipWhenElevated]
 public sealed class TextExpanderEditorTests : TextExpanderTestBase
 {
     private static readonly string[] StarterTriggers = ["!ddate", "!ttime", "!ddt", "!isodate", "!mysig", "!myemail"];

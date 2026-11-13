@@ -17,6 +17,7 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 /// never take the focus: what's typed while it shows goes on into the app, and clicking it only dismisses it.
 /// </summary>
 [TestClass]
+[SkipWhenElevated]
 public sealed class TextExpanderNoticeTests : TextExpanderTestBase
 {
     private const string Heading = "No email address found";

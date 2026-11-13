@@ -139,6 +139,11 @@ public abstract class TextExpanderTestBase : UITestBase
 
     protected override void PrepareTestState()
     {
+        // Without it, an elevated run would fail these tests rather than skip them.
+        Assert.IsTrue(
+            GetType().IsDefined(typeof(SkipWhenElevatedAttribute), inherit: false),
+            $"{GetType().Name} needs [SkipWhenElevated], like every Text Expander UI test class.");
+
         // The hygiene pass doesn't wait, and either process could still be writing the files about to be seeded.
         Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(SnippetEditor.ProcessName, 15_000), "A snippet editor from an earlier run did not exit.");
         Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(EngineProcessName, 15_000), "A Text Expander engine from an earlier run did not exit.");
