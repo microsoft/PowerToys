@@ -929,4 +929,323 @@ namespace RemappingLogicTests
             Assert::AreNotEqual((DWORD)0, arrowEvent[0].ki.dwFlags & KEYEVENTF_EXTENDEDKEY);
         }
     };
+
+    // Tests for the single-key-to-sequence remap (#5679): pressing one key sends an ordered list of
+    // key taps, in order; the source key is fully replaced (its own down and up are both suppressed).
+    TEST_CLASS (SingleKeyToSequenceRemappingTests)
+    {
+    private:
+        KeyboardManagerInput::MockedInput mockedInputHandler;
+        State testState;
+
+        // Records the vkCode of each KBM-INJECTED event (carrying the single-key flag), in order, so
+        // the emitted sequence and its ordering can be asserted. The physical key the test itself
+        // sends via SendVirtualInput carries no KBM flag and is deliberately excluded (mirroring how
+        // the alone tests count only their injected target). Returns false so it never affects the
+        // SendVirtualInput call counter.
+        std::vector<DWORD> injected;
+        void RecordInjected()
+        {
+            injected.clear();
+            mockedInputHandler.SetSendVirtualInputTestHandler([this](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG)
+                {
+                    injected.push_back(data->lParam->vkCode);
+                }
+                return false;
+            });
+        }
+
+    public:
+        TEST_METHOD_INITIALIZE(InitializeTestEnv)
+        {
+            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyToSequenceRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
+            mockedInputHandler.SetHookProc(currentHookProc);
+        }
+
+        // Esc -> [Esc, IME-Off]: tapping Esc injects an Esc tap then an IME-Off tap (down+up each), in
+        // that order, and the physical Esc down is suppressed. This is the motivating case for #5679.
+        TEST_METHOD (SequenceRemap_ShouldInjectEachTargetAsTap_InOrder_OnKeyDown)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            RecordInjected();
+
+            std::vector<INPUT> escDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
+            };
+            mockedInputHandler.SendVirtualInput(escDown);
+
+            // Esc tap (down, up) then IME-Off tap (down, up) = 4 events, in order.
+            Assert::AreEqual((size_t)4, injected.size());
+            Assert::AreEqual((DWORD)VK_ESCAPE, injected[0]);
+            Assert::AreEqual((DWORD)VK_ESCAPE, injected[1]);
+            Assert::AreEqual((DWORD)VK_IME_OFF, injected[2]);
+            Assert::AreEqual((DWORD)VK_IME_OFF, injected[3]);
+        }
+
+        // The source key's own key-up is suppressed too (the sequence already fired on the key-down),
+        // so the original key never reaches the app on its own.
+        TEST_METHOD (SequenceRemap_ShouldSuppressOriginalKeyUp_WithNoFurtherInjection)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+
+            std::vector<INPUT> escDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
+            };
+            mockedInputHandler.SendVirtualInput(escDown);
+
+            RecordInjected(); // start recording for the key-up only
+            std::vector<INPUT> escUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(escUp);
+
+            Assert::AreEqual((size_t)0, injected.size());
+        }
+
+        // A key with no sequence remap is passed through untouched (handler returns 0 -> not suppressed).
+        TEST_METHOD (SequenceRemap_ShouldIgnoreUnmappedKey)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+
+            std::vector<INPUT> aDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
+            };
+            mockedInputHandler.SendVirtualInput(aDown);
+
+            // 'A' is not sequence-mapped: it passes through and sets its own key state.
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState('A'));
+        }
+
+        // Holding the source key sends the sequence once: auto-repeat key-downs are swallowed without
+        // injecting again. After the key-up, the next press sends the sequence again.
+        TEST_METHOD (SequenceRemap_ShouldSendOncePerPress_IgnoringAutoRepeat)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            RecordInjected();
+
+            std::vector<INPUT> escDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
+            };
+            std::vector<INPUT> escUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+
+            mockedInputHandler.SendVirtualInput(escDown);
+            mockedInputHandler.SendVirtualInput(escDown); // auto-repeat
+            mockedInputHandler.SendVirtualInput(escDown); // auto-repeat
+            Assert::AreEqual((size_t)4, injected.size());
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_ESCAPE));
+
+            mockedInputHandler.SendVirtualInput(escUp);
+            mockedInputHandler.SendVirtualInput(escDown);
+            Assert::AreEqual((size_t)8, injected.size());
+        }
+
+        // A key-up whose key-down this handler never saw (the key was already held when the remap was
+        // loaded, so its down reached the app) is passed through, so the key isn't left stuck down.
+        TEST_METHOD (SequenceRemap_ShouldPassThroughKeyUp_WhenKeyDownWasNotHandled)
+        {
+            std::vector<INPUT> escDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
+            };
+            mockedInputHandler.SendVirtualInput(escDown); // no remap yet: Esc goes down normally
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_ESCAPE));
+
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            RecordInjected();
+
+            std::vector<INPUT> escUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(escUp);
+
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_ESCAPE));
+            Assert::AreEqual((size_t)0, injected.size());
+        }
+
+        // The source key never reaches the app: after a full press (down + up) of a source key that
+        // is not itself in the sequence, its own key state was never set.
+        TEST_METHOD (SequenceRemap_SourceKeyStateIsNeverSet)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+
+            std::vector<INPUT> f1Down{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1 } },
+            };
+            mockedInputHandler.SendVirtualInput(f1Down);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
+
+            std::vector<INPUT> f1Up{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            RecordInjected();
+            mockedInputHandler.SendVirtualInput(f1Up);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
+            Assert::AreEqual((size_t)0, injected.size());
+        }
+
+        // A Disabled element is skipped, and the KBM "Win (either)" code is sent as Left Win.
+        TEST_METHOD (SequenceRemap_ShouldSkipDisabled_AndFilterWinBoth)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH, 0x41 });
+            RecordInjected();
+
+            std::vector<INPUT> f1Down{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1 } },
+            };
+            mockedInputHandler.SendVirtualInput(f1Down);
+
+            Assert::AreEqual((size_t)4, injected.size());
+            Assert::AreEqual((DWORD)VK_LWIN, injected[0]);
+            Assert::AreEqual((DWORD)VK_LWIN, injected[1]);
+            Assert::AreEqual((DWORD)0x41, injected[2]);
+            Assert::AreEqual((DWORD)0x41, injected[3]);
+        }
+
+        // If the injection is blocked (e.g. by UIPI), the original key is passed through -- both its
+        // key-down and its key-up -- instead of becoming a dead key or being stranded down.
+        TEST_METHOD (SequenceRemap_ShouldPassThroughOriginalKey_WhenInjectionFails)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
+                for (const auto& input : inputs)
+                {
+                    if (input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            });
+
+            std::vector<INPUT> escDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
+            };
+            mockedInputHandler.SendVirtualInput(escDown);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_ESCAPE));
+
+            std::vector<INPUT> escUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(escUp);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_ESCAPE));
+        }
+
+        // If the injection is blocked on the key-down and starts working while the key is still held,
+        // the rest of the press is still passed through (no retry): the key went down in the app, so
+        // its key-up must reach the app too.
+        TEST_METHOD (SequenceRemap_KeepsPassingThroughPress_WhenInjectionRecoversWhileHeld)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+            bool blocked = true;
+            mockedInputHandler.SetSendVirtualInputShouldFail([&blocked](const std::vector<INPUT>& inputs) {
+                // Block only KBM's own injection, not the simulated physical key events.
+                return blocked && !inputs.empty() && inputs[0].ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+            });
+            RecordInjected();
+
+            std::vector<INPUT> f1Down{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1 } },
+            };
+            mockedInputHandler.SendVirtualInput(f1Down);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_F1));
+
+            blocked = false;
+            mockedInputHandler.SendVirtualInput(f1Down); // auto-repeat, injection would now succeed
+            Assert::AreEqual((size_t)0, injected.size());
+
+            std::vector<INPUT> f1Up{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(f1Up);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
+
+            // The next press sends the sequence normally.
+            mockedInputHandler.SendVirtualInput(f1Down);
+            Assert::AreEqual((size_t)4, injected.size());
+        }
+
+        // A passed-through press stays passed through across a settings reload: its key-down already
+        // reached the app, so the reload must not turn its next auto-repeat into a fresh press whose
+        // key-up would then be swallowed.
+        TEST_METHOD (SequenceRemap_PassedThroughPress_SurvivesReload)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+            bool blocked = true;
+            mockedInputHandler.SetSendVirtualInputShouldFail([&blocked](const std::vector<INPUT>& inputs) {
+                return blocked && !inputs.empty() && inputs[0].ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+            });
+            RecordInjected();
+
+            std::vector<INPUT> f1Down{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1 } },
+            };
+            mockedInputHandler.SendVirtualInput(f1Down);
+            testState.ClearAllSequenceKeyState(); // settings reload while held
+            blocked = false;
+            mockedInputHandler.SendVirtualInput(f1Down); // auto-repeat
+            Assert::AreEqual((size_t)0, injected.size());
+
+            std::vector<INPUT> f1Up{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(f1Up);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
+        }
+
+        // A Ctrl/Alt/Shift source key: before the taps, a key-up of the source key is sent with the
+        // suppress flag (as the single-key remap does), so the taps aren't delivered as
+        // WM_SYSKEYDOWN. A non-modifier source key sends no such key-up.
+        TEST_METHOD (SequenceRemap_ModifierSource_ResetsModifierBeforeTaps)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_LMENU, std::vector<DWORD>{ 0x46 });
+            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x46 });
+            std::vector<std::pair<DWORD, ULONG_PTR>> events;
+            mockedInputHandler.SetSendVirtualInputTestHandler([&events](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo != 0)
+                {
+                    events.emplace_back(data->lParam->vkCode, data->lParam->dwExtraInfo);
+                }
+                return false;
+            });
+
+            std::vector<INPUT> altDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_LMENU } },
+            };
+            mockedInputHandler.SendVirtualInput(altDown);
+
+            Assert::AreEqual((size_t)3, events.size());
+            Assert::AreEqual((DWORD)VK_LMENU, events[0].first);
+            Assert::IsTrue(events[0].second == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+            Assert::AreEqual((DWORD)0x46, events[1].first);
+            Assert::AreEqual((DWORD)0x46, events[2].first);
+
+            events.clear();
+            std::vector<INPUT> f1Down{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1 } },
+            };
+            mockedInputHandler.SendVirtualInput(f1Down);
+            Assert::AreEqual((size_t)2, events.size());
+            Assert::AreEqual((DWORD)0x46, events[0].first);
+        }
+
+        // Reloading the tables forgets held keys, so a key-up lost before the reload doesn't make the
+        // next press be treated as an auto-repeat and ignored.
+        TEST_METHOD (SequenceRemap_ClearAllSequenceKeyState_ForgetsHeldKey)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            RecordInjected();
+
+            std::vector<INPUT> escDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
+            };
+            mockedInputHandler.SendVirtualInput(escDown); // key-up of this press is "lost"
+            testState.ClearAllSequenceKeyState();
+            mockedInputHandler.SendVirtualInput(escDown);
+
+            Assert::AreEqual((size_t)8, injected.size());
+        }
+    };
 }

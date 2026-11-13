@@ -100,6 +100,7 @@ void KeyboardManager::LoadSettings()
     // that was physically held across the reload can't leave a stale pending/combination entry (which a
     // later event would promote, injecting an unmatched original key-down). No-op on the initial load.
     state.ClearAllAloneKeyState();
+    state.ClearAllSequenceKeyState();
     try
     {
         // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
@@ -295,7 +296,7 @@ bool KeyboardManager::HasRegisteredRemappings() const
 
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 {
-    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.aloneSingleKeyReMap.empty() && state.singleKeyToTextReMap.empty());
+    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.aloneSingleKeyReMap.empty() && state.singleKeyToSequenceReMap.empty() && state.singleKeyToTextReMap.empty());
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
@@ -321,6 +322,14 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
     intptr_t SingleKeyAloneRemapResult = KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(inputHandler, data, state);
     if (SingleKeyAloneRemapResult == 1)
+    {
+        return 1;
+    }
+
+    // Remap a key to an ordered sequence of taps (#5679). Runs before the regular single-key remap;
+    // if it handles the event it fully replaces the source key, so suppress the original.
+    intptr_t SingleKeyToSequenceRemapResult = KeyboardEventHandlers::HandleSingleKeyToSequenceRemapEvent(inputHandler, data, state);
+    if (SingleKeyToSequenceRemapResult == 1)
     {
         return 1;
     }

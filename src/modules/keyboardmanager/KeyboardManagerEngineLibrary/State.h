@@ -22,6 +22,16 @@ private:
     std::unordered_set<DWORD> alonePendingKeys;      // held, still a tap candidate
     std::unordered_set<DWORD> aloneCombinationKeys;  // real key-down injected (combination started)
 
+    // Key-sequence source keys that are currently held, i.e. whose sequence already fired on this
+    // press. Auto-repeat key-downs of a held key are swallowed instead of sending the sequence again.
+    std::unordered_set<DWORD> heldSequenceKeys;
+    // Key-sequence source keys whose injection was blocked on this press, so the original key-down
+    // was passed through. The rest of the press (auto-repeats and the key-up) is passed through too,
+    // without retrying, so the key can't end up down in the app with its key-up swallowed.
+    std::unordered_set<DWORD> passedThroughSequenceKeys;
+    // Both sets are used by the low-level keyboard hook thread. heldSequenceKeys is also cleared by
+    // the settings thread on reload (ClearAllSequenceKeyState), the same as the alone sets above.
+
 public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
@@ -31,6 +41,25 @@ public:
 
     // Function to get the iterator of an "Alone" single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyAloneRemap(const DWORD& originalKey);
+
+    // Function to get the iterator of a single-key-to-sequence remap. Returns nullopt if not remapped.
+    std::optional<SingleKeyToSequenceRemapTable::iterator> GetSingleKeyToSequenceRemap(const DWORD& originalKey);
+
+    // Marks a key-sequence source key as held. Returns false if it was already held (the key-down
+    // is an auto-repeat), true if this is a fresh press.
+    bool MarkSequenceKeyHeld(const DWORD key);
+    // Forgets that a key-sequence source key is held (on its key-up). Returns true if it was held.
+    bool ClearSequenceKeyHeld(const DWORD key);
+    // Marks / checks / forgets that this press of a key-sequence source key is being passed through
+    // because its injection was blocked (see passedThroughSequenceKeys).
+    void SetSequenceKeyPassedThrough(const DWORD key);
+    bool IsSequenceKeyPassedThrough(const DWORD key) const;
+    bool ClearSequenceKeyPassedThrough(const DWORD key);
+    // Forgets all held key-sequence source keys. Called when the mapping tables are reloaded, like
+    // ClearAllAloneKeyState, so a key-up lost before the reload can't make the next press be ignored.
+    // Passed-through presses are kept: their key-down already reached the app, so their key-up must
+    // still be passed through.
+    void ClearAllSequenceKeyState();
 
     // Dual-key ("Alone") runtime state transitions (see member declarations above).
     // Mark an alone-mapped key as held and still a tap candidate.
