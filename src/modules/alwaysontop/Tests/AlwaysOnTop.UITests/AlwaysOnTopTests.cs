@@ -277,7 +277,7 @@ public sealed class AlwaysOnTopTests : UITestBase
                 var border = FindNearestVisibleBorder();
                 return (
                     Border: border,
-                    HasUpdatedColor: border.Hwnd != IntPtr.Zero && BorderContainsColor(border, updatedColor, updatedThickness));
+                    HasUpdatedColor: border.Hwnd != IntPtr.Zero && BorderContainsColor(border, updatedColor, updatedThickness, BorderBandInset(border, updatedThickness)));
             },
             isMatch: state =>
                 state.Border.Hwnd != IntPtr.Zero
@@ -553,7 +553,7 @@ public sealed class AlwaysOnTopTests : UITestBase
             observe: () =>
             {
                 var border = FindNearestVisibleBorder();
-                return border.Hwnd != IntPtr.Zero && BorderContainsColor(border, expectedColor, thickness);
+                return border.Hwnd != IntPtr.Zero && BorderContainsColor(border, expectedColor, thickness, BorderBandInset(border, thickness));
             },
             isMatch: matches => matches,
             timeoutMS: timeoutMs,
@@ -562,7 +562,16 @@ public sealed class AlwaysOnTopTests : UITestBase
         return result.Succeeded;
     }
 
-    private static bool BorderContainsColor(WindowControl.ProcessWindow border, Color expectedColor, int thickness)
+    // The border host can extend past the solid band (soft halo), so locate the band from the
+    // visible frame instead of assuming it starts at the host window's edge.
+    private int BorderBandInset(WindowControl.ProcessWindow border, int thickness)
+    {
+        var frame = fixture!.VisibleFrameBounds;
+        var bounds = WindowHelper.GetWindowBounds(border.Hwnd);
+        return Math.Max(0, frame.Left - bounds.Left - thickness);
+    }
+
+    private static bool BorderContainsColor(WindowControl.ProcessWindow border, Color expectedColor, int thickness, int inset)
     {
         var bounds = WindowHelper.GetWindowBounds(border.Hwnd);
         var width = bounds.Right - bounds.Left;
@@ -599,9 +608,9 @@ public sealed class AlwaysOnTopTests : UITestBase
         var band = Math.Min(Math.Max(thickness + 2, 4), Math.Min(width, height) / 3);
         var matches = 0;
         var samples = 0;
-        for (var x = 2; x < width - 2; x += 4)
+        for (var x = inset + 2; x < width - inset - 2; x += 4)
         {
-            for (var y = 1; y < band; y += 2)
+            for (var y = inset + 1; y < inset + band; y += 2)
             {
                 samples += 2;
                 if (PixelMatches(pixels, stride, x, y, expectedColor))
@@ -616,9 +625,9 @@ public sealed class AlwaysOnTopTests : UITestBase
             }
         }
 
-        for (var y = band; y < height - band; y += 4)
+        for (var y = inset + band; y < height - inset - band; y += 4)
         {
-            for (var x = 1; x < band; x += 2)
+            for (var x = inset + 1; x < inset + band; x += 2)
             {
                 samples += 2;
                 if (PixelMatches(pixels, stride, x, y, expectedColor))

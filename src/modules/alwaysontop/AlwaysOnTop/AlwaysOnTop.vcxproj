@@ -130,6 +130,9 @@
     <ClCompile Include="WindowBorder.cpp" />
     <ClCompile Include="WindowCornersUtil.cpp" />
     <ClCompile Include="WinHookEventIDs.cpp" />
+    <ClCompile Include="$(RepoRoot)src\common\WindowBorder\CompositionBorder.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AlwaysOnTop.h" />
@@ -150,6 +153,8 @@
     <ClInclude Include="WindowBorder.h" />
     <ClInclude Include="WindowCornersUtil.h" />
     <ClInclude Include="WinHookEventIDs.h" />
+    <ClInclude Include="$(RepoRoot)src\common\WindowBorder\BorderGeometry.h" />
+    <ClInclude Include="$(RepoRoot)src\common\WindowBorder\CompositionBorder.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
