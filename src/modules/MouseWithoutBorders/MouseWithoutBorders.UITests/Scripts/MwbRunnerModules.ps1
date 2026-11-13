@@ -12,17 +12,19 @@ function Get-MwbRunnerModules {
     }
     $text = Get-Content -LiteralPath $source.FullName -Raw
     $lists = [regex]::Matches($text,
-        '(?s)std::vector<std::wstring_view>\s+knownModules\s*=\s*\{(?<modules>.*?)\};')
+        '(?s)ModuleRegistration\s+knownModules\s*\[\s*\]\s*=\s*\{(?<modules>.*?)\}\s*;')
     if ($lists.Count -ne 1) { throw 'Expected exactly one explicit Runner module-load list.' }
     $block = $lists[0].Groups['modules'].Value
-    $moduleMatches = [regex]::Matches($block, 'L"(?<path>[^"\r\n]+)"')
-    $remainder = [regex]::Replace($block, 'L"[^"\r\n]+"', '')
+    # Each entry is { L"key", L"path", DefaultEnabled::Value[, gpoCallback] }.
+    $entryPattern = '\{\s*L"(?<key>[^"\r\n]+)"\s*,\s*L"(?<path>[^"\r\n]+)"\s*,\s*DefaultEnabled::\w+\s*(?:,\s*powertoys_gpo::\w+\s*)?\}'
+    $moduleMatches = [regex]::Matches($block, $entryPattern)
+    $remainder = [regex]::Replace($block, $entryPattern, '')
     if (-not $moduleMatches.Count -or $remainder -notmatch '^[\s,]*$') {
         throw 'The Runner module-load list has an unsupported or empty declaration.'
     }
     $paths = @(
         foreach ($match in $moduleMatches) {
-            $path = $match.Groups['path'].Value.Replace('/', '\')
+            $path = $match.Groups['path'].Value.Replace('\\', '\').Replace('/', '\')
             if ($path -cnotmatch '^(?:WinUI3Apps\\)?PowerToys\.[A-Za-z0-9.]+\.dll$') {
                 throw 'The Runner module-load list contains an unconfined or unsupported path.'
             }

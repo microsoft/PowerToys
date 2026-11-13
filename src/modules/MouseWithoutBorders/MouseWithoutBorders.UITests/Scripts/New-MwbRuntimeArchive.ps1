@@ -238,7 +238,7 @@ foreach ($name in @('PowerToys.exe', 'PowerToys.MouseWithoutBordersModuleInterfa
 }
 $runnerModules = $null
 if ($Configuration -eq 'Release') {
-    # Release Runner eagerly loads every interface, even for disabled utilities.
+    # Release Runner can load any registered interface on demand, so package the whole set.
     . "$PSScriptRoot\MwbRunnerModules.ps1"
     $runnerModules = Get-MwbRunnerModules $RunnerSourcePath
     foreach ($relative in $runnerModules.Modules) { Add-RuntimeFile (Join-Path $root $relative) }

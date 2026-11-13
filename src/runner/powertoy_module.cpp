@@ -3,12 +3,117 @@
 #include "centralized_kb_hook.h"
 #include "centralized_hotkeys.h"
 #include <common/logger/logger.h>
+#include <common/utils/package.h>
 #include <common/utils/winapi_error.h>
+
+namespace
+{
+    bool loadingAllowed = false; // Guarded by modules_mutex().
+}
+
+bool ModuleRegistration::enabled_by_default() const
+{
+    switch (defaultEnabled)
+    {
+    case DefaultEnabled::Yes:
+        return true;
+    case DefaultEnabled::BeforeWindows11:
+        return !package::IsWin11OrGreater();
+    default:
+        return false;
+    }
+}
+
+const ModuleRegistration* find_known_module(std::wstring_view key)
+{
+    for (const auto& registration : known_modules())
+    {
+        if (registration.key == key)
+        {
+            return &registration;
+        }
+    }
+    return nullptr;
+}
+
+std::mutex& modules_mutex()
+{
+    static std::mutex mutex;
+    return mutex;
+}
 
 std::map<std::wstring, PowertoyModule>& modules()
 {
     static std::map<std::wstring, PowertoyModule> modules;
     return modules;
+}
+
+void set_module_loading_allowed(bool allowed)
+{
+    std::scoped_lock lock(modules_mutex());
+    loadingAllowed = allowed;
+}
+
+PowertoyModule* find_loaded_module(const std::wstring& key)
+{
+    std::scoped_lock lock(modules_mutex());
+    const auto loaded = modules().find(key);
+    return loaded != modules().end() ? &loaded->second : nullptr;
+}
+
+PowertoyModule* load_known_module(const std::wstring& key)
+{
+    const auto* registration = find_known_module(key);
+    {
+        std::scoped_lock lock(modules_mutex());
+        if (const auto loaded = modules().find(key); loaded != modules().end())
+        {
+            return &loaded->second;
+        }
+        if (!registration || !loadingAllowed)
+        {
+            return nullptr;
+        }
+    }
+
+    // Load outside the lock: module construction runs third-party code, and the failure
+    // dialog pumps messages that can re-enter Runner on this thread.
+    const auto path = registration->dllPath;
+    try
+    {
+        auto module = load_powertoy(path);
+        std::scoped_lock lock(modules_mutex());
+        return &modules().emplace(key, std::move(module)).first->second;
+    }
+    catch (const winrt::hresult_error& error)
+    {
+        Logger::error(L"Failed to load {}: {}", path, error.message());
+    }
+    catch (const std::exception& error)
+    {
+        Logger::error("Failed to load {}: {}", winrt::to_string(path), error.what());
+    }
+
+#ifndef _DEBUG
+    const std::wstring message = L"Failed to load " + std::wstring(path);
+    MessageBoxW(nullptr, message.c_str(), L"PowerToys", MB_OK | MB_ICONERROR);
+#endif
+    return nullptr;
+}
+
+PowertoyModule* get_module_for_enabled_state(const std::wstring& key, bool& enabled)
+{
+    const auto* registration = find_known_module(key);
+    if (!registration)
+    {
+        return nullptr;
+    }
+    enabled = registration->apply_policy(enabled);
+    if (auto* loaded = find_loaded_module(key))
+    {
+        return loaded;
+    }
+    return enabled ? load_known_module(key) : nullptr;
 }
 
 PowertoyModule load_powertoy(const std::wstring_view filename)

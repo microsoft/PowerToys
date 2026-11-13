@@ -14,7 +14,7 @@ The Runner is responsible for:
 ### Key Components
 
 - Main CPP file manages the tray icon and modules
-- Creates a list of modules with DLL paths
+- Defines a constant catalog of module keys, DLL paths, native enabled defaults and GPO callbacks in `main.cpp`
 - Special handling for WinUI 3 apps (separated in different folder)
 - DLLs flattening for consistent versions
 - Runs as part of the Windows message loop
@@ -29,8 +29,8 @@ The Runner is responsible for:
 4. Parse command line arguments
 5. Start the tray icon
 6. Initialize low-level keyboard hooks
-7. Load module interfaces from DLLs
-8. Start enabled modules
+7. Resolve module enabled states from the catalog's defaults, settings and GPO
+8. Load and start enabled modules
 9. Enter Windows message loop
 10. On exit, stop modules and clean up resources
 
@@ -129,12 +129,13 @@ The flyout window is then activated and brought to the foreground using native W
 
 ## Module Loading Process
 
-1. Scan module directory for DLLs
-2. Create the module interface object for each module
-3. Load settings for each module
-4. Initialize each module
-5. Check GPO policies to determine which modules can start
-6. Start enabled modules that aren't disabled by policy
+1. Allow module loading once the startup elevation decision is made. The catalog itself is a `constexpr` table in `main.cpp`, exposed through `known_modules()`, so it costs nothing at startup.
+2. Resolve each module's enabled state using its native default, persisted preference and GPO override, without loading its DLL.
+3. Load and create only enabled module interfaces, then enable them and register their active hotkeys.
+4. Load a deferred interface when Settings enables it or sends that module's configuration or custom action. Configuration requests and custom actions do not enable the module.
+5. Keep loaded interfaces until Runner shutdown, even after disabling them. Only the main thread loads modules or clears the loaded-module map, holding `modules_mutex()` while it changes the map; other threads (settings telemetry, update checks) hold it to read. The lock is never nested and is not held while a module is constructed or destroyed.
+
+Unloaded modules still appear in general settings as disabled, unless a saved enabled preference is kept for a module that failed to load, so Settings never falls back to its own defaults. The full configuration Runner sends back after a module settings change includes only loaded modules; Settings does not read module configurations from that response. Keep catalog keys, defaults and policy callbacks synchronized with the corresponding module interfaces when changing them.
 
 ## Finding and Messaging the Tray Icon
 
@@ -148,7 +149,7 @@ WM_CLOSE
 ## Key Files and Their Purposes
 
 #### [`main.cpp`](/src/runner/main.cpp)
-Contains the executable starting point, initialization code and the list of known PowerToys. All singletons are also initialized here at the start. Loads all the powertoys by scanning the `./modules` folder and `enable()`s those marked as enabled in `%LOCALAPPDATA%\Microsoft\PowerToys\settings.json` config. Then it runs [a message loop](https://learn.microsoft.com/windows/win32/winmsg/using-messages-and-message-queues) for the tray UI. Note that this message loop also [handles lowlevel_keyboard_hook events](https://github.com/microsoft/PowerToys/blob/1760af50c8803588cb575167baae0439af38a9c1/src/runner/lowlevel_keyboard_event.cpp#L24).
+Contains the executable starting point, initialization code and the catalog of known PowerToys. All singletons are also initialized here at the start. Loads and enables the catalog modules selected by their defaults, `%LOCALAPPDATA%\Microsoft\PowerToys\settings.json` and GPO overrides. Disabled interfaces are loaded on demand. Then it runs [a message loop](https://learn.microsoft.com/windows/win32/winmsg/using-messages-and-message-queues) for the tray UI. Note that this message loop also [handles lowlevel_keyboard_hook events](https://github.com/microsoft/PowerToys/blob/1760af50c8803588cb575167baae0439af38a9c1/src/runner/lowlevel_keyboard_event.cpp#L24).
 
 #### [`powertoy_module.h`](/src/runner/powertoy_module.h) and [`powertoy_module.cpp`](/src/runner/powertoy_module.cpp)
 Contains code for initializing and managing the PowerToy modules. `PowertoyModule` is a RAII-style holder for the `PowertoyModuleIface` pointer, which we got by [invoking module DLL's `powertoy_create` function](https://github.com/microsoft/PowerToys/blob/1760af50c8803588cb575167baae0439af38a9c1/src/runner/powertoy_module.cpp#L13-L24).
