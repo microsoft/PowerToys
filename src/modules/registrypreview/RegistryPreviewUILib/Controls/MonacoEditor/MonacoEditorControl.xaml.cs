@@ -109,7 +109,7 @@ namespace RegistryPreviewUILib
 
             var assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? string.Empty;
             var index = Path.GetFullPath(Path.Combine(assemblyDir, "Assets", "RegistryPreview", "index.html"));
-            Browser.CoreWebView2.Navigate(new Uri(index).AbsoluteUri);
+            Browser.CoreWebView2.Navigate(index);
         }
 
         private async void CoreWebView2_NewWindowRequested(CoreWebView2 sender, CoreWebView2NewWindowRequestedEventArgs args)
