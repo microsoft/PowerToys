@@ -134,6 +134,13 @@
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_HighlightSearch" IsOn="{x:Bind viewModel.HighlightSearchOnActivate, Mode=TwoWay}" />
                     </controls:SettingsCard>
 
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_MultilineSearchInput_SettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A4;}"
+                        local:SettingsPageTarget.Id="multiline-search-input">
+                        <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_MultilineSearchInput" IsOn="{x:Bind viewModel.MultilineSearchInput, Mode=TwoWay}" />
+                    </controls:SettingsCard>
+
                     <!--  'Recent items' section  -->
 
                     <TextBlock

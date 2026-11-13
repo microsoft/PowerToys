@@ -217,6 +217,15 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
         }
     }
 
+    public bool MultilineSearchInput
+    {
+        get => _settingsService.Settings.MultilineSearchInput;
+        set
+        {
+            _settingsService.UpdateSettings(s => s with { MultilineSearchInput = value });
+        }
+    }
+
     public int MonitorPositionIndex
     {
         get => (int)_settingsService.Settings.SummonOn;
@@ -768,6 +777,7 @@ public partial class SettingsViewModel : INotifyPropertyChanged,
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UseLowLevelGlobalHotkey)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanEditLowLevelGlobalHotkey)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Hotkey)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(MultilineSearchInput)));
             },
             CancellationToken.None,
             TaskCreationOptions.None,

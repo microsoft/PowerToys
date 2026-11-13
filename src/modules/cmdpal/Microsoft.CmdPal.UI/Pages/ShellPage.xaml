@@ -239,7 +239,10 @@
                     </Grid.Transitions>
                 </Grid>
                 <!--  Filter: wrapped in a grid to enable RepositionThemeTransitions  -->
-                <Grid Grid.Column="2" HorizontalAlignment="Right">
+                <Grid
+                    Grid.Column="2"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top">
                     <cpcontrols:FiltersDropDown
                         x:Name="FiltersDropDown"
                         HorizontalAlignment="Right"
