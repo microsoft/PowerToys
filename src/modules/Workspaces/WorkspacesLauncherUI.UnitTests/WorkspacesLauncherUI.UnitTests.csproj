@@ -1,40 +1,40 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
 
   <PropertyGroup>
-    <UseWPF>true</UseWPF>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\WorkspacesLauncherUI\</OutputPath>
+    <OutputPath>$(SolutionDir)$(Platform)\$(Configuration)\tests\WorkspacesLauncherUI.Tests\</OutputPath>
     <RootNamespace>WorkspacesLauncherUI.UnitTests</RootNamespace>
-    <AssemblyName>PowerToys.WorkspacesLauncherUI.UnitTests</AssemblyName>
+    <AssemblyName>PowerToys.WorkspacesLauncherUI.Tests</AssemblyName>
     <OutputType>Exe</OutputType>
+    <UseWinUI>true</UseWinUI>
+    <Platforms>x64;ARM64</Platforms>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- The referenced application initializes WinAppSDK; its SDK helpers are visible through InternalsVisibleTo. -->
+    <WindowsAppSdkUndockedRegFreeWinRTInitialize>false</WindowsAppSdkUndockedRegFreeWinRTInitialize>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />
   </ItemGroup>
 
-  <!-- Compile the real warning and view model without starting the launcher or touching settings. -->
   <ItemGroup>
-    <Page Include="..\WorkspacesLauncherUI\SignatureWarningWindow.xaml" Link="SignatureWarningWindow.xaml" />
-    <Compile Include="..\WorkspacesLauncherUI\SignatureWarningWindow.xaml.cs" Link="SignatureWarningWindow.xaml.cs" />
-    <Compile Include="..\WorkspacesLauncherUI\Models\SignatureWarningRequest.cs" Link="Models\SignatureWarningRequest.cs" />
-    <Compile Include="..\WorkspacesLauncherUI\Models\AppLaunching.cs" Link="Models\AppLaunching.cs" />
-    <Compile Include="..\WorkspacesLauncherUI\ViewModels\MainViewModel.cs" Link="ViewModels\MainViewModel.cs" />
-    <Compile Include="..\WorkspacesLauncherUI\Data\*.cs" Link="Data\%(Filename)%(Extension)" />
-    <Compile Include="..\WorkspacesLauncherUI\Properties\Resources.Designer.cs" Link="Properties\Resources.Designer.cs" />
-    <EmbeddedResource Include="..\WorkspacesLauncherUI\Properties\Resources.resx" Link="Properties\Resources.resx">
+    <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
+    <ProjectReference Include="..\WorkspacesLauncherUI.WinUI\WorkspacesLauncherUI.WinUI.csproj" />
+    <EmbeddedResource Include="..\WorkspacesLauncherUI.WinUI\Properties\Resources.resx" Link="Properties\Resources.resx">
       <ManifestResourceName>WorkspacesLauncherUI.Properties.Resources</ManifestResourceName>
     </EmbeddedResource>
-    <None Include="..\WorkspacesLauncherUI\Properties\Resources.resx" Link="TestResources\NeutralResources.xml" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
-    <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
+    <None Include="..\WorkspacesLauncherUI.WinUI\Properties\Resources.resx" Link="TestResources\NeutralResources.xml" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\WorkspacesLauncherUI.WinUI\Views\SignatureWarningWindow.xaml" Link="TestResources\SignatureWarningWindow.xaml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Synthetic satellites are test-only fixtures, not product translations. -->

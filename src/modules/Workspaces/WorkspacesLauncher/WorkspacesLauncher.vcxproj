@@ -143,7 +143,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WorkspacesLauncherUI\WorkspacesLauncherUI.csproj">
+    <ProjectReference Include="..\WorkspacesLauncherUI.WinUI\WorkspacesLauncherUI.WinUI.csproj">
       <Project>{9c53cc25-0623-4569-95bc-b05410675ee3}</Project>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
