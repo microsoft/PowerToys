@@ -131,6 +131,58 @@ public sealed class GrabAndMoveTests : UITestBase
     }
 
     [TestMethod]
+    public void AltF4ChordClosesForegroundAndReleasesAlt()
+    {
+        var processId = ModuleProcessId();
+        FocusFixture();
+        Assert.AreEqual(fixture!.Handle, WindowControl.GetForegroundWindowHandle(), "The fixture must own foreground before Alt+F4.");
+
+        Step("Sending HID Alt+F4 to the foreground fixture");
+        KeyboardHelper.PressKey(Key.Alt);
+        try
+        {
+            // The swallowed Alt keydown does not have to show up in async key state.
+            // Give that hook time to absorb Alt before F4 is reported.
+            Thread.Sleep(200);
+            KeyboardHelper.PressKey(Key.F4);
+            KeyboardHelper.ReleaseKey(Key.F4);
+            KeyboardHelper.ReleaseKey(Key.Alt);
+        }
+        finally
+        {
+            KeyboardHelper.ReleaseKey(Key.F4);
+            KeyboardHelper.ReleaseKey(Key.Alt);
+        }
+
+        var closed = WaitHelper.WaitForStable(() => fixture!.IsClosed, isClosed => isClosed, 5_000, requiredConsecutiveMatches: 3);
+        Assert.IsTrue(closed.Succeeded, $"Alt+F4 did not close the fixture. {ForegroundDiagnostic()}");
+        Assert.AreEqual(processId, ModuleProcessId(), "Alt+F4 must leave PowerToys.GrabAndMove running as the same process.");
+
+        var altReleased = WaitHelper.WaitForStable(
+            () => KeyboardHelper.IsKeyDown(Key.Alt),
+            held => !held,
+            5_000,
+            requiredConsecutiveMatches: 3);
+        Assert.IsTrue(altReleased.Succeeded, "Alt stayed down after the Alt+F4 chord.");
+
+        Step("Opening a second fixture to confirm Alt is clear and grab still moves a window");
+        fixture!.Dispose();
+        fixture = new TestWindow();
+        FocusFixture();
+        var second = fixture!;
+        var beforeEsc = second.KeyDownCount;
+        KeyboardHelper.SendKey(Key.Esc);
+        var esc = WaitHelper.WaitForStable(
+            () => second.KeyDownCount > beforeEsc && second.LastKeyCode == System.Windows.Forms.Keys.Escape,
+            seen => seen,
+            5_000,
+            requiredConsecutiveMatches: 2);
+        Assert.IsTrue(esc.Succeeded, $"The second fixture did not observe Esc; count={second.KeyDownCount}, key={second.LastKeyCode}, alt={second.LastKeyHadAlt}.");
+        Assert.IsFalse(second.LastKeyHadAlt, "Esc arrived with Alt held.");
+        DragAndAssert(Key.Alt, resize: false);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void GeometryOverlayAppearsOnlyDuringGesture(bool resize)
