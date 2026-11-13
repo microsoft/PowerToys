@@ -235,6 +235,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         QuickAccessShelf.RebuildCompleted += QuickAccessShelf_RebuildCompleted;
 
         this.InitializeComponent();
+        SearchBox.MultilineSearchInput = settings.MultilineSearchInput;
         _pageInteractions = new(MainCommandBar);
         _pageInteractions.DetailsChanged += PageInteractions_DetailsChanged;
         _pageInteractions.FocusSearchRequested += PageInteractions_FocusSearchRequested;
@@ -2318,7 +2319,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void OnSettingsChanged(ISettingsService sender, SettingsModel args)
     {
-        // Comparing and updating the compact-layout settings on the UI thread keeps the
+        // Comparing and updating the search and compact-layout settings on the UI thread keeps the
         // state single-threaded regardless of which thread raises the event.
         var compactMode = args.CompactMode;
         var quickAccessShelfEnabled = args.ShowQuickAccessShelf;
@@ -2327,6 +2328,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var recentCommandLimit = args.RecentCommandsDisplayLimit;
         this.DispatcherQueue.TryEnqueue(() =>
         {
+            SearchBox.MultilineSearchInput = args.MultilineSearchInput;
             QuickAccessShelf.SetItemConfiguration(
                 recentCommandsPlacement,
                 pinnedCommandLimit,

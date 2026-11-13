@@ -81,6 +81,8 @@ public record SettingsModel
 
     public bool KeepPreviousQuery { get; init; }
 
+    public bool MultilineSearchInput { get; init; } = true;
+
     public bool ShowSystemTrayIcon { get; init; } = true;
 
     public string Language { get; init; } = string.Empty;
@@ -260,7 +262,8 @@ public record SettingsModel
           int recentCommandsDisplayLimit = DefaultRecentCommandsDisplayLimit,
           bool dockFocusAcrossMonitors = true,
           bool dockRememberLastFocusedItem = true,
-          bool dockFocusPrimaryFirst = false)
+          bool dockFocusPrimaryFirst = false,
+          bool multilineSearchInput = true)
     {
         PinnedCommands = pinnedCommands ?? ImmutableList<PinnedCommandSettings>.Empty;
         ProviderSettings = providerSettings ?? ImmutableDictionary<string, ProviderSettings>.Empty;
@@ -273,6 +276,7 @@ public record SettingsModel
         DockFocusAcrossMonitors = dockFocusAcrossMonitors;
         DockRememberLastFocusedItem = dockRememberLastFocusedItem;
         DockFocusPrimaryFirst = dockFocusPrimaryFirst;
+        MultilineSearchInput = multilineSearchInput;
     }
 
     public SettingsModel()
