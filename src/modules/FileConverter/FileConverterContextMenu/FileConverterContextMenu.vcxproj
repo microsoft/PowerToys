@@ -59,14 +59,27 @@
   <ItemGroup>
     <ResourceCompile Include="..\Strings\FileConverter.rc" />
     <None Include="Source.def" />
-    <None Include="AppxManifest.xml" />
-    <None Include="Assets\FileConverter\LargeTile.png" />
-    <None Include="Assets\FileConverter\SmallTile.png" />
-    <None Include="Assets\FileConverter\SplashScreen.png" />
-    <None Include="Assets\FileConverter\Square150x150Logo.png" />
-    <None Include="Assets\FileConverter\Square44x44Logo.png" />
-    <None Include="Assets\FileConverter\storelogo.png" />
-    <None Include="Assets\FileConverter\Wide310x150Logo.png" />
+    <FileConverterPackageAsset Include="Assets\FileConverter\*.png" PackagePath="FileConverter.%(Filename)%(Extension)" />
+    <FileConverterPackageFile Include="AppxManifest.xml" PackagePath="AppxManifest.xml" />
+    <FileConverterPackageFile Include="@(FileConverterPackageAsset)" />
+    <None Include="@(FileConverterPackageFile)" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="BuildFileConverterContextMenuPackage"
+          AfterTargets="Link"
+          Condition="'$(Configuration)' == 'Release'"
+          Inputs="$(MSBuildProjectFullPath);$(TargetPath);@(FileConverterPackageFile)"
+          Outputs="$(OutDir)FileConverterContextMenuPackage.msix;@(FileConverterPackageAsset->'$(OutDir)%(PackagePath)')">
+    <!-- Windows resolves visual assets from the external location during registration. The installer harvests these files from WinUI3Apps. -->
+    <Copy SourceFiles="@(FileConverterPackageAsset)"
+          DestinationFiles="@(FileConverterPackageAsset->'$(OutDir)%(PackagePath)')" />
+    <WriteLinesToFile File="$(IntDir)FileConverterPackage.map"
+                      Lines="[Files];@(FileConverterPackageFile->'&quot;%(FullPath)&quot; &quot;%(PackagePath)&quot;')"
+                      Overwrite="true" />
+    <Exec Command="MakeAppx.exe pack /f &quot;$(IntDir)FileConverterPackage.map&quot; /p &quot;$(OutDir)FileConverterContextMenuPackage.msix&quot; /nv /o" />
+    <ItemGroup>
+      <FileWrites Include="$(IntDir)FileConverterPackage.map;$(OutDir)FileConverterContextMenuPackage.msix" />
+      <FileWrites Include="@(FileConverterPackageAsset->'$(OutDir)%(PackagePath)')" />
+    </ItemGroup>
+  </Target>
 </Project>

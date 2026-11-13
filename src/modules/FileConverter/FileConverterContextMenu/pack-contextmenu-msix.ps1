@@ -170,6 +170,14 @@ function Get-ManifestComDllPath {
     return [string]$classNode.Path
 }
 
+function Copy-ContextMenuAssets {
+    param([string]$Source, [string]$Destination)
+
+    Get-ChildItem -LiteralPath $Source -File -Filter '*.png' | ForEach-Object {
+        Copy-Item -LiteralPath $_.FullName -Destination (Join-Path $Destination "FileConverter.$($_.Name)") -Force
+    }
+}
+
 function Invoke-LooseRegistration {
     param(
         [string]$OutDir,
@@ -180,13 +188,11 @@ function Invoke-LooseRegistration {
 
     $registerRoot = Join-Path $OutDir "FileConverterDevRegister"
     New-Item -Path $registerRoot -ItemType Directory -Force | Out-Null
-    New-Item -Path (Join-Path $registerRoot "Assets") -ItemType Directory -Force | Out-Null
-
     Copy-Item -Path $ManifestPath -Destination (Join-Path $registerRoot "AppxManifest.xml") -Force
     Copy-Item -Path $BuiltContextMenuDllPath -Destination (Join-Path $registerRoot "PowerToys.FileConverterContextMenu.dll") -Force
-    Copy-Item -Path $AssetsSourcePath -Destination (Join-Path $registerRoot "Assets\\FileConverter") -Recurse -Force
+    Copy-ContextMenuAssets -Source $AssetsSourcePath -Destination $registerRoot
 
-    Add-AppxPackage -Register -Path (Join-Path $registerRoot "AppxManifest.xml") -ExternalLocation $registerRoot
+    Add-AppxPackage -Register -Path (Join-Path $registerRoot "AppxManifest.xml") -ExternalLocation $OutDir
     return $registerRoot
 }
 
@@ -215,15 +221,14 @@ try {
         Copy-Item -Path $sourceManifest -Destination $stagedManifest -Force
     }
 
-    Copy-Item -Path (Join-Path $scriptDir "Assets") -Destination (Join-Path $stagingRoot "Assets") -Recurse -Force
+    $assetsSource = Join-Path $scriptDir "Assets\FileConverter"
+    Copy-ContextMenuAssets -Source $assetsSource -Destination $stagingRoot
+    Copy-ContextMenuAssets -Source $assetsSource -Destination $outDir
 
     $manifestComDllPath = Get-ManifestComDllPath -ManifestPath $stagedManifest
     if ([System.IO.Path]::GetFileName($manifestComDllPath) -ne "PowerToys.FileConverterContextMenu.dll") {
         throw "Manifest com:Class Path must point to PowerToys.FileConverterContextMenu.dll. Current value: $manifestComDllPath"
     }
-
-    $stagedComDll = Join-Path $stagingRoot "PowerToys.FileConverterContextMenu.dll"
-    Copy-Item -Path $contextMenuDll -Destination $stagedComDll -Force
 
     $makeAppx = Get-MakeAppxPath
     $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
@@ -268,7 +273,7 @@ try {
         }
 
         if (-not $registerSucceeded) {
-            $looseRoot = Invoke-LooseRegistration -OutDir $outDir -ManifestPath $stagedManifest -BuiltContextMenuDllPath $contextMenuDll -AssetsSourcePath (Join-Path $scriptDir "Assets\\FileConverter")
+            $looseRoot = Invoke-LooseRegistration -OutDir $outDir -ManifestPath $stagedManifest -BuiltContextMenuDllPath $contextMenuDll -AssetsSourcePath $assetsSource
             Write-Host "Loose registration root:" $looseRoot
         }
     }
@@ -276,20 +281,13 @@ try {
     try {
         Copy-Item -Path $timestampedPackage -Destination $stablePackage -Force -ErrorAction Stop
         Write-Host "Updated stable package:" $stablePackage
-
-        if ($SignPackage -or $RegisterPackage) {
-            & $signTool sign /fd SHA256 /sha1 $cert.Thumbprint /s My $stablePackage
-            if ($LASTEXITCODE -ne 0) {
-                Write-Warning "Stable package signing failed with exit code $LASTEXITCODE."
-            }
-        }
     }
     catch {
         Write-Warning "Stable package copy skipped because destination appears locked."
     }
 
-    $allPackages = Get-ChildItem -Path $outDir -Filter "FileConverterContextMenuPackage.*.msix" |
-        Sort-Object LastWriteTime -Descending
+    $allPackages = @(Get-ChildItem -Path $outDir -Filter "FileConverterContextMenuPackage.*.msix" |
+        Sort-Object LastWriteTime -Descending)
 
     if ($allPackages.Count -gt $KeepRecent) {
         $allPackages | Select-Object -Skip $KeepRecent | Remove-Item -Force -ErrorAction SilentlyContinue
