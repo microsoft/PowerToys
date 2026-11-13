@@ -183,81 +183,6 @@ function Get-TrxSummary {
     return [pscustomobject]@{ Totals = [pscustomobject]$totals; Suites = $suites }
 }
 
-function Start-InteractiveTask {
-    param(
-        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
-        [Parameter(Mandatory)][string]$TaskName,
-        [Parameter(Mandatory)][string]$Executable,
-        [Parameter(Mandatory)][string]$Arguments,
-        [Parameter(Mandatory)][string]$UserName,
-        [Parameter(Mandatory)][int]$ExecutionTimeLimitMinutes
-    )
-
-    return Invoke-Command -Session $Session -ScriptBlock {
-        param($Name, $FilePath, $ArgumentList, $InteractiveUser, $LimitMinutes)
-
-        $ErrorActionPreference = 'Stop'
-        Unregister-ScheduledTask -TaskName $Name -Confirm:$false -ErrorAction SilentlyContinue
-        $action = New-ScheduledTaskAction -Execute $FilePath -Argument $ArgumentList
-        $principal = New-ScheduledTaskPrincipal `
-            -UserId "$env:COMPUTERNAME\$InteractiveUser" `
-            -LogonType Interactive -RunLevel Limited
-        # Priority 7 defaults to background CPU/I/O scheduling and propagates to
-        # product children. Interactive UI tests need normal scheduling under VM load.
-        $settings = New-ScheduledTaskSettingsSet -Priority 4 `
-            -ExecutionTimeLimit (New-TimeSpan -Minutes $LimitMinutes) `
-            -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-        $task = New-ScheduledTask -Action $action -Principal $principal -Settings $settings
-        Register-ScheduledTask -TaskName $Name -InputObject $task -Force | Out-Null
-        Start-ScheduledTask -TaskName $Name
-        $registered = Get-ScheduledTask -TaskName $Name
-        [pscustomobject]@{
-            TaskName = $Name
-            State = [string]$registered.State
-            UserId = $registered.Principal.UserId
-            RunLevel = [string]$registered.Principal.RunLevel
-        }
-    } -ArgumentList $TaskName, $Executable, $Arguments, $UserName, $ExecutionTimeLimitMinutes
-}
-
-function Get-InteractiveTaskInfo {
-    param(
-        [Parameter(Mandatory)][System.Management.Automation.Runspaces.PSSession]$Session,
-        [Parameter(Mandatory)][string]$TaskName,
-        [ValidateRange(1, 10)][int]$Attempts = 3
-    )
-
-    for ($attempt = 1; $attempt -le $Attempts; $attempt++) {
-        try {
-            return Invoke-Command -Session $Session -ScriptBlock {
-                param($Name)
-
-                $task = Get-ScheduledTask -TaskName $Name -ErrorAction SilentlyContinue
-                $info = Get-ScheduledTaskInfo -TaskName $Name -ErrorAction SilentlyContinue
-                $state = if ($null -ne $task) { [string]$task.State } else { 'Missing' }
-                $lastTaskResult = if ($null -ne $info) { [int]$info.LastTaskResult } else { $null }
-                $lastRunTimeUtc = if ($null -ne $info -and $info.LastRunTime.Year -gt 2000) {
-                    $info.LastRunTime.ToUniversalTime().ToString('o')
-                }
-                else {
-                    $null
-                }
-                [pscustomobject]@{
-                    State = $state
-                    LastTaskResult = $lastTaskResult
-                    LastRunTimeUtc = $lastRunTimeUtc
-                }
-            } -ArgumentList $TaskName -ErrorAction Stop
-        }
-        catch {
-            if ($attempt -eq $Attempts) {
-                throw
-            }
-            Start-Sleep -Milliseconds 250
-        }
-    }
-}
-
 $requiredFiles = @($TestsArchive, $ProductArchive, $WinAppCliArchive, $DotNetArchive)
 if (-not [string]::IsNullOrWhiteSpace($ProductOverlayArchive)) {
     $requiredFiles += $ProductOverlayArchive
@@ -475,7 +400,7 @@ namespace PowerToys.UiTests.LocalVm
         Write-Host "Installed the Visual C++ runtime in '$VmName' for failure-video capture."
     }
 
-    $guestPowerShell = 'C:\Program Files\PowerShell\7\pwsh.exe'
+    $guestPowerShell = Get-GuestPowerShellPath
     $powerShellPresent = Invoke-Command -Session $session -ScriptBlock {
         param($Path)
         Test-Path $Path -PathType Leaf
@@ -577,7 +502,7 @@ Add-Type -AssemblyName System.Windows.Forms
     $probeTask = Start-InteractiveTask `
         -Session $session -TaskName $probeTaskName `
         -Executable $guestPowerShell -Arguments $probeArguments `
-        -UserName $StandardUser -ExecutionTimeLimitMinutes 2
+        -UserName $StandardUser -ExecutionTimeLimitSeconds 120
     Write-Host "Desktop probe task: $($probeTask.TaskName), user $($probeTask.UserId)"
 
     $probeDeadline = [DateTime]::UtcNow.AddMinutes(2)
@@ -617,7 +542,7 @@ Add-Type -AssemblyName System.Windows.Forms
     $testTask = Start-InteractiveTask `
         -Session $session -TaskName $testTaskName `
         -Executable $guestPowerShell -Arguments $runnerArguments `
-        -UserName $StandardUser -ExecutionTimeLimitMinutes $taskLimitMinutes
+        -UserName $StandardUser -ExecutionTimeLimitSeconds ($taskLimitMinutes * 60)
     Write-Host "UI-test task: $($testTask.TaskName), user $($testTask.UserId)"
 
     $deadline = [DateTime]::UtcNow.AddMinutes($TimeoutMinutes)
