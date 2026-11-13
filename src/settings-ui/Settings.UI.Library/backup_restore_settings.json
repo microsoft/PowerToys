@@ -3,6 +3,7 @@
   "IncludeFiles": [
     "*Keyboard Manager\\default.json",
     "*Keyboard Manager\\editorSettings.json",
+    "*Keyboard Manager\\*.json",
     "*settings.json",
     "*FancyZones\\custom-layouts.json",
     "*FancyZones\\layout-hotkeys.json",
@@ -33,6 +34,12 @@
       "overwrite": true
     },
     "\\Keyboard Manager\\editorSettings.json": {
+      "overwrite": true
+    },
+    "\\Keyboard Manager\\settings.json": {
+      "overwrite": false
+    },
+    "\\Keyboard Manager\\*.json": {
       "overwrite": true
     }
   },

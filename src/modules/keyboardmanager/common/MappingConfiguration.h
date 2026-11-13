@@ -16,8 +16,29 @@ class MappingConfiguration
 public:
     ~MappingConfiguration() = default;
 
-    // Load the configuration.
-    bool LoadSettings();
+    // How a LoadSettings call ended, for callers that load into a fresh (staged) configuration and
+    // must tell "the active profile has no config file" apart from "the file could not be read now".
+    enum class LoadOutcome
+    {
+        // The active profile's config file was read; the tables hold its remaps (some entries may
+        // have been skipped as malformed, in which case LoadSettings returns false).
+        Loaded,
+
+        // The active profile's config file is confirmed absent; every remap table was cleared.
+        ConfirmedAbsent,
+
+        // settings.json or the profile's config file could not be read right now, or the profile name
+        // was not resolved; the tables were left as they were.
+        Failed,
+    };
+
+    // Load the configuration. If `outcome` is not null, it receives how the load ended.
+    bool LoadSettings(LoadOutcome* outcome = nullptr);
+
+    // Exchange every remap table, the derived scan-code map and the configuration name with `other`
+    // (container swaps only, no copies). Runtime state that is not part of a profile, such as
+    // numpadKeyPressed, is not exchanged.
+    void SwapMappings(MappingConfiguration& other) noexcept;
 
     bool IsConfigurationNameResolved() const;
 
