@@ -34,8 +34,9 @@ namespace RegistryPreviewUILib
 
         public MonacoEditorControl()
         {
-            InitializeComponent();
+            // WebView2 can initialize while the XAML controls are being created.
             Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", MonacoHelper.TempFolderPath, EnvironmentVariableTarget.Process);
+            InitializeComponent();
 
             _textChangedThrottle = new Timer(250);
             _textChangedThrottle.Elapsed += OnTextChangedThrottleElapsed;
