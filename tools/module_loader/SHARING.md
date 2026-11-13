@@ -104,6 +104,16 @@ Note: the module installs a low-level mouse hook; a locked button is released
 Size: ~650KB
 ```
 
+### CursorBrake
+```
+Files to share:
+  - x64\Debug\PowerToys.CursorBrake.dll  (or Release)
+  - %LOCALAPPDATA%\Microsoft\PowerToys\CursorBrake\settings.json
+
+Note: the module installs a low-level mouse hook and only acts with two or
+      more monitors.
+```
+
 ### AlwaysOnTop
 ```
 Files to share:

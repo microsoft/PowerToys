@@ -25,6 +25,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 case ModuleType.CropAndLock: return GPOWrapper.GetConfiguredCropAndLockEnabledValue();
                 case ModuleType.CursorWrap: return GPOWrapper.GetConfiguredCursorWrapEnabledValue();
                 case ModuleType.MouseButtonLock: return GPOWrapper.GetConfiguredMouseButtonLockEnabledValue();
+                case ModuleType.CursorBrake: return GPOWrapper.GetConfiguredCursorBrakeEnabledValue();
                 case ModuleType.EnvironmentVariables: return GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
                 case ModuleType.FancyZones: return GPOWrapper.GetConfiguredFancyZonesEnabledValue();
                 case ModuleType.FileLocksmith: return GPOWrapper.GetConfiguredFileLocksmithEnabledValue();
@@ -68,6 +69,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.CropAndLock => typeof(CropAndLockPage),
                 ModuleType.CursorWrap => typeof(MouseUtilsPage),
                 ModuleType.MouseButtonLock => typeof(MouseUtilsPage),
+                ModuleType.CursorBrake => typeof(MouseUtilsPage),
                 ModuleType.LightSwitch => typeof(LightSwitchPage),
                 ModuleType.EnvironmentVariables => typeof(EnvironmentVariablesPage),
                 ModuleType.FancyZones => typeof(FancyZonesPage),

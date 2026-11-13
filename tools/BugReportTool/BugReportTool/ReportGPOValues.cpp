@@ -68,6 +68,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredKeyboardManagerEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredKeyboardManagerEnabledValue()) << std::endl;
     report << "getConfiguredFindMyMouseEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFindMyMouseEnabledValue()) << std::endl;
     report << "getConfiguredMouseButtonLockEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseButtonLockEnabledValue()) << std::endl;
+    report << "getConfiguredCursorBrakeEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredCursorBrakeEnabledValue()) << std::endl;
     report << "getConfiguredMouseHighlighterEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseHighlighterEnabledValue()) << std::endl;
     report << "getConfiguredMouseJumpEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMouseJumpEnabledValue()) << std::endl;
     report << "getConfiguredMousePointerCrosshairsEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMousePointerCrosshairsEnabledValue()) << std::endl;

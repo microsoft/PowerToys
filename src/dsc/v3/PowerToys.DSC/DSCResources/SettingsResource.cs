@@ -43,6 +43,7 @@ public sealed class SettingsResource : BaseResource
             { nameof(ModuleType.Awake),                     CreateModuleFunctionData<AwakeSettings> },
             { nameof(ModuleType.ColorPicker),               CreateModuleFunctionData<ColorPickerSettings> },
             { nameof(ModuleType.CropAndLock),               CreateModuleFunctionData<CropAndLockSettings> },
+            { nameof(ModuleType.CursorBrake),               CreateModuleFunctionData<CursorBrakeSettings> },
             { nameof(ModuleType.EnvironmentVariables),      CreateModuleFunctionData<EnvironmentVariablesSettings> },
             { nameof(ModuleType.FancyZones),                CreateModuleFunctionData<FancyZonesSettings> },
             { nameof(ModuleType.FileLocksmith),             CreateModuleFunctionData<FileLocksmithSettings> },

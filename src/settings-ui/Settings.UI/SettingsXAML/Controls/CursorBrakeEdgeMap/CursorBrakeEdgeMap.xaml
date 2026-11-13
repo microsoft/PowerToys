@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<UserControl
+    x:Class="Microsoft.PowerToys.Settings.UI.Controls.CursorBrakeEdgeMap"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Grid>
+        <!--  The transparent background gives the map its full size in UI Automation, not just its drawn shapes.  -->
+        <Canvas
+            x:Name="MapCanvas"
+            Width="440"
+            Height="260"
+            AutomationProperties.AutomationId="MouseUtils_CursorBrakeEdgeMapId"
+            Background="Transparent" />
+        <!--  Hidden helpers that resolve the drawn shapes' brushes for the element theme, which an application resource lookup does not follow.  -->
+        <TextBlock
+            x:Name="TileFillBrush"
+            Foreground="{ThemeResource ControlAltFillColorTertiaryBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+        <TextBlock
+            x:Name="TileStrokeBrush"
+            Foreground="{ThemeResource SurfaceStrokeColorDefaultBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+        <TextBlock
+            x:Name="PrimaryTextBrush"
+            Foreground="{ThemeResource TextFillColorPrimaryBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+        <TextBlock
+            x:Name="TertiaryTextBrush"
+            Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+        <TextBlock
+            x:Name="AccentBrush"
+            Foreground="{ThemeResource AccentFillColorDefaultBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+        <TextBlock
+            x:Name="StrongStrokeBrush"
+            Foreground="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+        <TextBlock
+            x:Name="BaseBackgroundBrush"
+            Foreground="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+        <TextBlock
+            x:Name="BadgeFillBrush"
+            Foreground="{ThemeResource SolidBackgroundFillColorQuarternaryBrush}"
+            IsHitTestVisible="False"
+            Visibility="Collapsed" />
+    </Grid>
+</UserControl>
