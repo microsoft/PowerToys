@@ -5,35 +5,43 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.Text.Json;
-using System.Windows;
-using System.Windows.Threading;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.UI.Dispatching;
 using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
+using WorkspacesLauncherUI.Helpers;
 using WorkspacesLauncherUI.Models;
 
 namespace WorkspacesLauncherUI.ViewModels
 {
-    public class MainViewModel : INotifyPropertyChanged, IDisposable
+    public partial class MainViewModel : ObservableObject, IDisposable
     {
         private readonly Action<string> _sendMessage;
-        private readonly Func<SignatureWarningRequest, SignatureWarningWindow> _createWarning;
-        private readonly Dispatcher _dispatcher = Dispatcher.CurrentDispatcher;
+        private readonly Func<SignatureWarningRequest, ISignatureWarningWindow> _createWarning;
+        private readonly Action<Action, bool> _enqueue;
+        private readonly Func<bool> _canDisplayWarning;
+        private readonly Action _closeOwner;
+        private readonly Func<string, string, string, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> _loadIcon;
         private readonly HashSet<Guid> _seenRequests = new HashSet<Guid>();
-        private readonly bool _confirmationOnly;
-        private Window _snapshotWindow;
         private ActiveWarning _warning;
         private bool _stopped;
 
         public MainViewModel()
-            : this(false)
+            : this(false, () => false, () => { })
         {
         }
 
-        public MainViewModel(bool confirmationOnly)
-            : this(App.SendIPCMessage, request => new SignatureWarningWindow(request), confirmationOnly)
+        public MainViewModel(bool confirmationOnly, Func<bool> ownerVisible, Action closeOwner)
+            : this(
+                App.SendIPCMessage,
+                request => new SignatureWarningWindow(request),
+                (action, highPriority) => App.DispatcherQueue.TryEnqueue(highPriority ? DispatcherQueuePriority.High : DispatcherQueuePriority.Normal, () => action()),
+                () => confirmationOnly || ownerVisible(),
+                closeOwner,
+                IconHelper.TryGetApplicationIcon)
         {
             if (!confirmationOnly)
             {
@@ -41,30 +49,26 @@ namespace WorkspacesLauncherUI.ViewModels
             }
         }
 
-        internal MainViewModel(Action<string> sendMessage, Func<SignatureWarningRequest, SignatureWarningWindow> createWarning, bool confirmationOnly = false)
+        internal MainViewModel(
+            Action<string> sendMessage,
+            Func<SignatureWarningRequest, ISignatureWarningWindow> createWarning,
+            Action<Action, bool> enqueue,
+            Func<bool> canDisplayWarning,
+            Action closeOwner,
+            Func<string, string, string, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> loadIcon = null)
         {
             _sendMessage = sendMessage;
             _createWarning = createWarning;
-            _confirmationOnly = confirmationOnly;
+            _enqueue = enqueue;
+            _canDisplayWarning = canDisplayWarning;
+            _closeOwner = closeOwner;
+            _loadIcon = loadIcon;
             App.IPCMessageReceivedCallback = ReceiveMessage;
         }
 
         public ObservableCollection<AppLaunching> AppsListed { get; } = new ObservableCollection<AppLaunching>();
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
-        private void ReceiveMessage(string message)
-        {
-            if (!_dispatcher.HasShutdownStarted)
-            {
-                _dispatcher.BeginInvoke(DispatcherPriority.Send, new Action(() => HandleMessage(message)));
-            }
-        }
+        private void ReceiveMessage(string message) => _enqueue(() => HandleMessage(message), true);
 
         private void HandleMessage(string message)
         {
@@ -135,9 +139,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
                 var warning = new ActiveWarning(id, request);
                 _warning = warning;
-
-                // The pipe callback must return before ShowDialog enters a nested dispatcher.
-                _dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => ShowWarning(warning)));
+                _enqueue(() => ShowWarning(warning), false);
             }
             catch (Exception exception)
             {
@@ -160,54 +162,35 @@ namespace WorkspacesLauncherUI.ViewModels
         {
             if (!CanShowWarning(warning))
             {
-                if (ReferenceEquals(_warning, warning))
-                {
-                    Logger.LogWarning("The Workspaces elevation warning owner is unavailable.");
-                }
-
                 CompleteWarning(warning, false);
                 return;
             }
 
-            var run = false;
-            EventHandler rendered = (_, _) => OnWarningRendered(warning);
             try
             {
                 warning.Window = _createWarning(warning.Request);
-                if (!_confirmationOnly)
-                {
-                    warning.Window.Owner = _snapshotWindow;
-                }
-                else
-                {
-                    warning.Window.WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                    warning.Window.ShowInTaskbar = true;
-                    warning.Window.Topmost = true;
-                }
-
-                warning.Window.ContentRendered += rendered;
+                warning.Window.Rendered += (_, _) => OnWarningRendered(warning);
+                warning.Window.ChoiceMade += (_, run) => CompleteWarning(warning, run);
                 if (CanShowWarning(warning))
                 {
-                    run = warning.Window.ShowDialog() == true;
+                    warning.Window.Show();
                 }
                 else
                 {
-                    warning.Window.DismissWithoutResponse();
+                    if (ReferenceEquals(_warning, warning))
+                    {
+                        CompleteWarning(warning, false);
+                    }
+                    else
+                    {
+                        warning.Window.DismissWithoutResponse();
+                    }
                 }
             }
             catch (Exception exception)
             {
                 Logger.LogError("Unable to display the Workspaces elevation warning", exception);
-            }
-            finally
-            {
-                if (warning.Window != null)
-                {
-                    warning.Window.ContentRendered -= rendered;
-                }
-
-                CompleteWarning(warning, run);
-                warning.Window = null;
+                CompleteWarning(warning, false);
             }
         }
 
@@ -231,12 +214,7 @@ namespace WorkspacesLauncherUI.ViewModels
             }
         }
 
-        private bool CanShowWarning(ActiveWarning warning)
-        {
-            return !_stopped && ReferenceEquals(_warning, warning) && CanDisplayWarning;
-        }
-
-        private bool CanDisplayWarning => _confirmationOnly || _snapshotWindow?.IsVisible == true;
+        private bool CanShowWarning(ActiveWarning warning) => !_stopped && ReferenceEquals(_warning, warning) && _canDisplayWarning();
 
         private void CompleteWarning(ActiveWarning warning, bool? run)
         {
@@ -247,7 +225,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
             var allowRun = run == true && warning.Shown && CanShowWarning(warning);
 
-            // Clear before closing or sending: either can allow the next request to be dispatched.
+            // Clear before closing or sending: either can dispatch the next request.
             _warning = null;
             try
             {
@@ -261,14 +239,12 @@ namespace WorkspacesLauncherUI.ViewModels
 
             if (run.HasValue)
             {
-                SendResponse(warning.Request.RequestId, allowRun && !_stopped && CanDisplayWarning);
+                SendResponse(warning.Request.RequestId, allowRun && !_stopped && _canDisplayWarning());
             }
         }
 
-        private void SendResponse(string requestId, bool run)
-        {
+        private void SendResponse(string requestId, bool run) =>
             TrySendMessage(JsonSerializer.Serialize(new { type = "elevation-response", requestId, choice = run ? "run" : "skip" }));
-        }
 
         private bool TrySendMessage(string message)
         {
@@ -283,7 +259,7 @@ namespace WorkspacesLauncherUI.ViewModels
                 if (!_stopped)
                 {
                     Stop(false);
-                    _snapshotWindow?.Close();
+                    _closeOwner();
                 }
 
                 return false;
@@ -301,6 +277,7 @@ namespace WorkspacesLauncherUI.ViewModels
                 {
                     Name = app.Application.Application,
                     AppPath = app.Application.ApplicationPath,
+                    IconImage = _loadIcon?.Invoke(app.Application.ApplicationPath, app.Application.PackageFullName, app.Application.PwaAppId),
                     PackagedName = app.Application.PackageFullName,
                     Aumid = app.Application.AppUserModelId,
                     PwaAppId = app.Application.PwaAppId,
@@ -314,7 +291,7 @@ namespace WorkspacesLauncherUI.ViewModels
                 AppsListed.Add(app);
             }
 
-            OnPropertyChanged(new PropertyChangedEventArgs(nameof(AppsListed)));
+            OnPropertyChanged(nameof(AppsListed));
         }
 
         public void Dispose()
@@ -323,19 +300,11 @@ namespace WorkspacesLauncherUI.ViewModels
             GC.SuppressFinalize(this);
         }
 
-        internal void SetSnapshotWindow(Window snapshotWindow)
-        {
-            _snapshotWindow = snapshotWindow;
-        }
-
-        internal void CancelLaunch()
-        {
-            Stop(true);
-        }
+        [RelayCommand]
+        internal void CancelLaunch() => Stop(true);
 
         private void Stop(bool cancel)
         {
-            _dispatcher.VerifyAccess();
             if (_stopped)
             {
                 return;
@@ -366,7 +335,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
             internal SignatureWarningRequest Request { get; }
 
-            internal SignatureWarningWindow Window { get; set; }
+            internal ISignatureWarningWindow Window { get; set; }
 
             internal bool Rendered { get; set; }
 
