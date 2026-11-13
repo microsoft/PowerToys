@@ -14,9 +14,10 @@ internal static class ClipboardChoiceDialog
     /// <summary>Returns the pick, or null when cancelled, which cancels the whole snippet.</summary>
     /// <param name="target">The window being typed into; the window opens on its screen.</param>
     /// <param name="accepted">Runs on the window's thread as a pick is accepted, before the window goes.</param>
-    public static string? Show(ClipboardChoice choice, IntPtr target, Action? accepted = null)
+    public static string? Show(ClipboardChoice choice, IntPtr target, Action? accepted = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(choice);
+        cancellationToken.ThrowIfCancellationRequested();
 
         // Core asks only with two or more; anything less needs no window.
         if (choice.Options.Count < 2)
@@ -25,12 +26,13 @@ internal static class ClipboardChoiceDialog
             return choice.Options.Count == 1 ? choice.Options[0] : string.Empty;
         }
 
-        if (PromptHost.TryChoose(choice, target, accepted, out string? chosen))
+        if (PromptHost.TryChoose(choice, target, accepted, out string? chosen, cancellationToken))
         {
             return chosen;
         }
 
         // Without the Windows App SDK there's no window to pick in: the first, the newest from history, as without a choice.
+        cancellationToken.ThrowIfCancellationRequested();
         accepted?.Invoke();
         return choice.Options[0];
     }

@@ -34,8 +34,8 @@ namespace Microsoft.PowerToys.TextExpander
                     continue;
                 }
 
-                string fired = triggers.Index.MatchLongestSuffix(trigger.AsSpan(0, typed));
-                if (added?.MatchLongestSuffix(trigger.AsSpan(0, typed)) is { } longer && longer.Length > (fired?.Length ?? 0))
+                string fired = triggers.Index.MatchLongestSuffix(trigger.AsSpan(0, typed), wordMode);
+                if (added?.MatchLongestSuffix(trigger.AsSpan(0, typed), wordMode) is { } longer && longer.Length > (fired?.Length ?? 0))
                 {
                     fired = longer;
                 }
@@ -43,10 +43,7 @@ namespace Microsoft.PowerToys.TextExpander
                 if (fired is not null)
                 {
                     start = typed - fired.Length;
-                    if (!wordMode || WordBoundaryRules.StartsAtWordBoundary(trigger.AsSpan(0, start), fired))
-                    {
-                        return (trigger.Substring(start, fired.Length), trigger[typed]);
-                    }
+                    return (trigger.Substring(start, fired.Length), trigger[typed]);
                 }
             }
 

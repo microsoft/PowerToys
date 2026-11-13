@@ -1235,7 +1235,7 @@ public sealed class SnippetStoreTests
         using ScratchDirectory scratch = ScratchDirectory.Create();
         string path = Write(scratch, SnippetStore.FileName, "!mine=Mine");
         using var saved = new ManualResetEventSlim(false);
-        using SnippetStore store = NewStore(path, isDefault: true, maxReloadAttempts: 1);
+        using var store = new SnippetStore(path, isDefault: true);
         store.Reloaded += _ =>
         {
             if (store.Current.Map.ContainsKey("!saved"))
@@ -1260,6 +1260,59 @@ public sealed class SnippetStoreTests
         Assert.IsTrue(saved.Wait(TimeSpan.FromSeconds(5)), "The watcher didn't load the saved file.");
         Assert.AreEqual("Saved", store.Current.Map["!saved"]);
         Assert.AreEqual(1, store.Current.Map.Count, "No starter snippets.");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void AFailedRepointDoesNotReinitializeThePublishedDefaultDuringASave(bool failWatcherRegistration)
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string current = Write(scratch, SnippetStore.FileName, "!mine=Mine");
+        string next = Write(scratch, "next.json", "!next=Next");
+        if (!failWatcherRegistration)
+        {
+            File.WriteAllText(next, "{");
+        }
+
+        int refuseWatcher = 0;
+        Action? publishedFileChanged = null;
+        using var reloaded = new ManualResetEventSlim(false);
+        var hooks = new SnippetStore.TestHooks
+        {
+            WatcherFileEventHandlerRegistered = (_, handler) =>
+                Interlocked.CompareExchange(ref publishedFileChanged, handler, null),
+            BeforeWatcherActivation = _ =>
+            {
+                if (Volatile.Read(ref refuseWatcher) != 0)
+                {
+                    throw new IOException("Injected watcher registration failure after reading the next library.");
+                }
+            },
+            AfterWatcherReload = _ => reloaded.Set(),
+        };
+        using var store = NewStore(current, hooks: hooks, isDefault: true, maxReloadAttempts: 1);
+        Assert.IsTrue(store.Load().Succeeded);
+        Assert.IsTrue(store.StartWatching().Succeeded);
+        Assert.IsNotNull(publishedFileChanged);
+
+        Volatile.Write(ref refuseWatcher, failWatcherRegistration ? 1 : 0);
+        Assert.IsFalse(store.Repoint(next).Succeeded);
+        Assert.AreEqual(current, store.FilePath);
+        Assert.IsTrue(store.IsWatching, "A failed switch keeps the default library and its watcher active.");
+
+        string saving = current + ".saving";
+        File.WriteAllText(saving, SnippetJson.Of("!saved=Saved"));
+        File.Delete(current);
+        publishedFileChanged!();
+        Assert.IsTrue(reloaded.Wait(TimeSpan.FromSeconds(5)), "The retained watcher did not process the deletion.");
+        Assert.IsFalse(File.Exists(current), "A failed switch must not put starters in the external save's destination.");
+        Assert.AreEqual("Mine", store.Current.Map["!mine"]);
+
+        File.Move(saving, current, overwrite: false);
+        publishedFileChanged();
+        Assert.IsTrue(SpinWait.SpinUntil(() => store.Current.Map.ContainsKey("!saved"), TimeSpan.FromSeconds(5)));
+        Assert.AreEqual(1, store.Current.Map.Count, "The saved library contains no starter snippets.");
     }
 
     [TestMethod]

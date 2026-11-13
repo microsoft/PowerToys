@@ -35,10 +35,11 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 - On load, `enable()` and `disable()`, the module stops stray engines. It posts
   `PowerToys.TextExpander.RequestShutdown` to their `PowerToys.TextExpander.MessageWindow.powertoys`
   windows.
-- `disable()` then signals `TEXT_EXPANDER_EXIT_EVENT` and terminates its engine after 1.5 s. The event
+- `disable()` then signals `TEXT_EXPANDER_EXIT_EVENT` and terminates its engine after 10 s. The event
   is auto-reset, so it wakes only one engine.
 - The mutex `Local\PowerToys.TextExpander.SingleInstance` plus `.<instance>` allows one engine per
-  session. The engine exits with the runner or on the exit event, waiting up to 2 s for the worker.
+  session. The engine exits with the runner or on the exit event. Shutdown cancels unanswered prompts
+  and choices, then waits up to 10 s for the worker to finish any clipboard restoration.
 
 ## How an expansion works
 
@@ -46,8 +47,9 @@ erases each trigger and pastes or types the snippet. A separate editor manages t
 
 - `KeyboardHook` installs `WH_KEYBOARD_LL`, `WH_MOUSE_LL` and a foreground WinEvent hook. Each key
   event goes to `InsertionGuard.Swallows` first, and only key-downs reach matching.
-- `HostInputTags.Classify` ignores the engine's tag, runner replays (`0x110`) and Keyboard Manager's
-  suppressed keys (`0x111`). Command Palette's extension (`InputTags.CommandPalette`) never matches,
+- `HostInputTags.Classify` ignores the engine's tag and Keyboard Manager's suppressed keys (`0x111`).
+  `0x110` bypasses the runner's hotkeys but remains input here, including Quick Accent's edits.
+  Command Palette's extension (`InputTags.CommandPalette`) never matches,
   but ends what was typed, like a remap. Other injected input, like the touch keyboard, is typing.
 - With `treat_remaps_as_typing` off, keys with Keyboard Manager's bit `0x1` aren't matched. The
   engine's random tag sets that bit, so Keyboard Manager's key remaps skip it.
@@ -152,8 +154,10 @@ keys out of an insertion.
   keys go back.
 - After the end marker, held keys go back in rounds, with their own tags, so a key-up never passes its
   key-down. They go back only to their window, still in front. A focus change cancels the insertion.
-- The guard ends after 2 s without an engine event, or at 256 held key events. Typing past 2 s goes on
-  unguarded. A slow clipboard borrow gets a new start marker before the erase.
+- The guard ends after 2 s without an engine event, or at 256 held key events. Typing releases its
+  guard after 2 s and continues only if no non-modifier input reached the app, including returned
+  keys. Final cursor placement takes the guard again to release modifiers during its moves.
+  A slow clipboard borrow gets a new start marker before the erase.
 
 ### Erase
 

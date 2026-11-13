@@ -109,7 +109,9 @@ internal static class Program
         Clipboard.OwnerWindow = hwnd;
 
         ConfigureInjection(settings);
-        _hostSettings?.StartWatching(OnHostSettingsChanged, readAgain: settings is null);
+
+        // Settings can change while the initial library loads, even when the first settings read succeeded.
+        _hostSettings?.StartWatching(OnHostSettingsChanged, readAgain: true);
 
         _hostLink = HostLink.Create(args);
         _hostLink?.Start(() => Native.PostMessageW(hwnd, RequestShutdownMessage, IntPtr.Zero, IntPtr.Zero));
@@ -121,7 +123,8 @@ internal static class Program
             return 1;
         }
 
-        _worker = new Thread(ExpansionLoop)
+        using var shutdown = new CancellationTokenSource();
+        _worker = new Thread(() => ExpansionLoop(shutdown.Token))
         {
             IsBackground = true,
             Name = "PowerToys Text Expander",
@@ -136,6 +139,7 @@ internal static class Program
 
         RunMessageLoop();
 
+        shutdown.Cancel();
         _hook.Dispose();
         _worker.Join(WorkerDrainTimeoutMs);
 
@@ -353,7 +357,7 @@ internal static class Program
         }
     }
 
-    private static void ExpansionLoop()
+    private static void ExpansionLoop(CancellationToken cancellationToken)
     {
         if (_hook is null || _store is null)
         {
@@ -362,11 +366,15 @@ internal static class Program
 
         try
         {
-            foreach (PendingExpansion work in _hook.Pending.GetConsumingEnumerable())
+            foreach (PendingExpansion work in _hook.Pending.GetConsumingEnumerable(cancellationToken))
             {
                 try
                 {
-                    Expand(work);
+                    Expand(work, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    return;
                 }
                 catch
                 {
@@ -379,9 +387,13 @@ internal static class Program
         catch (InvalidOperationException)
         {
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+        }
     }
 
-    private static void Expand(PendingExpansion work) => Expand(_hook!, work, () => TryExpand(_hook!, work));
+    private static void Expand(PendingExpansion work, CancellationToken cancellationToken)
+        => Expand(_hook!, work, () => TryExpand(_hook!, work, cancellationToken: cancellationToken));
 
     /// <summary>
     /// Runs <paramref name="tryExpand"/> for <paramref name="work"/>, then lets go of what the guard still holds for it.
@@ -415,8 +427,9 @@ internal static class Program
     /// <paramref name="notify"/>, so nothing is typed, read from the keyboard, the clipboard or clipboard history, asked,
     /// chosen or shown.
     /// </summary>
-    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<ClipboardChoice, IntPtr, Action?, string?>? choose = null, Func<string?>? readClipboard = null, Func<ClipboardHistory>? readHistory = null, Action<IntPtr, IReadOnlyList<ClipboardGap>>? notify = null)
+    internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<ClipboardChoice, IntPtr, Action?, string?>? choose = null, Func<string?>? readClipboard = null, Func<ClipboardHistory>? readHistory = null, Action<IntPtr, IReadOnlyList<ClipboardGap>>? notify = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         replace ??= Injector.Replace;
         readClipboard ??= Clipboard.GetText;
 
@@ -433,6 +446,7 @@ internal static class Program
                 return false;
             }
 
+            cancellationToken.ThrowIfCancellationRequested();
             if (work.TargetWindow != IntPtr.Zero && Native.GetForegroundWindow() != work.TargetWindow)
             {
                 return false;
@@ -459,8 +473,9 @@ internal static class Program
 
         bool giveBack = false;
         ExpandedSnippet? expanded = Variables.MayAsk(work.Replacement)
-            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, work.InputGeneration, ask ?? PromptDialog.Show, choose ?? ClipboardChoiceDialog.Show, readClipboard, readHistory, isKeyDown, out giveBack)
+            ? ExpandWithPrompts(hook, work.Replacement, work.TargetWindow, work.InputGeneration, ask, choose, readClipboard, readHistory, isKeyDown, out giveBack, cancellationToken)
             : Variables.ExpandWithPromptRequests(work.Replacement, static _ => string.Empty, readClipboard, history: readHistory);
+        cancellationToken.ThrowIfCancellationRequested();
         if (expanded is null)
         {
             // A question was cancelled: nothing is erased or inserted, and the keystroke the hook swallowed goes back, so
@@ -520,8 +535,11 @@ internal static class Program
     /// Keys typed on after the trigger, which are held since its match (input generation <paramref name="generation"/>),
     /// cancel it before a window opens: the window would take them. They go back as typed, after that keystroke.
     /// </summary>
-    private static ExpandedSnippet? ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target, long generation, Func<PromptRequest, IntPtr, Action?, string?> ask, Func<ClipboardChoice, IntPtr, Action?, string?> choose, Func<string?> readClipboard, Func<ClipboardHistory>? readHistory, Func<int, bool>? isKeyDown, out bool giveBack)
+    private static ExpandedSnippet? ExpandWithPrompts(KeyboardHook hook, string replacement, IntPtr target, long generation, Func<PromptRequest, IntPtr, Action?, string?>? ask, Func<ClipboardChoice, IntPtr, Action?, string?>? choose, Func<string?> readClipboard, Func<ClipboardHistory>? readHistory, Func<int, bool>? isKeyDown, out bool giveBack, CancellationToken cancellationToken)
     {
+        ask ??= (request, window, accepted) => PromptDialog.Show(request, window, accepted, cancellationToken);
+        choose ??= (choice, window, accepted) => ClipboardChoiceDialog.Show(choice, window, accepted, cancellationToken);
+
         // Once the last window is answered, keys typed right away are held for the expansion, so they land after it. A
         // clipboard choice may follow the questions, so then the last question doesn't hold; the choice says if it's last.
         int prompts = SnippetTemplate.Parse(replacement).Count(token => token.Kind == SnippetTokenKind.Prompt);
@@ -548,6 +566,9 @@ internal static class Program
             hook.Suspended = false;
         }
 
+        // Shutdown cancels the work itself, rather than returning a cancelled prompt to an app and taking focus back.
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Only once a window of ours took the front. A snippet that asked nothing, as with one match, never pulls the app
         // back in front: if the user went elsewhere meanwhile, the expansion is dropped instead.
         if (target != IntPtr.Zero && shown)
@@ -564,8 +585,11 @@ internal static class Program
 
         void Hold()
         {
-            holding = true;
-            hook.Guard.Hold(target);
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                holding = true;
+                hook.Guard.Hold(target);
+            }
         }
 
         // Esc, Cancel or the close button cancels the whole snippet: nothing more is asked or chosen, nor is the clipboard
@@ -581,6 +605,7 @@ internal static class Program
 
             shown = true;
             string? answer = ask(request, target, --prompts == 0 && !mayChoose ? Hold : null);
+            cancellationToken.ThrowIfCancellationRequested();
             if (answer is null)
             {
                 Cancel();
@@ -598,6 +623,7 @@ internal static class Program
 
             shown = true;
             string? chosen = choose(choice, target, choice.IsLast ? Hold : null);
+            cancellationToken.ThrowIfCancellationRequested();
             if (chosen is null)
             {
                 Cancel();
@@ -612,6 +638,7 @@ internal static class Program
         // was held since the match went back, the swallowed key first, once the insertion was too long coming.
         bool WindowMayOpen()
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!hook.Guard.Unchanged(generation))
             {
                 cancelled = true;

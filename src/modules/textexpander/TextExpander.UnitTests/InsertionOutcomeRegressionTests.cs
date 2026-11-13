@@ -10,11 +10,23 @@ namespace Microsoft.PowerToys.TextExpander.UnitTests;
 public sealed class InsertionOutcomeRegressionTests
 {
     [TestMethod]
-    public void TerminalUndoUsesTheTextActuallyTyped()
+    [DataRow("ab\u000Fcd", "abcd ", true, 0)]
+    [DataRow("a\nb", "a\nb ", false, 0)]
+    [DataRow("a\r\nb", "a\nb ", false, 0)]
+    [DataRow("a\rb", "ab ", false, 0)]
+    [DataRow("a$|$\nb", "a\nb ", false, 3)]
+    [DataRow("a$|$\r\nb", "a\nb ", false, 3)]
+    [DataRow("a$|$\rb", "ab ", false, 2)]
+    [DataRow("a\r$|$b", "ab ", false, 2)]
+    [DataRow("a$|$\r\r\nb", "a\nb ", false, 3)]
+    [DataRow("a$|$\r", "a ", false, 1)]
+    public void CursorPlacementAndUndoUseTheTextActuallyTyped(string replacement, string expected, bool terminal, int expectedCursorLeft)
     {
         using ScratchDirectory scratch = ScratchDirectory.Create();
         string path = Path.Combine(scratch.Path, "snippets.json");
-        File.WriteAllText(path, SnippetJson.Of("!x=ab\u000Fcd"));
+
+        // A hand-edited file preserves CR, unlike an editor save, which normalizes line breaks.
+        File.WriteAllText(path, SnippetJson.Of("!x=" + replacement));
         using var store = new SnippetStore(path);
         Assert.AreEqual(1, store.Load().Count);
         using var hook = new KeyboardHook(store)
@@ -49,22 +61,71 @@ public sealed class InsertionOutcomeRegressionTests
                 sleep: _ => { },
                 inserted: inserted,
                 givenBack: givenBack,
-                isWindowsTerminal: _ => true,
+                isWindowsTerminal: _ => terminal,
                 fromClipboard: fromClipboard,
                 isConsole: _ => false,
                 swallowed: swallowed);
 
             Assert.IsTrue(Program.Expand(hook, work, () => Program.TryExpand(hook, work, replace)));
-            Assert.AreEqual("PREFIX abcd ", box.Text);
+            Assert.AreEqual("PREFIX " + expected, box.Text);
+            Assert.AreEqual(box.Text.Length - expectedCursorLeft, box.Caret);
             Assert.IsTrue(hook.ProcessKey((uint)'Z', 0, ctrl: true, alt: false, shift: false, win: false));
             Assert.IsTrue(hook.Pending.TryTake(out PendingExpansion undo));
-            Assert.AreEqual("abcd ", undo.Replacement);
+            Assert.AreEqual(expected, undo.Replacement);
+            Assert.AreEqual(expectedCursorLeft, undo.CursorLeft);
             Assert.IsTrue(Program.Expand(hook, undo, () => Program.TryExpand(hook, undo, replace, isKeyDown: _ => false)));
             Assert.AreEqual("PREFIX !x ", box.Text);
         }
         finally
         {
             WordBoundary.Required = required;
+            Injector.Backend = backend;
+        }
+    }
+
+    [TestMethod]
+    public void PastingKeepsCarriageReturnsAndTheOriginalCursorOffset()
+    {
+        using var box = new FakeTextBox("PREFIX ");
+        InjectionBackend backend = Injector.Backend;
+        string? published = null;
+        string? recorded = null;
+        int recordedCursorLeft = -1;
+        try
+        {
+            Injector.Backend = InjectionBackend.Clipboard;
+            Assert.IsTrue(Injector.ReplaceCore(
+                0,
+                "ab\rcd",
+                IntPtr.Zero,
+                3,
+                _ => true,
+                box.Guard,
+                box.Hook.InputGeneration,
+                () => new IntPtr(1),
+                (text, target, send, keepAlive) =>
+                {
+                    published = text;
+                    return box.Paste(text, target, send, keepAlive);
+                },
+                box.Dispatch,
+                getAsyncKeyState: _ => 0,
+                sleep: _ => { },
+                inserted: (text, left) =>
+                {
+                    recorded = text;
+                    recordedCursorLeft = left;
+                },
+                isOpenByTarget: box.TookPaste,
+                isWindowsTerminal: _ => false,
+                isConsole: _ => false));
+
+            Assert.AreEqual("ab\rcd", published);
+            Assert.AreEqual("ab\rcd", recorded);
+            Assert.AreEqual(3, recordedCursorLeft);
+        }
+        finally
+        {
             Injector.Backend = backend;
         }
     }

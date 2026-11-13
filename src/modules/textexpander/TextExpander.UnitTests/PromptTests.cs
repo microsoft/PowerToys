@@ -86,6 +86,97 @@ public sealed class PromptTests
     }
 
     [TestMethod]
+    public void ShutdownPreventsOpeningAPromptOrAcceptingAChoice()
+    {
+        using var shutdown = new CancellationTokenSource();
+        shutdown.Cancel();
+        var request = new PromptRequest("Name", Required: true);
+        var choice = new ClipboardChoice(ClipboardPart.All, FromHistory: true, ["one"], IsLast: true);
+        int accepted = 0;
+
+        Assert.ThrowsException<OperationCanceledException>(() => PromptDialog.Show(request, IntPtr.Zero, () => accepted++, shutdown.Token));
+        Assert.ThrowsException<OperationCanceledException>(() => ClassicPromptDialog.Show(request, () => accepted++, shutdown.Token));
+        Assert.ThrowsException<OperationCanceledException>(() => ClipboardChoiceDialog.Show(choice, IntPtr.Zero, () => accepted++, shutdown.Token));
+        Assert.AreEqual(0, accepted);
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("Ada")]
+    public void ShutdownDuringAPromptSkipsFurtherQuestionsClipboardReadsAndInsertion(string? answer)
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using var store = new SnippetStore(Path.Combine(scratch.Path, "snippets.json"));
+        using var hook = new KeyboardHook(store);
+        using var shutdown = new CancellationTokenSource();
+        var work = new PendingExpansion("!ask", "!ask", "{{prompt:Name}}{{prompt:Team}}{{clipboard}}", IntPtr.Zero, SwallowedText: " ");
+        int questions = 0;
+        int clipboardReads = 0;
+        int insertions = 0;
+
+        Assert.ThrowsException<OperationCanceledException>(() => Program.TryExpand(
+            hook,
+            work,
+            (_, _, _, _, _, _, _, _, _, _, _) =>
+            {
+                insertions++;
+                return true;
+            },
+            isKeyDown: _ => false,
+            ask: (_, _, _) =>
+            {
+                questions++;
+                shutdown.Cancel();
+                return answer;
+            },
+            readClipboard: () =>
+            {
+                clipboardReads++;
+                return "copy";
+            },
+            cancellationToken: shutdown.Token));
+
+        Assert.AreEqual(1, questions);
+        Assert.AreEqual(0, clipboardReads);
+        Assert.AreEqual(0, insertions, "Shutdown must not insert the snippet or give back the swallowed key as a normal cancellation would.");
+        Assert.IsFalse(hook.Suspended);
+    }
+
+    [TestMethod]
+    public void ShutdownDuringAClipboardChoiceSkipsInsertion()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        using var store = new SnippetStore(Path.Combine(scratch.Path, "snippets.json"));
+        using var hook = new KeyboardHook(store);
+        using var shutdown = new CancellationTokenSource();
+        var work = new PendingExpansion("!pick", "!pick", "{{clipboard:email}}", IntPtr.Zero, SwallowedText: " ");
+        int choices = 0;
+        int insertions = 0;
+
+        Assert.ThrowsException<OperationCanceledException>(() => Program.TryExpand(
+            hook,
+            work,
+            (_, _, _, _, _, _, _, _, _, _, _) =>
+            {
+                insertions++;
+                return true;
+            },
+            isKeyDown: _ => false,
+            choose: (_, _, _) =>
+            {
+                choices++;
+                shutdown.Cancel();
+                return null;
+            },
+            readClipboard: () => "a@example.com b@example.com",
+            cancellationToken: shutdown.Token));
+
+        Assert.AreEqual(1, choices);
+        Assert.AreEqual(0, insertions);
+        Assert.IsFalse(hook.Suspended);
+    }
+
+    [TestMethod]
     public void ClipboardHistoryIsReadAheadOnlyForASnippetThatPicksFromItAndWaitedForAtMostAWhile()
     {
         Assert.IsTrue(ClipboardChoiceDialog.PicksCopy("{{clipboard:pick}}"));

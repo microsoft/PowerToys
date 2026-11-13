@@ -210,7 +210,7 @@ internal sealed class HostSettings : IDisposable
     /// Watches the file so a change in the Settings app takes effect without restarting the
     /// module. <paramref name="onChanged"/> runs on a timer thread, and returns false when it couldn't read the file:
     /// it's then called again, up to <see cref="MaxRetries"/> more times, before waiting for the next change. With
-    /// <paramref name="readAgain"/>, for a file that couldn't be read at startup, it's called once soon without a change too.
+    /// <paramref name="readAgain"/>, it's called once soon to catch changes between the initial read and registration.
     /// </summary>
     public void StartWatching(Func<bool> onChanged, bool readAgain = false)
     {

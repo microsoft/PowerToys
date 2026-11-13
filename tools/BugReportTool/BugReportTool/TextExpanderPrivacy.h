@@ -429,13 +429,13 @@ inline bool IsKeptInReport(const std::wstring &relative, bool directory) {
 // The largest file the engine and the editor read: .NET's Array.MaxLength.
 inline constexpr std::uint64_t MaxSnippetFileSize = 0x7FFFFFC7;
 
-// Eight characters, each at most six bytes as \uXXXX, plus the two quotes.
-inline constexpr size_t MaxEncodedMarkerBytes = 2 + 6 * 8;
+// "replacement" is the longest marker: each character can be six bytes as \uXXXX, plus quotes.
+inline constexpr size_t MaxEncodedMarkerBytes = 2 + 6 * 11;
 
 // Decode only short escaped strings, not the surrounding file: snippets may
 // have comments and trailing commas, and other report files need not be JSON.
 inline void ObserveEscapedSnippetMarkers(std::string_view text, bool &snippets,
-                                         bool &trigger) {
+                                         bool &entry) {
   if (text.find("\\u") == std::string_view::npos) {
     return;
   }
@@ -443,7 +443,7 @@ inline void ObserveEscapedSnippetMarkers(std::string_view text, bool &snippets,
   // Inspect each quote independently. A chunk may begin inside an unrelated
   // string, so treating its first quote as an opening must not hide a later one.
   for (size_t start = text.find('"');
-       start != std::string_view::npos && !(snippets && trigger);
+       start != std::string_view::npos && !(snippets && entry);
        start = text.find('"', start + 1)) {
     bool unicodeEscape = false;
     for (size_t offset = 1;
@@ -465,8 +465,10 @@ inline void ObserveEscapedSnippetMarkers(std::string_view text, bool &snippets,
               const int length = static_cast<int>(name.size());
               snippets = snippets || CompareStringOrdinal(name.c_str(), length,
                                                           L"snippets", 8, TRUE) == CSTR_EQUAL;
-              trigger = trigger || CompareStringOrdinal(name.c_str(), length,
-                                                        L"trigger", 7, TRUE) == CSTR_EQUAL;
+              entry = entry || CompareStringOrdinal(name.c_str(), length,
+                                                    L"trigger", 7, TRUE) == CSTR_EQUAL ||
+                      CompareStringOrdinal(name.c_str(), length,
+                                           L"replacement", 11, TRUE) == CSTR_EQUAL;
             }
           } catch (const winrt::hresult_error &) {
             // Unrelated log or binary bytes need not be valid UTF-8 strings.
@@ -478,8 +480,9 @@ inline void ObserveEscapedSnippetMarkers(std::string_view text, bool &snippets,
   }
 }
 
-// Whether a file holds snippets: it has both "snippets" and "trigger", quoted,
-// in any case, including JSON-escaped spellings. Its name doesn't matter, since
+// Whether a file holds snippets: "snippets" plus "trigger" or "replacement", quoted,
+// in any case, including JSON-escaped spellings. The editor keeps entries without
+// a trigger too. Its name doesn't matter, since
 // the editor and the engine use a snippets file of any name, such as work.txt,
 // and its backups and copies are named after it. Only escaped marker strings
 // are parsed; the file itself may have comments and trailing commas. Bytes are
@@ -495,14 +498,15 @@ inline bool HoldsSnippets(const std::filesystem::path &file) {
 
   constexpr std::string_view snippetsKey = "\"snippets\"";
   constexpr std::string_view triggerKey = "\"trigger\"";
+  constexpr std::string_view replacementKey = "\"replacement\"";
   std::ifstream stream(file, std::ios::binary);
   std::string chunk(64 * 1024, '\0');
   std::string text;
   std::string carry;
   std::uint64_t read = 0;
   bool snippets = false;
-  bool trigger = false;
-  while (stream && !(snippets && trigger)) {
+  bool entry = false;
+  while (stream && !(snippets && entry)) {
     stream.read(chunk.data(), static_cast<std::streamsize>(chunk.size()));
     const size_t count = static_cast<size_t>(stream.gcount());
     read += count;
@@ -516,7 +520,7 @@ inline bool HoldsSnippets(const std::filesystem::path &file) {
                            ? text.size() - (MaxEncodedMarkerBytes - 1)
                            : 0,
                  std::string::npos);
-    ObserveEscapedSnippetMarkers(text, snippets, trigger);
+    ObserveEscapedSnippetMarkers(text, snippets, entry);
 
     // The ordinary literal markers still use the byte-search fast path.
     for (char &ch : text) {
@@ -524,10 +528,11 @@ inline bool HoldsSnippets(const std::filesystem::path &file) {
     }
 
     snippets = snippets || text.find(snippetsKey) != std::string::npos;
-    trigger = trigger || text.find(triggerKey) != std::string::npos;
+    entry = entry || text.find(triggerKey) != std::string::npos ||
+            text.find(replacementKey) != std::string::npos;
   }
 
-  return (snippets && trigger) || read != size;
+  return (snippets && entry) || read != size;
 }
 
 // Leaves the user's snippets out of a report: the snippets files and the copies

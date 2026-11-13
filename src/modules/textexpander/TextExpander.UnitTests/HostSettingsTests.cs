@@ -208,6 +208,32 @@ public sealed class HostSettingsTests
     }
 
     [TestMethod]
+    public void SettingsChangedAfterASuccessfulStartupReadAreReadAgainWhenWatchingStarts()
+    {
+        using ScratchDirectory scratch = ScratchDirectory.Create();
+        string file = Path.Combine(scratch.Path, "settings.json");
+        File.WriteAllText(file, "{\"properties\":{\"clipboard_threshold_chars\":{\"value\":5}}}");
+        using var read = new ManualResetEventSlim(false);
+        using HostSettings settings = HostSettings.Create([$"--settings:{file}"])!;
+        HostSettings.Values? applied = settings.Read();
+        Assert.AreEqual(5, applied?.ClipboardThresholdChars);
+
+        // The Settings app can save while the engine loads its initial snippet library, before the watcher exists.
+        File.WriteAllText(file, "{\"properties\":{\"clipboard_threshold_chars\":{\"value\":42}}}");
+        settings.StartWatching(
+            () =>
+            {
+                applied = settings.Read();
+                read.Set();
+                return applied is not null;
+            },
+            readAgain: true);
+
+        Assert.IsTrue(read.Wait(TimeSpan.FromSeconds(5)), "No second file change should be needed to apply the saved options.");
+        Assert.AreEqual(42, applied?.ClipboardThresholdChars);
+    }
+
+    [TestMethod]
     [DoNotParallelize]
     public void OverlappingReloadsApplyTheLatestLibraryAfterTheEarlierCallbackFinishes()
     {

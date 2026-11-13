@@ -26,13 +26,15 @@ internal static class ClassicPromptDialog
     private static Action? _accepted;
 
     /// <summary>Shows the dialog modally. Returns null when cancelled; <paramref name="accepted"/> runs as an answer is accepted.</summary>
-    public static string? Show(PromptRequest request, Action? accepted = null)
+    public static string? Show(PromptRequest request, Action? accepted = null, CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         // Laid out in fixed pixels, so let Windows scale it.
         IntPtr previous = Native.SetThreadDpiAwarenessContext(Native.DPI_AWARENESS_CONTEXT_UNAWARE);
         try
         {
-            return ShowUnscaled(request, accepted);
+            return ShowUnscaled(request, accepted, cancellationToken);
         }
         finally
         {
@@ -43,7 +45,7 @@ internal static class ClassicPromptDialog
         }
     }
 
-    private static string? ShowUnscaled(PromptRequest request, Action? accepted)
+    private static string? ShowUnscaled(PromptRequest request, Action? accepted, CancellationToken cancellationToken)
     {
         EnsureClassRegistered();
 
@@ -95,10 +97,16 @@ internal static class ClassicPromptDialog
             Native.SendMessageW(control, Native.WM_SETFONT, font, new IntPtr(1));
         }
 
+        // Wake this thread's modal loop on shutdown; the worker then propagates cancellation without returning focus.
+        using CancellationTokenRegistration cancellation = cancellationToken.Register(
+            () => Native.PostMessageW(hwnd, Native.WM_CLOSE, IntPtr.Zero, IntPtr.Zero));
         Native.EnableWindow(_okHandle, !request.Required);
-        Native.ShowWindow(hwnd, Native.SW_SHOW);
-        WindowFocus.Force(hwnd);
-        Native.SetFocus(_editHandle);
+        if (!cancellationToken.IsCancellationRequested)
+        {
+            Native.ShowWindow(hwnd, Native.SW_SHOW);
+            WindowFocus.Force(hwnd);
+            Native.SetFocus(_editHandle);
+        }
 
         RunModalLoop(hwnd);
 
@@ -107,6 +115,8 @@ internal static class ClassicPromptDialog
         _editHandle = IntPtr.Zero;
         _okHandle = IntPtr.Zero;
         _errorHandle = IntPtr.Zero;
+        _accepted = null;
+        cancellationToken.ThrowIfCancellationRequested();
         return result;
     }
 

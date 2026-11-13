@@ -232,8 +232,7 @@ internal static class Injector
         PasteHold hold = default;
         tryPaste ??= (pasteText, window, send, keepAlive) => TryPaste(pasteText, window, send, keepAlive, () => hold);
 
-        // Clicks aren't held: one from now on stops the insertion. They're counted apart from the input generation, which
-        // is taken again once held keys go back mid-typing, so a click then isn't taken in with them.
+        // Clicks aren't held: one from now on stops the insertion, and held keys wait for the mouse buttons to go up.
         long clicks = guard.Clicks;
 
         // The window must still be in front and drivable, and nothing since the match may have moved the caret.
@@ -359,14 +358,29 @@ internal static class Injector
         // are read again, rather than erase unguarded. Nothing is erased if a click, which isn't held, moved the caret.
         bool Insert(bool paste)
         {
+            // Typing skips CR, including the CR in a CR LF pair. Undo and cursor placement count only what is typed;
+            // the clipboard path keeps its original text and offset.
+            int left = cursorLeftUnits;
+            if (!paste && typed.Contains('\r'))
+            {
+                if (left > 0)
+                {
+                    int[] elements = System.Globalization.StringInfo.ParseCombiningCharacters(typed);
+                    int suffixStart = elements[Math.Max(0, elements.Length - left)];
+                    left = CountDeletableUnits(typed[suffixStart..].Replace("\r", string.Empty, StringComparison.Ordinal));
+                }
+
+                typed = typed.Replace("\r", string.Empty, StringComparison.Ordinal);
+            }
+
             bool done = (guard.Renew() || (!guard.Cancelled && Start()))
                 && guard.Unchanged(inputGeneration)
                 && EraseTrigger()
                 && (paste ? PasteChord() : TypeText(typed))
-                && SendChunks(Presses(Native.VK_LEFT, cursorLeftUnits));
+                && PlaceCaret(left);
             if (done)
             {
-                inserted?.Invoke(paste ? text : typed, cursorLeftUnits);
+                inserted?.Invoke(paste ? text : typed, left);
             }
 
             return done;
@@ -407,16 +421,33 @@ internal static class Injector
             return true;
         }
 
+        // A long typed insertion may have returned held modifiers at its cap. Hold input again and release the current
+        // modifiers before moving the caret, or Left would select text with Shift or move by words with Ctrl.
+        bool PlaceCaret(int left)
+        {
+            if (left <= 0)
+            {
+                return true;
+            }
+
+            if (!guarded && (!OnTarget() || !Start() || !SendChunks(Modifiers(modifiers, up: true))))
+            {
+                return false;
+            }
+
+            return SendChunks(Presses(Native.VK_LEFT, left));
+        }
+
         // The end marker, after the paste's settle and restore: the keys held meanwhile go back after it all.
-        (bool Completed, long InputGeneration) EndGuard(bool matchReturnedKeys = true)
+        bool EndGuard(bool matchReturnedKeys = true)
         {
             if (guarded)
             {
                 guarded = false;
-                return guard.AwaitEnd(DispatchExactly(dispatch, [marker]), pressAgain, matchReturnedKeys);
+                return guard.AwaitEnd(DispatchExactly(dispatch, [marker]), pressAgain, matchReturnedKeys).Completed;
             }
 
-            return (true, inputGeneration);
+            return true;
         }
 
         // For a second at most, with the guard kept on: keys typed meanwhile are held too.
@@ -579,18 +610,14 @@ internal static class Injector
                     sleep(delay);
                 }
 
-                // Keys are held for HoldCapMs at most; the rest of the text goes in unguarded. Going back, they move the
-                // input generation on themselves. The confirmed drain returns that generation before fresh input can
-                // pass; a later key stops the rest, and so does a click, as clicks are counted apart.
+                // Keys are held for HoldCapMs at most. Keep the original generation: returned keys can move the caret
+                // just like fresh input, so either stops the remaining insertion. With no input, typing can continue.
                 if (guarded && guard.Overdue && guard.Unchanged(inputGeneration))
                 {
-                    (bool completed, long returnedGeneration) = EndGuard(matchReturnedKeys: false);
-                    if (!completed)
+                    if (!EndGuard(matchReturnedKeys: false))
                     {
                         return false;
                     }
-
-                    inputGeneration = returnedGeneration;
                 }
             }
 

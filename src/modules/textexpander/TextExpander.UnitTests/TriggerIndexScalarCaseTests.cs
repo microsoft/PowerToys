@@ -142,15 +142,17 @@ public sealed class TriggerIndexScalarCaseTests
     }
 
     [TestMethod]
-    public void IgnoringCaseMatchingAllocatesNothing()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void IgnoringCaseMatchingAllocatesNothing(bool requireWordBoundary)
     {
-        TriggerIndex index = TriggerIndex.Build(["!" + AdlamSmallAlif, "!" + DeseretCapitalLongI + "x", "btw", "caf\u00E9"], caseSensitive: false);
-        string[] tails = ["typed !" + AdlamCapitalAlif, "typed !" + DeseretSmallLongI + "X", "BTW", "CAF\u00C9", "\u03A9\u0416" + AdlamCapitalAlif, "\U0001F600", "none"];
+        TriggerIndex index = TriggerIndex.Build(["!" + AdlamSmallAlif, "!" + DeseretCapitalLongI + "x", "btw", "caf\u00E9", "call", "on call"], caseSensitive: false);
+        string[] tails = ["typed !" + AdlamCapitalAlif, "typed !" + DeseretSmallLongI + "X", "BTW", "CAF\u00C9", "\u03A9\u0416" + AdlamCapitalAlif, "\U0001F600", "none", "Python CALL"];
 
         // The runtime fills its casing table for a block of characters the first time it sees one.
         foreach (string tail in tails)
         {
-            _ = index.MatchLongestSuffix(tail);
+            _ = index.MatchLongestSuffix(tail, requireWordBoundary);
         }
 
         long before = GC.GetAllocatedBytesForCurrentThread();
@@ -158,7 +160,7 @@ public sealed class TriggerIndexScalarCaseTests
         {
             foreach (string tail in tails)
             {
-                _ = index.MatchLongestSuffix(tail);
+                _ = index.MatchLongestSuffix(tail, requireWordBoundary);
             }
         }
 

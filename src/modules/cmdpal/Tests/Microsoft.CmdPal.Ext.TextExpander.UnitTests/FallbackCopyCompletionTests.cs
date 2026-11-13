@@ -7,6 +7,7 @@ using Microsoft.CmdPal.Ext.TextExpander.Commands;
 using Microsoft.CmdPal.Ext.TextExpander.Insertion;
 using Microsoft.CmdPal.Ext.TextExpander.Pages;
 using Microsoft.CmdPal.Ext.TextExpander.Properties;
+using Microsoft.CmdPal.Ext.TextExpander.Snippets;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -42,6 +43,42 @@ public sealed class FallbackCopyCompletionTests
         Assert.AreEqual(("Hi Your name", false), environment.Clipboard.Writes.Single());
         Assert.AreEqual(string.Empty, answer.Text);
         Assert.AreEqual("Hi [Name]", page.Command.Subtitle);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void FallbackCopy_TextExpanderTurnedOffAfterPasteFailed_DoesNotCopyOrClearAnswers(bool disabledByPolicy)
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!greet", "Hi {{prompt:Name}}"));
+        environment.Clipboard.Text = "Something the user copied";
+        environment.Desktop.CanDriveTarget = false;
+        var page = new SnippetAnswersPage(environment.SnippetFor("!greet"), environment.Actions);
+        var answer = page.Parameters.OfType<AnswerRun>().Single();
+        answer.Text = "Your name";
+        var failed = ((IInvokableCommand)page.Command.Command!).Invoke(null);
+        var copy = (CopySnippetCommand)((ToastArgs)failed.Args!).Command!;
+
+        if (disabledByPolicy)
+        {
+            environment.Policies.Values[TextExpanderPolicy.TextExpanderValueName] = 0;
+        }
+        else
+        {
+            environment.Folder.SetEnabled(false);
+        }
+
+        Assert.IsFalse(environment.Source.GetState().IsOn);
+        var result = copy.Invoke();
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toast = (ToastArgs)result.Args!;
+        Assert.AreEqual(Resources.toast_off, toast.Message);
+        Assert.AreEqual(CommandResultKind.KeepOpen, toast.Result!.Kind);
+        Assert.AreEqual(0, environment.Clipboard.Writes.Count);
+        Assert.AreEqual("Something the user copied", environment.Clipboard.Text);
+        Assert.AreEqual("Your name", answer.Text);
     }
 
     [TestMethod]
