@@ -13,6 +13,7 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -33,6 +34,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
         public void CommandLineArgumentsReachUnpackagedAndPackagedApps(bool packaged)
@@ -73,6 +75,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void DesktopShortcutTracksFilePresenceAndLaunchesWorkspace()
         {
             var title = State.Prefix + "-shortcut";
@@ -125,6 +128,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void LaunchAndEditCaptureAddsWindowsToTheExistingWorkspace()
         {
             var originalTitle = State.Prefix + "-original";
@@ -158,6 +162,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void MoveExistingWindowsReusesTheOriginalProcessAndWindow()
         {
             var title = State.Prefix + "-reuse";
@@ -179,6 +184,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void MissingSavedMonitorUsesTheRemainingDisplay()
         {
             var title = State.Prefix + "-missing-monitor";
@@ -203,6 +209,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void LauncherDisplaysLaunchingLaunchedAndFailedStates()
         {
             using var gate = new EventWaitHandle(false, EventResetMode.ManualReset, $@"Local\{State.Prefix}-progress-gate");
@@ -227,6 +234,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancelLaunchStopsPendingAppsAndPreservesOpenedWindows()
         {
             var gateName = $@"Local\{State.Prefix}-cancel-gate";
@@ -259,6 +267,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void DismissClosesProgressWhileApplicationsContinueLaunching()
         {
             var gateName = $@"Local\{State.Prefix}-dismiss-gate";

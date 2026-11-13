@@ -97,7 +97,7 @@ Describe 'resolveUiTestModules' {
         @($result.UiTestModules).Count | Should Be 0
     }
 
-    It 'selects MWB alongside other affected Release suites' {
+    It 'skips the temporarily disabled MWB suite but keeps other affected suites' {
         New-UITestProject 'src\modules\MouseWithoutBorders\Tests\MouseWithoutBorders.UITests\MouseWithoutBorders.UITests.csproj'
         New-UITestProject 'src\modules\FileLocksmith\Tests\FileLocksmith.UITests\FileLocksmith.UITests.csproj'
 
@@ -107,7 +107,7 @@ Describe 'resolveUiTestModules' {
         )
 
         $result.TouchedModules | Should Be @('FileLocksmith', 'MouseWithoutBorders')
-        $result.UiTestModules | Should Be @('FileLocksmith.UITests', 'MouseWithoutBorders.UITests')
+        $result.UiTestModules | Should Be @('FileLocksmith.UITests')
     }
 
     It 'selects the smoke set when UI-test infrastructure changes' {

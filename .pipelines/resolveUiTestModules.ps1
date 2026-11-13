@@ -93,8 +93,13 @@ if ($infrastructureChanged) {
     $uiTestModules = @($uiTestModules) + $smokeProjects
 }
 
+# TODO: Re-enable once the MWB Sandbox suite is stable on the current hosted test images.
+# It currently fails every PR that touches MWB (provisioning on Win11 image 30.0.0, guest
+# connect timeouts on Win10), so it is excluded from PR auto-selection.
+$disabledUiTestModules = @('MouseWithoutBorders.UITests')
+
 [PSCustomObject]@{
     TouchedModules = @($touchedModules)
     InfrastructureChanged = $infrastructureChanged
-    UiTestModules = @($uiTestModules | Where-Object { $_ } | Sort-Object -Unique)
+    UiTestModules = @($uiTestModules | Where-Object { $_ -and $_ -notin $disabledUiTestModules } | Sort-Object -Unique)
 }
