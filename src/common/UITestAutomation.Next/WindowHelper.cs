@@ -62,6 +62,7 @@ public static class WindowHelper
     private const int SW_MAXIMIZE = 3;
     private const int SW_RESTORE = 9;
     private const int SW_MINIMIZE = 6;
+    private const int NULLREGION = 1;
 #pragma warning restore SA1310
     private const int DwmCloakedAttribute = 14;
     private const int DwmExtendedFrameBoundsAttribute = 9;
@@ -103,6 +104,9 @@ public static class WindowHelper
 
     [DllImport("gdi32.dll")]
     private static extern uint GetPixel(IntPtr hdc, int x, int y);
+
+    [DllImport("user32.dll")]
+    private static extern int GetWindowRgnBox(IntPtr hWnd, out RECT lprc);
 
     [DllImport("dwmapi.dll", EntryPoint = "DwmGetWindowAttribute")]
     private static extern int DwmGetWindowIntAttribute(IntPtr hWnd, int dwAttribute, out int pvAttribute, int cbAttribute);
@@ -207,6 +211,14 @@ public static class WindowHelper
         ThrowIfDwmQueryFailed(hWnd, "DWMWA_CLOAKED", hResult);
         return cloakedState != 0;
     }
+
+    /// <summary>
+    /// Whether a window is clipped to an empty window region (see <c>SetWindowRgn</c>). Like
+    /// cloaking, this is independent of Win32 visibility - a shown window with an empty region
+    /// draws nothing and receives no mouse input. A window with no region set isn't clipped.
+    /// </summary>
+    public static bool IsWindowRegionEmpty(IntPtr hWnd) =>
+        GetWindowRgnBox(hWnd, out _) == NULLREGION;
 
     /// <summary>
     /// DWM extended-frame bounds (Left, Top, Right, Bottom) in physical screen pixels. Unlike

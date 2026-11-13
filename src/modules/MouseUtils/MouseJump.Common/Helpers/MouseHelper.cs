@@ -2,13 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-using MouseJump.Common.Interop;
+using MouseJump.Common.Win32Gen;
 using MouseJump.Models.Drawing;
 
-using Windows.Win32;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.WindowsAndMessaging;
 
@@ -37,8 +36,7 @@ public static class MouseHelper
     /// </summary>
     public static PointInfo GetCursorPosition()
     {
-        var result = PInvoke.GetCursorPos(out var point);
-        ResultHandler.ThrowIfZero(result: result, getLastError: true, memberName: nameof(PInvoke.GetCursorPos));
+        _ = User32.GetCursorPos(out var point).ThrowIfFailed();
         return new(point.X, point.Y);
     }
 
@@ -78,17 +76,10 @@ public static class MouseHelper
         var targetPosition = position.ToPoint();
         for (var i = 0; i < 2; i++)
         {
-            // SetCursorPos has been known to return zero (i.e. an error),
-            // with GetLastError also returning zero to indicate success
-            var result1 = PInvoke.SetCursorPos(targetPosition.X, targetPosition.Y);
-            if (result1 == 0)
-            {
-                var lastError = Marshal.GetLastPInvokeError();
-                ResultHandler.HandleResult(result: result1, success: lastError == 0, lastError: lastError, memberName: nameof(PInvoke.SetCursorPos));
-            }
-
-            var result2 = PInvoke.GetCursorPos(out var currentPosition);
-            ResultHandler.ThrowIfZero(result: result2, getLastError: true, memberName: nameof(PInvoke.GetCursorPos));
+            _ = User32.SetCursorPos(targetPosition.X, targetPosition.Y)
+                .ThrowIfFailed();
+            _ = User32.GetCursorPos(out var currentPosition)
+                .ThrowIfFailed();
             if ((currentPosition.X == position.X) && (currentPosition.Y == position.Y))
             {
                 break;
@@ -125,20 +116,26 @@ public static class MouseHelper
             },
         };
 
+        // cbSize is the size of an INPUT struct, *not* the number of inputs - SendInput
+        // rejects the call if it's wrong, and the crosshair silently stops following the
+        // cursor (see microsoft#48290).
+        //
+        // the cursor has already moved by this point, so don't crash if the synthetic
+        // mouse move can't be sent - but assert in debug builds so a regression like
+        // the one above gets noticed during development
         var cbSize = Marshal.SizeOf<INPUT>();
-        var result = PInvoke.SendInput(inputs, cbSize);
-        if (result != inputs.Length)
-        {
-            ResultHandler.HandleFailure(result: result, getLastError: true, memberName: nameof(PInvoke.SendInput));
-        }
+        var result = User32.SendInput(inputs, cbSize)
+            .IgnoreFailure();
+        Debug.Assert(result.Success, $"SendInput failed - LastError: {result.LastError}");
     }
 
     private static decimal CalculateAbsoluteCoordinateX(decimal x)
     {
         // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
         // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
-        var result = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN);
-        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.GetSystemMetrics));
+        var result = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CXSCREEN)
+            .ThrowIfFailed()
+            .GetValue();
         return (x * 65535) / result;
     }
 
@@ -146,8 +143,9 @@ public static class MouseHelper
     {
         // If MOUSEEVENTF_ABSOLUTE value is specified, dx and dy contain normalized absolute coordinates between 0 and 65,535.
         // see https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-mouseinput
-        var result = PInvoke.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN);
-        ResultHandler.ThrowIfZero(result: result, getLastError: false, memberName: nameof(PInvoke.GetSystemMetrics));
+        var result = User32.GetSystemMetrics(SYSTEM_METRICS_INDEX.SM_CYSCREEN)
+            .ThrowIfFailed()
+            .GetValue();
         return (y * 65535) / result;
     }
 }

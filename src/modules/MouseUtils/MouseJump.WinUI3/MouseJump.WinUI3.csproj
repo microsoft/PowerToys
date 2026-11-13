@@ -39,6 +39,15 @@
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     </ItemGroup>
 
+    <ItemGroup>
+        <Compile Update="MouseJumpXAML\UI\PreviewPane.*.cs">
+            <DependentUpon>PreviewPane.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="MouseJumpXAML\UI\PreviewWindow.*.cs">
+            <DependentUpon>PreviewWindow.xaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
+
     <!--
       GPOWrapper is a C++ WinRT component - by default these can't be accessed from C# projects.
       The CsWinRTIncludes property generates a C# projection of the C++ WinRT component so that it can be used in this project.
