@@ -16,7 +16,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     private const int B = 0x42;
     private const int D = 0x44;
     private const int E = 0x45;
-    private const int F = 0x46;
+    private const int F12 = 0x7B;
     private const int Q = 0x51;
     private const int U = 0x55;
     private const int V = 0x56;
@@ -213,6 +213,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
+    // Win+F opens Feedback Hub and can leave a sign-in dialog blocking subsequent suites.
     [TestMethod("KeyboardManager.Remapping.ShortcutToShortcut")]
     [TestCategory("Keyboard Manager")]
     [DataRow("Ctrl+A to Ctrl+V", LeftControl, A, LeftControl, V, false)]
@@ -221,8 +222,8 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     [DataRow("Win+A to Ctrl+V, modifier first", LeftWindows, A, LeftControl, V, true)]
     [DataRow("Ctrl+V to Win+A", LeftControl, V, LeftWindows, A, false)]
     [DataRow("Ctrl+V to Win+A, modifier first", LeftControl, V, LeftWindows, A, true)]
-    [DataRow("Win+A to Win+F", LeftWindows, A, LeftWindows, F, false)]
-    [DataRow("Win+A to Win+F, modifier first", LeftWindows, A, LeftWindows, F, true)]
+    [DataRow("Win+A to Win+F12", LeftWindows, A, LeftWindows, F12, false)]
+    [DataRow("Win+A to Win+F12, modifier first", LeftWindows, A, LeftWindows, F12, true)]
     public void ShortcutToShortcutReleasesTargetsForEitherSourceReleaseOrder(
         string scenario,
         int sourceModifier,
