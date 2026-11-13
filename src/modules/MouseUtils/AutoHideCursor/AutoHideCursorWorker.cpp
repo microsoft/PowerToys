@@ -8,6 +8,7 @@
 #include "SystemCursorHider.h"
 
 #include <shellapi.h>
+#include <optional>
 #include <string>
 
 namespace
@@ -76,7 +77,7 @@ namespace
     public:
         explicit Worker(const Options& options) :
             m_options{ options },
-            m_state{ options.configuration, GetTickCount64(), GetCursorPosition() }
+            m_state{ options.configuration, GetTickCount64(), GetCursorPosition().value_or(auto_hide_cursor::Point{}) }
         {
         }
 
@@ -130,7 +131,10 @@ namespace
                 // message queue to evaluate the physical-input idle deadline.
                 if (running && m_error == ERROR_SUCCESS)
                 {
-                    QueueAction(m_state.OnTimer(GetTickCount64(), GetCursorPosition()));
+                    const auto position = GetCursorPosition();
+                    // A secure desktop can make the pointer position unavailable. Fail safe
+                    // by restoring the global cursor scheme until we can observe input again.
+                    QueueAction(position ? m_state.OnTimer(GetTickCount64(), *position) : m_state.Stop());
                 }
 
                 if (m_error != ERROR_SUCCESS)
@@ -159,11 +163,15 @@ namespace
 
         using unique_handle = std::unique_ptr<void, HandleCloser>;
 
-        static auto_hide_cursor::Point GetCursorPosition() noexcept
+        static std::optional<auto_hide_cursor::Point> GetCursorPosition() noexcept
         {
             POINT point{};
-            GetCursorPos(&point);
-            return { point.x, point.y };
+            if (!GetCursorPos(&point))
+            {
+                return std::nullopt;
+            }
+
+            return auto_hide_cursor::Point{ point.x, point.y };
         }
 
         bool InstallHooks()
@@ -275,8 +283,11 @@ namespace
                 if ((keyboard->flags & (LLKHF_INJECTED | LLKHF_LOWER_IL_INJECTED)) == 0 &&
                     !auto_hide_cursor::State::IsModifierVirtualKey(keyboard->vkCode))
                 {
-                    s_instance->QueueAction(
-                        s_instance->m_state.OnKeyboardInput(GetTickCount64(), GetCursorPosition()));
+                    if (const auto position = GetCursorPosition())
+                    {
+                        s_instance->QueueAction(
+                            s_instance->m_state.OnKeyboardInput(GetTickCount64(), *position));
+                    }
                 }
             }
 
