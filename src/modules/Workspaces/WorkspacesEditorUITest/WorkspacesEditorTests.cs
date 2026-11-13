@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -19,219 +19,114 @@ public class WorkspacesEditorTests : WorkspacesUiAutomationBase
     [TestCategory("Workspaces UI")]
     public void TestItemsPresents()
     {
-        Assert.IsTrue(this.Has<Button>("Create Workspace"), "Should have create workspace button");
+        var create = Find<Button>(By.AccessibilityId("NewProjectButton"));
+        Assert.IsTrue(create.Displayed && create.Enabled, "Should have an enabled Create Workspace button.");
     }
 
+    // These external-application scenarios were disabled before the WinUI migration.
+    // The Next suite provides the active, controlled-fixture behavior coverage.
     /*
     [TestMethod("WorkspacesEditor.Editor.NewWorkspaceAppearsInList")]
     [TestCategory("Workspaces UI")]
     public void TestNewWorkspaceAppearsInListAfterCapture()
     {
-        // Open test application
-        OpenNotepad();
-        Thread.Sleep(2000);
-
-        // Create workspace
-        var createButton = Find<Button>("Create Workspace");
-        createButton.Click();
-        Thread.Sleep(1000);
-
-        // Capture
-        var captureButton = Find<Button>("Capture");
-        captureButton.Click();
-        Thread.Sleep(2000);
-
-        // Save workspace
-        var saveButton = Find<Button>("Save");
-        saveButton.Click();
-        Thread.Sleep(1000);
-
-        // Verify workspace appears in list
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspaceItems = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"));
-        Assert.IsTrue(workspaceItems.Count > 0, "New workspace should appear in the list");
-
-        CloseNotepad();
+        string name = "LegacyCapture_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(name);
+        Assert.AreEqual(name, GetWorkspaceCard(name).Name, "The captured workspace should appear in the list.");
+        DeleteWorkspace(name);
     }
 
     [TestMethod("WorkspacesEditor.Editor.CancelCaptureDoesNotAddWorkspace")]
     [TestCategory("Workspaces UI")]
     public void TestCancelCaptureDoesNotAddWorkspace()
     {
-        // Count existing workspaces
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var initialCount = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem")).Count;
-
-        // Create workspace
-        var createButton = Find<Button>("Create Workspace");
-        createButton.Click();
-        Thread.Sleep(1000);
-
-        // Cancel
-        var cancelButton = Find<Button>("Cancel");
-        cancelButton.Click();
-        Thread.Sleep(1000);
-
-        // Verify count hasn't changed
-        var finalCount = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem")).Count;
-        Assert.AreEqual(initialCount, finalCount, "Workspace count should not change after canceling");
+        var initialIds = GetWorkspaceCards().Select(card => card.AutomationId).ToArray();
+        StartCapture();
+        CancelSnapshot();
+        CollectionAssert.AreEquivalent(initialIds, GetWorkspaceCards().Select(card => card.AutomationId).ToArray(), "Canceling capture should preserve the workspace list.");
     }
 
     [TestMethod("WorkspacesEditor.Editor.SearchFiltersWorkspaces")]
     [TestCategory("Workspaces UI")]
     public void TestSearchFiltersWorkspaces()
     {
-        // Create test workspaces first
-        CreateTestWorkspace("TestWorkspace1");
-        CreateTestWorkspace("TestWorkspace2");
-        CreateTestWorkspace("DifferentName");
+        string prefix = "LegacySearch_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(prefix + "_1");
+        CreateTestWorkspace(prefix + "_2");
+        string other = "DifferentName_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(other);
 
-        // Find search box
-        var searchBox = Find<TextBox>("Search");
-        searchBox.SetText("TestWorkspace");
-        Thread.Sleep(1000);
-
-        // Verify filtered results
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var visibleItems = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"));
-
-        // Should only show items matching "TestWorkspace"
-        Assert.IsTrue(visibleItems.Count >= 2, "Should show at least 2 TestWorkspace items");
-
-        // Clear search
-        searchBox.SetText(string.Empty);
-        Thread.Sleep(500);
+        var search = GetSearchBox();
+        search.SetText(prefix);
+        CollectionAssert.AreEquivalent(new[] { prefix + "_1", prefix + "_2" }, GetWorkspaceCards().Select(card => card.Name).ToArray(), "Search should display exactly the matching workspace cards.");
+        search.SetText(string.Empty);
+        DeleteWorkspace(prefix + "_1");
+        DeleteWorkspace(prefix + "_2");
+        DeleteWorkspace(other);
     }
 
     [TestMethod("WorkspacesEditor.Editor.SortByWorks")]
     [TestCategory("Workspaces UI")]
     public void TestSortByFunctionality()
     {
-        // Find sort dropdown
-        var sortDropdown = Find<ComboBox>("SortBy");
-        sortDropdown.Click();
-        Thread.Sleep(500);
-
-        // Select different sort options
-        var sortOptions = FindAll<Custom>(By.ClassName("ComboBoxItem"));
-        if (sortOptions.Count > 1)
-        {
-            sortOptions[1].Click(); // Select second option
-            Thread.Sleep(1000);
-
-            // Verify list is updated (we can't easily verify sort order in UI tests)
-            var workspacesList = Find<Custom>("WorkspacesList");
-            Assert.IsNotNull(workspacesList, "Workspaces list should still be visible after sorting");
-        }
+        string prefix = "LegacySort_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(prefix + "_Z");
+        CreateTestWorkspace(prefix + "_A");
+        GetSearchBox().SetText(prefix);
+        SelectSortOrder("SortNameItem");
+        CollectionAssert.AreEqual(new[] { prefix + "_A", prefix + "_Z" }, GetWorkspaceCards().Select(card => card.Name).ToArray(), "Name sorting should order workspace cards alphabetically.");
+        AssertSortOrderSelected("SortNameItem");
+        GetSearchBox().SetText(string.Empty);
+        DeleteWorkspace(prefix + "_Z");
+        DeleteWorkspace(prefix + "_A");
     }
 
     [TestMethod("WorkspacesEditor.Editor.SortByPersists")]
     [TestCategory("Workspaces UI")]
     public void TestSortByPersistsAfterRestart()
     {
-        // Set sort option
-        var sortDropdown = Find<ComboBox>("SortBy");
-        sortDropdown.Click();
-        Thread.Sleep(500);
-
-        var sortOptions = FindAll<Custom>(By.ClassName("ComboBoxItem"));
-        string selectedOption = string.Empty;
-        if (sortOptions.Count > 1)
-        {
-            sortOptions[1].Click(); // Select second option
-            selectedOption = sortDropdown.Text;
-            Thread.Sleep(1000);
-        }
-
-        // Restart editor
+        SelectSortOrder("SortCreatedItem");
+        AssertSortOrderSelected("SortCreatedItem");
         RestartScopeExe();
-        Thread.Sleep(2000);
-
-        // Verify sort option persisted
-        sortDropdown = Find<ComboBox>("SortBy");
-        Assert.AreEqual(selectedOption, sortDropdown.Text, "Sort option should persist after restart");
+        AssertMainPage();
+        AssertSortOrderSelected("SortCreatedItem");
     }
 
     [TestMethod("WorkspacesEditor.Editor.RemoveWorkspace")]
     [TestCategory("Workspaces UI")]
     public void TestRemoveWorkspace()
     {
-        // Create a test workspace
-        CreateTestWorkspace("WorkspaceToRemove");
-
-        // Find the workspace in the list
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspaceItem = workspacesList.Find<Custom>(By.Name("WorkspaceToRemove"));
-
-        // Click remove button
-        var removeButton = workspaceItem.Find<Button>("Remove");
-        removeButton.Click();
-        Thread.Sleep(1000);
-
-        // Confirm removal if dialog appears
-        if (Has<Button>("Yes"))
-        {
-            Find<Button>("Yes").Click();
-            Thread.Sleep(1000);
-        }
-
-        // Verify workspace is removed
-        Assert.IsFalse(Has(By.Name("WorkspaceToRemove")), "Workspace should be removed from list");
+        string name = "LegacyRemove_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(name);
+        DeleteWorkspace(name);
+        Assert.IsFalse(GetWorkspaceCards().Any(card => card.Name == name), "The deleted workspace should be absent from the list.");
     }
 
     [TestMethod("WorkspacesEditor.Editor.EditOpensEditingPage")]
     [TestCategory("Workspaces UI")]
     public void TestEditOpensEditingPage()
     {
-        // Create a test workspace if none exist
-        if (!Has<Custom>("WorkspacesList"))
-        {
-            CreateTestWorkspace("TestWorkspace");
-        }
-
-        // Find first workspace
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspaceItem = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"))[0];
-
-        // Click edit button
-        var editButton = workspaceItem.Find<Button>("Edit");
-        editButton.Click();
-        Thread.Sleep(1000);
-
-        // Verify editing page opened
-        Assert.IsTrue(Has<Button>("Save"), "Should have Save button on editing page");
-        Assert.IsTrue(Has<Button>("Cancel"), "Should have Cancel button on editing page");
-
-        // Go back
-        Find<Button>("Cancel").Click();
-        Thread.Sleep(1000);
+        string name = "LegacyEdit_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(name);
+        OpenWorkspace(name);
+        Assert.IsTrue(Find<Button>(By.AccessibilityId("SaveButton")).Displayed, "Editing should expose Save.");
+        Assert.IsTrue(Find<Button>(By.AccessibilityId("PART_BackButton")).Displayed, "Editing should expose title-bar back navigation.");
+        ReturnToMainPage();
+        DeleteWorkspace(name);
     }
 
     [TestMethod("WorkspacesEditor.Editor.ClickWorkspaceOpensEditingPage")]
     [TestCategory("Workspaces UI")]
     public void TestClickWorkspaceOpensEditingPage()
     {
-        // Create a test workspace if none exist
-        if (!Has<Custom>("WorkspacesList"))
-        {
-            CreateTestWorkspace("TestWorkspace");
-        }
-
-        // Find first workspace
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspaceItem = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"))[0];
-
-        // Click on the workspace item itself
-        workspaceItem.Click();
-        Thread.Sleep(1000);
-
-        // Verify editing page opened
-        Assert.IsTrue(Has<Button>("Save"), "Should have Save button on editing page");
-        Assert.IsTrue(Has<Button>("Cancel"), "Should have Cancel button on editing page");
-
-        // Go back
-        Find<Button>("Cancel").Click();
-        Thread.Sleep(1000);
+        string name = "LegacyCard_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(name);
+        GetWorkspaceCard(name).Click();
+        Assert.AreEqual(name, Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Text, "Clicking the card should edit that workspace.");
+        Find<TextBox>(By.AccessibilityId("EditNameTextBox")).SetText(name + "_unsaved");
+        ReturnToMainPage();
+        Assert.IsFalse(GetWorkspaceCards().Any(card => card.Name == name + "_unsaved"), "Back navigation should discard unsaved changes.");
+        DeleteWorkspace(name);
     }
     */
 }

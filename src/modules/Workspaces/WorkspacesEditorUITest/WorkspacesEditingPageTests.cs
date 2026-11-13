@@ -2,9 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
+using System.Drawing;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using WorkspacesCsharpLibrary.Data;
 
 namespace WorkspacesEditorUITest;
 
@@ -12,594 +13,331 @@ namespace WorkspacesEditorUITest;
 [Ignore("not stable")]
 public class WorkspacesEditingPageTests : WorkspacesUiAutomationBase
 {
+    private string workspaceName = string.Empty;
+
     public WorkspacesEditingPageTests()
         : base()
     {
+    }
+
+    [TestInitialize]
+    public void SetupWorkspace()
+    {
+        workspaceName = "LegacyEditing_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(workspaceName);
+        OpenWorkspace(workspaceName);
+    }
+
+    [TestCleanup]
+    public void CleanupWorkspace()
+    {
+        CloseCalculator();
+        AttachWorkspacesEditor();
+        if (Has(By.AccessibilityId("EditNameTextBox"), timeoutMS: 500))
+        {
+            ReturnToMainPage();
+        }
+
+        if (GetWorkspaceCards().Any(card => card.Name == workspaceName))
+        {
+            DeleteWorkspace(workspaceName);
+        }
+
+        File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{workspaceName}.lnk"));
     }
 
     [TestMethod("WorkspacesEditingPage.RemoveApp")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestRemoveAppFromWorkspace()
     {
-        // Find app list
-        var appList = Find<Custom>("AppList");
-        var initialAppCount = appList.FindAll<Custom>(By.ClassName("AppItem")).Count;
+        var app = FindCapturedNotepad();
+        int initialCount = IncludedApplicationCount();
+        using var before = CapturePreview();
+        InclusionButton(app, "Remove").Click();
 
-        if (initialAppCount == 0)
+        Assert.IsFalse(app.Enabled, "The removed application should stay in the list as a disabled expander.");
+        Assert.IsTrue(InclusionButton(app, "Add back").Enabled, "The removed application should have an enabled Add back button.");
+        Assert.AreEqual(initialCount - 1, IncludedApplicationCount(), "One application should be excluded.");
+        AssertPreviewPixels(before, changed: true);
+
+        string appId = CapturedNotepad().Id;
+        if (IncludedApplicationCount() == 0)
         {
-            Assert.Inconclusive("No apps in workspace to remove");
-            return;
+            Assert.IsFalse(Find<Button>(By.AccessibilityId("SaveButton")).Enabled, "A workspace with no included applications should not be saveable.");
         }
-
-        // Remove first app
-        var firstApp = appList.FindAll<Custom>(By.ClassName("AppItem"))[0];
-        var appName = firstApp.GetAttribute("Name");
-
-        var removeButton = firstApp.Find<Button>("Remove");
-        removeButton.Click();
-        Thread.Sleep(500);
-
-        // Verify app removed from list
-        var finalAppCount = appList.FindAll<Custom>(By.ClassName("AppItem")).Count;
-        Assert.AreEqual(initialAppCount - 1, finalAppCount, "App should be removed from list");
-
-        // Verify preview updated
-        var previewPane = Find<Pane>("Preview");
-        var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
-        Assert.AreEqual(finalAppCount, windowPreviews.Count, "Preview should show correct number of windows");
+        else
+        {
+            SaveWorkspace();
+            Assert.IsFalse(StoredWorkspace().Applications.Any(application => application.Id == appId), "The removed application should be excluded from the saved workspace.");
+        }
     }
 
     [TestMethod("WorkspacesEditingPage.RemoveAndAddBackApp")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestRemoveAndAddBackApp()
     {
-        // Find app list
-        var appList = Find<Custom>("AppList");
-        var apps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+        var app = FindCapturedNotepad();
+        int initialCount = IncludedApplicationCount();
+        using var before = CapturePreview();
+        InclusionButton(app, "Remove").Click();
+        Assert.IsFalse(app.Enabled, "The removed application should be disabled.");
+        AssertPreviewPixels(before, changed: true);
 
-        if (apps.Count == 0)
-        {
-            Assert.Inconclusive("No apps in workspace to test");
-            return;
-        }
-
-        var firstApp = apps[0];
-        var appName = firstApp.GetAttribute("Name");
-
-        // Remove app
-        var removeButton = firstApp.Find<Button>("Remove");
-        removeButton.Click();
-        Thread.Sleep(500);
-
-        // Verify removed app shows in "removed apps" section
-        Assert.IsTrue(Has<Button>("Add back"), "Should have 'Add back' button for removed apps");
-
-        // Add back the app
-        var addBackButton = Find<Button>("Add back");
-        addBackButton.Click();
-        Thread.Sleep(500);
-
-        // Verify app is back in the list
-        var restoredApp = appList.Find<Custom>(By.Name(appName), timeoutMS: 2000);
-        Assert.IsNotNull(restoredApp, "App should be restored to the list");
-
-        // Verify preview updated
-        var previewPane = Find<Pane>("Preview");
-        var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
-        var currentAppCount = appList.FindAll<Custom>(By.ClassName("AppItem")).Count;
-        Assert.AreEqual(currentAppCount, windowPreviews.Count, "Preview should show all windows again");
+        InclusionButton(app, "Add back").Click();
+        Assert.IsTrue(app.Enabled, "Adding the application back should re-enable its expander.");
+        Assert.AreEqual(initialCount, IncludedApplicationCount(), "Adding the application back should restore the included application count.");
+        AssertPreviewPixels(before, changed: false);
     }
 
     [TestMethod("WorkspacesEditingPage.SetAppMinimized")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSetAppMinimized()
     {
-        // Find first app
-        var appList = Find<Custom>("AppList");
-        var apps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+        var app = ExpandApplication(CapturedNotepad().Application);
+        SelectPosition(app, "Custom");
+        using var before = CapturePreview();
+        SelectPosition(app, "Minimized");
+        Assert.IsFalse(app.FindAll<TextBox>(By.AccessibilityId("LeftTextBox"), timeoutMS: 500).Any(input => input.Displayed), "Minimized windows should hide custom position inputs.");
+        AssertPreviewPixels(before, changed: true);
+        SaveWorkspace();
 
-        if (apps.Count == 0)
-        {
-            Assert.Inconclusive("No apps in workspace to test");
-            return;
-        }
-
-        var firstApp = apps[0];
-
-        // Find and toggle minimized checkbox
-        var minimizedCheckbox = firstApp.Find<CheckBox>("Minimized");
-        bool wasMinimized = minimizedCheckbox.IsChecked;
-
-        minimizedCheckbox.Click();
-        Thread.Sleep(500);
-
-        // Verify state changed
-        Assert.AreNotEqual(wasMinimized, minimizedCheckbox.IsChecked, "Minimized state should toggle");
-
-        // Verify preview reflects the change
-        var previewPane = Find<Pane>("Preview");
-        var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
-
-        // The first window preview should indicate minimized state
-        if (minimizedCheckbox.IsChecked && windowPreviews.Count > 0)
-        {
-            var firstPreview = windowPreviews[0];
-            var opacity = firstPreview.GetAttribute("Opacity");
-
-            // Minimized windows might have reduced opacity or other visual indicator
-            Assert.IsNotNull(opacity, "Minimized window should have visual indication in preview");
-        }
+        var saved = CapturedNotepad();
+        Assert.IsTrue(saved.Minimized, "The saved application should be minimized.");
+        Assert.IsFalse(saved.Maximized, "The saved application should not also be maximized.");
     }
 
     [TestMethod("WorkspacesEditingPage.SetAppMaximized")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSetAppMaximized()
     {
-        // Find first app
-        var appList = Find<Custom>("AppList");
-        var apps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+        var app = ExpandApplication(CapturedNotepad().Application);
+        SelectPosition(app, "Custom");
+        using var before = CapturePreview();
+        SelectPosition(app, "Maximized");
+        Assert.IsFalse(app.FindAll<TextBox>(By.AccessibilityId("LeftTextBox"), timeoutMS: 500).Any(input => input.Displayed), "Maximized windows should hide custom position inputs.");
+        AssertPreviewPixels(before, changed: true);
+        SaveWorkspace();
 
-        if (apps.Count == 0)
-        {
-            Assert.Inconclusive("No apps in workspace to test");
-            return;
-        }
-
-        var firstApp = apps[0];
-
-        // Find and toggle maximized checkbox
-        var maximizedCheckbox = firstApp.Find<CheckBox>("Maximized");
-        bool wasMaximized = maximizedCheckbox.IsChecked;
-
-        maximizedCheckbox.Click();
-        Thread.Sleep(500);
-
-        // Verify state changed
-        Assert.AreNotEqual(wasMaximized, maximizedCheckbox.IsChecked, "Maximized state should toggle");
-
-        // Verify preview reflects the change
-        var previewPane = Find<Pane>("Preview");
-        if (maximizedCheckbox.IsChecked)
-        {
-            // Maximized window should fill the preview area
-            var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
-            if (windowPreviews.Count > 0)
-            {
-                var firstPreview = windowPreviews[0];
-
-                // Check if preview shows maximized state
-                var width = firstPreview.GetAttribute("Width");
-                var height = firstPreview.GetAttribute("Height");
-                Assert.IsNotNull(width, "Maximized window should have width in preview");
-                Assert.IsNotNull(height, "Maximized window should have height in preview");
-            }
-        }
+        var saved = CapturedNotepad();
+        Assert.IsTrue(saved.Maximized, "The saved application should be maximized.");
+        Assert.IsFalse(saved.Minimized, "The saved application should not also be minimized.");
     }
 
     [TestMethod("WorkspacesEditingPage.LaunchAsAdmin")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSetLaunchAsAdmin()
     {
-        // Find app that supports admin launch
-        var appList = Find<Custom>("AppList");
-        var apps = appList.FindAll<Custom>(By.ClassName("AppItem"));
-
-        bool foundAdminCapableApp = false;
-        foreach (var app in apps)
-        {
-            try
-            {
-                var adminCheckbox = app.Find<CheckBox>("Launch as admin", timeoutMS: 1000);
-                if (adminCheckbox != null && adminCheckbox.IsChecked)
-                {
-                    foundAdminCapableApp = true;
-                    bool wasAdmin = adminCheckbox.IsChecked;
-
-                    adminCheckbox.Click();
-                    Thread.Sleep(500);
-
-                    // Verify state changed
-                    Assert.AreNotEqual(wasAdmin, adminCheckbox.IsChecked, "Admin launch state should toggle");
-                    break;
-                }
-            }
-            catch
-            {
-                // This app doesn't support admin launch
-                continue;
-            }
-        }
-
-        if (!foundAdminCapableApp)
+        var candidates = StoredWorkspace().Applications.Where(application => application.CanLaunchElevated).ToList();
+        if (candidates.Count == 0)
         {
             Assert.Inconclusive("No apps in workspace support admin launch");
+            return;
         }
+
+        var application = candidates[0];
+        var app = ExpandApplication(application.Application);
+        var admin = app.Find<CheckBox>(By.AccessibilityId("LaunchAsAdminCheckBox"));
+        Assert.IsTrue(admin.Enabled, "An admin-capable application should have an enabled checkbox.");
+        bool original = admin.IsChecked;
+        admin.Click();
+        Assert.AreNotEqual(original, admin.IsChecked, "The admin launch state should toggle.");
+        SaveWorkspace();
+        Assert.AreEqual(!original, StoredWorkspace().Applications.Single(saved => saved.Id == application.Id).IsElevated, "The admin launch choice should be saved.");
     }
 
     [TestMethod("WorkspacesEditingPage.AddCLIArgs")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestAddCommandLineArguments()
     {
-        // Find first app
-        var appList = Find<Custom>("AppList");
-        var apps = appList.FindAll<Custom>(By.ClassName("AppItem"));
-
-        if (apps.Count == 0)
-        {
-            Assert.Inconclusive("No apps in workspace to test");
-            return;
-        }
-
-        var firstApp = apps[0];
-
-        // Find CLI args textbox
-        var cliArgsTextBox = firstApp.Find<TextBox>("Command line arguments", timeoutMS: 2000);
-        if (cliArgsTextBox == null)
-        {
-            Assert.Inconclusive("App does not support command line arguments");
-            return;
-        }
-
-        // Add test arguments
-        string testArgs = "--test-arg value";
-        cliArgsTextBox.SetText(testArgs);
-        Thread.Sleep(500);
-
-        // Verify arguments were entered
-        Assert.AreEqual(testArgs, cliArgsTextBox.Text, "Command line arguments should be set");
+        var app = ExpandApplication(CapturedNotepad().Application);
+        var arguments = app.Find<TextBox>(By.AccessibilityId("CommandLineTextBox"));
+        const string expected = "--test-arg value";
+        arguments.SetText(expected);
+        Assert.AreEqual(expected, arguments.Text, "Command line arguments should be entered.");
+        SaveWorkspace();
+        Assert.AreEqual(expected, CapturedNotepad().CommandLineArguments, "Command line arguments should be saved.");
     }
 
     [TestMethod("WorkspacesEditingPage.ChangeAppPosition")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestManuallyChangeAppPosition()
     {
-        // Find first app
-        var appList = Find<Custom>("AppList");
-        var apps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+        var app = ExpandApplication(CapturedNotepad().Application);
+        SelectPosition(app, "Custom");
+        using var before = CapturePreview();
+        app.Find<TextBox>(By.AccessibilityId("LeftTextBox")).SetText("200");
+        app.Find<TextBox>(By.AccessibilityId("TopTextBox")).SetText("150");
+        app.Find<TextBox>(By.AccessibilityId("WidthTextBox")).SetText("640");
+        app.Find<TextBox>(By.AccessibilityId("HeightTextBox")).SetText("480");
+        AssertPreviewPixels(before, changed: true);
+        SaveWorkspace();
 
-        if (apps.Count == 0)
-        {
-            Assert.Inconclusive("No apps in workspace to test");
-            return;
-        }
-
-        var firstApp = apps[0];
-
-        // Find position controls
-        var xPositionBox = firstApp.Find<TextBox>("X position", timeoutMS: 2000);
-        var yPositionBox = firstApp.Find<TextBox>("Y position", timeoutMS: 2000);
-
-        if (xPositionBox == null || yPositionBox == null)
-        {
-            // Try alternate approach with spinners
-            var positionSpinners = firstApp.FindAll<Custom>(By.ClassName("SpinBox"));
-            if (positionSpinners.Count >= 2)
-            {
-                xPositionBox = positionSpinners[0].Find<TextBox>(By.ClassName("TextBox"));
-                yPositionBox = positionSpinners[1].Find<TextBox>(By.ClassName("TextBox"));
-            }
-        }
-
-        if (xPositionBox != null && yPositionBox != null)
-        {
-            // Change position
-            xPositionBox.SetText("200");
-            Thread.Sleep(500);
-
-            yPositionBox.SetText("150");
-            Thread.Sleep(500);
-
-            // Verify preview updated
-            var previewPane = Find<Pane>("Preview");
-            var windowPreviews = previewPane.FindAll<Custom>(By.ClassName("WindowPreview"));
-            Assert.IsTrue(windowPreviews.Count > 0, "Preview should show window at new position");
-        }
-        else
-        {
-            Assert.Inconclusive("Could not find position controls");
-        }
+        var position = CapturedNotepad().Position;
+        Assert.AreEqual(200, position.X, "The horizontal position should be saved.");
+        Assert.AreEqual(150, position.Y, "The vertical position should be saved.");
+        Assert.AreEqual(640, position.Width, "The width should be saved.");
+        Assert.AreEqual(480, position.Height, "The height should be saved.");
     }
 
     [TestMethod("WorkspacesEditingPage.ChangeWorkspaceName")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestChangeWorkspaceName()
     {
-        // Find workspace name textbox
-        var nameTextBox = Find<TextBox>("Workspace name");
-        string originalName = nameTextBox.Text;
-
-        // Change name
-        string newName = "Renamed_Workspace_" + DateTime.Now.Ticks;
-        nameTextBox.SetText(newName);
-        Thread.Sleep(500);
-
-        // Save changes
-        var saveButton = Find<Button>("Save");
-        saveButton.Click();
-        Thread.Sleep(1000);
-
-        // Verify we're back at main list
-        Assert.IsTrue(Has<Custom>("WorkspacesList"), "Should return to main list after saving");
-
-        // Verify workspace was renamed
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var renamedWorkspace = workspacesList.Find<Custom>(By.Name(newName), timeoutMS: 2000);
-        Assert.IsNotNull(renamedWorkspace, "Workspace should be renamed in the list");
+        string original = workspaceName;
+        workspaceName += "_renamed";
+        Find<TextBox>(By.AccessibilityId("EditNameTextBox")).SetText(workspaceName);
+        SaveWorkspace();
+        Assert.AreEqual(workspaceName, GetWorkspaceCard(workspaceName).Name, "The workspace should be renamed in the list.");
+        Assert.IsFalse(GetWorkspaceCards().Any(card => card.Name == original), "The old workspace name should no longer be shown.");
     }
 
     [TestMethod("WorkspacesEditingPage.SaveAndCancelWork")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestSaveAndCancelButtons()
     {
-        // Make a change
-        var nameTextBox = Find<TextBox>("Workspace name");
-        string originalName = nameTextBox.Text;
-        string tempName = originalName + "_temp";
+        string temporary = workspaceName + "_temp";
+        Find<TextBox>(By.AccessibilityId("EditNameTextBox")).SetText(temporary);
+        ReturnToMainPage();
+        Assert.IsFalse(GetWorkspaceCards().Any(card => card.Name == temporary), "Back navigation should discard the unsaved name.");
 
-        nameTextBox.SetText(tempName);
-        Thread.Sleep(500);
-
-        // Test Cancel button
-        var cancelButton = Find<Button>("Cancel");
-        cancelButton.Click();
-        Thread.Sleep(1000);
-
-        // Verify returned to main list without saving
-        Assert.IsTrue(Has<Custom>("WorkspacesList"), "Should return to main list");
-
-        // Go back to editing
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspace = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"))[0];
-        workspace.Click();
-        Thread.Sleep(1000);
-
-        // Verify name wasn't changed
-        nameTextBox = Find<TextBox>("Workspace name");
-        Assert.AreEqual(originalName, nameTextBox.Text, "Name should not be changed after cancel");
-
-        // Now test Save button
-        nameTextBox.SetText(tempName);
-        Thread.Sleep(500);
-
-        var saveButton = Find<Button>("Save");
-        saveButton.Click();
-        Thread.Sleep(1000);
-
-        // Verify saved
-        workspacesList = Find<Custom>("WorkspacesList");
-        var savedWorkspace = workspacesList.Find<Custom>(By.Name(tempName), timeoutMS: 2000);
-        Assert.IsNotNull(savedWorkspace, "Workspace should be saved with new name");
+        OpenWorkspace(workspaceName);
+        Assert.AreEqual(workspaceName, Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Text, "The saved name should be restored after canceling.");
+        Find<TextBox>(By.AccessibilityId("EditNameTextBox")).SetText(temporary);
+        workspaceName = temporary;
+        SaveWorkspace();
+        Assert.AreEqual(temporary, GetWorkspaceCard(temporary).Name, "Save should persist the new workspace name.");
     }
 
     [TestMethod("WorkspacesEditingPage.NavigateWithoutSaving")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestNavigateToMainPageWithoutSaving()
     {
-        // Make a change
-        var nameTextBox = Find<TextBox>("Workspace name");
-        string originalName = nameTextBox.Text;
-
-        nameTextBox.SetText(originalName + "_unsaved");
-        Thread.Sleep(500);
-
-        // Click on "Workspaces" navigation/breadcrumb
-        if (Has<NavigationViewItem>("Workspaces", timeoutMS: 1000))
-        {
-            var workspacesNav = Find<NavigationViewItem>("Workspaces");
-            workspacesNav.Click();
-            Thread.Sleep(1000);
-        }
-        else if (Has<HyperlinkButton>("Workspaces", timeoutMS: 1000))
-        {
-            var workspacesBreadcrumb = Find<HyperlinkButton>("Workspaces");
-            workspacesBreadcrumb.Click();
-            Thread.Sleep(1000);
-        }
-
-        // If there's a confirmation dialog, handle it
-        if (Has<Button>("Discard", timeoutMS: 1000))
-        {
-            Find<Button>("Discard").Click();
-            Thread.Sleep(500);
-        }
-
-        // Verify returned to main list
-        Assert.IsTrue(Has<Custom>("WorkspacesList"), "Should return to main list");
-
-        // Verify changes weren't saved
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var unsavedWorkspace = workspacesList.Find<Custom>(By.Name(originalName + "_unsaved"), timeoutMS: 1000);
-        Assert.IsNull(unsavedWorkspace, "Unsaved changes should not persist");
+        string unsaved = workspaceName + "_unsaved";
+        Find<TextBox>(By.AccessibilityId("EditNameTextBox")).SetText(unsaved);
+        SendKeys(Key.Tab);
+        SendKeys(Key.Esc);
+        AssertMainPage();
+        Assert.IsFalse(GetWorkspaceCards().Any(card => card.Name == unsaved), "Escape navigation should discard unsaved changes.");
+        Assert.AreEqual(workspaceName, GetWorkspaceCard(workspaceName).Name, "Escape navigation should preserve the saved workspace.");
     }
 
     [TestMethod("WorkspacesEditingPage.CreateDesktopShortcut")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestCreateDesktopShortcut()
     {
-        // Find desktop shortcut checkbox
-        var shortcutCheckbox = Find<CheckBox>("Create desktop shortcut");
-
-        // Get desktop path
-        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-
-        // Get workspace name to check for shortcut
-        var nameTextBox = Find<TextBox>("Workspace name");
-        string workspaceName = nameTextBox.Text;
-        string shortcutPath = Path.Combine(desktopPath, $"{workspaceName}.lnk");
-
-        // Clean up any existing shortcut
-        if (File.Exists(shortcutPath))
-        {
-            File.Delete(shortcutPath);
-            Thread.Sleep(500);
-        }
-
-        // Check the checkbox
-        if (!shortcutCheckbox.IsChecked)
-        {
-            shortcutCheckbox.Click();
-            Thread.Sleep(500);
-        }
-
-        // Save
-        var saveButton = Find<Button>("Save");
-        saveButton.Click();
-        Thread.Sleep(2000); // Give time for shortcut creation
-
-        // Verify shortcut was created
-        Assert.IsTrue(File.Exists(shortcutPath), "Desktop shortcut should be created");
-
-        // Clean up
-        if (File.Exists(shortcutPath))
-        {
-            File.Delete(shortcutPath);
-        }
+        string shortcutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{workspaceName}.lnk");
+        Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).SetCheck(true);
+        SaveWorkspace();
+        Assert.IsTrue(File.Exists(shortcutPath), "Saving with Create desktop shortcut checked should create the shortcut.");
+        Assert.IsTrue(StoredWorkspace().IsShortcutNeeded, "The shortcut choice should be saved.");
     }
 
     [TestMethod("WorkspacesEditingPage.DesktopShortcutState")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestDesktopShortcutCheckboxState()
     {
-        // Get workspace name
-        var nameTextBox = Find<TextBox>("Workspace name");
-        string workspaceName = nameTextBox.Text;
-        string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-        string shortcutPath = Path.Combine(desktopPath, $"{workspaceName}.lnk");
+        string shortcutPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"{workspaceName}.lnk");
+        Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).SetCheck(true);
+        SaveWorkspace();
+        Assert.IsTrue(File.Exists(shortcutPath), "The shortcut fixture should exist.");
 
-        // Find checkbox
-        var shortcutCheckbox = Find<CheckBox>("Create desktop shortcut");
-
-        // Test 1: When shortcut exists
-        if (!File.Exists(shortcutPath))
-        {
-            // Create shortcut first
-            if (!shortcutCheckbox.IsChecked)
-            {
-                shortcutCheckbox.Click();
-                Thread.Sleep(500);
-            }
-
-            Find<Button>("Save").Click();
-            Thread.Sleep(2000);
-
-            // Navigate back to editing
-            NavigateToEditingPage();
-        }
-
-        shortcutCheckbox = Find<CheckBox>("Create desktop shortcut");
-        Assert.IsTrue(shortcutCheckbox.IsChecked, "Checkbox should be checked when shortcut exists");
-
-        // Test 2: Remove shortcut
-        if (File.Exists(shortcutPath))
-        {
-            File.Delete(shortcutPath);
-            Thread.Sleep(500);
-        }
-
-        // Re-navigate to refresh state
-        Find<Button>("Cancel").Click();
-        Thread.Sleep(1000);
-        NavigateToEditingPage();
-
-        shortcutCheckbox = Find<CheckBox>("Create desktop shortcut");
-        Assert.IsFalse(shortcutCheckbox.IsChecked, "Checkbox should be unchecked when shortcut doesn't exist");
+        OpenWorkspace(workspaceName);
+        Assert.IsTrue(Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).IsChecked, "The shortcut checkbox should reflect the existing shortcut.");
+        File.Delete(shortcutPath);
+        ReturnToMainPage();
+        OpenWorkspace(workspaceName);
+        Assert.IsFalse(Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).IsChecked, "The shortcut checkbox should refresh after its shortcut is removed.");
     }
 
     [TestMethod("WorkspacesEditingPage.LaunchAndEdit")]
     [TestCategory("Workspaces Editing Page UI")]
     public void TestLaunchAndEditCapture()
     {
-        // Find Launch and Edit button
-        var launchEditButton = Find<Button>("Launch and Edit");
-        launchEditButton.Click();
-        Thread.Sleep(3000); // Wait for apps to launch
+        Find<Button>(By.AccessibilityId("LaunchEditButton")).Click();
+        AttachSnapshotWindow();
+        OpenCalculator();
+        CaptureWorkspace();
+        Assert.AreEqual(workspaceName, Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Text, "Recapture should keep editing the selected workspace.");
+        var captured = new ProjectData().Read(TempProjectData.File);
+        Assert.IsTrue(captured.Applications.Any(application => application.ApplicationPath.Contains("Calculator", StringComparison.OrdinalIgnoreCase)), "The newly opened Calculator should be recaptured.");
+        Assert.IsTrue(FindAll<Button>(By.AccessibilityId("ToggleApplicationInclusionButton")).Any(button => button.Name.Contains("Calculator", StringComparison.OrdinalIgnoreCase)), "The newly captured Calculator should appear in the application list.");
+    }
 
-        // Open a new application
-        Process.Start("calc.exe");
-        Thread.Sleep(2000);
+    private ProjectWrapper StoredWorkspace()
+    {
+        var storage = new WorkspacesData();
+        var workspaces = storage.Read(storage.File).Workspaces.Where(project => project.Name == workspaceName).ToList();
+        Assert.AreEqual(1, workspaces.Count, "The test workspace should be saved exactly once.");
+        return workspaces[0];
+    }
 
-        // Click Capture
-        var captureButton = Find<Button>("Capture");
-        captureButton.Click();
-        Thread.Sleep(2000);
+    private ApplicationWrapper CapturedNotepad()
+    {
+        var notepads = StoredWorkspace().Applications.Where(application => application.ApplicationPath.Contains("notepad", StringComparison.OrdinalIgnoreCase)).ToList();
+        Assert.IsTrue(notepads.Count > 0, "The Notepad fixture should have been captured.");
+        return notepads[0];
+    }
 
-        // Verify new app was added
-        var appList = Find<Custom>("AppList");
-        var apps = appList.FindAll<Custom>(By.ClassName("AppItem"));
+    private Element FindCapturedNotepad() => Find<Element>(By.AccessibilityId(CapturedNotepad().Application));
 
-        bool foundCalculator = false;
-        foreach (var app in apps)
+    private Element ExpandApplication(string name)
+    {
+        var app = Find<Element>(By.AccessibilityId(name));
+        if (!app.FindAll<TextBox>(By.AccessibilityId("CommandLineTextBox"), timeoutMS: 500).Any(input => input.Displayed))
         {
-            var appName = app.GetAttribute("Name");
-            if (appName.Contains("Calculator", StringComparison.OrdinalIgnoreCase))
+            app.Click();
+        }
+
+        Assert.IsTrue(app.Find<TextBox>(By.AccessibilityId("CommandLineTextBox")).Displayed, "The application expander should show its edit inputs.");
+        return app;
+    }
+
+    private Button InclusionButton(Element app, string action)
+    {
+        // The inclusion button is a sibling of the disabled expander, so scope by ID and app name.
+        var buttons = FindAll<Button>(By.AccessibilityId("ToggleApplicationInclusionButton"))
+            .Where(button => button.Name == $"{action} {app.Name}")
+            .OrderBy(button => Math.Abs((button.Rect?.Top ?? int.MaxValue) - (app.Rect?.Top ?? 0)))
+            .ToList();
+        Assert.IsTrue(buttons.Count > 0, $"The application should have a '{action}' button.");
+        return buttons[0];
+    }
+
+    private int IncludedApplicationCount() => FindAll<Button>(By.AccessibilityId("ToggleApplicationInclusionButton")).Count(button => button.Name.StartsWith("Remove ", StringComparison.Ordinal));
+
+    private void SelectPosition(Element app, string state)
+    {
+        app.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")).Click();
+        Find<Element>(By.Name(state), global: true).Click();
+    }
+
+    private Bitmap CapturePreview()
+    {
+        var bounds = GetPreviewImage().Rect!.Value;
+        Session.MoveMouseTo(0, 0);
+        var image = new Bitmap(bounds.Width, bounds.Height);
+        using var graphics = Graphics.FromImage(image);
+        graphics.CopyFromScreen(bounds.Location, Point.Empty, bounds.Size);
+        return image;
+    }
+
+    private void AssertPreviewPixels(Bitmap before, bool changed)
+    {
+        using var after = CapturePreview();
+        Assert.AreEqual(before.Size, after.Size, "Editing an application should preserve preview dimensions.");
+        bool difference = false;
+        for (int y = 0; y < before.Height && !difference; y++)
+        {
+            for (int x = 0; x < before.Width; x++)
             {
-                foundCalculator = true;
-                break;
+                if (before.GetPixel(x, y) != after.GetPixel(x, y))
+                {
+                    difference = true;
+                    break;
+                }
             }
         }
 
-        Assert.IsTrue(foundCalculator, "Newly opened Calculator should be captured and added");
-
-        // Clean up
-        foreach (var process in Process.GetProcessesByName("CalculatorApp"))
-        {
-            process.Kill();
-        }
-
-        foreach (var process in Process.GetProcessesByName("Calculator"))
-        {
-            process.Kill();
-        }
-    }
-
-    // Helper methods
-    private void NavigateToEditingPage()
-    {
-        // Ensure we have at least one workspace
-        if (!Has<Custom>("WorkspacesList", timeoutMS: 1000))
-        {
-            CreateTestWorkspace();
-        }
-
-        // Click on first workspace to edit
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspaceItems = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"));
-
-        if (workspaceItems.Count == 0)
-        {
-            CreateTestWorkspace();
-            workspaceItems = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"));
-        }
-
-        workspaceItems[0].Click();
-        Thread.Sleep(1000);
-    }
-
-    private void CreateTestWorkspace()
-    {
-        // Open a test app
-        Process.Start("notepad.exe");
-        Thread.Sleep(1000);
-
-        // Create workspace
-        var createButton = Find<Button>("Create Workspace");
-        createButton.Click();
-        Thread.Sleep(1000);
-
-        // Capture
-        var captureButton = Find<Button>("Capture");
-        captureButton.Click();
-        Thread.Sleep(2000);
-
-        // Save with default name
-        var saveButton = Find<Button>("Save");
-        saveButton.Click();
-        Thread.Sleep(1000);
-
-        // Close test app
-        foreach (var process in Process.GetProcessesByName("notepad"))
-        {
-            process.Kill();
-        }
+        Assert.AreEqual(changed, difference, changed ? "The application edit should change the preview pixels." : "Adding the application back should restore the preview pixels.");
     }
 }

@@ -4,7 +4,7 @@
 
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WorkspacesEditor.Utils;
+using WorkspacesCsharpLibrary.Data;
 
 namespace WorkspacesEditorUITest;
 
@@ -20,20 +20,12 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
     [TestCategory("Workspaces Snapshot UI")]
     public void TestCaptureCancel()
     {
-        AttachWorkspacesEditor();
-
-        var createButton = Find<Button>("Create Workspace");
-        createButton.Click();
-
-        Task.Delay(1000).Wait();
-
-        AttachSnapshotWindow();
-
-        var cancelButton = Find<Button>("Cancel");
-
-        Assert.IsNotNull(cancelButton, "Capture button should exist");
-
-        cancelButton.Click();
+        int count = GetWorkspaceCards().Count;
+        StartCapture();
+        var cancelButton = Find<Button>(By.AccessibilityId("CancelButton"));
+        Assert.AreEqual("Cancel", cancelButton.Name, "The snapshot Cancel button should have an accessible name.");
+        CancelSnapshot();
+        Assert.AreEqual(count, GetWorkspaceCards().Count, "Canceling capture should not add a workspace.");
     }
 
     [TestMethod("WorkspacesSnapshot.CapturePackagedApps")]
@@ -41,42 +33,27 @@ public class WorkspacesSnapshotTests : WorkspacesUiAutomationBase
     public void TestCapturePackagedApplications()
     {
         OpenCalculator();
+        try
+        {
+            Task.Delay(2000).Wait();
+            StartCapture();
+            CaptureWorkspace();
 
-        // OpenWindowsSettings();
-        Task.Delay(2000).Wait();
+            // Read the native capture DTO without constructing a WinUI Project or its images.
+            Assert.IsTrue(File.Exists(TempProjectData.File), "Capture should write the temporary workspace data.");
+            var workspace = new ProjectData().Read(TempProjectData.File);
+            Assert.IsTrue(Guid.TryParse(workspace.Id, out _), "The captured workspace should have a valid ID.");
+            Assert.IsNotNull(workspace.Applications, "Workspace should contain a list of apps.");
+            var calculator = workspace.Applications.Where(app => app.ApplicationPath.Contains("Calculator", StringComparison.OrdinalIgnoreCase)).ToList();
+            Assert.IsTrue(calculator.Count > 0, "Calculator should be captured in the workspace data.");
+            Assert.IsTrue(calculator.Any(app => !string.IsNullOrEmpty(app.PackageFullName) && !string.IsNullOrEmpty(app.AppUserModelId)), "The captured Calculator should retain its packaged application identity.");
 
-        AttachWorkspacesEditor();
-        var createButton = Find<Button>("Create Workspace");
-        createButton.Click();
-        Task.Delay(1000).Wait();
-
-        AttachSnapshotWindow();
-        var captureButton = Find<Button>("Capture");
-        captureButton.Click();
-        Task.Delay(3000).Wait();
-
-        // Verify captured windows by reading the temporary workspaces file as the ground truth.
-        var editorIO = new WorkspacesEditorIO();
-        var workspace = editorIO.ParseTempProject();
-
-        Assert.IsNotNull(workspace, "Workspace data should be deserialized.");
-        Assert.IsNotNull(workspace.Applications, "Workspace should contain a list of apps.");
-
-        bool isCalculatorFound = workspace.Applications.Any(app => app.AppPath.Contains("Calculator", StringComparison.OrdinalIgnoreCase));
-
-        // bool isSettingsFound = workspace.Applications.Any(app => app.AppPath.Contains("Settings", StringComparison.OrdinalIgnoreCase));
-        Assert.IsTrue(isCalculatorFound, "Calculator should be captured in the workspace data.");
-
-        // Assert.IsTrue(isSettingsFound, "Settings should be captured in the workspace data.");
-
-        // Cancel to clean up
-        AttachWorkspacesEditor();
-        Find<Button>("Cancel").Click();
-        Task.Delay(1000).Wait();
-
-        // Close test applications
-        CloseCalculator();
-
-        // CloseWindowsSettings();
+            ReturnToMainPage();
+            Assert.IsFalse(File.Exists(TempProjectData.File), "Canceling the new workspace should discard its temporary capture data.");
+        }
+        finally
+        {
+            CloseCalculator();
+        }
     }
 }

@@ -32,6 +32,7 @@
                 <AutoSuggestBox
                     x:Name="SearchBox"
                     x:Uid="SearchBox"
+                    AutomationProperties.AutomationId="SearchTextBox"
                     MaxWidth="360"
                     VerticalAlignment="Center"
                     QueryIcon="Find"
@@ -45,8 +46,13 @@
                                 Padding="0,4"
                                 Orientation="Vertical"
                                 Spacing="2">
-                                <TextBlock FontWeight="SemiBold" Text="{x:Bind Name, Mode=OneWay}" />
                                 <TextBlock
+                                    AutomationProperties.AccessibilityView="Content"
+                                    AutomationProperties.AutomationId="WorkspaceSearchSuggestionName"
+                                    FontWeight="SemiBold"
+                                    Text="{x:Bind Name, Mode=OneWay}" />
+                                <TextBlock
+                                    AutomationProperties.AutomationId="WorkspaceSearchSuggestionDetails"
                                     FontSize="12"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Text="{x:Bind AppsCountString, Mode=OneWay}" />

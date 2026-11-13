@@ -23,7 +23,7 @@ namespace WorkspacesEditor.UnitTests
             var app = project.Applications[0];
             app.IsIncluded = true;
 
-            app.IsIncluded = !app.IsIncluded;
+            app.SwitchDeletion();
 
             Assert.IsFalse(app.IsIncluded);
         }
@@ -36,7 +36,7 @@ namespace WorkspacesEditor.UnitTests
             var app = project.Applications[0];
             app.IsIncluded = false;
 
-            app.IsIncluded = !app.IsIncluded;
+            app.SwitchDeletion();
 
             Assert.IsTrue(app.IsIncluded);
         }
@@ -49,8 +49,8 @@ namespace WorkspacesEditor.UnitTests
             var app = project.Applications[0];
             app.IsIncluded = true;
 
-            app.IsIncluded = !app.IsIncluded;
-            app.IsIncluded = !app.IsIncluded;
+            app.SwitchDeletion();
+            app.SwitchDeletion();
 
             Assert.IsTrue(app.IsIncluded);
         }
@@ -221,6 +221,37 @@ namespace WorkspacesEditor.UnitTests
             var pos2 = new Application.WindowPosition { X = 960, Y = 0, Width = 960, Height = 1080 };
 
             Assert.IsTrue(pos1 != pos2);
+        }
+
+        [TestMethod]
+        [TestCategory("Model.Application")]
+        public void UpdatePosition_UnchangedCoordinatesPreserveManualAdjustmentState()
+        {
+            var project = TestHelpers.CreateProject("Test", 0, 0, "App");
+            var app = project.Applications[0];
+            var original = new Application.WindowPosition { X = 240, Y = 220, Width = 720, Height = 460 };
+            app.Position = original;
+
+            app.UpdatePositionX("0240");
+            app.UpdatePositionY("220");
+            app.UpdatePositionWidth("720");
+            app.UpdatePositionHeight("460");
+
+            Assert.AreEqual(original, app.Position);
+            Assert.IsFalse(project.IsPositionChangedManually, "Initializing or refreshing unchanged coordinates must not count as a manual adjustment.");
+
+            app.UpdatePositionX("420");
+            Assert.AreEqual(420, app.Position.X);
+            Assert.IsTrue(project.IsPositionChangedManually, "An actual coordinate change must count as a manual adjustment.");
+
+            var adjusted = app.Position;
+            app.UpdatePositionX("420");
+            app.UpdatePositionY("220");
+            app.UpdatePositionWidth("720");
+            app.UpdatePositionHeight("460");
+
+            Assert.AreEqual(adjusted, app.Position);
+            Assert.IsTrue(project.IsPositionChangedManually, "Unchanged input must preserve an earlier manual adjustment.");
         }
 
         [TestMethod]

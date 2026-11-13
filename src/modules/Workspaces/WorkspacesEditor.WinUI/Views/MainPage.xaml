@@ -31,6 +31,7 @@
                 x:Name="NewProjectButton"
                 x:Uid="CreateWorkspaceBtn"
                 HorizontalAlignment="Left"
+                AutomationProperties.AutomationId="NewProjectButton"
                 Click="NewProjectButton_Click"
                 Style="{ThemeResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal">
@@ -51,7 +52,7 @@
                 x:Uid="SortByButton"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Center"
-                AutomationProperties.AutomationId="WorkspaceSortComboBox"
+                AutomationProperties.AutomationId="WorkspaceSortButton"
                 Style="{StaticResource SubtleButtonStyle}">
                 <ToolTipService.ToolTip>
                     <TextBlock x:Uid="SortByButtonToolTip" />
@@ -61,16 +62,19 @@
                     <MenuFlyout>
                         <RadioMenuFlyoutItem
                             x:Uid="SortLastLaunchedItem"
+                            AutomationProperties.AutomationId="SortLastLaunchedItem"
                             Click="SortByLastLaunched_Click"
                             GroupName="WorkspacesSortOrder"
                             IsChecked="{x:Bind ViewModel.OrderByIndex, Mode=OneWay, Converter={StaticResource IndexToBool}, ConverterParameter=0}" />
                         <RadioMenuFlyoutItem
                             x:Uid="SortCreatedItem"
+                            AutomationProperties.AutomationId="SortCreatedItem"
                             Click="SortByCreated_Click"
                             GroupName="WorkspacesSortOrder"
                             IsChecked="{x:Bind ViewModel.OrderByIndex, Mode=OneWay, Converter={StaticResource IndexToBool}, ConverterParameter=1}" />
                         <RadioMenuFlyoutItem
                             x:Uid="SortNameItem"
+                            AutomationProperties.AutomationId="SortNameItem"
                             Click="SortByName_Click"
                             GroupName="WorkspacesSortOrder"
                             IsChecked="{x:Bind ViewModel.OrderByIndex, Mode=OneWay, Converter={StaticResource IndexToBool}, ConverterParameter=2}" />
@@ -111,7 +115,7 @@
                             <DataTemplate x:DataType="models:Project">
                                 <tkcontrols:SettingsCard
                                     HorizontalAlignment="Stretch"
-                                    AutomationProperties.AutomationId="WorkspaceItem"
+                                    AutomationProperties.AutomationId="{x:Bind Id, Mode=OneWay}"
                                     AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
                                     Click="WorkspaceCardClicked"
                                     DataContext="{x:Bind}"
@@ -150,7 +154,10 @@
                                             </StackPanel>
                                         </Grid>
                                     </tkcontrols:SettingsCard.Description>
-                                    <Button x:Uid="LaunchBtn" Click="LaunchButton_Click">
+                                    <Button
+                                        x:Uid="LaunchBtn"
+                                        AutomationProperties.AutomationId="LaunchButton"
+                                        Click="LaunchButton_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <FontIcon FontSize="16" Glyph="&#xE8A7;" />
                                             <TextBlock x:Uid="LaunchLabel" VerticalAlignment="Center" />

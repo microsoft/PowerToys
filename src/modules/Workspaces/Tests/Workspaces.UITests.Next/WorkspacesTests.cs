@@ -16,10 +16,6 @@ namespace Microsoft.Workspaces.UITests
     [DoNotParallelize]
     public sealed partial class WorkspacesTests : UITestBase
     {
-        // Re-enable these scenarios after the WinUI automation contracts and end-to-end behavior are validated.
-        private const string WinUiMigrationIgnoreReason =
-            "Temporarily disabled pending Workspaces WinUI migration validation: https://github.com/microsoft/PowerToys/pull/49077";
-
         private const string EditorProcess = "PowerToys.WorkspacesEditor";
         private const string LauncherProcess = "PowerToys.WorkspacesLauncher";
         private const string LauncherUiProcess = "PowerToys.WorkspacesLauncherUI";
@@ -65,7 +61,7 @@ namespace Microsoft.Workspaces.UITests
             ArgumentNullException.ThrowIfNull(context);
             Assert.IsFalse(ElevationHelper.IsProcessElevated(Environment.ProcessId), "Run Test Explorer and the Workspaces UI tests without elevation.");
             var target = WorkspacesDisplay.GetPrimaryTarget();
-            context.WriteLine($"Workspaces placement target: {target.DeviceName}, monitor {target.Number}, DPI {target.Dpi}.");
+            context.WriteLine($"Workspaces placement target: {target.DeviceName}, monitor {target.Number}, DPI {target.Dpi}, physical size {target.MonitorWidth}x{target.MonitorHeight}, logical width {target.LogicalMonitorRight - target.LogicalMonitorLeft}.");
         }
 
         protected override void PrepareTestState()
@@ -177,27 +173,36 @@ namespace Microsoft.Workspaces.UITests
             SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesEnableToggleControlHeaderText"), 15_000)
                 .Find<ToggleSwitch>(By.Name("Workspaces"), 15_000);
 
-        private void OpenEditor()
+        private void OpenEditor(bool maximize = true)
         {
-            Step("Clicking Open editor in Settings.");
-            var launch = SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
-            Assert.IsTrue(launch.Displayed && launch.Width > 0 && launch.Height > 0, "The launch card is not visible.");
+            Step("Opening editor from Settings with Enter.");
             SettingsUi.EnsureForeground();
             Assert.IsTrue(
                 WindowControl.WaitForForeground(SettingsWindow(), 10_000),
                 $"Settings did not acquire foreground for the launch card: {WindowControl.GetForegroundWindowInfo()}.");
 
-            // SettingsCard exposes a Button role but no InvokePattern; its pointer command is the user action.
-            launch.Click(msPostAction: 0);
-            AttachEditor();
+            var launch = SettingsUi.Find<Button>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
+            Assert.AreEqual("WorkspacesLaunchEditorButtonControl", launch.AutomationId, "The Settings launch action resolved to the wrong control.");
+            Assert.IsTrue(launch.Displayed && launch.IsEnabled, "The launch card is not available.");
+
+            // SettingsCard handles Enter through ButtonBase even when its automation peer does not
+            // expose InvokePattern. Keep activation on the actual Settings card and command path.
+            launch.Focus();
+            Assert.IsTrue(launch.WaitForProperty("HasKeyboardFocus", "True", 5_000), "The Settings launch card did not receive keyboard focus.");
+            KeyboardHelper.SendKeys(Key.Enter);
+            AttachEditor(maximize);
         }
 
-        private void AttachEditor()
+        private void AttachEditor(bool maximize = true)
         {
             editor = WindowsFinder.WaitForWindowByApp(EditorProcess, window => window.Width > 400 && window.Height > 300, 45_000);
             Assert.IsNotNull(editor, "Workspaces Editor did not open.");
             Assert.IsFalse(editor.IsElevated, "Workspaces Editor must run at the test user's integrity level.");
-            WindowHelper.MaximizeWindow(new IntPtr(editor.WindowHandle));
+            if (maximize)
+            {
+                WindowHelper.MaximizeWindow(new IntPtr(editor.WindowHandle));
+            }
+
             Assert.IsTrue(editor.Has(By.AccessibilityId("NewProjectButton"), 20_000), "The editor did not present its workspace list.");
         }
 
@@ -209,17 +214,17 @@ namespace Microsoft.Workspaces.UITests
             editor = null;
         }
 
-        private void EditWorkspace(string name, bool useMenu = false)
+        private void EditWorkspace(string name, bool useKeyboard = false)
         {
             var card = WaitForCard(name);
-            if (useMenu)
+            if (useKeyboard)
             {
-                OpenWorkspaceMenu(card);
-                var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
-                var buttons = process.FindAll<Button>(By.Name("Edit"), 10_000).Where(button => button.Name == "Edit").ToArray();
-                var menuButton = buttons.Single(button => button.Width > 0 && button.Width < 300);
-                Step("Invoking the workspace's Edit menu command.");
-                menuButton.Invoke(msPostAction: 0);
+                Step($"Opening workspace '{name}' with the keyboard.");
+                Editor.EnsureForeground();
+                var element = Editor.Find<Element>(By.AccessibilityId(card.Id));
+                element.Focus();
+                Assert.IsTrue(element.WaitForProperty("HasKeyboardFocus", "True", 5_000), "The workspace card did not receive keyboard focus.");
+                KeyboardHelper.SendKeys(Key.Enter);
             }
             else
             {
@@ -232,10 +237,8 @@ namespace Microsoft.Workspaces.UITests
         }
 
         // Open a workspace's editing page with a real mouse click on the card's name region. The whole
-        // card is the Edit button, and its left name area never overlaps the Launch/More buttons on the
-        // right. WPF drops the cards' descendant automation peers after the list re-projects its items
-        // (a save, sort, or filter), so a UIA invoke on the descendant Edit button is unreliable; the item
-        // container keeps correct on-screen bounds, so a physical click on it always reaches the button.
+        // card opens the editor, and its left name area never overlaps the Launch button on the right.
+        // Reacquire its stable workspace ID after a save, sort, or filter changes the list.
         // A single physical click can still be silently dropped while the editor is settling foreground /
         // z-order right after it opens (observed in CI), so retry a bounded number of times: re-acquire the
         // card by name (its bounds survive re-projection), click, and stop the moment the editing page's
@@ -244,6 +247,7 @@ namespace Microsoft.Workspaces.UITests
         // arbitrary sleep.
         private void OpenCardForEditing(string name)
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
             const int maxAttempts = 4;
             for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
@@ -282,29 +286,77 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        private void OpenWorkspaceMenu(WorkspaceCard card)
-        {
-            Step("Opening the workspace actions menu.");
-
-            // Scope the More button to the target card by its on-screen row so the correct card's menu
-            // opens even when several cards are present. This relies on live descendant peers, so it is
-            // only used on a freshly rendered list (before any save/sort/filter re-projects the items).
-            var more = Editor.FindAll<Button>(By.AccessibilityId("MoreButton"), 10_000)
-                .Where(button => button.Y >= card.Y && button.Y <= card.Y + card.Height)
-                .ToArray();
-            Assert.HasCount(1, more, "The workspace actions button was not uniquely addressable.");
-            more[0].Invoke(msPostAction: 0);
-
-            // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
-            Assert.IsTrue(
-                Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess).Has<Button>(By.Name("Remove"), 10_000),
-                "The workspace actions menu did not open.");
-        }
-
         private void Search(string term)
         {
             Step($"Searching workspaces for '{term}'.");
-            Editor.Find<TextBox>(By.AccessibilityId("SearchTextBox"), 15_000).SetText(term);
+            var input = SearchInput();
+            input.Focus();
+            input.SetText(term);
+            Assert.IsTrue(input.WaitForValue(term, timeoutMS: 5_000), "The search input did not accept the query.");
+        }
+
+        private TextBox SearchInput()
+        {
+            var search = Editor.Find<Element>(By.AccessibilityId("SearchTextBox"), 15_000);
+            var inputs = FindDescendants<TextBox>(search, "Edit");
+            Assert.HasCount(1, inputs, "The AutoSuggestBox should contain one editable search input.");
+            return inputs[0];
+        }
+
+        private T[] FindDescendants<T>(Element parent, string controlType, string? automationId = null)
+            where T : Element, new()
+        {
+            // Element.Find forwards to a window-wide lookup in this harness. Inspect the selected
+            // subtree explicitly before resolving its child slugs, so repeated IDs stay scoped.
+            var tree = WinappCli.InvokeJson(
+                "ui",
+                "inspect",
+                parent.Selector,
+                "-w",
+                Editor.WindowHandle.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                "--json",
+                "-d",
+                "20");
+            var selectors = new List<By>();
+            void Walk(JsonElement element)
+            {
+                var selector = element.TryGetProperty("selector", out var selectorProperty) ? selectorProperty.GetString() : null;
+                if (selector is not null && selector != parent.Selector &&
+                    element.TryGetProperty("type", out var typeProperty) && typeProperty.GetString() == controlType &&
+                    (automationId is null || (element.TryGetProperty("automationId", out var idProperty) && idProperty.GetString() == automationId)))
+                {
+                    // Inspect returns an AutomationId for unique controls and a semantic slug for
+                    // repeated controls. Resolve IDs through search so a partial parent ID cannot
+                    // cause inspect to return that parent instead of the requested control.
+                    selectors.Add(element.TryGetProperty("automationId", out var automationIdProperty) && selector == automationIdProperty.GetString()
+                        ? By.AccessibilityId(selector)
+                        : By.Slug(selector));
+                }
+
+                if (element.TryGetProperty("children", out var children) && children.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var child in children.EnumerateArray())
+                    {
+                        Walk(child);
+                    }
+                }
+            }
+
+            if (tree.TryGetProperty("windows", out var windows) && windows.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var window in windows.EnumerateArray())
+                {
+                    if (window.TryGetProperty("elements", out var elements) && elements.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var element in elements.EnumerateArray())
+                        {
+                            Walk(element);
+                        }
+                    }
+                }
+            }
+
+            return selectors.Select(selector => Editor.Find<T>(selector, 0)).ToArray();
         }
 
         // Reproduce the product's snapshot geometry contract (workspaces-common WindowUtils::GetWindowRect):
@@ -315,6 +367,7 @@ namespace Microsoft.Workspaces.UITests
         // (WindowHelper.GetVisibleBounds) are only correct for composed preview pixels, not saved placement.
         private static (int X, int Y, int Width, int Height) NormalizedOuterBounds(IntPtr handle)
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
             var (left, top, right, bottom) = WindowHelper.GetWindowBounds(handle);
             var dpi = NativeMethods.GetDpiForWindow(handle);
             Assert.IsTrue(dpi > 0, $"Could not read DPI for fixture HWND {handle}.");
@@ -331,21 +384,25 @@ namespace Microsoft.Workspaces.UITests
 
         private WorkspaceCard[] WorkspaceCards()
         {
-            // Read each workspace card from its container's AutomationId (bound to the workspace name via
-            // the ItemsControl item-container style in MainPage.xaml) plus its on-screen bounds. WPF drops
-            // the cards' descendant automation peers after a filter/sort/save re-projects the ItemsControl
-            // source, but the item container itself stays in the tree with correct bounds, so it is the one
-            // handle on a workspace's identity and location that survives every re-projection.
+            Assert.IsTrue(
+                Editor.FindAll<Button>(By.AccessibilityId("NewProjectButton"), 0).Any(button => button.Displayed),
+                "Workspace cards can only be read from the visible overview page.");
+
+            // ItemsRepeater does not expose an automation peer. Read the actual SettingsCard buttons
+            // by their GUID and test name instead; TextBlocks and search suggestions cannot match.
             var found = new List<WorkspaceCard>();
 
             void Walk(JsonElement element)
             {
-                if (element.TryGetProperty("automationId", out var idProperty) &&
-                    idProperty.GetString() is { } id &&
-                    id.StartsWith(State.Prefix, StringComparison.Ordinal))
+                var id = element.TryGetProperty("automationId", out var idProperty) ? idProperty.GetString() : null;
+                if (element.TryGetProperty("type", out var typeProperty) && typeProperty.GetString() == "Button" &&
+                    Guid.TryParse(id, out _) &&
+                    element.TryGetProperty("name", out var nameProperty) &&
+                    nameProperty.GetString() is { } name && name.StartsWith(State.Prefix, StringComparison.Ordinal))
                 {
                     found.Add(new WorkspaceCard(
-                        id,
+                        id!,
+                        name,
                         element.TryGetProperty("x", out var xp) ? xp.GetInt32() : 0,
                         element.TryGetProperty("y", out var yp) ? yp.GetInt32() : 0,
                         element.TryGetProperty("width", out var wp) ? wp.GetInt32() : 0,
@@ -393,7 +450,7 @@ namespace Microsoft.Workspaces.UITests
             return result.LastObservation![0];
         }
 
-        private readonly record struct WorkspaceCard(string Name, int X, int Y, int Width, int Height);
+        private readonly record struct WorkspaceCard(string Id, string Name, int X, int Y, int Width, int Height);
 
         private void AssertWorkspaceNames(params string[] expected)
         {
@@ -412,9 +469,13 @@ namespace Microsoft.Workspaces.UITests
         {
             Step($"Expanding application '{name}'.");
             var row = Editor.Find<Element>(By.AccessibilityId(name), 15_000);
-            if (!string.Equals(row.GetProperty("ExpandCollapseState"), "Expanded", StringComparison.OrdinalIgnoreCase))
+            var expanders = FindDescendants<Button>(row, "Button")
+                .Where(button => button.ClassName == "Microsoft.UI.Xaml.Controls.Expander").ToArray();
+            Assert.HasCount(1, expanders, "The application row should expose one expandable header.");
+            var expander = expanders[0];
+            if (!string.Equals(expander.GetProperty("ExpandCollapseState"), "Expanded", StringComparison.OrdinalIgnoreCase))
             {
-                row.Invoke(msPostAction: 0);
+                expander.Invoke(msPostAction: 0);
             }
 
             Assert.IsTrue(row.Find<TextBox>(By.AccessibilityId("CommandLineTextBox"), 15_000).IsEnabled, "Application details did not expand.");
@@ -427,7 +488,19 @@ namespace Microsoft.Workspaces.UITests
             var save = Editor.Find<Button>(By.AccessibilityId("SaveButton"), 15_000);
             Assert.IsTrue(save.IsEnabled, "The workspace cannot be saved.");
             save.Invoke(msPostAction: 0);
-            Assert.IsTrue(Editor.Has(By.AccessibilityId("NewProjectButton"), 15_000), "Save did not return to the workspace list.");
+            AssertWorkspaceListReady();
+        }
+
+        private void AssertWorkspaceListReady()
+        {
+            var ready = WaitHelper.WaitForStable(
+                () => Editor.FindAll<Button>(By.AccessibilityId("NewProjectButton"), 0)
+                    .Any(button => button.Displayed),
+                visible => visible,
+                15_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(ready.Succeeded, "The editor did not return to the visible workspace list.");
+            Assert.IsFalse(Editor.Has(By.AccessibilityId("EditNameTextBox"), 500), "An old editing page remained active after returning to the list.");
         }
 
         private Session StartCapture()
@@ -480,7 +553,9 @@ namespace Microsoft.Workspaces.UITests
                     "The editor did not finish applying the recaptured workspace.");
             }
 
-            return result.LastObservation!;
+            var snapshot = result.LastObservation!;
+            State.TrackProjectIcon(WorkspaceTestState.Text(snapshot, "id"));
+            return snapshot;
         }
 
         private static bool WaitForProcess(string name, bool expected, int timeoutMS = 20_000)

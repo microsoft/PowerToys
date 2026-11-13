@@ -21,7 +21,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Sort")]
         public void Sort_ByName_ReturnsAlphabeticalOrder()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("Zebra", 0, 0, "App"),
@@ -42,7 +42,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Sort")]
         public void Sort_ByCreated_ReturnsNewestFirst()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("Oldest", 1000, 0, "App"),
@@ -63,7 +63,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Sort")]
         public void Sort_ByLastViewed_ReturnsMostRecentFirst()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("LeastRecent", 0, 1000, "App"),
@@ -84,7 +84,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Sort")]
         public void Sort_OrderByIndex_RaisesPropertyChanged()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>();
 
             var changedProps = new System.Collections.Generic.List<string>();
@@ -98,7 +98,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Sort")]
         public void Sort_CombinedWithFilter_FilteredResultsAreSorted()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("Z Dev", 0, 0, "VS Code"),

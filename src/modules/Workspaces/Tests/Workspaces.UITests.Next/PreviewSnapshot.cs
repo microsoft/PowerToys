@@ -51,6 +51,7 @@ namespace Microsoft.Workspaces.UITests
         // of it, then deleted, so a long comparison loop never accumulates result files.
         private static PreviewSnapshot CaptureBitmap(TestContext context, Session editor)
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
             var image = editor.Find<Element>(By.AccessibilityId("WorkspacePreviewImage"), 15_000);
             Assert.IsTrue(image.Width > 0 && image.Height > 0, "The visible workspace preview has no geometry.");
             var directory = context.TestRunResultsDirectory ?? throw new InvalidOperationException("No results directory is available.");
