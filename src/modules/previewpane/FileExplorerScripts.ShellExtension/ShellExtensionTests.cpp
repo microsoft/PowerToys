@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <thread>
 
 namespace
 {
@@ -159,6 +160,43 @@ namespace
         return command;
     }
 
+    void VerifyCatalogueContention(IClassFactory* factory, const wchar_t* path)
+    {
+        ComPtr<IShellItem> item;
+        winrt::check_hresult(SHCreateItemFromParsingName(path, nullptr, IID_PPV_ARGS(&item)));
+        ComPtr<IShellItemArray> selection;
+        winrt::check_hresult(SHCreateShellItemArrayFromShellItem(item.Get(), IID_PPV_ARGS(&selection)));
+        const auto cache = DataDirectory() / L"catalogue.json";
+        const auto raw = CreateFileW(cache.c_str(), GENERIC_READ, 0, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+        if (raw == INVALID_HANDLE_VALUE)
+        {
+            winrt::throw_last_error();
+        }
+        winrt::handle locked{ raw };
+        const auto command = CreateCommand(factory);
+        EXPCMDSTATE state{};
+        if (command->GetState(selection.Get(), FALSE, &state) != E_PENDING)
+        {
+            throw std::runtime_error("A busy catalogue must defer fast state instead of hiding the menu.");
+        }
+        const auto started = std::chrono::steady_clock::now();
+        winrt::check_hresult(command->GetState(selection.Get(), TRUE, &state));
+        if (state != ECS_HIDDEN || std::chrono::steady_clock::now() - started > std::chrono::milliseconds(250))
+        {
+            throw std::runtime_error("An unreleased catalogue lock must fail closed with a bounded slow callback.");
+        }
+        std::jthread release([handle = std::move(locked)]() mutable {
+            Sleep(5);
+            handle.close();
+        });
+        winrt::check_hresult(command->GetState(selection.Get(), TRUE, &state));
+        if (state != ECS_ENABLED)
+        {
+            throw std::runtime_error("Slow state must recover when the catalogue publication lock is released.");
+        }
+        std::wcout << L"PASS busy catalogue defers fast state, bounds slow callbacks and recovers after release\n";
+    }
+
     std::vector<std::wstring> Titles(IExplorerCommand* command)
     {
         ComPtr<IEnumExplorerCommand> enumerator;
@@ -290,6 +328,10 @@ int wmain(int argc, wchar_t** argv)
         }
         ComPtr<IClassFactory> factory;
         winrt::check_hresult(getClass(__uuidof(ScriptCommand), IID_PPV_ARGS(&factory)));
+        if (isolated)
+        {
+            VerifyCatalogueContention(factory.Get(), argv[2]);
+        }
         const auto classic = CreateCommand(factory.Get());
         Verify(factory.Get(), classic.Get(), argv[2], L"Image -");
         Verify(factory.Get(), classic.Get(), argv[3], L"Audio -");

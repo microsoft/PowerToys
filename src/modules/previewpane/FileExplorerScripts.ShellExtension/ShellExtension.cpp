@@ -38,10 +38,27 @@ namespace
         return result;
     }
 
-    JsonObject ReadCatalogue()
+    JsonObject ReadCatalogue(bool okToBeSlow = false)
     {
         const auto path = DataDirectory() / L"catalogue.json";
-        const auto file = OpenCatalogue(path);
+        auto file = OpenCatalogue(path);
+        auto error = file ? ERROR_SUCCESS : GetLastError();
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(25);
+        // ReplaceFile briefly publishes its exclusively held replacement handle.
+        while (!file && error == ERROR_SHARING_VIOLATION)
+        {
+            if (!okToBeSlow)
+            {
+                winrt::throw_hresult(HRESULT_FROM_WIN32(error));
+            }
+            if (std::chrono::steady_clock::now() >= deadline)
+            {
+                return JsonObject{};
+            }
+            Sleep(1);
+            file = OpenCatalogue(path);
+            error = file ? ERROR_SUCCESS : GetLastError();
+        }
         LARGE_INTEGER size{};
         if (!file || !GetFileSizeEx(file.get(), &size) || size.QuadPart <= 0 || size.QuadPart > 1024 * 1024)
         {
@@ -445,7 +462,7 @@ public:
                 mediaMime.clear();
             }
             files = currentFiles;
-            catalogue = ReadCatalogue();
+            catalogue = ReadCatalogue(okToBeSlow != FALSE);
             if (!files.empty() && catalogue.GetNamedBoolean(L"enabled", false))
             {
                 const auto scripts = catalogue.GetNamedArray(L"scripts", JsonArray{});
@@ -459,6 +476,10 @@ public:
                 *state = available ? ECS_ENABLED : ECS_HIDDEN;
             }
             return S_OK;
+        }
+        catch (const winrt::hresult_error& error)
+        {
+            return !okToBeSlow && error.code() == HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION) ? E_PENDING : error.code().value;
         }
         catch (...)
         {
@@ -578,7 +599,7 @@ HRESULT ScriptCommand::EnumSubCommands(IEnumExplorerCommand** result)
     try
     {
         const auto list = Make<CommandEnumerator>();
-        catalogue = ReadCatalogue();
+        catalogue = ReadCatalogue(true);
         if (files.empty() && storedSelection)
         {
             files = GetFiles(storedSelection.Get());
