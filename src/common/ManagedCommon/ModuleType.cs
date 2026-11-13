@@ -34,6 +34,7 @@ namespace ManagedCommon
         PowerAccent,
         PowerDisplay,
         RegistryPreview,
+        RobocopyUI,
         MeasureTool,
         ShortcutGuide,
         PowerOCR,

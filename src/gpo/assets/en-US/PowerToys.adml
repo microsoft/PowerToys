@@ -302,6 +302,7 @@ Note: Online/remote images (http/https URLs) are always blocked regardless of th
       <string id="ConfigureEnabledUtilityWorkspaces">PowerToys Workspaces: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityRobocopyUI">Robocopy UI: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>

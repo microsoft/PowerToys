@@ -85,6 +85,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredRunAtStartupValue();
         static GpoRuleConfigured GetConfiguredNewPlusReplaceVariablesValue();
         static GpoRuleConfigured GetConfiguredNewPlusHideBuiltInNewContextMenuValue();
+        static GpoRuleConfigured GetConfiguredRobocopyUIEnabledValue();
     };
 }
 
