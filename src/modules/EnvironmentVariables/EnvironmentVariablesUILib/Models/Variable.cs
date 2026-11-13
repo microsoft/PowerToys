@@ -15,25 +15,26 @@ using EnvironmentVariablesUILib.Helpers;
 
 namespace EnvironmentVariablesUILib.Models
 {
+    [WinRT.GeneratedBindableCustomProperty]
     public partial class Variable : ObservableObject, IJsonOnDeserialized
     {
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
         [NotifyPropertyChangedFor(nameof(ShowAsList))]
         [NotifyPropertyChangedFor(nameof(IsPath))]
-        private string _name;
+        public partial string Name { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(Valid))]
-        private string _values;
+        public partial string Values { get; set; }
 
         [ObservableProperty]
-        private bool _applyToSystem;
+        public partial bool ApplyToSystem { get; set; }
 
+        // Marks a default-set variable that an applied profile overrides, so the UI can disable editing.
+        [ObservableProperty]
         [JsonIgnore]
-        [property: JsonIgnore]
-        [ObservableProperty]
-        private bool _isAppliedFromProfile; // Used to mark that a variable in a default set is applied by a profile. Used to disable editing / mark it in the UI.
+        public partial bool IsAppliedFromProfile { get; set; }
 
         [JsonIgnore]
         public bool IsEditable
@@ -47,16 +48,9 @@ namespace EnvironmentVariablesUILib.Models
         [JsonIgnore]
         public VariablesSetType ParentType { get; set; }
 
-        // To store the strings in the Values List with actual objects that can be referenced and identity compared
-        public class ValuesListItem
-        {
-            public string Text { get; set; }
-        }
-
         [ObservableProperty]
-        [property: JsonIgnore]
         [JsonIgnore]
-        private ObservableCollection<ValuesListItem> _valuesList;
+        public partial ObservableCollection<ValuesListItem> ValuesList { get; set; }
 
         [JsonIgnore]
         public bool Valid => Validate();

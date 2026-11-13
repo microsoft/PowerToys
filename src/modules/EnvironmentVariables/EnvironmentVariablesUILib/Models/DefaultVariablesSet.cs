@@ -6,7 +6,7 @@ using System;
 
 namespace EnvironmentVariablesUILib.Models
 {
-    public class DefaultVariablesSet : VariablesSet
+    public partial class DefaultVariablesSet : VariablesSet
     {
         public DefaultVariablesSet(Guid id, string name, VariablesSetType type)
             : base(id, name, type)

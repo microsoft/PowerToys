@@ -56,13 +56,13 @@
                                 ItemsSource="{x:Bind ValuesList, Mode=TwoWay}"
                                 Visibility="{x:Bind ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
                                 <ItemsControl.ItemTemplate>
-                                    <DataTemplate x:DataType="x:String">
+                                    <DataTemplate x:DataType="models:ValuesListItem">
                                         <TextBlock
                                             Margin="0,2,0,2"
                                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                             IsTextSelectionEnabled="True"
                                             Style="{StaticResource CaptionTextBlockStyle}"
-                                            Text="{Binding Text}" />
+                                            Text="{x:Bind Text}" />
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>
                             </ItemsControl>
@@ -427,6 +427,7 @@
             <StackPanel
                 MinWidth="320"
                 HorizontalAlignment="Stretch"
+                x:DataType="models:Variable"
                 Spacing="16">
                 <TextBox
                     x:Uid="AddNewVariableName"
@@ -457,7 +458,7 @@
             <ContentDialog.DataContext>
                 <models:Variable />
             </ContentDialog.DataContext>
-            <ScrollViewer>
+            <ScrollViewer x:DataType="models:Variable">
                 <StackPanel
                     MinWidth="320"
                     HorizontalAlignment="Stretch"
@@ -493,7 +494,7 @@
                         ItemsSource="{Binding ValuesList, Mode=TwoWay}"
                         Visibility="{Binding ShowAsList, Converter={StaticResource BoolToVisibilityConverter}}">
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate>
+                            <DataTemplate x:DataType="models:ValuesListItem">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*" />
@@ -505,7 +506,7 @@
                                         Background="Transparent"
                                         BorderBrush="Transparent"
                                         LostFocus="EditVariableValuesListTextBox_LostFocus"
-                                        Text="{Binding Text}" />
+                                        Text="{x:Bind Text}" />
                                     <Button
                                         x:Uid="More_Options_Button"
                                         Grid.Column="1"
@@ -560,7 +561,7 @@
         <ContentDialog
             x:Name="AddProfileDialog"
             x:Uid="AddProfileDialog"
-            IsPrimaryButtonEnabled="{Binding Valid, Mode=OneWay}"
+            IsPrimaryButtonEnabled="{x:Bind ((models:ProfileVariablesSet)AddProfileDialog.DataContext).Valid, Mode=OneWay}"
             IsSecondaryButtonEnabled="True"
             PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
             <ContentDialog.DataContext>
@@ -571,7 +572,7 @@
                     MinWidth="360"
                     HorizontalAlignment="Stretch"
                     Spacing="12">
-                    <Grid ColumnSpacing="12">
+                    <Grid x:DataType="models:ProfileVariablesSet" ColumnSpacing="12">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
@@ -596,7 +597,7 @@
                             OnContent="" />
                     </Grid>
 
-                    <Grid>
+                    <Grid x:DataType="models:ProfileVariablesSet">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
                             <ColumnDefinition />
@@ -691,7 +692,7 @@
                                     <tkcontrols:SwitchPresenter
                                         x:Name="AddVariableSwitchPresenter"
                                         Grid.Row="1"
-                                        Value="{Binding SelectedItem.Tag, ElementName=SwitchViewsSegmentedView}">
+                                        Value="{x:Bind ((tkcontrols:SegmentedItem)SwitchViewsSegmentedView.SelectedItem).Tag, Mode=OneWay}">
                                         <tkcontrols:Case Value="NewVariable">
                                             <StackPanel Grid.Row="1" Orientation="Vertical">
 
