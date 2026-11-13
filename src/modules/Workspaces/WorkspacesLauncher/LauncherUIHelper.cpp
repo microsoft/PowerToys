@@ -105,6 +105,11 @@ void LauncherUIHelper::DismissApproval(const std::wstring& requestId) const
     }
 }
 
+void LauncherUIHelper::AcknowledgeCancellation() const
+{
+    m_ipcHelper.send(Message(L"cancel-accepted").Stringify().c_str());
+}
+
 void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const
 {
     if (m_confirmationOnly)

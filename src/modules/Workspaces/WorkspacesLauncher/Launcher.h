@@ -35,8 +35,8 @@ private:
     std::mutex m_launchThreadMutex;
     std::thread m_launchThread;
 
-    std::unique_ptr<LauncherUIHelper> m_uiHelper;
     std::mutex m_uiHelperMutex;
+    std::unique_ptr<LauncherUIHelper> m_uiHelper;
 
     std::unique_ptr<WindowArrangerHelper> m_windowArrangerHelper;
     std::mutex m_windowArrangerHelperMutex;

@@ -13,6 +13,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Graphics;
+using WorkspacesLauncherUI.Helpers;
 using WorkspacesLauncherUI.Models;
 using VirtualKey = Windows.System.VirtualKey;
 
@@ -36,27 +38,35 @@ namespace WorkspacesLauncherUI
             Title = request.Title;
             Root.Language = CultureInfo.CurrentUICulture.IetfLanguageTag;
             Root.FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
-            var display = DisplayArea.GetFromWindowId(AppWindow.Id, DisplayAreaFallback.Nearest);
-            var scale = GetDpiForWindow(WinRT.Interop.WindowNative.GetWindowHandle(this)) / 96.0;
-            var width = Math.Min((int)(600 * scale), display.WorkArea.Width);
-            var height = Math.Min((int)(700 * scale), display.WorkArea.Height);
-            AppWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
-            AppWindow.Move(new Windows.Graphics.PointInt32(
-                display.WorkArea.X + ((display.WorkArea.Width - width) / 2),
-                display.WorkArea.Y + ((display.WorkArea.Height - height) / 2)));
+            var windowHandle = WinRT.Interop.WindowNative.GetWindowHandle(this);
+            var owner = (Application.Current as App)?.MainWindow;
+            var displayId = AppWindow.Id;
+            RectInt32? ownerBounds = null;
+            if (owner != null)
+            {
+                _owner = WinRT.Interop.WindowNative.GetWindowHandle(owner);
+                SetWindowLongPtrW(windowHandle, -8, _owner);
+                var ownerAppWindow = owner.AppWindow;
+                displayId = ownerAppWindow.Id;
+                var ownerPosition = ownerAppWindow.Position;
+                var ownerSize = ownerAppWindow.Size;
+                ownerBounds = new RectInt32(ownerPosition.X, ownerPosition.Y, ownerSize.Width, ownerSize.Height);
+            }
+
+            var display = DisplayArea.GetFromWindowId(displayId, DisplayAreaFallback.Nearest);
+            var dpi = GetDpiForWindow(_owner != IntPtr.Zero ? _owner : windowHandle);
+            var scale = (dpi == 0 ? 96 : dpi) / 96.0;
+            var bounds = WindowPlacement.GetCenteredBounds(display.WorkArea, new SizeInt32((int)(600 * scale), (int)(700 * scale)), ownerBounds);
+
+            // A cross-monitor move can apply WM_DPICHANGED's suggested bounds; repeat to keep the requested physical size and position.
+            AppWindow.MoveAndResize(bounds);
+            AppWindow.MoveAndResize(bounds);
             if (AppWindow.Presenter is OverlappedPresenter presenter)
             {
                 presenter.IsResizable = false;
                 presenter.IsMaximizable = false;
                 presenter.IsMinimizable = false;
                 presenter.IsAlwaysOnTop = true;
-            }
-
-            var owner = (Application.Current as App)?.MainWindow;
-            if (owner != null)
-            {
-                _owner = WinRT.Interop.WindowNative.GetWindowHandle(owner);
-                SetWindowLongPtrW(WinRT.Interop.WindowNative.GetWindowHandle(this), -8, _owner);
             }
 
             Root.Loaded += (_, _) =>
@@ -171,7 +181,7 @@ namespace WorkspacesLauncherUI
                         XamlRoot = Root.XamlRoot,
                         Title = Title,
                         Content = _request.CopyDetailsErrorText,
-                        CloseButtonText = _request.SkipText,
+                        CloseButtonText = _request.CopyDetailsAcknowledgementText,
                     };
                     await _copyError.ShowAsync();
                     _copyError = null;

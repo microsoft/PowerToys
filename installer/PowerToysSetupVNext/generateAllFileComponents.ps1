@@ -495,8 +495,11 @@ Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath 
 Generate-FileComponents -fileListName "SettingsV2AssetsCmdPalFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
-Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"
+# Both Workspaces UIs emit their shared icons under WinUI3Apps. Keep the root assets for legacy relative paths.
+Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Workspaces\"
 Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
+Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesWinUI3ComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Workspaces\"
+Generate-FileComponents -fileListName "WorkspacesImagesWinUI3ComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
 
 #DSC Resources - JSON manifest files in DSCModules subfolder
 Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCModules\"
