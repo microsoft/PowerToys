@@ -16,7 +16,36 @@ namespace KeyboardManagerEditorUI.Helpers
     public static class PowerScriptsCatalog
     {
         private const string HostExeName = "PowerScripts.Host.exe";
+        private static readonly object ClientGate = new();
         private static IReadOnlyList<PowerScriptInfo> _latestScripts = Array.Empty<PowerScriptInfo>();
+        private static PowerScriptsClient? _client;
+        private static bool _stopping;
+
+        public static void Shutdown()
+        {
+            lock (ClientGate)
+            {
+                _stopping = true;
+                _client?.Dispose();
+                _client = null;
+            }
+        }
+
+        private static PowerScriptsClient GetClient(string hostPath)
+        {
+            lock (ClientGate)
+            {
+                ObjectDisposedException.ThrowIf(_stopping, typeof(PowerScriptsCatalog));
+
+                if (_client is not null && !string.Equals(_client.HostPath, hostPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    _client.Dispose();
+                    _client = null;
+                }
+
+                return _client ??= new PowerScriptsClient(PowerScriptConsumer.KeyboardManager, reuseHost: true, hostPath: hostPath);
+            }
+        }
 
         public static string? ResolveHostPath()
         {
@@ -52,7 +81,7 @@ namespace KeyboardManagerEditorUI.Helpers
                     return new(null, Array.Empty<PowerScriptInfo>(), ResourceHelper.GetString("PowerScript_HostUnavailable"));
                 }
 
-                var client = new PowerScriptsClient(PowerScriptConsumer.KeyboardManager, hostPath);
+                var client = GetClient(hostPath);
                 var scripts = await client.ListAsync(timeout.Token).ConfigureAwait(false);
                 IReadOnlyList<PowerScriptInfo> actions = scripts.Where(script => script.IsAction)
                     .Select(script => new PowerScriptInfo(script)).ToList().AsReadOnly();

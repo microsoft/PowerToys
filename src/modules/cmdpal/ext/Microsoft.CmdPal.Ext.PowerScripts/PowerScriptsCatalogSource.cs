@@ -205,6 +205,8 @@ internal sealed partial class PowerScriptsCatalogSource : IDisposable
             entry.Session.Dispose();
         }
 
+        (_service as IDisposable)?.Dispose();
+
         if (discovery is null || discovery.IsCompleted)
         {
             _lifetime.Dispose();

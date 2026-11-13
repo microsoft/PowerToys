@@ -4,9 +4,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -49,6 +51,27 @@ public sealed class PowerScriptsServiceTests
 
         Assert.ThrowsExactly<ArgumentException>(() => service.RunAsync(script, new Dictionary<string, JsonElement>(), CancellationToken.None));
         Assert.AreEqual(0, clientsCreated);
+    }
+
+    [TestMethod]
+    public async Task DiscoveryRetainsItsOwnedClientAndDisposalPreventsRestart()
+    {
+        var created = 0;
+        using var service = new PowerScriptsService(() =>
+        {
+            created++;
+            return new PowerScriptsClient(
+                PowerScriptConsumer.CommandPalette,
+                reuseHost: true,
+                hostPath: Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "missing-host.exe"));
+        });
+
+        await Assert.ThrowsExactlyAsync<FileNotFoundException>(() => service.DiscoverAsync(CancellationToken.None));
+        await Assert.ThrowsExactlyAsync<FileNotFoundException>(() => service.DiscoverAsync(CancellationToken.None));
+        Assert.AreEqual(1, created);
+        service.Dispose();
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => service.DiscoverAsync(CancellationToken.None));
+        Assert.AreEqual(1, created);
     }
 
     [TestMethod]

@@ -38,9 +38,29 @@ internal static class Program
         try
         {
             Console.OutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
-            if (args.Length == 1 && args[0] == "session")
+            if (args.Length > 0 && args[0] == "session")
             {
-                return HostSession.Run(Main);
+                if (args.Length == 1)
+                {
+                    return HostSession.Run(Main);
+                }
+
+                if (args.Length is 3 or 5 && args[1] == "--owner" &&
+                    int.TryParse(args[2], out var owner) && owner > 0 && owner != Environment.ProcessId)
+                {
+                    if (args.Length == 3)
+                    {
+                        return HostSession.Run(Main, owner);
+                    }
+
+                    if (args[3] == "--stop-event" && long.TryParse(args[4], out var stopEvent) && stopEvent > 0)
+                    {
+                        return HostSession.Run(Main, owner, stopEvent);
+                    }
+                }
+
+                Console.Error.WriteLine("session: use session [--owner <process-id> [--stop-event <inherited-handle>]].");
+                return PowerScriptsProtocol.ExitCode.Usage;
             }
 
             if (args.Length == 0)

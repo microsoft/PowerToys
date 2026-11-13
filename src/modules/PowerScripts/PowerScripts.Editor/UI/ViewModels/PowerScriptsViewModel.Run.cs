@@ -17,6 +17,7 @@ public partial class PowerScriptsViewModel
         return Task.Run(
             () => new PowerScriptsClient(
                 PowerScriptConsumer.Editor,
+                reuseHost: true,
                 hostPath: ResolveHostPath(),
                 scriptsRoot: root),
             cancellationToken);

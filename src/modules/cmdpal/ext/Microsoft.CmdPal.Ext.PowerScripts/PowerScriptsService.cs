@@ -15,9 +15,12 @@ using PowerScripts.Client;
 namespace Microsoft.CmdPal.Ext.PowerScripts;
 
 /// <summary>Adapts the shared PowerScripts Host to the input and output supported by Command Palette.</summary>
-internal sealed class PowerScriptsService : IPowerScriptsService
+internal sealed partial class PowerScriptsService : IPowerScriptsService, IDisposable
 {
     private readonly Func<PowerScriptsClient> _createClient;
+    private readonly object _clientGate = new();
+    private PowerScriptsClient? _client;
+    private bool _disposed;
 
     public PowerScriptsService()
         : this(CreateClient)
@@ -36,7 +39,7 @@ internal sealed class PowerScriptsService : IPowerScriptsService
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
         try
         {
-            using var client = _createClient();
+            var client = GetClient();
             var state = await client.GetConsumerStateAsync(timeout.Token).ConfigureAwait(false);
             IReadOnlyList<PowerScriptInfo> scripts = state.IsEnabled && state.IsPowerScriptsEnabled
                 ? await client.ListAsync(timeout.Token).ConfigureAwait(false)
@@ -153,7 +156,7 @@ internal sealed class PowerScriptsService : IPowerScriptsService
             throw new InvalidOperationException(Properties.Resources.ScriptContractChanged);
         }
 
-        using var client = _createClient();
+        var client = GetClient();
         var result = await client.TransformAsync(
             current.Id,
             new PowerScriptTransformInput { Parameters = parameters.Count == 0 ? null : parameters },
@@ -175,7 +178,7 @@ internal sealed class PowerScriptsService : IPowerScriptsService
         var overridePath = Environment.GetEnvironmentVariable(PowerScriptsProtocol.HostPathEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(overridePath) && File.Exists(overridePath))
         {
-            return new PowerScriptsClient(PowerScriptConsumer.CommandPalette, hostPath: overridePath);
+            return new PowerScriptsClient(PowerScriptConsumer.CommandPalette, reuseHost: true, hostPath: overridePath);
         }
 
         var installDirectory = PowerToysPathResolver.GetPowerToysInstallPath();
@@ -184,10 +187,29 @@ internal sealed class PowerScriptsService : IPowerScriptsService
             var hostPath = Path.Combine(installDirectory, "PowerScripts", PowerScriptsProtocol.HostExeName);
             if (File.Exists(hostPath))
             {
-                return new PowerScriptsClient(PowerScriptConsumer.CommandPalette, hostPath: hostPath);
+                return new PowerScriptsClient(PowerScriptConsumer.CommandPalette, reuseHost: true, hostPath: hostPath);
             }
         }
 
-        return new PowerScriptsClient(PowerScriptConsumer.CommandPalette);
+        return new PowerScriptsClient(PowerScriptConsumer.CommandPalette, reuseHost: true);
+    }
+
+    public void Dispose()
+    {
+        lock (_clientGate)
+        {
+            _disposed = true;
+            _client?.Dispose();
+            _client = null;
+        }
+    }
+
+    private PowerScriptsClient GetClient()
+    {
+        lock (_clientGate)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _client ??= _createClient();
+        }
     }
 }

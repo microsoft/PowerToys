@@ -67,12 +67,19 @@ encapsulates Host discovery, safe argument construction, process invocation, JSO
 timeouts while keeping the consumer decoupled from `PowerScripts.Core`.
 
 Long-lived consumers can opt into `new PowerScriptsClient("my-module", reuseHost: true)` and
-dispose it when their owner exits. This keeps one private Host alive for `ListAsync` and
-`TransformAsync(..., noConsent: true)`, avoiding repeated managed startup. Requests are serialized;
-the Host reloads scripts/settings and performs the same approval, schema and MXC checks on every
-invocation. Interpreters and Windows sandboxes remain fresh. Cancellation kills the session's
-child tree; interrupted requests are never replayed. Interactive transforms and existing clients
-retain the one-shot contract. The stdio session does not expose trust approval or settings writes.
+dispose it when their owner exits. Discovery (`ListAsync` and `GetConsumerStateAsync`) shares one
+private Host, separate from execution. `Run` and `TransformAsync` reuse execution Hosts, including
+the normal interactive consent path. Concurrent executions receive independent Hosts; at most two
+idle execution Hosts are retained. The Host reloads scripts/settings and performs the same approval,
+schema and MXC checks on every invocation. Interpreters and Windows sandboxes remain fresh; managed
+Linux retains its existing shared container lifecycle. Cancellation kills only the affected session's
+child tree; interrupted requests are never replayed. Clients that do not opt in retain the one-shot
+contract. The stdio session does not expose explicit trust-management or settings-write commands.
+
+Keyboard Manager's canonical non-elevated, hidden PowerScripts bindings use the native stdio pool
+in `PowerScripts.Client.Native/HostSession.h`; other program/elevation paths keep their existing
+launch behavior. Native sessions observe owner exit and a private inherited stop event rather than
+an enclosing job, which would otherwise capture the Linux daemon shared across consumers.
 
 ```csharp
 var client = new PowerScriptsClient("my-module");

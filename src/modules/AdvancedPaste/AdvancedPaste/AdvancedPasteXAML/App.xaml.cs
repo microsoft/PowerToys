@@ -261,6 +261,7 @@ namespace AdvancedPaste
             {
                 if (disposing)
                 {
+                    PowerScriptsService.Shutdown();
                     EtwTrace?.Dispose();
                     window?.Dispose();
                 }

@@ -8,6 +8,7 @@
 
 #include <keyboardmanager/KeyboardManagerEngineLibrary/KeyboardEventHandlers.h>
 #include <filesystem>
+#include <PowerScripts/PowerScripts.Client.Native/HostSession.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -16,6 +17,22 @@ namespace RemappingLogicTests
     TEST_CLASS (ProgramLauncherTests)
     {
     public:
+        TEST_METHOD (PowerScriptsHotkey_PreservesEncodedParameters)
+        {
+            const auto parsed = PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager --no-consent --set-base64 bmFtZQB2YWx1ZQ==");
+            Assert::IsTrue(parsed.has_value());
+            Assert::AreEqual(size_t{ 7 }, parsed->size());
+            Assert::AreEqual(L"bmFtZQB2YWx1ZQ==", parsed->back().c_str());
+        }
+
+        TEST_METHOD (PowerScriptsHotkey_DoesNotInterceptOtherCommandsOrConsumers)
+        {
+            Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"trust approve sample").has_value());
+            Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample --consumer command-line --no-consent").has_value());
+            Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager").has_value());
+            Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager --no-consent --root other").has_value());
+        }
+
         TEST_METHOD (RelativeProgramPath_ShouldUseEngineCurrentDirectory)
         {
             const auto expected = (std::filesystem::current_path() / L"NonexistentProgramLauncherTest.exe").wstring();

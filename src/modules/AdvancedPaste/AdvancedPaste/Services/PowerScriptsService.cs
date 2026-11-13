@@ -22,10 +22,33 @@ namespace AdvancedPaste.Services;
 internal static class PowerScriptsService
 {
     internal const string PreserveFilesProperty = "AdvancedPaste.PowerScripts.PreserveFiles";
+    private static readonly object ClientGate = new();
+    private static PowerScriptsClient _sharedClient;
+    private static bool _stopping;
+
+    internal static void Shutdown()
+    {
+        lock (ClientGate)
+        {
+            _stopping = true;
+            _sharedClient?.Dispose();
+            _sharedClient = null;
+        }
+    }
+
+    private static PowerScriptsClient GetClient()
+    {
+        lock (ClientGate)
+        {
+            ObjectDisposedException.ThrowIf(_stopping, typeof(PowerScriptsService));
+
+            return _sharedClient ??= new PowerScriptsClient(PowerScriptConsumer.AdvancedPaste, reuseHost: true);
+        }
+    }
 
     public static async Task<IReadOnlyList<PowerScriptInfo>> GetAdvancedPasteScriptsAsync()
     {
-        var client = new PowerScriptsClient(PowerScriptConsumer.AdvancedPaste);
+        var client = GetClient();
         if (!client.IsAvailable)
         {
             return [];
@@ -207,7 +230,7 @@ internal static class PowerScriptsService
         }
 
         token.ThrowIfCancellationRequested();
-        var result = await (client ?? new PowerScriptsClient(PowerScriptConsumer.AdvancedPaste)).TransformAsync(script.Id, input, cancellationToken: token);
+        var result = await (client ?? GetClient()).TransformAsync(script.Id, input, cancellationToken: token);
         if (!result.Succeeded)
         {
             throw Failure("PowerScriptsExecutionFailed", result.StdErr);

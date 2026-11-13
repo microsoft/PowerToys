@@ -11,6 +11,7 @@
 #include <keyboardmanager/common/InputInterface.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/KeyboardManagerEngineLibrary/trace.h>
+#include <PowerScripts/PowerScripts.Client.Native/HostSession.h>
 
 #include <TlHelp32.h>
 #include <thread>
@@ -26,8 +27,8 @@
 #include <mmsystem.h>
 
 using namespace winrt;
-using namespace Windows::UI::Notifications;
-using namespace Windows::Data::Xml::Dom;
+using namespace winrt::Windows::UI::Notifications;
+using namespace winrt::Windows::Data::Xml::Dom;
 
 namespace
 {
@@ -1782,6 +1783,40 @@ namespace KeyboardEventHandlers
             {
                 launchProgram(*launchPath, *expandedArgs, currentDir);
                 return;
+            }
+
+            if (_wcsicmp(fileNamePart.c_str(), L"PowerScripts.Host.exe") == 0 &&
+                shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::StartAnother &&
+                shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated &&
+                shortcut.startWindowType == Shortcut::StartWindowType::Hidden && !is_process_elevated())
+            {
+                if (const auto arguments = PowerScripts::ParseHotkeyInvocation(*expandedArgs))
+                {
+                    try
+                    {
+                        static const auto pool = std::make_shared<PowerScripts::HostPool>();
+                        const auto owner = pool;
+                        const auto result = owner->Invoke(*launchPath, currentDir, *arguments);
+                        if (result.ExitCode != 0)
+                        {
+                            Logger::error(L"PowerScript hotkey failed with exit code {}; the invocation was not retried.", result.ExitCode);
+                            toast(L"PowerScript failed", result.Error.empty()
+                                                           ? L"Check PowerScripts Activity for details. The invocation was not retried."
+                                                           : result.Error.substr(0, 500));
+                        }
+                    }
+                    catch (const winrt::hresult_error& exception)
+                    {
+                        Logger::error(L"PowerScripts Host session failed: {}. The invocation was not retried.", exception.message());
+                        toast(L"PowerScript failed", L"The Host session failed. The invocation was not retried.");
+                    }
+                    catch (const std::exception& exception)
+                    {
+                        Logger::error(L"PowerScripts Host session failed: {}. The invocation was not retried.", winrt::to_hstring(exception.what()));
+                        toast(L"PowerScript failed", L"The Host session failed. The invocation was not retried.");
+                    }
+                    return;
+                }
             }
 
             DWORD processId = 0;

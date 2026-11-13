@@ -36,6 +36,7 @@ public sealed class PowerScriptsClient : IDisposable
     private readonly string? _scriptsRoot;
     private readonly string _consumerId;
     private readonly PowerScriptsHostSession? _session;
+    private readonly PowerScriptsHostPool? _executionSessions;
 
     /// <summary>
     /// Creates a client attributed to the required, stable <paramref name="consumerId"/> module ID.
@@ -50,9 +51,10 @@ public sealed class PowerScriptsClient : IDisposable
     }
 
     /// <summary>
-    /// Optionally retains a consumer-owned Host for asynchronous discovery and non-interactive transforms.
-    /// Dispose a reusable client when its owner exits. Requests remain serialized and freshly validated;
-    /// cancellation terminates the Host and its child tree without replaying the interrupted invocation.
+    /// Optionally retains consumer-owned Hosts for discovery and execution, including ordinary consent.
+    /// Dispose a reusable client when its owner exits. Discovery stays separate from execution and
+    /// concurrent executions use independent Hosts. Cancellation terminates only the affected Host
+    /// and its child tree without replaying the interrupted invocation.
     /// </summary>
     public PowerScriptsClient(string consumerId, bool reuseHost, string? hostPath = null, string? scriptsRoot = null)
     {
@@ -67,10 +69,17 @@ public sealed class PowerScriptsClient : IDisposable
         _session = reuseHost
             ? new PowerScriptsHostSession(() => CreateStartInfo(redirectStdIn: true, redirectStdOut: true, redirectStdErr: true))
             : null;
+        _executionSessions = reuseHost
+            ? new PowerScriptsHostPool(() => CreateStartInfo(redirectStdIn: true, redirectStdOut: true, redirectStdErr: true))
+            : null;
     }
 
     /// <summary>Terminates any reusable Host and its child processes.</summary>
-    public void Dispose() => _session?.Dispose();
+    public void Dispose()
+    {
+        _session?.Dispose();
+        _executionSessions?.Dispose();
+    }
 
     /// <summary>The resolved host path, or null when the host could not be found.</summary>
     public string? HostPath => _hostPath;
@@ -91,6 +100,12 @@ public sealed class PowerScriptsClient : IDisposable
 
         try
         {
+            if (_session is not null)
+            {
+                using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                return ListAsync(timeout.Token).GetAwaiter().GetResult();
+            }
+
             var psi = CreateStartInfo(redirectStdOut: true);
             psi.ArgumentList.Add("list");
             psi.ArgumentList.Add("--json");
@@ -206,6 +221,17 @@ public sealed class PowerScriptsClient : IDisposable
         psi.ArgumentList.Add("list");
 
         // Consumer settings are global: the Host rejects --root and --consumer for this verb.
+        if (_session is not null)
+        {
+            var response = await _session.InvokeAsync(psi.ArgumentList, null, cancellationToken).ConfigureAwait(false);
+            if (response.ExitCode != PowerScriptsProtocol.ExitCode.Ok)
+            {
+                throw new InvalidOperationException($"PowerScripts integration settings failed ({response.ExitCode}): {response.StdErr}");
+            }
+
+            return PowerScriptConsumerState.ParseSnapshot(response.StdOut, _consumerId);
+        }
+
         using var process = Process.Start(psi)
             ?? throw new InvalidOperationException("Failed to start the PowerScripts Host.");
         try
@@ -308,6 +334,18 @@ public sealed class PowerScriptsClient : IDisposable
 
         try
         {
+            if (_executionSessions is not null)
+            {
+                using var timeout = new CancellationTokenSource(timeoutMs);
+                var response = _executionSessions.InvokeAsync(psi.ArgumentList, null, timeout.Token).GetAwaiter().GetResult();
+                return new PowerScriptRunResult
+                {
+                    ExitCode = response.ExitCode,
+                    StdOut = response.StdOut,
+                    StdErr = response.StdErr,
+                };
+            }
+
             using var process = Process.Start(psi)
                 ?? throw new InvalidOperationException("Failed to start the PowerScripts host.");
 
@@ -327,9 +365,13 @@ public sealed class PowerScriptsClient : IDisposable
                 StdErr = stdErr.GetAwaiter().GetResult(),
             };
         }
-        catch (Exception)
+        catch (OperationCanceledException) when (_executionSessions is not null)
         {
-            return new PowerScriptRunResult { ExitCode = PowerScriptsProtocol.ExitCode.Error };
+            return new PowerScriptRunResult { ExitCode = PowerScriptsProtocol.ExitCode.Timeout, StdErr = "PowerScript timed out; the invocation was not retried." };
+        }
+        catch (Exception exception)
+        {
+            return new PowerScriptRunResult { ExitCode = PowerScriptsProtocol.ExitCode.Error, StdErr = exception.Message };
         }
     }
 
@@ -364,9 +406,9 @@ public sealed class PowerScriptsClient : IDisposable
         AppendRoot(psi);
 
         var payload = SerializeInput(input);
-        if (_session is not null && noConsent)
+        if (_executionSessions is not null)
         {
-            var response = await _session.InvokeAsync(psi.ArgumentList, payload, cancellationToken).ConfigureAwait(false);
+            var response = await _executionSessions.InvokeAsync(psi.ArgumentList, payload, cancellationToken).ConfigureAwait(false);
             return ParseTransformResult(response.StdOut, response.StdErr, response.ExitCode);
         }
 

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 
 namespace PowerScripts.Client;
@@ -32,6 +33,8 @@ internal sealed class PowerScriptsHostSession(Func<ProcessStartInfo> createStart
                 {
                     var start = createStartInfo();
                     start.ArgumentList.Add("session");
+                    start.ArgumentList.Add("--owner");
+                    start.ArgumentList.Add(Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
                     _process = Process.Start(start)
                         ?? throw new InvalidOperationException("Failed to start the PowerScripts Host session.");
                     _diagnostics = _process.StandardError.ReadToEndAsync();

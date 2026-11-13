@@ -27,7 +27,7 @@ namespace PowerScripts.Editor.Views;
 [SuppressMessage(
     "Design",
     "CA1001:Types that own disposable fields should be disposable",
-    Justification = "WinUI owns the Page lifecycle. OnNavigatedFrom cancels and disposes navigation cancellation; OnNavigatedTo releases any previous lifetime before replacing it.")]
+    Justification = "WinUI owns the Page lifecycle. Navigation cancels execution and disposes cancellation and reusable Host clients before replacing the lifetime.")]
 public sealed partial class PowerScriptSettingsPage : Page
 {
     private NavigationContext _context;
@@ -38,6 +38,7 @@ public sealed partial class PowerScriptSettingsPage : Page
     private CancellationTokenSource _pageCancellation;
     private CancellationTokenSource _runCancellation;
     private PowerScriptsClient _runClient;
+    private string _runClientRoot;
 
     public PowerScriptRunViewModel RunModel { get; } = new();
 
@@ -89,6 +90,9 @@ public sealed partial class PowerScriptSettingsPage : Page
         finally
         {
             cancellation?.Dispose();
+            _runClient?.Dispose();
+            _runClient = null;
+            _runClientRoot = null;
         }
     }
 
@@ -184,7 +188,22 @@ public sealed partial class PowerScriptSettingsPage : Page
         timeout.CancelAfter(TimeSpan.FromSeconds(5));
         try
         {
-            var client = await _context.ViewModel.CreateRunClientAsync(timeout.Token);
+            var root = _context.ViewModel.ScriptsFolder;
+            if (_runClient is not null && !string.Equals(_runClientRoot, root, StringComparison.OrdinalIgnoreCase))
+            {
+                _runClient.Dispose();
+                _runClient = null;
+            }
+
+            var client = _runClient ?? await _context.ViewModel.CreateRunClientAsync(timeout.Token);
+            if (!_isActive || generation != _runGeneration)
+            {
+                client.Dispose();
+                return false;
+            }
+
+            _runClient = client;
+            _runClientRoot = root;
             var scripts = await client.ListAsync(timeout.Token);
             if (!_isActive || generation != _runGeneration)
             {
@@ -199,7 +218,6 @@ public sealed partial class PowerScriptSettingsPage : Page
                 throw new InvalidOperationException(Resource("PowerScripts_RunUnavailable"));
             }
 
-            _runClient = client;
             RunModel.FinishLoading(script);
             return true;
         }
