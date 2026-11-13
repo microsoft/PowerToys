@@ -46,13 +46,25 @@ namespace WorkspacesEditor.Views
             if (e.Parameter is (MainViewModel vm, Project project))
             {
                 _mainViewModel = vm;
-                EditedProject = project;
-                this.DataContext = project;
-                Bindings.Update();
+                UpdateProject(project);
 
                 // Set focus to the name field so Narrator announces the page context
                 this.Loaded -= OnLoaded;
                 this.Loaded += OnLoaded;
+            }
+        }
+
+        public void UpdateProject(Project project)
+        {
+            ArgumentNullException.ThrowIfNull(project);
+            EditedProject = project;
+            this.DataContext = project;
+            Bindings.Update();
+            _mainViewModel?.SaveProjectName(project);
+
+            if (IsLoaded)
+            {
+                EditNameTextBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             }
         }
 

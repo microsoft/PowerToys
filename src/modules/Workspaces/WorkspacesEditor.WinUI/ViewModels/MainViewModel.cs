@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,18 +17,25 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
+using WorkspacesCsharpLibrary;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
+using WorkspacesEditor.Services;
+using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 
 namespace WorkspacesEditor.ViewModels
 {
     public partial class MainViewModel : ObservableObject, IDisposable
     {
-        private WorkspacesEditorIO _workspacesEditorIO;
+        private readonly WorkspacesEditorIO _workspacesEditorIO;
+        private readonly Action<WorkspacesSettings> _saveSettings;
+        private readonly Action<List<Project>> _serializeWorkspaces;
+        private readonly IWorkspaceShortcutService _shortcuts;
+        private readonly Action<EditEvent> _writeEditTelemetry;
         private Project _editedProject;
         private Project _projectBeforeLaunch;
         private string _projectNameBeingEdited;
@@ -162,7 +168,7 @@ namespace WorkspacesEditor.ViewModels
         partial void OnOrderByIndexChanged(int value)
         {
             _settings.Properties.SortBy = (WorkspacesProperties.SortByProperty)value;
-            _settings.Save(SettingsUtils.Default);
+            _saveSettings(_settings);
             RefreshWorkspacesView();
         }
 
@@ -170,10 +176,47 @@ namespace WorkspacesEditor.ViewModels
         public partial bool IsLoading { get; set; }
 
         public MainViewModel(WorkspacesEditorIO workspacesEditorIO)
+            : this(
+                workspacesEditorIO,
+                Utils.Settings.ReadSettings(),
+                settings => settings.Save(SettingsUtils.Default),
+                new WorkspaceShortcutService(),
+                workspaces => workspacesEditorIO.SerializeWorkspaces(workspaces),
+                telemetryEvent => PowerToysTelemetry.Log.WriteEvent(telemetryEvent))
         {
-            _settings = Utils.Settings.ReadSettings();
-            OrderByIndex = (int)_settings.Properties.SortBy;
+            // Populate the shared resolver before either previews or the editor load PWA icons.
+            try
+            {
+                _ = new PwaHelper();
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Logger.LogError("Failed to initialize PWA icons", ex);
+            }
+        }
+
+        internal MainViewModel(
+            WorkspacesEditorIO workspacesEditorIO,
+            WorkspacesSettings settings,
+            Action<WorkspacesSettings> saveSettings,
+            IWorkspaceShortcutService shortcuts,
+            Action<List<Project>> serializeWorkspaces,
+            Action<EditEvent> writeEditTelemetry)
+        {
+            ArgumentNullException.ThrowIfNull(workspacesEditorIO);
+            ArgumentNullException.ThrowIfNull(settings);
+            ArgumentNullException.ThrowIfNull(saveSettings);
+            ArgumentNullException.ThrowIfNull(shortcuts);
+            ArgumentNullException.ThrowIfNull(serializeWorkspaces);
+            ArgumentNullException.ThrowIfNull(writeEditTelemetry);
+
             _workspacesEditorIO = workspacesEditorIO;
+            _settings = settings;
+            _saveSettings = saveSettings;
+            _shortcuts = shortcuts;
+            _serializeWorkspaces = serializeWorkspaces;
+            _writeEditTelemetry = writeEditTelemetry;
+            OrderByIndex = (int)_settings.Properties.SortBy;
 
             StrongReferenceMessenger.Default.Register<SnapshotCapturedMessage>(this, (r, m) => ((MainViewModel)r).OnSnapshotCaptured());
             StrongReferenceMessenger.Default.Register<SnapshotCancelledMessage>(this, (r, m) => ((MainViewModel)r).CancelSnapshot());
@@ -181,7 +224,10 @@ namespace WorkspacesEditor.ViewModels
 
         private void OnSnapshotCaptured()
         {
-            _ = SnapWorkspaceAsync();
+            if (!_isDisposed)
+            {
+                _ = SnapWorkspaceAsync();
+            }
         }
 
         public void Initialize()
@@ -202,9 +248,15 @@ namespace WorkspacesEditor.ViewModels
 
         public void SaveProject(Project projectToSave)
         {
-            if (_editedProject == null)
+            if (_isDisposed || _editedProject == null || projectToSave == null)
             {
                 return;
+            }
+
+            EditEvent editEvent = EditEventFactory.Create(_editedProject, projectToSave);
+            if (!string.Equals(_editedProject.Name, projectToSave.Name, StringComparison.Ordinal))
+            {
+                _shortcuts.Remove(_editedProject);
             }
 
             _editedProject.Name = projectToSave.Name;
@@ -216,14 +268,20 @@ namespace WorkspacesEditor.ViewModels
 
             _editedProject.NotifyApplicationsChanged();
             _editedProject.InitializePreview();
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
-            ApplyShortcut(_editedProject);
+            _serializeWorkspaces(Workspaces.ToList());
+            _shortcuts.Apply(_editedProject);
+            RefreshWorkspacesView();
 
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.EditEvent { Successful = true, PixelAdjustmentsUsed = projectToSave.IsPositionChangedManually });
+            _writeEditTelemetry(editEvent);
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
         {
+            if (_isDisposed || selectedProject == null)
+            {
+                return;
+            }
+
             _editedProject = selectedProject;
 
             if (!isNewlyCreated)
@@ -234,35 +292,14 @@ namespace WorkspacesEditor.ViewModels
             if (isNewlyCreated)
             {
                 string defaultNamePrefix = GetString("DefaultWorkspaceNamePrefix");
-                int nextProjectIndex = 0;
-                foreach (var proj in Workspaces)
-                {
-                    if (proj.Name.StartsWith(defaultNamePrefix, StringComparison.CurrentCulture))
-                    {
-                        try
-                        {
-                            int index = int.Parse(proj.Name[(defaultNamePrefix.Length + 1)..], CultureInfo.CurrentCulture);
-                            if (nextProjectIndex < index)
-                            {
-                                nextProjectIndex = index;
-                            }
-                        }
-                        catch (FormatException)
-                        {
-                        }
-                        catch (OverflowException)
-                        {
-                        }
-                    }
-                }
-
-                selectedProject.Name = defaultNamePrefix + " " + (nextProjectIndex + 1).ToString(CultureInfo.CurrentCulture);
+                selectedProject.Name = WorkspaceNameGenerator.Create(defaultNamePrefix, Workspaces.Select(project => project.Name));
             }
 
+            CheckShortcutPresence(selectedProject);
             selectedProject.EditorWindowTitle = isNewlyCreated ? GetString("CreateWorkspace") : GetString("EditWorkspace");
             selectedProject.InitializePreview();
 
-            _lastUpdatedTimer.Stop();
+            _lastUpdatedTimer?.Stop();
 
             // Navigate to editor page, passing the project as parameter
             StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(selectedProject));
@@ -273,10 +310,10 @@ namespace WorkspacesEditor.ViewModels
             project.Applications.RemoveAll(app => !app.IsIncluded);
             project.InitializePreview();
             Workspaces.Add(project);
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
+            _serializeWorkspaces(Workspaces.ToList());
             TempProjectData.DeleteTempFile();
             RefreshWorkspacesView();
-            ApplyShortcut(project);
+            _shortcuts.Apply(project);
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.CreateEvent
             {
@@ -292,8 +329,8 @@ namespace WorkspacesEditor.ViewModels
         public void DeleteProject(Project selectedProject)
         {
             Workspaces.Remove(selectedProject);
-            _workspacesEditorIO.SerializeWorkspaces(Workspaces.ToList());
-            RemoveShortcut(selectedProject);
+            _serializeWorkspaces(Workspaces.ToList());
+            _shortcuts.Remove(selectedProject);
             RefreshWorkspacesView();
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.DeleteEvent { Successful = true });
@@ -334,20 +371,31 @@ namespace WorkspacesEditor.ViewModels
 
         public void SwitchToMainView()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             StrongReferenceMessenger.Default.Send(new GoBackMessage());
-            _lastUpdatedTimer.Start();
+            RefreshWorkspacesView();
+            _lastUpdatedTimer?.Start();
             _editedProject = null;
         }
 
         [RelayCommand]
         public async Task LaunchProjectAsync(Project project)
         {
-            if (project == null)
+            if (_isDisposed || project == null)
             {
                 return;
             }
 
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
+            if (_isDisposed)
+            {
+                return;
+            }
+
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
                 foreach (Project p in Workspaces)
@@ -361,12 +409,17 @@ namespace WorkspacesEditor.ViewModels
 
         public async Task LaunchProjectAndExitAsync(Project project)
         {
-            if (project == null)
+            if (_isDisposed || project == null)
             {
                 return;
             }
 
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
+            if (_isDisposed)
+            {
+                return;
+            }
+
             if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
             {
                 foreach (Project p in Workspaces)
@@ -383,6 +436,11 @@ namespace WorkspacesEditor.ViewModels
 
         public void EnterSnapshotMode(bool isExistingProjectLaunched)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             _isExistingProjectLaunched = isExistingProjectLaunched;
 
             // Minimize the main window
@@ -394,17 +452,30 @@ namespace WorkspacesEditor.ViewModels
 
         internal void CancelSnapshot()
         {
-            StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
+            if (!_isDisposed)
+            {
+                StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
+            }
         }
 
         [RelayCommand]
         internal async Task SnapWorkspaceAsync()
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             // Restore window immediately so user sees feedback
             StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
             IsLoading = true;
 
             await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
+
+            if (_isDisposed)
+            {
+                return;
+            }
 
             IsLoading = false;
 
@@ -414,7 +485,9 @@ namespace WorkspacesEditor.ViewModels
                 if (_isExistingProjectLaunched)
                 {
                     project.UpdateAfterLaunchAndEdit(_projectBeforeLaunch);
+                    CheckShortcutPresence(project);
                     project.EditorWindowTitle = GetString("EditWorkspace");
+                    project.InitializePreview();
 
                     // Navigate to editor page with the updated project
                     StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(project));
@@ -429,15 +502,26 @@ namespace WorkspacesEditor.ViewModels
         [RelayCommand]
         internal async Task LaunchAndEditAsync(Project project)
         {
+            if (_isDisposed || project == null)
+            {
+                return;
+            }
+
             await Task.Run(() => RunLauncher(project.Id, InvokePoint.LaunchAndEdit));
+            if (_isDisposed)
+            {
+                return;
+            }
+
             _projectBeforeLaunch = new Project(project);
             EnterSnapshotMode(true);
         }
 
         internal void RevertLaunch()
         {
-            if (_projectBeforeLaunch != null)
+            if (!_isDisposed && _projectBeforeLaunch != null)
             {
+                CheckShortcutPresence(_projectBeforeLaunch);
                 _projectBeforeLaunch.InitializePreview();
                 StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(_projectBeforeLaunch));
             }
@@ -485,18 +569,16 @@ namespace WorkspacesEditor.ViewModels
                 launcherPath = Path.Combine(exeDir, "PowerToys.WorkspacesLauncher.exe");
             }
 
-            Process process = new Process();
+            using Process process = new();
             process.StartInfo = ModuleProcess.CreateStartInfo(launcherPath, $"{projectId} {(int)invokePoint}");
             process.StartInfo.WorkingDirectory = Path.GetDirectoryName(launcherPath);
 
             try
             {
                 process.Start();
-                if (!process.WaitForExit(120_000))
-                {
-                    Logger.LogWarning("Workspace launcher did not exit within 120 seconds.");
-                    process.Kill();
-                }
+
+                // A launch can legitimately wait for the user's trust/elevation decision.
+                process.WaitForExit();
             }
             catch (Exception ex)
             {
@@ -542,76 +624,9 @@ namespace WorkspacesEditor.ViewModels
             return ResourceLoaderInstance.ResourceLoader?.GetString(key) ?? key;
         }
 
-        private static string GetDesktopShortcutAddress(Project project) => Path.Combine(WorkspacesCsharpLibrary.Utils.FolderUtils.Desktop(), project.Name + ".lnk");
-
-        private static string GetShortcutStoreAddress(Project project)
+        private void CheckShortcutPresence(Project project)
         {
-            var dataFolder = WorkspacesCsharpLibrary.Utils.FolderUtils.DataFolder();
-            Directory.CreateDirectory(dataFolder);
-            var shortcutStoreFolder = Path.Combine(dataFolder, "WorkspacesIcons");
-            Directory.CreateDirectory(shortcutStoreFolder);
-            return Path.Combine(shortcutStoreFolder, project.Id + ".ico");
-        }
-
-        private static void ApplyShortcut(Project project)
-        {
-            if (!project.IsShortcutNeeded)
-            {
-                RemoveShortcut(project);
-                return;
-            }
-
-            try
-            {
-                var basePath = Path.GetDirectoryName(Path.GetDirectoryName(Environment.ProcessPath));
-                var shortcutAddress = GetDesktopShortcutAddress(project);
-                var shortcutIconFilename = GetShortcutStoreAddress(project);
-
-                bool isDarkTheme = Helpers.ThemeHelper.IsDarkTheme();
-
-                var icon = Utils.WorkspacesIcon.DrawIcon(Utils.WorkspacesIcon.IconTextFromProjectName(project.Name), isDarkTheme);
-                Utils.WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
-
-                File.WriteAllBytes(shortcutAddress, Array.Empty<byte>());
-
-                Shell32.Shell shell = new Shell32.Shell();
-                Shell32.Folder dir = shell.NameSpace(WorkspacesCsharpLibrary.Utils.FolderUtils.Desktop());
-                Shell32.FolderItem folderItem = dir.Items().Item($"{project.Name}.lnk");
-                Shell32.ShellLinkObject link = (Shell32.ShellLinkObject)folderItem.GetLink;
-
-                link.Description = $"Project Launcher {project.Id}";
-                link.Path = Path.Combine(basePath, "PowerToys.WorkspacesLauncher.exe");
-                link.Arguments = $"{project.Id} {(int)InvokePoint.Shortcut}";
-                link.WorkingDirectory = basePath;
-                link.SetIconLocation(shortcutIconFilename, 0);
-                link.Save(shortcutAddress);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Shortcut creation error: {ex.Message}");
-            }
-        }
-
-        private static void RemoveShortcut(Project project)
-        {
-            string shortcutAddress = GetDesktopShortcutAddress(project);
-            string shortcutIconFilename = GetShortcutStoreAddress(project);
-
-            if (File.Exists(shortcutIconFilename))
-            {
-                File.Delete(shortcutIconFilename);
-            }
-
-            if (File.Exists(shortcutAddress))
-            {
-                File.Delete(shortcutAddress);
-            }
-        }
-
-        private static void CheckShortcutPresence(Project project)
-        {
-            string shortcutAddress = Path.Combine(WorkspacesCsharpLibrary.Utils.FolderUtils.Desktop(), project.Name + ".lnk");
-            project.IsShortcutNeeded = File.Exists(shortcutAddress);
+            project.IsShortcutNeeded = _shortcuts.Exists(project);
         }
 
         public void Dispose()

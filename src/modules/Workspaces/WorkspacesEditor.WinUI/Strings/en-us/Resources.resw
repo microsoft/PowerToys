@@ -189,6 +189,9 @@
   <data name="WorkspaceName" xml:space="preserve">
     <value>Workspace name</value>
   </data>
+  <data name="WorkspacePreviewImage.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Workspace layout preview</value>
+  </data>
   <data name="Workspaces" xml:space="preserve">
     <value>Workspaces</value>
   </data>
