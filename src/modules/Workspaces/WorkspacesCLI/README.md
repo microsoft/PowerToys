@@ -142,7 +142,7 @@ reports `outcomeUnknown` and exits; it does not force-kill a thread or report su
 
 `SignatureVerificationTests`, `CliContractTests`, `WorkspaceStoreTests`, managed `WorkspaceWriteTests`, shared `PipeCallerAuthTests`
 and manifest-driven `CliShim` tests cover their respective boundaries.
-`WorkspacesLauncherUI.UnitTests` covers the existing dialog, rendered acknowledgement, Allow/Skip,
+`WorkspacesLauncherUI.UnitTests` covers the WinUI warning lifecycle, rendered acknowledgement, Allow/Skip,
 dismissal and replay rules, including confirmation-only mode without a visible status owner.
 Opt-in `CliRuntimeTests` builds `Tests\RuntimeFixture` to verify code-page restoration and the shared
 GUI/CLI session entry with synthetic snapshots and no additional Launcher host, plus inline cancellation

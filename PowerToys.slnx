@@ -1306,12 +1306,12 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/Workspaces/WorkspacesEditor/WorkspacesEditor.csproj">
+    <Project Path="src/modules/Workspaces/WorkspacesEditor.WinUI/WorkspacesEditor.WinUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Workspaces/WorkspacesLauncher/WorkspacesLauncher.vcxproj" Id="2cac093e-5fcf-4102-9c2c-ac7dd5d9eb96" />
-    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI/WorkspacesLauncherUI.csproj">
+    <Project Path="src/modules/Workspaces/WorkspacesLauncherUI.WinUI/WorkspacesLauncherUI.WinUI.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
