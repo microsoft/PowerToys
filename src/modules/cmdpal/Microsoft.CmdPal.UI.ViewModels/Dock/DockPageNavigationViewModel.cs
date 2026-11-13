@@ -35,12 +35,17 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
             if (SetProperty(ref _currentPage, value))
             {
                 OnPropertyChanged(nameof(CanGoBack));
+                OnPropertyChanged(nameof(HasBackButton));
                 OnPropertyChanged(nameof(BackStackDepth));
             }
         }
     }
 
     public bool CanGoBack => _pages.Count > 1;
+
+    public bool HasExternalBackTarget { get; }
+
+    public bool HasBackButton => CanGoBack || HasExternalBackTarget;
 
     public int BackStackDepth => Math.Max(0, _pages.Count - 1);
 
@@ -49,15 +54,22 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
     /// </summary>
     public event EventHandler? CloseRequested;
 
+    /// <summary>
+    /// Raised on the UI scheduler when a command result asks to go back from the root page.
+    /// </summary>
+    public event EventHandler? RootBackRequested;
+
     public DockPageNavigationViewModel(
         DockCommandRoute route,
         TaskScheduler scheduler,
         IPageViewModelFactoryService pageFactory,
-        IAppHostService appHostService)
+        IAppHostService appHostService,
+        bool hasExternalBackTarget = false)
     {
         Route = route;
         _scheduler = scheduler;
         _pageNavigation = new(pageFactory, appHostService);
+        HasExternalBackTarget = hasExternalBackTarget;
     }
 
     public bool OwnsSourcePage(PageViewModel? sourcePage) =>
@@ -231,7 +243,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
                 }
                 else
                 {
-                    CloseRequested?.Invoke(this, EventArgs.Empty);
+                    (RootBackRequested ?? CloseRequested)?.Invoke(this, EventArgs.Empty);
                 }
 
                 break;
@@ -248,13 +260,16 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
         var host = _pageNavigation.ResolveHost(message, CurrentPage);
         var providerContext = _pageNavigation.ResolveProviderContext(message, CurrentPage);
-        var pageViewModel = _pageNavigation.TryPreparePage(page, _pages.Count > 0, host, providerContext, message.ListPageOptions);
+        var nested = _pages.Count > 0;
+        var pageViewModel = _pageNavigation.TryPreparePage(page, nested, host, providerContext, message.ListPageOptions);
         if (pageViewModel is null)
         {
             return null;
         }
 
         pageViewModel.DockRoute = Route;
+        pageViewModel.IsRootPage = !nested && !HasExternalBackTarget;
+        pageViewModel.HasBackButton = nested || HasExternalBackTarget;
         _pages.Add(pageViewModel);
         CurrentPage = pageViewModel;
 
@@ -376,6 +391,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         _pages.Clear();
         CurrentPage = null;
         CloseRequested = null;
+        RootBackRequested = null;
         _lifetimeCancellation.Dispose();
         GC.SuppressFinalize(this);
     }

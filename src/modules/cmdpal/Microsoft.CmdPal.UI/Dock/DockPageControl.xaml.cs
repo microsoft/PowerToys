@@ -90,7 +90,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable, ISearchB
             UpdateCurrentPage();
         }
 
-        if (e.PropertyName == nameof(DockPageNavigationViewModel.CanGoBack) && _isLoaded)
+        if (e.PropertyName == nameof(DockPageNavigationViewModel.HasBackButton) && _isLoaded)
         {
             UpdatePageLevelState(useTransitions: true);
         }
@@ -99,7 +99,7 @@ public sealed partial class DockPageControl : UserControl, IDisposable, ISearchB
     private void UpdatePageLevelState(bool useTransitions) =>
         VisualStateManager.GoToState(
             this,
-            Navigation.CanGoBack ? "NestedPage" : "RootPage",
+            Navigation.HasBackButton ? "NestedPage" : "RootPage",
             useTransitions);
 
     private void UpdateCurrentPage()

@@ -66,6 +66,7 @@ public partial class SettingsSearchTests
     [DataRow("dock theme", SettingsLinkIds.Dock.Theme)]
     [DataRow("dock dark", SettingsLinkIds.Dock.Theme)]
     [DataRow("recent items", SettingsLinkIds.General.RecentItems)]
+    [DataRow("tray icon click action", SettingsLinkIds.General.TrayIconClickAction)]
     [DataRow("quick access shelf", SettingsLinkIds.Appearance.QuickAccessShelf)]
     [DataRow("compact", SettingsLinkIds.Appearance.CompactMode)]
     [DataRow("compact mode", SettingsLinkIds.Appearance.CompactMode)]
@@ -95,6 +96,7 @@ public partial class SettingsSearchTests
 
     [TestMethod]
     [DataRow(SettingsLinkIds.General.RecentItems, "General")]
+    [DataRow(SettingsLinkIds.General.TrayIconClickAction, "General › App behavior")]
     [DataRow(SettingsLinkIds.Appearance.HomeRecentCommands, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.RecentCommandsDisplayLimit, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.ClearRecentCommands, "General › Recent items")]

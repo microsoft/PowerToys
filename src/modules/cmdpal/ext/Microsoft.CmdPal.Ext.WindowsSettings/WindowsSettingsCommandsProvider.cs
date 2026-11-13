@@ -1,11 +1,13 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-
 using ManagedCommon;
+using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
 using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
 using Microsoft.CmdPal.Ext.WindowsSettings.Pages;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
@@ -69,4 +71,11 @@ public sealed partial class WindowsSettingsCommandsProvider : CommandProvider
     }
 
     public override IFallbackCommandItem[] FallbackCommands() => [_fallback];
+
+    public override ICommandItem GetCommandItem(string id)
+    {
+        var entry = _windowsSettings?.Settings.FirstOrDefault(setting => setting.Command == id);
+        var list = new List<WindowsSetting>() { entry };
+        return entry is null ? null : ResultHelper.GetResultList(list).FirstOrDefault();
+    }
 }

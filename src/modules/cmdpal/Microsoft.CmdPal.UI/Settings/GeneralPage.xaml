@@ -192,6 +192,15 @@
                         local:SettingsPageTarget.Id="system-tray-icon">
                         <ToggleSwitch AutomationProperties.AutomationId="CmdPal_GeneralPage_ShowSystemTrayIcon" IsOn="{x:Bind viewModel.ShowSystemTrayIcon, Mode=TwoWay}" />
                     </controls:SettingsCard>
+                    <controls:SettingsCard
+                        x:Uid="Settings_GeneralPage_TrayIconClickAction"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        local:SettingsPageTarget.Id="tray-icon-click-action">
+                        <ComboBox AutomationProperties.AutomationId="CmdPal_GeneralPage_TrayIconClickAction" SelectedIndex="{x:Bind viewModel.TrayIconClickActionIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_TrayIconClickAction_QuickActions" />
+                            <ComboBoxItem x:Uid="Settings_GeneralPage_TrayIconClickAction_CommandPalette" />
+                        </ComboBox>
+                    </controls:SettingsCard>
 
                     <controls:SettingsCard
                         x:Uid="Settings_GeneralPage_AllowAltF4_SettingsCard"
