@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.SelfContained.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>PowerToys.TextExpander.Editor</AssemblyName>
+    <RootNamespace>Microsoft.PowerToys.TextExpander.Editor</RootNamespace>
+    <UseWinUI>true</UseWinUI>
+    <!-- Embeds compiled XAML in the PRI; the installer does not ship loose .xbf files. -->
+    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+    <WindowsPackageType>None</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\TextExpander\app.ico</ApplicationIcon>
+    <ProjectPriFileName>PowerToys.TextExpander.Editor.pri</ProjectPriFileName>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CsWinRTIncludes>PowerToys.GPOWrapper</CsWinRTIncludes>
+    <CsWinRTGeneratedFilesDir>$(OutDir)</CsWinRTGeneratedFilesDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Page Remove="TextExpanderEditorXAML\App.xaml" />
+    <ApplicationDefinition Include="TextExpanderEditorXAML\App.xaml" />
+    <Manifest Include="$(ApplicationManifest)" />
+    <InternalsVisibleTo Include="PowerToys.TextExpander.Editor.UnitTests" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
+    <PackageReference Include="WinUIEx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TextExpander.Core\TextExpander.Core.csproj" />
+    <ProjectReference Include="..\TextExpander.Storage\TextExpander.Storage.csproj" />
+    <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
+    <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
+  </ItemGroup>
+  <Target Name="CopyPRIFileToOutputDir" AfterTargets="Build">
+    <ItemGroup>
+      <PRIFile Include="$(OutDir)**\PowerToys.TextExpander.Editor.pri" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PRIFile)" DestinationFolder="$(OutDir)" />
+  </Target>
+</Project>

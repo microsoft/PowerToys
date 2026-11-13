@@ -1,0 +1,56 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using Microsoft.CmdPal.Ext.TextExpander.Insertion;
+using Microsoft.CmdPal.Ext.TextExpander.Properties;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.PowerToys.TextExpander;
+
+namespace Microsoft.CmdPal.Ext.TextExpander.Commands;
+
+/// <summary>
+/// Copies a snippet's text to the clipboard. The user asked for the copy, so unlike a paste it stays there and isn't
+/// kept out of Clipboard History.
+/// </summary>
+internal sealed partial class CopySnippetCommand : InvokableCommand
+{
+    private readonly Func<string?> _text;
+    private readonly IClipboardAccess _clipboard;
+    private readonly Action? _copied;
+
+    /// <param name="text">Gets the text to copy, expanded when the copy is made; null when Text Expander is off.</param>
+    /// <param name="clipboard">The clipboard.</param>
+    /// <param name="copied">Runs once the copy is made, so a snippet's answers can be cleared, as after a paste.</param>
+    internal CopySnippetCommand(Func<string?> text, IClipboardAccess clipboard, Action? copied = null)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(clipboard);
+
+        _text = text;
+        _clipboard = clipboard;
+        _copied = copied;
+        Name = Resources.copy_command_name;
+        Icon = Icons.Copy;
+    }
+
+    public override ICommandResult Invoke()
+    {
+        var text = _text();
+        if (text is null)
+        {
+            return CommandResult.ShowToast(new ToastArgs { Message = Resources.toast_off, Result = CommandResult.KeepOpen() });
+        }
+
+        // With CR LF line breaks, as the clipboard has text: the console runs pasted lines with a lone LF as one.
+        if (_clipboard.WriteText(ClipboardFormats.WithClipboardLineBreaks(text), keepOutOfHistory: false) != ClipboardWrite.Written)
+        {
+            return CommandResult.ShowToast(new ToastArgs { Message = Resources.copy_failed_toast, Result = CommandResult.KeepOpen() });
+        }
+
+        _copied?.Invoke();
+        return CommandResult.ShowToast(Resources.copied_toast);
+    }
+}

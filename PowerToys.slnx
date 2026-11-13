@@ -316,6 +316,10 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
+    <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TextExpander/Microsoft.CmdPal.Ext.TextExpander.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
     <Project Path="src/modules/cmdpal/ext/Microsoft.CmdPal.Ext.TimeDate/Microsoft.CmdPal.Ext.TimeDate.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -420,6 +424,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.System.UnitTests/Microsoft.CmdPal.Ext.System.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.Ext.TextExpander.UnitTests/Microsoft.CmdPal.Ext.TextExpander.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1180,7 +1188,45 @@
     </Project>
     <Project Path="src/modules/peek/peek/peek.vcxproj" Id="a1425b53-3d61-4679-8623-e64a0d3d0a48" />
   </Folder>
-  <Folder Name="/modules/PowerAccent/">
+  <Folder Name="/modules/TextExpander/">
+    <Project Path="src/modules/textexpander/TextExpander.Core/TextExpander.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander.Storage/TextExpander.Storage.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander.Editor/TextExpander.Editor.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander.Editor.UnitTests/TextExpander.Editor.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander.FuzzTests/TextExpander.FuzzTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander/TextExpander.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander.UITests/TextExpander.UITests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpander.UnitTests/TextExpander.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/textexpander/TextExpanderModuleInterface/TextExpanderModuleInterface.vcxproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+  </Folder>
+    <Folder Name="/modules/PowerAccent/">
     <Project Path="src/modules/poweraccent/PowerAccent.Common.UnitTests/PowerAccent.Common.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1471,5 +1517,6 @@
   <Project Path="tools/CliShim/CliShim.vcxproj" Id="8a7fb7fa-65ea-4004-ba73-1b237435a57b" />
   <Project Path="tools/CliShim.UnitTests/CliShim.UnitTests.vcxproj" Id="d4b0ed68-867d-46b4-a03f-ec52b9fbebe5" />
   <Project Path="tools/BugReportTool/BugReportTool/BugReportTool.vcxproj" Id="99126840-5c30-4e9e-ac6c-e73dded5c3bd" />
+  <Project Path="tools/BugReportTool/BugReportTool.UnitTests/BugReportTool.UnitTests.vcxproj" Id="593a1a9a-4906-4909-8ce5-9fed76d7bb47" />
   <Project Path="tools/StylesReportTool/StylesReportTool.vcxproj" Id="0febafaf-cb77-41f0-8ef9-8e3ad4b4f842" />
 </Solution>

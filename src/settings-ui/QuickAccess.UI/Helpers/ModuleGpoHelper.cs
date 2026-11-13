@@ -41,6 +41,7 @@ internal static class ModuleGpoHelper
             ModuleType.PowerRename => GPOWrapper.GetConfiguredPowerRenameEnabledValue(),
             ModuleType.PowerLauncher => GPOWrapper.GetConfiguredPowerLauncherEnabledValue(),
             ModuleType.PowerAccent => GPOWrapper.GetConfiguredQuickAccentEnabledValue(),
+            ModuleType.TextExpander => GPOWrapper.GetConfiguredTextExpanderEnabledValue(),
             ModuleType.Workspaces => GPOWrapper.GetConfiguredWorkspacesEnabledValue(),
             ModuleType.RegistryPreview => GPOWrapper.GetConfiguredRegistryPreviewEnabledValue(),
             ModuleType.MeasureTool => GPOWrapper.GetConfiguredScreenRulerEnabledValue(),
