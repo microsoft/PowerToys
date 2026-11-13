@@ -64,12 +64,28 @@ The Start menu specification includes sources such as Windows Settings.
 
 | WUP pattern | CmdPal mapping | Limit |
 | --- | --- | --- |
-| Eligible catalog definition | A private `WupSourcePage` inside the aggregate page | No separate top-level command for each source. |
+| Eligible catalog definition | A `WupSourcePage` inside the aggregate page | No separate top-level command for each source. |
 | Empty search and `ZeroState.*` source | `source.GetItems()` -> CmdPal list items | No zero-state query object is passed. |
 | Nonempty search and `QueryResult.*` source | `source.ExecuteQueryAsync()` -> CmdPal list items | Other source roles do not receive normal text searches. |
 | `PaletteCatalog.Changed` | Reconcile sources by provider ID and refresh the current search | Retained pages keep their active extensions. Removed sources are released. |
 | Missing or incompatible WUP API | Do not register the provider | The provider is absent from settings and command lists. |
 | Other catalog failure | Log the failure and do not register the provider | Command Palette continues without this provider. |
+
+The **Show installed palettes** setting is enabled by default.
+With an empty search, the **Installed palettes** section links to sources that declare `QueryResult.*` support.
+Each link opens a searchable page for that source.
+Zero-state-only sources do not appear in this section.
+With search text, the page shows merged results instead of these links.
+With the setting disabled, an empty search shows only the merged zero-state items.
+The directory filter does not remove zero-state-only sources from the catalog or from aggregate queries.
+
+The directory starts asynchronous activation checks for its queryable sources.
+If activation returns `E_ACCESSDENIED` (`0x80070005`), the bridge logs the denial and hides that source.
+The source can briefly appear before its activation check finishes.
+The bridge skips further searches and activation attempts for that source.
+Catalog refreshes retain the denial for an existing source.
+A restart or removal and rediscovery of the source permits another activation attempt.
+Empty results, query failures, and other activation errors do not hide a source.
 
 **Gap:** The bridge does not use `ContainedKinds` or `AcceptedKindSpecs` to select sources for normal searches.
 It does not use `PaletteCatalog.Parse` to resolve entities.

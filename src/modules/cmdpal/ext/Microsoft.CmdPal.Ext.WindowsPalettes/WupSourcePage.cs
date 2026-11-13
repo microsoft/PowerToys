@@ -31,10 +31,11 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
     private string? _lastSearchText;
     private PaletteQuery? _lastFixedQuery;
     private long _queryGeneration;
+    private bool _isAccessDenied;
     private bool _disposed;
 
     internal WupSourcePage(PaletteExtensionDefinition definition)
-        : this(definition.As<IPaletteExtensionDefinition>())
+        : this(new WupSourceDefinitionAdapter(definition))
     {
     }
 
@@ -58,6 +59,8 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
     }
 
     internal IPaletteExtensionDefinition Definition => Volatile.Read(ref _definition);
+
+    internal bool IsAccessDenied => Volatile.Read(ref _isAccessDenied);
 
     internal void UpdateDefinition(IPaletteExtensionDefinition definition, WupSourceDescriptor descriptor)
     {
@@ -96,7 +99,7 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
 
     public override void UpdateSearchText(string oldSearch, string newSearch) => _ = ExecuteQueryAsync(newSearch, null);
 
-    internal Task ExecuteSearchAsync(string searchText) => ExecuteQueryAsync(searchText, null);
+    internal Task ExecuteSearchAsync(string searchText, bool checkAvailability = false) => ExecuteQueryAsync(searchText, null, checkAvailability);
 
     internal Task ExecuteFixedQueryAsync(PaletteQuery query) => ExecuteQueryAsync(null, query);
 
@@ -172,7 +175,7 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
         return replacement?.Token ?? CancellationToken.None;
     }
 
-    private async Task ExecuteQueryAsync(string? searchText, PaletteQuery? fixedQuery)
+    private async Task ExecuteQueryAsync(string? searchText, PaletteQuery? fixedQuery, bool checkAvailability = false)
     {
         // The generation, last query and cancellation source are swapped together so concurrent searches and
         // ItemsChanged refreshes can't cancel each other and leave the page with no current query.
@@ -181,7 +184,7 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
         CancellationTokenSource? previous;
         lock (_stateLock)
         {
-            if (_disposed)
+            if (_disposed || IsAccessDenied)
             {
                 return;
             }
@@ -203,6 +206,11 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
 
         try
         {
+            if (checkAvailability)
+            {
+                await GetExtensionAsync(cancellationToken).ConfigureAwait(false);
+            }
+
             var definition = Definition;
             if (fixedQuery is null && string.IsNullOrEmpty(searchText))
             {
@@ -242,7 +250,11 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
         }
         catch (Exception ex)
         {
-            WupDiagnostics.Write($"Source '{Id}' query failed: 0x{ex.HResult:X8} {ex.GetType().Name}: {ex.Message}{Environment.NewLine}{ex.StackTrace}");
+            if (!IsAccessDenied)
+            {
+                WupDiagnostics.Write($"Source '{Id}' query failed: 0x{ex.HResult:X8} {ex.GetType().Name}: {ex.Message}{Environment.NewLine}{ex.StackTrace}");
+            }
+
             PublishFinal([], null, null, generation, cancellationToken);
         }
     }
@@ -259,6 +271,11 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
         try
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            if (IsAccessDenied)
+            {
+                throw new UnauthorizedAccessException("Palette activation was denied for this host.");
+            }
+
             if (_extension is not null)
             {
                 return _extension;
@@ -271,6 +288,13 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
                 var projectedHost = MarshalInspectable<PaletteExtensionHost>.FromAbi(hostPointer);
                 var definition = Definition;
                 extension = await Task.Run(() => definition.CreateExtension(projectedHost), cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex.HResult == unchecked((int)0x80070005))
+            {
+                Volatile.Write(ref _isAccessDenied, true);
+                WupDiagnostics.Write($"Source '{Id}' is unavailable to this host; activation denied: 0x{ex.HResult:X8} {ex.Message}");
+                RaiseItemsChanged(0);
+                throw;
             }
             finally
             {
@@ -403,6 +427,11 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
         WupCommandKind expectedKind,
         string commandId)
     {
+        if (IsAccessDenied)
+        {
+            return null;
+        }
+
         try
         {
             // GetCommandItem is synchronous. Activation runs on the thread pool, bounded by a timeout, so a
@@ -452,7 +481,7 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
                 _rehydratedAdapters.Add(adapter);
             }
 
-            _ = ReportVisibleAsync(source, [item]);
+            _ = ReportVisibleAsync(source, new PaletteItemView[] { item });
             return adapter;
         }
         catch (Exception ex)

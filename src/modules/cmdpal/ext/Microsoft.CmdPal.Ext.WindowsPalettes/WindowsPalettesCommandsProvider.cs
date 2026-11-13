@@ -34,6 +34,7 @@ public sealed partial class WindowsPalettesCommandsProvider : CommandProvider
     ];
 
     private readonly object _stateLock = new();
+    private readonly WindowsPalettesSettings _settings;
     private PaletteCatalog? _catalog;
     private WindowsPalettesPage? _page;
     private ICommandItem[] _topLevelCommands = [];
@@ -41,9 +42,11 @@ public sealed partial class WindowsPalettesCommandsProvider : CommandProvider
 
     private WindowsPalettesCommandsProvider()
     {
+        _settings = new();
         Id = "com.microsoft.cmdpal.wup.bridge";
         DisplayName = Resources.ProviderDisplayName;
         Icon = WindowsPalettesPage.PalettesIcon;
+        Settings = _settings.Settings;
         Frozen = false;
     }
 
@@ -193,7 +196,7 @@ public sealed partial class WindowsPalettesCommandsProvider : CommandProvider
             WupDiagnostics.Write("Opening the palette catalog.");
             catalog = PaletteCatalog.Open(new PaletteKinds(SourceKindSpecs), string.Empty);
             var definitions = catalog.GetPalettes() ?? [];
-            page = new WindowsPalettesPage(definitions);
+            page = new WindowsPalettesPage(definitions, _settings);
             catalog.Changed += Catalog_Changed;
 
             lock (_stateLock)
@@ -280,13 +283,14 @@ public sealed partial class WindowsPalettesCommandsProvider : CommandProvider
         RaiseItemsChanged(1);
     }
 
-    private static ICommandItem[] CreateTopLevelCommands(WindowsPalettesPage page, int sourceCount) =>
+    private ICommandItem[] CreateTopLevelCommands(WindowsPalettesPage page, int sourceCount) =>
     [
         new CommandItem
         {
             Title = Resources.ProviderDisplayName,
             Subtitle = string.Format(CultureInfo.CurrentCulture, Resources.LoadedPalettesSubtitle, sourceCount),
             Command = page,
+            MoreCommands = [new CommandContextItem(_settings.Settings.SettingsPage)],
         },
     ];
 }

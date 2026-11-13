@@ -6,7 +6,6 @@ using Microsoft.CmdPal.Ext.WindowsPalettes.Properties;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.UI.Palettes;
-using WinRT;
 
 namespace Microsoft.CmdPal.Ext.WindowsPalettes;
 
@@ -18,13 +17,18 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
     private readonly object _stateLock = new();
     private readonly object _sourceUpdateLock = new();
     private readonly SemaphoreSlim _searchDispatchGate = new(1, 1);
+    private readonly IWindowsPalettesSettings _settings;
     private List<WupSourcePage> _sources = [];
+    private string _searchText = string.Empty;
     private long _searchGeneration;
     private bool _started;
     private bool _disposed;
 
-    internal WindowsPalettesPage(IReadOnlyList<PaletteExtensionDefinition> definitions)
+    internal WindowsPalettesPage(
+        IReadOnlyList<PaletteExtensionDefinition> definitions,
+        IWindowsPalettesSettings? settings = null)
     {
+        _settings = settings ?? new WindowsPalettesSettings();
         Id = PageId;
         Name = Resources.PalettesPageName;
         Title = Resources.ProviderDisplayName;
@@ -32,12 +36,16 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
         ShowDetails = true;
         UpdateSources(definitions);
         Icon = PalettesIcon;
+        _settings.SettingsChanged += Settings_SettingsChanged;
     }
 
     public override IListItem[] GetItems()
     {
         EnsureStarted();
-        return WupResultMerger.Merge(GetSourcesSnapshot());
+        var (sources, searchText) = GetStateSnapshot();
+        return ShouldShowInstalledPalettes(searchText)
+            ? CreateInstalledPaletteItems(sources)
+            : WupResultMerger.Merge(sources);
     }
 
     public override void UpdateSearchText(string oldSearch, string newSearch)
@@ -48,11 +56,13 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
         lock (_stateLock)
         {
             _started = true;
+            _searchText = newSearch;
             sources = [.. _sources];
             generation = ++_searchGeneration;
         }
 
         IsLoading = true;
+        RaiseItemsChanged(GetItemCount());
         _ = Task.Run(() => SearchSourcesAsync(sources, newSearch, generation));
     }
 
@@ -90,7 +100,7 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
     }
 
     internal void UpdateSources(IReadOnlyList<PaletteExtensionDefinition> definitions) =>
-        UpdateSources(definitions.Select(definition => definition.As<IPaletteExtensionDefinition>()).ToArray());
+        UpdateSources(definitions.Select(definition => (IPaletteExtensionDefinition)new WupSourceDefinitionAdapter(definition)).ToArray());
 
     internal void UpdateSources(IReadOnlyList<IPaletteExtensionDefinition> definitions)
     {
@@ -147,7 +157,7 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
                 {
                     _sources = newSources;
                     sources = [.. newSources];
-                    searchText = SearchText;
+                    searchText = _searchText;
                     generation = ++_searchGeneration;
                     started = _started;
                 }
@@ -186,6 +196,7 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
         }
 
         DisposeSources(sources);
+        _settings.SettingsChanged -= Settings_SettingsChanged;
         GC.SuppressFinalize(this);
     }
 
@@ -217,6 +228,30 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
 
     private void Source_PropChanged(object sender, IPropChangedEventArgs args) => UpdateState();
 
+    private void Settings_SettingsChanged(object? sender, EventArgs args)
+    {
+        string searchText;
+        bool started;
+        lock (_stateLock)
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            searchText = _searchText;
+            started = _started;
+        }
+
+        if (started && ShouldShowInstalledPalettes(searchText))
+        {
+            UpdateSearchText(searchText, searchText);
+            return;
+        }
+
+        RaiseItemsChanged(GetItemCount());
+    }
+
     private void UpdateState()
     {
         var sources = GetSourcesSnapshot();
@@ -230,7 +265,13 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
         HasMoreItems = false;
     }
 
-    private int GetItemCount() => WupResultMerger.Merge(GetSourcesSnapshot()).Length;
+    private int GetItemCount()
+    {
+        var (sources, searchText) = GetStateSnapshot();
+        return ShouldShowInstalledPalettes(searchText)
+            ? sources.Count(IsQueryable)
+            : WupResultMerger.Merge(sources).Length;
+    }
 
     private async Task SearchSourcesAsync(WupSourcePage[] sources, string searchText, long generation)
     {
@@ -250,7 +291,9 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
                 var source = sources[index];
                 ExtensionHost.LogMessage($"WindowsPalettesPage: searching source '{source.Id}' ('{searchText}')");
                 WupDiagnostics.Write($"Search generation {generation} dispatching source '{source.Id}'.");
-                searches[index] = source.ExecuteSearchAsync(searchText);
+                searches[index] = source.ExecuteSearchAsync(
+                    searchText,
+                    checkAvailability: ShouldShowInstalledPalettes(searchText) && IsQueryable(source));
             }
         }
         finally
@@ -289,6 +332,31 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
             return _disposed ? [] : [.. _sources];
         }
     }
+
+    private (WupSourcePage[] Sources, string SearchText) GetStateSnapshot()
+    {
+        lock (_stateLock)
+        {
+            return _disposed
+                ? ([], string.Empty)
+                : ([.. _sources], _searchText);
+        }
+    }
+
+    private bool ShouldShowInstalledPalettes(string searchText) =>
+        string.IsNullOrEmpty(searchText) && _settings.ShowInstalledPalettes;
+
+    private static IListItem[] CreateInstalledPaletteItems(IReadOnlyList<WupSourcePage> sources) =>
+        sources.Where(IsQueryable).Select(
+            source => new ListItem(source)
+            {
+                Title = source.Title,
+                Icon = source.Icon,
+                Section = Resources.InstalledPalettesSection,
+            }).ToArray();
+
+    private static bool IsQueryable(WupSourcePage source) =>
+        !source.IsAccessDenied && source.Definition.Kinds.IsOfKind("QueryResult.*");
 
     private void DisposeSources(IEnumerable<WupSourcePage> sources)
     {

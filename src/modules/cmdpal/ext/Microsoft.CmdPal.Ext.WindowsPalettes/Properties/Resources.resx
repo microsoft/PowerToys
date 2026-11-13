@@ -73,6 +73,18 @@
     <value>{0} palettes loaded</value>
     <comment>Subtitle for the Windows Palettes top-level command. {0} is the number of loaded palette sources.</comment>
   </data>
+  <data name="InstalledPalettesSection" xml:space="preserve">
+    <value>Installed palettes</value>
+    <comment>Section title for links to individual Windows palette providers.</comment>
+  </data>
+  <data name="ShowInstalledPalettesSetting" xml:space="preserve">
+    <value>Show installed palettes</value>
+    <comment>Title for the setting that shows links to individual palette providers when the search box is empty.</comment>
+  </data>
+  <data name="ShowInstalledPalettesSettingDescription" xml:space="preserve">
+    <value>Show each installed palette on the Windows Palettes page when the search box is empty.</value>
+    <comment>Description for the setting that shows links to individual palette providers.</comment>
+  </data>
   <data name="InvocationFailed" xml:space="preserve">
     <value>Failed to run '{0}'</value>
     <comment>Error shown when a Windows Palette item fails to run. {0} is the item title.</comment>

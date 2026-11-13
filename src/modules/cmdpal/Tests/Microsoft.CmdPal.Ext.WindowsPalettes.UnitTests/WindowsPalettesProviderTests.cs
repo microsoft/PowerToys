@@ -5,10 +5,15 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
+using Windows.Foundation.Metadata;
 using Windows.UI.Palettes;
 
 namespace Microsoft.CmdPal.Ext.WindowsPalettes.UnitTests;
@@ -16,6 +21,49 @@ namespace Microsoft.CmdPal.Ext.WindowsPalettes.UnitTests;
 [TestClass]
 public sealed partial class WindowsPalettesProviderTests
 {
+    [TestMethod]
+    [TestCategory("WindowsPalettesIntegration")]
+    public void NativeCatalogDefinitionsPopulateThePalettesPage()
+    {
+        if (!ApiInformation.IsApiContractPresent("Windows.UI.Palettes.PalettesContract", 2, 0) ||
+            !VersionInfo.IsEligible(2, 0))
+        {
+            Assert.Inconclusive("Windows Palettes contract v2 is not available.");
+        }
+
+        var catalog = PaletteCatalog.Open(new PaletteKinds(WindowsPalettesCommandsProvider.SourceKindSpecs), string.Empty);
+        var definitions = catalog.GetPalettes() ?? [];
+        if (definitions.Length == 0)
+        {
+            Assert.Inconclusive("No Windows palette providers are installed.");
+        }
+
+        using var page = new WindowsPalettesPage(definitions, new TestSettings { ShowInstalledPalettes = true });
+        var sources = page.GetSourcesSnapshot();
+        Assert.HasCount(definitions.Length, sources);
+        Assert.IsTrue(page.GetItems().All(item =>
+            item.Command is WupSourcePage source && source.Definition.Kinds.IsOfKind("QueryResult.*")));
+        for (var index = 0; index < definitions.Length; index++)
+        {
+            Assert.AreEqual(definitions[index].ExtensionId, sources[index].Definition.ExtensionId);
+            Assert.AreEqual(definitions[index].DisplayName, sources[index].Title);
+        }
+
+        page.UpdateSources(definitions);
+        Assert.AreSame(sources[0], page.GetSourcesSnapshot()[0]);
+        using var source = new WupSourcePage(definitions[0]);
+        Assert.AreEqual(definitions[0].ExtensionId, source.Definition.ExtensionId);
+
+        using var provider = WindowsPalettesCommandsProvider.TryCreate();
+        Assert.IsNotNull(provider);
+        Assert.IsTrue(
+            SpinWait.SpinUntil(() => provider.TopLevelCommands().Length == 1, TimeSpan.FromSeconds(10)),
+            "The Windows Palettes provider did not publish its top-level command.");
+        var command = provider.TopLevelCommands()[0];
+        Assert.IsInstanceOfType<WindowsPalettesPage>(command.Command);
+        Assert.AreSame(command, provider.GetCommandItem(WindowsPalettesPage.PageId));
+    }
+
     [TestMethod]
     public void ApiPresenceCheckUsesPalettesContractVersionTwo()
     {
@@ -246,6 +294,229 @@ public sealed partial class WindowsPalettesProviderTests
         Assert.HasCount(0, page.GetSourcesSnapshot());
     }
 
+    [TestMethod]
+    public void EmptySearchShowsInstalledPalettesWhenEnabled()
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = true };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        page.UpdateSources(new IPaletteExtensionDefinition[] { new TestDefinition("first"), new TestDefinition("second") });
+
+        var items = page.GetItems();
+
+        Assert.HasCount(2, items);
+        Assert.AreEqual("first", items[0].Title);
+        Assert.AreEqual("Installed palettes", items[0].Section);
+        Assert.IsInstanceOfType<WupSourcePage>(items[0].Command);
+        Assert.AreEqual("second", items[1].Title);
+        Assert.AreEqual("Installed palettes", items[1].Section);
+    }
+
+    [TestMethod]
+    public void SearchDoesNotShowInstalledPaletteLinks()
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = true };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        page.UpdateSources(new IPaletteExtensionDefinition[] { new TestDefinition("source") });
+
+        page.UpdateSearchText(string.Empty, "query");
+
+        Assert.HasCount(0, page.GetItems());
+    }
+
+    [TestMethod]
+    [DataRow("ZeroState.*", false)]
+    [DataRow("ZeroState.CommandPalette", false)]
+    [DataRow("QueryResult.*", true)]
+    [DataRow("QueryResult.CommandPalette", true)]
+    [DataRow("QueryResult.StartMenu", true)]
+    public void InstalledPaletteLinksRequireQuerySupport(string kind, bool expectedLink)
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = true };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        var definition = new TestDefinition("source") { Kinds = new PaletteKinds(new[] { kind }) };
+        var itemCount = -1;
+        page.ItemsChanged += (_, args) => itemCount = args.TotalItems;
+
+        page.UpdateSources(new IPaletteExtensionDefinition[] { definition });
+
+        Assert.HasCount(1, page.GetSourcesSnapshot(), "Zero-state sources must remain available for aggregate results.");
+        Assert.HasCount(expectedLink ? 1 : 0, page.GetItems());
+        Assert.AreEqual(expectedLink ? 1 : 0, itemCount);
+    }
+
+    [TestMethod]
+    public void InstalledPaletteLinkSupportsBothZeroStateAndQueries()
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = true };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        page.UpdateSources(new IPaletteExtensionDefinition[]
+        {
+            new TestDefinition("source") { Kinds = new PaletteKinds(["ZeroState.*", "QueryResult.*"]) },
+        });
+
+        Assert.HasCount(1, page.GetItems());
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2201:Do not raise reserved exception types", Justification = "Simulates a native COM activation returning E_ACCESSDENIED.")]
+    public async Task ActivationAccessDeniedHidesOnlyTheDeniedSourceAndStopsRetries(bool comException)
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = true };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        var denied = new TestDefinition("denied")
+        {
+            ActivationException = comException
+                ? new COMException("Access is denied.", unchecked((int)0x80070005))
+                : new UnauthorizedAccessException("Caller is not a trusted system component"),
+        };
+        var available = new TestDefinition("available");
+        page.UpdateSources(new IPaletteExtensionDefinition[] { denied, available });
+        var source = page.GetSourcesSnapshot()[0];
+        var itemCount = -1;
+        page.ItemsChanged += (_, args) => itemCount = args.TotalItems;
+
+        await Task.WhenAll(
+            source.ExecuteSearchAsync(string.Empty, checkAvailability: true),
+            source.ExecuteSearchAsync("query"));
+
+        Assert.IsTrue(source.IsAccessDenied);
+        Assert.AreEqual(1, itemCount);
+        var items = page.GetItems();
+        Assert.HasCount(1, items);
+        Assert.AreEqual("available", items[0].Title);
+
+        var refreshed = new TestDefinition("denied");
+        page.UpdateSources(new IPaletteExtensionDefinition[] { refreshed, available });
+        await source.ExecuteSearchAsync("another query");
+        RehydrateMissingItem(source, denied);
+
+        Assert.AreSame(source, page.GetSourcesSnapshot()[0]);
+        Assert.HasCount(1, page.GetItems());
+        Assert.AreEqual(1, denied.CreationCount);
+        Assert.AreEqual(0, refreshed.CreationCount);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task OpeningInstalledPalettesDetectsActivationAccessDeniedWithoutTyping(bool enableAfterOpening)
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = !enableAfterOpening };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        var denied = new TestDefinition("denied") { ActivationException = new UnauthorizedAccessException("Access is denied.") };
+        page.UpdateSources(new IPaletteExtensionDefinition[] { denied });
+        var hidden = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        page.ItemsChanged += (_, args) =>
+        {
+            if (args.TotalItems == 0 && page.GetSourcesSnapshot()[0].IsAccessDenied)
+            {
+                hidden.TrySetResult();
+            }
+        };
+
+        page.GetItems();
+        if (enableAfterOpening)
+        {
+            Assert.IsTrue(SpinWait.SpinUntil(() => !page.IsLoading, TimeSpan.FromSeconds(5)));
+            Assert.AreEqual(0, denied.CreationCount);
+            settings.ShowInstalledPalettes = true;
+            settings.RaiseSettingsChanged();
+        }
+
+        await hidden.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+        Assert.HasCount(0, page.GetItems());
+        Assert.AreEqual(1, denied.CreationCount);
+    }
+
+    [TestMethod]
+    public async Task OtherActivationFailuresDoNotHideTheSourceOrPreventRetry()
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = true };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        var definition = new TestDefinition("source") { ActivationException = new InvalidOperationException("Temporary failure") };
+        page.UpdateSources(new IPaletteExtensionDefinition[] { definition });
+        var source = page.GetSourcesSnapshot()[0];
+
+        await source.ExecuteSearchAsync(string.Empty, checkAvailability: true);
+        Assert.IsFalse(source.IsAccessDenied);
+
+        var refreshed = new TestDefinition("source");
+        page.UpdateSources(new IPaletteExtensionDefinition[] { refreshed });
+        await source.ExecuteSearchAsync(string.Empty, checkAvailability: true);
+
+        Assert.HasCount(1, page.GetItems());
+        Assert.AreEqual(1, refreshed.CreationCount);
+        Assert.IsFalse(source.IsAccessDenied);
+    }
+
+    [TestMethod]
+    public async Task QueryAccessDeniedDoesNotMarkActivationAsDenied()
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = true };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        var definition = new TestDefinition("source");
+        definition.Source.QueryException = new UnauthorizedAccessException("This query is not allowed.");
+        page.UpdateSources(new IPaletteExtensionDefinition[] { definition });
+        var source = page.GetSourcesSnapshot()[0];
+
+        await source.ExecuteSearchAsync("query");
+
+        Assert.IsFalse(source.IsAccessDenied);
+        Assert.HasCount(1, page.GetItems());
+    }
+
+    [TestMethod]
+    public void EmptySearchDoesNotShowInstalledPalettesWhenDisabled()
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = false };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        page.UpdateSources(new IPaletteExtensionDefinition[] { new TestDefinition("source") });
+
+        Assert.HasCount(0, page.GetItems());
+    }
+
+    [TestMethod]
+    public void SettingChangeRefreshesEmptySearchItems()
+    {
+        var settings = new TestSettings { ShowInstalledPalettes = false };
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
+        page.UpdateSources(new IPaletteExtensionDefinition[] { new TestDefinition("source") });
+
+        settings.ShowInstalledPalettes = true;
+        settings.RaiseSettingsChanged();
+
+        Assert.HasCount(1, page.GetItems());
+    }
+
+    [TestMethod]
+    public void InstalledPalettesSettingDefaultsToEnabled()
+    {
+        var settings = new WindowsPalettesSettings(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
+
+        Assert.IsTrue(settings.ShowInstalledPalettes);
+    }
+
+    [TestMethod]
+    public void InstalledPalettesSettingLoadsDisabledValue()
+    {
+        var path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        try
+        {
+            File.WriteAllText(path, """{"windowsPalettes.ShowInstalledPalettes":"false"}""");
+
+            var settings = new WindowsPalettesSettings(path);
+
+            Assert.IsFalse(settings.ShowInstalledPalettes);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
     private static void RehydrateMissingItem(WupSourcePage source, TestDefinition definition)
     {
         var identity = new WupCommandIdentity(definition.ExtensionId, "missing", WupCommandKind.Invoke);
@@ -269,6 +540,8 @@ public sealed partial class WindowsPalettesProviderTests
 
         public int CreationCount { get; private set; }
 
+        public Exception ActivationException { get; init; }
+
         public PaletteExtensionHost Host { get; private set; } = null!;
 
         public PaletteItemFactory ItemFactory => throw new NotSupportedException();
@@ -281,21 +554,37 @@ public sealed partial class WindowsPalettesProviderTests
 
         public IDictionary<string, object> Properties => throw new NotSupportedException();
 
-        public PaletteKinds Kinds => throw new NotSupportedException();
+        public PaletteKinds Kinds { get; init; } = new(["QueryResult.*"]);
 
         public PaletteKinds ContainedKinds => throw new NotSupportedException();
 
         public IPaletteItemSourceExtension CreateExtension(PaletteExtensionHost host)
         {
             CreationCount++;
+            if (ActivationException is not null)
+            {
+                throw ActivationException;
+            }
+
             Host = host;
             return Source;
         }
     }
 
+    private sealed class TestSettings : IWindowsPalettesSettings
+    {
+        public event EventHandler SettingsChanged;
+
+        public bool ShowInstalledPalettes { get; set; }
+
+        public void RaiseSettingsChanged() => SettingsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     private sealed partial class TestSource : IPaletteItemSourceExtension
     {
         private int _subscriptionCount;
+
+        public Exception QueryException { get; set; } = new NotSupportedException();
 
         public int SubscriptionCount => Volatile.Read(ref _subscriptionCount);
 
@@ -314,7 +603,7 @@ public sealed partial class WindowsPalettesProviderTests
         public PaletteItemView[] GetItems() => [];
 
         public IAsyncOperationWithProgress<PaletteQueryResultsView, PaletteQueryProgress> ExecuteQueryAsync(PaletteQuery query) =>
-            throw new NotSupportedException();
+            throw QueryException;
 
         public IAsyncAction ReportItemAnalyticsAsync(PaletteItemAnalytics[] analytics) => throw new NotSupportedException();
 

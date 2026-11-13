@@ -68,6 +68,15 @@ namespace Microsoft.CmdPal.Ext.WindowsPalettes.Properties {
                 return ResourceManager.GetString("InvocationFailed", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Installed palettes.
+        /// </summary>
+        internal static string InstalledPalettesSection {
+            get {
+                return ResourceManager.GetString("InstalledPalettesSection", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to {0} palettes loaded.
@@ -120,6 +129,24 @@ namespace Microsoft.CmdPal.Ext.WindowsPalettes.Properties {
         internal static string SearchPlaceholder {
             get {
                 return ResourceManager.GetString("SearchPlaceholder", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Show installed palettes.
+        /// </summary>
+        internal static string ShowInstalledPalettesSetting {
+            get {
+                return ResourceManager.GetString("ShowInstalledPalettesSetting", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Show each installed palette on the Windows Palettes page when the search box is empty..
+        /// </summary>
+        internal static string ShowInstalledPalettesSettingDescription {
+            get {
+                return ResourceManager.GetString("ShowInstalledPalettesSettingDescription", resourceCulture);
             }
         }
         
