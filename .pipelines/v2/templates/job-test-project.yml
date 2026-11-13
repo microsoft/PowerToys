@@ -672,6 +672,10 @@ jobs:
         } catch {
           Write-Host "##vso[task.logissue type=error]UI tests failed for ${base}: $($_.Exception.Message)"
           $suiteFailed = $true
+          if ($nonElevatedSuites -contains $base) {
+            # A failed launcher may leave a desktop worker alive; do not overlap another suite.
+            throw
+          }
         } finally {
           try {
             if ($null -ne $fixtureContext) {
