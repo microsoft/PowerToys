@@ -178,6 +178,42 @@ namespace Awake.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string AWAKE_EXPIRATION_DIALOG_CANCEL {
+            get {
+                return ResourceManager.GetString("AWAKE_EXPIRATION_DIALOG_CANCEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Keep awake until:.
+        /// </summary>
+        internal static string AWAKE_EXPIRATION_DIALOG_LABEL {
+            get {
+                return ResourceManager.GetString("AWAKE_EXPIRATION_DIALOG_LABEL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string AWAKE_EXPIRATION_DIALOG_OK {
+            get {
+                return ResourceManager.GetString("AWAKE_EXPIRATION_DIALOG_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The expiration date and time must be in the future..
+        /// </summary>
+        internal static string AWAKE_EXPIRATION_DIALOG_PAST {
+            get {
+                return ResourceManager.GetString("AWAKE_EXPIRATION_DIALOG_PAST", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} hour.
         /// </summary>
         internal static string AWAKE_HOUR {
