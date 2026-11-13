@@ -249,11 +249,26 @@ execution still validates availability, contracts, global policy, and trust thro
 
 ### Command Palette
 
-Command Palette (`command-palette`) exposes one PowerScripts entry leading to an asynchronously
-loaded script list. Search filters this page's catalogue; individual scripts are not top-level
-commands, fallback suggestions, or entries in the Apps search channel. Refresh remains in the
-actions menu, not a row among the scripts. Discovery failures offer retry and are reported separately
-from an empty compatible catalogue.
+Command Palette (`command-palette`) exposes a PowerScripts entry leading to an asynchronously
+loaded script list, and a fallback v2 result source that finds scripts directly from the main search.
+Both entry points search script names and descriptions and share the same cached catalogue and
+per-script pages and run sessions. Main-search results honor the host's item budget and offer
+additional matches through Load more. Individual scripts are not added to the Apps search channel.
+Refresh remains in the actions menu, not a row among the scripts, and updates both entry points.
+Discovery failures offer retry on the full script list and are reported separately from an empty
+compatible catalogue.
+
+Discovery, filtering, and paging never execute a script. Selecting a script without parameters
+opens its result page and starts the run; a script with any declared parameters first opens its
+parameter form. Cancelling a search does not stop a run that the user has already started.
+
+On Windows 11, the Command Palette package excludes the PowerScripts module data directory
+from AppData write virtualization so the shared Host can use the same catalogue, configuration,
+and exact-content approvals as other consumers. The exclusion is limited to
+`%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts`; custom script roots elsewhere in AppData are
+outside that scope. Windows 10 keeps its previous virtualization behavior and needs separate
+validation. When setting up development fixtures from an MSIX-packaged tool, check their physical
+location: a logical AppData path can refer to that tool's private copy rather than the shared data.
 
 The adapter accepts only `input: none` and `output: none` or `text`. No primary input does not
 exclude named parameters. It does not supply clipboard content, selected files, or inline media,
@@ -459,9 +474,9 @@ delete original items need a separately reviewed security and UX design.
   the script and revalidate compatibility/parameters immediately before calling the Host. Never
   replay a failed invocation automatically.
 - Use `ListAsync` with cancellation rather than the tolerant synchronous discovery helpers when
-  the UI must distinguish a failed Host from a healthy empty list. The Client currently has no
-  consumer-state snapshot helper; this integration queries the existing `consumers list` JSON
-  contract rather than referencing Core or duplicating policy resolution.
+  the UI must distinguish a failed Host from a healthy empty list. The Client exposes
+  `GetConsumerStateAsync` for a single consumer. This integration queries the existing
+  `consumers list` JSON contract rather than referencing Core or duplicating policy resolution.
 - The consumer owns parameter controls. With parameter options disabled, only valid declared
   defaults may be used; missing required values disable the action. Do not silently remember
   per-script values, edit descriptor defaults, or treat a menu click as trust approval.

@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
@@ -1602,5 +1603,33 @@ public partial class CommandItemViewModelTests
 
             set => base.MoreCommands = value;
         }
+    }
+
+    [TestMethod]
+    public void FallbackContext_PropagatesToSecondaryCommandViewModel()
+    {
+        var pageContext = new TestPageContext();
+        var secondary = new CommandContextItem(new NoOpCommand { Name = "Secondary" });
+        var item = new CommandItem(new NoOpCommand { Name = "Primary" })
+        {
+            MoreCommands = [secondary],
+        };
+        using var queryCancellation = new CancellationTokenSource();
+        var fallbackContext = new FallbackQueryContext(
+            null!,
+            CommandProviderContext.Empty,
+            item,
+            queryCancellation.Token);
+
+        var viewModel = new CommandItemViewModel(
+            new(item),
+            new(pageContext),
+            DefaultContextMenuFactory.Instance,
+            fallbackContext);
+        viewModel.SlowInitializeProperties();
+
+        Assert.IsNotNull(viewModel.SecondaryCommand?.FallbackContext);
+        Assert.AreSame(secondary, viewModel.SecondaryCommand.FallbackContext.InvocationContext);
+        Assert.AreEqual(queryCancellation.Token, viewModel.SecondaryCommand.FallbackContext.QueryToken);
     }
 }

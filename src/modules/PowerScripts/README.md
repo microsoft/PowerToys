@@ -13,7 +13,9 @@ Consumers that need saved assignments own their binding UI and persist script ID
 copies. There is no shared per-consumer configuration picker in this version.
 See the [consumer onboarding guide](CONSUMER-INTEGRATION.md#automatic-discovery-or-saved-bindings).
 
-Command Palette provides one **PowerScripts** entry. Open it to browse and filter scripts with
+Command Palette finds compatible scripts directly from its main search using a PowerScripts
+results section, with Load more for additional matches. The **PowerScripts** entry also lets you
+browse and filter the full catalogue. Both entry points offer scripts with
 no primary input and either no output or a text result. Explicitly activate a script with no declared
 parameters to start it and open its results page in one action. Scripts declaring parameters open
 a form; fill it and choose **Run**. Browsing or filtering the list never runs scripts. Refresh is
@@ -22,7 +24,8 @@ any parameter controls on the same results page, alongside status and diagnostic
 **Stop** while running and supports an explicit rerun after completion; an empty text result is
 successful. Optional parameters may be omitted, while explicit
 empty strings, zero, and false retain their JSON types. Auxiliary file parameters accept existing
-Windows file paths. Scripts are not published as individual home-page commands or fallback results.
+Windows file paths. Searching and loading more results never run scripts. Cancelling a search
+does not stop a script that you have explicitly started.
 Every run retains the Host's normal trust checks. The adapter uses the shared Host with the
 `command-palette` consumer ID; it does not add primary
 file/media input, output-file saving, or clipboard handling. See the

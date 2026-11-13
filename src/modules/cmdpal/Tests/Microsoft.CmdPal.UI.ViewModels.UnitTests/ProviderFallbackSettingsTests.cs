@@ -3,9 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
@@ -27,11 +29,14 @@ public partial class ProviderFallbackSettingsTests
     private const string FallbackId = "test-provider.fallback";
 
     [TestMethod]
-    public async Task LoadTopLevelCommands_BuiltInFallback_IsPersistedInGlobalResults()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task LoadTopLevelCommands_BuiltInFallback_IsPersistedInGlobalResults(bool passive)
     {
         var settingsService = new FakeSettingsService();
         await using var services = CreateServices(settingsService);
-        var wrapper = new CommandProviderWrapper(new TestCommandProvider(), TaskScheduler.Default);
+        var fallback = passive ? new FallbackPassiveItem(new NoOpCommand(), "Test fallback", FallbackId) : null;
+        var wrapper = new CommandProviderWrapper(new TestCommandProvider(fallback: fallback), TaskScheduler.Default);
 
         await wrapper.LoadTopLevelCommands(services);
 
@@ -43,12 +48,54 @@ public partial class ProviderFallbackSettingsTests
     }
 
     [TestMethod]
+    public async Task LoadTopLevelCommands_BuiltInResultsFallback_DefaultsToItsOwnSection()
+    {
+        var settingsService = new FakeSettingsService();
+        await using var services = CreateServices(settingsService);
+        var wrapper = new CommandProviderWrapper(new TestCommandProvider(fallback: new TestResultsFallback()), TaskScheduler.Default);
+
+        await wrapper.LoadTopLevelCommands(services);
+
+        var fallbackSettings = settingsService.Settings.ProviderSettings[ProviderId].FallbackCommands[FallbackId];
+        Assert.IsTrue(fallbackSettings.IsEnabled);
+        Assert.IsFalse(fallbackSettings.IncludeInGlobalResults);
+        Assert.IsTrue(wrapper.FallbackItems[0].HasFallbackQueryHandler);
+        Assert.IsFalse(wrapper.FallbackItems[0].IncludeInGlobalResults);
+        CollectionAssert.DoesNotContain(settingsService.Settings.GetGlobalFallbacks(), FallbackId);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task LoadTopLevelCommands_BuiltInResultsFallback_PreservesSavedGrouping(bool includeInGlobalResults)
+    {
+        var settingsService = new FakeSettingsService();
+        var savedFallback = new FallbackSettings { IsEnabled = true, IncludeInGlobalResults = includeInGlobalResults };
+        settingsService.Settings = settingsService.Settings with
+        {
+            ProviderSettings = settingsService.Settings.ProviderSettings.SetItem(
+                ProviderId,
+                new ProviderSettings
+                {
+                    FallbackCommands = ImmutableDictionary<string, FallbackSettings>.Empty.Add(FallbackId, savedFallback),
+                }),
+        };
+        await using var services = CreateServices(settingsService);
+        var wrapper = new CommandProviderWrapper(new TestCommandProvider(fallback: new TestResultsFallback()), TaskScheduler.Default);
+
+        await wrapper.LoadTopLevelCommands(services);
+
+        Assert.AreSame(savedFallback, settingsService.Settings.ProviderSettings[ProviderId].FallbackCommands[FallbackId]);
+        Assert.AreEqual(includeInGlobalResults, wrapper.FallbackItems[0].IncludeInGlobalResults);
+    }
+
+    [TestMethod]
     public async Task LoadTopLevelCommands_KeepsSavedFallbackSettings()
     {
         var settingsService = new FakeSettingsService();
         var saved = new ProviderSettings
         {
-            FallbackCommands = ImmutableDictionary<string, FallbackSettings>.Empty.Add(FallbackId, new FallbackSettings(isEnabled: true, includeInGlobalResults: false)),
+            FallbackCommands = ImmutableDictionary<string, FallbackSettings>.Empty.Add(FallbackId, new FallbackSettings { IsEnabled = true, IncludeInGlobalResults = false }),
         };
         settingsService.Settings = settingsService.Settings with
         {
@@ -109,9 +156,40 @@ public partial class ProviderFallbackSettingsTests
         Assert.AreEqual(2, score.Invoke(null, [firstItem, new[] { FallbackId }]));
 
         using var provider = new ProviderSettingsViewModel(first, new ProviderSettings(), settingsService);
-        var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider, settingsService);
+        var fallback = new FallbackSettingsViewModel(first.FallbackItems[0], new FallbackSettings(), provider);
         Assert.AreEqual(first.FallbackItems[0].FallbackKey, fallback.RankId);
         Assert.AreEqual(FallbackId, fallback.Id);
+    }
+
+    [TestMethod]
+    public async Task CoupledFallbackSettings_NotifyBothProperties()
+    {
+        var settingsService = new FakeSettingsService();
+        await using var services = CreateServices(settingsService);
+        var wrapper = new CommandProviderWrapper(new TestCommandProvider(), TaskScheduler.Default);
+        await wrapper.LoadTopLevelCommands(services);
+        using var provider = new ProviderSettingsViewModel(wrapper, new ProviderSettings(), settingsService);
+        var fallback = new FallbackSettingsViewModel(
+            wrapper.FallbackItems[0],
+            new FallbackSettings { IsEnabled = false },
+            provider);
+        List<string?> notifications = [];
+        fallback.PropertyChanged += (_, args) => notifications.Add(args.PropertyName);
+
+        fallback.IncludeInGlobalResults = true;
+
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IncludeInGlobalResults));
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IsEnabled));
+        Assert.IsTrue(fallback.IncludeInGlobalResults);
+        Assert.IsTrue(fallback.IsEnabled);
+
+        notifications.Clear();
+        fallback.IsEnabled = false;
+
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IsEnabled));
+        CollectionAssert.Contains(notifications, nameof(FallbackSettingsViewModel.IncludeInGlobalResults));
+        Assert.IsFalse(fallback.IsEnabled);
+        Assert.IsFalse(fallback.IncludeInGlobalResults);
     }
 
     [TestMethod]
@@ -199,10 +277,11 @@ public partial class ProviderFallbackSettingsTests
 
     private sealed partial class TestCommandProvider : CommandProvider
     {
-        private readonly FallbackCommandItem _fallback = new(new NoOpCommand(), "Test fallback", FallbackId);
+        private readonly FallbackCommandItem _fallback;
 
-        public TestCommandProvider(string providerId = ProviderId)
+        public TestCommandProvider(string providerId = ProviderId, FallbackCommandItem? fallback = null)
         {
+            _fallback = fallback ?? new FallbackCommandItem(new NoOpCommand(), "Test fallback", FallbackId);
             Id = providerId;
             DisplayName = "Test provider";
         }
@@ -210,5 +289,14 @@ public partial class ProviderFallbackSettingsTests
         public override ICommandItem[] TopLevelCommands() => [];
 
         public override IFallbackCommandItem[] FallbackCommands() => [_fallback];
+    }
+
+    private sealed partial class TestResultsFallback() : FallbackResultsItem("Test fallback", FallbackId)
+    {
+        protected override Task<IFallbackCommandResult> QueryAsync(
+            FallbackQueryArgs args,
+            CancellationToken cancellationToken,
+            IProgress<IFallbackCommandResult> progress)
+            => throw new InvalidOperationException("Loading provider settings must not query fallback results.");
     }
 }

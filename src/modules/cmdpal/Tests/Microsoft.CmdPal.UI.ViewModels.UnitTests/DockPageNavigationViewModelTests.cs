@@ -274,7 +274,7 @@ public sealed partial class DockPageNavigationViewModelTests
         var page = new BlockingPageViewModel(new ListPage());
         var factory = new Mock<IPageViewModelFactoryService>();
         factory
-            .Setup(f => f.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>()))
+            .Setup(f => f.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>(), null))
             .Returns(page);
         var navigation = CreateNavigation(route, factory: factory.Object);
 

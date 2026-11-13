@@ -213,11 +213,21 @@ public partial class ShellViewModel : ObservableObject,
 
     private void PerformCommand(PerformCommandMessage message)
     {
-        var command = message.Command.Model.Unsafe;
-        if (command is null)
+        var fallbackContext = message.FallbackContext;
+        if (fallbackContext?.CanInvoke == false)
         {
             return;
         }
+
+        IDisposable? invocationLease = null;
+        if (fallbackContext is not null && !fallbackContext.TryAcquireSnapshotLease(out invocationLease))
+        {
+            return;
+        }
+
+        var invocationContext = fallbackContext?.InvocationContext
+            ?? (message.Command as FallbackInvocationViewModel)?.QueryContext.InvocationContext
+            ?? message.CommandContext;
 
         // Determine whether this is the root/home page navigation BEFORE
         // computing providerContext. When navigating back to the root page we
@@ -227,36 +237,62 @@ public partial class ShellViewModel : ObservableObject,
         // isMainPage must be evaluated here; if it were moved inside the
         // "if (command is IPage)" block below, it would be too late to affect
         // the providerContext that is passed to the new page view-model.
-        var isMainPage = command == _rootCommand.Model.Unsafe;
-
         // Only commands sent from the palette's own root page are top-level. Commands from
         // other surfaces (for example, a dock flyout page) must not update home-page history.
         var sourcePage = message.Context?.Page;
         var isTopLevel = CurrentPage.IsRootPage && (sourcePage is null || ReferenceEquals(sourcePage, CurrentPage));
 
         var host = _pageNavigation.ResolveHost(message, CurrentPage);
-        var providerContext = isMainPage
-            ? CommandProviderContext.Empty
-            : _pageNavigation.ResolveProviderContext(message, CurrentPage);
 
         try
         {
+            var commandViewModel = ResolveRequestedCommand(message.Command);
+            if (commandViewModel is null)
+            {
+                return;
+            }
+
+            var command = commandViewModel.Model.Unsafe;
+            if (command is null)
+            {
+                return;
+            }
+
+            var isMainPage = command == _rootCommand.Model.Unsafe;
+            var providerContext = isMainPage
+                ? CommandProviderContext.Empty
+                : _pageNavigation.ResolveProviderContext(message, CurrentPage);
+
             // Report page commands only after navigation preparation succeeds.
             if (command is IPage page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
 
                 var isNested = !isMainPage;
-                var pageViewModel = _pageNavigation.TryPreparePage(page, isNested, host, providerContext, message.ListPageOptions);
+                var pageViewModel = _pageNavigation.TryPreparePage(
+                    page,
+                    isNested,
+                    host,
+                    providerContext,
+                    message.ListPageOptions,
+                    fallbackContext);
                 if (pageViewModel is null)
                 {
+                    // A page that came from a fallback result can go stale between the
+                    // check above and this call, because the user kept typing. That is
+                    // normal, so leave without an error.
+                    if (fallbackContext is not null)
+                    {
+                        return;
+                    }
+
                     CoreLogger.LogError($"Failed to create ViewModel for page {page.GetType().Name}");
                     throw new NotSupportedException();
                 }
 
                 pageViewModel.HasBackButton = isNested && !message.TransientPage;
 
-                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
 
                 // Create/replace the navigation cancellation token.
                 // If one already exists, cancel and dispose it first.
@@ -291,8 +327,8 @@ public partial class ShellViewModel : ObservableObject,
                 if (host is not null)
                 {
                     var extensionId = host.GetExtensionDisplayName() ?? "builtin";
-                    var commandId = message.Command.Id;
-                    var commandName = message.Command.Name;
+                    var commandId = commandViewModel.Id;
+                    var commandName = commandViewModel.Name;
                     WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                     WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(
                         new(extensionId, commandId, commandName, true, 0));
@@ -325,13 +361,18 @@ public partial class ShellViewModel : ObservableObject,
             {
                 CoreLogger.LogDebug($"Invoking command");
 
-                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host);
+                StartInvoke(message, invokable, host, invocationContext, commandViewModel, invocationLease);
+
+                // StartInvoke now owns the reference and releases it when the command
+                // ends, which can be long after this method returns. Clear the local so
+                // the finally block below does not release it a second time.
+                invocationLease = null;
             }
             else
             {
-                _rootPageService.OnPerformCommand(message.CommandContext, isTopLevel, host);
+                _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
             }
         }
         catch (Exception ex)
@@ -340,16 +381,32 @@ public partial class ShellViewModel : ObservableObject,
             // than a silent log message.
             CoreLogger.LogError("Failed to perform command", ex);
         }
+        finally
+        {
+            invocationLease?.Dispose();
+        }
     }
 
-    private void StartInvoke(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    internal static CommandViewModel? ResolveRequestedCommand(CommandViewModel requestedCommand) =>
+        requestedCommand is FallbackInvocationViewModel fallback ? fallback.CreateCommand() : requestedCommand;
+
+    private void StartInvoke(
+        PerformCommandMessage message,
+        IInvokableCommand invokable,
+        AppExtensionHost? host,
+        object? invocationSender,
+        CommandViewModel command,
+        IDisposable? invocationLease)
     {
+        // Takes ownership of invocationLease. Every path through this method either
+        // releases it or hands it to the task that does.
         // TODO GH #525 This needs more better locking.
         lock (_invokeLock)
         {
             if (_handleInvokeTask is not null)
             {
-                // do nothing - a command is already doing a thing
+                // Another command is already running, so this one never starts.
+                invocationLease?.Dispose();
             }
             else
             {
@@ -357,19 +414,25 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, command, invocationLease);
                 });
             }
         }
     }
 
-    private void SafeHandleInvokeCommandSynchronous(PerformCommandMessage message, IInvokableCommand invokable, AppExtensionHost? host)
+    private void SafeHandleInvokeCommandSynchronous(
+        PerformCommandMessage message,
+        IInvokableCommand invokable,
+        AppExtensionHost? host,
+        object? invocationSender,
+        CommandViewModel command,
+        IDisposable? invocationLease)
     {
         // Telemetry: Track command execution time and success
         var stopwatch = System.Diagnostics.Stopwatch.StartNew();
         var extensionId = "builtin";
-        var commandId = "unknown";
-        var commandName = "unknown";
+        var commandId = command.Id;
+        var commandName = command.Name;
         var success = false;
 
         try
@@ -378,13 +441,11 @@ public partial class ShellViewModel : ObservableObject,
             try
             {
                 extensionId = host?.GetExtensionDisplayName() ?? "builtin";
-                commandId = message.Command.Id;
-                commandName = message.Command.Name;
 
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
-                result = invokable.Invoke(message.CommandContext);
+                result = invokable.Invoke(invocationSender);
                 success = true;
             }
             finally
@@ -400,7 +461,8 @@ public partial class ShellViewModel : ObservableObject,
                 result,
                 message.OnBeforeShowConfirmation,
                 message.ResultHandler,
-                message.Context?.Page);
+                message.Context?.Page,
+                message.FallbackContext);
         }
         catch (Exception ex)
         {
@@ -413,6 +475,7 @@ public partial class ShellViewModel : ObservableObject,
         }
         finally
         {
+            invocationLease?.Dispose();
             lock (_invokeLock)
             {
                 _handleInvokeTask = null;
@@ -424,7 +487,8 @@ public partial class ShellViewModel : ObservableObject,
         ICommandResult? result,
         Action? onBeforeShowConfirmation = null,
         Func<ICommandResult, bool>? resultHandler = null,
-        PageViewModel? sourcePage = null)
+        PageViewModel? sourcePage = null,
+        FallbackQueryContext? fallbackContext = null)
     {
         if (result is null)
         {
@@ -492,7 +556,17 @@ public partial class ShellViewModel : ObservableObject,
                             CoreLogger.LogError(ex.ToString());
                         }
 
-                        WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(new(a));
+                        // The dialog outlives this method, so it needs its own reference
+                        // on the snapshot.
+                        IDisposable? confirmationLease = null;
+                        if (fallbackContext is not null
+                            && !fallbackContext.TryAcquireSnapshotLease(out confirmationLease))
+                        {
+                            break;
+                        }
+
+                        WeakReferenceMessenger.Default.Send<ShowConfirmationMessage>(
+                            new(a, fallbackContext, confirmationLease));
                     }
 
                     break;
@@ -518,12 +592,23 @@ public partial class ShellViewModel : ObservableObject,
                             if (toastCommand is not null)
                             {
                                 command = new CommandViewModel(toastCommand, new(sourcePage ?? CurrentPage));
+                                command.InheritFallbackContext(fallbackContext);
                                 command.InitializeProperties();
                             }
                         }
 
-                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command));
-                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation, resultHandler, sourcePage);
+                        // The toast holds the command until it closes, so it needs its own
+                        // reference on the snapshot. A toast without a command reads nothing
+                        // from the snapshot and needs none.
+                        IDisposable? toastLease = null;
+                        if (command is not null && fallbackContext is not null
+                            && !fallbackContext.TryAcquireSnapshotLease(out toastLease))
+                        {
+                            break;
+                        }
+
+                        WeakReferenceMessenger.Default.Send<ShowToastMessage>(new(a.Message, icon, command, toastLease));
+                        UnsafeHandleCommandResult(a.Result, onBeforeShowConfirmation, resultHandler, sourcePage, fallbackContext);
                     }
 
                     break;
@@ -565,7 +650,8 @@ public partial class ShellViewModel : ObservableObject,
             message.Result.Unsafe,
             message.OnBeforeShowConfirmation,
             message.ResultHandler,
-            message.Context?.Page);
+            message.Context?.Page,
+            message.FallbackContext);
     }
 
     public void Receive(WindowHiddenMessage message)

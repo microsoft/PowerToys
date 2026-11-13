@@ -130,6 +130,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public DockCommandRoute? DockRoute { get; internal set; }
 
+    private IDisposable? _fallbackSnapshotLease;
+
     public PageViewModel(IPage? model, TaskScheduler scheduler, AppExtensionHost extensionHost, ICommandProviderContext providerContext)
         : base(scheduler)
     {
@@ -142,6 +144,12 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
         ExtensionHost.StatusMessages.CollectionChanged += StatusMessages_CollectionChanged;
         UpdateHasStatusMessage();
+    }
+
+    internal void AttachFallbackContext(FallbackQueryContext? fallbackContext, IDisposable? snapshotLease)
+    {
+        InheritFallbackContext(fallbackContext);
+        _fallbackSnapshotLease = snapshotLease;
     }
 
     private void StatusMessages_CollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e) => UpdateHasStatusMessage();
@@ -353,6 +361,7 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
         base.UnsafeCleanup();
 
         ExtensionHost.StatusMessages.CollectionChanged -= StatusMessages_CollectionChanged;
+        Interlocked.Exchange(ref _fallbackSnapshotLease, null)?.Dispose();
 
         var model = _pageModel.Unsafe;
         if (model is not null)
@@ -380,5 +389,10 @@ public interface IPageViewModelFactoryService
     /// <param name="nested">Indicates whether the page is not the top-level page.</param>
     /// <param name="host">The command palette host that will host the page (for status messages)</param>
     /// <returns>A new instance of the page view model.</returns>
-    PageViewModel? TryCreatePageViewModel(IPage page, bool nested, AppExtensionHost host, ICommandProviderContext providerContext);
+    PageViewModel? TryCreatePageViewModel(
+        IPage page,
+        bool nested,
+        AppExtensionHost host,
+        ICommandProviderContext providerContext,
+        FallbackQueryContext? fallbackContext = null);
 }

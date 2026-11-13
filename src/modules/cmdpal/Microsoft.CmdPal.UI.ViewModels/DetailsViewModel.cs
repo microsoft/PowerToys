@@ -104,6 +104,7 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
                 };
                 if (vm is not null)
                 {
+                    ShareFallbackContext(vm);
                     vm.InitializeProperties();
                     newMetadata.Add(vm);
                 }
@@ -167,6 +168,7 @@ public partial class DetailsViewModel : ExtensionObjectViewModel
                 var viewModel = CommandPaletteContentPageViewModel.CreateViewModel(item, PageContext);
                 if (viewModel is not null)
                 {
+                    ShareFallbackContext(viewModel);
                     viewModel.InitializeProperties();
                     content.Add(viewModel);
                 }
