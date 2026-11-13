@@ -89,6 +89,34 @@
                         Toggled="ConsumerEnabledToggle_Toggled" />
                 </tkcontrols:SettingsExpander>
                 <tkcontrols:SettingsExpander
+                    x:Uid="PowerScripts_FileExplorerConsumer"
+                    AutomationProperties.AutomationId="PowerScriptsFileExplorerScripts"
+                    Description="{x:Bind ViewModel.FileExplorerConsumer.Description, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreModuleCataloguesReady, Mode=OneWay}"
+                    IsExpanded="{x:Bind ViewModel.FileExplorerConsumer.IsExpanded, Mode=TwoWay}"
+                    ItemContainerStyleSelector="{x:Null}"
+                    ItemTemplate="{StaticResource ModuleScriptTemplate}"
+                    ItemsSource="{x:Bind ViewModel.FileExplorerConsumer.ApplicableScripts, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Settings/Icons/FileExplorerPreview.png" />
+                    </tkcontrols:SettingsExpander.HeaderIcon>
+                    <tkcontrols:SettingsExpander.ItemsFooter>
+                        <TextBlock
+                            Margin="48,12,16,12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.FileExplorerConsumer.CatalogueStatus, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind local:ConsumerModulesPage.BoolToVisibility(ViewModel.FileExplorerConsumer.HasCatalogueStatus), Mode=OneWay}" />
+                    </tkcontrols:SettingsExpander.ItemsFooter>
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsFileExplorerEnabled"
+                        AutomationProperties.Name="File Explorer"
+                        IsEnabled="{x:Bind ViewModel.FileExplorerConsumer.CanChange, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.FileExplorerConsumer.IsEnabled, Mode=OneWay}"
+                        Tag="file-explorer"
+                        Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsExpander>
+                <tkcontrols:SettingsExpander
                     x:Uid="PowerScripts_KeyboardManagerConsumer"
                     AutomationProperties.AutomationId="PowerScriptsKeyboardManagerScripts"
                     Description="{x:Bind ViewModel.KeyboardManagerConsumer.Description, Mode=OneWay}"

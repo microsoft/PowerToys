@@ -382,7 +382,8 @@ public class ClientTests
                 param([string[]]$Files)
                 [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
                 if ($env:POWERSCRIPTS_FILES) { $Files = $env:POWERSCRIPTS_FILES -split "`n" }
-                $output = Join-Path $env:POWERSCRIPTS_MXC_WORKSPACE ('result ' + [char]0x6D4B + [char]0x8BD5 + '.png')
+                $workspace = if ($env:POWERSCRIPTS_MXC_WORKSPACE) { $env:POWERSCRIPTS_MXC_WORKSPACE } else { $PSScriptRoot }
+                $output = Join-Path $workspace ('result ' + [char]0x6D4B + [char]0x8BD5 + '.png')
                 [IO.File]::WriteAllBytes($output, [IO.File]::ReadAllBytes($Files[0]))
                 @{ files = @($output) } | ConvertTo-Json -Compress
                 """);

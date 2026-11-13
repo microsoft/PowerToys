@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="Title" xml:space="preserve"><value>PowerScripts for File Explorer</value></data>
+  <data name="ChooseScript" xml:space="preserve"><value>Choose a script</value></data>
+  <data name="ConfigureRun" xml:space="preserve"><value>Configure and run</value></data>
+  <data name="Run" xml:space="preserve"><value>Run</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Browse" xml:space="preserve"><value>Browse…</value></data>
+  <data name="Required" xml:space="preserve"><value>Required</value></data>
+  <data name="Optional" xml:space="preserve"><value>Optional</value></data>
+  <data name="Running" xml:space="preserve"><value>Running script…</value></data>
+  <data name="Preparing" xml:space="preserve"><value>Preparing script…</value></data>
+  <data name="Saving" xml:space="preserve"><value>Saving output files…</value></data>
+  <data name="Elapsed" xml:space="preserve"><value>Elapsed: {0}</value></data>
+  <data name="Cancelling" xml:space="preserve"><value>Stopping script…</value></data>
+  <data name="CancelledTitle" xml:space="preserve"><value>Script interrupted</value></data>
+  <data name="SaveFailed" xml:space="preserve"><value>Unable to save output files</value></data>
+  <data name="TimedOut" xml:space="preserve"><value>The invocation exceeded the 10-minute time limit. It may already have produced side effects; it was not retried.</value></data>
+  <data name="CancellationNotice" xml:space="preserve"><value>Cancelling cannot undo changes already made. Closing this window hides it without stopping the script.</value></data>
+  <data name="FailureNotice" xml:space="preserve"><value>No automatic retry was attempted. Check the output folder before running again; files or other side effects may already exist.</value></data>
+  <data name="RetainedOutputs" xml:space="preserve"><value>Output files already saved and retained:</value></data>
+  <data name="ErrorDetails" xml:space="preserve"><value>Error details</value></data>
+  <data name="CopyDetails" xml:space="preserve"><value>Copy details</value></data>
+  <data name="CopyFailed" xml:space="preserve"><value>Unable to copy error details. Select the text under Error details and copy it manually.</value></data>
+  <data name="Close" xml:space="preserve"><value>Close</value></data>
+  <data name="Completed" xml:space="preserve"><value>PowerScript completed</value></data>
+  <data name="CreatedFiles" xml:space="preserve"><value>Created {0} file(s) in {1}</value></data>
+  <data name="NoFiles" xml:space="preserve"><value>The script completed without creating files.</value></data>
+  <data name="NoScripts" xml:space="preserve"><value>No compatible scripts are available. Check Consumer modules and runtime settings in the PowerScripts editor.</value></data>
+  <data name="MissingDefaults" xml:space="preserve"><value>This script requires parameter values. Turn on “Show parameter options before running” in File Explorer Add-ons settings.</value></data>
+  <data name="Failed" xml:space="preserve"><value>Unable to run PowerScript</value></data>
+  <data name="CatalogueTooLarge" xml:space="preserve"><value>The script catalogue is too large for the context menu. Choose a script to browse the full list.</value></data>
+  <data name="NotificationFailed" xml:space="preserve"><value>The script completed, but its notification could not be displayed. Check the output folder before running it again.</value></data>
+  <data name="Cancelled" xml:space="preserve"><value>The invocation was interrupted. It may already have produced side effects; it was not retried.</value></data>
+  <data name="ChooseDestination" xml:space="preserve"><value>Choose an output folder</value></data>
+  <data name="SelectionSummary" xml:space="preserve"><value>{0} selected file(s). Results are saved as new files; originals are not replaced.</value></data>
+</root>

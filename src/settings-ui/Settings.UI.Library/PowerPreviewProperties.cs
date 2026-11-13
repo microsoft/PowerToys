@@ -21,6 +21,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public const string DefaultSvgBackgroundSolidColor = "#FFFFFF";
         public const int DefaultSvgBackgroundCheckeredShade = (int)SvgPreviewCheckeredShade.Light;
 
+        [JsonPropertyName("powerscripts-show-parameters")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool PowerScriptsShowParameters { get; set; } = true;
+
+        [JsonPropertyName("powerscripts-status-delay-seconds")]
+        public IntProperty PowerScriptsStatusDelaySeconds { get; set; } = new IntProperty(2);
+
         private bool enableSvgPreview = true;
 
         [JsonPropertyName("svg-previewer-toggle-setting")]

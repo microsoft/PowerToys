@@ -14,7 +14,7 @@ public sealed record ConsumerSettingsSnapshot(bool IsPowerScriptsEnabled, bool I
 /// <summary>Shared preference and policy resolution. Consumer identity is not authentication.</summary>
 public sealed class ConsumerSettings
 {
-    private static readonly string[] KnownConsumers = ["advanced-paste", "keyboard-manager", "command-palette"];
+    private static readonly string[] KnownConsumers = ["advanced-paste", "keyboard-manager", "command-palette", "file-explorer"];
     private readonly ISettingsStore _store;
     private readonly Func<string, string, bool?> _readPolicy;
     private readonly Func<bool> _moduleEnabled;
@@ -44,7 +44,12 @@ public sealed class ConsumerSettings
         var preferences = GetPreferences(config);
         var userEnabled = preferences?[consumerId] is { } saved
             ? saved.GetValue<bool>()
-            : consumerId != "advanced-paste" || _legacyAdvancedPasteEnabled();
+            : consumerId switch
+            {
+                "advanced-paste" => _legacyAdvancedPasteEnabled(),
+                "file-explorer" => false,
+                _ => true,
+            };
         var policy = _readPolicy(PowerScriptsPolicies.ConsumersKey, consumerId);
         var parent = consumerId switch
         {

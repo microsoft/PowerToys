@@ -631,10 +631,12 @@ public sealed class PowerScriptsClient : IDisposable
     /// <summary>
     /// Resolves <c>PowerScripts.Host.exe</c>, or null when it cannot be found. Search order matches
     /// every existing surface: the <c>POWERSCRIPTS_HOST</c> override, next to the calling app, a
-    /// <c>PowerScripts</c> subfolder, the per-user module directory, then (for in-repo dev builds) a
+    /// <c>PowerScripts</c> subfolder or sibling, the per-user module directory, then (for in-repo dev builds) a
     /// walk up to the host project's <c>bin\Debug|Release</c> output.
     /// </summary>
-    public static string? ResolveHostPath()
+    public static string? ResolveHostPath() => ResolveHostPath(AppContext.BaseDirectory);
+
+    internal static string? ResolveHostPath(string baseDirectory)
     {
         var overridePath = Environment.GetEnvironmentVariable(PowerScriptsProtocol.HostPathEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(overridePath) && File.Exists(overridePath))
@@ -650,12 +652,13 @@ public sealed class PowerScriptsClient : IDisposable
 
         var candidates = new List<string>
         {
-            Path.Combine(AppContext.BaseDirectory, PowerScriptsProtocol.HostExeName),
-            Path.Combine(AppContext.BaseDirectory, "PowerScripts", PowerScriptsProtocol.HostExeName),
+            Path.Combine(baseDirectory, PowerScriptsProtocol.HostExeName),
+            Path.Combine(baseDirectory, "PowerScripts", PowerScriptsProtocol.HostExeName),
+            Path.GetFullPath(Path.Combine(baseDirectory, "..", "PowerScripts", PowerScriptsProtocol.HostExeName)),
             Path.Combine(moduleDir, PowerScriptsProtocol.HostExeName),
         };
 
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        var dir = new DirectoryInfo(baseDirectory);
         while (dir is not null)
         {
             foreach (var config in new[] { "Debug", "Release" })

@@ -13,4 +13,7 @@
     <!-- Parsing uses JsonDocument / Utf8JsonWriter only (no reflection), so it is trim/AOT friendly. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="PowerScripts.Core.Tests" />
+  </ItemGroup>
 </Project>

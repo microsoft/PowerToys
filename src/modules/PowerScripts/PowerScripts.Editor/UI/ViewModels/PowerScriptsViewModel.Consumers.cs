@@ -25,6 +25,8 @@ public partial class PowerScriptsViewModel
 
     public PowerScriptConsumerItem KeyboardManagerConsumer { get; } = new("keyboard-manager");
 
+    public PowerScriptConsumerItem FileExplorerConsumer { get; } = new("file-explorer");
+
     public PowerScriptConsumerItem CommandPaletteConsumer { get; } = new("command-palette");
 
     public bool CanChangePowerScriptsEnabled => AreConsumerSettingsReady && !_isPowerScriptsPolicyControlled;
@@ -45,7 +47,7 @@ public partial class PowerScriptsViewModel
     public async Task RefreshModuleScriptsAsync()
     {
         var generation = ++_moduleCatalogueGeneration;
-        PowerScriptConsumerItem[] consumers = [AdvancedPasteConsumer, KeyboardManagerConsumer, CommandPaletteConsumer];
+        PowerScriptConsumerItem[] consumers = [AdvancedPasteConsumer, KeyboardManagerConsumer, CommandPaletteConsumer, FileExplorerConsumer];
         foreach (var consumer in consumers)
         {
             consumer.ClearApplicableScripts("PowerScripts_ModuleScriptsLoading");
@@ -127,11 +129,13 @@ public partial class PowerScriptsViewModel
             var advancedPaste = snapshot.Consumers?.Single(item => item.Id == AdvancedPasteConsumer.Id)
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             var keyboardManager = snapshot.Consumers.Single(item => item.Id == KeyboardManagerConsumer.Id);
+            var fileExplorer = snapshot.Consumers.Single(item => item.Id == FileExplorerConsumer.Id);
             var commandPalette = snapshot.Consumers.Single(item => item.Id == CommandPaletteConsumer.Id);
             _isEnabled = snapshot.IsPowerScriptsEnabled;
             _isPowerScriptsPolicyControlled = snapshot.IsPowerScriptsPolicyControlled;
             AdvancedPasteConsumer.Update(advancedPaste);
             KeyboardManagerConsumer.Update(keyboardManager);
+            FileExplorerConsumer.Update(fileExplorer);
             CommandPaletteConsumer.Update(commandPalette);
             _consumerSettingsLoaded = true;
             OnPropertyChanged(nameof(IsEnabled));
@@ -144,6 +148,7 @@ public partial class PowerScriptsViewModel
             AdvancedPasteConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             KeyboardManagerConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             CommandPaletteConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
+            FileExplorerConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             throw;
         }
         finally
@@ -215,6 +220,7 @@ public partial class PowerScriptsViewModel
                     "advanced-paste" => "PowerScripts_AdvancedPasteScriptsDescription",
                     "keyboard-manager" => "PowerScripts_KeyboardManagerScriptsDescription",
                     "command-palette" => "PowerScripts_CommandPaletteScriptsDescription",
+                    "file-explorer" => "PowerScripts_FileExplorerScriptsDescription",
                     _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
                 });
                 return !string.IsNullOrEmpty(_state?.DisabledReason) || _state?.IsPolicyControlled == true
@@ -287,6 +293,7 @@ public partial class PowerScriptsViewModel
                 "advanced-paste" => input != "none" && output != "none",
                 "keyboard-manager" => input == "none",
                 "command-palette" => input == "none" && output is "none" or "text",
+                "file-explorer" => input is "files" or "image" or "audio",
                 _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
             };
         }

@@ -36,7 +36,7 @@
     <Compile Include="$(SettingsSource)Helpers\OpenFileName.cs" Link="Helpers\OpenFileName.cs" />
     <Compile Include="$(SettingsSource)Helpers\ShellGetFolder.cs" Link="Helpers\ShellGetFolder.cs" />
     <PRIResource Include="$(IntermediateOutputPath)Strings\en-US\Resources.resw" Link="Strings\en-US\Resources.resw" />
-    <Content Include="$(SettingsSource)Assets\Settings\Icons\AdvancedPaste.png;$(SettingsSource)Assets\Settings\Icons\KeyboardManager.png;$(SettingsSource)Assets\Settings\Icons\CmdPal.png"
+    <Content Include="$(SettingsSource)Assets\Settings\Icons\AdvancedPaste.png;$(SettingsSource)Assets\Settings\Icons\KeyboardManager.png;$(SettingsSource)Assets\Settings\Icons\CmdPal.png;$(SettingsSource)Assets\Settings\Icons\FileExplorerPreview.png"
              Link="Assets\Settings\Icons\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(RepoRoot)src\modules\PowerScripts\PowerScripts.Core\Templates\Icons\*.ico"
              Link="Assets\PowerScripts\Icons\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

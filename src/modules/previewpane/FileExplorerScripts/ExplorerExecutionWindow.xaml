@@ -1,0 +1,86 @@
+﻿<Window
+    x:Class="FileExplorerScripts.ExplorerExecutionWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid
+        Padding="24"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Spacing="8">
+            <TextBlock
+                x:Name="Heading"
+                AutomationProperties.AutomationId="ExplorerExecutionHeading"
+                Style="{StaticResource SubtitleTextBlockStyle}"
+                TextWrapping="Wrap" />
+            <TextBlock x:Name="Summary" TextWrapping="Wrap" />
+        </StackPanel>
+        <StackPanel Grid.Row="1" Spacing="8">
+            <StackPanel
+                x:Name="ProgressRow"
+                Orientation="Horizontal"
+                Spacing="12">
+                <ProgressRing
+                    x:Name="Progress"
+                    Width="24"
+                    Height="24"
+                    IsActive="False" />
+                <TextBlock
+                    x:Name="Stage"
+                    VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="ExplorerExecutionStage"
+                    AutomationProperties.LiveSetting="Polite"
+                    TextWrapping="Wrap" />
+            </StackPanel>
+            <TextBlock
+                x:Name="Elapsed"
+                AutomationProperties.AutomationId="ExplorerExecutionElapsed"
+                Style="{StaticResource CaptionTextBlockStyle}" />
+            <InfoBar
+                x:Name="Failure"
+                AutomationProperties.AutomationId="ExplorerExecutionFailure"
+                IsClosable="False"
+                Severity="Error" />
+        </StackPanel>
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Spacing="12">
+                <TextBlock x:Name="CancellationNotice" TextWrapping="Wrap" />
+                <Expander
+                    x:Name="DetailsExpander"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    AutomationProperties.AutomationId="ExplorerExecutionErrorDetails"
+                    Visibility="Collapsed">
+                    <TextBox
+                        x:Name="Details"
+                        MinHeight="80"
+                        MaxHeight="240"
+                        AcceptsReturn="True"
+                        AutomationProperties.AutomationId="ExplorerExecutionDetails"
+                        IsReadOnly="True"
+                        TextWrapping="Wrap" />
+                </Expander>
+            </StackPanel>
+        </ScrollViewer>
+        <StackPanel
+            Grid.Row="3"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                x:Name="CopyButton"
+                AutomationProperties.AutomationId="ExplorerExecutionCopy"
+                Click="CopyButton_Click"
+                Visibility="Collapsed" />
+            <Button
+                x:Name="CancelButton"
+                AutomationProperties.AutomationId="ExplorerExecutionCancel"
+                Click="CancelButton_Click" />
+        </StackPanel>
+    </Grid>
+</Window>

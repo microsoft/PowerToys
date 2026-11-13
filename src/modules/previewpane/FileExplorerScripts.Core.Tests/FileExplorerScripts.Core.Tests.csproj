@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>FileExplorerScripts.Core.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\FileExplorerScripts.Core\FileExplorerScripts.Core.csproj" />
+    <ProjectReference Include="FakeHost\FakeHost.csproj" ReferenceOutputAssembly="false" OutputItemType="FakeHostTargetPath" />
+    <Compile Remove="FakeHost\**\*.cs" />
+    <Compile Include="..\FileExplorerScripts\ExplorerSettings.cs" Link="ExplorerSettings.cs" />
+    <Compile Include="..\FileExplorerScripts\CatalogueLifetime.cs" Link="CatalogueLifetime.cs" />
+    <Compile Include="..\FileExplorerScripts\CatalogueFile.cs" Link="CatalogueFile.cs" />
+  </ItemGroup>
+  <Target Name="CopyFakeHost" AfterTargets="Build">
+    <PropertyGroup>
+      <FakeHostOutputDirectory>@(FakeHostTargetPath->'%(RootDir)%(Directory)')</FakeHostOutputDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <FakeHostFiles Include="$(FakeHostOutputDirectory)FakeHost.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(FakeHostFiles)" DestinationFolder="$(OutDir)fake-host" />
+    <Error Condition="!Exists('$(OutDir)fake-host\FakeHost.exe')" Text="The fake PowerScripts Host was not deployed to the test output." />
+  </Target>
+</Project>

@@ -89,6 +89,13 @@
       <disabledValue><decimal value="0" /></disabledValue>
     </policy>
 
+    <policy name="ConfigurePowerScriptsFileExplorer" class="Both" displayName="$(string.ConfigurePowerScriptsFileExplorer)" explainText="$(string.ConfigurePowerScriptsFileExplorerDescription)" key="Software\Policies\PowerToys\PowerScripts\Consumers" valueName="file-explorer">
+      <parentCategory ref="PowerScripts" />
+      <supportedOn ref="SUPPORTED_POWERTOYS_POWERSCRIPTS" />
+      <enabledValue><decimal value="1" /></enabledValue>
+      <disabledValue><decimal value="0" /></disabledValue>
+    </policy>
+
  <!--The name (id) of the policy is different to sort it as first policy in edit dialog. The order is sorted alphabetically based on the "name" property.-->
     <policy name="ConfigureAllUtilityGlobalEnabledState" class="Both" displayName="$(string.ConfigureAllUtilityGlobalEnabledState)" explainText="$(string.ConfigureAllUtilityGlobalEnabledStateDescription)" key="Software\Policies\PowerToys" valueName="ConfigureGlobalUtilityEnabledState">
       <parentCategory ref="PowerToys" />

@@ -1255,6 +1255,21 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
   </Folder>
+  <Folder Name="/modules/FileExplorerScripts/">
+    <Project Path="src/modules/previewpane/FileExplorerScripts/FileExplorerScripts.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/FileExplorerScripts.Core/FileExplorerScripts.Core.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/FileExplorerScripts.Core.Tests/FileExplorerScripts.Core.Tests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/previewpane/FileExplorerScripts.ShellExtension/FileExplorerScripts.ShellExtension.vcxproj" Id="f1c54079-4d32-40e2-8a51-ea5ef3b36c36" />
+  </Folder>
   <Folder Name="/modules/PowerScripts/Tests/">
     <Project Path="src/modules/PowerScripts/PowerScripts.Core.Tests/PowerScripts.Core.Tests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />

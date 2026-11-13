@@ -73,6 +73,7 @@ public sealed partial class ConsumerModulesPage : Page
         {
             "advanced-paste" => ViewModel.AdvancedPasteConsumer,
             "keyboard-manager" => ViewModel.KeyboardManagerConsumer,
+            "file-explorer" => ViewModel.FileExplorerConsumer,
             "command-palette" => ViewModel.CommandPaletteConsumer,
             _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
         };

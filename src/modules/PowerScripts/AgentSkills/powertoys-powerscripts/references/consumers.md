@@ -14,7 +14,7 @@ PowerScripts app > Consumer modules.
 | `advanced-paste` | Clipboard text/files/image/audio; never none | Pasteable text/files/image/audio; typed prompts, automatic discovery |
 | `keyboard-manager` | Ordinary action: none | Prefer none; manual saved shortcut, required options need defaults/saved arguments |
 | `command-palette` | No primary input: none | None/text; no-parameter explicit activation runs and opens results; declared parameters use a form and Run |
-| `file-explorer` (integration builds only) | Selected files | None/text/files/image/audio; typed prompts and separate exported results |
+| `file-explorer` (integration builds only) | Selected files; one compatible image/audio file | None/text/files/image/audio; typed prompts and separate exported results |
 | `command-line` | Explicit authorized Host test | Any supported contract; does not test another consumer's UI/binding |
 
 ## Advanced Paste
@@ -67,8 +67,11 @@ An auxiliary file-path option does not change primary input to `files`.
 
 ## File Explorer (separate integration builds)
 
-Requires primary `files`, not merely a `file-path` option. Accepts 1-1024 local
-regular files, no directories; all must match extensions/count.
+Primary `files` accepts 1-1024 local regular files matching extensions/count.
+Primary `image`/`audio` accepts one locally available PNG/JPEG/WebP/WAV/MP3/FLAC,
+matching the declared MIME and scalar/array bounds, at most 16 MiB. Headers are
+checked; no automatic transcoding or cloud hydration. Multiple selections/large
+media need `files`. A `file-path` option alone does not supply primary input.
 
 | Output | Presentation |
 |---|---|
@@ -80,6 +83,11 @@ regular files, no directories; all must match extensions/count.
 Use runtime workspace outputs; consumer handles destination names/collisions.
 Default isolation makes selected inputs read-only. Cancellation does not undo
 published files or script side effects.
+
+Enable in **PowerScripts app > Consumer modules > File Explorer**.
+File Explorer Add-ons owns parameter prompting and status delay (0-600 seconds,
+default 2). Errors appear immediately; closing a running window hides, not cancels.
+Scripts report stderr/nonzero failures, not their own status UI.
 
 ## Maintainers
 

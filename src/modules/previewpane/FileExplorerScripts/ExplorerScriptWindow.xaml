@@ -1,0 +1,54 @@
+<Window
+    x:Class="FileExplorerScripts.ExplorerScriptWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid
+        x:Name="Root"
+        Padding="24"
+        Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+        RowSpacing="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Spacing="8">
+            <TextBlock x:Name="Heading" Style="{StaticResource TitleTextBlockStyle}" />
+            <TextBlock x:Name="Summary" TextWrapping="Wrap" />
+        </StackPanel>
+        <ComboBox
+            x:Name="ScriptPicker"
+            Grid.Row="1"
+            HorizontalAlignment="Stretch"
+            AutomationProperties.AutomationId="ExplorerScriptPicker"
+            DisplayMemberPath="Name"
+            SelectionChanged="ScriptPicker_SelectionChanged" />
+        <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel x:Name="ParameterFields" Spacing="16" />
+        </ScrollViewer>
+        <InfoBar
+            x:Name="ValidationError"
+            Grid.Row="3"
+            AutomationProperties.AutomationId="ExplorerScriptValidation"
+            IsClosable="False"
+            Severity="Error" />
+        <StackPanel
+            Grid.Row="4"
+            HorizontalAlignment="Right"
+            Orientation="Horizontal"
+            Spacing="8">
+            <Button
+                x:Name="CancelButton"
+                AutomationProperties.AutomationId="ExplorerScriptCancel"
+                Click="CancelButton_Click" />
+            <Button
+                x:Name="RunButton"
+                AutomationProperties.AutomationId="ExplorerScriptRun"
+                Click="RunButton_Click"
+                IsEnabled="False"
+                Style="{StaticResource AccentButtonStyle}" />
+        </StackPanel>
+    </Grid>
+</Window>

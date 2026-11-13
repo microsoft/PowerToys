@@ -69,6 +69,7 @@ public sealed class ConsumerSettingsTests
         var store = new MemoryStore();
         var settings = new ConsumerSettings(store, (_, _) => null, () => true, () => false);
         Assert.IsFalse(settings.Get("advanced-paste").IsEnabled);
+        Assert.IsFalse(settings.Get("file-explorer").IsEnabled);
         Assert.IsTrue(settings.Get("keyboard-manager").IsEnabled);
         Assert.IsTrue(settings.Get("command-palette").IsEnabled);
         Assert.IsTrue(settings.Get("future-module").IsEnabled);
@@ -76,6 +77,22 @@ public sealed class ConsumerSettingsTests
 
         settings = new ConsumerSettings(store, (_, _) => null, () => true, () => true);
         Assert.IsTrue(settings.Get("advanced-paste").IsEnabled);
+    }
+
+    [TestMethod]
+    public void ExplorerOptInCanBeChangedAndPolicyStillOverridesIt()
+    {
+        var store = new MemoryStore();
+        bool? policy = null;
+        var settings = new ConsumerSettings(store, (key, name) =>
+            key == PowerScriptsPolicies.ConsumersKey && name == "file-explorer" ? policy : null, () => true, () => false);
+        settings.Set("file-explorer", true);
+        Assert.IsTrue(settings.Get("file-explorer").IsEnabled);
+        policy = false;
+        Assert.IsFalse(settings.Get("file-explorer").IsEnabled);
+        Assert.ThrowsException<InvalidOperationException>(() => settings.Set("file-explorer", true));
+        policy = null;
+        Assert.IsTrue(settings.Get("file-explorer").IsEnabled);
     }
 
     [TestMethod]
@@ -99,13 +116,14 @@ public sealed class ConsumerSettingsTests
     public void SavingCommandPalettePreservesExistingConsumersAndUnrelatedConfiguration()
     {
         var store = new MemoryStore();
-        store.WriteBlob("config.json", """{"consumers":{"advanced-paste":false,"keyboard-manager":false,"future-consumer":false},"mxc":{"enabled":true}}""");
+        store.WriteBlob("config.json", """{"consumers":{"advanced-paste":false,"keyboard-manager":false,"file-explorer":true,"future-consumer":false},"mxc":{"enabled":true}}""");
         var settings = new ConsumerSettings(store, (_, _) => null, () => true, () => true);
         settings.Set("command-palette", false);
 
         var config = JsonNode.Parse(store.ReadBlob("config.json")!)!;
         Assert.IsFalse(config["consumers"]!["advanced-paste"]!.GetValue<bool>());
         Assert.IsFalse(config["consumers"]!["keyboard-manager"]!.GetValue<bool>());
+        Assert.IsTrue(config["consumers"]!["file-explorer"]!.GetValue<bool>());
         Assert.IsFalse(config["consumers"]!["future-consumer"]!.GetValue<bool>());
         Assert.IsFalse(config["consumers"]!["command-palette"]!.GetValue<bool>());
         Assert.IsTrue(config["mxc"]!["enabled"]!.GetValue<bool>());
@@ -127,11 +145,12 @@ public sealed class ConsumerSettingsTests
         var snapshot = settings.GetSnapshot();
 
         CollectionAssert.AreEquivalent(
-            new[] { "advanced-paste", "keyboard-manager", "command-palette" },
+            new[] { "advanced-paste", "keyboard-manager", "command-palette", "file-explorer" },
             snapshot.Consumers.Select(item => item.Id).ToArray());
         Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "command-palette").IsEnabled);
         Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "advanced-paste").IsEnabled);
         Assert.IsFalse(snapshot.Consumers.Single(item => item.Id == "keyboard-manager").IsEnabled);
+        Assert.IsFalse(snapshot.Consumers.Single(item => item.Id == "file-explorer").IsEnabled);
         Assert.AreEqual(configuration, store.ReadBlob("config.json"), "Reading an old configuration must not rewrite it.");
     }
 
