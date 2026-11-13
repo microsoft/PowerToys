@@ -228,6 +228,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("1.2E-1", 0.12)]
         [DataRow("5/5E3", 0.001)]
         [DataRow("-5/5E3", -0.001)]
+        [DataRow("1E-30", 0)]
         [DataRow("(1+1)(3+2)", 10)]
         [DataRow("(1+1)cos(pi)", -2)]
         [DataRow("log(100)cos(pi)", -2)]

@@ -40,7 +40,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysSetupCustomActionsVNext;SilentFilesInUseBAFunction
         /p:RunBuildEvents=true;RestorePackagesConfig=true;CIBuild=true
-        -restore -graph
+        -restore -graph -mt
         /bl:$(LogOutputDirectory)\installer-actions.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -77,7 +77,7 @@ steps:
       solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 18.0
       msbuildArgs: >-
-        -restore
+        -restore -mt
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
@@ -94,6 +94,7 @@ steps:
       solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 18.0
       msbuildArgs: >-
+        -mt
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
@@ -145,7 +146,7 @@ steps:
       solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 18.0
       msbuildArgs: >-
-        -restore
+        -restore -mt
         /t:PowerToysBootstrapperVNext
         /p:PerUser=false;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-machine-bootstrapper.binlog
@@ -162,6 +163,7 @@ steps:
       solution: "**/installer/PowerToysSetup.slnx"
       vsVersion: 18.0
       msbuildArgs: >-
+        -mt
         /t:PowerToysBootstrapperVNext
         /p:PerUser=true;BuildProjectReferences=false;CIBuild=true
         /bl:$(LogOutputDirectory)\installer-user-bootstrapper.binlog

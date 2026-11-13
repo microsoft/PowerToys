@@ -64,7 +64,7 @@ tools\build\build.cmd `
   -Platform x64 `
   -Configuration Debug
 
-$exe = 'x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<Module>.UITests.Next.exe'
+$exe = 'x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0\<Module>.UITests.Next.exe'
 & $exe `
   --filter 'TestCategory=<Module>' `
   --report-trx `

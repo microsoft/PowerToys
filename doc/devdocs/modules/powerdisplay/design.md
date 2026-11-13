@@ -1736,7 +1736,7 @@ executable from its standard-user console, with the probe path set:
 
 ```powershell
 $env:POWERTOYS_POWERDISPLAY_IDD_PROBE = 'C:\IddPoc\artifact\driver\IddProbe.exe'
-& .\x64\Debug\tests\PowerDisplay.UITests\net10.0-windows10.0.26100.0\PowerDisplay.UITests.exe `
+& .\x64\Debug\tests\PowerDisplay.UITests\net11.0-windows10.0.26100.0\PowerDisplay.UITests.exe `
     --report-trx --report-trx-filename PowerDisplay.UITests.trx `
     --results-directory .\TestResults\PowerDisplay
 ```

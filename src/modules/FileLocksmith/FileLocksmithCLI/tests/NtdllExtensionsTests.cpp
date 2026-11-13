@@ -48,6 +48,18 @@ namespace FileLocksmithCLIUnitTests
     TEST_CLASS(NtdllExtensionsTests)
     {
     public:
+        TEST_CLASS_INITIALIZE(PinTestModule)
+        {
+            // A worker abandoned by the stall watchdog can still be blocked in this module's code when the
+            // test host unloads the DLL, and crashes the host as soon as it wakes. Keep the code mapped until
+            // the process exits, as it is in the File Locksmith executable.
+            HMODULE module = nullptr;
+            Assert::IsTrue(GetModuleHandleExW(
+                               GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN,
+                               reinterpret_cast<LPCWSTR>(&current_process_found),
+                               &module) == TRUE);
+        }
+
         TEST_METHOD(FindsFileHeldByCurrentProcess)
         {
             HeldTempFile file;

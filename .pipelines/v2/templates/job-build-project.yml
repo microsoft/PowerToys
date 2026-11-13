@@ -368,7 +368,7 @@ jobs:
       solution: 'PowerToys.slnx'
       vsVersion: 18.0
       msbuildArgs: >-
-        -restore -graph
+        -restore -graph -mt
         /p:RestorePackagesConfig=true
         /p:CIBuild=true
         /p:BuildTests=${{ parameters.buildTests }}
@@ -392,7 +392,7 @@ jobs:
       solution: PowerToys.slnx
       vsVersion: 18.0
       msbuildArgs: >-
-        -restore
+        -restore -mt
         /p:Configuration=$(BuildConfiguration)
         /p:Platform=x64
         /t:DSC\PowerToys_Settings_DSC_Schema_Generator
@@ -411,7 +411,7 @@ jobs:
     condition: and(succeeded(), ne(variables['BuildPlatform'], 'x64'))
     inputs:
       solution: src/dsc/v3/PowerToys.DSC/PowerToys.DSC.csproj
-      msbuildArgs: /t:Build /m /restore
+      msbuildArgs: /t:Build /m /mt /restore
       platform: x64
       configuration: $(BuildConfiguration)
       msbuildArchitecture: x64
@@ -455,6 +455,7 @@ jobs:
       vsVersion: 18.0
       msbuildArgs: >-
         /target:Publish
+        -mt
         /p:PowerToysRoot=$(Build.SourcesDirectory)
         /bl:$(LogOutputDirectory)\publish-for-packaging.binlog
         $(RestoreAdditionalProjectSourcesArg)
@@ -686,6 +687,7 @@ jobs:
         solution: src/modules/MouseWithoutBorders/App/MouseWithoutBorders.csproj
         msbuildArgs: >-
           /t:Build
+          -mt
           /p:BuildProjectReferences=false
           /p:MwbUiTestBuild=true
           /p:MwbUiTestSourceRevision=$(Build.SourceVersion)

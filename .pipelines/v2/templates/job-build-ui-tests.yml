@@ -88,6 +88,7 @@ jobs:
         msbuildArgs: >-
           -restore
           -graph
+          -mt
           /p:RestorePackagesConfig=true
           /p:BuildProjectReferences=true
           /p:CIBuild=true
@@ -109,6 +110,7 @@ jobs:
           msbuildArgs: >-
             -restore
             -graph
+            -mt
             /p:RestorePackagesConfig=true
             /p:BuildProjectReferences=true
             /p:CIBuild=true

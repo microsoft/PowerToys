@@ -71,7 +71,9 @@ public class ExtensionGalleryViewModelTests
             uiScheduler: _uiScheduler);
 
         var loadTask = viewModel.LoadAsync();
-        var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1)));
+        using var timeoutCts = new CancellationTokenSource();
+        var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1), timeoutCts.Token));
+        timeoutCts.Cancel();
 
         Assert.AreSame(loadTask, completedTask);
         Assert.IsTrue(loadTask.IsCompletedSuccessfully);
@@ -217,7 +219,9 @@ public class ExtensionGalleryViewModelTests
             uiScheduler: _uiScheduler);
 
         var refreshTask = viewModel.RefreshCommand.ExecuteAsync(null);
-        var completedTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(1)));
+        using var timeoutCts = new CancellationTokenSource();
+        var completedTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(1), timeoutCts.Token));
+        timeoutCts.Cancel();
 
         Assert.AreSame(refreshTask, completedTask);
         Assert.IsTrue(refreshTask.IsCompletedSuccessfully);

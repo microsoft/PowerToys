@@ -214,7 +214,7 @@ tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests.Next -Pl
 
 # 2. Run (needs a live desktop). A .Next project is a Microsoft.Testing.Platform Exe — run the
 #    produced exe directly with a TRX report; filter to one test/category for a tight loop.
-$exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
+$exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
 & $exe --filter "TestCategory=<Cat>" --report-trx --report-trx-filename run.trx --results-directory <dir>
 #    --filter accepts "TestCategory=X" or "FullyQualifiedName~Y"; omit it to run everything.
 #    Exit 0 = all passed. Parse the .trx for per-test outcomes + failure messages.

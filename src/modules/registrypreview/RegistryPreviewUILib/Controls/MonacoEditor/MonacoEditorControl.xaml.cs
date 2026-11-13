@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text.Json.Nodes;
@@ -64,7 +65,26 @@ namespace RegistryPreviewUILib
         {
             IsLoading = true;
 
+            try
+            {
+                await InitializeBrowserAsync();
+            }
+            catch (Exception ex)
+            {
+                // This is an async void event handler, so an unhandled exception would terminate the process.
+                // Keep the app alive when the WebView2 runtime is missing or fails to initialize.
+                Trace.TraceError($"RegistryPreview: failed to initialize the Monaco editor: {ex}");
+            }
+        }
+
+        private async Task InitializeBrowserAsync()
+        {
             await Browser.EnsureCoreWebView2Async();
+            if (Browser.CoreWebView2 == null)
+            {
+                throw new InvalidOperationException("The WebView2 runtime could not be initialized.");
+            }
+
             Browser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
             Browser.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
             Browser.CoreWebView2.PermissionRequested += CoreWebView2_PermissionRequested;
@@ -148,6 +168,11 @@ namespace RegistryPreviewUILib
 
         private async Task SetThemeAsync()
         {
+            if (Browser.CoreWebView2 == null)
+            {
+                return;
+            }
+
             var theme = Application.Current.RequestedTheme == ApplicationTheme.Light ? "vs" : "vs-dark";
             await Browser.CoreWebView2.ExecuteScriptAsync($"monaco.editor.setTheme('{theme}')");
         }

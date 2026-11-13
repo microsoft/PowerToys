@@ -3,8 +3,8 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
     <MSTestVersion>3.8.3</MSTestVersion>
-    <!-- Update this when global.json changes. -->
-    <DotNetRuntimePackageVersion>10.0.14</DotNetRuntimePackageVersion>
+    <!-- .NET 11 RC3 runtime. Update this when global.json changes. -->
+    <DotNetRuntimePackageVersion>11.0.0</DotNetRuntimePackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AdaptiveCards.ObjectModel.WinUI3" Version="2.0.2-beta" />
@@ -38,7 +38,7 @@
     <PackageVersion Include="Markdig.Signed" Version="0.34.0" />
     <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
     <PackageVersion Include="MessagePack" Version="3.1.9" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.102" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="11.0.100" />
     <PackageVersion Include="Microsoft.CommandPalette.Extensions" Version="0.9.260303001" />
     <PackageVersion Include="Microsoft.Data.Sqlite" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Including Microsoft.Bcl.AsyncInterfaces to force version, since it's used by Microsoft.SemanticKernel. -->
@@ -46,8 +46,8 @@
     <PackageVersion Include="Microsoft.Graphics.Win2D" Version="1.4.0" />
     <PackageVersion Include="Microsoft.Windows.CppWinRT" Version="2.0.250303.1" />
     <PackageVersion Include="Microsoft.Diagnostics.Tracing.TraceEvent" Version="3.1.16" />
-    <PackageVersion Include="Microsoft.Extensions.AI" Version="10.2.0" />
-    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="10.0.1-preview.1.25571.5" />
+    <PackageVersion Include="Microsoft.Extensions.AI" Version="$(DotNetRuntimePackageVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.AI.OpenAI" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="$(DotNetRuntimePackageVersion)" />
@@ -97,7 +97,8 @@
     <PackageVersion Include="NLog" Version="5.2.8" />
     <PackageVersion Include="NLog.Extensions.Logging" Version="5.3.8" />
     <PackageVersion Include="NLog.Schema" Version="5.2.8" />
-    <PackageVersion Include="OpenAI" Version="2.7.0" />
+    <!-- Must be at least the OpenAI version required by Microsoft.Extensions.AI.OpenAI (which tracks DotNetRuntimePackageVersion); transitive pinning turns a lower pin into an NU1109 restore error. -->
+    <PackageVersion Include="OpenAI" Version="2.14.0" />
     <PackageVersion Include="ReverseMarkdown" Version="4.1.0" />
     <PackageVersion Include="ScipBe.Common.Office.OneNote" Version="3.0.1" />
     <PackageVersion Include="ScreenRecorderLib" Version="6.6.0" />
@@ -116,17 +117,19 @@
     <PackageVersion Include="System.Diagnostics.EventLog" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Kept at the .NET runtime version to match the shared framework copy; some projects use ExcludeAssets=runtime. -->
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="$(DotNetRuntimePackageVersion)" />
-    <PackageVersion Include="System.ClientModel" Version="1.8.1" />
+    <!-- Must be at least the System.ClientModel version required by the pinned OpenAI package. -->
+    <PackageVersion Include="System.ClientModel" Version="1.15.0" />
     <PackageVersion Include="System.Drawing.Common" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Security pin (CVE-2018-8292): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Net.Http" Version="4.3.4" />
-    <PackageVersion Include="System.Numerics.Tensors" Version="10.0.2" />
+    <PackageVersion Include="System.Numerics.Tensors" Version="$(DotNetRuntimePackageVersion)" />
     <!-- Security pin (CVE-2019-0657, CVE-2019-0980, CVE-2019-0981): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
     <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
+    <PackageVersion Include="System.Resources.Extensions" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Runtime.Caching" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="$(DotNetRuntimePackageVersion)" />
