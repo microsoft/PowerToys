@@ -4,11 +4,12 @@
 #include "pch.h"
 
 #include <Constants.h>
+#include <common/utils/resources.h>
+#include "../Strings/FileConverterResourceIds.h"
 #include <FileConversionEngine.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <winrt/Windows.Data.Json.h>
 #include <winrt/Windows.Foundation.Collections.h>
-#include <winrt/Windows.ApplicationModel.Resources.h>
 #include <winrt/base.h>
 #include <common/logger/logger.h>
 #include <common/utils/logger_helper.h>
@@ -19,7 +20,6 @@
 
 #include <algorithm>
 #include <atomic>
-#include <chrono>
 #include <condition_variable>
 #include <cwctype>
 #include <filesystem>
@@ -43,24 +43,7 @@ namespace
     constexpr wchar_t CONTEXT_MENU_PACKAGE_FILE_NAME[] = L"FileConverterContextMenuPackage.msix";
     constexpr wchar_t CONTEXT_MENU_PACKAGE_FILE_PREFIX[] = L"FileConverterContextMenuPackage";
     constexpr wchar_t CONTEXT_MENU_HANDLER_CLSID[] = L"{57EC18F5-24D5-4DC6-AE2E-9D0F7A39F8BA}";
-    std::wstring LoadLocalizedString(std::wstring_view key, std::wstring_view fallback)
-    {
-        try
-        {
-            static const auto loader = winrt::Windows::ApplicationModel::Resources::ResourceLoader::GetForViewIndependentUse(L"Resources");
-            const auto value = loader.GetString(winrt::hstring{ key });
-            if (!value.empty())
-            {
-                return value.c_str();
-            }
-        }
-        catch (...)
-        {
-        }
-
-        return std::wstring{ fallback };
-    }
-
+    constexpr DWORD PIPE_READ_TIMEOUT_MS = 5000;
     struct ConversionRequest
     {
         file_converter::ImageFormat format = file_converter::ImageFormat::Png;
@@ -249,43 +232,79 @@ namespace
         return std::wstring(fc_constants::PipeNamePrefix) + std::to_wstring(session_id);
     }
 
-    std::string ReadPipeMessage(HANDLE pipe_handle)
+    DWORD CompletePendingPipeOperation(HANDLE pipe_handle, OVERLAPPED& operation, HANDLE stop_event, DWORD& bytes_transferred, DWORD timeout_ms)
+    {
+        const HANDLE events[]{ stop_event, operation.hEvent };
+        const DWORD wait_result = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE, timeout_ms);
+        if (wait_result == WAIT_OBJECT_0 + 1)
+        {
+            return GetOverlappedResult(pipe_handle, &operation, &bytes_transferred, FALSE) ? ERROR_SUCCESS : GetLastError();
+        }
+
+        DWORD error = ERROR_OPERATION_ABORTED;
+        if (wait_result == WAIT_TIMEOUT)
+        {
+            error = ERROR_SEM_TIMEOUT;
+        }
+        else if (wait_result == WAIT_FAILED)
+        {
+            error = GetLastError();
+        }
+        CancelIoEx(pipe_handle, &operation);
+        // Keep the operation and its buffer alive until cancellation or completion finishes.
+        GetOverlappedResult(pipe_handle, &operation, &bytes_transferred, TRUE);
+        return error;
+    }
+
+    std::string ReadPipeMessage(HANDLE pipe_handle, HANDLE io_event, HANDLE stop_event)
     {
         constexpr DWORD BUFFER_SIZE = 4096;
         char buffer[BUFFER_SIZE] = {};
         std::string payload;
+        const auto deadline = GetTickCount64() + PIPE_READ_TIMEOUT_MS;
 
-        while (true)
+        while (WaitForSingleObject(stop_event, 0) == WAIT_TIMEOUT)
         {
+            const auto now = GetTickCount64();
+            if (now >= deadline)
+            {
+                break;
+            }
+
+            ResetEvent(io_event);
+            OVERLAPPED operation{};
+            operation.hEvent = io_event;
             DWORD bytes_read = 0;
-            const BOOL read_ok = ReadFile(pipe_handle, buffer, BUFFER_SIZE, &bytes_read, nullptr);
+            DWORD read_error = ReadFile(pipe_handle, buffer, BUFFER_SIZE, &bytes_read, &operation) ? ERROR_SUCCESS : GetLastError();
+            if (read_error == ERROR_IO_PENDING)
+            {
+                read_error = CompletePendingPipeOperation(pipe_handle, operation, stop_event, bytes_read, static_cast<DWORD>(deadline - now));
+            }
+
             if (bytes_read > 0)
             {
                 payload.append(buffer, bytes_read);
             }
 
-            if (read_ok)
+            if (read_error == ERROR_SUCCESS)
             {
-                break;
+                return payload;
             }
 
-            const DWORD read_error = GetLastError();
             if (read_error == ERROR_MORE_DATA)
             {
                 continue;
             }
 
-            if (read_error == ERROR_BROKEN_PIPE || read_error == ERROR_PIPE_NOT_CONNECTED)
+            if (read_error != ERROR_BROKEN_PIPE && read_error != ERROR_PIPE_NOT_CONNECTED && read_error != ERROR_OPERATION_ABORTED && read_error != ERROR_SEM_TIMEOUT)
             {
-                break;
+                Logger::warn(L"File Converter pipe read failed. Error={}", read_error);
             }
 
-            Logger::warn(L"File Converter pipe read failed. Error={}", read_error);
-            payload.clear();
             break;
         }
 
-        return payload;
+        return {};
     }
 
     bool TryParseFormatConvertRequest(
@@ -298,34 +317,34 @@ namespace
 
         if (payload.empty())
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_EmptyPayload", L"empty payload");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_EMPTYPAYLOAD, L"empty payload");
             return false;
         }
 
         winrt_json::JsonObject json_payload;
         if (!winrt_json::JsonObject::TryParse(winrt::to_hstring(payload), json_payload))
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_InvalidJson", L"invalid JSON");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_INVALIDJSON, L"invalid JSON");
             return false;
         }
 
         if (!json_payload.HasKey(fc_constants::JsonActionKey))
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_MissingAction", L"missing action");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_MISSINGACTION, L"missing action");
             return false;
         }
 
         const auto action_value = json_payload.GetNamedValue(fc_constants::JsonActionKey);
         if (action_value.ValueType() != winrt_json::JsonValueType::String)
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_ActionNotString", L"action is not a string");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_ACTIONNOTSTRING, L"action is not a string");
             return false;
         }
 
         const auto action = json_payload.GetNamedString(fc_constants::JsonActionKey);
         if (_wcsicmp(action.c_str(), fc_constants::ActionFormatConvert) != 0)
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_UnsupportedAction", L"unsupported action");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_UNSUPPORTEDACTION, L"unsupported action");
             return false;
         }
 
@@ -341,14 +360,14 @@ namespace
 
         if (!json_payload.HasKey(fc_constants::JsonFilesKey))
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_MissingFilesArray", L"missing files array");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_MISSINGFILESARRAY, L"missing files array");
             return false;
         }
 
         const auto files_value = json_payload.GetNamedValue(fc_constants::JsonFilesKey);
         if (files_value.ValueType() != winrt_json::JsonValueType::Array)
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_FilesNotArray", L"files is not an array");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_FILESNOTARRAY, L"files is not an array");
             return false;
         }
 
@@ -373,21 +392,21 @@ namespace
 
         if (request.files.empty())
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_NoValidPaths", L"no valid file paths");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_NOVALIDPATHS, L"no valid file paths");
             return false;
         }
 
         const auto parsed_format = ParseFormat(destination);
         if (!parsed_format.has_value())
         {
-            rejection_reason = LoadLocalizedString(L"FileConverter_Error_UnsupportedDestination", L"unsupported destination format");
+            rejection_reason = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_UNSUPPORTEDDESTINATION, L"unsupported destination format");
             return false;
         }
 
         const auto support = file_converter::IsOutputFormatSupported(parsed_format.value());
         if (FAILED(support.hr))
         {
-            rejection_reason = support.error_message.empty() ? LoadLocalizedString(L"FileConverter_Error_DestinationUnavailable", L"requested destination format is unavailable") : support.error_message;
+            rejection_reason = support.error_message.empty() ? GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_ERROR_DESTINATIONUNAVAILABLE, L"requested destination format is unavailable") : support.error_message;
             return false;
         }
 
@@ -465,7 +484,7 @@ namespace
             return;
         }
 
-        if (!package::IsPackageRegisteredWithPowerToysVersion(CONTEXT_MENU_PACKAGE_DISPLAY_NAME))
+        if (!package::IsPackageSatisfied(package_path->wstring()))
         {
             (void)package::RegisterSparsePackage(context_menu_path.wstring(), package_path->wstring());
         }
@@ -491,29 +510,87 @@ namespace
         runtime_shell_ext::Unregister(BuildWin10ContextMenuSpec());
     }
 
+    void UnregisterContextMenuPackage()
+    {
+        if (!package::IsWin11OrGreater())
+        {
+            return;
+        }
+
+        (void)package::UnRegisterPackage(CONTEXT_MENU_PACKAGE_DISPLAY_NAME);
+    }
+
     class FileConverterPipeOrchestrator
     {
     public:
         void Start(const std::wstring& pipe_name)
         {
-            if (m_running.exchange(true))
+            std::scoped_lock lifecycle_lock(m_lifecycle_mutex);
+            if (m_running.load())
             {
                 return;
             }
 
             m_pipe_name = pipe_name;
-            m_listener_thread = std::thread(&FileConverterPipeOrchestrator::ListenerLoop, this);
-            m_worker_thread = std::thread(&FileConverterPipeOrchestrator::WorkerLoop, this);
+            m_stop_event = winrt::handle{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
+            winrt::check_bool(m_stop_event.get() != nullptr);
+            m_io_event = winrt::handle{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
+            winrt::check_bool(m_io_event.get() != nullptr);
+            {
+                std::scoped_lock lock(m_queue_mutex);
+                m_running.store(true);
+            }
+
+            try
+            {
+                m_listener_thread = std::thread(&FileConverterPipeOrchestrator::ListenerLoop, this);
+                m_worker_thread = std::thread(&FileConverterPipeOrchestrator::WorkerLoop, this);
+            }
+            catch (...)
+            {
+                StopThreads();
+                throw;
+            }
         }
 
         void Stop()
         {
-            if (!m_running.exchange(false))
+            std::scoped_lock lifecycle_lock(m_lifecycle_mutex);
+            StopThreads();
+        }
+
+        ~FileConverterPipeOrchestrator()
+        {
+            Stop();
+        }
+
+        void EnqueuePayload(std::string payload)
+        {
             {
-                return;
+                std::scoped_lock lock(m_queue_mutex);
+                if (!m_running.load())
+                {
+                    return;
+                }
+
+                m_pending_payloads.push(std::move(payload));
             }
 
-            WakeListener();
+            m_queue_cv.notify_one();
+        }
+
+    private:
+        void StopThreads()
+        {
+            {
+                std::scoped_lock lock(m_queue_mutex);
+                if (!m_running.exchange(false))
+                {
+                    return;
+                }
+            }
+
+            SetEvent(m_stop_event.get());
             m_queue_cv.notify_all();
 
             if (m_listener_thread.joinable())
@@ -531,54 +608,6 @@ namespace
                 std::scoped_lock lock(m_queue_mutex);
                 std::swap(m_pending_payloads, empty);
             }
-        }
-
-        void EnqueueActionPayload(std::string payload)
-        {
-            if (!m_running.load())
-            {
-                return;
-            }
-
-            EnqueuePayload(std::move(payload));
-        }
-
-        ~FileConverterPipeOrchestrator()
-        {
-            Stop();
-        }
-
-    private:
-        void WakeListener() const
-        {
-            if (m_pipe_name.empty())
-            {
-                return;
-            }
-
-            HANDLE wake_handle = CreateFileW(
-                m_pipe_name.c_str(),
-                GENERIC_WRITE,
-                0,
-                nullptr,
-                OPEN_EXISTING,
-                0,
-                nullptr);
-
-            if (wake_handle != INVALID_HANDLE_VALUE)
-            {
-                CloseHandle(wake_handle);
-            }
-        }
-
-        void EnqueuePayload(std::string payload)
-        {
-            {
-                std::scoped_lock lock(m_queue_mutex);
-                m_pending_payloads.push(std::move(payload));
-            }
-
-            m_queue_cv.notify_one();
         }
 
         void ProcessPayload(const std::string& payload)
@@ -630,12 +659,7 @@ namespace
 
                     if (m_pending_payloads.empty())
                     {
-                        if (!m_running.load())
-                        {
-                            break;
-                        }
-
-                        continue;
+                        break;
                     }
 
                     payload = std::move(m_pending_payloads.front());
@@ -648,57 +672,66 @@ namespace
 
         void ListenerLoop()
         {
+            winrt::handle pipe;
             while (m_running.load())
             {
-                HANDLE pipe_handle = CreateNamedPipeW(
-                    m_pipe_name.c_str(),
-                    PIPE_ACCESS_INBOUND,
-                    PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-                    PIPE_UNLIMITED_INSTANCES,
-                    0,
-                    4096,
-                    0,
-                    nullptr);
-
-                if (pipe_handle == INVALID_HANDLE_VALUE)
+                if (!pipe.get())
                 {
-                    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                    continue;
-                }
+                    const HANDLE pipe_handle = CreateNamedPipeW(
+                        m_pipe_name.c_str(),
+                        PIPE_ACCESS_INBOUND | FILE_FLAG_OVERLAPPED,
+                        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
+                        PIPE_UNLIMITED_INSTANCES,
+                        0,
+                        4096,
+                        0,
+                        nullptr);
 
-                const BOOL connected = ConnectNamedPipe(pipe_handle, nullptr) ? TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-                if (!connected)
-                {
-                    CloseHandle(pipe_handle);
-                    if (m_running.load())
+                    if (pipe_handle == INVALID_HANDLE_VALUE)
                     {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        WaitForSingleObject(m_stop_event.get(), 100);
+                        continue;
                     }
 
+                    // Reuse the server instance so waiting clients can connect between requests.
+                    pipe = winrt::handle{ pipe_handle };
+                }
+
+                ResetEvent(m_io_event.get());
+                OVERLAPPED operation{};
+                operation.hEvent = m_io_event.get();
+                DWORD connect_error = ConnectNamedPipe(pipe.get(), &operation) ? ERROR_SUCCESS : GetLastError();
+                if (connect_error == ERROR_IO_PENDING)
+                {
+                    DWORD unused = 0;
+                    connect_error = CompletePendingPipeOperation(pipe.get(), operation, m_stop_event.get(), unused, INFINITE);
+                }
+
+                if (connect_error != ERROR_SUCCESS && connect_error != ERROR_PIPE_CONNECTED)
+                {
+                    DisconnectNamedPipe(pipe.get());
+                    WaitForSingleObject(m_stop_event.get(), 50);
                     continue;
                 }
 
-                const std::string payload = ReadPipeMessage(pipe_handle);
+                auto payload = ReadPipeMessage(pipe.get(), m_io_event.get(), m_stop_event.get());
 
                 // Inbound-only server pipes have no outbound data to flush.
                 // Skipping FlushFileBuffers avoids reconnect stalls on malformed-request sequences.
-                DisconnectNamedPipe(pipe_handle);
-                CloseHandle(pipe_handle);
-
-                if (!m_running.load())
-                {
-                    break;
-                }
+                DisconnectNamedPipe(pipe.get());
 
                 if (!payload.empty())
                 {
-                    EnqueuePayload(payload);
+                    EnqueuePayload(std::move(payload));
                 }
             }
         }
 
         std::atomic<bool> m_running = false;
+        std::mutex m_lifecycle_mutex;
         std::wstring m_pipe_name;
+        winrt::handle m_stop_event;
+        winrt::handle m_io_event;
         std::thread m_listener_thread;
         std::thread m_worker_thread;
         std::mutex m_queue_mutex;
@@ -720,7 +753,11 @@ public:
 
     ~FileConverterModule()
     {
-        disable();
+        if (m_enabled)
+        {
+            m_pipe_orchestrator.Stop();
+            UnregisterContextMenuRuntime();
+        }
     }
 
     void destroy() override
@@ -742,7 +779,7 @@ public:
     {
         HINSTANCE hinstance = reinterpret_cast<HINSTANCE>(&__ImageBase);
         PowerToysSettings::Settings settings(hinstance, get_name());
-        settings.set_description(LoadLocalizedString(L"FileConverter_Settings_Description", L"Convert image files to common formats."));
+        settings.set_description(GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_SETTINGS_DESCRIPTION, L"Convert image files to common formats."));
         settings.set_overview_link(L"https://aka.ms/PowerToysOverview_FileConverter");
         settings.set_icon_key(L"pt-file-converter");
         return settings.serialize_to_buffer(buffer, buffer_size);
@@ -759,7 +796,7 @@ public:
             return;
         }
 
-        m_pipe_orchestrator.EnqueueActionPayload(winrt::to_string(action));
+        m_pipe_orchestrator.EnqueuePayload(winrt::to_string(action));
     }
 
     void enable() override
@@ -784,6 +821,7 @@ public:
 
         m_pipe_orchestrator.Stop();
         UnregisterContextMenuRuntime();
+        UnregisterContextMenuPackage();
         m_enabled = false;
     }
 

@@ -4,85 +4,61 @@
 #include "pch.h"
 
 #include <Constants.h>
+#include <FileConversionEngine.h>
+#include <common/utils/resources.h>
+#include "../Strings/FileConverterResourceIds.h"
 #include <ShlObj.h>
-#include <winrt/Windows.ApplicationModel.Resources.h>
 #include <winrt/Windows.Data.Json.h>
 #include <winrt/Windows.Foundation.Collections.h>
 #include <winrt/base.h>
 
 #include <algorithm>
 #include <array>
+#include <cstdio>
 #include <cwctype>
 #include <optional>
 #include <string>
 #include <vector>
 
 using namespace Microsoft::WRL;
-namespace json = winrt::Windows::Data::Json;
+namespace winrt_json = winrt::Windows::Data::Json;
 namespace fc_constants = winrt::PowerToys::FileConverter::Constants;
 
 namespace
 {
     constexpr DWORD PIPE_CONNECT_TIMEOUT_MS = 1000;
 
-    enum class FormatGroup
-    {
-        Png,
-        Jpeg,
-        Bmp,
-        Tiff,
-        Heif,
-        Webp,
-        Unknown,
-    };
+    using file_converter::ImageFormat;
 
     struct TargetFormatSpec
     {
-        const wchar_t* label_key;
+        UINT label_id;
         const wchar_t* label_fallback;
         const wchar_t* destination;
-        FormatGroup destination_group;
+        ImageFormat format;
         GUID canonical_name;
     };
 
     constexpr std::array<TargetFormatSpec, 8> TARGET_FORMATS = {
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Png", L"PNG", fc_constants::FormatPng, FormatGroup::Png, { 0x0a4200f1, 0x74e5, 0x4f59, { 0xbb, 0x5d, 0x79, 0x8a, 0xfa, 0xf8, 0x01, 0x10 } } },
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Jpg", L"JPG", fc_constants::FormatJpg, FormatGroup::Jpeg, { 0x9f0adf10, 0x3fcb, 0x4a22, { 0x9e, 0x4a, 0x9c, 0x9c, 0x5e, 0xc1, 0x16, 0x4a } } },
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Jpeg", L"JPEG", fc_constants::FormatJpeg, FormatGroup::Jpeg, { 0x6d94f15d, 0xa2ba, 0x4912, { 0xa8, 0xf6, 0xe3, 0x89, 0xe0, 0xf8, 0x50, 0x76 } } },
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Bmp", L"BMP", fc_constants::FormatBmp, FormatGroup::Bmp, { 0x922d3030, 0x7fdb, 0x4de7, { 0x99, 0x39, 0x15, 0x95, 0x38, 0x0e, 0x81, 0x88 } } },
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Tiff", L"TIFF", fc_constants::FormatTiff, FormatGroup::Tiff, { 0x91fc7a8a, 0x34b9, 0x4ddf, { 0x86, 0xe8, 0x9f, 0xbb, 0x84, 0xf3, 0x55, 0x65 } } },
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Heic", L"HEIC", fc_constants::FormatHeic, FormatGroup::Heif, { 0xd10be4f8, 0x6e5f, 0x4c6d, { 0xa1, 0x45, 0xbe, 0x57, 0x9f, 0x42, 0x75, 0x69 } } },
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Heif", L"HEIF", fc_constants::FormatHeif, FormatGroup::Heif, { 0x7fce9037, 0x12fe, 0x40af, { 0x88, 0x95, 0x6e, 0x7f, 0xe6, 0x29, 0x2b, 0x45 } } },
-        TargetFormatSpec{ L"FileConverter_ContextMenu_Format_Webp", L"WebP", fc_constants::FormatWebp, FormatGroup::Webp, { 0x5fce9315, 0x3d7b, 0x4372, { 0xac, 0x17, 0x35, 0x57, 0x91, 0xcd, 0x17, 0x61 } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_PNG, L"PNG", fc_constants::FormatPng, ImageFormat::Png, { 0x0a4200f1, 0x74e5, 0x4f59, { 0xbb, 0x5d, 0x79, 0x8a, 0xfa, 0xf8, 0x01, 0x10 } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_JPG, L"JPG", fc_constants::FormatJpg, ImageFormat::Jpeg, { 0x9f0adf10, 0x3fcb, 0x4a22, { 0x9e, 0x4a, 0x9c, 0x9c, 0x5e, 0xc1, 0x16, 0x4a } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_JPEG, L"JPEG", fc_constants::FormatJpeg, ImageFormat::Jpeg, { 0x6d94f15d, 0xa2ba, 0x4912, { 0xa8, 0xf6, 0xe3, 0x89, 0xe0, 0xf8, 0x50, 0x76 } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_BMP, L"BMP", fc_constants::FormatBmp, ImageFormat::Bmp, { 0x922d3030, 0x7fdb, 0x4de7, { 0x99, 0x39, 0x15, 0x95, 0x38, 0x0e, 0x81, 0x88 } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_TIFF, L"TIFF", fc_constants::FormatTiff, ImageFormat::Tiff, { 0x91fc7a8a, 0x34b9, 0x4ddf, { 0x86, 0xe8, 0x9f, 0xbb, 0x84, 0xf3, 0x55, 0x65 } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_HEIC, L"HEIC", fc_constants::FormatHeic, ImageFormat::Heif, { 0xd10be4f8, 0x6e5f, 0x4c6d, { 0xa1, 0x45, 0xbe, 0x57, 0x9f, 0x42, 0x75, 0x69 } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_HEIF, L"HEIF", fc_constants::FormatHeif, ImageFormat::Heif, { 0x7fce9037, 0x12fe, 0x40af, { 0x88, 0x95, 0x6e, 0x7f, 0xe6, 0x29, 0x2b, 0x45 } } },
+        TargetFormatSpec{ IDS_FILECONVERTER_CONTEXTMENU_FORMAT_WEBP, L"WebP", fc_constants::FormatWebp, ImageFormat::Webp, { 0x5fce9315, 0x3d7b, 0x4372, { 0xac, 0x17, 0x35, 0x57, 0x91, 0xcd, 0x17, 0x61 } } },
     };
-
-    std::wstring LoadLocalizedString(std::wstring_view key, std::wstring_view fallback)
-    {
-        try
-        {
-            static const auto loader = winrt::Windows::ApplicationModel::Resources::ResourceLoader::GetForViewIndependentUse(L"Resources");
-            const auto value = loader.GetString(winrt::hstring{ key });
-            if (!value.empty())
-            {
-                return value.c_str();
-            }
-        }
-        catch (...)
-        {
-        }
-
-        return std::wstring{ fallback };
-    }
 
     std::wstring GetContextMenuParentLabel()
     {
-        static const std::wstring label = LoadLocalizedString(L"FileConverter_ContextMenu_Entry", L"Convert to...");
+        static const std::wstring label = GET_RESOURCE_STRING_FALLBACK(IDS_FILECONVERTER_CONTEXTMENU_ENTRY, L"Convert to...");
         return label;
     }
 
     std::wstring GetTargetFormatLabel(const TargetFormatSpec& spec)
     {
-        return LoadLocalizedString(spec.label_key, spec.label_fallback);
+        return GET_RESOURCE_STRING_FALLBACK(spec.label_id, spec.label_fallback);
     }
 
     std::wstring GetPipeNameForCurrentSession()
@@ -166,64 +142,31 @@ namespace
         return value;
     }
 
-    FormatGroup ExtensionToGroup(const std::wstring& extension)
+    struct SourceFormatSpec
     {
-        const std::wstring lower = ToLower(extension);
-        if (lower == fc_constants::ExtensionPng)
-        {
-            return FormatGroup::Png;
-        }
+        std::wstring_view extension;
+        std::optional<ImageFormat> format;
+    };
 
-        if (lower == fc_constants::ExtensionJpg || lower == fc_constants::ExtensionJpeg)
-        {
-            return FormatGroup::Jpeg;
-        }
+    constexpr auto SOURCE_FORMATS = std::to_array<SourceFormatSpec>({
+        { fc_constants::ExtensionPng, ImageFormat::Png },
+        { fc_constants::ExtensionJpg, ImageFormat::Jpeg },
+        { fc_constants::ExtensionJpeg, ImageFormat::Jpeg },
+        { L".jfif", ImageFormat::Jpeg },
+        { L".jpe", ImageFormat::Jpeg },
+        { fc_constants::ExtensionBmp, ImageFormat::Bmp },
+        { L".dib", ImageFormat::Bmp },
+        { fc_constants::ExtensionTif, ImageFormat::Tiff },
+        { fc_constants::ExtensionTiff, ImageFormat::Tiff },
+        { fc_constants::ExtensionHeic, ImageFormat::Heif },
+        { fc_constants::ExtensionHeif, ImageFormat::Heif },
+        { fc_constants::ExtensionWebp, ImageFormat::Webp },
+        { L".gif", std::nullopt },
+        { L".jxr", std::nullopt },
+        { L".wdp", std::nullopt },
+    });
 
-        if (lower == fc_constants::ExtensionBmp)
-        {
-            return FormatGroup::Bmp;
-        }
-
-        if (lower == fc_constants::ExtensionTif || lower == fc_constants::ExtensionTiff)
-        {
-            return FormatGroup::Tiff;
-        }
-
-        if (lower == fc_constants::ExtensionHeic || lower == fc_constants::ExtensionHeif)
-        {
-            return FormatGroup::Heif;
-        }
-
-        if (lower == fc_constants::ExtensionWebp)
-        {
-            return FormatGroup::Webp;
-        }
-
-        return FormatGroup::Unknown;
-    }
-
-    bool IsPathEligibleSource(const std::wstring& path, FormatGroup& group)
-    {
-        const wchar_t* extension = PathFindExtension(path.c_str());
-        if (extension == nullptr || extension[0] == L'\0')
-        {
-            return false;
-        }
-
-        group = ExtensionToGroup(extension);
-        if (group == FormatGroup::Unknown)
-        {
-            return false;
-        }
-
-#pragma warning(suppress : 26812)
-        PERCEIVED perceived_type = PERCEIVED_TYPE_UNSPECIFIED;
-        PERCEIVEDFLAG perceived_flags = PERCEIVEDFLAG_UNDEFINED;
-        AssocGetPerceivedType(extension, &perceived_type, &perceived_flags, nullptr);
-        return perceived_type == PERCEIVED_TYPE_IMAGE;
-    }
-
-    bool CanConvertPaths(const std::vector<std::wstring>& paths, std::optional<FormatGroup> destination_group)
+    bool CanConvertPaths(const std::vector<std::wstring>& paths, ImageFormat destination)
     {
         if (paths.empty())
         {
@@ -232,13 +175,9 @@ namespace
 
         for (const auto& path : paths)
         {
-            FormatGroup source_group = FormatGroup::Unknown;
-            if (!IsPathEligibleSource(path, source_group))
-            {
-                return false;
-            }
-
-            if (destination_group.has_value() && source_group == destination_group.value())
+            const auto extension = ToLower(PathFindExtension(path.c_str()));
+            const auto source = std::ranges::find(SOURCE_FORMATS, extension, &SourceFormatSpec::extension);
+            if (source == SOURCE_FORMATS.end() || source->format == destination)
             {
                 return false;
             }
@@ -247,17 +186,16 @@ namespace
         return true;
     }
 
+    bool CanOfferDestination(const std::vector<std::wstring>& paths, ImageFormat destination)
+    {
+        return CanConvertPaths(paths, destination) && file_converter::IsOutputFormatSupported(destination).succeeded();
+    }
+
     bool HasAnyAvailableDestination(const std::vector<std::wstring>& paths)
     {
-        for (const auto& spec : TARGET_FORMATS)
-        {
-            if (CanConvertPaths(paths, spec.destination_group))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return std::ranges::any_of(TARGET_FORMATS, [&](const auto& target) {
+            return CanOfferDestination(paths, target.format);
+        });
     }
 
     const TargetFormatSpec* FindTargetFormat(std::wstring_view destination)
@@ -276,24 +214,36 @@ namespace
 
     std::string BuildFormatConvertPayload(const std::vector<std::wstring>& paths, std::wstring_view destination)
     {
-        json::JsonObject payload;
-        payload.Insert(fc_constants::JsonActionKey, json::JsonValue::CreateStringValue(fc_constants::ActionFormatConvert));
-        payload.Insert(fc_constants::JsonDestinationKey, json::JsonValue::CreateStringValue(destination.data()));
+        winrt_json::JsonObject payload;
+        payload.Insert(fc_constants::JsonActionKey, winrt_json::JsonValue::CreateStringValue(fc_constants::ActionFormatConvert));
+        payload.Insert(fc_constants::JsonDestinationKey, winrt_json::JsonValue::CreateStringValue(destination.data()));
 
-        json::JsonArray files;
+        winrt_json::JsonArray files;
         for (const auto& path : paths)
         {
-            files.Append(json::JsonValue::CreateStringValue(path));
+            files.Append(winrt_json::JsonValue::CreateStringValue(path));
         }
 
         payload.Insert(fc_constants::JsonFilesKey, files);
         return winrt::to_string(payload.Stringify());
     }
 
+    bool IsConversionServiceAvailable()
+    {
+        const std::wstring pipe_name = GetPipeNameForCurrentSession();
+        if (WaitNamedPipeW(pipe_name.c_str(), NMPWAIT_NOWAIT))
+        {
+            return true;
+        }
+
+        // A busy pipe still belongs to a running service. Probing must not consume a connection.
+        return GetLastError() == ERROR_SEM_TIMEOUT;
+    }
+
     HRESULT SendFormatConvertRequest(const std::vector<std::wstring>& paths, std::wstring_view destination)
     {
         const TargetFormatSpec* target = FindTargetFormat(destination);
-        if (target == nullptr || !CanConvertPaths(paths, target->destination_group))
+        if (target == nullptr || !CanConvertPaths(paths, target->format))
         {
             return E_INVALIDARG;
         }
@@ -371,13 +321,18 @@ namespace
             return S_OK;
         }
 
-        IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL, _Out_ EXPCMDSTATE* cmd_state)
+        IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL ok_to_be_slow, _Out_ EXPCMDSTATE* cmd_state)
         {
             *cmd_state = ECS_HIDDEN;
 
-            if (selection == nullptr)
+            if (selection == nullptr || !IsConversionServiceAvailable())
             {
                 return S_OK;
+            }
+
+            if (!ok_to_be_slow)
+            {
+                return E_PENDING;
             }
 
             std::vector<std::wstring> paths;
@@ -386,7 +341,7 @@ namespace
                 return S_OK;
             }
 
-            if (CanConvertPaths(paths, m_spec.destination_group))
+            if (CanOfferDestination(paths, m_spec.format))
             {
                 *cmd_state = ECS_ENABLED;
             }
@@ -404,7 +359,13 @@ namespace
             std::vector<std::wstring> paths;
             if (SUCCEEDED(GetSelectedPaths(selection, paths)))
             {
-                (void)SendFormatConvertRequest(paths, m_spec.destination);
+                const HRESULT hr = SendFormatConvertRequest(paths, m_spec.destination);
+                if (FAILED(hr))
+                {
+                    wchar_t message[256]{};
+                    swprintf_s(message, L"[FileConverterContextMenu] SendFormatConvertRequest failed: 0x%08lx\n", static_cast<unsigned long>(hr));
+                    OutputDebugStringW(message);
+                }
             }
 
             return S_OK;
@@ -529,13 +490,18 @@ public:
         return S_OK;
     }
 
-    IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL, _Out_ EXPCMDSTATE* cmd_state)
+    IFACEMETHODIMP GetState(_In_opt_ IShellItemArray* selection, _In_ BOOL ok_to_be_slow, _Out_ EXPCMDSTATE* cmd_state)
     {
         *cmd_state = ECS_HIDDEN;
 
-        if (selection == nullptr)
+        if (selection == nullptr || !IsConversionServiceAvailable())
         {
             return S_OK;
+        }
+
+        if (!ok_to_be_slow)
+        {
+            return E_PENDING;
         }
 
         std::vector<std::wstring> paths;
@@ -587,20 +553,21 @@ public:
         return S_OK;
     }
 
-    IFACEMETHODIMP QueryContextMenu(HMENU menu, UINT index_menu, UINT id_cmd_first, UINT, UINT flags)
+    IFACEMETHODIMP QueryContextMenu(HMENU menu, UINT index_menu, UINT id_cmd_first, UINT id_cmd_last, UINT flags)
     {
         if (menu == nullptr)
         {
             return E_INVALIDARG;
         }
 
-        if ((flags & CMF_DEFAULTONLY) != 0 || m_data_object == nullptr)
+        m_context_menu_target_indexes.clear();
+        if ((flags & CMF_DEFAULTONLY) != 0 || id_cmd_first > id_cmd_last || m_data_object == nullptr || !IsConversionServiceAvailable())
         {
             return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
         }
 
         std::vector<std::wstring> paths;
-        if (FAILED(GetSelectedPaths(m_data_object.Get(), paths)) || !HasAnyAvailableDestination(paths))
+        if (FAILED(GetSelectedPaths(m_data_object.Get(), paths)))
         {
             return MAKE_HRESULT(SEVERITY_SUCCESS, FACILITY_NULL, 0);
         }
@@ -611,13 +578,12 @@ public:
             return HRESULT_FROM_WIN32(GetLastError());
         }
 
-        m_context_menu_target_indexes.clear();
         UINT command_id = id_cmd_first;
         UINT sub_menu_index = 0;
         for (size_t i = 0; i < TARGET_FORMATS.size(); ++i)
         {
             const auto& format = TARGET_FORMATS[i];
-            if (!CanConvertPaths(paths, format.destination_group))
+            if (!CanOfferDestination(paths, format.format))
             {
                 continue;
             }
@@ -633,6 +599,11 @@ public:
             }
 
             m_context_menu_target_indexes.push_back(i);
+            if (command_id == id_cmd_last)
+            {
+                break;
+            }
+
             ++command_id;
             ++sub_menu_index;
         }
@@ -682,12 +653,19 @@ public:
         const auto& target = TARGET_FORMATS[target_index];
 
         std::vector<std::wstring> paths;
-        if (FAILED(GetSelectedPaths(m_data_object.Get(), paths)) || !CanConvertPaths(paths, target.destination_group))
+        if (FAILED(GetSelectedPaths(m_data_object.Get(), paths)) || !CanConvertPaths(paths, target.format))
         {
             return S_OK;
         }
 
-        (void)SendFormatConvertRequest(paths, target.destination);
+        const HRESULT hr = SendFormatConvertRequest(paths, target.destination);
+        if (FAILED(hr))
+        {
+            wchar_t message[256]{};
+            swprintf_s(message, L"[FileConverterContextMenu] SendFormatConvertRequest failed: 0x%08lx\n", static_cast<unsigned long>(hr));
+            OutputDebugStringW(message);
+        }
+
         return S_OK;
     }
 

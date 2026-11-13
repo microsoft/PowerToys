@@ -8,7 +8,11 @@
     <RootNamespace>FileConverterLib</RootNamespace>
     <ProjectName>FileConverterLib</ProjectName>
     <TargetName>PowerToys.FileConverterLib</TargetName>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
+  </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
   </PropertyGroup>
@@ -34,7 +38,7 @@
     <ClInclude Include="FileConversionEngine.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Strings\en-us\Resources.resw" />
+    <ClInclude Include="..\Strings\FileConverterResourceIds.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">

@@ -7,7 +7,11 @@
     <RootNamespace>FileConverterContextMenu</RootNamespace>
     <ProjectName>FileConverterContextMenu</ProjectName>
     <TargetName>PowerToys.FileConverterContextMenu</TargetName>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
+  </ItemGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
@@ -45,14 +49,17 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\FileConverterLib\FileConverterLib.vcxproj">
       <Project>{2d6e2c29-43ce-4be9-b0fd-2f6240d04ef4}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="AppxManifest.xml" />
-    <None Include="..\Strings\en-us\Resources.resw" />
+    <ResourceCompile Include="..\Strings\FileConverter.rc" />
     <None Include="Source.def" />
+    <None Include="AppxManifest.xml" />
     <None Include="Assets\FileConverter\LargeTile.png" />
     <None Include="Assets\FileConverter\SmallTile.png" />
     <None Include="Assets\FileConverter\SplashScreen.png" />
