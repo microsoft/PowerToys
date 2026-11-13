@@ -4,4 +4,4 @@
 
 namespace LanguageModelProvider.FoundryLocal;
 
-internal sealed record FoundryCatalogModel(string Name, string Alias);
+internal sealed record FoundryCatalogModel(string Name, string Alias, long FileSizeMb, string License, string DeviceType);

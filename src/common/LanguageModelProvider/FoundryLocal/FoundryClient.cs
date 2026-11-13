@@ -199,7 +199,15 @@ internal sealed class FoundryClient
             List<FoundryCatalogModel> models = [];
             foreach (var model in doc.RootElement.GetProperty("models").EnumerateArray())
             {
-                models.Add(new FoundryCatalogModel(GetString(model, "id"), GetString(model, "alias")));
+                var deviceType = model.TryGetProperty("runtime", out var runtime) && runtime.ValueKind == JsonValueKind.Object
+                    ? GetString(runtime, "deviceType")
+                    : string.Empty;
+                models.Add(new FoundryCatalogModel(
+                    GetString(model, "id"),
+                    GetString(model, "alias"),
+                    model.TryGetProperty("fileSizeMb", out var size) && size.TryGetInt64(out var mb) ? mb : 0,
+                    GetString(model, "license"),
+                    deviceType));
             }
 
             if (models.Count > 0)

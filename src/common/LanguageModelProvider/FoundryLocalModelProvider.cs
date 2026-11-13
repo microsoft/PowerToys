@@ -104,19 +104,36 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         foreach (var model in cachedModels)
         {
             Logger.LogInfo($"[FoundryLocal] Adding unmatched cached model: {model.Name}");
+            List<HardwareAccelerator> accelerators = [HardwareAccelerator.FOUNDRYLOCAL];
+            if (TryMapDeviceType(model.DeviceType) is { } deviceAccelerator)
+            {
+                accelerators.Add(deviceAccelerator);
+            }
+
             downloadedModels.Add(new ModelDetails
             {
                 Id = $"fl-{model.Name}",
                 Name = model.Name,
                 Url = $"fl://{model.Name}",
                 Description = $"{model.Name} running locally with Foundry Local",
-                HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL],
+                Size = model.FileSizeMb * 1024L * 1024L,
+                License = model.License,
+                HardwareAccelerators = accelerators,
                 ProviderModelDetails = model,
             });
         }
 
         return downloadedModels;
     }
+
+    private static HardwareAccelerator? TryMapDeviceType(string deviceType) =>
+        deviceType.ToUpperInvariant() switch
+        {
+            "CPU" => HardwareAccelerator.CPU,
+            "GPU" => HardwareAccelerator.GPU,
+            "NPU" => HardwareAccelerator.NPU,
+            _ => null,
+        };
 
     private async Task InitializeAsync(CancellationToken cancelationToken = default)
     {
