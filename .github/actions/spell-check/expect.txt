@@ -930,6 +930,7 @@ keyvault
 kfull
 KILLFOCUS
 killrunner
+KLF
 kmph
 KVM
 kvp
@@ -1267,6 +1268,7 @@ NOSENDCHANGING
 NOSIZE
 nosize
 notdefault
+NOTELLSHELL
 NOTHOUSANDS
 NOTICKS
 NOTIFICATIONSDLL
