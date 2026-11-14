@@ -284,6 +284,9 @@ internal sealed class TestHelper
     public void OpenLocation()
     {
         Step("Opening the location dialog");
+
+        // Windows requires foreground ownership when requesting location consent.
+        RequireForeground();
         ui.Find<Button>(By.AccessibilityId("SetLocationButton_LightSwitch")).Invoke(msPostAction: 0);
         var ready = WaitHelper.WaitForStable(
             () =>
@@ -324,6 +327,7 @@ internal sealed class TestHelper
     public void DetectLocation()
     {
         Step("Requesting the real Windows geolocation provider");
+        RequireForeground();
         var sync = ui.Find<Button>(By.AccessibilityId("SyncLocationButton_LightSwitch"));
         Assert.AreEqual("true", sync.GetProperty("IsEnabled").ToLowerInvariant(), $"Geolocation prerequisite unavailable: {ReadLocationError()}. Enable Windows location services and provide a location source; manual coordinates are not a substitute for this test.");
         sync.Invoke(msPostAction: 0);
@@ -432,10 +436,10 @@ internal sealed class TestHelper
 
     private void RequireForeground()
     {
-        Step("Establishing foreground ownership for physical keyboard input");
+        Step("Establishing Settings foreground ownership");
         Assert.IsTrue(
             WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), 10_000, requiredConsecutiveMatches: 3),
-            $"Settings must own foreground before SendInput. Observed {WindowControl.GetForegroundWindowInfo()}.");
+            $"Settings must own foreground for this interaction. Observed {WindowControl.GetForegroundWindowInfo()}.");
     }
 
     private T FindDescendant<T>(string parentId, string type)
