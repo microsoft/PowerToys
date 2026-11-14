@@ -91,7 +91,7 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         explorer = OpenExplorer(folder);
         var preview = WaitForClassicContextMenuItem(explorer, fixture, ContextMenuCaption, timeoutMS: WindowTimeoutMS);
         Assert.IsNotNull(preview, $"Explorer did not offer '{ContextMenuCaption}' after Registry Preview was enabled.");
-        preview!.Invoke(msPostAction: 300);
+        preview!.Click(msPostAction: 300);
 
         var registryPreview = WindowsFinder.WaitForWindowByApp(
             RegistryPreviewProcessName,

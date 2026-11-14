@@ -34,8 +34,6 @@ namespace RegistryPreviewUILib
 
         public MonacoEditorControl()
         {
-            // WebView2 can initialize while the XAML controls are being created.
-            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", MonacoHelper.TempFolderPath, EnvironmentVariableTarget.Process);
             InitializeComponent();
 
             _textChangedThrottle = new Timer(250);
@@ -65,7 +63,8 @@ namespace RegistryPreviewUILib
         {
             IsLoading = true;
 
-            await Browser.EnsureCoreWebView2Async();
+            var environment = await CoreWebView2Environment.CreateWithOptionsAsync(null, MonacoHelper.TempFolderPath, null);
+            await Browser.EnsureCoreWebView2Async(environment);
             Browser.DefaultBackgroundColor = Color.FromArgb(0, 0, 0, 0);
             Browser.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
             Browser.CoreWebView2.PermissionRequested += CoreWebView2_PermissionRequested;
