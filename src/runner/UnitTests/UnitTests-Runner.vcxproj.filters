@@ -23,6 +23,9 @@
     <ClCompile Include="GeneralSettingsReaderTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AutoStartTaskTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\hotkey_conflict_detector.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -38,6 +41,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\general_settings_reader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\auto_start_task.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

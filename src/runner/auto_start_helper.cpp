@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "auto_start_helper.h"
+#include "auto_start_task.h"
 
 #include <Lmcons.h>
 
@@ -67,6 +68,69 @@ static std::wstring get_auto_start_task_sddl()
     return sddl;
 }
 
+static std::wstring bstr_to_wstring(const _bstr_t& value)
+{
+    return value.length() ? static_cast<const wchar_t*>(value) : L"";
+}
+
+static std::optional<auto_start_task::RegisteredTask> read_registered_task(IRegisteredTask* pRegisteredTask)
+{
+    winrt::com_ptr<ITaskDefinition> definition;
+    winrt::com_ptr<IPrincipal> principal;
+    TASK_RUNLEVEL_TYPE runLevel = TASK_RUNLEVEL_LUA;
+    _bstr_t securityDescriptor;
+    if (FAILED(pRegisteredTask->get_Definition(definition.put())) ||
+        FAILED(definition->get_Principal(principal.put())) ||
+        FAILED(principal->get_RunLevel(&runLevel)) ||
+        FAILED(pRegisteredTask->GetSecurityDescriptor(DACL_SECURITY_INFORMATION, securityDescriptor.GetAddress())))
+    {
+        return std::nullopt;
+    }
+
+    auto_start_task::RegisteredTask task{
+        .runElevated = runLevel == TASK_RUNLEVEL_HIGHEST,
+        .securityDescriptor = bstr_to_wstring(securityDescriptor),
+    };
+
+    winrt::com_ptr<IActionCollection> actions;
+    winrt::com_ptr<IAction> action;
+    winrt::com_ptr<IExecAction> execAction;
+    LONG actionCount = 0;
+    _bstr_t path;
+    if (SUCCEEDED(definition->get_Actions(actions.put())) &&
+        SUCCEEDED(actions->get_Count(&actionCount)) && actionCount == 1 &&
+        SUCCEEDED(actions->get_Item(1, action.put())) &&
+        SUCCEEDED(action->QueryInterface(IID_IExecAction, execAction.put_void())) &&
+        SUCCEEDED(execAction->get_Path(path.GetAddress())))
+    {
+        task.executablePath = bstr_to_wstring(path);
+    }
+
+    winrt::com_ptr<ITriggerCollection> triggers;
+    LONG triggerCount = 0;
+    if (SUCCEEDED(definition->get_Triggers(triggers.put())) && SUCCEEDED(triggers->get_Count(&triggerCount)))
+    {
+        for (LONG i = 1; i <= triggerCount && !task.logonTriggerDelay; ++i)
+        {
+            winrt::com_ptr<ITrigger> trigger;
+            winrt::com_ptr<ILogonTrigger> logonTrigger;
+            TASK_TRIGGER_TYPE2 type{};
+            VARIANT_BOOL enabled = VARIANT_FALSE;
+            _bstr_t delay;
+            if (SUCCEEDED(triggers->get_Item(i, trigger.put())) &&
+                SUCCEEDED(trigger->get_Type(&type)) && type == TASK_TRIGGER_LOGON &&
+                SUCCEEDED(trigger->get_Enabled(&enabled)) && enabled == VARIANT_TRUE &&
+                SUCCEEDED(trigger->QueryInterface(IID_ILogonTrigger, logonTrigger.put_void())) &&
+                SUCCEEDED(logonTrigger->get_Delay(delay.GetAddress())))
+            {
+                task.logonTriggerDelay = bstr_to_wstring(delay);
+            }
+        }
+    }
+
+    return task;
+}
+
 bool create_auto_start_task_for_this_user(bool runElevated)
 {
     HRESULT hr = S_OK;
@@ -75,6 +139,8 @@ bool create_auto_start_task_for_this_user(bool runElevated)
     WCHAR username[USERNAME_LEN];
 
     std::wstring wstrTaskName;
+    const std::wstring sddl = get_auto_start_task_sddl();
+    std::optional<std::wstring> logonTriggerDelay;
 
     ITaskService* pService = NULL;
     ITaskFolder* pTaskFolder = NULL;
@@ -132,6 +198,28 @@ bool create_auto_start_task_for_this_user(bool runElevated)
         {
             pRootFolder->Release();
             ExitOnFailure(hr, "Cannot create PowerToys task folder: {:x}", hr);
+        }
+    }
+
+    {
+        IRegisteredTask* pExistingRegisteredTask = NULL;
+        hr = pTaskFolder->GetTask(_bstr_t(wstrTaskName.c_str()), &pExistingRegisteredTask);
+        if (SUCCEEDED(hr))
+        {
+            const auto existingTask = read_registered_task(pExistingRegisteredTask);
+            pExistingRegisteredTask->Release();
+
+            const bool isTrusted = existingTask && auto_start_task::grants_access_only_to(existingTask->securityDescriptor, sddl);
+            if (isTrusted)
+            {
+                logonTriggerDelay = existingTask->logonTriggerDelay;
+            }
+
+            if (!isTrusted || !auto_start_task::matches(*existingTask, wszExecutablePath, runElevated))
+            {
+                Logger::info(L"The autorun task doesn't match the current settings, recreating it.");
+                hr = pTaskFolder->DeleteTask(_bstr_t(wstrTaskName.c_str()), 0);
+            }
         }
     }
 
@@ -200,7 +288,7 @@ bool create_auto_start_task_for_this_user(bool runElevated)
 
         // Timing issues may make explorer not be started when the task runs.
         // Add a little delay to mitigate this.
-        hr = pLogonTrigger->put_Delay(_bstr_t(L"PT03S"));
+        hr = pLogonTrigger->put_Delay(_bstr_t(logonTriggerDelay.value_or(L"PT03S").c_str()));
 
         // Define the user. The task will execute when the user logs on.
         // The specified user must be a user on this computer.
@@ -265,7 +353,6 @@ bool create_auto_start_task_for_this_user(bool runElevated)
     // ------------------------------------------------------
     //  Save the task in the PowerToys folder.
     {
-        std::wstring sddl = get_auto_start_task_sddl();
         _variant_t taskSecurityDescriptor = sddl.c_str();
         hr = pTaskFolder->RegisterTaskDefinition(
             _bstr_t(wstrTaskName.c_str()),
