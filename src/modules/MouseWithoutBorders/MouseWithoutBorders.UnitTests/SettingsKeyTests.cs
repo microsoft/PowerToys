@@ -60,7 +60,7 @@ public sealed class SettingsKeyTests
         StringAssert.Contains(click[validation..click.IndexOf("Encryption.MyKey = key;", StringComparison.Ordinal)], "return;");
     }
 
-    private static string ReadRepositorySource(string relativePath)
+    internal static string ReadRepositorySource(string relativePath)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory != null && !File.Exists(Path.Combine(directory.FullName, relativePath)))
