@@ -73,7 +73,8 @@ clearing inputs or replaying a possibly completed command. Socket-state polling
 also bounds replies and waits two seconds between attempts, including failures.
 The Sandbox flow starts Settings through the supported
 `--open-settings=MouseWithoutBorders` Runner deep link, maximizes the owned
-window, and waits for this field-opening command before invoking it. It avoids
+window, and waits for this field-opening command before invoking it through
+UIA rather than relying on pointer delivery. It avoids
 a whole-window header search and a Home-page navigation that are not required
 for MWB pairing. This does not claim to fix Settings startup latency or validate
 Home-to-module navigation. Navigation invocation alone does not establish that
