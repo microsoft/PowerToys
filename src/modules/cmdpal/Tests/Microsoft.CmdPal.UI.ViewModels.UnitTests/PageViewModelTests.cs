@@ -152,10 +152,11 @@ public partial class PageViewModelTests
         page.DockRoute = new DockCommandRoute((nint)42, Guid.NewGuid());
         var sourcePage = withPage ? page : null;
         var command = new NoOpCommand();
+        var commandViewModel = new CommandViewModel(command, new(page));
+        commandViewModel.FastInitializeProperties();
         var listItem = new ListItem(command);
         var commandItem = new CommandItem(command);
         var contextItem = new CommandContextItem(command);
-        var commandViewModel = new CommandViewModel(command, new(page));
         var confirmation = new ConfirmResultViewModel(Mock.Of<IConfirmationArgs>(), new(page));
         (PerformCommandMessage Message, object? Payload)[] cases =
         [
