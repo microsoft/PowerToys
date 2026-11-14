@@ -279,7 +279,12 @@ namespace KeyboardManagerEditorUI.Helpers
             bool isEditMode = false,
             string? editingId = null)
         {
-            if (originalKeys.Count < 2)
+            if (originalKeys == null || originalKeys.Count == 0)
+            {
+                return ValidationErrorType.EmptyOriginalKeys;
+            }
+
+            if (originalKeys.Count == 1)
             {
                 return ValidationErrorType.OneKeyMapping;
             }
