@@ -34,7 +34,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reference the NEW harness only. NEVER reference ..\common\UITestAutomation\UITestAutomation.csproj. -->
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
   </ItemGroup>
 

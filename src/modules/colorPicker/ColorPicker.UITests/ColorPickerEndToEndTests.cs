@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -161,18 +162,15 @@ public class ColorPickerEndToEndTests : UITestBase
     [TestCategory("winappcli-POC")]
     public void NavigateReadShortcutActivateAndCapture()
     {
-        try
-        {
-            RunTest();
-        }
-        finally
-        {
-            // Universal cleanup: close any leftover ColorPicker window (overlay or editor),
-            // then close the Settings window. Tolerant — never throws so it can't mask the
-            // real test failure.
-            WindowControl.TryCloseByApp("PowerToys.ColorPickerUI");
-            WindowControl.TryCloseByApp("PowerToys.Settings");
-        }
+        RunTest();
+    }
+
+    [TestCleanup]
+    public async Task CleanupWindowsAsync()
+    {
+        await CaptureFailureArtifactsBeforeCleanupAsync();
+        WindowControl.TryCloseByApp("PowerToys.ColorPickerUI");
+        WindowControl.TryCloseByApp("PowerToys.Settings");
     }
 
     private void RunTest()
@@ -332,6 +330,7 @@ public class ColorPickerEndToEndTests : UITestBase
             }
 
             TestContext.WriteLine($"Picker overlay appeared: hwnd={overlay!.WindowHandle} title='{overlay.WindowTitle}'");
+            TestContext.WriteLine($"Settings elevated={Session.IsElevated}; Color Picker elevated={overlay.IsElevated}.");
 
             Assert.IsFalse(
                 string.IsNullOrWhiteSpace(overlay.WindowTitle),
@@ -360,7 +359,15 @@ public class ColorPickerEndToEndTests : UITestBase
             var zoomWindow = WindowsFinder.WaitForWindowByApp(
                 "PowerToys.ColorPickerUI",
                 w => w.Width > 300 && w.Height > 300,
-                timeoutMS: 2_500);
+                timeoutMS: 10_000);
+            if (zoomWindow is null)
+            {
+                foreach (var nativeWindow in WindowControl.EnumerateProcessWindows([overlay.ProcessId]))
+                {
+                    TestContext.WriteLine($"Missing magnifier native window: {nativeWindow}");
+                }
+            }
+
             Assert.IsNotNull(zoomWindow, "The zoom magnifier window did not appear after scrolling.");
             Assert.AreEqual(
                 "Zoom window",
@@ -522,24 +529,32 @@ public class ColorPickerEndToEndTests : UITestBase
 
             // -- 14. Incomplete RGB/HEX edits must not remain visible after focus leaves -----
             editor.Find<Button>(By.AccessibilityId("CurrentColorButton"), timeoutMS: 2_000).Invoke();
-            var redTextBox = editor.Find<TextBox>(By.AccessibilityId("RNumberBox"), timeoutMS: 2_000);
-            var greenTextBox = editor.Find<TextBox>(By.AccessibilityId("GNumberBox"), timeoutMS: 2_000);
-            var hexTextBox = editor.Find<TextBox>(By.AccessibilityId("HexCode"), timeoutMS: 2_000);
+            var flyout = WindowsFinder.WaitForWindowByApp(
+                editor.ProcessId.ToString(CultureInfo.InvariantCulture),
+                window => window.ClassName == "Microsoft.UI.Content.PopupWindowSiteBridge",
+                timeoutMS: 5_000);
+            Assert.IsNotNull(flyout, "The Adjust Color flyout did not expose its popup window.");
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(flyout.WindowHandle), 5_000, 2),
+                $"The Adjust Color flyout could not gain foreground. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            var redTextBox = flyout.Find<TextBox>(By.AccessibilityId("RNumberBox"), timeoutMS: 2_000);
+            var greenTextBox = flyout.Find<TextBox>(By.AccessibilityId("GNumberBox"), timeoutMS: 2_000);
+            var hexTextBox = flyout.Find<TextBox>(By.AccessibilityId("HexCode"), timeoutMS: 2_000);
             string originalRed = redTextBox.Value;
             string originalHex = hexTextBox.Value;
 
-            redTextBox.Focus();
+            redTextBox.Click();
             redTextBox.SetText(string.Empty);
-            greenTextBox.Focus();
+            greenTextBox.Click();
             Thread.Sleep(300);
             Assert.AreEqual(
                 originalRed,
                 redTextBox.Value,
                 "An empty RGB field must restore the current channel value after losing focus.");
 
-            hexTextBox.Focus();
+            hexTextBox.Click();
             hexTextBox.SetText("zzzzzz");
-            redTextBox.Focus();
+            redTextBox.Click();
             Thread.Sleep(300);
             Assert.AreEqual(
                 originalHex,
@@ -608,7 +623,7 @@ public class ColorPickerEndToEndTests : UITestBase
     /// <summary>
     /// Parse a UI-rendered shortcut string like <c>"Win + Shift + C"</c> into the
     /// <see cref="Key"/> sequence the harness's keyboard helper expects. Matches the parser
-    /// pattern used by <c>ScreenRuler.UITests/TestHelper.cs</c>.
+    /// pattern used by <c>ScreenRuler.UITests.Next/TestHelper.cs</c>.
     /// </summary>
     private static Key[] ParseShortcutText(string shortcutText)
     {

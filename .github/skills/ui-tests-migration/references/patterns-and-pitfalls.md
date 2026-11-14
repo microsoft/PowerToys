@@ -694,7 +694,7 @@ swallow in `FancyZones.cpp::OnKeyDown`.
     `TryKillProcessTreeByNameAndWait` per scenario (Recipe 14).
 23. **Foreground activation is best-effort across integrity levels.** An elevated visible helper
     console can permanently block a non-elevated target. Log `GetForegroundWindowInfo()` and fix the
-    environment (for example launch shared WinAppDriver hidden), rather than adding infinite retries.
+    environment (for example launch prerequisite helpers hidden), rather than adding infinite retries.
 24. **Explorer UIA is not the Shell selection authority.** Title readiness and visible file rows do
     not prove the exact selected set or focused item. Use `ExplorerShell` (Recipe 13).
 25. **`PrintWindow` is not a composed-content oracle.** WinUI/WebView2 can render correctly on video

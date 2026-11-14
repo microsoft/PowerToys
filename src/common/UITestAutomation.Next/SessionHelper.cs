@@ -28,9 +28,8 @@ public sealed class SessionHelper
 {
     // Generous window-appearance budget. On a cold/busy CI agent the runner spends tens of seconds
     // enabling every module and the Settings WinUI process cold-starts before its window appears.
-    // When the whole test job runs elevated (required so the legacy WinAppDriver harness can bind
-    // :4723) the runner's startup is slower still — ~100s to the first Settings window observed on a
-    // slow platform — so the budget is 150s. We wait patiently (and only re-issue the launch when
+    // On slow CI platforms the first Settings window has taken about 100s to appear,
+    // so the budget is 150s. We wait patiently (and only re-issue the launch when
     // nothing is alive) rather than kill-and-relaunch on a short deadline, which only resets a
     // slow-but-healthy startup and never converges.
     private static readonly TimeSpan LaunchTimeout = TimeSpan.FromSeconds(150);
@@ -422,45 +421,14 @@ public sealed class SessionHelper
     /// </remarks>
     private static Session? WaitForMainWindow(PowerToysModule scope, TimeSpan timeout)
     {
+        if (scope == PowerToysModule.CommandPalette)
+        {
+            return WaitForCmdPalWindow(timeout);
+        }
+
         var processName = ModulePaths.ProcessNameFor(scope);
         var expectedTitle = ModulePaths.MainWindowTitleFor(scope);
         var deadline = DateTime.UtcNow + timeout;
-
-        if (scope == PowerToysModule.CommandPalette)
-        {
-            // A live CmdPal instance can be cloaked. Activation redirects to that instance and
-            // shows it; walking its UIA tree cannot make the hidden window available.
-            var lastActivation = DateTime.UtcNow;
-            var ready = WaitHelper.WaitForStable(
-                observe: () => WindowsFinder.ListByApp(processName).FirstOrDefault(
-                    window => MatchesMainWindow(processName, expectedTitle, window.ProcessName, window.Title) &&
-                              !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd))),
-                isMatch: window => window is not null,
-                timeoutMS: checked((int)timeout.TotalMilliseconds),
-                requiredConsecutiveMatches: 2,
-                pollIntervalMS: 250,
-                recover: _ =>
-                {
-                    if (DateTime.UtcNow - lastActivation >= TimeSpan.FromSeconds(25))
-                    {
-                        LaunchScope(scope);
-                        lastActivation = DateTime.UtcNow;
-                    }
-                });
-            var mainWindow = ready.LastObservation;
-            if (!ready.Succeeded || mainWindow is null)
-            {
-                return null;
-            }
-
-            // The native window appears before startup finishes. Bind only after its search box is
-            // available, using the remaining launch budget rather than a later interaction's timeout.
-            var session = new Session(scope, mainWindow.Hwnd, mainWindow.Title, mainWindow.ProcessId, mainWindow.ProcessName);
-            var remainingMS = checked((int)Math.Max(0, (deadline - DateTime.UtcNow).TotalMilliseconds));
-            return remainingMS > 0 && session.WaitForElement(By.AccessibilityId("MainSearchBox"), remainingMS)
-                ? session
-                : null;
-        }
 
         while (DateTime.UtcNow < deadline)
         {
@@ -521,6 +489,47 @@ public sealed class SessionHelper
         }
 
         return null;
+    }
+
+    private static Session? WaitForCmdPalWindow(TimeSpan timeout)
+    {
+        const PowerToysModule scope = PowerToysModule.CommandPalette;
+        var processName = ModulePaths.ProcessNameFor(scope);
+        var expectedTitle = ModulePaths.MainWindowTitleFor(scope);
+        var deadline = DateTime.UtcNow + timeout;
+
+        // A live CmdPal instance can be cloaked. Activation redirects to that instance and
+        // shows it; walking its UIA tree cannot make the hidden window available.
+        var lastActivation = DateTime.UtcNow;
+        var ready = WaitHelper.WaitForStable(
+            observe: () => WindowsFinder.ListByApp(processName).FirstOrDefault(
+                window => MatchesMainWindow(processName, expectedTitle, window.ProcessName, window.Title) &&
+                          !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd))),
+            isMatch: window => window is not null,
+            timeoutMS: checked((int)timeout.TotalMilliseconds),
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 250,
+            recover: _ =>
+            {
+                if (DateTime.UtcNow - lastActivation >= TimeSpan.FromSeconds(25))
+                {
+                    LaunchScope(scope);
+                    lastActivation = DateTime.UtcNow;
+                }
+            });
+        var mainWindow = ready.LastObservation;
+        if (!ready.Succeeded || mainWindow is null)
+        {
+            return null;
+        }
+
+        // The native window appears before startup finishes. Bind only after its search box is
+        // available, using the remaining launch budget rather than a later interaction's timeout.
+        var session = new Session(scope, mainWindow.Hwnd, mainWindow.Title, mainWindow.ProcessId, mainWindow.ProcessName);
+        var remainingMS = checked((int)Math.Max(0, (deadline - DateTime.UtcNow).TotalMilliseconds));
+        return remainingMS > 0 && session.WaitForElement(By.AccessibilityId("MainSearchBox"), remainingMS)
+            ? session
+            : null;
     }
 
     private static bool MatchesMainWindow(string expectedProcess, string expectedTitle, string processName, string title) =>

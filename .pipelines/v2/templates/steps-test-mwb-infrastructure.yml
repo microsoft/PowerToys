@@ -13,6 +13,7 @@ steps:
       $tests += Get-Item -LiteralPath (Join-Path $testRoot 'resolveUiTestModules.Tests.ps1')
       $tests += Get-Item -LiteralPath (Join-Path $testRoot 'runUiTestAsUser.Tests.ps1')
       $tests += Get-Item -LiteralPath (Join-Path $testRoot 'uiTestSigningSelection.Tests.ps1')
+      $tests += Get-Item -LiteralPath (Join-Path $testRoot 'dotnetSdkSetup.Tests.ps1')
       $null = New-Item -ItemType Directory -Path "$(LogOutputDirectory)" -Force
       $result = Invoke-Pester -Script $tests.FullName -ExcludeTag NativeCompiler -PassThru -Quiet `
         -OutputFile "$(LogOutputDirectory)\pipeline-powershell-tests.xml" -OutputFormat NUnitXml

@@ -33,7 +33,6 @@ function Get-UITestSigningSelection {
 
 Describe 'UI test signing selection' {
     $authenticatedModules = @(
-        'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
         'AltWindowCycle.UITests',
         'Awake.UITests',
@@ -41,23 +40,21 @@ Describe 'UI test signing selection' {
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
         'GrabAndMove.UITests',
-        'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
         'Microsoft.CmdPal.UITests.Next',
         'MouseWithoutBorders.UITests',
-        'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'NewPlus.UITests',
         'NewPlus.UITests.Next',
         'PowerAccent.UITests',
         'PowerDisplay.UITests',
         'PowerOCR.UITests.Next',
-        'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
+        'Settings.UITests',
         'ShortcutGuide.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
@@ -75,6 +72,10 @@ Describe 'UI test signing selection' {
     }
 
     It 'does not require IPC companions for unrelated project <Module>' -TestCases @(
+        'AdvancedPaste-UITests',
+        'HostsEditor.UITests',
+        'MouseUtils.UITests',
+        'PowerRename.UITests',
         'OtherNewPlus.UITests',
         'NewPlus.UITests.Extra',
         'OtherPowerRename.UITests',
@@ -87,7 +88,6 @@ Describe 'UI test signing selection' {
         'GrabAndMove.UITests.Extra',
         'ImageResizer.UITests.Extra',
         'LightSwitch.UITests.Next.Extra',
-        'Microsoft.CmdPal.UITests.Next.Extra',
         'MouseWithoutBorders.UITests.Extra',
         'PowerDisplay.UITests.Extra',
         'PowerOCR.UITests.Next.Extra',
@@ -122,7 +122,7 @@ Describe 'UI test signing selection' {
         param($Platform)
         $selected = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next' -Platform $Platform
         ($selected.Packages -contains 'SamplePagesExtension.msix') | Should Be $true
-        $unrelated = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next.Extra' -Platform $Platform
+        $unrelated = Get-UITestSigningSelection -Modules 'FancyZones.UITests.Next' -Platform $Platform
         ($unrelated.Packages -contains 'SamplePagesExtension.msix') | Should Be $false
         $all = Get-UITestSigningSelection -Platform $Platform
         ($all.Packages -contains 'SamplePagesExtension.msix') | Should Be $true

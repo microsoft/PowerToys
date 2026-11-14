@@ -106,12 +106,12 @@ public class MouseJumpTests : UITestBase
     {
         var preview = ShowPreview();
         var previewClassName = WaitForPreviewWindow().ClassName;
-        var bounds = WindowHelper.GetWindowBounds(new IntPtr(preview.WindowHandle));
+        var bounds = WindowHelper.GetWindowBounds(preview.Hwnd);
         var clickX = bounds.Left + ((bounds.Right - bounds.Left) / 2);
         var clickY = bounds.Top + ((bounds.Bottom - bounds.Top) / 2);
-        using (var watcher = new WindowShowWatcher(previewClassName, preview.WindowHandle))
+        using (var watcher = new WindowShowWatcher(previewClassName, preview.Hwnd.ToInt64()))
         {
-            var previewHwnd = new IntPtr(preview.WindowHandle);
+            var previewHwnd = preview.Hwnd;
             WindowControl.WaitForForeground(previewHwnd, 2_000);
             Assert.IsTrue(
                 WindowControl.IsPointOwnedByWindow(previewHwnd, clickX, clickY),
@@ -161,9 +161,9 @@ public class MouseJumpTests : UITestBase
     {
         var preview = ShowPreview();
         Assert.IsTrue(
-            WindowControl.WaitForForeground(new IntPtr(preview.WindowHandle), 5_000, 2),
+            WindowControl.WaitForForeground(preview.Hwnd, 5_000, 2),
             $"Mouse Jump was not foreground before the focus-loss transition. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
-        using var focusWatcher = new WindowShowWatcher(WaitForPreviewWindow().ClassName, preview.WindowHandle);
+        using var focusWatcher = new WindowShowWatcher(WaitForPreviewWindow().ClassName, preview.Hwnd.ToInt64());
         notepadFixture = NotepadFixture.Start();
         var notepadWindow = notepadFixture.Window;
         Assert.IsTrue(
@@ -177,7 +177,7 @@ public class MouseJumpTests : UITestBase
     public void ThumbnailSizeSetsPreviewBounds()
     {
         var preview = ShowPreview();
-        var bounds = WindowHelper.GetWindowBounds(new IntPtr(preview.WindowHandle));
+        var bounds = WindowHelper.GetWindowBounds(preview.Hwnd);
         var width = bounds.Right - bounds.Left;
         var height = bounds.Bottom - bounds.Top;
         Assert.IsTrue(width is >= 620 and <= 650, $"Configured 640px preview width rendered as {width}px.");
@@ -199,7 +199,7 @@ public class MouseJumpTests : UITestBase
     {
         var preview = ShowPreview();
         var path = Path.Combine(TestContext.TestResultsDirectory ?? Path.GetTempPath(), $"mouse-jump-custom-{Guid.NewGuid():N}.png");
-        WindowHelper.CaptureVisibleWindow(new IntPtr(preview.WindowHandle), path);
+        WindowHelper.CaptureVisibleWindow(preview.Hwnd, path);
         try
         {
             using var image = new Bitmap(path);
@@ -260,28 +260,33 @@ public class MouseJumpTests : UITestBase
         }
         """;
 
-    private static Session ShowPreview()
+    private WindowControl.ProcessWindow ShowPreview()
     {
         _ = WaitForPreviewReady();
 
         for (var attempt = 1; attempt <= 3; attempt++)
         {
             Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(Session.WindowHandle), 5_000, 2),
+                $"Settings could not establish the preview activation baseline. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            Assert.IsTrue(
                 NamedEventHelper.WaitAndSignal(NamedEventHelper.MouseJumpShowPreview, 10_000),
                 "Mouse Jump show-preview event was unavailable.");
-            var preview = WindowsFinder.WaitForWindowByApp(
-                ProcessName,
-                window => window.Title.Equals(WindowTitle, StringComparison.OrdinalIgnoreCase),
-                timeoutMS: 5_000);
-            if (preview is not null)
+            var preview = WaitHelper.WaitForStable(
+                GetPreviewWindow,
+                window => window.Hwnd != IntPtr.Zero && window.IsVisible && !WindowHelper.IsWindowCloaked(window.Hwnd),
+                timeoutMS: 5_000,
+                requiredConsecutiveMatches: 2,
+                pollIntervalMS: 100);
+            if (preview.Succeeded)
             {
-                WindowControl.WaitForForeground(new IntPtr(preview.WindowHandle), 2_000);
-                return preview;
+                WindowControl.WaitForForeground(preview.LastObservation.Hwnd, 2_000);
+                return preview.LastObservation;
             }
         }
 
         Assert.Fail("Mouse Jump preview did not become visible after three show-event attempts.");
-        return null!;
+        return default;
     }
 
     private static WindowControl.ProcessWindow GetPreviewWindow()

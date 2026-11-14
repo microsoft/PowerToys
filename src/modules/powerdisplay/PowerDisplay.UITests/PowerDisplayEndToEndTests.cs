@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -466,12 +467,23 @@ public sealed partial class PowerDisplayEndToEndTests : UITestBase
                 UseShellExecute = true,
             }) ?? throw new InvalidOperationException("Explorer did not accept the Power Display test launcher.");
 
-            Assert.IsNotNull(
-                WindowsFinder.WaitForWindowByApp(
-                    "PowerToys.Settings",
-                    window => window.Title.Contains("PowerToys", StringComparison.OrdinalIgnoreCase),
-                    timeoutMS: 150_000),
-                "The shell-launched Runner did not open Settings. Verify VBScript and the .vbs file association, and inspect Runner startup logs.");
+            var startup = Stopwatch.StartNew();
+            var window = WindowsFinder.WaitForWindowByApp(
+                "PowerToys.Settings",
+                candidate => candidate.Title.Contains("PowerToys", StringComparison.OrdinalIgnoreCase),
+                timeoutMS: 150_000);
+            Assert.IsNotNull(window, "The shell-launched Runner did not open Settings. Verify VBScript and the .vbs file association, and inspect Runner startup logs.");
+
+            // Let the transient WinUI startup HWND settle before the base class binds its session.
+            var settings = Session.FromProcess(window.ProcessId.ToString(CultureInfo.InvariantCulture));
+            var remainingMS = (int)Math.Max(0, 150_000 - startup.ElapsedMilliseconds);
+            Assert.IsTrue(
+                remainingMS > 0 && WaitHelper.WaitForStable(
+                    () => settings.WaitForElement(By.AccessibilityId("InputOutputNavItem"), 1_000),
+                    ready => ready,
+                    remainingMS,
+                    2).Succeeded,
+                "Settings did not expose stable navigation before the startup deadline.");
         }
         finally
         {

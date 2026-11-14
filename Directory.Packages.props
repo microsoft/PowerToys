@@ -13,7 +13,6 @@
     <PackageVersion Include="boost" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.261027-build.2704" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.1" />
-    <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.2.251219" />
@@ -121,18 +120,12 @@
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="$(DotNetRuntimePackageVersion)" />
-    <!-- Security pin (CVE-2018-8292): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
-    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Numerics.Tensors" Version="10.0.2" />
-    <!-- Security pin (CVE-2019-0657, CVE-2019-0980, CVE-2019-0981): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
-    <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(DotNetRuntimePackageVersion)" />
-    <!-- Security pin (CVE-2019-0820): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
-    <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="ToolGood.Words.Pinyin" Version="3.1.0.3" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />

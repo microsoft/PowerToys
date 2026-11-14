@@ -227,6 +227,7 @@ $taskName = "PowerToys-InteractiveUiTest-$runId"
 $originalDacl = $null
 $recoveryOriginalDacl = $null
 $registered = $false
+$taskCompleted = $false
 try {
     New-Item -ItemType Directory -Path $ResultsDirectory -Force | Out-Null
     New-Item -ItemType Directory -Path $runDirectory | Out-Null
@@ -293,28 +294,41 @@ try {
     $timer = [Diagnostics.Stopwatch]::StartNew()
     $launchObserved = $false
     $schedulerLaunchObserved = $false
+    $observationFailures = 0
     Start-ScheduledTask -TaskName $taskName
     while ($true) {
         Start-Sleep -Seconds 5
-        $info = Get-ScheduledTaskInfo -TaskName $taskName
-        $task = Get-ScheduledTask -TaskName $taskName
-        $schedulerLaunchObserved = $schedulerLaunchObserved -or $task.State -eq 'Running' -or $info.LastRunTime.Year -ge 2000
-        $launchObserved = $launchObserved -or $schedulerLaunchObserved -or
-            (Test-Path -LiteralPath (Join-Path $runDirectory 'desktop.txt'))
-        # A writable status file alone is not completion evidence. Queued tasks are not terminal.
-        if ($task.State -in @('Ready', 'Disabled') -and $schedulerLaunchObserved) {
-            if (-not (Test-Path -LiteralPath $statusPath)) {
-                throw "Interactive task exited without status (result $($info.LastTaskResult)). Evidence: $runDirectory"
-            }
-            # Refresh the result after observing completion, not from a possibly running snapshot.
+        if ($timer.Elapsed.TotalMinutes -gt ($TimeoutMinutes + 1)) {
+            throw "Timed out waiting for the interactive test task. Evidence: $runDirectory"
+        }
+        try {
             $info = Get-ScheduledTaskInfo -TaskName $taskName
-            break
+            $task = Get-ScheduledTask -TaskName $taskName
+            $schedulerLaunchObserved = $schedulerLaunchObserved -or $task.State -eq 'Running' -or $info.LastRunTime.Year -ge 2000
+            $launchObserved = $launchObserved -or $schedulerLaunchObserved -or
+                (Test-Path -LiteralPath (Join-Path $runDirectory 'desktop.txt'))
+            # A writable status file alone is not completion evidence. Queued tasks are not terminal.
+            if ($task.State -in @('Ready', 'Disabled') -and $schedulerLaunchObserved) {
+                if (-not (Test-Path -LiteralPath $statusPath)) {
+                    throw "Interactive task exited without status (result $($info.LastTaskResult)). Evidence: $runDirectory"
+                }
+                # Refresh the result after observing completion, not from a possibly running snapshot.
+                $info = Get-ScheduledTaskInfo -TaskName $taskName
+                $taskCompleted = $true
+                break
+            }
+            $observationFailures = 0
+        }
+        catch [Microsoft.Management.Infrastructure.CimException], [ComponentModel.Win32Exception] {
+            $observationFailures++
+            Write-Warning "Could not observe interactive task '$taskName' ($observationFailures/3): $($_.Exception.Message). $($_.InvocationInfo.PositionMessage)"
+            if ($observationFailures -ge 3) {
+                throw
+            }
+            continue
         }
         if (-not $launchObserved -and $timer.Elapsed.TotalSeconds -gt 30) {
             throw "The test task never entered the interactive desktop. Evidence: $runDirectory"
-        }
-        if ($timer.Elapsed.TotalMinutes -gt ($TimeoutMinutes + 1)) {
-            throw "Timed out waiting for the interactive test task. Evidence: $runDirectory"
         }
     }
     $status = Get-Content -LiteralPath $statusPath -Raw | ConvertFrom-Json -NoEnumerate
@@ -353,7 +367,7 @@ try {
 finally {
     try {
         if ($registered) {
-            if ((Get-ScheduledTask -TaskName $taskName).State -in @('Running', 'Queued')) {
+            if (-not $taskCompleted -and (Get-ScheduledTask -TaskName $taskName).State -in @('Running', 'Queued')) {
                 Stop-ScheduledTask -TaskName $taskName
             }
             Unregister-ScheduledTask -TaskName $taskName -Confirm:$false

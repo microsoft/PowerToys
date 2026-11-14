@@ -50,8 +50,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reference the NEW harness only. NEVER reference ..\common\UITestAutomation\UITestAutomation.csproj.
-         Adjust the ..\ depth so it resolves from this project's folder to src\common. -->
+    <!-- Adjust the ..\ depth so it resolves from this project's folder to src\common. -->
     <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
   </ItemGroup>
 </Project>

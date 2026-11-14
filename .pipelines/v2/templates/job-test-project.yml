@@ -49,6 +49,11 @@ parameters:
   - name: umdfHidArm64Dedicated
     type: boolean
     default: false
+  # Split the selected UI suites across this many parallel agents (1 = today's single job).
+  - name: uiTestShardCount
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
 
 jobs:
 - job: Test${{ parameters.platform }}${{ parameters.configuration }}${{ parameters.jobSuffix }}
@@ -57,6 +62,9 @@ jobs:
   condition: ${{ parameters.condition }}
   timeoutInMinutes: 300
   cancelTimeoutInMinutes: 15
+  ${{ if gt(parameters.uiTestShardCount, 1) }}:
+    strategy:
+      parallel: ${{ parameters.uiTestShardCount }}
   variables:
     ${{ if or(eq(parameters.platform, 'x64Win10'), eq(parameters.platform, 'x64Win11')) }}:
       BuildPlatform: x64
@@ -151,6 +159,10 @@ jobs:
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
       if ($selection.Run) {
+        $imageDirectory = Get-MwbPrerequisiteDirectory "$(Common.TestResultsDirectory)" "$(System.JobId)"
+        $null = New-Item -ItemType Directory -Path $imageDirectory -Force
+        Get-MwbImageServicingReport | ConvertTo-Json -Depth 8 |
+          Set-Content -LiteralPath (Join-Path $imageDirectory 'image-servicing-job-start.json') -Encoding utf8
         $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
         try {
           if (-not ([Security.Principal.WindowsPrincipal]::new($identity)).IsInRole(
@@ -279,11 +291,6 @@ jobs:
 
   - template: steps-ensure-dotnet-version.yml
 
-  - pwsh: |-
-      & '$(build.sourcesdirectory)\.pipelines\InstallWinAppDriver.ps1'
-    displayName: Download and install WinAppDriver
-    condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
-
   # winappcli (winapp.exe) powers the Microsoft.PowerToys.UITest.Next harness and isn't baked
   # into the agent image yet. winget / App Installer isn't available on these agents, so download
   # the pinned standalone CLI from its GitHub release. Drop this step once the CLI is pre-staged.
@@ -366,7 +373,6 @@ jobs:
       )
       # Match exact project stems so unrelated names cannot opt into companion signing.
       $authenticatedSettingsIpcModules = @(
-        'AdvancedPaste-UITests',
         'AdvancedPaste.UITests.Next',
         'AltWindowCycle.UITests',
         'Awake.UITests',
@@ -374,21 +380,19 @@ jobs:
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
         'GrabAndMove.UITests',
-        'HostsEditor.UITests',
         'Hosts.UITests.Next',
         'ImageResizer.UITests',
         'LightSwitch.UITests.Next',
         'Microsoft.CmdPal.UITests.Next',
         'MouseWithoutBorders.UITests',
-        'MouseUtils.UITests',
         'MouseUtils.UITests.Next',
         'PowerAccent.UITests',
         'PowerDisplay.UITests',
         'PowerOCR.UITests.Next',
-        'PowerRename.UITests',
         'PowerRename.UITests.Next',
         'RegistryPreview.UITests',
         'ScreenRuler.UITests.Next',
+        'Settings.UITests',
         'ShortcutGuide.UITests',
         'Workspaces.UITests.Next',
         'ZoomIt.UITests'
@@ -508,43 +512,6 @@ jobs:
       env:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
-  # Start WinAppDriver once for the whole job — WinAppDriver's documented CI pattern
-  # (https://github.com/microsoft/WinAppDriver/blob/master/Docs/CI_AzureDevOps.md). Launching it
-  # detached gives it its own hidden console whose stdin blocks, so it stays alive for the run without
-  # stealing foreground from non-elevated apps under test. This also avoids reading EOF and exiting the
-  # moment it starts listening (the failure mode when a test host launches it as a child). The legacy
-  # UITest harness reuses an already-listening instance rather than
-  # relaunching it per test, so this removes the per-assembly launch cost. The winappcli-based .Next
-  # tests don't use WinAppDriver. Best-effort: if the pre-start fails, each assembly still launches its own.
-  - pwsh: |
-      $winapp = "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe"
-      if (Test-Path $winapp) {
-        Start-Process -FilePath $winapp -WindowStyle Hidden
-
-        $deadline = (Get-Date).AddSeconds(30)
-        $ready = $false
-        while (-not $ready -and (Get-Date) -lt $deadline) {
-          try {
-            $client = [System.Net.Sockets.TcpClient]::new()
-            $client.Connect('127.0.0.1', 4723)
-            $ready = $client.Connected
-            $client.Close()
-          } catch {
-            Start-Sleep -Milliseconds 500
-          }
-        }
-
-        if ($ready) {
-          Write-Host 'WinAppDriver is listening on 127.0.0.1:4723.'
-        } else {
-          Write-Host "##vso[task.logissue type=warning]WinAppDriver did not start listening on :4723 within 30s; tests will launch it themselves."
-        }
-      } else {
-        Write-Host "##vso[task.logissue type=warning]WinAppDriver not found at $winapp; tests will launch it themselves."
-      }
-    displayName: Start WinAppDriver (shared, persistent)
-    condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
-
   - pwsh: |
       $ErrorActionPreference = 'Stop'
       $runGenericUiTests = $env:RUN_GENERIC_UI_TESTS -eq 'true'
@@ -598,16 +565,64 @@ jobs:
         exit 1
       }
 
+      # Sharding: every parallel job packs the same suite list identically and keeps only its share.
+      $shardCount = if ($env:SHARD_COUNT) { [int]$env:SHARD_COUNT } else { 1 }
+      $shardIndex = 1
+      if ($shardCount -gt 1) {
+        $shardIndex = [int]$env:SHARD_INDEX
+        . "$(Build.SourcesDirectory)\.pipelines\UiTestShards.Common.ps1"
+        $candidates = @($entries | ForEach-Object { $_.Name -replace '\.runtimeconfig\.json$', '' })
+        if ($runMwbSandbox) { $candidates += 'MouseWithoutBorders.UITests' }
+        $mine = @(Get-UiTestShardSuites -Suites $candidates -ShardIndex $shardIndex -ShardCount $shardCount -Platform '$(TestPlatform)')
+        $entries = @($entries | Where-Object { $mine -contains ($_.Name -replace '\.runtimeconfig\.json$', '') })
+        if ($runMwbSandbox -and $mine -notcontains 'MouseWithoutBorders.UITests') {
+          # Another shard owns MWB; turn off its cleanup, diagnostics and TRX requirement here too.
+          $runMwbSandbox = $false
+          Write-Host "##vso[task.setvariable variable=RunMwbSandbox]false"
+        }
+        if ($entries.Count -eq 0 -and -not $runMwbSandbox) {
+          Write-Host "Shard $shardIndex/$shardCount has no suites to run."
+        }
+      }
+
       $resultsDir = "$(Common.TestResultsDirectory)"
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'PowerDisplay.UITests', 'Microsoft.CmdPal.UITests.Next', 'PowerOCR.UITests.Next', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'Microsoft.CmdPal.UITests.Next', 'MouseUtils.UITests.Next', 'PowerDisplay.UITests', 'PowerOCR.UITests.Next', 'Settings.UITests', 'Workspaces.UITests.Next')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
-      foreach ($rc in ($entries | Sort-Object FullName -Unique)) {
+      $mwbDispatched = $false
+      $runMwb = {
+        $mwbDispatched = $true
+        if ($runMwbSandbox) {
+          Write-Host "##[group]Run UI tests: MouseWithoutBorders.UITests"
+          try {
+            . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
+            Invoke-MwbUiTestSuite -RunId "$(System.JobId)" -ArtifactRoot $artifactRoot `
+              -ResultsDirectory $resultsDir -Platform "$(TestPlatform)" `
+              -SourceRevision "$(Build.SourceVersion)" -Configuration "$(BuildConfiguration)" `
+              -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
+            Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]true"
+          } catch {
+            Write-Host "##vso[task.logissue type=error]UI tests failed for MouseWithoutBorders.UITests: $($_.Exception.Message)"
+            $failed++
+          } finally {
+            Write-Host "##[endgroup]"
+          }
+        }
+      }
+      # Sandbox must finish before installing drivers; display topology is the last mutation.
+      $fixtureSuites = @((Get-UmdfFixtures).Suite)
+      $orderedEntries = $entries | Sort-Object @{
+        Expression = { $fixtureSuites.IndexOf(($_.Name -replace '\.runtimeconfig\.json$', '')) + 1 }
+      }, FullName
+      foreach ($rc in $orderedEntries) {
         $base = $rc.Name -replace '\.runtimeconfig\.json$', ''
+        if (-not $mwbDispatched -and $base -in $fixtureSuites) {
+          . $runMwb
+        }
         $dir = $rc.DirectoryName
         $exe = Join-Path $dir "$base.exe"
         $dll = Join-Path $dir "$base.dll"
@@ -626,7 +641,7 @@ jobs:
             $fixtureContext = Get-UmdfFixtureContext -Suite $base -RepositoryRoot "$(Build.SourcesDirectory)" `
               -ArtifactRoot $artifactRoot -Platform "$(BuildPlatform)" `
               -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory $resultsDir
-            Start-UmdfFixture -Context $fixtureContext
+            Start-UmdfFixture -Context $fixtureContext -RequireFreshGuest
           }
           if ($base -eq 'LightSwitch.UITests.Next') {
             try {
@@ -657,11 +672,15 @@ jobs:
         } catch {
           Write-Host "##vso[task.logissue type=error]UI tests failed for ${base}: $($_.Exception.Message)"
           $suiteFailed = $true
+          if ($nonElevatedSuites -contains $base) {
+            # A failed launcher may leave a desktop worker alive; do not overlap another suite.
+            throw
+          }
         } finally {
           try {
             if ($null -ne $fixtureContext) {
               try {
-                Stop-UmdfFixture -Context $fixtureContext
+                Stop-UmdfFixture -Context $fixtureContext -DeferRemovalToVmDisposal
               } catch {
                 Write-Host "##vso[task.logissue type=error]UMDF fixture cleanup failed for ${base}: $($_.Exception.Message)"
                 $suiteFailed = $true
@@ -685,32 +704,18 @@ jobs:
         }
       }
 
-      # MWB stays last and uses its bounded, isolated executor, not direct elevated MTP dispatch.
-      if ($runMwbSandbox) {
-        Write-Host "##[group]Run UI tests: MouseWithoutBorders.UITests"
-        try {
-          . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
-          Invoke-MwbUiTestSuite -RunId "$(System.JobId)" -ArtifactRoot $artifactRoot `
-            -ResultsDirectory $resultsDir -Platform "$(TestPlatform)" `
-            -SourceRevision "$(Build.SourceVersion)" -Configuration "$(BuildConfiguration)" `
-            -CertificateMarkerPath "$(Agent.WorkFolder)\PowerToysUiTestState\SigningCertificates.txt"
-          Write-Host "##vso[task.setvariable variable=MwbUiTestsPassed]true"
-        } catch {
-          Write-Host "##vso[task.logissue type=error]UI tests failed for MouseWithoutBorders.UITests: $($_.Exception.Message)"
-          $failed++
-        } finally {
-          Write-Host "##[endgroup]"
-        }
+      if (-not $mwbDispatched) {
+        . $runMwb
       }
-      if ($env:MWB_SELECTION_BLOCKED -eq 'true') {
+      if ($shardIndex -eq 1 -and $env:MWB_SELECTION_BLOCKED -eq 'true') {
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: MWB requires the selected revision's shared Release runtime bundle (buildNow or buildNowSlim). Older official/installed builds are not substituted; other selected suites run independently."
         $failed++
       }
-      if ($env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
+      if ($shardIndex -eq 1 -and $env:UMDF_HID_SELECTION_BLOCKED -eq 'true') {
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: explicitly selected GrabAndMove.UITests requires the configured dedicated ARM64 UMDF pool/image. No boot policies are changed; other selected suites run independently."
         $failed++
       }
-      if ($env:UMDF_DISPLAY_SELECTION_BLOCKED -eq 'true') {
+      if ($shardIndex -eq 1 -and $env:UMDF_DISPLAY_SELECTION_BLOCKED -eq 'true') {
         Write-Host "##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerDisplay.UITests requires the isolated architecture-matched UMDF image. No boot policies are changed."
         $failed++
       }
@@ -734,6 +739,8 @@ jobs:
       EXCLUDE_UMDF_DISPLAY_SUITE: $(ExcludeUmdfDisplaySuite)
       UMDF_DISPLAY_SELECTION_BLOCKED: $(UmdfDisplaySelectionBlocked)
       POWERDISPLAY_UI_TEST_FILTER: $(PowerDisplayUiTestFilter)
+      SHARD_COUNT: ${{ parameters.uiTestShardCount }}
+      SHARD_INDEX: $(System.JobPositionInPhase)
       POWER_OCR_LANGUAGES_READY: $(PowerOcrLanguagesReady)
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
@@ -745,7 +752,8 @@ jobs:
       try {
         Restore-UmdfFixtures -RepositoryRoot "$(Build.SourcesDirectory)" `
           -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" -Platform "$(BuildPlatform)" `
-          -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory "$(Common.TestResultsDirectory)"
+          -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory "$(Common.TestResultsDirectory)" `
+          -DeferRemovalToVmDisposal
       } catch {
         Write-Host "##vso[task.logissue type=error]$($_.Exception.Message)"
         $failures++
@@ -785,7 +793,7 @@ jobs:
 
   - task: PublishPipelineArtifact@1
     displayName: Publish UI-test diagnostics
-    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'), or(failed(), canceled(), ne(variables['MwbUiTestsPassed'], 'true'), ne(variables['UiTestCleanupComplete'], 'true')))
+    condition: and(always(), eq(variables['RunMwbSandbox'], 'true'))
     inputs:
       targetPath: '$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)'
       artifactName: ui-test-diagnostics-$(TestPlatform)-$(System.JobId)
@@ -799,13 +807,6 @@ jobs:
       mergeTestResults: true
       failTaskOnFailedTests: true
       failTaskOnMissingResultsFile: $(RunMwbSandbox)
-
-  # Stop the shared WinAppDriver (paired with the start step above) so it doesn't linger on the
-  # self-hosted agent between jobs. Best-effort and always runs.
-  - pwsh: |
-      Get-Process -Name 'WinAppDriver' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
-    displayName: Stop WinAppDriver
-    condition: and(always(), eq(variables['RunGenericUiTests'], 'true'))
 
   - pwsh: |
       & "$(build.sourcesdirectory)\.pipelines\removeTestSigningCertificates.ps1" `

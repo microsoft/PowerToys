@@ -50,7 +50,23 @@ parameters:
     type: boolean
     default: false
     displayName: "Experimental UMDF HID smoke only (no PowerToys build)"
-
+  # Scale UI tests out: number of parallel test agents (shards) per test platform, 1-6.
+  # 1 keeps the single job per platform. Suites are balanced via .pipelines\uiTestDurations.json.
+  - name: uiTestShardsX64Win10
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
+    displayName: "UI test shards: x64 Win10"
+  - name: uiTestShardsX64Win11
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
+    displayName: "UI test shards: x64 Win11"
+  - name: uiTestShardsArm64
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
+    displayName: "UI test shards: arm64"
 stages:
   - ${{ if eq(parameters.umdfHidSmokeOnly, true) }}:
     - template: pipeline-umdf-hid-smoke.yml
@@ -78,6 +94,9 @@ stages:
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             uiTestModules: ${{ parameters.uiTestModules }}
+            uiTestShardsX64Win10: ${{ parameters.uiTestShardsX64Win10 }}
+            uiTestShardsX64Win11: ${{ parameters.uiTestShardsX64Win11 }}
+            uiTestShardsArm64: ${{ parameters.uiTestShardsArm64 }}
 
       # Official build path: build UI tests only and download the selected official build.
       - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
@@ -92,3 +111,6 @@ stages:
             specificBuildId: ${{ parameters.specificBuildId }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             uiTestModules: ${{ parameters.uiTestModules }}
+            uiTestShardsX64Win10: ${{ parameters.uiTestShardsX64Win10 }}
+            uiTestShardsX64Win11: ${{ parameters.uiTestShardsX64Win11 }}
+            uiTestShardsArm64: ${{ parameters.uiTestShardsArm64 }}

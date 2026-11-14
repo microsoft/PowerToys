@@ -11,6 +11,29 @@ namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 public sealed class ModulePathsTests
 {
     [TestMethod]
+    [DoNotParallelize]
+    public void WorkspacesResolvesWinUiEditorUnderExplicitRuntimeRoot()
+    {
+        WithExecutablePaths((loose, packaged) =>
+        {
+            var root = Path.GetDirectoryName(loose)!;
+            var editor = Path.Combine(root, "WinUI3Apps", "PowerToys.WorkspacesEditor.exe");
+            Directory.CreateDirectory(Path.GetDirectoryName(editor)!);
+            File.WriteAllText(editor, "fixture");
+            var previousRoot = Environment.GetEnvironmentVariable("POWERTOYS_INSTALL_DIR");
+            try
+            {
+                Environment.SetEnvironmentVariable("POWERTOYS_INSTALL_DIR", root);
+                Assert.AreEqual(editor, ModulePaths.ExePathFor(PowerToysModule.Workspaces));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("POWERTOYS_INSTALL_DIR", previousRoot);
+            }
+        });
+    }
+
+    [TestMethod]
     public void LooseCommandPaletteDoesNotQueryRegisteredPackages()
     {
         WithExecutablePaths((loose, packaged) =>

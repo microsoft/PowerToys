@@ -20,6 +20,5 @@
   <ItemGroup>
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
-    <Compile Include="..\PowerOCR-UITests\CursorStateReader.cs" Link="CursorStateReader.cs" />
   </ItemGroup>
 </Project>

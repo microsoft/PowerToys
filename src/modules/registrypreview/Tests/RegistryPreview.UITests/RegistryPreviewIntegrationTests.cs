@@ -91,7 +91,22 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         explorer = OpenExplorer(folder);
         var preview = WaitForClassicContextMenuItem(explorer, fixture, ContextMenuCaption, timeoutMS: WindowTimeoutMS);
         Assert.IsNotNull(preview, $"Explorer did not offer '{ContextMenuCaption}' after Registry Preview was enabled.");
-        preview!.Invoke(msPostAction: 300);
+
+        var clickX = preview!.X + (preview.Width / 2);
+        var clickY = preview.Y + (preview.Height / 2);
+        Assert.AreEqual(
+            new IntPtr(explorer.WindowHandle),
+            WindowControl.GetForegroundWindowHandle(),
+            "Explorer lost foreground before the classic Preview menu click.");
+        Assert.IsTrue(
+            WindowControl.EnumerateProcessWindows([explorer.ProcessId]).Any(
+                popup => popup.IsVisible &&
+                    popup.ClassName == ShellMenu.ClassicWindowClassName &&
+                    WindowControl.IsPointOwnedByWindow(popup.Hwnd, clickX, clickY)),
+            $"The classic Preview popup did not own its item at ({clickX},{clickY}).");
+
+        // The owner retains foreground while a native popup tracks mouse input.
+        MouseHelper.LeftClickAt(clickX, clickY);
 
         var registryPreview = WindowsFinder.WaitForWindowByApp(
             RegistryPreviewProcessName,

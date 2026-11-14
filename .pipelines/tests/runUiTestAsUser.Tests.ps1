@@ -228,6 +228,8 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
         $state.TaskResult = 0
         $state.TaskResults = @()
         $state.InfoCalls = 0
+        $state.InfoFailures = 0
+        $state.TaskFailures = 0
         $state.StatusFields = @{ ExitCode = 0; Error = $null }
         $state.WriteStatus = $true
         $state.WrapStatusInArray = $false
@@ -291,10 +293,18 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
             }
         }
         Mock Get-ScheduledTask {
+            if ($state.TaskFailures -gt 0) {
+                $state.TaskFailures--
+                throw [ComponentModel.Win32Exception]::new(2)
+            }
             $index = [Math]::Max(0, [Math]::Min($state.PollIndex, $state.TaskStates.Count - 1))
             [pscustomobject]@{ State = $state.TaskStates[$index] }
         }
         Mock Get-ScheduledTaskInfo {
+            if ($state.InfoFailures -gt 0) {
+                $state.InfoFailures--
+                throw [Microsoft.Management.Infrastructure.CimException]::new('transient scheduler query failure')
+            }
             $result = $state.TaskResult
             if ($state.TaskResults.Count -gt 0) {
                 $result = $state.TaskResults[[Math]::Min($state.InfoCalls, $state.TaskResults.Count - 1)]
@@ -398,6 +408,37 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
         $LASTEXITCODE | Should Be 0
         Assert-MockCalled Start-Sleep -Times 3 -Exactly -Scope It
+    }
+
+    It 'retries <Failures> transient <Query> failures before confirming completion' -TestCases @(
+        @{ Query = 'InfoFailures'; Failures = 1 }
+        @{ Query = 'InfoFailures'; Failures = 2 }
+        @{ Query = 'TaskFailures'; Failures = 1 }
+        @{ Query = 'TaskFailures'; Failures = 2 }
+    ) {
+        param($Query, $Failures)
+        $state[$Query] = $Failures
+        $state.TaskStates = @('Ready', 'Ready', 'Ready')
+
+        & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory
+
+        $LASTEXITCODE | Should Be 0
+        Assert-MockCalled Start-Sleep -Times ($Failures + 1) -Exactly -Scope It
+        Assert-MockCalled Stop-ScheduledTask -Times 0 -Exactly -Scope It
+        Assert-MockCalled Unregister-ScheduledTask -Times 1 -Exactly -Scope It
+    }
+
+    It 'stops the worker and fails after three consecutive scheduler query errors' {
+        $state.InfoFailures = 3
+        $state.TaskStates = @('Running', 'Running', 'Running')
+
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory } |
+            Should Throw 'transient scheduler query failure'
+
+        Assert-MockCalled Start-Sleep -Times 3 -Exactly -Scope It
+        Assert-MockCalled Stop-ScheduledTask -Times 1 -Exactly -Scope It
+        Assert-MockCalled Unregister-ScheduledTask -Times 1 -Exactly -Scope It
+        $state.AclWrites[1].Dacl | Should Be $state.OriginalDacl
     }
 
     It 'rejects scheduler and status disagreement after the running task completes' {
@@ -536,13 +577,28 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 }
 
 Describe 'UI-test pipeline non-elevated dispatch' {
+    It 'stops dispatch after a launcher exception instead of overlapping desktop suites' {
+        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $handler = [regex]::Match($template,
+            '(?ms)^ {8}\} catch \{\r?\n(?<body> {10}Write-Host "##vso\[task\.logissue type=error\]UI tests failed for \$\{base\}:.*?)(?=^ {8}\} finally \{)').Groups['body'].Value
+        $handler | Should Not BeNullOrEmpty
+        $base = 'MouseUtils.UITests.Next'
+        $nonElevatedSuites = @($base)
+        $suiteFailed = $false
+        $dispatch = [scriptblock]::Create("try { throw 'injected launcher failure' } catch {`n$handler`n}")
+
+        { & $dispatch } | Should Throw 'injected launcher failure'
+    }
+
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
         @{ Suite = 'AdvancedPaste.UITests.Next' }
         @{ Suite = 'AltWindowCycle.UITests' }
         @{ Suite = 'CropAndLock.UITests' }
         @{ Suite = 'GrabAndMove.UITests' }
         @{ Suite = 'Microsoft.CmdPal.UITests.Next' }
+        @{ Suite = 'MouseUtils.UITests.Next' }
         @{ Suite = 'PowerOCR.UITests.Next' }
+        @{ Suite = 'Settings.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
         param($Suite)
@@ -585,33 +641,4 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         ($requiredAuthenticodeFiles -contains 'PowerToys.QuickAccess.exe') | Should Be $Expected
     }
 
-    It 'scopes Workspaces authenticated Settings IPC signing without changing other families' -TestCases @(
-        @{ Modules = @('AdvancedPaste.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @('AltWindowCycle.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('AltWindowCycle.UITests.Extra'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
-        @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('CropAndLock.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('GrabAndMove.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('Microsoft.CmdPal.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @('Microsoft.CmdPal.UITests.Next.Extra'); AllModules = $false; Expected = $false }
-        @{ Modules = @('PowerOCR.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @(); AllModules = $true; Expected = $true }
-    ) {
-        param($Modules, $AllModules, $Expected)
-
-        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $start = $template.IndexOf('      $selectedModules =')
-        $end = $template.IndexOf('      $requiredPackages =', $start)
-        $start | Should BeGreaterThan -1
-        $end | Should BeGreaterThan $start
-        $selection = $template.Substring($start, $end - $start).Replace('$(TestPlatform)', 'x64Win11')
-        $modulesRaw = if ($AllModules) { '' } else { $Modules -join ';' }
-        . ([scriptblock]::Create($selection))
-
-        $requiresAuthenticatedSettingsIpc | Should Be $Expected
-    }
 }

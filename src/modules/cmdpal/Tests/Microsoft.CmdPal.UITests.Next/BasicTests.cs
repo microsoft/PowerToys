@@ -82,7 +82,6 @@ public class BasicTests : CommandPaletteTestBase
     [TestCategory("CmdPal")]
     public void BasicTimeAndDateTest()
     {
-        using var diagnostics = BeginNavigationDiagnostics();
         SetSearchBox("time and date");
 
         var timeAndDateItem = CommandPaletteSession.Find<NavigationViewItem>("Time and date");
@@ -170,7 +169,6 @@ public class BasicTests : CommandPaletteTestBase
     [TestCategory("CmdPal")]
     public void BasicWindowsSettingsTest()
     {
-        using var diagnostics = BeginNavigationDiagnostics();
         SetSearchBox("Windows settings");
 
         var settingsItem = CommandPaletteSession.Find<NavigationViewItem>("Windows Settings");
