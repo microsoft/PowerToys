@@ -1,10 +1,15 @@
 # Pull request intake
 
 The workflow in `.github/workflows/pr-intake.yml` applies deterministic product
-labels to all pull requests and runs intake checks on non-draft pull requests.
+labels to same-repository pull requests and runs the same intake checks on forks.
 It does not call any AI model and does not execute any code from the pull
 request head; the Node script reads all pull request data through the GitHub
 API.
+`POST_COMMENT` selects PR feedback or the Actions job summary. Forks never
+attempt comments, labels or reviewer requests. The summary reuses the existing
+comment text; required intake findings fail summary-only runs. Same-repository
+branches retain automation, except the previously requested screenshot-reminder
+bypass. No telemetry documentation gate is introduced.
 
 ## Flow
 

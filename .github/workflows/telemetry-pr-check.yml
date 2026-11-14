@@ -3,7 +3,7 @@
 name: Telemetry PR Check
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, reopened, synchronize, ready_for_review]
   workflow_dispatch:
     inputs:
@@ -28,8 +28,23 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.event.pull_request.base.sha || github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - name: Choose feedback destination
+        id: feedback
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+        run: |
+          post_comment=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" \
+            --jq ".head.repo.full_name == \"$GITHUB_REPOSITORY\" and .base.repo.full_name == \"$GITHUB_REPOSITORY\"")
+          echo "post_comment=$post_comment" >> "$GITHUB_OUTPUT"
 
       - name: Detect telemetry event changes and comment PR
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
+          POST_COMMENT: ${{ steps.feedback.outputs.post_comment }}
         run: node .github/scripts/telemetry-pr-check.js
