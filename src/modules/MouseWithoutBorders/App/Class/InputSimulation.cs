@@ -10,6 +10,7 @@
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -30,6 +31,9 @@ namespace MouseWithoutBorders.Class
     internal class InputSimulation
     {
         public static InputInjector Injector;
+
+        private static readonly object RemoteKeyboardBypassLock = new();
+        private static readonly Dictionary<int, bool> RemoteKeyboardBypassPolicies = new();
 
         private InputSimulation()
         {
@@ -130,6 +134,46 @@ namespace MouseWithoutBorders.Class
             // skips key remaps, and the exact value also skips shortcut remaps.
             input.ki.dwExtraInfo = bypassKeyboardManager ? new System.IntPtr(0x101) : NativeMethods.GetMessageExtraInfo();
             return input;
+        }
+
+        internal static bool GetRemoteKeyboardBypassPolicy(KEYBDDATA kd, bool bypassKeyboardManager)
+        {
+            bool isKeyUp = (kd.dwFlags & (int)WM.LLKHF.UP) == (int)WM.LLKHF.UP;
+
+            lock (RemoteKeyboardBypassLock)
+            {
+                if (isKeyUp)
+                {
+                    if (RemoteKeyboardBypassPolicies.Remove(kd.wVk, out bool keyDownPolicy))
+                    {
+                        return keyDownPolicy;
+                    }
+
+                    return bypassKeyboardManager;
+                }
+
+                if (RemoteKeyboardBypassPolicies.TryGetValue(kd.wVk, out bool repeatedKeyPolicy))
+                {
+                    return repeatedKeyPolicy;
+                }
+
+                RemoteKeyboardBypassPolicies.Add(kd.wVk, bypassKeyboardManager);
+                return bypassKeyboardManager;
+            }
+        }
+
+        internal static bool ConsumeRemoteKeyboardBypassPolicy(int vkCode)
+        {
+            lock (RemoteKeyboardBypassLock)
+            {
+                return RemoteKeyboardBypassPolicies.Remove(vkCode, out bool bypassKeyboardManager)
+                    && bypassKeyboardManager;
+            }
+        }
+
+        internal static void SendRemoteKey(KEYBDDATA kd, bool bypassKeyboardManager)
+        {
+            SendKey(kd, GetRemoteKeyboardBypassPolicy(kd, bypassKeyboardManager));
         }
 
         internal static void SendKey(KEYBDDATA kd, bool bypassKeyboardManager = false)

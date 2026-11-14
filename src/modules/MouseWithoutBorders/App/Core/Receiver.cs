@@ -110,7 +110,7 @@ internal static class Receiver
                         return;
                     }
 
-                    InputSimulation.SendKey(package.Kd, Setting.Values.SuppressKeyboardManager);
+                    InputSimulation.SendRemoteKey(package.Kd, Setting.Values.SuppressKeyboardManager);
                 }
 
                 break;

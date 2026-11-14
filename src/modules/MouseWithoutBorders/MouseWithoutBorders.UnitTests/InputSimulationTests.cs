@@ -41,4 +41,28 @@ public sealed class InputSimulationTests
         Assert.AreEqual(remote.ki.wVk, local.ki.wVk);
         Assert.AreEqual(remote.ki.dwFlags, local.ki.dwFlags);
     }
+
+    [TestMethod]
+    public void RemoteKeyboardBypassPolicyRemainsStableWhileKeyIsHeld()
+    {
+        var keyDown = new KEYBDDATA { wVk = (int)VK.RCONTROL };
+        var keyUp = new KEYBDDATA { wVk = keyDown.wVk, dwFlags = (int)WM.LLKHF.UP };
+
+        Assert.IsFalse(InputSimulation.GetRemoteKeyboardBypassPolicy(keyDown, bypassKeyboardManager: false));
+        Assert.IsFalse(InputSimulation.GetRemoteKeyboardBypassPolicy(keyDown, bypassKeyboardManager: true));
+        Assert.IsFalse(InputSimulation.GetRemoteKeyboardBypassPolicy(keyUp, bypassKeyboardManager: true));
+
+        Assert.IsTrue(InputSimulation.GetRemoteKeyboardBypassPolicy(keyDown, bypassKeyboardManager: true));
+        Assert.IsTrue(InputSimulation.GetRemoteKeyboardBypassPolicy(keyUp, bypassKeyboardManager: false));
+    }
+
+    [TestMethod]
+    public void CleanupReleaseUsesTrackedRemoteBypassPolicy()
+    {
+        var keyDown = new KEYBDDATA { wVk = (int)VK.RMENU };
+
+        Assert.IsTrue(InputSimulation.GetRemoteKeyboardBypassPolicy(keyDown, bypassKeyboardManager: true));
+        Assert.IsTrue(InputSimulation.ConsumeRemoteKeyboardBypassPolicy(keyDown.wVk));
+        Assert.IsFalse(InputSimulation.ConsumeRemoteKeyboardBypassPolicy(keyDown.wVk));
+    }
 }
