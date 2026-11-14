@@ -39,9 +39,20 @@
                     </tkcontrols:SettingsCard>
                 </controls:GPOInfoControl>
                 <controls:SettingsGroup x:Uid="ZoomIt_BehaviorGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
-                    <tkcontrols:SettingsCard Name="ZoomItToggleShowTrayIcon" x:Uid="ZoomIt_Toggle_ShowTrayIcon">
+                    <tkcontrols:SettingsExpander
+                        Name="ZoomItToggleShowTrayIcon"
+                        x:Uid="ZoomIt_Toggle_ShowTrayIcon"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}"
+                        IsExpanded="False">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.ShowTrayIcon, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard
+                                x:Uid="ShowThemeAdaptiveTrayIcon"
+                                IsEnabled="{x:Bind ViewModel.ShowTrayIcon, Mode=OneWay}">
+                                <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
                 <controls:SettingsGroup x:Uid="ZoomIt_ZoomGroup" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                     <tkcontrols:SettingsExpander
