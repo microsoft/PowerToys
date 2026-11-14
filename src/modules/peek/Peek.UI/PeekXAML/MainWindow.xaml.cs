@@ -44,6 +44,7 @@ namespace Peek.UI
         /// </summary>
         private bool _isDeleteInProgress;
         private bool _exitAfterClose;
+        private bool _isUninitializing;
 
         private IntPtr _keyboardHookHandle;
         private NativeMethods.LowLevelKeyboardProc? _keyboardHookProc;
@@ -238,10 +239,22 @@ namespace Peek.UI
             PowerToysTelemetry.Log.WriteEvent(new OpenedEvent() { FileExtension = ViewModel.CurrentItem?.Extension ?? string.Empty, HotKeyToVisibleTimeMs = bootTime.ElapsedMilliseconds });
         }
 
-        private void Uninitialize()
+        private async void Uninitialize()
         {
+            if (_isUninitializing)
+            {
+                return;
+            }
+
+            _isUninitializing = true;
             try
             {
+                // Blank the WebView while it is still visible; otherwise it shows this file again on next open.
+                if (AppWindow.IsVisible)
+                {
+                    await FilePreviewer.ClearBrowserPreviewAsync();
+                }
+
                 // Keep teardown best-effort: one failure must not skip later cleanup
                 // or prevent the CLI/-FilePath exit-after-close contract.
                 TryRunUninitializeStep(UninstallKeyboardHook, nameof(UninstallKeyboardHook));
@@ -254,6 +267,7 @@ namespace Peek.UI
             }
             finally
             {
+                _isUninitializing = false;
                 if (_exitAfterClose)
                 {
                     Environment.Exit(0);
