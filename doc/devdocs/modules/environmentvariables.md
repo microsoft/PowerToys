@@ -70,6 +70,21 @@ EnvironmentVariableUILib            # Abstracted UI methods and implementations
 - This direct registry access approach is used because the Environment API automatically expands variables and has a timeout for notifications
 - When a profile variable has the same name as an existing User variable, a backup is created with the naming pattern: `VARIABLE_NAME_PowerToys_PROFILE_NAME`
 
+## Hosting the UI library
+
+`EnvironmentVariablesUILib` (`PowerToys.EnvironmentVariablesUILib`) can be hosted by any WinUI 3 app. Construct `MainViewModel` and pass it to `EnvironmentVariablesMainPage`.
+
+| Host provides | Default when `null` |
+|---|---|
+| `IEnvironmentVariablesService` | Required; use `new EnvironmentVariablesService(new FileSystem())` |
+| `IElevationHelper` | Current process token; no elevation request |
+| `ILogger`, `ITelemetry` | No-op |
+
+- **Group Policy**: the library reads `ConfigureEnabledUtilityEnvironmentVariables`, falling back to `ConfigureGlobalUtilityEnabledState`. When disabled, the page shows an error and loads or writes nothing. `EnvironmentVariablesPolicy.IsDisabled()` lets a host hide its entry point.
+- **Elevation**: unelevated hosts get read-only System variables. Implement `IElevationHelper.CanRequestElevation` and `RequestElevation()` to show a **Restart as administrator** button.
+- **Environment changes**: set `MainViewModel.EnvironmentState` to `EnvironmentMessageReceived` when the host window receives `WM_SETTINGCHANGE` for `Environment`.
+- **Shared with PowerToys, not configurable**: the profiles file (`%LOCALAPPDATA%\Microsoft\PowerToys\EnvironmentVariables\profiles.json`), the backup naming pattern and the `.pri` resource name.
+
 ## UI tests
 
 **Do not run this suite on a working machine.** Use a disposable VM: the PATH scenario temporarily
