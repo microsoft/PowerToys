@@ -173,6 +173,60 @@ namespace AltWindowCycleLogic
         return { left, top, left + layout.tileW, top + layout.tileH - layout.cardTrimBottom };
     }
 
+    // Hit-test a point in panel coordinates against the currently visible page of
+    // tiles. Returns the cycle-set index, or -1 when the point is in padding/gap
+    // or no tiles are shown. Used for mouse hover/click selection.
+    inline int HitTestTile(const OverlayLayout& layout, int pageStart, int windowCount, int x, int y)
+    {
+        if (windowCount <= 0 || layout.pageSize <= 0 || layout.cols <= 0 || pageStart < 0)
+        {
+            return -1;
+        }
+
+        const int pageEnd = (std::min)(pageStart + layout.pageSize, windowCount);
+        const int visibleCount = pageEnd - pageStart;
+        if (visibleCount <= 0)
+        {
+            return -1;
+        }
+
+        // Arithmetic grid hit-test (avoids per-tile PtInRect on every mouse move).
+        const int localX = x - layout.pad;
+        const int localY = y - layout.pad;
+        if (localX < 0 || localY < 0)
+        {
+            return -1;
+        }
+
+        const int strideX = layout.tileW + layout.gap;
+        const int strideY = layout.tileH + layout.gap;
+        if (strideX <= 0 || strideY <= 0)
+        {
+            return -1;
+        }
+
+        const int col = localX / strideX;
+        const int row = localY / strideY;
+        if (col < 0 || row < 0 || col >= layout.cols || row >= layout.rows)
+        {
+            return -1;
+        }
+
+        // Reject clicks that land in the gap between tiles.
+        if ((localX % strideX) >= layout.tileW || (localY % strideY) >= (layout.tileH - layout.cardTrimBottom))
+        {
+            return -1;
+        }
+
+        const int slot = row * layout.cols + col;
+        if (slot < 0 || slot >= visibleCount)
+        {
+            return -1;
+        }
+
+        return pageStart + slot;
+    }
+
     // Flush to the card's left/right/bottom edges, and now flush directly
     // under the header row too -- like the native Alt-Tab switcher's
     // thumbnail, with no inset padding on any side.
