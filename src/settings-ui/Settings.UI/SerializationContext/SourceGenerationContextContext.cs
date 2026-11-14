@@ -46,6 +46,7 @@ namespace Microsoft.PowerToys.Settings.UI.SerializationContext;
 [JsonSerializable(typeof(WorkspacesSettings))]
 [JsonSerializable(typeof(GrabAndMoveSettings))]
 [JsonSerializable(typeof(ZoomItSettings))]
+[JsonSerializable(typeof(SoundManagerSettings))]
 [JsonSerializable(typeof(PasteAIConfiguration))]
 [JsonSerializable(typeof(PasteAIProviderDefinition))]
 [JsonSerializable(typeof(System.Collections.ObjectModel.ObservableCollection<PasteAIProviderDefinition>))]

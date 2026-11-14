@@ -112,6 +112,7 @@ internal static class SettingsCliHelper
             "powerdisplay" => GpoApi.GetConfiguredPowerDisplayEnabledValue(),
             "zoomit" => GpoApi.GetConfiguredZoomItEnabledValue(),
             "grabandmove" => GpoApi.GetConfiguredGrabAndMoveEnabledValue(),
+            "soundmanager" => GpoApi.GetConfiguredSoundManagerEnabledValue(),
             _ => GpoRuleConfigured.Unavailable,
         };
     }

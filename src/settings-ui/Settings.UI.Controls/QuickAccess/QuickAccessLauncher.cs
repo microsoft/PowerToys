@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -12,10 +13,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
     public class QuickAccessLauncher : IQuickAccessLauncher
     {
         private readonly bool _isElevated;
+        private readonly Func<string, int>? _sendMessage;
 
-        public QuickAccessLauncher(bool isElevated)
+        public QuickAccessLauncher(bool isElevated, Func<string, int>? sendMessage = null)
         {
             _isElevated = isElevated;
+            _sendMessage = sendMessage;
         }
 
         public virtual bool Launch(ModuleType moduleType)
@@ -148,6 +151,14 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     }
 
                     return true;
+                case ModuleType.SoundManager:
+                    // The Sound Manager has no shared event, so the module is asked to open its window through the runner.
+                    if (_sendMessage == null)
+                    {
+                        return false;
+                    }
+
+                    return _sendMessage("{\"action\":{\"" + SoundManagerSettings.ModuleName + "\":{\"action_name\":\"open-sound-manager\",\"value\":\"\"}}}") == 0;
                 default:
                     return false;
             }

@@ -50,6 +50,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.ViewModel
             (PowerToysModules.RegistryPreview, false),
             (PowerToysModules.NewPlus, false),
             (PowerToysModules.ZoomIt, false),
+            (PowerToysModules.SoundManager, true),
             }
             .Select(x => new OobePowerToysModule
             {

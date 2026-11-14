@@ -275,6 +275,9 @@
             "PowerToys.GrabAndMove.exe",
             "PowerToys.GrabAndMoveModuleInterface.dll",
 
+            "WinUI3Apps\\PowerToys.SoundManager.exe",
+            "WinUI3Apps\\PowerToys.SoundManagerModuleInterface.dll",
+
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
             "WinUI3Apps\\PowerToys.Settings.Cli.dll",

@@ -58,6 +58,11 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
     public bool UpdateModuleEnabled(ModuleType moduleType, bool isEnabled)
         => TrySendIpcMessage($"{{\"module_status\": {{\"{ModuleHelper.GetModuleKey(moduleType)}\": {isEnabled.ToString().ToLowerInvariant()}}}}}", "module status update");
 
+    public int SendMessage(string payload)
+    {
+        return TrySendIpcMessage(payload, "action message") ? 0 : -1;
+    }
+
     public void ReportBug()
     {
         if (!TrySendIpcMessage("{\"bugreport\": 0 }", "bug report request"))

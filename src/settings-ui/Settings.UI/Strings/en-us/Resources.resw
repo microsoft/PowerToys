@@ -6982,4 +6982,141 @@ Text uses the current drawing color.</value>
   <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
     <value>Pairing could not be loaded or updated. Try again.</value>
   </data>
+  <data name="SoundManager.ModuleTitle" xml:space="preserve">
+    <value>Sound Manager</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager.ModuleDescription" xml:space="preserve">
+    <value>Sound Manager is a quick way to control your system volume, per-app volumes and audio devices from a single window.</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="Shell_SoundManager.Content" xml:space="preserve">
+    <value>Sound Manager</value>
+    <comment>Product name: Navigation view item name for Sound Manager</comment>
+  </data>
+  <data name="SoundManager_EnableToggleControl_HeaderText.Header" xml:space="preserve">
+    <value>Sound Manager</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_ActivationSettings.Header" xml:space="preserve">
+    <value>Activation</value>
+  </data>
+  <data name="SoundManager_ActivationSettings_Description.Text" xml:space="preserve">
+    <value>The shortcut that opens the Sound Manager window</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="SoundManager_ActivationShortcut.Description" xml:space="preserve">
+    <value>Customize the shortcut to bring up the Sound Manager window</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_ShortDescription" xml:space="preserve">
+    <value>Open Sound Manager</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_Ducking_GroupSettings.Header" xml:space="preserve">
+    <value>Calls and chats</value>
+  </data>
+  <data name="SoundManager_Ducking_GroupSettings_Description.Text" xml:space="preserve">
+    <value>What Windows does with the other sounds while a program is talking</value>
+    <comment>What happens to the other sounds when a program starts talking, such as a call</comment>
+  </data>
+  <data name="SoundManager_DuckingToggle.Header" xml:space="preserve">
+    <value>Lower the other sounds during calls</value>
+  </data>
+  <data name="SoundManager_DuckingToggle.Description" xml:space="preserve">
+    <value>Windows holds the other sounds down while a program is talking</value>
+    <comment>What happens to the other sounds when a program starts talking, such as a call</comment>
+  </data>
+  <data name="SoundManager_DuckingAmount.Header" xml:space="preserve">
+    <value>How much to lower them</value>
+  </data>
+  <data name="SoundManager_DuckingAmount.Description" xml:space="preserve">
+    <value>How far the other sounds are lowered during a call</value>
+    <comment>How far the other sounds are lowered while a program is talking</comment>
+  </data>
+  <data name="SoundManager_Ducking_MuteOthers" xml:space="preserve">
+    <value>Mute the others</value>
+  </data>
+  <data name="SoundManager_Ducking_LowerBy80" xml:space="preserve">
+    <value>Lower by 80%</value>
+  </data>
+  <data name="SoundManager_Ducking_LowerBy50" xml:space="preserve">
+    <value>Lower by 50%</value>
+  </data>
+  <data name="SoundManager_Launch_GroupSettings.Header" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="SoundManager_Launch_GroupSettings_Description.Text" xml:space="preserve">
+    <value>Open the window without the shortcut</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_LaunchButtonControl.Header" xml:space="preserve">
+    <value>Open Sound Manager</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_LaunchButtonControl.Description" xml:space="preserve">
+    <value>Show the Sound Manager window</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_MuteShortcuts_GroupSettings.Header" xml:space="preserve">
+    <value>Shortcuts</value>
+  </data>
+  <data name="SoundManager_MuteShortcuts_GroupSettings_Description.Text" xml:space="preserve">
+    <value>Shortcuts that mute one program each</value>
+    <comment>Shortcuts that silence one program, each one of its own</comment>
+  </data>
+  <data name="SoundManager_MuteShortcuts.Header" xml:space="preserve">
+    <value>Mute toggle shortcuts</value>
+    <comment>Shortcuts that silence one program, each one of its own</comment>
+  </data>
+  <data name="SoundManager_MuteShortcuts.Description" xml:space="preserve">
+    <value>Add a program to give it a shortcut that mutes it</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="SoundManager_MuteShortcuts_AddButton.Content" xml:space="preserve">
+    <value>Add program</value>
+  </data>
+  <data name="SoundManager_MuteShortcuts_RemoveButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Take the shortcut of this program away</value>
+  </data>
+  <data name="SoundManager_MuteShortcuts_RemoveButtonTooltip.Text" xml:space="preserve">
+    <value>Take the shortcut of this program away</value>
+  </data>
+  <data name="SoundManager_MuteShortcuts_PickerTitle" xml:space="preserve">
+    <value>Choose a program</value>
+  </data>
+  <data name="SoundManager_MuteShortcuts_PickerAdd" xml:space="preserve">
+    <value>Add</value>
+  </data>
+  <data name="SoundManager_MuteShortcuts_PickerCancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="SoundManager_ProgramSearchBox.PlaceholderText" xml:space="preserve">
+    <value>Search for a program</value>
+  </data>
+  <data name="SoundManager_ProgramPicker_NothingPlaying.Text" xml:space="preserve">
+    <value>No program is playing audio right now.</value>
+  </data>
+  <data name="SoundManager_ProgramPicker_NoMatch.Text" xml:space="preserve">
+    <value>No program matches the search.</value>
+  </data>
+  <data name="Oobe_SoundManager.Title" xml:space="preserve">
+    <value>Sound Manager</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_SoundManager.Description" xml:space="preserve">
+    <value>Sound Manager is a quick way to control your system volume, per-app volumes and audio devices from a single window.</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="Oobe_SoundManager_HowToUse.Text" xml:space="preserve">
+    <value>to open the Sound Manager window.</value>
+    <comment>"Sound Manager" is the name of the utility</comment>
+  </data>
+  <data name="LearnMore_SoundManager.Text" xml:space="preserve">
+    <value>Learn more about Sound Manager</value>
+    <comment>"Sound Manager" is a product name, do not localize</comment>
+  </data>
 </root>

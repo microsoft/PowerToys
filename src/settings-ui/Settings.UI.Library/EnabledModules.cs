@@ -629,6 +629,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool soundManager; // defaulting to off
+
+        [JsonPropertyName("Sound Manager")]
+        public bool SoundManager
+        {
+            get => soundManager;
+            set
+            {
+                if (soundManager != value)
+                {
+                    LogTelemetryEvent(value);
+                    soundManager = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

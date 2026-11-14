@@ -72,6 +72,7 @@
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Run.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Run.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Settings.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Settings.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\ShortcutGuide.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\ShortcutGuide.wxs.bk""""
+      call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\SoundManager.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\SoundManager.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\Tools.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\Tools.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinAppSDK.wxs.bk""""
       call cmd /C "copy ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs"" ""$(ProjectDir)..\PowerToysSetupVNext\WinUI3Applications.wxs.bk""""

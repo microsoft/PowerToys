@@ -17,6 +17,7 @@ namespace winrt::PowerToys::GPOWrapper::implementation
         static GpoRuleConfigured GetConfiguredLightSwitchEnabledValue();
         static GpoRuleConfigured GetConfiguredPowerDisplayEnabledValue();
         static GpoRuleConfigured GetConfiguredGrabAndMoveEnabledValue();
+        static GpoRuleConfigured GetConfiguredSoundManagerEnabledValue();
         static GpoRuleConfigured GetConfiguredFancyZonesEnabledValue();
         static GpoRuleConfigured GetConfiguredFileLocksmithEnabledValue();
         static GpoRuleConfigured GetConfiguredSvgPreviewEnabledValue();
