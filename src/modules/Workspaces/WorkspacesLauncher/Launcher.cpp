@@ -19,14 +19,20 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_project(project),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
-    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1),
-                                                options.operationId, options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)),
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(
         std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1),
         options.operationId)),
     m_launchingStatus(m_project),
     m_options(options)
 {
+    // The helper starts IPC workers. Publish it only after the launch state is initialized.
+    {
+        std::lock_guard lock(m_uiHelperMutex);
+        m_uiHelper = std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1),
+                                                        options.operationId,
+                                                        options.presentation == WorkspacesSession::Presentation::ConfirmationOnly);
+    }
+
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
@@ -70,7 +76,13 @@ Launcher::~Launcher()
     // Stop callbacks while all launch state and synchronization objects are still alive.
     m_windowArrangerHelper->StopCallbacks();
     m_windowArrangerHelper.reset();
-    m_uiHelper.reset();
+    std::unique_ptr<LauncherUIHelper> uiHelper;
+    {
+        std::lock_guard lock(m_uiHelperMutex);
+        uiHelper = std::move(m_uiHelper);
+    }
+    // Destruction joins IPC callbacks, which may need the helper mutex.
+    uiHelper.reset();
     if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
         return;
     // main thread, will wait until arranger is finished
@@ -299,6 +311,23 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
     }
     if (message->type == LauncherUiMessage::Type::Cancel)
     {
+        // Queue the acknowledgement before cancellation can tear down the helper.
+        try
+        {
+            std::lock_guard lock(m_uiHelperMutex);
+            if (m_uiHelper)
+            {
+                m_uiHelper->AcknowledgeCancellation();
+            }
+        }
+        catch (const winrt::hresult_error& error)
+        {
+            Logger::warn(L"Unable to acknowledge Workspaces cancellation: {}", error.message());
+        }
+        catch (const std::exception& error)
+        {
+            Logger::warn("Unable to acknowledge Workspaces cancellation: {}", error.what());
+        }
         m_uiCanceled = true;
         if (!SetEvent(m_options.cancelEvent))
             Logger::error(L"Unable to signal session cancellation: {}", GetLastError());

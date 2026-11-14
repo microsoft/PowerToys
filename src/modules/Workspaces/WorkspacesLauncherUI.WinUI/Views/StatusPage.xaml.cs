@@ -22,7 +22,7 @@ namespace WorkspacesLauncherUI.Views
         public MainViewModel ViewModel { get; private set; }
 
         /// <summary>
-        /// Raised when the user clicks Cancel or Dismiss and the hosting window should close.
+        /// Raised when the user clicks Dismiss and the hosting window should close.
         /// </summary>
         public event EventHandler CloseRequested;
 

@@ -189,6 +189,10 @@
     <value>Copy details</value>
     <comment>Button inside the warning's Details section. Copies the displayed app name, location, verification reason, command-line arguments, and Windows status to the clipboard. It does not approve or launch the app.</comment>
   </data>
+  <data name="SignatureWarningCopyDetailsAcknowledgement" xml:space="preserve">
+    <value>OK</value>
+    <comment>Acknowledges a clipboard copy error and closes only the error message. The application launch decision is unchanged. Do not translate as skipping the app or canceling the workspace.</comment>
+  </data>
   <data name="SignatureWarningCopyDetailsError" xml:space="preserve">
     <value>Could not copy the details to the clipboard. Try again.</value>
     <comment>Error when the Copy details action cannot access the Windows clipboard, for example because another app is using it. The launch decision is unchanged.</comment>

@@ -20,6 +20,9 @@ namespace WorkspacesLauncherUI.UnitTests
     {
         private const string FirstId = "{A1111111-B111-C111-D111-E11111111111}";
         private const string SecondId = "{A2222222-B222-C222-D222-E22222222222}";
+        private const string CancelAccepted = "{\"type\":\"cancel-accepted\"}";
+        private static readonly string[] ExpectedCancelCloseActions = { "cancel", "close" };
+        private static readonly string[] ExpectedCancelMessages = { "cancel" };
 
         [TestMethod]
         public void MissingConfirmationOwnerCannotBeWatched()
@@ -182,6 +185,211 @@ namespace WorkspacesLauncherUI.UnitTests
             session.Windows[1].Render();
             session.Windows[1].Choose(true);
             CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run"), Shown(SecondId), Response(SecondId, "run") }, session.Messages);
+        }
+
+        [TestMethod]
+        public void CancelCommandWaitsForAcknowledgementBeforeClosingOwner()
+        {
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            var pendingStates = new List<bool>();
+            var interactionChanged = false;
+            session.ViewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(MainViewModel.IsCancellationPending))
+                {
+                    pendingStates.Add(session.ViewModel.IsCancellationPending);
+                }
+
+                if (args.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
+                {
+                    interactionChanged = true;
+                }
+            };
+            session.OnSend = actions.Add;
+            session.OnClose = () =>
+            {
+                actions.Add("close");
+                session.ViewModel.Dispose();
+            };
+            var receive = App.IPCMessageReceivedCallback;
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelMessages, actions);
+            Assert.IsTrue(session.OwnerVisible);
+            Assert.IsTrue(session.ViewModel.IsCancellationPending);
+            Assert.IsFalse(session.ViewModel.IsInteractionEnabled);
+            Assert.IsTrue(interactionChanged);
+            Assert.IsFalse(session.CancellationTimer.IsDisposed);
+            Assert.IsNotNull(App.IPCMessageReceivedCallback);
+
+            session.Receive(CancelAccepted);
+            session.Drain();
+            receive(CancelAccepted);
+            session.Drain();
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            Assert.AreEqual(2, pendingStates.Count);
+            Assert.IsTrue(pendingStates[0]);
+            Assert.IsFalse(pendingStates[1]);
+        }
+
+        [TestMethod]
+        public void CancellationAcknowledgementIsIgnoredBeforeCancelRequest()
+        {
+            using var session = new WarningSession();
+
+            session.Receive(CancelAccepted);
+            session.Drain();
+
+            Assert.IsTrue(session.OwnerVisible);
+            Assert.IsTrue(session.ViewModel.IsInteractionEnabled);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsNull(session.CancellationTimer);
+            Assert.AreEqual(0, session.Messages.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("not-json")]
+        [DataRow("{}")]
+        [DataRow("{\"type\":null}")]
+        [DataRow("{\"type\":\"dismiss-warning\",\"requestId\":\"wrong\"}")]
+        public void OtherMessagesCannotCompletePendingCancellation(string message)
+        {
+            using var session = new WarningSession();
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            session.Receive(message);
+            session.Drain();
+
+            Assert.IsTrue(session.OwnerVisible);
+            Assert.IsTrue(session.ViewModel.IsCancellationPending);
+            Assert.IsFalse(session.CancellationTimer.IsDisposed);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+        }
+
+        [TestMethod]
+        public void CancelSendFailureClosesOwnerWithoutWaitingForAcknowledgement()
+        {
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            session.OnSend = message =>
+            {
+                actions.Add(message);
+                throw new InvalidOperationException("Test cancellation send failure.");
+            };
+            session.OnClose = () =>
+            {
+                actions.Add("close");
+                session.ViewModel.Dispose();
+            };
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+        }
+
+        [TestMethod]
+        public void CancellationTimeoutClosesOwnerOnceWithoutAcknowledgement()
+        {
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            session.OnSend = actions.Add;
+            session.OnClose = () => actions.Add("close");
+            var receive = App.IPCMessageReceivedCallback;
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            session.CancellationTimer.Fire();
+            session.Drain();
+            receive(CancelAccepted);
+            session.CancellationTimer.Fire();
+            session.Drain();
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+        }
+
+        [TestMethod]
+        public void DisposePendingCancellationIgnoresQueuedTimeoutAndAcknowledgement()
+        {
+            using var session = new WarningSession();
+            var closeRequested = false;
+            session.OnClose = () => closeRequested = true;
+            var receive = App.IPCMessageReceivedCallback;
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            session.CancellationTimer.Fire();
+
+            session.ViewModel.Dispose();
+            receive(CancelAccepted);
+            session.Drain();
+
+            Assert.IsFalse(closeRequested);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+        }
+
+        [TestMethod]
+        public void ReentrantCancelCommandRequestsCancellationAndOwnerCloseOnlyOnce()
+        {
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            session.OnSend = message =>
+            {
+                actions.Add(message);
+                session.ViewModel.CancelLaunchCommand.Execute(null);
+            };
+            session.OnClose = () =>
+            {
+                actions.Add("close");
+                session.ViewModel.Dispose();
+                session.ViewModel.CancelLaunchCommand.Execute(null);
+            };
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, actions);
+            Assert.IsTrue(session.ViewModel.IsCancellationPending);
+            session.Receive(CancelAccepted);
+            session.Drain();
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+        }
+
+        [TestMethod]
+        public void CancelCommandDoesNothingAfterOwnerDisposesViewModel()
+        {
+            using var session = new WarningSession();
+            var closeRequested = false;
+            session.OnClose = () => closeRequested = true;
+            session.ViewModel.Dispose();
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            Assert.AreEqual(0, session.Messages.Count);
+            Assert.IsFalse(closeRequested);
         }
 
         [DataTestMethod]
@@ -364,7 +572,16 @@ namespace WorkspacesLauncherUI.UnitTests
                     },
                     (action, high) => (high ? _high : _normal).Enqueue(action),
                     () => confirmationOnly || OwnerVisible,
-                    () => OwnerVisible = false);
+                    () =>
+                    {
+                        OwnerVisible = false;
+                        OnClose?.Invoke();
+                    },
+                    createCancellationTimer: callback =>
+                    {
+                        CancellationTimer = new TestCancellationTimer(callback);
+                        return CancellationTimer;
+                    });
             }
 
             internal MainViewModel ViewModel { get; }
@@ -375,7 +592,11 @@ namespace WorkspacesLauncherUI.UnitTests
 
             internal List<TestWarningWindow> Windows { get; } = new List<TestWarningWindow>();
 
+            internal TestCancellationTimer CancellationTimer { get; private set; }
+
             internal Action OnCreate { get; set; }
+
+            internal Action OnClose { get; set; }
 
             internal Action<string> OnSend { get; set; }
 
@@ -390,6 +611,28 @@ namespace WorkspacesLauncherUI.UnitTests
             }
 
             public void Dispose() => ViewModel.Dispose();
+        }
+
+        private sealed class TestCancellationTimer : IDisposable
+        {
+            private readonly Action _callback;
+
+            internal TestCancellationTimer(Action callback)
+            {
+                _callback = callback;
+            }
+
+            internal bool IsDisposed { get; private set; }
+
+            internal void Fire()
+            {
+                if (!IsDisposed)
+                {
+                    _callback();
+                }
+            }
+
+            public void Dispose() => IsDisposed = true;
         }
 
         private sealed class TestWarningWindow : ISignatureWarningWindow

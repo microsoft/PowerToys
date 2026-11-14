@@ -15,6 +15,7 @@ public:
     bool IsRunning() const;
     bool RequestApproval(const std::wstring& requestId, const std::wstring& name, const std::wstring& path, const std::wstring& arguments, const SignatureVerification::Result& result) const;
     void DismissApproval(const std::wstring& requestId) const;
+    void AcknowledgeCancellation() const;
 
 private:
     DWORD m_processId;

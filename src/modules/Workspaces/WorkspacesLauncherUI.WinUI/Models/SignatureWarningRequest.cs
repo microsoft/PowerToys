@@ -63,6 +63,8 @@ namespace WorkspacesLauncherUI.Models
 
         public string CopyDetailsButtonText => Resources.SignatureWarningCopyDetails;
 
+        public string CopyDetailsAcknowledgementText => Resources.SignatureWarningCopyDetailsAcknowledgement;
+
         public string CopyDetailsErrorText => Resources.SignatureWarningCopyDetailsError;
 
         public string DetailsText => string.Join(

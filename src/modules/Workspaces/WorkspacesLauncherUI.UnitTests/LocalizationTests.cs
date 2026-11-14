@@ -76,6 +76,7 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataRow(nameof(SignatureWarningRequest.RunAnywayText), nameof(Resources.SignatureWarningRunAnyway))]
         [DataRow(nameof(SignatureWarningRequest.RunAnywayHelp), nameof(Resources.SignatureWarningRunAnywayHelp))]
         [DataRow(nameof(SignatureWarningRequest.CopyDetailsButtonText), nameof(Resources.SignatureWarningCopyDetails))]
+        [DataRow(nameof(SignatureWarningRequest.CopyDetailsAcknowledgementText), nameof(Resources.SignatureWarningCopyDetailsAcknowledgement))]
         [DataRow(nameof(SignatureWarningRequest.CopyDetailsErrorText), nameof(Resources.SignatureWarningCopyDetailsError))]
         public void LabelAndActionUseExpectedNonemptyResource(string propertyName, string resourceKey)
         {

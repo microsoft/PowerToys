@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.Runtime.InteropServices;
 
 using ManagedCommon;
@@ -23,6 +24,7 @@ namespace WorkspacesLauncherUI
         public StatusWindow(MainViewModel mainViewModel)
         {
             this.InitializeComponent();
+            RootGrid.FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             StatusPageView.Initialize(mainViewModel);
 
             ExtendsContentIntoTitleBar = true;
@@ -93,6 +95,12 @@ namespace WorkspacesLauncherUI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
+            if (StatusPageView.ViewModel?.IsCancellationPending == true)
+            {
+                args.Handled = true;
+                return;
+            }
+
             StatusPageView.ViewModel?.Dispose();
             (Application.Current as App)?.OnMainWindowClosed();
         }
