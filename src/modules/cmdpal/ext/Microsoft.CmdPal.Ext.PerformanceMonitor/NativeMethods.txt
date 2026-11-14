@@ -10,6 +10,7 @@ IDXGIFactory1
 IDXGIAdapter1
 DXGI_ADAPTER_DESC1
 GetIfTable2
+GetIpInterfaceTable
 FreeMibTable
 NtQuerySystemInformation
 SYSTEM_PROCESS_INFORMATION

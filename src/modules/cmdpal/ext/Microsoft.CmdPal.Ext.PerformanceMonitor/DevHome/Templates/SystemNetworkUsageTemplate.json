@@ -78,7 +78,68 @@
         {
           "text": "${networkName}",
           "type": "TextBlock",
-          "size": "medium"
+          "size": "medium",
+          "wrap": true
+        },
+        {
+          "type": "Container",
+          "$when": "${networkDescription != null}",
+          "items": [
+            {
+              "text": "%NetworkUsage_Widget_Template/Description%",
+              "type": "TextBlock",
+              "size": "small",
+              "isSubtle": true
+            },
+            {
+              "text": "${networkDescription}",
+              "type": "TextBlock",
+              "spacing": "small",
+              "wrap": true
+            }
+          ]
+        },
+        {
+          "type": "ColumnSet",
+          "$when": "${networkType != null}",
+          "columns": [
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "text": "%NetworkUsage_Widget_Template/Type%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${networkType}",
+                  "type": "TextBlock",
+                  "spacing": "small",
+                  "wrap": true
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "items": [
+                {
+                  "text": "%NetworkUsage_Widget_Template/Status%",
+                  "type": "TextBlock",
+                  "size": "small",
+                  "isSubtle": true
+                },
+                {
+                  "text": "${networkStatus}",
+                  "type": "TextBlock",
+                  "spacing": "small",
+                  "wrap": true
+                }
+              ]
+            }
+          ]
         }
       ]
     }
