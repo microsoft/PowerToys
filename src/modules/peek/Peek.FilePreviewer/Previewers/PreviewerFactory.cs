@@ -38,6 +38,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new AudioPreviewer(item);
             }
+            else if (Peek.FilePreviewer.Previewers.EmailPreviewer.EmailPreviewer.IsItemSupported(item))
+            {
+                return new Peek.FilePreviewer.Previewers.EmailPreviewer.EmailPreviewer(item);
+            }
             else if (WebBrowserPreviewer.IsItemSupported(item))
             {
                 return new WebBrowserPreviewer(item, _previewSettings);
