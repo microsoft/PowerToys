@@ -13,7 +13,6 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -34,7 +33,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
         public void CommandLineArgumentsReachUnpackagedAndPackagedApps(bool packaged)
@@ -75,7 +73,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void DesktopShortcutTracksFilePresenceAndLaunchesWorkspace()
         {
             var title = State.Prefix + "-shortcut";
@@ -86,7 +83,7 @@ namespace Microsoft.Workspaces.UITests
             var shortcut = WorkspaceTestState.ShortcutPath(name);
             OpenEditor();
             EditWorkspace(name);
-            var checkBox = Editor.Find<CheckBox>(By.Name("Create desktop shortcut"));
+            var checkBox = Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox"));
             Assert.IsFalse(checkBox.IsChecked, "A missing desktop shortcut should be shown as unchecked.");
             SetCheck(checkBox, true);
             SaveWorkspace();
@@ -99,7 +96,7 @@ namespace Microsoft.Workspaces.UITests
             // WScript.Shell shortcut object reads the target and arguments the Shell actually stored.
             var (target, shortcutArguments) = ReadShortcutTargetAndArguments(shortcut);
             Assert.AreEqual(
-                Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Workspaces))!, "PowerToys.WorkspacesLauncher.exe"),
+                Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "PowerToys.WorkspacesLauncher.exe"),
                 target,
                 true,
                 "The shortcut does not target the Workspaces launcher.");
@@ -112,23 +109,26 @@ namespace Microsoft.Workspaces.UITests
             WaitForLaunchCompletion(project);
 
             EditWorkspace(name);
-            Assert.IsTrue(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")).IsChecked, "The existing desktop shortcut was not recognized.");
+            Assert.IsTrue(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).IsChecked, "The existing desktop shortcut was not recognized.");
             CancelEditing();
             File.Delete(shortcut);
             EditWorkspace(name);
-            Assert.IsFalse(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")).IsChecked, "The checkbox did not notice an externally removed shortcut.");
-            SetCheck(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")), true);
+            Assert.IsFalse(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).IsChecked, "The checkbox did not notice an externally removed shortcut.");
+            SaveWorkspace();
+            Assert.IsFalse(File.Exists(shortcut), "Saving another edit recreated the externally removed shortcut.");
+            Assert.IsFalse(WorkspaceTestState.ReadProject(WorkspaceTestState.Text(project, "id"))["is-shortcut-needed"]!.GetValue<bool>());
+            EditWorkspace(name);
+            SetCheck(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")), true);
             SaveWorkspace();
             Assert.IsTrue(File.Exists(shortcut), "The shortcut was not recreated.");
             EditWorkspace(name);
-            SetCheck(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")), false);
+            SetCheck(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")), false);
             SaveWorkspace();
             Assert.IsFalse(File.Exists(shortcut), "Unchecking the option did not remove the desktop shortcut.");
             Assert.IsFalse(WorkspaceTestState.ReadProject(WorkspaceTestState.Text(project, "id"))["is-shortcut-needed"]!.GetValue<bool>());
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void LaunchAndEditCaptureAddsWindowsToTheExistingWorkspace()
         {
             var originalTitle = State.Prefix + "-original";
@@ -162,7 +162,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void MoveExistingWindowsReusesTheOriginalProcessAndWindow()
         {
             var title = State.Prefix + "-reuse";
@@ -172,7 +171,7 @@ namespace Microsoft.Workspaces.UITests
             State.WriteProjects(project);
             OpenEditor();
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
-            SetCheck(Editor.Find<CheckBox>(By.Name("Move existing windows")), true);
+            SetCheck(Editor.Find<CheckBox>(By.AccessibilityId("MoveExistingWindowsCheckBox")), true);
             SaveWorkspace();
             LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
             AssertPositioned(original, app);
@@ -184,7 +183,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void MissingSavedMonitorUsesTheRemainingDisplay()
         {
             var title = State.Prefix + "-missing-monitor";
@@ -209,7 +207,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void LauncherDisplaysLaunchingLaunchedAndFailedStates()
         {
             using var gate = new EventWaitHandle(false, EventResetMode.ManualReset, $@"Local\{State.Prefix}-progress-gate");
@@ -234,7 +231,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancelLaunchStopsPendingAppsAndPreservesOpenedWindows()
         {
             var gateName = $@"Local\{State.Prefix}-cancel-gate";
@@ -267,7 +263,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void DismissClosesProgressWhileApplicationsContinueLaunching()
         {
             var gateName = $@"Local\{State.Prefix}-dismiss-gate";
@@ -300,27 +295,12 @@ namespace Microsoft.Workspaces.UITests
         private void LaunchWorkspace(string name)
         {
             var card = WaitForCard(name);
-            var launch = LaunchButtonsForCard(card);
-            if (launch.Length != 1)
-            {
-                // The Launch button is a card descendant, so its automation peer can be missing after the
-                // list re-projected its items (e.g. right after a save). Re-render the list once from a
-                // fresh editor to restore live descendant peers, then reacquire the button.
-                Step("Re-rendering the workspace list to restore the card's Launch button.");
-                CloseEditor();
-                OpenEditor();
-                card = WaitForCard(name);
-                launch = LaunchButtonsForCard(card);
-            }
-
-            Assert.HasCount(1, launch, "The workspace Launch button was not uniquely addressable.");
+            var launches = FindDescendants<Button>(Editor.Find<Element>(By.AccessibilityId(card.Id), 10_000), "Button", "LaunchButton");
+            Assert.HasCount(1, launches, "The workspace card should contain one Launch button.");
+            Assert.IsTrue(launches[0].IsEnabled, "The workspace Launch button is unavailable.");
             Step($"Launching workspace '{name}' from its editor card.");
-            launch[0].Invoke(msPostAction: 0);
+            launches[0].Invoke(msPostAction: 0);
         }
-
-        private Button[] LaunchButtonsForCard(WorkspaceCard card) =>
-            [.. Editor.FindAll<Button>(By.Name("Launch"), 5_000)
-                .Where(button => button.Name == "Launch" && button.Y >= card.Y && button.Y <= card.Y + card.Height)];
 
         private static (string Target, string Arguments) ReadShortcutTargetAndArguments(string path)
         {

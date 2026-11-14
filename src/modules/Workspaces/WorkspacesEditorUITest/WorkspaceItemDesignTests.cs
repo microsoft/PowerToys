@@ -4,6 +4,7 @@
 
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using WorkspacesCsharpLibrary.Data;
 
 namespace WorkspacesEditorUITest;
 
@@ -17,6 +18,8 @@ namespace WorkspacesEditorUITest;
 [TestClass]
 public class WorkspaceItemDesignTests : WorkspacesUiAutomationBase
 {
+    private string workspaceName = string.Empty;
+
     public WorkspaceItemDesignTests()
         : base()
     {
@@ -25,11 +28,22 @@ public class WorkspaceItemDesignTests : WorkspacesUiAutomationBase
     [TestInitialize]
     public void Setup()
     {
-        // Ensure at least one workspace exists for item-level tests
-        if (!HasWorkspaceItem())
+        workspaceName = "LegacyItemDesign_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(workspaceName);
+    }
+
+    [TestCleanup]
+    public void CleanupWorkspace()
+    {
+        AttachWorkspacesEditor();
+        if (Has(By.AccessibilityId("EditNameTextBox"), timeoutMS: 500))
         {
-            CreateTestWorkspace("DesignTest");
-            Task.Delay(2000).Wait();
+            ReturnToMainPage();
+        }
+
+        if (GetWorkspaceCards().Any(card => card.Name == workspaceName))
+        {
+            DeleteWorkspace(workspaceName);
         }
     }
 
@@ -37,121 +51,59 @@ public class WorkspaceItemDesignTests : WorkspacesUiAutomationBase
     [TestCategory("Design.WorkspaceItem")]
     public void WorkspaceItem_DisplaysName()
     {
-        if (!HasWorkspaceItem())
-        {
-            Assert.Inconclusive("No workspace items available for testing");
-            return;
-        }
-
-        var item = GetFirstWorkspaceItem();
-        Assert.IsNotNull(item, "Should have at least one workspace item");
+        var item = GetWorkspaceCard(workspaceName);
+        Assert.AreEqual(workspaceName, item.Name, "The workspace card should expose its saved name.");
+        Assert.IsTrue(Guid.TryParse(item.AutomationId, out _), "The workspace card should expose its stable GUID.");
     }
 
     [TestMethod("WorkspaceItem.HasLaunchButton")]
     [TestCategory("Design.WorkspaceItem")]
     public void WorkspaceItem_HasLaunchButton()
     {
-        if (!HasWorkspaceItem())
-        {
-            Assert.Inconclusive("No workspace items available for testing");
-            return;
-        }
-
-        var item = GetFirstWorkspaceItem();
-        var launchButton = item.Find<Button>(By.Name("Launch"));
-        Assert.IsNotNull(launchButton, "Workspace item should have a Launch button");
+        var item = GetWorkspaceCard(workspaceName);
+        var launchButton = item.Find<Button>(By.AccessibilityId("LaunchButton"));
+        Assert.IsTrue(launchButton.Displayed && launchButton.Enabled, "Workspace item should have an enabled Launch button.");
+        Assert.AreEqual("Launch", launchButton.Name, "The Launch button should have its localized accessible name.");
     }
 
     [TestMethod("WorkspaceItem.CardIsClickable")]
     [TestCategory("Design.WorkspaceItem")]
     public void WorkspaceItem_CardIsClickableForEditing()
     {
-        if (!HasWorkspaceItem())
-        {
-            Assert.Inconclusive("No workspace items available for testing");
-            return;
-        }
-
-        var item = GetFirstWorkspaceItem();
-
-        // In the WinUI editor, clicking the card navigates to the editor page.
-        // The SettingsCard has IsClickEnabled="True" which makes it a clickable element.
-        Assert.IsNotNull(item, "Workspace item card should be clickable for editing");
+        OpenWorkspace(workspaceName);
+        Assert.IsTrue(Find<Button>(By.AccessibilityId("SaveButton")).Displayed, "Clicking the workspace card should open the editing page.");
+        ReturnToMainPage();
     }
 
     [TestMethod("WorkspaceItem.HasSortButton")]
     [TestCategory("Design.WorkspaceItem")]
     public void WorkspaceItem_HasSortButton()
     {
-        // The WinUI editor replaces per-item "More options" with a global sort button.
-        // This test verifies the sort control exists at the page level.
-        // Sort functionality is validated separately in EditorViewModelSortTests.
-        Assert.IsTrue(true, "Sort functionality replaced per-item More button — tested in ViewModel sort tests");
+        var sort = Find<Button>(By.AccessibilityId("WorkspaceSortButton"));
+        Assert.IsTrue(sort.Displayed && sort.Enabled, "The workspace list should expose its Sort by button.");
+        sort.Click();
+        Assert.IsTrue(Find<Element>(By.AccessibilityId("SortNameItem")).Displayed, "The sort button should open its ordering flyout.");
+        SendKeys(Key.Esc);
     }
 
     [TestMethod("WorkspaceItem.HasAppCountText")]
     [TestCategory("Design.WorkspaceItem")]
     public void WorkspaceItem_DisplaysAppCount()
     {
-        if (!HasWorkspaceItem())
-        {
-            Assert.Inconclusive("No workspace items available for testing");
-            return;
-        }
-
-        var item = GetFirstWorkspaceItem();
-
-        // App count text should contain a number followed by "App" or "Apps"
-        var textBlocks = item.FindAll<TextBlock>(By.ClassName("TextBlock"));
-        bool hasAppCount = textBlocks.Any(t =>
-        {
-            var text = t.GetAttribute("Name") ?? string.Empty;
-            return text.Contains("App", System.StringComparison.OrdinalIgnoreCase);
-        });
-
-        Assert.IsTrue(hasAppCount, "Workspace item should display app count");
+        var item = GetWorkspaceCard(workspaceName);
+        var storage = new WorkspacesData();
+        var workspace = storage.Read(storage.File).Workspaces.Single(project => project.Name == workspaceName);
+        int count = workspace.Applications.Count;
+        string expected = $"{count} {(count == 1 ? "app" : "apps")}";
+        Assert.IsTrue(item.FindAll<TextBlock>(By.Name(expected)).Any(text => text.Displayed), "The workspace card should show the captured application count.");
     }
 
     [TestMethod("WorkspaceItem.HasLastLaunchedText")]
     [TestCategory("Design.WorkspaceItem")]
     public void WorkspaceItem_DisplaysLastLaunchedTime()
     {
-        if (!HasWorkspaceItem())
-        {
-            Assert.Inconclusive("No workspace items available for testing");
-            return;
-        }
-
-        var item = GetFirstWorkspaceItem();
-
-        // Should contain "Last launched" text
-        var textBlocks = item.FindAll<TextBlock>(By.ClassName("TextBlock"));
-        bool hasLastLaunched = textBlocks.Any(t =>
-        {
-            var text = t.GetAttribute("Name") ?? string.Empty;
-            return text.Contains("Last", System.StringComparison.OrdinalIgnoreCase);
-        });
-
-        Assert.IsTrue(hasLastLaunched, "Workspace item should display last launched time");
-    }
-
-    private bool HasWorkspaceItem()
-    {
-        try
-        {
-            var root = Find<Element>(By.AccessibilityId("WorkspacesItemsControl"));
-            return root != null;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private Element GetFirstWorkspaceItem()
-    {
-        var root = Find<Element>(By.AccessibilityId("WorkspacesItemsControl"));
-        var items = root.FindAll<Element>(By.ClassName("WorkspaceItem"));
-        return items.Count > 0 ? items[0] : root;
+        var item = GetWorkspaceCard(workspaceName);
+        var lastLaunched = item.Find<TextBlock>(By.Name("Last launched: never"));
+        Assert.IsTrue(lastLaunched.Displayed, "A new workspace card should show that it has never been launched.");
     }
 }

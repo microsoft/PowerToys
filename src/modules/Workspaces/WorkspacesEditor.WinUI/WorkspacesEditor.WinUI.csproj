@@ -25,6 +25,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="PowerToys.WorkspacesEditor.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Page Remove="Views\App.xaml" />
   </ItemGroup>
   <ItemGroup>

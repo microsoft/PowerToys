@@ -1,7 +1,8 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -11,6 +12,8 @@ namespace WorkspacesEditorUITest;
 [Ignore("NOT STABLE")]
 public class WorkspacesLauncherTest : WorkspacesUiAutomationBase
 {
+    private const string LauncherWindowTitle = "Your workspace is launching. Waiting on ...";
+
     public WorkspacesLauncherTest()
         : base()
     {
@@ -20,81 +23,68 @@ public class WorkspacesLauncherTest : WorkspacesUiAutomationBase
     [TestCategory("Workspaces UI")]
     public void TestLaunchWorkspaceFromEditor()
     {
-        ClearWorkspaces();
-        var uuid = Guid.NewGuid().ToString("N").Substring(0, 8);
-        CreateTestWorkspace(uuid);
-
-        CloseNotepad();
-
-        var launchButton = Find<Button>(By.Name("Launch"));
-        launchButton.Click();
-
-        Task.Delay(2000).Wait();
-
-        var processes = System.Diagnostics.Process.GetProcessesByName("notepad");
-
-        Assert.IsTrue(processes?.Length > 0);
+        string name = "LegacyLaunch_" + Guid.NewGuid().ToString("N");
+        CreateTestWorkspace(name);
+        try
+        {
+            GetWorkspaceCard(name).Find<Button>(By.AccessibilityId("LaunchButton")).Click();
+            Task.Delay(2000).Wait();
+            Assert.IsTrue(Process.GetProcessesByName("notepad").Length > 0, "Launching the workspace should start its captured Notepad.");
+            AssertMainPage();
+        }
+        finally
+        {
+            CloseTestApplications();
+            AttachWorkspacesEditor();
+            DeleteWorkspace(name);
+        }
     }
 
     [TestMethod("WorkspacesEditor.Launcher.CancelLaunch")]
     [TestCategory("Workspaces UI")]
     public void TestCancelLaunch()
     {
-        // Create workspace with multiple apps
-        CreateWorkspaceWithApps();
-
-        // Launch workspace
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspaceItem = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"))[0];
-        var launchButton = workspaceItem.Find<Button>("Launch");
-        launchButton.Click();
-        Thread.Sleep(1000);
-
-        // Cancel launch
-        if (Has<Button>("Cancel launch"))
+        string name = CreateWorkspaceWithApps();
+        try
         {
-            Find<Button>("Cancel launch").Click();
-            Thread.Sleep(1000);
-
-            // Verify launcher closed
-            Assert.IsFalse(Has<Window>("Workspaces Launcher"), "Launcher window should close after cancel");
+            GetWorkspaceCard(name).Find<Button>(By.AccessibilityId("LaunchButton")).Click();
+            Session.Attach(LauncherWindowTitle);
+            var cancel = Find<Button>(By.AccessibilityId("CancelButton"));
+            Assert.AreEqual("Cancel launch", cancel.Name, "The launcher Cancel button should have its localized accessible name.");
+            cancel.Click();
+            Task.Delay(1000).Wait();
+            Assert.IsFalse(WindowHelper.IsWindowOpen(LauncherWindowTitle), "Canceling launch should close the launcher status window.");
         }
-
-        // Close any apps that may have launched
-        CloseTestApplications();
+        finally
+        {
+            CloseTestApplications();
+            AttachWorkspacesEditor();
+            DeleteWorkspace(name);
+        }
     }
 
     [TestMethod("WorkspacesEditor.Launcher.DismissKeepsLaunching")]
     [TestCategory("Workspaces UI")]
     public void TestDismissKeepsAppsLaunching()
     {
-        // Create workspace with apps
-        CreateWorkspaceWithApps();
-
-        // Launch workspace
-        var workspacesList = Find<Custom>("WorkspacesList");
-        var workspaceItem = workspacesList.FindAll<Custom>(By.ClassName("WorkspaceItem"))[0];
-        var launchButton = workspaceItem.Find<Button>("Launch");
-        launchButton.Click();
-        Thread.Sleep(1000);
-
-        // Dismiss launcher
-        if (Has<Button>("Dismiss"))
+        string name = CreateWorkspaceWithApps();
+        try
         {
-            Find<Button>("Dismiss").Click();
-            Thread.Sleep(1000);
-
-            // Verify launcher closed but apps continue launching
-            Assert.IsFalse(Has<Window>("Workspaces Launcher"), "Launcher window should close after dismiss");
-
-            // Wait for apps to finish launching
-            Thread.Sleep(3000);
-
-            // Verify apps launched (notepad should be open)
-            Assert.IsTrue(WindowHelper.IsWindowOpen("Notepad"), "Apps should continue launching after dismiss");
+            GetWorkspaceCard(name).Find<Button>(By.AccessibilityId("LaunchButton")).Click();
+            Session.Attach(LauncherWindowTitle);
+            var dismiss = Find<Button>(By.AccessibilityId("DismissButton"));
+            Assert.AreEqual("Dismiss", dismiss.Name, "The launcher Dismiss button should have its localized accessible name.");
+            dismiss.Click();
+            Task.Delay(1000).Wait();
+            Assert.IsFalse(WindowHelper.IsWindowOpen(LauncherWindowTitle), "Dismissing launch should close the launcher status window.");
+            Task.Delay(3000).Wait();
+            Assert.IsTrue(Process.GetProcessesByName("notepad").Length > 0, "The captured Notepad should keep launching after dismiss.");
         }
-
-        // Close launched apps
-        CloseTestApplications();
+        finally
+        {
+            CloseTestApplications();
+            AttachWorkspacesEditor();
+            DeleteWorkspace(name);
+        }
     }
 }

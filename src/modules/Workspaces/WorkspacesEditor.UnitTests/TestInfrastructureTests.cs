@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesEditor.Models;
@@ -16,6 +18,15 @@ namespace WorkspacesEditor.UnitTests
     [TestClass]
     public class TestInfrastructureTests
     {
+        [TestMethod]
+        [TestCategory("Infrastructure")]
+        public void ProductResources_AreAvailableWithoutStartingAnEditorWindow()
+        {
+            Assert.IsTrue(File.Exists(Path.Combine(AppContext.BaseDirectory, "PowerToys.WorkspacesEditor.pri")), "The product PRI must accompany the test runtime.");
+            Assert.IsNotNull(ResourceLoaderInstance.ResourceLoader);
+            Assert.AreEqual("Workspace", ResourceLoaderInstance.ResourceLoader.GetString("DefaultWorkspaceNamePrefix"));
+        }
+
         [TestMethod]
         [TestCategory("Infrastructure")]
         public void CreateProject_WithApps_ReturnsValidProject()

@@ -23,6 +23,7 @@ namespace Microsoft.Workspaces.UITests
             Preserve(SettingsPath);
             Preserve(WorkspacesPath);
             Preserve(TemporaryPath);
+            Preserve(WindowPlacementPath);
         }
 
         internal static string DirectoryPath => Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "Workspaces");
@@ -32,6 +33,8 @@ namespace Microsoft.Workspaces.UITests
         internal static string WorkspacesPath => Path.Combine(DirectoryPath, "workspaces.json");
 
         internal static string TemporaryPath => Path.Combine(DirectoryPath, "temp-workspaces.json");
+
+        internal static string WindowPlacementPath => Path.Combine(DirectoryPath, "editor-window.json");
 
         internal TestAppFixture Fixture { get; } = new();
 
@@ -129,7 +132,7 @@ namespace Microsoft.Workspaces.UITests
         {
             var name = $"{Prefix}-{suffix}";
             var id = Guid.NewGuid().ToString("B");
-            Preserve(Path.Combine(DirectoryPath, "WorkspacesIcons", id + ".ico"));
+            TrackProjectIcon(id);
             TrackShortcut(name);
             var display = Target;
             return new JsonObject
@@ -179,6 +182,8 @@ namespace Microsoft.Workspaces.UITests
         }
 
         internal void TrackShortcut(string name) => Preserve(ShortcutPath(name));
+
+        internal void TrackProjectIcon(string id) => Preserve(Path.Combine(DirectoryPath, "WorkspacesIcons", id + ".ico"));
 
         internal static string ShortcutPath(string name) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), name + ".lnk");
 

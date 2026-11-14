@@ -11,26 +11,63 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
-        public void SearchFiltersByWorkspaceAndApplicationNames()
+        public void SearchSuggestsWorkspacesAndApplicationsAndOpensSelection()
         {
             var projects = SeedSearchWorkspaces();
             var names = projects.Select(project => WorkspaceTestState.Text(project, "name")).ToArray();
+            var original = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
             OpenEditor();
             AssertWorkspaceNames(names);
             Search("aTlAs");
-            AssertWorkspaceNames(names[0]);
-            Search("editor fixture");
-            AssertWorkspaceNames(names[1], names[2]);
-            Search("no matching workspace or application");
-            AssertWorkspaceNames();
-            Search(string.Empty);
+            AssertSearchSuggestions(names[0]);
             AssertWorkspaceNames(names);
-            Assert.AreEqual(3, WorkspaceTestState.ReadProjects().Count, "Searching changed the saved workspaces.");
+            ChooseSearchSuggestion(names[0]);
+            CancelEditing();
+
+            Search("editor fixture");
+            AssertSearchSuggestions(names[1], names[2]);
+            AssertWorkspaceNames(names);
+            ChooseSearchSuggestion(names[2]);
+            CancelEditing();
+
+            Search("no matching workspace or application");
+            AssertSearchSuggestions();
+            SearchInput().Focus();
+            KeyboardHelper.SendKeys(Key.Enter);
+            AssertWorkspaceListReady();
+            AssertWorkspaceNames(names);
+            Search(string.Empty);
+            AssertSearchSuggestions();
+            AssertWorkspaceNames(names);
+            CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Searching or opening a suggestion changed saved workspaces.");
+        }
+
+        private void AssertSearchSuggestions(params string[] expected)
+        {
+            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
+            var ready = WaitHelper.WaitForStable(
+                () => process.FindAll<TextBlock>(By.AccessibilityId("WorkspaceSearchSuggestionName"), 0)
+                    .Where(text => text.Displayed).Select(text => text.Name).Order(StringComparer.Ordinal).ToArray(),
+                names => names is not null && names.SequenceEqual(expected.Order(StringComparer.Ordinal)),
+                15_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(ready.Succeeded, $"Expected suggestions [{string.Join(", ", expected)}], observed [{string.Join(", ", ready.LastObservation ?? [])}].");
+        }
+
+        private void ChooseSearchSuggestion(string name)
+        {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
+            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
+            var suggestions = process.FindAll<TextBlock>(By.AccessibilityId("WorkspaceSearchSuggestionName"), 10_000)
+                .Where(text => text.Name == name && text.Displayed && text.Width > 0 && text.Height > 0).ToArray();
+            Assert.HasCount(1, suggestions, $"The '{name}' search suggestion was not uniquely addressable.");
+            suggestions[0].Click(msPostAction: 0);
+            Assert.IsTrue(
+                Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(name, timeoutMS: 10_000),
+                "Choosing a search suggestion did not open the corresponding workspace.");
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow("Last launched", 0)]
         [DataRow("Created", 1)]
         [DataRow("Name", 2)]
@@ -46,42 +83,39 @@ namespace Microsoft.Workspaces.UITests
                 _ => throw new ArgumentOutOfRangeException(nameof(index)),
             };
             OpenEditor();
-            SelectCombo(Editor.Find<ComboBox>(By.AccessibilityId("WorkspaceSortComboBox")), order, EditorProcess);
+            SelectWorkspaceSort(index);
             AssertWorkspaceOrder(expected);
             Assert.AreEqual(index, WorkspaceTestState.ReadObject(WorkspaceTestState.SettingsPath)["properties"]!["sortby"]!.GetValue<int>());
             CloseEditor();
             OpenEditor();
-            Assert.AreEqual(order, Editor.Find<ComboBox>(By.AccessibilityId("WorkspaceSortComboBox")).SelectedText);
+            AssertWorkspaceSortSelected(index, order);
             AssertWorkspaceOrder(expected);
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
-        public void WorkspaceCardAndEditMenuOpenEditingPage(bool useMenu)
+        public void WorkspaceCardOpensEditingPageWithMouseAndKeyboard(bool useKeyboard)
         {
             var project = SeedOneWorkspace();
             var original = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
             OpenEditor();
-            EditWorkspace(WorkspaceTestState.Text(project, "name"), useMenu);
+            EditWorkspace(WorkspaceTestState.Text(project, "name"), useKeyboard);
             Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("SaveButton")).IsEnabled);
-            Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("CancelButton")).IsEnabled);
+            Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("PART_BackButton")).IsEnabled);
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Opening the editing page changed stored data.");
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void DeleteRemovesOnlyTheSelectedWorkspace()
         {
             var projects = SeedSearchWorkspaces();
             var names = projects.Select(project => WorkspaceTestState.Text(project, "name")).ToArray();
             OpenEditor();
             AssertWorkspaceNames(names);
-            OpenWorkspaceMenu(WaitForCard(names[1]));
+            EditWorkspace(names[1]);
             Step("Deleting the selected workspace.");
-            Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess)
-                .Find<Button>(By.Name("Remove"), 10_000).Invoke(msPostAction: 0);
+            ConfirmWorkspaceDeletion();
             AssertWorkspaceNames(names[0], names[2]);
             CollectionAssert.AreEquivalent(
                 new[] { WorkspaceTestState.Text(projects[0], "id"), WorkspaceTestState.Text(projects[2], "id") },
@@ -90,7 +124,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void NameArgumentsAdminAndGeometryEditsPersist()
         {
             var project = SeedOneWorkspace();
@@ -103,7 +136,7 @@ namespace Microsoft.Workspaces.UITests
             var row = ExpandApplication("Primary fixture");
             Step("Editing application arguments, administrator preference, and all four position fields.");
             row.Find<TextBox>(By.AccessibilityId("CommandLineTextBox")).SetText(arguments);
-            SetCheck(row.Find<CheckBox>(By.Name("Launch as")), true);
+            SetCheck(row.Find<CheckBox>(By.AccessibilityId("LaunchAsAdminCheckBox")), true);
             using var before = PreviewSnapshot.Capture(TestContext, Editor, "before-position");
             row.Find<TextBox>(By.AccessibilityId("LeftTextBox")).SetText("420");
             row.Find<TextBox>(By.AccessibilityId("TopTextBox")).SetText("310");
@@ -121,7 +154,7 @@ namespace Microsoft.Workspaces.UITests
             EditWorkspace(newName);
             row = ExpandApplication("Primary fixture");
             Assert.AreEqual(arguments, row.Find<TextBox>(By.AccessibilityId("CommandLineTextBox")).Value);
-            Assert.IsTrue(row.Find<CheckBox>(By.Name("Launch as")).IsChecked);
+            Assert.IsTrue(row.Find<CheckBox>(By.AccessibilityId("LaunchAsAdminCheckBox")).IsChecked);
             Assert.AreEqual("420", row.Find<TextBox>(By.AccessibilityId("LeftTextBox")).Value);
             Assert.AreEqual("310", row.Find<TextBox>(By.AccessibilityId("TopTextBox")).Value);
             Assert.AreEqual("810", row.Find<TextBox>(By.AccessibilityId("WidthTextBox")).Value);
@@ -129,10 +162,9 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
-        public void CancelAndBreadcrumbDiscardUnsavedEdits(bool useBreadcrumb)
+        public void BackAndEscapeDiscardUnsavedEdits(bool useBackButton)
         {
             var project = SeedOneWorkspace();
             var name = WorkspaceTestState.Text(project, "name");
@@ -143,7 +175,7 @@ namespace Microsoft.Workspaces.UITests
             row.Find<TextBox>(By.AccessibilityId("LeftTextBox")).SetText("600");
             row.Find<TextBox>(By.AccessibilityId("CommandLineTextBox")).SetText("--payload discarded");
             Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox")).SetText(State.Prefix + "-discarded");
-            CancelEditing(useBreadcrumb);
+            CancelEditing(useBackButton);
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Discarding edits changed stored workspace data.");
             AssertWorkspaceNames(name);
             EditWorkspace(name);
@@ -157,7 +189,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void RemoveAndAddBackUpdatePreviewAndSavedApplicationList()
         {
             var first = State.Application("Primary fixture", State.Prefix + "-first");
@@ -168,13 +199,13 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
             using var before = PreviewSnapshot.Capture(TestContext, Editor, "both-applications");
-            ToggleApplicationInclusion("Primary fixture");
+            ToggleApplicationInclusion("Primary fixture", include: false);
             Assert.IsFalse(Editor.Find(By.AccessibilityId("Primary fixture")).IsEnabled, "The removed application remained editable.");
             PreviewSnapshot.AssertChanged(TestContext, Editor, before);
-            ToggleApplicationInclusion("Primary fixture");
+            ToggleApplicationInclusion("Primary fixture", include: true);
             Assert.IsTrue(Editor.Find(By.AccessibilityId("Primary fixture")).IsEnabled, "Add back did not restore the application.");
             PreviewSnapshot.AssertRestored(TestContext, Editor, before);
-            ToggleApplicationInclusion("Primary fixture");
+            ToggleApplicationInclusion("Primary fixture", include: false);
             SaveWorkspace();
             var saved = WorkspaceTestState.WaitForProject(
                 WorkspaceTestState.Text(project, "id"),
@@ -186,7 +217,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow("Minimized", true, false)]
         [DataRow("Maximized", false, true)]
         public void WindowStateChangesUpdatePreviewAndPersist(string selected, bool minimized, bool maximized)
@@ -197,7 +227,7 @@ namespace Microsoft.Workspaces.UITests
             var row = ExpandApplication("Primary fixture");
             using var before = PreviewSnapshot.Capture(TestContext, Editor, "custom-position");
             SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), selected, EditorProcess);
-            Assert.IsFalse(row.Find<TextBox>(By.AccessibilityId("LeftTextBox")).IsEnabled, "Custom coordinates stayed editable for a minimized/maximized app.");
+            AssertCustomCoordinatesAvailable(row, expected: false);
             PreviewSnapshot.AssertChanged(TestContext, Editor, before);
             SaveWorkspace();
             var saved = WorkspaceTestState.ReadProject(WorkspaceTestState.Text(project, "id"));
@@ -208,7 +238,7 @@ namespace Microsoft.Workspaces.UITests
             row = ExpandApplication("Primary fixture");
             Assert.AreEqual(selected, row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")).SelectedText);
             SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), "Custom", EditorProcess);
-            Assert.IsTrue(row.Find<TextBox>(By.AccessibilityId("LeftTextBox")).IsEnabled);
+            AssertCustomCoordinatesAvailable(row, expected: true);
             PreviewSnapshot.AssertRestored(TestContext, Editor, before);
         }
 
@@ -241,8 +271,54 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(result.Succeeded, $"Expected order [{string.Join(", ", expected)}], observed [{string.Join(", ", result.LastObservation ?? [])}].");
         }
 
+        private void SelectWorkspaceSort(int index)
+        {
+            Step($"Selecting workspace sort order {index}.");
+            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortButton"), 15_000).Invoke(msPostAction: 0);
+            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
+            process.Find<Element>(By.AccessibilityId(SortItemId(index)), 10_000).Invoke(msPostAction: 0);
+            AssertWorkspaceSortSelected(index);
+        }
+
+        private void AssertWorkspaceSortSelected(int index, string? expectedName = null)
+        {
+            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortButton"), 15_000).Invoke(msPostAction: 0);
+            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
+            var selected = process.Find<Element>(By.AccessibilityId(SortItemId(index)), 10_000);
+            Assert.IsTrue(selected.WaitForProperty("ToggleState", "On", 5_000), "The sort menu did not retain its selected option.");
+            if (expectedName is not null)
+            {
+                Assert.AreEqual(expectedName, selected.Name);
+            }
+
+            KeyboardHelper.SendKeys(Key.Esc);
+        }
+
+        private static string SortItemId(int index) => index switch
+        {
+            0 => "SortLastLaunchedItem",
+            1 => "SortCreatedItem",
+            2 => "SortNameItem",
+            _ => throw new ArgumentOutOfRangeException(nameof(index)),
+        };
+
+        private void AssertCustomCoordinatesAvailable(Element row, bool expected)
+        {
+            var ready = WaitHelper.WaitForStable(
+                () => FindDescendants<TextBox>(row, "Edit", "LeftTextBox")
+                    .Any(textBox => textBox.Displayed && textBox.IsEnabled),
+                available => available == expected,
+                10_000,
+                requiredConsecutiveMatches: 2);
+            string message = expected
+                ? "Custom window coordinates did not become editable."
+                : "Custom coordinates stayed editable for a minimized/maximized app.";
+            Assert.IsTrue(ready.Succeeded, message);
+        }
+
         private void SelectCombo(ComboBox combo, string item, string processName)
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
             Step($"Selecting '{item}'.");
             if (combo.SelectedText == item)
             {
@@ -253,10 +329,8 @@ namespace Microsoft.Workspaces.UITests
             combo.Invoke(msPostAction: 0);
             var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(processName);
 
-            // WPF surfaces each open ComboBox item twice (once beneath the ComboBox, once in the popup
-            // host) at an identical rectangle. Collapse those duplicate peers by their on-screen bounds so
-            // a genuinely ambiguous match (two different items) still fails, then activate the single
-            // remaining selection.
+            // The dropdown's popup is process-scoped; scope identical item peers by their on-screen
+            // bounds while keeping two genuinely different matching items an error.
             var options = process.FindAll<Element>(By.Name(item), 15_000)
                 .Where(option => option.Name.Equals(item, StringComparison.OrdinalIgnoreCase) && option.ControlType == "ListItem")
                 .GroupBy(option => (option.X, option.Y, option.Width, option.Height))
@@ -278,20 +352,60 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(checkBox.WaitForProperty("ToggleState", value ? "On" : "Off", 10_000));
         }
 
-        private void ToggleApplicationInclusion(string name)
+        private void ToggleApplicationInclusion(string name, bool include)
         {
-            Step($"Removing or adding back '{name}'.");
-            Editor.Find(By.AccessibilityId(name)).Find<Button>(By.Name("Remove")).Invoke(msPostAction: 0);
+            var action = include ? "Add back" : "Remove";
+            Step($"{action}: '{name}'.");
+            var ready = WaitHelper.WaitForStable(
+                () => Editor.FindAll<Button>(By.AccessibilityId("ToggleApplicationInclusionButton"), 0)
+                    .Where(button => button.Name == $"{action} {name}").ToArray(),
+                buttons => buttons is { Length: 1 },
+                10_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(ready.Succeeded, $"The '{action}' action for '{name}' was not uniquely addressable.");
+            var button = ready.LastObservation![0];
+            Assert.IsTrue(button.IsEnabled, $"The '{action}' action for '{name}' is disabled.");
+            button.Invoke(msPostAction: 0);
+            Assert.IsTrue(
+                Editor.Find<Element>(By.AccessibilityId(name)).WaitForProperty("IsEnabled", include ? "True" : "False", 10_000),
+                $"The application inclusion state did not change after '{action}'.");
         }
 
-        private void CancelEditing(bool useBreadcrumb = false)
+        private void CancelEditing(bool useBackButton = true)
         {
-            Step(useBreadcrumb ? "Discarding edits through the Workspaces breadcrumb." : "Cancelling workspace edits.");
-            var button = useBreadcrumb
-                ? Editor.Find<Button>(By.Name("Workspaces"))
-                : Editor.Find<Button>(By.AccessibilityId("CancelButton"));
-            button.Invoke(msPostAction: 0);
-            Assert.IsTrue(Editor.Has(By.AccessibilityId("NewProjectButton"), 15_000), "Discard did not return to the workspace list.");
+            Step(useBackButton ? "Discarding edits through the title-bar Back button." : "Discarding edits with Escape.");
+            if (useBackButton)
+            {
+                Editor.Find<Button>(By.AccessibilityId("PART_BackButton"), 15_000).Invoke(msPostAction: 0);
+            }
+            else
+            {
+                Editor.EnsureForeground();
+                Editor.Find<Button>(By.AccessibilityId("SaveButton"), 15_000).Focus();
+                KeyboardHelper.SendKeys(Key.Esc);
+            }
+
+            AssertWorkspaceListReady();
+        }
+
+        private void ConfirmWorkspaceDeletion()
+        {
+            Editor.Find<Button>(By.AccessibilityId("DeleteWorkspaceButton"), 15_000).Invoke(msPostAction: 0);
+            ClickConfirmationButton("Remove");
+            AssertWorkspaceListReady();
+        }
+
+        private void ClickConfirmationButton(string name)
+        {
+            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
+            var ready = WaitHelper.WaitForStable(
+                () => process.FindAll<Button>(By.Name(name), 0)
+                    .Where(button => button.Name == name && button.Displayed && button.IsEnabled).ToArray(),
+                buttons => buttons is { Length: 1 },
+                10_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(ready.Succeeded, $"The confirmation dialog's '{name}' button was not uniquely addressable.");
+            ready.LastObservation![0].Invoke(msPostAction: 0);
         }
     }
 }

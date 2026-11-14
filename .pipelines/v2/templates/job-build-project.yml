@@ -211,14 +211,15 @@ jobs:
         Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
         $result = Invoke-Pester -Script @(
             '.pipelines/tests/versionAndSignCheck.Tests.ps1',
-            '.pipelines/tests/winmdSigningPolicy.Tests.ps1'
+            '.pipelines/tests/winmdSigningPolicy.Tests.ps1',
+            '.pipelines/tests/workspacesInstallerIntegration.Tests.ps1'
         ) -PassThru
         if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
-            throw 'Release signing regression tests failed.'
+            throw 'Release signing and installer regression tests failed.'
         }
         # Negative script tests set LASTEXITCODE; report the Pester result instead.
         exit 0
-      displayName: Test release signing checks
+      displayName: Test release signing and installer integration
 
   - ${{ if eq(parameters.enableMsBuildCaching, true) }}:
     - pwsh: |-

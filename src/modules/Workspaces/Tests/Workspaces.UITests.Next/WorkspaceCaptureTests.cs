@@ -12,7 +12,6 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void CaptureIncludesPackagedUnpackagedAndMinimizedWindows()
         {
             State.Fixture.PreparePackage(TestContext);
@@ -76,7 +75,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancelCaptureLeavesWorkspaceListAndStorageUnchanged()
         {
             var project = SeedOneWorkspace();
@@ -93,14 +91,13 @@ namespace Microsoft.Workspaces.UITests
                     10_000,
                     requiredConsecutiveMatches: 2).Succeeded,
                 "The cancelled capture window remained visible.");
-            Assert.IsTrue(Editor.Has(By.AccessibilityId("NewProjectButton"), 15_000));
+            AssertWorkspaceListReady();
             AssertWorkspaceNames(name);
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Cancelling capture changed the stored workspaces.");
             Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Cancelling before Capture unexpectedly created a snapshot.");
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancellingCapturedWorkspaceDiscardsIt()
         {
             State.Fixture.OpenUnpackaged(State.Prefix + "-capture-cancel", TestContext);
@@ -108,8 +105,7 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             Capture(StartCapture());
             Step("Discarding the newly captured workspace.");
-            Editor.Find<Button>(By.AccessibilityId("CancelButton")).Invoke(msPostAction: 0);
-            Assert.IsTrue(Editor.Has(By.AccessibilityId("NewProjectButton"), 15_000));
+            CancelEditing();
             AssertWorkspaceNames();
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Cancelling the new workspace persisted it.");
             Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "The discarded temporary snapshot was not removed.");
