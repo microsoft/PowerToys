@@ -93,8 +93,8 @@ Displays horizontal and vertical lines that intersect at the mouse cursor positi
 #### Activation Process
 1. Creates a transparent, layered window for drawing crosshairs
 2. When activated via shortcut, calls `StartDrawing()`
-3. Sets a low-level mouse hook to track cursor movement
-4. Updates crosshairs position on every mouse movement
+3. Sets a low-level mouse hook for immediate mouse movement updates
+4. Samples the cursor position approximately every 16 ms while active to follow pen and Windows Ink input, redrawing only when the position changes; sampling is skipped during Gliding Cursor external control
 5. Includes auto-hide functionality for cursor inactivity
 
 ### Mouse Jump
