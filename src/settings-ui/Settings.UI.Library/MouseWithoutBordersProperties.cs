@@ -86,6 +86,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowClipboardAndNetworkStatusMessages { get; set; }
 
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool ReverseRemoteScrollWheel { get; set; }
+
         [CmdConfigureIgnoreAttribute]
         public List<string> MachineMatrixString
         {
@@ -192,6 +195,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             MoveMouseRelatively = false;
             BlockMouseAtScreenCorners = false;
             ShowClipboardAndNetworkStatusMessages = false;
+            ReverseRemoteScrollWheel = false;
             EasyMouse = new IntProperty(1);
             MachineMatrixString = new List<string>();
             DeviceID = new StringProperty(string.Empty);
