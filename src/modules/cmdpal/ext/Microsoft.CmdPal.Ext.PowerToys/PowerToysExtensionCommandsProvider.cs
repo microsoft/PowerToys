@@ -50,7 +50,7 @@ public partial class PowerToysExtensionCommandsProvider : CommandProvider
                 continue;
             }
 
-            fallbacks.Add(new PowerToysFallbackCommandItem(cmd, item.Title, item.Subtitle, item.Icon, item.MoreCommands));
+            fallbacks.Add(new PowerToysFallbackResultSource(cmd, item.Title, item.Subtitle, item.Icon, item.MoreCommands));
         }
 
         return fallbacks.ToArray();
