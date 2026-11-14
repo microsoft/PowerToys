@@ -106,7 +106,11 @@ namespace Hosts.UITests
                 "Should show warning dialog");
 
             // Quit Hosts File Editor.
-            hostsSession.FindExact<Button>("Quit").Invoke(msPostAction: 0);
+            var quitButton = hostsSession.FindExact<Button>("Quit");
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(hostsSession.WindowHandle), timeoutMS: 5_000, requiredConsecutiveMatches: 3),
+                $"Hosts should own foreground before clicking Quit. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            quitButton.Click(msPostAction: 0);
 
             // Observe native window closure; a UIA query against the closing window can block.
             var quitResult = WaitHelper.WaitForStable(
