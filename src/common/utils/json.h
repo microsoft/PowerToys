@@ -11,6 +11,36 @@ namespace json
 {
     using namespace winrt::Windows::Data::Json;
 
+    // Mutates a diagnostic copy, never the settings object used by the application.
+    inline bool redact_security_keys(const IJsonValue& value)
+    {
+        bool changed = false;
+        if (value.ValueType() == JsonValueType::Object)
+        {
+            const auto object = value.GetObjectW();
+            for (const auto& property : object)
+            {
+                if (property.Key() != L"SecurityKey")
+                {
+                    changed = redact_security_keys(property.Value()) || changed;
+                }
+            }
+            if (object.HasKey(L"SecurityKey"))
+            {
+                object.SetNamedValue(L"SecurityKey", JsonValue::CreateStringValue(L"<private_data>"));
+                changed = true;
+            }
+        }
+        else if (value.ValueType() == JsonValueType::Array)
+        {
+            for (const auto& element : value.GetArray())
+            {
+                changed = redact_security_keys(element) || changed;
+            }
+        }
+        return changed;
+    }
+
     inline std::optional<JsonObject> from_file(std::wstring_view file_name)
     {
         try
