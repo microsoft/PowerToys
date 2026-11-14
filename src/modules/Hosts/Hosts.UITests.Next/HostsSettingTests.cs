@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -106,21 +107,24 @@ namespace Hosts.UITests
                 "Should show warning dialog");
 
             // Quit Hosts File Editor.
+            using var hostsProcess = Process.GetProcessById(hostsSession.ProcessId);
+            _ = hostsProcess.Handle;
             var quitButton = hostsSession.FindExact<Button>("Quit");
             Assert.IsTrue(
                 WindowControl.WaitForForeground(new IntPtr(hostsSession.WindowHandle), timeoutMS: 5_000, requiredConsecutiveMatches: 3),
                 $"Hosts should own foreground before clicking Quit. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
             quitButton.Click(msPostAction: 0);
 
-            // Observe native window closure; a UIA query against the closing window can block.
+            // Quit calls Environment.Exit(0); Win10 can retain a stale HWND after process exit.
             var quitResult = WaitHelper.WaitForStable(
-                IsHostsFileEditorClosed,
-                closed => closed,
+                () => hostsProcess.HasExited,
+                exited => exited,
                 15_000,
                 requiredConsecutiveMatches: 3);
             Assert.IsTrue(
                 quitResult.Succeeded,
-                $"Hosts File Editor should be closed after click Quit button in Warning Dialog; windows={string.Join(", ", WindowsFinder.ListByApp("PowerToys.Hosts"))}.");
+                $"Hosts File Editor should exit after clicking Quit in the Warning Dialog; windows={string.Join(", ", WindowsFinder.ListByApp("PowerToys.Hosts"))}.");
+            Assert.AreEqual(0, hostsProcess.ExitCode, "The startup Quit command should exit cleanly.");
             TestContext.WriteLine("Startup Quit closed the editor.");
 
             // Re-launch Hosts File Editor from Settings.
