@@ -30,13 +30,20 @@ namespace PowerDisplay
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
+        private const uint WmSettingChange = 0x001A;
+        private const uint WmDisplayChange = 0x007E;
+        private const uint WmDpiChanged = 0x02E0;
+
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
+        private readonly FlyoutPlacementSession _placementSession = new();
         private MainViewModel? _viewModel;
         private HotkeyService? _hotkeyService;
         private WindowMessageHook? _messageHook;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
+
+        internal Func<RectInt32?>? TrayIconBoundsProvider { get; set; }
 
         public MainWindow()
         {
@@ -75,7 +82,14 @@ namespace PowerDisplay
                 // 6. Subclass WndProc to route WM_HOTKEY messages into HotkeyService.
                 Logger.LogTrace("MainWindow constructor: Setting up WindowMessageHook");
                 _messageHook = new WindowMessageHook(this, (uMsg, wParam, _) =>
-                    _hotkeyService?.HandleMessage(uMsg, wParam) == true);
+                {
+                    if (uMsg is WmSettingChange or WmDisplayChange or WmDpiChanged)
+                    {
+                        QueuePlacementValidation();
+                    }
+
+                    return _hotkeyService?.HandleMessage(uMsg, wParam) == true;
+                });
                 Logger.LogTrace("MainWindow constructor: HotkeyService initialized");
 
                 Logger.LogTrace("MainWindow constructor: Setting IsShownInSwitchers property");
@@ -137,7 +151,6 @@ namespace PowerDisplay
         }
 
         private bool _hasInitialized;
-        private bool _isShowingWindow;
         private CancellationTokenSource? _cliServerCts;
 
         private void ShowError(string message)
@@ -147,12 +160,11 @@ namespace PowerDisplay
 
         private void OnWindowActivated(object sender, WindowActivatedEventArgs args)
         {
-            Logger.LogTrace($"OnWindowActivated: WindowActivationState={args.WindowActivationState}, _isShowingWindow={_isShowingWindow}");
+            Logger.LogTrace($"OnWindowActivated: WindowActivationState={args.WindowActivationState}, isShowingWindow={_placementSession.IsShowing}");
 
-            // Auto-hide window when it loses focus (deactivated)
-            // But NOT during ShowWindow() sequence — the first Activate() for positioning
-            // may briefly deactivate before the final Activate()/Show() brings it back.
-            if (args.WindowActivationState == WindowActivationState.Deactivated && !_isShowingWindow)
+            // First presentation can briefly deactivate while the window is prepared.
+            // Keep it visible until the ShowWindow sequence finishes.
+            if (args.WindowActivationState == WindowActivationState.Deactivated && !_placementSession.IsShowing)
             {
                 Logger.LogInfo("OnWindowActivated: Window deactivated, hiding window");
                 HideWindow();
@@ -168,10 +180,29 @@ namespace PowerDisplay
 
         public void ShowWindow()
         {
+            ShowWindowCore(null, isTrayActivation: false);
+        }
+
+        private void ShowWindowCore(RectInt32? trayAnchor, bool isTrayActivation)
+        {
             Logger.LogInfo($"ShowWindow: Called, _hasInitialized={_hasInitialized}");
-            _isShowingWindow = true;
             try
             {
+                FlyoutPlacementContext? placement;
+                bool hasPlacement = isTrayActivation && trayAnchor is RectInt32 anchor
+                    ? FlyoutWindowHelper.TryCreatePlacementAtAnchor(anchor, out placement)
+                    : FlyoutWindowHelper.TryCreatePlacementAtCursor(
+                        isTrayActivation ? null : TrayIconBoundsProvider?.Invoke(),
+                        out placement);
+
+                if (!hasPlacement || placement is null)
+                {
+                    Logger.LogWarning("ShowWindow: Unable to determine a flyout placement");
+                    return;
+                }
+
+                _placementSession.BeginShow(placement);
+
                 // If not initialized, log warning but continue showing
                 if (!_hasInitialized)
                 {
@@ -181,6 +212,11 @@ namespace PowerDisplay
                 // Adjust size and position on the correct monitor
                 // (DPI change suppression is handled inside AdjustWindowSizeToContent)
                 AdjustWindowSizeToContent();
+
+                if (_placementSession.Current is null)
+                {
+                    return;
+                }
 
                 // CRITICAL: WinUI3 windows must be Activated at least once to display properly.
                 // In PowerToys mode, window is created but never activated until first show.
@@ -201,18 +237,21 @@ namespace PowerDisplay
             }
             catch (Exception ex)
             {
+                _placementSession.Clear();
                 Logger.LogError($"ShowWindow: Failed to show window: {ex.Message}\n{ex.StackTrace}");
                 throw;
             }
             finally
             {
-                _isShowingWindow = false;
+                _placementSession.FinishShow();
             }
         }
 
         public void HideWindow()
         {
             Logger.LogInfo("HideWindow: Hiding window");
+
+            _placementSession.Clear();
 
             // Hide window
             this.Hide();
@@ -236,6 +275,16 @@ namespace PowerDisplay
         /// </summary>
         public void ToggleWindow()
         {
+            ToggleWindowCore(null, isTrayActivation: false);
+        }
+
+        internal void ToggleWindow(RectInt32? trayAnchor)
+        {
+            ToggleWindowCore(trayAnchor, isTrayActivation: true);
+        }
+
+        private void ToggleWindowCore(RectInt32? trayAnchor, bool isTrayActivation)
+        {
             bool currentlyVisible = IsWindowVisible();
             Logger.LogInfo($"ToggleWindow: Called, current visibility={currentlyVisible}");
             try
@@ -248,7 +297,7 @@ namespace PowerDisplay
                 else
                 {
                     Logger.LogInfo("ToggleWindow: Window is hidden, showing");
-                    ShowWindow();
+                    ShowWindowCore(trayAnchor, isTrayActivation);
                 }
 
                 Logger.LogInfo($"ToggleWindow: Completed, new visibility={IsWindowVisible()}");
@@ -298,6 +347,39 @@ namespace PowerDisplay
         {
             // Use Low priority to ensure x:Bind visibility/layout updates land before measuring.
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, AdjustWindowSizeToContent);
+        }
+
+        private void QueuePlacementValidation()
+        {
+            var placement = _placementSession.Current;
+            if (placement is null)
+            {
+                return;
+            }
+
+            var generation = _placementSession.Generation;
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                // A notification queued by an earlier display session must not close a
+                // window that the user has since reopened with a fresh anchor.
+                if (generation != _placementSession.Generation || !_placementSession.CanApplyLayout(this.Visible))
+                {
+                    return;
+                }
+
+                try
+                {
+                    if (!FlyoutWindowHelper.IsPlacementCurrent(placement))
+                    {
+                        HideWindow();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"Unable to validate flyout placement: {ex.Message}");
+                    HideWindow();
+                }
+            });
         }
 
         private void OnRefreshClick(object sender, RoutedEventArgs e)
@@ -350,9 +432,6 @@ namespace PowerDisplay
                 // Using minimal height prevents the "large window shrinking" flicker.
                 this.SetWindowSize(AppConstants.UI.WindowWidthDip, AppConstants.UI.WindowMinHeightDip);
 
-                // Position window at bottom right corner
-                PositionWindowAtBottomRight();
-
                 // Set window title
                 this.AppWindow.Title = "Power Display";
 
@@ -385,12 +464,19 @@ namespace PowerDisplay
         {
             try
             {
-                if (RootGrid == null)
+                var placement = _placementSession.Current;
+                if (RootGrid == null || placement is null || !_placementSession.CanApplyLayout(this.Visible))
                 {
                     return;
                 }
 
-                var maxHeightDip = GetAdaptiveWindowMaxHeightDip();
+                if (!FlyoutWindowHelper.IsPlacementCurrent(placement))
+                {
+                    HideWindow();
+                    return;
+                }
+
+                var maxHeightDip = GetAdaptiveWindowMaxHeightDip(placement);
                 if (MainScrollViewer != null)
                 {
                     MainScrollViewer.MaxHeight = double.PositiveInfinity;
@@ -415,66 +501,43 @@ namespace PowerDisplay
 
                 // FlyoutWindowHelper handles cross-monitor DPI internally via a 1×1 teleport
                 // before the final move, so no WM_DPICHANGED suppression is required here.
-                FlyoutWindowHelper.PositionWindowBottomRight(
+                if (!FlyoutWindowHelper.PositionWindowNearAnchor(
                     this,
+                    placement,
                     AppConstants.UI.WindowWidthDip,
                     finalHeightDip,
-                    AppConstants.UI.WindowRightMarginDip,
-                    AppConstants.UI.WindowBottomMarginDip);
+                    AppConstants.UI.WindowBottomMarginDip))
+                {
+                    HideWindow();
+                }
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Error adjusting window size: {ex.Message}");
+                HideWindow();
             }
         }
 
-        private static int GetAdaptiveWindowMaxHeightDip()
+        private static int GetAdaptiveWindowMaxHeightDip(FlyoutPlacementContext placement)
         {
-            if (!FlyoutWindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
-            {
-                return AppConstants.UI.WindowMaxHeightDip;
-            }
-
-            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
-            int workAreaHeightDip = FlyoutWindowHelper.ScaleToDip(displayArea.WorkArea.Height, dpiScale);
+            int workAreaHeightDip = FlyoutWindowHelper.ScaleToDip(placement.WorkArea.Height, placement.DpiScale);
             return (int)Math.Floor(workAreaHeightDip * AppConstants.UI.WindowMaxWorkAreaHeightRatio);
         }
 
-        private static double GetAdaptiveFlyoutMaxWidthDip()
+        private double GetAdaptiveFlyoutMaxWidthDip()
         {
-            if (!FlyoutWindowHelper.TryGetDisplayAreaAtCursor(out var displayArea) || displayArea is null)
+            var placement = _placementSession.Current;
+            if (placement is null)
             {
                 return AppConstants.UI.FlyoutContextMenuMaxWidthDip;
             }
 
-            double dpiScale = FlyoutWindowHelper.GetDpiScale(displayArea);
-            int workAreaWidthDip = FlyoutWindowHelper.ScaleToDip(displayArea.WorkArea.Width, dpiScale);
+            int workAreaWidthDip = FlyoutWindowHelper.ScaleToDip(placement.WorkArea.Width, placement.DpiScale);
             double adaptiveMaxWidthDip = Math.Floor(workAreaWidthDip * AppConstants.UI.FlyoutContextMenuMaxWorkAreaWidthRatio);
 
             return Math.Max(
                 AppConstants.UI.FlyoutContextMenuMaxWidthDip,
                 Math.Min(AppConstants.UI.FlyoutContextMenuAdaptiveMaxWidthDip, adaptiveMaxWidthDip));
-        }
-
-        private void PositionWindowAtBottomRight()
-        {
-            try
-            {
-                var windowHeightDip = this.Height > 0
-                    ? (int)Math.Ceiling(this.Height)
-                    : AppConstants.UI.WindowMinHeightDip;
-
-                FlyoutWindowHelper.PositionWindowBottomRight(
-                    this,  // MainWindow inherits from WindowEx
-                    AppConstants.UI.WindowWidthDip,
-                    windowHeightDip,
-                    AppConstants.UI.WindowRightMarginDip,
-                    AppConstants.UI.WindowBottomMarginDip);
-            }
-            catch (Exception)
-            {
-                // Window positioning failures are non-critical, silently ignore
-            }
         }
 
         /// <summary>
@@ -532,6 +595,7 @@ namespace PowerDisplay
 
         public void Dispose()
         {
+            _placementSession.Clear();
             _cliServerCts?.Cancel();
             _cliServerCts?.Dispose();
             _cliServerCts = null;
