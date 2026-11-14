@@ -5,6 +5,12 @@ namespace HostsUILib.Helpers
 {
     public static class LoggerInstance
     {
-        public static ILogger Logger { get; set; }
+        private static ILogger _logger = NullLogger.Instance;
+
+        public static ILogger Logger
+        {
+            get => _logger;
+            set => _logger = value ?? NullLogger.Instance;
+        }
     }
 }

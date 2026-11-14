@@ -45,7 +45,16 @@
             <RowDefinition Height="*" />
             <!--  Content  -->
         </Grid.RowDefinitions>
-        <Grid>
+        <InfoBar
+            x:Uid="PolicyDisabled"
+            Grid.RowSpan="2"
+            VerticalAlignment="Top"
+            IsClosable="False"
+            IsOpen="{x:Bind ViewModel.IsDisabledByPolicy, Mode=OneTime}"
+            Severity="Error"
+            Visibility="{x:Bind ViewModel.IsDisabledByPolicy, Mode=OneTime, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+        <Grid Visibility="{x:Bind ViewModel.IsDisabledByPolicy, Mode=OneTime, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
             <!--  Buttons  -->
             <Button x:Uid="AddEntryBtn" Command="{x:Bind NewDialogCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
@@ -142,7 +151,8 @@
                     Command="{x:Bind ViewModel.OpenSettingsCommand}"
                     Content="{ui:FontIcon Glyph=&#xe713;,
                                           FontSize=16}"
-                    Style="{StaticResource SubtleButtonStyle}" />
+                    Style="{StaticResource SubtleButtonStyle}"
+                    Visibility="{x:Bind ViewModel.CanOpenSettings, Mode=OneTime, Converter={StaticResource BoolToVisibilityConverter}}" />
             </StackPanel>
         </Grid>
 
@@ -152,7 +162,7 @@
             CanDragItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
             CanReorderItems="{x:Bind ViewModel.Filtered, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}"
         -->
-        <Grid Grid.Row="1" Visibility="{x:Bind ViewModel.IsLoading, Converter={StaticResource BoolToInvertedVisibilityConverter}, Mode=OneWay}">
+        <Grid Grid.Row="1" Visibility="{x:Bind GetContentVisibility(ViewModel.IsLoading), Mode=OneWay}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
@@ -357,6 +367,20 @@
             </StackPanel>
 
             <StackPanel Grid.Row="1">
+                <InfoBar
+                    x:Uid="NotElevated"
+                    Margin="0,8,0,0"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.ShowElevationPrompt, Mode=OneTime}"
+                    Severity="Informational"
+                    Visibility="{x:Bind ViewModel.ShowElevationPrompt, Mode=OneTime, Converter={StaticResource BoolToVisibilityConverter}}">
+                    <InfoBar.ActionButton>
+                        <Button
+                            x:Uid="RestartAsAdmin"
+                            HorizontalAlignment="Right"
+                            Command="{x:Bind ViewModel.RequestElevationCommand}" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
                 <InfoBar
                     x:Uid="FileSaveError"
                     Margin="0,8,0,0"

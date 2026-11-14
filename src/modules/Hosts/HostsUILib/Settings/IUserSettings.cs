@@ -30,6 +30,11 @@ namespace HostsUILib.Settings
 
         public delegate void OpenSettingsFunction();
 
+        /// <summary>
+        /// Invoked when the user quits from the startup warning dialog.
+        /// </summary>
+        public delegate void QuitFunction();
+
         public bool NoLeadingSpaces { get; }
     }
 }

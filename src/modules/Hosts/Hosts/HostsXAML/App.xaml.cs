@@ -64,6 +64,10 @@ namespace Hosts
             {
                 SettingsDeepLink.OpenSettings();
             });
+            services.AddSingleton<QuitFunction>(() =>
+            {
+                DispatcherQueue.GetForCurrentThread().TryEnqueue(() => Environment.Exit(0));
+            });
 
             services.AddSingleton<MainViewModel, MainViewModel>();
             services.AddSingleton<HostsMainPage, HostsMainPage>();
