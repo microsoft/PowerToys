@@ -442,11 +442,19 @@ namespace ManagedCommon
                         }
                     }
 
-                    formatString = string.Concat(formatString.AsSpan(0, formatterPosition), GetStringRepresentation(color.Value, paramFormat, paramType), formatString.AsSpan(formatterPosition + paramCount + 1));
+                    string replacement = GetStringRepresentation(color.Value, paramFormat, paramType);
+                    formatString = string.Concat(formatString.AsSpan(0, formatterPosition), replacement, formatString.AsSpan(formatterPosition + paramCount + 1));
+
+                    // continue searching after the inserted value; it can be empty, so do not assume it is at least one character long
+                    formatterPosition += replacement.Length;
+                }
+                else
+                {
+                    formatterPosition++;
                 }
 
                 // search for the next occurrence of the formatter char
-                formatterPosition = formatString.IndexOf('%', formatterPosition + 1);
+                formatterPosition = formatString.IndexOf('%', formatterPosition);
             }
 
             return formatString;
@@ -587,7 +595,10 @@ namespace ManagedCommon
                     return colorByteValue.ToString(FormatTypeToStringFormatters[paramFormat], CultureInfo.InvariantCulture);
                 case 'f':
                 case 'F':
-                    return (colorByteValue / 255d).ToString(FormatTypeToStringFormatters[paramFormat], CultureInfo.InvariantCulture);
+                    string floatValue = (colorByteValue / 255d).ToString(FormatTypeToStringFormatters[paramFormat], CultureInfo.InvariantCulture);
+
+                    // the "F" format (".##") renders values that round to zero as an empty string
+                    return floatValue.Length == 0 ? "0" : floatValue;
                 default: return colorByteValue.ToString(CultureInfo.InvariantCulture);
             }
         }
