@@ -18,6 +18,11 @@ internal static partial class NativeMethods
     internal const int WS_EX_CLIENTEDGE = 0x00000200;
     internal const int WS_EX_DLGMODALFRAME = 0x00000001;
 
+    internal const uint WM_GETICON = 0x007F;
+    internal const int ICON_BIG = 1;
+    internal const int ICON_SMALL2 = 2;
+    internal const uint SMTO_ABORTIFHUNG = 0x0002;
+
     internal const uint ABM_GETTASKBARPOS = 0x00000005;
     internal const uint ABE_LEFT = 0;
     internal const uint ABE_TOP = 1;
@@ -77,6 +82,15 @@ internal static partial class NativeMethods
 
     [LibraryImport("user32.dll")]
     internal static partial short GetAsyncKeyState(int vKey);
+
+    [LibraryImport("user32.dll")]
+    internal static partial IntPtr SendMessageTimeoutW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);
+
+    [LibraryImport("shell32.dll")]
+    internal static partial int SHGetPropertyStoreForWindow(IntPtr hwnd, in Guid riid, out IntPtr ppv);
+
+    [LibraryImport("ole32.dll")]
+    internal static partial int PropVariantClear(ref PROPVARIANT value);
 
     [DllImport("../PowerToys.Interop.dll", EntryPoint = "get_buttons")]
     internal static extern IntPtr GetTasklistButtons(IntPtr monitor, out int size);
@@ -209,6 +223,27 @@ internal static partial class NativeMethods
         public uint UEdge;
         public RECT Rc;
         public IntPtr LParam;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PROPERTYKEY
+    {
+        public Guid FmtId;
+        public uint PId;
+    }
+
+    /// <summary>
+    /// Blittable PROPVARIANT layout. Only pointer-sized values such as VT_LPWSTR are read.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct PROPVARIANT
+    {
+        public ushort Vt;
+        public ushort Reserved1;
+        public ushort Reserved2;
+        public ushort Reserved3;
+        public IntPtr Value;
+        public IntPtr Value2;
     }
 
     public enum MonitorFromWindowDwFlags

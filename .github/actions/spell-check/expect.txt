@@ -324,6 +324,7 @@ cropandlock
 CROPTOSQUARE
 Crossdevice
 crt
+crx
 csdevkit
 cso
 CSRW

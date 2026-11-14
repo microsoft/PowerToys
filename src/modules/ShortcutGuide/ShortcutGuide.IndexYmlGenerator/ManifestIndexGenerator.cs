@@ -29,6 +29,8 @@ namespace ShortcutGuide.IndexYmlGenerator
             public string? WindowFilter { get; init; }
 
             public bool BackgroundProcess { get; init; }
+
+            public string? AppUserModelId { get; init; }
         }
 
         private const int InitialIndexFileCapacity = 4096;
@@ -38,6 +40,7 @@ namespace ShortcutGuide.IndexYmlGenerator
         private const string PackageNamePrefix = "PackageName:";
         private const string WindowFilterPrefix = "WindowFilter:";
         private const string BackgroundProcessPrefix = "BackgroundProcess:";
+        private const string AppUserModelIdPrefix = "AppUserModelId:";
         private const string ShortcutsPrefix = "Shortcuts:";
 
         public static string DefaultManifestsPath => Path.Combine(
@@ -149,12 +152,12 @@ namespace ShortcutGuide.IndexYmlGenerator
 
             // Reduce the parsed headers into the grouped and sorted structure for the
             // index file.
-            Dictionary<(string WindowFilter, bool BackgroundProcess), HashSet<string>> processes =
+            Dictionary<(string WindowFilter, bool BackgroundProcess, string? AppUserModelId), HashSet<string>> processes =
                 new(parsedHeaders.Count);
 
             foreach (var header in parsedHeaders)
             {
-                var key = (header.WindowFilter!, header.BackgroundProcess);
+                var key = (header.WindowFilter!, header.BackgroundProcess, header.AppUserModelId);
                 if (!processes.TryGetValue(key, out HashSet<string>? apps))
                 {
                     apps = new HashSet<string>(StringComparer.Ordinal);
@@ -169,17 +172,28 @@ namespace ShortcutGuide.IndexYmlGenerator
             sb.AppendLine("DefaultShellName: +WindowsNT.Shell");
             sb.AppendLine("Index:");
 
-            List<(string WindowFilter, bool BackgroundProcess)> sortedKeys = new(processes.Keys);
+            List<(string WindowFilter, bool BackgroundProcess, string? AppUserModelId)> sortedKeys = new(processes.Keys);
             sortedKeys.Sort(static (a, b) =>
             {
                 int cmp = string.Compare(a.WindowFilter, b.WindowFilter, StringComparison.Ordinal);
-                return cmp != 0 ? cmp : a.BackgroundProcess.CompareTo(b.BackgroundProcess);
+                if (cmp != 0)
+                {
+                    return cmp;
+                }
+
+                cmp = a.BackgroundProcess.CompareTo(b.BackgroundProcess);
+                return cmp != 0 ? cmp : string.Compare(a.AppUserModelId, b.AppUserModelId, StringComparison.Ordinal);
             });
 
             foreach (var key in sortedKeys)
             {
                 sb.AppendLine(CultureInfo.InvariantCulture, $"- WindowFilter: {FormatYamlScalar(key.WindowFilter)}");
                 sb.AppendLine(CultureInfo.InvariantCulture, $"  BackgroundProcess: {(key.BackgroundProcess ? "true" : "false")}");
+                if (key.AppUserModelId != null)
+                {
+                    sb.AppendLine(CultureInfo.InvariantCulture, $"  AppUserModelId: {FormatYamlScalar(key.AppUserModelId)}");
+                }
+
                 sb.AppendLine("  Apps:");
 
                 List<string> apps = new(processes[key]);
@@ -224,6 +238,7 @@ namespace ShortcutGuide.IndexYmlGenerator
             warning = null;
             string? packageName = null;
             string? windowFilter = null;
+            string? appUserModelId = null;
             bool backgroundProcess = false;
             bool hasBackgroundProcess = false;
             bool hasAnyNonEmptyContent = false;
@@ -257,10 +272,15 @@ namespace ShortcutGuide.IndexYmlGenerator
                     backgroundProcess = ExtractBoolScalar(rawLine[BackgroundProcessPrefix.Length..], filename, "BackgroundProcess");
                     hasBackgroundProcess = true;
                 }
+                else if (rawLine.StartsWith(AppUserModelIdPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    appUserModelId = ExtractStringScalar(rawLine[AppUserModelIdPrefix.Length..], filename, "AppUserModelId");
+                }
                 else if (rawLine.StartsWith(ShortcutsPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Only short-circuit if all top-level header fields have already been parsed.
-                    // BackgroundProcess may appear before or after Shortcuts.
+                    // Only short-circuit if all required top-level header fields have already been parsed.
+                    // BackgroundProcess may appear before or after Shortcuts. The optional
+                    // AppUserModelId field must appear before Shortcuts.
                     if (packageName != null && windowFilter != null && hasBackgroundProcess)
                     {
                         break;
@@ -294,6 +314,7 @@ namespace ShortcutGuide.IndexYmlGenerator
                 PackageName = packageName,
                 WindowFilter = windowFilter,
                 BackgroundProcess = backgroundProcess,
+                AppUserModelId = string.IsNullOrWhiteSpace(appUserModelId) ? null : appUserModelId,
             };
 
             return true;

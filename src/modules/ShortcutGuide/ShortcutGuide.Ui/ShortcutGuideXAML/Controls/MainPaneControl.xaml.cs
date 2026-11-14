@@ -259,18 +259,23 @@ namespace ShortcutGuide.Controls
                 return;
             }
 
+            this._selectedAppName = selectedItem.Name;
+            App.CurrentAppName = this._selectedAppName;
+            this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
+
             if (selectedItem.Icon is FontIcon && _currentApplicationIds.TryGetValue(selectedItem.Name, out string? exePath))
             {
-                BitmapImage? bitmap = IconHelper.TryGetExecutableIcon(exePath);
+                // Manifests with an AppUserModelId only match the foreground window, which
+                // carries the app's own icon (for example a web app hosted by a browser).
+                BitmapImage? bitmap = (string.IsNullOrEmpty(this._shortcutFile?.AppUserModelId)
+                    ? null
+                    : IconHelper.TryGetWindowIcon(Program.ForegroundWindowHandle))
+                    ?? IconHelper.TryGetExecutableIcon(exePath);
                 if (bitmap is not null)
                 {
                     selectedItem.Icon = new ImageIcon { Source = bitmap };
                 }
             }
-
-            this._selectedAppName = selectedItem.Name;
-            App.CurrentAppName = this._selectedAppName;
-            this._shortcutFile = ManifestInterpreter.GetShortcutsOfApplication(this._selectedAppName);
 
             bool exposesTaskbarSection = false;
 

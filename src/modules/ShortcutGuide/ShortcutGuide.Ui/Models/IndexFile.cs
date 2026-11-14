@@ -12,6 +12,8 @@ namespace ShortcutGuide.Models
 
             public bool BackgroundProcess { get; set; }
 
+            public string? AppUserModelId { get; set; }
+
             public string[] Apps { get; set; }
         }
 
