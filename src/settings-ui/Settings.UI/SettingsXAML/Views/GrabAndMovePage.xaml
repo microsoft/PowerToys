@@ -59,6 +59,9 @@
                     <tkcontrols:SettingsCard x:Uid="GrabAndMove_ShowGeometry" HeaderIcon="{ui:FontIcon Glyph=&#xE809;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowGeometry, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="GrabAndMove_BringToFrontOnGrab" HeaderIcon="{ui:FontIcon Glyph=&#xE81E;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.BringToFrontOnGrab, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="ExcludedApps" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
