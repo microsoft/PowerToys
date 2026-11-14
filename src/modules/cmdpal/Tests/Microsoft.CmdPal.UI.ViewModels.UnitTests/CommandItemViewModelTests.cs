@@ -233,6 +233,30 @@ public partial class CommandItemViewModelTests
     }
 
     [TestMethod]
+    [DataRow(null, "item-icon")]
+    [DataRow("command-icon", "command-icon")]
+    public void InitializeProperties_GivesThePrimaryContextItemTheCommandIconOrTheItemIcon(string? commandIcon, string expectedIcon)
+    {
+        // Fast init creates the primary context item before the icons load, and a toolkit command
+        // without an icon still returns an empty one. Neither may leave the primary entry without an icon.
+        var pageContext = new TestPageContext();
+        var command = new NoOpCommand { Name = "Primary" };
+        if (commandIcon is not null)
+        {
+            command.Icon = new IconInfo(commandIcon);
+        }
+
+        var item = new CommandItem(command) { Icon = new IconInfo("item-icon") };
+
+        var viewModel = new CommandItemViewModel(new(item), new WeakReference<IPageContext>(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.InitializeProperties();
+
+        var primary = (CommandContextItemViewModel)viewModel.AllCommands[0];
+        Assert.AreEqual(expectedIcon, primary.Icon.Light.Icon);
+        GC.KeepAlive(pageContext);
+    }
+
+    [TestMethod]
     public void FastInitializeProperties_CachesListPageShapeWithoutAccessingFilters()
     {
         var pageContext = new TestPageContext();
