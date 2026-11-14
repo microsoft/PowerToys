@@ -162,11 +162,12 @@ public static class RunHistory
                 IsUri = false,
                 FilePath = filePath,
                 Arguments = arguments,
+                TargetFound = true,
             };
         }
 
         // Fall back to user command line evaluation (like _EvaluateUserCommandLine)
-        result = EvaluateUserCommandLine(commandLine, workingDirectory, out filePath, out arguments);
+        result = EvaluateUserCommandLine(commandLine, workingDirectory, out filePath, out arguments, out var targetFound);
 
         return new ParseCommandlineResult
         {
@@ -174,6 +175,7 @@ public static class RunHistory
             IsUri = false,
             FilePath = filePath,
             Arguments = arguments,
+            TargetFound = targetFound,
         };
     }
 
@@ -342,10 +344,15 @@ public static class RunHistory
         string command,
         string workingDirectory,
         out string filePath,
-        out string arguments)
+        out string arguments,
+        out bool targetFound)
     {
         filePath = string.Empty;
         arguments = string.Empty;
+
+        // Only a candidate TryResolveExecutable resolves was found. The quoted path and the split at
+        // the first space below aren't checked.
+        targetFound = false;
 
         if (string.IsNullOrEmpty(command))
         {
@@ -390,6 +397,7 @@ public static class RunHistory
             if (TryResolveExecutable(candidate, out var resolved))
             {
                 filePath = resolved;
+                targetFound = true;
 
                 // The rest are arguments - build manually to avoid LINQ
                 if (i + 1 < parts.Length)

@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Ext.Run;
 using Microsoft.CmdPal.Ext.UnitTestBase;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -678,6 +679,47 @@ public class RunPageTests : CommandPaletteUnitTestBase
                     $"Expected TextToSuggest to start with ~ or {userProfile}, but got {item.TextToSuggest}");
             }
         }
+    }
+
+    [TestMethod]
+    [DataRow("https://example.com/app.exe", false)]
+    [DataRow("cmdpal-missing-command /c", false)]
+    [DataRow("cmd /c echo test", true)]
+    [DataRow("C:\\Windows", true)]
+    [DataRow("\"C:\\Program Files\"", true)]
+    public async Task CommandLineItem_ShowsAShellIconOnlyForAnExistingPath(string commandLine, bool expectFileIcon)
+    {
+        // Setup
+        var nativeService = CreateMockHistoryService().Object;
+        using var page = new RunListPage(nativeService, telemetryService: null);
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = commandLine; });
+
+        // A URI or a missing path would ask the Shell for the icon of a path that isn't there,
+        // parsing doesn't check a quoted path, the page's own check finds the folder
+        var item = page.GetItems().OfType<RunCommandLineItem>().Single();
+        Assert.AreEqual(expectFileIcon, ShellItemIconProtocol.IsProtocol(item.Icon?.Light?.Icon), item.Icon?.Light?.Icon);
+
+        // The rest show the Run icon, not an empty one
+        Assert.AreEqual(!expectFileIcon, ReferenceEquals(Icons.RunGeneric, item.Icon));
+    }
+
+    [TestMethod]
+    public async Task CommandLineItem_ShowsTheFileIconOfAFileOnlyThePageFound()
+    {
+        // Setup
+        // Parsing doesn't report finding the file, as for a quoted path, but the file exists
+        var file = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+        var historyService = CreateMockHistoryService();
+        historyService.Setup(x => x.ParseCommandline(It.IsAny<string>(), It.IsAny<string>()))
+                      .Returns(new ParseCommandlineResult { FilePath = file, Arguments = string.Empty, TargetFound = false });
+        using var page = new RunListPage(historyService.Object, telemetryService: null);
+
+        await UpdatePageAndWaitForItems(page, () => { page.SearchText = "\"cmd.exe\""; });
+
+        // The page's own file check found it, so the row shows its icon
+        var item = page.GetItems().OfType<RunCommandLineItem>().Single();
+        Assert.IsTrue(ShellItemIconProtocol.IsProtocol(item.Icon?.Light?.Icon));
     }
 
     [TestMethod]

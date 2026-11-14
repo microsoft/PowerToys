@@ -1,0 +1,7 @@
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+    <!-- Drawn upright, then slanted 1:4 around y=20. Horizontal edges sit on even units, so they land on whole pixels at 20 and 40 px. -->
+    <g transform="matrix(1,0,-0.25,1,5,0)" fill="black" fill-opacity="0.62">
+        <path fill-rule="evenodd" d="M11,4H29C33.418,4 37,7.582 37,12V28C37,32.418 33.418,36 29,36H11C6.582,36 3,32.418 3,28V12C3,7.582 6.582,4 11,4ZM11,8H29C31.209,8 33,9.791 33,12V14H7V12C7,9.791 8.791,8 11,8ZM7,18H33V28C33,30.209 31.209,32 29,32H11C8.791,32 7,30.209 7,28Z"/>
+        <rect x="11" y="22" width="18" height="6"/>
+    </g>
+</svg>
