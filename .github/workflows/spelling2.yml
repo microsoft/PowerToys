@@ -48,7 +48,7 @@ name: Spell checking
 # on:
 #   push:
 #     ...
-#   pull_request_target:
+#   pull_request:
 #     ...
 # jobs:
 #   # you only want the spelling job, all others should be omitted
@@ -63,7 +63,7 @@ on:
       - "**"
     tags-ignore:
       - "**"
-  pull_request_target:
+  pull_request:
     branches:
       - "**"
     types:
@@ -107,7 +107,8 @@ jobs:
           report-timing: 1
           warnings: bad-regex,binary-file,deprecated-feature,ignored-expect-variant,large-file,limited-references,no-newline-at-eof,noisy-file,non-alpha-in-dictionary,token-is-substring,unexpected-line-ending,whitespace-in-dictionary,minified-file,unsupported-configuration,no-files-to-check,unclosed-block-ignore-begin,unclosed-block-ignore-end
           experimental_apply_changes_via_bot: 1
-          use_sarif: 1
+          # The action probes SARIF access with a tag ref, which fork PR tokens cannot write.
+          use_sarif: ${{ github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository }}
           check_extra_dictionaries: ""
           dictionary_source_prefixes: >
             {
@@ -162,7 +163,7 @@ jobs:
     permissions:
       actions: read
       pull-requests: write
-    if: (success() || failure()) && needs.spelling.outputs.followup && contains(github.event_name, 'pull_request')
+    if: (success() || failure()) && needs.spelling.outputs.followup && contains(github.event_name, 'pull_request') && github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: comment
         uses: check-spelling/check-spelling@cfb6f7e75bbfc89c71eaa30366d0c166f1bd9c8c # v0.0.26
