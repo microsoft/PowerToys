@@ -123,6 +123,76 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="MouseUtils_SeamlessCursor" AutomationProperties.AutomationId="MouseUtils_SeamlessCursorTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsSeamlessCursorEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableSeamlessCursor"
+                            x:Uid="MouseUtils_Enable_SeamlessCursor"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                            IsEnabled="{x:Bind ViewModel.IsSeamlessCursorEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_SeamlessCursorToggleId"
+                                IsOn="{x:Bind ViewModel.IsSeamlessCursorEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <InfoBar
+                        x:Uid="MouseUtils_SeamlessCursor_SingleMonitor"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowSeamlessCursorSingleMonitorNotice, Mode=OneWay}"
+                        Severity="Informational" />
+                    <InfoBar
+                        x:Uid="MouseUtils_SeamlessCursor_NotCalibrated"
+                        IsClosable="False"
+                        IsOpen="{x:Bind ViewModel.ShowSeamlessCursorNotCalibratedNotice, Mode=OneWay}"
+                        Severity="Informational" />
+
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsSeamlessCursorCalibrate"
+                        x:Uid="MouseUtils_SeamlessCursor_Calibrate"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xED5E;}"
+                        IsEnabled="{x:Bind ViewModel.IsSeamlessCursorEnabled, Mode=OneWay}">
+                        <Button
+                            x:Uid="MouseUtils_SeamlessCursor_CalibrateButton"
+                            AutomationProperties.AutomationId="MouseUtils_SeamlessCursorCalibrateButtonId"
+                            Command="{x:Bind ViewModel.SeamlessCursorCalibrateCommand}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsSeamlessCursorStopAtEmptyEdges"
+                        x:Uid="MouseUtils_SeamlessCursor_StopAtEmptyEdges"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE71A;}"
+                        IsEnabled="{x:Bind ViewModel.IsSeamlessCursorEnabled, Mode=OneWay}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="MouseUtils_SeamlessCursorStopAtEmptyEdgesToggleId"
+                            IsOn="{x:Bind ViewModel.SeamlessCursorStopAtEmptyEdges, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsSeamlessCursorMapCursorWrap"
+                        x:Uid="MouseUtils_SeamlessCursor_MapCursorWrap"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorWrap.png}"
+                        IsEnabled="{x:Bind ViewModel.IsSeamlessCursorEnabled, Mode=OneWay}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="MouseUtils_SeamlessCursorMapCursorWrapToggleId"
+                            IsOn="{x:Bind ViewModel.SeamlessCursorMapCursorWrap, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Name="MouseUtilsSeamlessCursorResetCalibration"
+                        x:Uid="MouseUtils_SeamlessCursor_ResetCalibration"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7A7;}"
+                        IsEnabled="{x:Bind ViewModel.IsSeamlessCursorEnabled, Mode=OneWay}">
+                        <Button
+                            x:Uid="MouseUtils_SeamlessCursor_ResetCalibrationButton"
+                            AutomationProperties.AutomationId="MouseUtils_SeamlessCursorResetCalibrationButtonId"
+                            Command="{x:Bind ViewModel.SeamlessCursorResetCalibrationCommand}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_FindMyMouse" AutomationProperties.AutomationId="MouseUtils_FindMyMouseTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsFindMyMouseEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard

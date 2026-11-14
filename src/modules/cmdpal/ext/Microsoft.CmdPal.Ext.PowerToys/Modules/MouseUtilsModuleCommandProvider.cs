@@ -59,6 +59,16 @@ internal sealed class MouseUtilsModuleCommandProvider : ModuleCommandProvider
             };
         }
 
+        if (ModuleEnablementService.IsKeyEnabled("SeamlessCursor"))
+        {
+            yield return new ListItem(new CalibrateSeamlessCursorCommand() { Id = "com.microsoft.powertoys.mouseUtils.seamlessCursorCalibrate" })
+            {
+                Title = Resources.MouseUtils_SeamlessCursor_Title,
+                Subtitle = Resources.MouseUtils_SeamlessCursor_Subtitle,
+                Icon = icon,
+            };
+        }
+
         if (ModuleEnablementService.IsKeyEnabled("MouseJump"))
         {
             yield return new ListItem(new ShowMouseJumpPreviewCommand() { Id = "com.microsoft.powertoys.mouseUtils.mouseJump" })

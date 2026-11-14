@@ -997,6 +997,33 @@ namespace PowerToysExtension.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Failed to open the monitor calibration: {0}.
+        /// </summary>
+        internal static string MouseUtils_SeamlessCursor_CalibrateFailed_Format {
+            get {
+                return ResourceManager.GetString("MouseUtils_SeamlessCursor_CalibrateFailed_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Align monitors so the pointer moves smoothly between them.
+        /// </summary>
+        internal static string MouseUtils_SeamlessCursor_Subtitle {
+            get {
+                return ResourceManager.GetString("MouseUtils_SeamlessCursor_Subtitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Calibrate Seamless Multi-Screen Cursor.
+        /// </summary>
+        internal static string MouseUtils_SeamlessCursor_Title {
+            get {
+                return ResourceManager.GetString("MouseUtils_SeamlessCursor_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Open Mouse Utilities settings.
         /// </summary>
         internal static string MouseUtils_Settings_Subtitle {
