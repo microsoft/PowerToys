@@ -1,163 +1,361 @@
+<#
+.SYNOPSIS
+    Validates that NOTICE.md reflects top-level NuGet packages in restored project
+    inventories.
+
+.DESCRIPTION
+    Scans 'project.assets.json' files for managed and native projects without calling
+    dotnet.
+    
+    It extracts top-level package dependencies, filters out System/Microsoft and auto-
+    referenced packages, and verifies that every remaining third-party package is
+    correctly documented in NOTICE.md.
+    
+    Use -Verbose to display NOTICE.md and the complete package inventory with owning
+    projects.
+
+    Missing NOTICE entries always include their owning projects in the difference report.
+    The audit covers existing restore outputs; projects without assets files are not
+    discovered.
+
+.PARAMETER path
+    The root directory to search for project.assets.json files and the NOTICE.md file.
+
+.OUTPUTS
+    Writes a summary report to the console. Exits with code 1 if missing or unexpected
+    packages are found, and 0 if they match perfectly (excluding allowed test packages).
+#>
+#Requires -Version 7
 [CmdletBinding()]
 Param(
-    [Parameter(Mandatory=$True,Position=1)]
+    [Parameter(Mandatory=$True, Position=1)]
     [string]$path
 )
 
-$noticeFile = Get-Content -Raw "NOTICE.md"
+$ErrorActionPreference = 'Stop'
 
-Write-Host $noticeFile
-
-Write-Host "Verifying NuGet packages"
-
-$projFiles = Get-ChildItem $path -Filter *.csproj -force -Recurse
-$projFiles.Count
-
-Write-Host "Going through all csproj files"
-
-$totalList = $projFiles | ForEach-Object -Parallel {
-    $csproj = $_
-    $nugetTemp = @();
-    
-    #Workaround for preventing exit code from dotnet process from reflecting exit code in PowerShell
-    $procInfo = New-Object System.Diagnostics.ProcessStartInfo -Property @{ 
-        FileName               = "dotnet.exe"; 
-        Arguments              = "list $csproj package --no-restore"; 
-        RedirectStandardOutput = $true; 
-        RedirectStandardError  = $true; 
-    }
-    
-    $proc = [System.Diagnostics.Process]::Start($procInfo);
-
-    while (!$proc.StandardOutput.EndOfStream) {
-        $nugetTemp += $proc.StandardOutput.ReadLine();
-    }
-    
-    $proc = $null;
-    $procInfo = $null;
-
-    if($nugetTemp -is [array] -and $nugetTemp.count -gt 3)
-    {
-        # Need to debug this script? Uncomment this line.
-        # Write-Host $csproj "`r`n" $nugetTemp "`r`n"
-        $temp = New-Object System.Collections.ArrayList
-        $temp.AddRange($nugetTemp)
-        $temp.RemoveRange(0, 3)
-
-        foreach($p in $temp) 
-        {
-            # ignore "Auto-referenced" string in the output
-            if ($p -match "Auto-referenced") {
-                continue
-            }
-
-            # breaking item down to usable array and getting 1 and 2, see below of a sample output
-            #    > PACKAGE      VERSION            VERSION
-            # if a package is Auto-referenced, "(A)" will appear in position 1 instead of a version number.
-
-            $p = -split $p
-            $p = $p[1, 2]
-            $tempString = $p[0]
-
-            if([string]::IsNullOrWhiteSpace($tempString))
-            {
-                Continue
-            }
-
-            if($tempString.StartsWith("Microsoft.") -Or $tempString.StartsWith("System."))
-            {
-                Continue
-            }
-
-            echo "- $tempString"
-        }
-	$csproj = $null;
-    }
-} -ThrottleLimit 4 | Sort-Object
-
-$returnList = [System.Collections.Generic.HashSet[string]]($totalList) -join "`r`n"
-
-Write-Host $returnList
-
-# Extract the current package list from NOTICE.md
-$noticePattern = "## NuGet Packages used by PowerToys\s*((?:\r?\n- .+)+)"
-$noticeMatch = [regex]::Match($noticeFile, $noticePattern)
-
-if ($noticeMatch.Success) {
-    $currentNoticePackageList = $noticeMatch.Groups[1].Value.Trim()
-} else {
-    Write-Warning "Warning: Could not find 'NuGet Packages used by PowerToys' section in NOTICE.md"
-    $currentNoticePackageList = ""
+trap {
+    Write-Host -ForegroundColor Red "FAILED: $($_.Exception.Message)"
+    exit 1
 }
 
-# Test-only packages that are allowed to be in NOTICE.md but not in the build
-# (e.g., when BuildTests=false, these packages won't appear in the NuGet list)
-$allowedExtraPackages = @(
-	"- Moq",
-	"- MSTest"
+$root = Get-Item -LiteralPath $path
+if ($root -isnot [System.IO.DirectoryInfo]) {
+    throw "The project root must be a filesystem directory: $path"
+}
+
+$references = @(
+    'System.Collections',
+    'System.Collections.Concurrent',
+    'System.IO.FileSystem',
+    'System.Memory',
+    'System.Threading.Tasks.Parallel',
+    'System.Text.Json'
 )
 
-if (!$noticeFile.Trim().EndsWith($returnList.Trim()))
+if (-not ('PowerToysNoticeAssetsAudit' -as [type])) {
+    Add-Type -ReferencedAssemblies $references -TypeDefinition @'
+using System;
+using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Diagnostics;
+
+// Audits managed and native restore inventories without accepting partial or conflicting
+// package sets.
+public static class PowerToysNoticeAssetsAudit
 {
-	Write-Host -ForegroundColor Yellow "Notice.md does not exactly match NuGet list. Analyzing differences..."
+    // Never return a partial inventory, which could hide missing notices behind
+    // unreadable restore output.
+    public static HashSet<string> CollectTopLevelPackages(
+        string root,
+        ConcurrentDictionary<string, HashSet<string>> inventories)
+    {
+        root = Path.GetFullPath(root);
+        var options = new EnumerationOptions
+        {
+            RecurseSubdirectories = true,
+            IgnoreInaccessible = false,
+            AttributesToSkip = FileAttributes.ReparsePoint | FileAttributes.Hidden | FileAttributes.System
+        };
+        var files = new List<string>();
+        foreach (var f in Directory.EnumerateFiles(root, "project.assets.json", options))
+        {
+            files.Add(f);
+        }
 
-	# Show detailed differences
-	$generatedPackages = $returnList -split "`r`n|`n" | Where-Object { $_.Trim() -ne "" } | Sort-Object
-	$noticePackages = $currentNoticePackageList -split "`r`n|`n" | Where-Object { $_.Trim() -ne "" } | ForEach-Object { $_.Trim() } | Sort-Object
+        if (files.Count == 0)
+        {
+            throw new InvalidDataException(
+                "No project.assets.json files were found. Restore the intended projects before auditing.");
+        }
 
-	Write-Host ""
-	Write-Host -ForegroundColor Cyan "=== DETAILED DIFFERENCE ANALYSIS ==="
-	Write-Host ""
+        var packages = new ConcurrentDictionary<string, byte>(StringComparer.OrdinalIgnoreCase);
+        var errors = new ConcurrentBag<string>();
+        Parallel.ForEach(files, path =>
+        {
+            try
+            {
+                using (var stream = File.OpenRead(path))
+                using (var doc = JsonDocument.Parse(stream))
+                {
+                    if (doc.RootElement.ValueKind != JsonValueKind.Object ||
+                        !doc.RootElement.TryGetProperty("project", out var project) ||
+                        project.ValueKind != JsonValueKind.Object ||
+                        !project.TryGetProperty("restore", out var restore) ||
+                        restore.ValueKind != JsonValueKind.Object ||
+                        !restore.TryGetProperty("projectPath", out var owner) ||
+                        owner.ValueKind != JsonValueKind.String ||
+                        string.IsNullOrWhiteSpace(owner.GetString()) ||
+                        !project.TryGetProperty("frameworks", out var frameworks) ||
+                        frameworks.ValueKind != JsonValueKind.Object ||
+                        !frameworks.EnumerateObject().MoveNext())
+                    {
+                        throw new InvalidDataException(
+                            "Missing project ownership or target-framework metadata.");
+                    }
 
-	# Find packages in proj file list but not in NOTICE.md
-	$missingFromNotice = $generatedPackages | Where-Object { $noticePackages -notcontains $_ }
-	if ($missingFromNotice.Count -gt 0) {
-		Write-Host -ForegroundColor Red "MissingFromNotice (ERROR - these must be added to NOTICE.md):"
-		foreach ($pkg in $missingFromNotice) {
-			Write-Host -ForegroundColor Red "  $pkg"
-		}
-		Write-Host ""
-	}
+                    string projectPath = Path.GetFullPath(owner.GetString(), root);
+                    ValidateProjectPath(root, projectPath);
+                    if (doc.RootElement.TryGetProperty("logs", out var logs))
+                    {
+                        if (logs.ValueKind != JsonValueKind.Array)
+                        {
+                            throw new InvalidDataException("Invalid restore diagnostics.");
+                        }
+                        foreach (var log in logs.EnumerateArray())
+                        {
+                            if (log.TryGetProperty("level", out var level) &&
+                                string.Equals(level.GetString(), "Error", StringComparison.OrdinalIgnoreCase))
+                            {
+                                throw new InvalidDataException(
+                                    "The assets file contains a restore error: " + log.ToString());
+                            }
+                        }
+                    }
 
-	# Find packages in NOTICE.md but not in proj file list
-	$extraInNotice = $noticePackages | Where-Object { $generatedPackages -notcontains $_ }
-	
-	# Filter out allowed extra packages (test-only dependencies)
-	$unexpectedExtra = $extraInNotice | Where-Object { $allowedExtraPackages -notcontains $_ }
-	$allowedExtra = $extraInNotice | Where-Object { $allowedExtraPackages -contains $_ }
+                    var projectPackages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var tfm in frameworks.EnumerateObject())
+                    {
+                        if (tfm.Value.ValueKind != JsonValueKind.Object)
+                        {
+                            throw new InvalidDataException("Invalid target-framework metadata.");
+                        }
+                        if (!tfm.Value.TryGetProperty("dependencies", out var deps))
+                        {
+                            continue;
+                        }
+                        if (deps.ValueKind != JsonValueKind.Object)
+                        {
+                            throw new InvalidDataException("Invalid dependencies metadata.");
+                        }
+                        foreach (var dep in deps.EnumerateObject())
+                        {
+                            if (string.IsNullOrWhiteSpace(dep.Name) ||
+                                dep.Value.ValueKind != JsonValueKind.Object ||
+                                !dep.Value.TryGetProperty("target", out var target) ||
+                                target.ValueKind != JsonValueKind.String)
+                            {
+                                throw new InvalidDataException("Invalid dependency metadata for '" + dep.Name + "'.");
+                            }
+                            // Project references are not packages, even when their names resemble package IDs.
+                            if (string.Equals(target.GetString(), "Project", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+                            if (!string.Equals(target.GetString(), "Package", StringComparison.OrdinalIgnoreCase))
+                            {
+                                throw new InvalidDataException(
+                                    "Unsupported dependency target for '" + dep.Name + "': " + target.GetString());
+                            }
+                            if (dep.Value.TryGetProperty("autoReferenced", out var autoRef))
+                            {
+                                if (autoRef.ValueKind == JsonValueKind.True)
+                                {
+                                    continue;
+                                }
+                                if (autoRef.ValueKind != JsonValueKind.False)
+                                {
+                                    throw new InvalidDataException(
+                                        "Invalid autoReferenced flag for '" + dep.Name + "'.");
+                                }
+                            }
+                            string id = dep.Name;
+                            if (id.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase) ||
+                                id.StartsWith("System.", StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
 
-	if ($allowedExtra.Count -gt 0) {
-		Write-Host -ForegroundColor Green "ExtraInNotice (OK - allowed test-only packages):"
-		foreach ($pkg in $allowedExtra) {
-			Write-Host -ForegroundColor Green "  $pkg"
-		}
-		Write-Host ""
-	}
+                            projectPackages.Add(id);
+                        }
+                    }
+                    if (!inventories.TryAdd(projectPath, projectPackages) &&
+                        !inventories[projectPath].SetEquals(projectPackages))
+                    {
+                        throw new InvalidDataException(
+                            "Conflicting restored package inventories for '" + projectPath + "'. Clean and restore before auditing.");
+                    }
+                    foreach (string id in projectPackages)
+                    {
+                        packages.TryAdd(id, 0);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                errors.Add(path + ": " + ex.Message);
+            }
+        });
+        if (inventories.IsEmpty)
+        {
+            errors.Add("No valid restored project inventories remained.");
+        }
+        if (!errors.IsEmpty)
+        {
+            var sortedErrors = new List<string>(errors);
+            sortedErrors.Sort(StringComparer.OrdinalIgnoreCase);
+            throw new InvalidDataException("Could not collect a complete restored package inventory:" + Environment.NewLine +
+                string.Join(Environment.NewLine, sortedErrors));
+        }
+        return new HashSet<string>(packages.Keys, StringComparer.OrdinalIgnoreCase);
+    }
 
-	if ($unexpectedExtra.Count -gt 0) {
-		Write-Host -ForegroundColor Red "ExtraInNotice (ERROR - unexpected packages in NOTICE.md):"
-		foreach ($pkg in $unexpectedExtra) {
-			Write-Host -ForegroundColor Red "  $pkg"
-		}
-		Write-Host ""
-	}
-
-	# Show counts for summary
-	Write-Host -ForegroundColor Cyan "Summary:"
-	Write-Host "  Proj file list has $($generatedPackages.Count) packages"
-	Write-Host "  NOTICE.md has $($noticePackages.Count) packages"
-	Write-Host "  MissingFromNotice: $($missingFromNotice.Count) packages"
-	Write-Host "  ExtraInNotice (allowed): $($allowedExtra.Count) packages"
-	Write-Host "  ExtraInNotice (unexpected): $($unexpectedExtra.Count) packages"
-	Write-Host ""
-
-	# Fail if there are missing packages OR unexpected extra packages
-	if ($missingFromNotice.Count -gt 0 -or $unexpectedExtra.Count -gt 0) {
-		Write-Host -ForegroundColor Red "FAILED: NOTICE.md mismatch detected."
-		exit 1
-	} else {
-		Write-Host -ForegroundColor Green "PASSED: NOTICE.md matches (with allowed test-only packages)."
-	}
+    private static void ValidateProjectPath(string root, string projectPath)
+    {
+        string relativePath = Path.GetRelativePath(root, projectPath);
+        if (Path.IsPathRooted(relativePath) || relativePath == ".." ||
+            relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal))
+        {
+            throw new InvalidDataException("The owning project is outside the audit root: " + projectPath);
+        }
+        if (!File.Exists(projectPath))
+        {
+            throw new InvalidDataException("The owning project no longer exists: " + projectPath +
+                ". Remove the stale obj folder containing this assets file, then rerun the audit.");
+        }
+    }
+}
+'@
 }
 
-exit 0
+$noticePath = Join-Path $root.FullName 'NOTICE.md'
+$noticeFile = Get-Content -LiteralPath $noticePath -Raw
+Write-Verbose "NOTICE.md contents (${noticePath}):$([Environment]::NewLine)$noticeFile"
+
+$noticePattern = '(?ms)^## NuGet Packages used by PowerToys[ \t]*\r?\n(?<packages>.*?)(?=^## |\z)'
+$noticeMatches = [regex]::Matches($noticeFile, $noticePattern)
+if ($noticeMatches.Count -ne 1) {
+    throw 'Expected exactly one ''NuGet Packages used by PowerToys'' section in NOTICE.md.'
+}
+
+$comparer = [System.StringComparer]::OrdinalIgnoreCase
+$noticePackages = [System.Collections.Generic.HashSet[string]]::new($comparer)
+
+foreach ($line in ($noticeMatches[0].Groups['packages'].Value -split '\r?\n')) {
+    if ([string]::IsNullOrWhiteSpace($line)) {
+        continue
+    }
+    if ($line -notmatch '^- (?<id>\S+)[ \t]*$') {
+        throw "Invalid package entry in NOTICE.md: $line"
+    }
+    [void]$noticePackages.Add($Matches['id'])
+}
+
+Write-Host 'Extracting NuGet dependencies from restored managed and native project inventories...'
+$projectInventories = [System.Collections.Concurrent.ConcurrentDictionary[string, System.Collections.Generic.HashSet[string]]]::new($comparer)
+
+$generatedPackages = [PowerToysNoticeAssetsAudit]::CollectTopLevelPackages($root.FullName, $projectInventories)
+
+$packageProjects = [System.Collections.Generic.Dictionary[string, System.Collections.Generic.List[string]]]::new($comparer)
+foreach ($project in $projectInventories.GetEnumerator()) {
+    $projectPath = [System.IO.Path]::GetRelativePath($root.FullName, $project.Key)
+    foreach ($pkg in $project.Value) {
+        if (!$packageProjects.ContainsKey($pkg)) {
+            $packageProjects.Add($pkg, [System.Collections.Generic.List[string]]::new())
+        }
+        $packageProjects[$pkg].Add($projectPath)
+    }
+}
+
+if ($PSBoundParameters.ContainsKey('Verbose')) {
+    Write-Verbose 'Restored package inventory with owning projects:'
+    foreach ($pkg in ($generatedPackages | Sort-Object)) {
+        Write-Verbose "Package: $pkg"
+        foreach ($projectPath in ($packageProjects[$pkg] | Sort-Object)) {
+            Write-Verbose "  Project: $projectPath"
+        }
+    }
+}
+
+# Calculate differences.
+$allowedExtraPackages = [System.Collections.Generic.HashSet[string]]::new([string[]]@('Moq', 'MSTest'), $comparer)
+
+$missingFromNotice = [System.Collections.Generic.HashSet[string]]::new($generatedPackages, $comparer)
+$missingFromNotice.ExceptWith($noticePackages)
+
+$extraInNotice = [System.Collections.Generic.HashSet[string]]::new($noticePackages, $comparer)
+$extraInNotice.ExceptWith($generatedPackages)
+
+$allowedExtra = [System.Collections.Generic.HashSet[string]]::new($extraInNotice, $comparer)
+$allowedExtra.IntersectWith($allowedExtraPackages)
+
+$unexpectedExtra = [System.Collections.Generic.HashSet[string]]::new($extraInNotice, $comparer)
+$unexpectedExtra.ExceptWith($allowedExtraPackages)
+
+# Build report instead of outputting line-by-line.
+$report = [System.Text.StringBuilder]::new()
+$totalFailures = 0
+
+if ($missingFromNotice.Count -gt 0 -or $unexpectedExtra.Count -gt 0) {
+    [void]$report.AppendLine('FAILED: NOTICE.md mismatch detected.')
+    [void]$report.AppendLine('=== DETAILED DIFFERENCE ANALYSIS ===')
+    [void]$report.AppendLine('')
+
+    if ($missingFromNotice.Count -gt 0) {
+        [void]$report.AppendLine('MissingFromNotice (ERROR - these must be added to NOTICE.md):')
+        foreach ($pkg in ($missingFromNotice | Sort-Object)) {
+            [void]$report.AppendLine("  - $pkg")
+            foreach ($projectPath in ($packageProjects[$pkg] | Sort-Object)) {
+                [void]$report.AppendLine("    Project: $projectPath")
+            }
+        }
+        [void]$report.AppendLine('')
+        $totalFailures++
+    }
+
+    if ($unexpectedExtra.Count -gt 0) {
+        [void]$report.AppendLine('ExtraInNotice (ERROR - unexpected packages in NOTICE.md):')
+        foreach ($pkg in ($unexpectedExtra | Sort-Object)) {
+            [void]$report.AppendLine("  - $pkg")
+        }
+        [void]$report.AppendLine('')
+        $totalFailures++
+    }
+}
+
+[void]$report.AppendLine('Summary:')
+[void]$report.AppendLine("  Restored packages found:     $($generatedPackages.Count)")
+[void]$report.AppendLine("  NOTICE.md packages:          $($noticePackages.Count)")
+[void]$report.AppendLine("  MissingFromNotice:           $($missingFromNotice.Count)")
+[void]$report.AppendLine("  ExtraInNotice (allowed):     $($allowedExtra.Count)")
+[void]$report.AppendLine("  ExtraInNotice (unexpected):  $($unexpectedExtra.Count)")
+
+if ($totalFailures -gt 0) {
+    Write-Host -ForegroundColor Red $report.ToString()
+    exit 1
+} else {
+    if ($allowedExtra.Count -gt 0) {
+        [void]$report.AppendLine('')
+        [void]$report.AppendLine('ExtraInNotice (OK - allowed test-only packages):')
+        foreach ($pkg in ($allowedExtra | Sort-Object)) {
+            [void]$report.AppendLine("  - $pkg")
+        }
+    }
+    [void]$report.AppendLine('')
+    [void]$report.AppendLine('PASSED: NOTICE.md matches (with allowed test-only packages).')
+    Write-Host -ForegroundColor Green $report.ToString()
+    exit 0
+}
