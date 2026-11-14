@@ -119,8 +119,8 @@
     <comment>Accessible name for the button that picks a new color</comment>
   </data>
   <data name="Pick_color.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Pick color from screen</value>
-    <comment>Tooltip that shows that the user can click this button to pick a new color</comment>
+    <value>Pick color from screen (I)</value>
+    <comment>Tooltip that shows that the user can click this button to pick a new color. "(I)" is the keyboard shortcut (the I key).</comment>
   </data>
   <data name="Red_value.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Red value</value>
@@ -129,6 +129,10 @@
   <data name="Remove.Text" xml:space="preserve">
     <value>Remove</value>
     <comment>Tooltip that shows that the user can remove an item from a list</comment>
+  </data>
+  <data name="Remove.KeyboardAcceleratorTextOverride" xml:space="preserve">
+    <value>Del</value>
+    <comment>Keyboard shortcut hint shown next to the Remove context menu item (the Delete key). Localize the key name as appropriate.</comment>
   </data>
   <data name="Export_by.Text" xml:space="preserve">
     <value>Export</value>
