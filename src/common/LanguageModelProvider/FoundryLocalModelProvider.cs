@@ -14,7 +14,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
 {
     private FoundryClient? _foundryClient;
     private IEnumerable<FoundryCatalogModel>? _catalogModels;
-    private string? _serviceUrl;
 
     public static FoundryLocalModelProvider Instance { get; } = new();
 
@@ -57,21 +56,8 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             throw new InvalidOperationException(message);
         }
 
-        // Use ServiceUri instead of Endpoint since Endpoint already includes /v1
-        var baseUri = client.GetServiceUri();
-        if (baseUri == null && TryRefreshClient("Service URI was not available"))
-        {
-            baseUri = _foundryClient?.GetServiceUri();
-        }
-
-        if (baseUri == null)
-        {
-            const string message = "Foundry Local service URL is not available. Please make sure Foundry Local is installed and running.";
-            Logger.LogError($"[FoundryLocal] {message}");
-            throw new InvalidOperationException(message);
-        }
-
-        var endpointUri = new Uri($"{baseUri.ToString().TrimEnd('/')}/v1");
+        // Use BaseUri instead of Endpoint since Endpoint already includes /v1
+        var endpointUri = new Uri($"{client.BaseUri.ToString().TrimEnd('/')}/v1");
         Logger.LogInfo($"[FoundryLocal] Creating OpenAI client with endpoint: {endpointUri}");
 
         return new OpenAIClient(
@@ -93,13 +79,14 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         }
 
         var modelId = url.Split('/').LastOrDefault();
+        var serviceUrl = _foundryClient?.BaseUri.ToString().TrimEnd('/');
 
-        if (string.IsNullOrWhiteSpace(_serviceUrl) || string.IsNullOrWhiteSpace(modelId))
+        if (string.IsNullOrWhiteSpace(serviceUrl) || string.IsNullOrWhiteSpace(modelId))
         {
             return string.Empty;
         }
 
-        return $"new OpenAIClient(new ApiKeyCredential(\"none\"), new OpenAIClientOptions{{ Endpoint = new Uri(\"{_serviceUrl}/v1\") }}).GetChatClient(\"{modelId}\").AsIChatClient()";
+        return $"new OpenAIClient(new ApiKeyCredential(\"none\"), new OpenAIClientOptions{{ Endpoint = new Uri(\"{serviceUrl}/v1\") }}).GetChatClient(\"{modelId}\").AsIChatClient()";
     }
 
     public async Task<IEnumerable<ModelDetails>> GetModelsAsync(CancellationToken cancelationToken = default)
@@ -117,13 +104,21 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         foreach (var model in cachedModels)
         {
             Logger.LogInfo($"[FoundryLocal] Adding unmatched cached model: {model.Name}");
+            List<HardwareAccelerator> accelerators = [HardwareAccelerator.FOUNDRYLOCAL];
+            if (TryMapDeviceType(model.DeviceType) is { } deviceAccelerator)
+            {
+                accelerators.Add(deviceAccelerator);
+            }
+
             downloadedModels.Add(new ModelDetails
             {
                 Id = $"fl-{model.Name}",
                 Name = model.Name,
                 Url = $"fl://{model.Name}",
                 Description = $"{model.Name} running locally with Foundry Local",
-                HardwareAccelerators = [HardwareAccelerator.FOUNDRYLOCAL],
+                Size = model.FileSizeMb * 1024L * 1024L,
+                License = model.License,
+                HardwareAccelerators = accelerators,
                 ProviderModelDetails = model,
             });
         }
@@ -131,12 +126,20 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         return downloadedModels;
     }
 
+    private static HardwareAccelerator? TryMapDeviceType(string deviceType) =>
+        deviceType.ToUpperInvariant() switch
+        {
+            "CPU" => HardwareAccelerator.CPU,
+            "GPU" => HardwareAccelerator.GPU,
+            "NPU" => HardwareAccelerator.NPU,
+            _ => null,
+        };
+
     private async Task InitializeAsync(CancellationToken cancelationToken = default)
     {
         if (_foundryClient != null && _catalogModels != null && _catalogModels.Any())
         {
             await _foundryClient.EnsureRunning().ConfigureAwait(false);
-            _serviceUrl = await _foundryClient.GetServiceUrl().ConfigureAwait(false);
             return;
         }
 
@@ -150,8 +153,7 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             throw new InvalidOperationException(message);
         }
 
-        _serviceUrl ??= await _foundryClient.GetServiceUrl();
-        Logger.LogInfo($"[FoundryLocal] Service URL: {_serviceUrl}");
+        Logger.LogInfo($"[FoundryLocal] Service URL: {_foundryClient.BaseUri}");
 
         var catalogModels = await _foundryClient.ListCatalogModels();
         Logger.LogInfo($"[FoundryLocal] Found {catalogModels.Count} catalog models");
@@ -226,7 +228,6 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         {
             _foundryClient = null;
             _catalogModels = null;
-            _serviceUrl = null;
 
             InitializeAsync().GetAwaiter().GetResult();
             return _foundryClient != null;

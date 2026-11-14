@@ -2,13 +2,35 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
+using System.Net.Http;
+using System.Text.Json;
 using ManagedCommon;
-using Microsoft.AI.Foundry.Local;
 
 namespace LanguageModelProvider.FoundryLocal;
 
+// Talks to the Foundry Local daemon (`foundry server`) over its REST API, not via the SDK:
+// - Microsoft.AI.Foundry.Local 0.3.0 parses `foundry service status` (gone) and calls renamed endpoints.
+// - 2.x is an in-process inference engine (native ONNX Runtime, GBs of RAM, minute-long loads) with no
+//   client mode: ExternalUrl never delegates load/inference to the daemon.
 internal sealed class FoundryClient
 {
+    private static readonly HttpClient Http = new() { Timeout = TimeSpan.FromMinutes(5) };
+
+    private static readonly string FoundryDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".foundry");
+    private static readonly string DefaultCacheDir = Path.Combine(FoundryDir, "cache", "models");
+
+    private List<FoundryCatalogModel> _catalogModels = [];
+    private Uri _baseUri;
+    private string? _cacheDir;
+
+    private FoundryClient(Uri baseUri)
+    {
+        _baseUri = baseUri;
+    }
+
+    public Uri BaseUri => _baseUri;
+
     public static async Task<FoundryClient?> CreateAsync()
     {
         // First attempt with current environment
@@ -32,149 +54,230 @@ internal sealed class FoundryClient
         {
             Logger.LogInfo("[FoundryClient] Creating Foundry Local client");
 
-            var manager = new FoundryLocalManager();
-
-            // Check if service is already running
-            if (manager.IsServiceRunning)
-            {
-                Logger.LogInfo("[FoundryClient] Foundry service is already running");
-                return new FoundryClient(manager);
-            }
-
-            // Start the service using SDK's method
-            Logger.LogInfo("[FoundryClient] Starting Foundry service using manager.StartServiceAsync()");
-            await manager.StartServiceAsync().ConfigureAwait(false);
-
-            Logger.LogInfo("[FoundryClient] Foundry service started successfully");
-            return new FoundryClient(manager);
+            var uri = await FindDaemonAsync().ConfigureAwait(false) ?? await StartDaemonAsync().ConfigureAwait(false);
+            return uri == null ? null : new FoundryClient(uri);
         }
         catch (Exception ex)
         {
             Logger.LogError($"[FoundryClient] Error creating client: {ex.Message}");
-            if (ex.InnerException != null)
+            return null;
+        }
+    }
+
+    // The daemon picks a free port and writes it to ~/.foundry/daemon.json; fall back to CLI if missing.
+    private static async Task<Uri?> FindDaemonAsync() =>
+        await FindDaemonFromFileAsync().ConfigureAwait(false) ?? await FindDaemonFromCliAsync().ConfigureAwait(false);
+
+    private static async Task<Uri?> FindDaemonFromFileAsync()
+    {
+        var path = Path.Combine(FoundryDir, "daemon.json");
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            using var doc = JsonDocument.Parse(await File.ReadAllTextAsync(path).ConfigureAwait(false));
+            if (doc.RootElement.TryGetProperty("web_urls", out var urls))
             {
-                Logger.LogError($"[FoundryClient] Inner exception: {ex.InnerException.Message}");
+                return await ProbeDaemonUrlsAsync(urls).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or InvalidOperationException or UriFormatException)
+        {
+            Logger.LogWarning($"[FoundryClient] Could not read daemon.json: {ex.Message}");
+        }
+
+        return null;
+    }
+
+    private static async Task<Uri?> FindDaemonFromCliAsync()
+    {
+        using var statusDoc = await RunFoundryJsonAsync("server status -o json").ConfigureAwait(false);
+        if (statusDoc != null &&
+            statusDoc.RootElement.TryGetProperty("running", out var running) &&
+            running.ValueKind == JsonValueKind.True &&
+            statusDoc.RootElement.TryGetProperty("webUrls", out var statusUrls))
+        {
+            return await ProbeDaemonUrlsAsync(statusUrls).ConfigureAwait(false);
+        }
+
+        return null;
+    }
+
+    private static async Task<Uri?> ProbeDaemonUrlsAsync(JsonElement urls)
+    {
+        foreach (var url in urls.EnumerateArray())
+        {
+            if (Uri.TryCreate(url.GetString(), UriKind.Absolute, out var uri) &&
+                await ProbeUrlAsync(uri).ConfigureAwait(false))
+            {
+                return uri;
+            }
+        }
+
+        return null;
+    }
+
+    private static async Task<bool> ProbeUrlAsync(Uri uri)
+    {
+        // daemon.json outlives the daemon, so make sure something answers.
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        try
+        {
+            using var response = await Http.GetAsync(new Uri(uri, "models/loaded"), cts.Token).ConfigureAwait(false);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+        {
+            return false;
+        }
+    }
+
+    private static async Task<Uri?> StartDaemonAsync()
+    {
+        Logger.LogInfo("[FoundryClient] Starting Foundry service using 'foundry server start'");
+
+        try
+        {
+            // `foundry server start` launches the background daemon and exits.
+            using var process = Process.Start(new ProcessStartInfo("foundry", "server start")
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+            });
+
+            if (process == null)
+            {
+                return null;
             }
 
-            return null;
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            await process.WaitForExitAsync(cts.Token).ConfigureAwait(false);
+
+            for (var i = 0; i < 30; i++)
+            {
+                var uri = await FindDaemonFromFileAsync().ConfigureAwait(false);
+                if (uri != null)
+                {
+                    return uri;
+                }
+
+                if (i < 29)
+                {
+                    await Task.Delay(500).ConfigureAwait(false);
+                }
+            }
+
+            return await FindDaemonFromCliAsync().ConfigureAwait(false);
         }
+        catch (Exception ex)
+        {
+            Logger.LogError($"[FoundryClient] Error starting Foundry daemon: {ex.Message}");
+        }
+
+        return null;
     }
 
-    private readonly FoundryLocalManager _foundryManager;
-    private readonly List<FoundryCatalogModel> _catalogModels = [];
-
-    private FoundryClient(FoundryLocalManager foundryManager)
-    {
-        _foundryManager = foundryManager;
-    }
-
-    public Task<string?> GetServiceUrl()
-    {
-        try
-        {
-            return Task.FromResult(_foundryManager.Endpoint?.ToString());
-        }
-        catch
-        {
-            return Task.FromResult<string?>(null);
-        }
-    }
-
-    public Uri? GetServiceUri()
-    {
-        try
-        {
-            return _foundryManager.ServiceUri;
-        }
-        catch
-        {
-            return null;
-        }
-    }
-
+    // The daemon's own catalog cache holds the model id <-> alias mapping that loading needs.
     public async Task<List<FoundryCatalogModel>> ListCatalogModels()
     {
-        if (_catalogModels.Count > 0)
+        var cached = _catalogModels;
+        if (cached.Count > 0)
         {
-            return _catalogModels;
+            return cached;
         }
 
         try
         {
             Logger.LogInfo("[FoundryClient] Listing catalog models");
-            var models = await _foundryManager.ListCatalogModelsAsync().ConfigureAwait(false);
+            var cacheDir = await GetCacheDirAsync().ConfigureAwait(false);
+            var path = Path.Combine(cacheDir, "foundry.modelinfo.json");
+            using var doc = JsonDocument.Parse(await File.ReadAllTextAsync(path).ConfigureAwait(false));
 
-            if (models != null)
+            List<FoundryCatalogModel> models = [];
+            foreach (var model in doc.RootElement.GetProperty("models").EnumerateArray())
             {
-                foreach (var model in models)
-                {
-                    _catalogModels.Add(new FoundryCatalogModel
-                    {
-                        Name = model.ModelId ?? string.Empty,
-                        DisplayName = model.DisplayName ?? string.Empty,
-                        ProviderType = model.ProviderType ?? string.Empty,
-                        Uri = model.Uri ?? string.Empty,
-                        Version = model.Version ?? string.Empty,
-                        ModelType = model.ModelType ?? string.Empty,
-                        Publisher = model.Publisher ?? string.Empty,
-                        Task = model.Task ?? string.Empty,
-                        FileSizeMb = model.FileSizeMb,
-                        Alias = model.Alias ?? string.Empty,
-                        License = model.License ?? string.Empty,
-                        LicenseDescription = model.LicenseDescription ?? string.Empty,
-                        ParentModelUri = model.ParentModelUri ?? string.Empty,
-                        SupportsToolCalling = model.SupportsToolCalling,
-                    });
-                }
-
-                Logger.LogInfo($"[FoundryClient] Found {_catalogModels.Count} catalog models");
+                var deviceType = model.TryGetProperty("runtime", out var runtime) && runtime.ValueKind == JsonValueKind.Object
+                    ? GetString(runtime, "deviceType")
+                    : string.Empty;
+                models.Add(new FoundryCatalogModel(
+                    GetString(model, "id"),
+                    GetString(model, "alias"),
+                    model.TryGetProperty("fileSizeMb", out var size) && size.TryGetInt64(out var mb) ? mb : 0,
+                    GetString(model, "license"),
+                    deviceType));
             }
+
+            if (models.Count > 0)
+            {
+                _catalogModels = models;
+            }
+
+            Logger.LogInfo($"[FoundryClient] Found {models.Count} catalog models");
+            return models;
         }
         catch (Exception ex)
         {
             Logger.LogError($"[FoundryClient] Error listing catalog models: {ex.Message}");
 
             // Surfacing errors here prevents listing other providers; swallow and return cached list instead.
+            return _catalogModels;
         }
-
-        return _catalogModels;
     }
 
-    public async Task<List<FoundryCachedModel>> ListCachedModels()
+    // Downloaded models live in <cache>/<publisher>/<model id with ':' as '-'>; a download.tmp means unfinished.
+    public async Task<List<FoundryCatalogModel>> ListCachedModels()
     {
-        try
+        var catalogModels = await ListCatalogModels().ConfigureAwait(false);
+        var cacheDir = await GetCacheDirAsync().ConfigureAwait(false);
+        List<FoundryCatalogModel> models = [];
+
+        if (!Directory.Exists(cacheDir))
         {
-            Logger.LogInfo("[FoundryClient] Listing cached models");
-            var cachedModels = await _foundryManager.ListCachedModelsAsync().ConfigureAwait(false);
-            var catalogModels = await ListCatalogModels().ConfigureAwait(false);
-
-            List<FoundryCachedModel> models = [];
-
-            foreach (var model in cachedModels)
-            {
-                var catalogModel = catalogModels.FirstOrDefault(m => m.Name == model.ModelId);
-                var alias = catalogModel?.Alias ?? model.Alias;
-                models.Add(new FoundryCachedModel(model.ModelId ?? string.Empty, alias));
-            }
-
-            Logger.LogInfo($"[FoundryClient] Found {models.Count} cached models");
             return models;
         }
-        catch (Exception ex)
+
+        foreach (var dir in Directory.EnumerateDirectories(cacheDir).SelectMany(Directory.EnumerateDirectories))
         {
-            Logger.LogError($"[FoundryClient] Error listing cached models: {ex.Message}");
-            return [];
+            var hasFiles = false;
+            var isDownloading = false;
+            foreach (var file in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories))
+            {
+                hasFiles = true;
+                if (Path.GetFileName(file) == "download.tmp")
+                {
+                    isDownloading = true;
+                    break;
+                }
+            }
+
+            if (!hasFiles || isDownloading)
+            {
+                continue;
+            }
+
+            var name = Path.GetFileName(dir);
+            var catalogModel = catalogModels.FirstOrDefault(m => string.Equals(m.Name.Replace(':', '-'), name, StringComparison.OrdinalIgnoreCase));
+            if (catalogModel != null)
+            {
+                models.Add(catalogModel);
+            }
         }
+
+        Logger.LogInfo($"[FoundryClient] Found {models.Count} cached models");
+        return models;
     }
 
     public async Task<bool> IsModelLoaded(string modelId)
     {
         try
         {
-            var loadedModels = await _foundryManager.ListLoadedModelsAsync().ConfigureAwait(false);
-            var isLoaded = loadedModels.Any(m => m.ModelId == modelId);
+            var json = await Http.GetStringAsync(new Uri(_baseUri, "models/loaded")).ConfigureAwait(false);
+            var loadedModels = JsonSerializer.Deserialize<List<string>>(json) ?? [];
+            var isLoaded = loadedModels.Contains(modelId, StringComparer.OrdinalIgnoreCase);
             Logger.LogInfo($"[FoundryClient] IsModelLoaded({modelId}): {isLoaded}");
-            Logger.LogInfo($"[FoundryClient] Loaded models: {string.Join(", ", loadedModels.Select(m => m.ModelId))}");
             return isLoaded;
         }
         catch (Exception ex)
@@ -188,30 +291,101 @@ internal sealed class FoundryClient
     {
         Logger.LogInfo($"[FoundryClient] EnsureModelLoaded called with: {modelId}");
 
-        // Check if already loaded
         if (await IsModelLoaded(modelId).ConfigureAwait(false))
         {
-            Logger.LogInfo($"[FoundryClient] Model already loaded: {modelId}");
             return true;
         }
 
-        // Load the model
+        // Try loading by exact model id first so variant selection isn't lost; fall back to alias if needed.
         Logger.LogInfo($"[FoundryClient] Loading model: {modelId}");
-        await _foundryManager.LoadModelAsync(modelId).ConfigureAwait(false);
+        using var response = await Http.GetAsync(new Uri(_baseUri, $"models/load/{Uri.EscapeDataString(modelId)}")).ConfigureAwait(false);
+        if (!response.IsSuccessStatusCode)
+        {
+            var catalogModels = await ListCatalogModels().ConfigureAwait(false);
+            var alias = catalogModels.FirstOrDefault(m => string.Equals(m.Name, modelId, StringComparison.OrdinalIgnoreCase))?.Alias;
+            if (string.IsNullOrEmpty(alias))
+            {
+                Logger.LogError($"[FoundryClient] Loading {modelId} failed ({response.StatusCode}) and no alias known");
+                return false;
+            }
 
-        // Verify it's loaded
-        var loaded = await IsModelLoaded(modelId).ConfigureAwait(false);
-        Logger.LogInfo($"[FoundryClient] Model load result: {loaded}");
-        return loaded;
+            Logger.LogInfo($"[FoundryClient] Retrying load with alias {alias} for {modelId}");
+            using var aliasResponse = await Http.GetAsync(new Uri(_baseUri, $"models/load/{Uri.EscapeDataString(alias)}")).ConfigureAwait(false);
+            if (!aliasResponse.IsSuccessStatusCode)
+            {
+                Logger.LogError($"[FoundryClient] Loading {modelId} (alias {alias}) failed: {aliasResponse.StatusCode}");
+                return false;
+            }
+        }
+
+        return await IsModelLoaded(modelId).ConfigureAwait(false);
     }
 
     public async Task EnsureRunning()
     {
-        if (!_foundryManager.IsServiceRunning)
+        if (await ProbeUrlAsync(_baseUri).ConfigureAwait(false))
         {
-            await _foundryManager.StartServiceAsync();
+            return;
+        }
+
+        var uri = await FindDaemonAsync().ConfigureAwait(false) ?? await StartDaemonAsync().ConfigureAwait(false);
+        if (uri != null)
+        {
+            _baseUri = uri;
         }
     }
+
+    private async Task<string> GetCacheDirAsync()
+    {
+        if (_cacheDir != null)
+        {
+            return _cacheDir;
+        }
+
+        using var doc = await RunFoundryJsonAsync("cache location -o json").ConfigureAwait(false);
+        var path = doc != null ? GetString(doc.RootElement, "path") : string.Empty;
+        if (!string.IsNullOrWhiteSpace(path))
+        {
+            _cacheDir = path;
+            return _cacheDir;
+        }
+
+        return DefaultCacheDir;
+    }
+
+    private static async Task<JsonDocument?> RunFoundryJsonAsync(string arguments)
+    {
+        try
+        {
+            using var process = Process.Start(new ProcessStartInfo("foundry", arguments)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+            });
+
+            if (process == null)
+            {
+                return null;
+            }
+
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            var output = await process.StandardOutput.ReadToEndAsync(cts.Token).ConfigureAwait(false);
+            await process.WaitForExitAsync(cts.Token).ConfigureAwait(false);
+
+            return process.ExitCode == 0 && !string.IsNullOrWhiteSpace(output)
+                ? JsonDocument.Parse(output)
+                : null;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"[FoundryClient] 'foundry {arguments}' failed: {ex.Message}");
+            return null;
+        }
+    }
+
+    private static string GetString(JsonElement element, string name) =>
+        element.TryGetProperty(name, out var value) ? value.GetString() ?? string.Empty : string.Empty;
 
     /// <summary>
     /// Refreshes the PATH environment variable from the system registry.
