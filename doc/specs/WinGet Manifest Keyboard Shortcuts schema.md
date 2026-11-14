@@ -59,6 +59,7 @@ All relevant files are written in [YAML](https://yaml.org/spec).
 ```
 PackageName:                # The package unique identifier
 WindowFilter:               # The filter of window processes to which the shortcuts apply to
+AppUserModelId:             # Optionally restricts WindowFilter to windows with a given AppUserModelID
 BackgroundProcess:          # Optionally allows applying WindowFilter to background processes
 Shortcuts:                  # List of sections with keyboard shortcuts
   - SectionName:            # Name of the category of shortcuts
@@ -75,7 +76,7 @@ Shortcuts:                  # List of sections with keyboard shortcuts
             Keys:           # Array of keys that need to be pressed
 ```
 
-Per Application/Package one or more Keyboard manifests can be declared. Every manifest must have a different locale and the same `PackageName`, `WindowFilter` and `BackgroundProcess` fields.
+Per Application/Package one or more Keyboard manifests can be declared. Every manifest must have a different locale and the same `PackageName`, `WindowFilter`, `AppUserModelId` and `BackgroundProcess` fields.
 
 <details>
  <summary><b>PackageName</b> - The package unique identifier</summary>
@@ -88,6 +89,27 @@ Per Application/Package one or more Keyboard manifests can be declared. Every ma
  <summary><b>WindowFilter</b> - The filter of window processes to which the shortcuts apply to</summary>
 
  This field declares for which process name the shortcuts should be shown (To rephrase: For which processes the shortcut will have an effect if pressed). The value can be either an exact process executable name, for example `explorer.exe` or `chrome.exe`, or a single asterisk (`*`) to apply to any process. No other wildcard patterns are supported by this specification.
+
+</details>
+
+<details>
+ <summary><b>AppUserModelId</b> - Optionally restricts WindowFilter to windows with a given AppUserModelID</summary>
+
+ **Optional field**
+
+ Some processes host several applications in their own windows. For example, web apps installed from Chromium-based browsers run in `chrome.exe` or `msedge.exe`, but every web app window carries its own [AppUserModelID](https://learn.microsoft.com/windows/win32/shell/appids) (such as `Chrome._crx_<app id>`). When this field is set, the manifest only applies to foreground windows whose AppUserModelID matches, and it takes precedence over manifests that match the same `WindowFilter` without an `AppUserModelId`.
+
+ Multiple values can be separated by `;`. Matching is case-insensitive. A value ending in an asterisk (`*`) matches any AppUserModelID starting with the text before it, which covers browser profile suffixes.
+
+ The field must appear before `Shortcuts` and is ignored for background processes.
+
+ **Example**:
+
+ ```yaml
+ PackageName: +Web.YouTubeMusic
+ WindowFilter: "chrome.exe;msedge.exe"
+ AppUserModelId: "Chrome._crx_<app id>*;MSEdge._crx_<app id>*"
+ ```
 
 </details>
 
@@ -281,6 +303,7 @@ DefaultShellName:           # The package identifier of the default shell used i
 Index:                      # List of all manifest files
   - WindowFilter:           # The filter of window processes to which the shortcuts apply to
     BackgroundProcess:      # Optionally allows applying WindowFilter to background processes
+    AppUserModelId:         # Optionally restricts WindowFilter to windows with a given AppUserModelID
     Apps:                   # List of all manifest files for the filter
 ```
 
@@ -308,6 +331,15 @@ Index:                      # List of all manifest files
  **Optional field**
 
  See the `BackgroundProcess` field in the manifest file for more information.
+
+</details>
+
+<details>
+ <summary><b>AppUserModelId</b> - Optionally restricts WindowFilter to windows with a given AppUserModelID</summary>
+
+ **Optional field**
+
+ See the `AppUserModelId` field in the manifest file for more information. Manifests with different `AppUserModelId` values are listed in separate entries.
 
 </details>
 
