@@ -87,11 +87,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
                 $"{targetName} was not held while {sourceName} remained down.");
             if (targetKey == LeftWindows)
             {
-                // KBM uses this inert key to prevent a bare Windows-key release from opening Start.
-                KeyboardHelper.SendKey(ShellNeutralKey);
-                Assert.IsTrue(
-                    WaitForKeyState(targetKey, expected: true, timeoutMS: 1_000),
-                    $"{targetName} was released before {sourceName} after the shell-neutral input.");
+                SuppressBareWindowsKeyShellAction($"{sourceName} to {targetName}");
             }
         }
         finally
@@ -342,6 +338,10 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
                     timeoutMS: 3_000,
                     new ExpectedKeyboardEvent(targetKey, true)),
                 $"{scenario} did not generate its target key. Events: {recorder.DescribeGeneratedEvents()}.");
+            if (targetKey == LeftWindows)
+            {
+                SuppressBareWindowsKeyShellAction(scenario);
+            }
         });
 
         Assert.IsTrue(
@@ -656,6 +656,19 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         while (DateTime.UtcNow < deadline);
 
         return KeyboardHelper.IsKeyDown(ToKey(virtualKey)) == expected;
+    }
+
+    private static void SuppressBareWindowsKeyShellAction(string scenario)
+    {
+        Assert.IsTrue(
+            WaitForKeyState(LeftWindows, expected: true, timeoutMS: 1_000),
+            $"{scenario}: the Windows target was not held before shell-neutral input.");
+
+        // KBM uses this inert key to prevent a bare Windows-key release from opening Start.
+        KeyboardHelper.SendKey(ShellNeutralKey);
+        Assert.IsTrue(
+            WaitForKeyState(LeftWindows, expected: true, timeoutMS: 1_000),
+            $"{scenario}: the Windows target was released before its source after shell-neutral input.");
     }
 
     private static void DismissShellAndRefocus(NotepadInputWindow input, string scenario)
