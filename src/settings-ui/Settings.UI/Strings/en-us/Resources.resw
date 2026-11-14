@@ -6214,6 +6214,12 @@ The break timer font matches the text font.</value>
   <data name="PowerDisplay_AdvancedSettings.Header" xml:space="preserve">
     <value>Advanced</value>
   </data>
+  <data name="PowerDisplay_FollowBuiltInDisplayBrightness.Header" xml:space="preserve">
+    <value>Follow built-in display brightness</value>
+  </data>
+  <data name="PowerDisplay_FollowBuiltInDisplayBrightness.Description" xml:space="preserve">
+    <value>When the built-in display brightness changes, for example with the laptop brightness keys, apply the same level to external monitors. Works even when the built-in display is turned off. Monitors excluded from linked brightness are not changed.</value>
+  </data>
   <data name="PowerDisplay_MaxCompatibilityMode.Header" xml:space="preserve">
     <value>Maximum compatibility mode</value>
   </data>

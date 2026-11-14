@@ -173,6 +173,24 @@ public class PowerDisplay
     }
 
     [TestMethod]
+    public void FollowBuiltInDisplayBrightness_Toggle_SavesAndSignalsOnce()
+    {
+        using var viewModel = CreateViewModel(out var settings, out var settingsUtils, out var ipcMessages);
+
+        Assert.IsFalse(viewModel.FollowBuiltInDisplayBrightness);
+
+        viewModel.FollowBuiltInDisplayBrightness = true;
+
+        Assert.IsTrue(settings.Properties.FollowBuiltInDisplayBrightness);
+        Assert.IsTrue(GetSavedSettings(settingsUtils).Properties.FollowBuiltInDisplayBrightness);
+        Assert.AreEqual(1, ipcMessages.Count);
+
+        // Setting the same value again is a no-op: no extra save or IPC message.
+        viewModel.FollowBuiltInDisplayBrightness = true;
+        Assert.AreEqual(1, ipcMessages.Count);
+    }
+
+    [TestMethod]
     public void SettingsSave_SharedFlyoutSettings_PreservesExclusions()
     {
         using var viewModel = CreateViewModel(out var settings, out var settingsUtils, out var ipcMessages);

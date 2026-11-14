@@ -31,6 +31,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShowIdentifyMonitorsButton = true;
             MaxCompatibilityMode = false;
             LinkedLevelsActive = false;
+            FollowBuiltInDisplayBrightness = false;
             ExcludedFromSyncMonitorIds = new List<string>();
             CustomVcpMappings = new List<CustomVcpValueMapping>();
 
@@ -113,6 +114,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         [JsonPropertyName("linked_levels_active")]
         public bool LinkedLevelsActive { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether changes to the built-in display brightness
+        /// (laptop brightness keys, Quick Settings slider) are mirrored to external monitors.
+        /// Monitors listed in <see cref="ExcludedFromSyncMonitorIds"/> are not changed.
+        /// Off by default.
+        /// </summary>
+        [JsonPropertyName("follow_builtin_display_brightness")]
+        public bool FollowBuiltInDisplayBrightness { get; set; }
 
         /// <summary>
         /// Gets or sets the set of monitor <c>Id</c> values excluded from linked brightness.
