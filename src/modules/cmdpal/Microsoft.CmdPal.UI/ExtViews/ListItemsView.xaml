@@ -568,10 +568,11 @@
                     Margin="0"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
+                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                     CornerRadius="{StaticResource GalleryGridViewItemRadius}">
                     <Viewbox
                         HorizontalAlignment="Center"
-                        Stretch="UniformToFill"
+                        Stretch="{x:Bind LayoutImageStretch, Mode=OneWay}"
                         StretchDirection="Both">
                         <cpcontrols:IconBox
                             CornerRadius="4"
