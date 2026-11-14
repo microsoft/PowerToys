@@ -16,6 +16,7 @@ This file contains the documentation for the Mouse Without Borders PowerToy modu
   - [Settings matrix reconciliation](#settings-matrix-reconciliation)
   - [Settings persistence](#settings-persistence)
   - [Settings pairing readiness](#settings-pairing-readiness)
+  - [Keyboard Manager bypass](#keyboard-manager-bypass)
   - [Experimental non-console sessions](#experimental-non-console-sessions)
   - [Release, installed and physical-device validation](#release-installed-and-physical-device-validation)
 
@@ -89,6 +90,19 @@ not a product startup-performance guarantee. UIA, input, clipboard and
 the 45-second ownership lease retain their existing deadlines. Independent
 bootstrap, viewer and cleanup envelopes are documented in the autonomous
 suite's README.
+
+## Keyboard Manager bypass
+
+Enable **Bypass Keyboard Manager for remote input** on the receiving device to
+prevent its Keyboard Manager key and shortcut remaps from processing incoming MWB
+keyboard events. `SuppressKeyboardManager` is default-false and takes effect
+without restarting MWB. Local keyboard input and MWB's locally generated input
+retain their existing behavior; remaps on the sending device are not changed.
+
+The receiver tags injected key-down and key-up events with Keyboard Manager's
+existing `KEYBOARDMANAGER_SHORTCUT_FLAG` (`0x101`). The injected-input bit skips
+single-key remaps, while the exact tag skips shortcut remaps. This bypasses
+remapping rather than discarding input or disabling Keyboard Manager globally.
 
 ## Experimental non-console sessions
 

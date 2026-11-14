@@ -15,6 +15,35 @@ namespace CommonLibTest
     public class MouseWithoutBordersSettingsTests
     {
         [TestMethod]
+        [DataRow("{}")]
+        [DataRow("{\"properties\":{}}")]
+        public void MissingKeyboardManagerBypassRemainsDisabled(string json)
+        {
+            var settings = JsonSerializer.Deserialize(json, SettingsSerializationContext.Default.MouseWithoutBordersSettings);
+
+            Assert.IsNotNull(settings);
+            Assert.IsFalse(settings.Properties.SuppressKeyboardManager);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void KeyboardManagerBypassRoundTripSurvivesOrdinarySettingsEdit(bool bypass)
+        {
+            var settings = new MouseWithoutBordersSettings();
+            settings.Properties.SuppressKeyboardManager = bypass;
+            settings.Properties.WrapMouse = false;
+
+            using var document = JsonDocument.Parse(settings.ToJsonString());
+            Assert.AreEqual(bypass, document.RootElement.GetProperty("properties").GetProperty("SuppressKeyboardManager").GetProperty("value").GetBoolean());
+
+            var deserialized = JsonSerializer.Deserialize(settings.ToJsonString(), SettingsSerializationContext.Default.MouseWithoutBordersSettings);
+            Assert.IsNotNull(deserialized);
+            Assert.AreEqual(bypass, deserialized.Properties.SuppressKeyboardManager);
+            Assert.IsFalse(deserialized.Properties.WrapMouse);
+        }
+
+        [TestMethod]
         public void NonConsoleSessionsDefaultToFalseWithTypedJsonShape()
         {
             var settings = new MouseWithoutBordersSettings();

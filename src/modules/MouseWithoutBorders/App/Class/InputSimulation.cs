@@ -105,11 +105,9 @@ namespace MouseWithoutBorders.Class
             return rv;
         }
 
-        internal static void SendKey(KEYBDDATA kd)
+        internal static NativeMethods.INPUT CreateKeyboardInput(KEYBDDATA kd, bool bypassKeyboardManager = false)
         {
-            string log = string.Empty;
             NativeMethods.KEYEVENTF dwFlags = NativeMethods.KEYEVENTF.KEYDOWN;
-            uint scanCode = 0;
 
             // http://msdn.microsoft.com/en-us/library/ms644967(VS.85).aspx
             if ((kd.dwFlags & (int)WM.LLKHF.UP) == (int)WM.LLKHF.UP)
@@ -122,7 +120,21 @@ namespace MouseWithoutBorders.Class
                 dwFlags |= NativeMethods.KEYEVENTF.EXTENDEDKEY;
             }
 
-            scanCode = NativeMethods.MapVirtualKey((uint)kd.wVk, 0);
+            NativeMethods.INPUT input = default;
+            input.type = 1;
+            input.ki.wScan = (short)NativeMethods.MapVirtualKey((uint)kd.wVk, 0);
+            input.ki.wVk = (short)kd.wVk;
+            input.ki.dwFlags = (int)dwFlags;
+
+            // Match KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG: its low bit
+            // skips key remaps, and the exact value also skips shortcut remaps.
+            input.ki.dwExtraInfo = bypassKeyboardManager ? new System.IntPtr(0x101) : NativeMethods.GetMessageExtraInfo();
+            return input;
+        }
+
+        internal static void SendKey(KEYBDDATA kd, bool bypassKeyboardManager = false)
+        {
+            string log = string.Empty;
 
             InputProcessKeyEx(kd.wVk, kd.dwFlags, out bool eatKey);
 
@@ -131,14 +143,7 @@ namespace MouseWithoutBorders.Class
                 InputHook.RealData = false;
 #if !USING_keybd_event
                 // #if USING_SendInput
-                NativeMethods.INPUT structInput;
-                structInput = default;
-                structInput.type = 1;
-                structInput.ki.wScan = (short)scanCode;
-                structInput.ki.time = 0;
-                structInput.ki.wVk = (short)kd.wVk;
-                structInput.ki.dwFlags = (int)dwFlags;
-                structInput.ki.dwExtraInfo = NativeMethods.GetMessageExtraInfo();
+                NativeMethods.INPUT structInput = CreateKeyboardInput(kd, bypassKeyboardManager);
 
                 Common.DoSomethingInTheInputSimulationThread(() =>
                 {
@@ -147,7 +152,8 @@ namespace MouseWithoutBorders.Class
                 });
 
 #else
-                keybd_event((byte)kd.wVk, (byte)scanCode, (UInt32)dwFlags, 0);
+                var input = CreateKeyboardInput(kd, bypassKeyboardManager);
+                keybd_event((byte)input.ki.wVk, (byte)input.ki.wScan, (UInt32)input.ki.dwFlags, input.ki.dwExtraInfo.ToInt32());
 #endif
                 InputHook.RealData = true;
             }
