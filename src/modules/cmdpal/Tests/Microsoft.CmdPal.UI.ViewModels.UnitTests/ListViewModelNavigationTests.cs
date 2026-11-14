@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Helpers;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -1543,7 +1544,7 @@ public sealed partial class ListViewModelNavigationTests
     {
         var hostService = new Mock<IAppHostService>();
         hostService.Setup(service => service.GetDefaultHost()).Returns(new TestHost());
-        return new(TaskScheduler.Default, Mock.Of<IRootPageService>(), Mock.Of<IPageViewModelFactoryService>(), hostService.Object);
+        return new(TaskScheduler.Default, Mock.Of<IRootPageService>(), Mock.Of<IPageViewModelFactoryService>(), hostService.Object, new WindowDismissalService());
     }
 
     private static T GetPrivateField<T>(ListViewModel viewModel, string name) =>

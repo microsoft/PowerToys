@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -112,7 +113,8 @@ public partial class ShellViewModelTests
             TaskScheduler.Default,
             Mock.Of<IRootPageService>(),
             pageFactory.Object,
-            appHostService.Object);
+            appHostService.Object,
+            new WindowDismissalService());
         var item = new ListItem(page);
         var message = new PerformCommandMessage(
             CreateCommandViewModel(page, shell.CurrentPage),
@@ -144,7 +146,8 @@ public partial class ShellViewModelTests
             TaskScheduler.Default,
             rootPageService.Object,
             Mock.Of<IPageViewModelFactoryService>(),
-            CreateAppHostService(host).Object);
+            CreateAppHostService(host).Object,
+            new WindowDismissalService());
         var rootPage = new TestPageViewModel(new TestPage(), host) { IsRootPage = true };
         var otherPage = new TestPageViewModel(new TestPage(), host) { IsRootPage = true };
         var item = new ListItem(new NoOpCommand());
@@ -178,7 +181,7 @@ public partial class ShellViewModelTests
         var factory = new Mock<IPageViewModelFactoryService>();
         factory.Setup(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty)).Returns(viewModel);
         var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
-        using var shell = new ShellViewModel(scheduler, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object);
+        using var shell = new ShellViewModel(scheduler, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object, new WindowDismissalService());
         var activated = new TaskCompletionSource<TaskScheduler>(TaskCreationOptions.RunContinuationsAsynchronously);
         shell.PropertyChanged += (_, args) =>
         {
@@ -217,7 +220,7 @@ public partial class ShellViewModelTests
         var appHostService = CreateAppHostService(host);
         var factory = new Mock<IPageViewModelFactoryService>();
         factory.Setup(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty)).Returns(rootViewModel);
-        using var shell = new ShellViewModel(TaskScheduler.Default, rootPageService.Object, factory.Object, appHostService.Object);
+        using var shell = new ShellViewModel(TaskScheduler.Default, rootPageService.Object, factory.Object, appHostService.Object, new WindowDismissalService());
         var nestedPage = new PageViewModel(new Page(), TaskScheduler.Default, host, provider);
 
         try
@@ -258,7 +261,8 @@ public partial class ShellViewModelTests
             TaskScheduler.Default,
             rootPageService.Object,
             pageViewModelFactory.Object,
-            appHostService.Object);
+            appHostService.Object,
+            new WindowDismissalService());
         var windowMessageRecipient = new object();
         var showWindowCount = 0;
         WeakReferenceMessenger.Default.Register<ShowWindowMessage>(
@@ -330,7 +334,8 @@ public partial class ShellViewModelTests
             TaskScheduler.Default,
             rootPageService.Object,
             pageViewModelFactory.Object,
-            appHostService.Object);
+            appHostService.Object,
+            new WindowDismissalService());
 
         try
         {
@@ -367,7 +372,8 @@ public partial class ShellViewModelTests
             TaskScheduler.Default,
             rootPageService.Object,
             pageViewModelFactory.Object,
-            appHostService.Object);
+            appHostService.Object,
+            new WindowDismissalService());
 
         try
         {
@@ -382,6 +388,118 @@ public partial class ShellViewModelTests
         {
             WeakReferenceMessenger.Default.UnregisterAll(shell);
             shell.Dispose();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(202)]
+    [DataRow(0)]
+    public async Task PerformCommand_UpdatesHostHwndWhenSwitchingFromDockToPalette(int paletteHwnd)
+    {
+        var windowDismissal = new WindowDismissalService();
+        using var shell = CreateViewModel(windowDismissal);
+        var recipient = new object();
+        var paletteRequests = 0;
+        WeakReferenceMessenger.Default.Register<GetHwndMessage>(recipient, (_, message) =>
+        {
+            paletteRequests++;
+            message.Hwnd = paletteHwnd;
+        });
+        nint dockHwnd = 101;
+        var dockPage = new TestPageViewModel(new TestPage(), new TestAppExtensionHost())
+        {
+            DockRoute = new(dockHwnd, Guid.NewGuid()),
+        };
+        var command = new Mock<IInvokableCommand>();
+        var requiresHwnd = command.As<IRequiresHostHwnd>();
+        nint currentHwnd = 0;
+        requiresHwnd.Setup(model => model.SetHostHwnd(It.IsAny<nint>()))
+            .Callback<nint>(hwnd => currentHwnd = hwnd);
+        var invokedOwners = new List<nint>();
+        var heldOwners = new List<bool>();
+        command.Setup(model => model.Invoke(It.IsAny<object>())).Returns(() =>
+        {
+            invokedOwners.Add(currentHwnd);
+            heldOwners.Add(windowDismissal.IsSuppressed(currentHwnd));
+            return CommandResult.KeepOpen();
+        });
+        var commandViewModel = CreateCommandViewModel(command.Object, dockPage);
+
+        try
+        {
+            foreach (var sourcePage in new[] { dockPage, shell.CurrentPage })
+            {
+                // Forwarding clears the message route but retains the source page's owner.
+                shell.Receive(new PerformCommandMessage(commandViewModel, sourcePage) { DockRoute = null });
+                var invocation = (Task?)typeof(ShellViewModel)
+                    .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
+                    .GetValue(shell);
+                if (invocation is not null)
+                {
+                    await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+                }
+            }
+
+            CollectionAssert.AreEqual(new nint[] { dockHwnd, paletteHwnd }, invokedOwners);
+            CollectionAssert.AreEqual(new[] { true, paletteHwnd != 0 }, heldOwners);
+            Assert.IsFalse(windowDismissal.IsSuppressed(dockHwnd));
+            Assert.IsFalse(windowDismissal.IsSuppressed(paletteHwnd));
+            Assert.AreEqual(1, paletteRequests);
+            requiresHwnd.Verify(model => model.SetHostHwnd(It.IsAny<nint>()), Times.Exactly(2));
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+            WeakReferenceMessenger.Default.UnregisterAll(shell);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task PerformCommand_ReleasesDismissalHoldWhenOwnerSetupOrInvocationFails(bool failOwnerSetup)
+    {
+        var windowDismissal = new WindowDismissalService();
+        using var shell = CreateViewModel(windowDismissal);
+        var page = new TestPageViewModel(new TestPage(), new TestAppExtensionHost())
+        {
+            DockRoute = new(101, Guid.NewGuid()),
+        };
+        var command = new Mock<IInvokableCommand>();
+        var heldDuringSetup = false;
+        var heldDuringInvocation = false;
+        command.As<IRequiresHostHwnd>().Setup(model => model.SetHostHwnd(It.IsAny<nint>())).Callback(() =>
+        {
+            heldDuringSetup = windowDismissal.IsSuppressed(101);
+            if (failOwnerSetup)
+            {
+                throw new InvalidOperationException("Owner setup failed");
+            }
+        });
+        command.Setup(model => model.Invoke(It.IsAny<object>())).Returns(() =>
+        {
+            heldDuringInvocation = windowDismissal.IsSuppressed(101);
+            throw new InvalidOperationException("Invocation failed");
+        });
+
+        try
+        {
+            shell.Receive(new PerformCommandMessage(CreateCommandViewModel(command.Object, page), page) { DockRoute = null });
+            var invocation = (Task?)typeof(ShellViewModel)
+                .GetField("_handleInvokeTask", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(shell);
+            if (invocation is not null)
+            {
+                await invocation.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+
+            Assert.IsTrue(heldDuringSetup);
+            Assert.AreEqual(!failOwnerSetup, heldDuringInvocation);
+            Assert.IsFalse(windowDismissal.IsSuppressed(101));
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(shell);
         }
     }
 
@@ -657,7 +775,8 @@ public partial class ShellViewModelTests
                 TaskScheduler.Default,
                 rootPage.Object,
                 Mock.Of<IPageViewModelFactoryService>(),
-                CreateAppHostService(new TestAppExtensionHost()).Object);
+                CreateAppHostService(new TestAppExtensionHost()).Object,
+                new WindowDismissalService());
             var command = new TestCommand(CommandResult.KeepOpen(), () => throw exception);
             shell.Receive(new PerformCommandMessage(CreateCommandViewModel(command, shell.CurrentPage)));
 
@@ -688,7 +807,7 @@ public partial class ShellViewModelTests
         }
     }
 
-    private static ShellViewModel CreateViewModel()
+    private static ShellViewModel CreateViewModel(WindowDismissalService? windowDismissal = null)
     {
         var host = new TestAppExtensionHost();
         var appHostService = new Mock<IAppHostService>();
@@ -704,6 +823,7 @@ public partial class ShellViewModelTests
             TaskScheduler.Default,
             Mock.Of<IRootPageService>(),
             pageFactory.Object,
-            appHostService.Object);
+            appHostService.Object,
+            windowDismissal ?? new WindowDismissalService());
     }
 }

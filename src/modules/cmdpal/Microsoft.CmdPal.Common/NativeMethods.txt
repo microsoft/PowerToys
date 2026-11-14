@@ -21,3 +21,5 @@ CoCreateInstance
 
 CommandLineToArgvW
 LocalFree
+IsWindow
+IsWindowEnabled
