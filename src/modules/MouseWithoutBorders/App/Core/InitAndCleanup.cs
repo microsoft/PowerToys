@@ -5,6 +5,7 @@
 using System;
 using System.Globalization;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Threading;
 
@@ -104,23 +105,24 @@ internal static class InitAndCleanup
             Logger.Log(e.Message);
         }
 
+        Common.Is64bitOS = IntPtr.Size == 8;
+
         try
         {
             InputSimulation.Injector = InputInjector.TryCreate();
             if (InputSimulation.Injector != null)
             {
-                InputSimulation.MoveMouseRelative(0, 0);
                 NativeMethods.InjectMouseInputAvailable = true;
+                InputSimulation.MoveMouseRelative(0, 0);
             }
         }
-        catch (EntryPointNotFoundException)
+        catch (Exception ex) when (ex is EntryPointNotFoundException or COMException or UnauthorizedAccessException)
         {
             NativeMethods.InjectMouseInputAvailable = false;
-            Logger.Log($"{nameof(NativeMethods.InjectMouseInputAvailable)} = false");
+            Logger.Log($"{nameof(NativeMethods.InjectMouseInputAvailable)} = false ({ex.GetType().Name})");
         }
 
         bool dummy = Setting.Values.DrawMouseEx;
-        Common.Is64bitOS = IntPtr.Size == 8;
         Common.tcpPort = Setting.Values.TcpPort;
         WinAPI.GetScreenConfig();
         Package.PackageSent = new PackageMonitor(0);

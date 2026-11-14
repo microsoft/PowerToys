@@ -10,6 +10,7 @@
 //     2009-... modified by Truong Do (TruongDo).
 //     2023- Included in PowerToys.
 // </history>
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.InteropServices;
@@ -81,7 +82,17 @@ namespace MouseWithoutBorders.Class
 
                 if (input.type == 0 && (input.mi.dwFlags & (int)NativeMethods.MOUSEEVENTF.MOVE) != 0 && NativeMethods.InjectMouseInputAvailable)
                 {
-                    Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input64.mi) });
+                    try
+                    {
+                        Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input64.mi) });
+                    }
+                    catch (Exception ex) when (ex is COMException or UnauthorizedAccessException)
+                    {
+                        NativeMethods.InjectMouseInputAvailable = false;
+                        Logger.Log(ex);
+                        NativeMethods.INPUT64[] inputs = { input64 };
+                        rv = NativeMethods.SendInput64(1, inputs, Marshal.SizeOf(input64));
+                    }
                 }
                 else
                 {
@@ -93,7 +104,17 @@ namespace MouseWithoutBorders.Class
             {
                 if (input.type == 0 && (input.mi.dwFlags & (int)NativeMethods.MOUSEEVENTF.MOVE) != 0 && NativeMethods.InjectMouseInputAvailable)
                 {
-                    Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input.mi) });
+                    try
+                    {
+                        Injector.InjectMouseInput(new[] { MouseInputToInjectedInputMouseInfo(input.mi) });
+                    }
+                    catch (Exception ex) when (ex is COMException or UnauthorizedAccessException)
+                    {
+                        NativeMethods.InjectMouseInputAvailable = false;
+                        Logger.Log(ex);
+                        NativeMethods.INPUT[] inputs = { input };
+                        rv = NativeMethods.SendInput(1, inputs, Marshal.SizeOf(input));
+                    }
                 }
                 else
                 {
