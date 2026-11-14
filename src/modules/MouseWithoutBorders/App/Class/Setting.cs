@@ -744,6 +744,17 @@ namespace MouseWithoutBorders.Class
         [JsonIgnore]
         internal bool BlockScreenSaverIsGpoConfigured => GPOWrapper.GetConfiguredMwbDisallowBlockingScreensaverValue() == GpoRuleConfigured.Enabled;
 
+        internal bool SuppressKeyboardManager
+        {
+            get
+            {
+                lock (_loadingSettingsLock)
+                {
+                    return _properties.SuppressKeyboardManager;
+                }
+            }
+        }
+
         internal bool MoveMouseRelatively
         {
             get

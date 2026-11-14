@@ -411,6 +411,12 @@
   <data name="MouseWithoutBorders_ShareClipboard.Header" xml:space="preserve">
     <value>Share clipboard</value>
   </data>
+  <data name="MouseWithoutBorders_SuppressKeyboardManager.Header" xml:space="preserve">
+    <value>Bypass Keyboard Manager for remote input</value>
+  </data>
+  <data name="MouseWithoutBorders_SuppressKeyboardManager.Description" xml:space="preserve">
+    <value>Prevent Keyboard Manager on this device from remapping keyboard input received from other Mouse Without Borders devices. Local keyboard input is not affected.</value>
+  </data>
   <data name="MouseWithoutBorders_TransferFile.Content" xml:space="preserve">
     <value>Transfer copied files to the remote machine’s clipboard (up to 100 MB)</value>
   </data>
