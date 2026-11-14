@@ -19,6 +19,7 @@ namespace WorkspacesEditor.Views
     public sealed partial class SnapshotWindow : WindowEx
     {
         private bool _captured;
+        private bool _closingForShutdown;
 
         public SnapshotWindow()
         {
@@ -42,6 +43,11 @@ namespace WorkspacesEditor.Views
             // Set focus to the Capture button when window loads
             this.Activated += (s, e) =>
             {
+                if (_captured || _closingForShutdown)
+                {
+                    return;
+                }
+
                 var snapshotHwnd = WindowNative.GetWindowHandle(this);
                 SetForegroundWindow(snapshotHwnd);
                 SnapshotButton.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
@@ -69,9 +75,15 @@ namespace WorkspacesEditor.Views
             this.Close();
         }
 
+        internal void CloseForShutdown()
+        {
+            _closingForShutdown = true;
+            this.Close();
+        }
+
         private void OnClosed(object sender, WindowEventArgs args)
         {
-            if (!_captured)
+            if (!_captured && !_closingForShutdown)
             {
                 StrongReferenceMessenger.Default.Send(new SnapshotCancelledMessage());
             }

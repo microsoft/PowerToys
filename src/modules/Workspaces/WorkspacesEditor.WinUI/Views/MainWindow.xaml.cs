@@ -3,11 +3,15 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.Json;
 using System.Threading;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -25,8 +29,15 @@ namespace WorkspacesEditor
         public const int MinWindowWidth = 750;
         public const int MinWindowHeight = 680;
 
+        private const string WindowSettingsFileName = "editor-window.json";
+        private const string WorkspacesModuleName = "Workspaces";
         private readonly CancellationTokenSource _cancellationToken = new();
+        private readonly IDictionary<string, object> _windowPlacementStorage;
         private System.ComponentModel.PropertyChangedEventHandler _vmPropertyChangedHandler;
+        private Thread _hotkeyEventThread;
+        private SnapshotWindow _snapshotWindow;
+        private OverlayBorder _overlayBorder;
+        private bool _isDisposed;
 
         public MainWindow()
         {
@@ -34,6 +45,10 @@ namespace WorkspacesEditor
 
             var hwnd = WindowNative.GetWindowHandle(this);
 
+            // Unpackaged WindowEx windows need durable backing storage for persistence.
+            _windowPlacementStorage = LoadWindowPlacement();
+            WindowManager.PersistenceStorage = _windowPlacementStorage;
+            PersistenceId = "WorkspacesEditor";
             this.CenterOnScreen();
 
             AppWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
@@ -64,7 +79,15 @@ namespace WorkspacesEditor
             var vm = App.MainViewModel;
             StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
             {
-                ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
+                if (ContentFrame.Content is Views.WorkspacesEditorPage editorPage)
+                {
+                    editorPage.UpdateProject(m.Project);
+                }
+                else
+                {
+                    ContentFrame.Navigate(typeof(Views.WorkspacesEditorPage), (vm, m.Project));
+                }
+
                 SearchBox.Visibility = Visibility.Collapsed;
                 AppTitleBar.IsBackButtonVisible = true;
                 AppTitleBar.Title = m.Project.EditorWindowTitle;
@@ -76,6 +99,13 @@ namespace WorkspacesEditor
                     ContentFrame.GoBack();
                 }
 
+                if (ContentFrame.Content is not Views.MainPage)
+                {
+                    ContentFrame.Navigate(typeof(Views.MainPage), vm);
+                }
+
+                ContentFrame.BackStack.Clear();
+                ContentFrame.ForwardStack.Clear();
                 SearchBox.Text = string.Empty;
                 SearchBox.Visibility = Visibility.Visible;
                 AppTitleBar.IsBackButtonVisible = false;
@@ -91,20 +121,9 @@ namespace WorkspacesEditor
             });
 
             // Listen for snapshot window requests from ViewModel
-            OverlayBorder overlayBorder = null;
             StrongReferenceMessenger.Default.Register<ShowSnapshotWindowMessage>(this, (r, m) =>
             {
-                // Show red border overlay around all displays
-                var displays = OverlayBorder.GetAllMonitorBounds();
-                overlayBorder = OverlayBorder.CreateForAllMonitors(displays);
-
-                var snapshotWindow = new Views.SnapshotWindow();
-                snapshotWindow.Closed += (s, args) =>
-                {
-                    overlayBorder?.Dispose();
-                    overlayBorder = null;
-                };
-                snapshotWindow.Activate();
+                ShowSnapshotWindow();
             });
 
             // Bind loading ring to ViewModel.IsLoading
@@ -170,45 +189,135 @@ namespace WorkspacesEditor
         private void StartHotkeyEventLoop(IntPtr hwnd)
         {
             var token = _cancellationToken.Token;
-            new Thread(() =>
+            var cancellationHandle = token.WaitHandle;
+            _hotkeyEventThread = new Thread(() =>
             {
                 using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToys.Interop.Constants.WorkspacesHotkeyEvent());
-                while (true)
+                var waitHandles = new WaitHandle[] { cancellationHandle, eventHandle };
+                while (WaitHandle.WaitAny(waitHandles) == 1 && !token.IsCancellationRequested)
                 {
-                    if (WaitHandle.WaitAny(new WaitHandle[] { token.WaitHandle, eventHandle }) == 1)
+                    App.DispatcherQueue.TryEnqueue(() =>
                     {
-                        App.DispatcherQueue.TryEnqueue(() =>
+                        if (_isDisposed)
                         {
-                            if (ApplicationIsInFocus())
+                            return;
+                        }
+
+                        if (ApplicationIsInFocus())
+                        {
+                            StrongReferenceMessenger.Default.Send(new CloseApplicationMessage());
+                        }
+                        else
+                        {
+                            if (IsIconic(hwnd))
                             {
-                                StrongReferenceMessenger.Default.Send(new CloseApplicationMessage());
+                                ShowWindow(hwnd, 9); // SW_RESTORE
                             }
-                            else
-                            {
-                                WindowHelpers.BringToForeground(hwnd);
-                            }
-                        });
-                    }
-                    else
-                    {
-                        return;
-                    }
+
+                            WindowHelpers.BringToForeground(hwnd);
+                        }
+                    });
                 }
-            }) { IsBackground = true }.Start();
+            }) { IsBackground = true };
+            _hotkeyEventThread.Start();
         }
 
         private void OnClosed(object sender, WindowEventArgs args)
         {
-            StrongReferenceMessenger.Default.UnregisterAll(this);
-
-            if (_vmPropertyChangedHandler != null && App.MainViewModel != null)
+            try
             {
-                App.MainViewModel.PropertyChanged -= _vmPropertyChangedHandler;
+                // WindowEx has already written the native placement to its backing dictionary.
+                SettingsUtils.Default.SaveSettings(WindowPlacementStorage.Serialize(_windowPlacementStorage), WorkspacesModuleName, WindowSettingsFileName);
+            }
+            finally
+            {
+                try
+                {
+                    Dispose();
+                }
+                finally
+                {
+                    (Microsoft.UI.Xaml.Application.Current as App)?.OnMainWindowClosed();
+                }
+            }
+        }
+
+        private static IDictionary<string, object> LoadWindowPlacement()
+        {
+            try
+            {
+                var path = SettingsUtils.Default.GetSettingsFilePath(WorkspacesModuleName, WindowSettingsFileName);
+                if (File.Exists(path))
+                {
+                    return WindowPlacementStorage.Deserialize(File.ReadAllText(path));
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+            {
+                Logger.LogError("Failed to load Workspaces Editor window placement.", ex);
             }
 
-            _cancellationToken.Cancel();
-            _cancellationToken.Dispose();
-            (Microsoft.UI.Xaml.Application.Current as IDisposable)?.Dispose();
+            return new Dictionary<string, object>(StringComparer.Ordinal);
+        }
+
+        private void ShowSnapshotWindow()
+        {
+            if (_snapshotWindow != null)
+            {
+                WindowHelpers.BringToForeground(WindowNative.GetWindowHandle(_snapshotWindow));
+                return;
+            }
+
+            _overlayBorder = OverlayBorder.CreateForAllMonitors(OverlayBorder.GetAllMonitorBounds());
+            _snapshotWindow = new SnapshotWindow();
+            _snapshotWindow.Closed += OnSnapshotWindowClosed;
+            _snapshotWindow.Activate();
+        }
+
+        private void OnSnapshotWindowClosed(object sender, WindowEventArgs args)
+        {
+            if (sender is not SnapshotWindow window)
+            {
+                return;
+            }
+
+            window.Closed -= OnSnapshotWindowClosed;
+            if (!ReferenceEquals(_snapshotWindow, window))
+            {
+                return;
+            }
+
+            _snapshotWindow = null;
+            var overlay = _overlayBorder;
+            _overlayBorder = null;
+            overlay?.Dispose();
+        }
+
+        private void CloseSnapshotForShutdown()
+        {
+            var window = _snapshotWindow;
+            var overlay = _overlayBorder;
+            _snapshotWindow = null;
+            _overlayBorder = null;
+            if (window != null)
+            {
+                window.Closed -= OnSnapshotWindowClosed;
+            }
+
+            try
+            {
+                window?.CloseForShutdown();
+            }
+            finally
+            {
+                overlay?.Dispose();
+            }
+        }
+
+        internal void CloseForShutdown()
+        {
+            CloseSnapshotForShutdown();
+            this.Close();
         }
 
         private static bool ApplicationIsInFocus()
@@ -227,13 +336,33 @@ namespace WorkspacesEditor
 
         public void Dispose()
         {
-            _cancellationToken?.Dispose();
+            if (!_isDisposed)
+            {
+                _isDisposed = true;
+                StrongReferenceMessenger.Default.UnregisterAll(this);
+                this.Closed -= OnClosed;
+
+                if (_vmPropertyChangedHandler != null && App.MainViewModel != null)
+                {
+                    App.MainViewModel.PropertyChanged -= _vmPropertyChangedHandler;
+                }
+
+                CloseSnapshotForShutdown();
+                _cancellationToken.Cancel();
+                _hotkeyEventThread?.Join();
+                _cancellationToken.Dispose();
+            }
+
             GC.SuppressFinalize(this);
         }
 
         // Win32 interop
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool IsIconic(IntPtr hWnd);
 
         [DllImport("user32.dll")]
         private static extern IntPtr GetForegroundWindow();

@@ -7,22 +7,25 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 using Microsoft.UI.Xaml.Media.Imaging;
+using WorkspacesCsharpLibrary.Models;
 
 namespace WorkspacesEditor.Helpers
 {
     internal static class IconHelper
     {
-        public static BitmapImage TryGetExecutableIcon(string path)
+        public static BitmapImage TryGetApplicationIcon(BaseApplication application)
         {
-            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            if (application == null)
             {
                 return null;
             }
 
             try
             {
-                using Icon icon = Icon.ExtractAssociatedIcon(path);
+                // BaseApplication owns the cached icon and resolves PWA and packaged-app logos.
+                Icon icon = application.Icon;
                 if (icon is null)
                 {
                     return null;
@@ -41,6 +44,8 @@ namespace WorkspacesEditor.Helpers
                                     or UnauthorizedAccessException
                                     or Win32Exception
                                     or ArgumentException
+                                    or InvalidOperationException
+                                    or COMException
                                     or IOException)
             {
                 return null;

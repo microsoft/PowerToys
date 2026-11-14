@@ -21,6 +21,7 @@ namespace WorkspacesEditor
     {
         private MainWindow _mainWindow;
         private bool _isDisposed;
+        private bool _shuttingDown;
 
         public static DispatcherQueue DispatcherQueue { get; private set; }
 
@@ -51,6 +52,11 @@ namespace WorkspacesEditor
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            if (_shuttingDown)
+            {
+                return;
+            }
+
             DispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             WorkspacesEditorIO = new WorkspacesEditorIO();
@@ -64,8 +70,42 @@ namespace WorkspacesEditor
             StrongReferenceMessenger.Default.Register<CloseApplicationMessage>(this, (r, m) =>
             {
                 Logger.LogInfo("CloseApplicationMessage received. Shutting down.");
-                ((App)r).Exit();
+                ((App)r).Shutdown();
             });
+        }
+
+        internal void Shutdown()
+        {
+            if (_shuttingDown)
+            {
+                return;
+            }
+
+            _shuttingDown = true;
+            var window = _mainWindow;
+            _mainWindow = null;
+
+            try
+            {
+                window?.CloseForShutdown();
+            }
+            finally
+            {
+                try
+                {
+                    Dispose();
+                }
+                finally
+                {
+                    Exit();
+                }
+            }
+        }
+
+        internal void OnMainWindowClosed()
+        {
+            _mainWindow = null;
+            Shutdown();
         }
 
         private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -77,8 +117,9 @@ namespace WorkspacesEditor
         {
             if (!_isDisposed)
             {
-                MainViewModel?.Dispose();
                 _isDisposed = true;
+                StrongReferenceMessenger.Default.UnregisterAll(this);
+                MainViewModel?.Dispose();
             }
 
             GC.SuppressFinalize(this);

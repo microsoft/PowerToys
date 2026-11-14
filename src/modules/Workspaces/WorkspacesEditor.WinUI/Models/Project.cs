@@ -326,7 +326,26 @@ namespace WorkspacesEditor.Models
         public void UpdateAfterLaunchAndEdit(Project projectBefore)
         {
             Id = projectBefore.Id;
+            Name = projectBefore.Name;
             IsRevertEnabled = true;
+            IsShortcutNeeded = projectBefore.IsShortcutNeeded;
+            MoveExistingWindows = projectBefore.MoveExistingWindows;
+
+            var applicationsBefore = projectBefore.Applications.ToLookup(app => app.Id, StringComparer.OrdinalIgnoreCase);
+            foreach (Application app in Applications)
+            {
+                if (string.IsNullOrEmpty(app.Id))
+                {
+                    continue;
+                }
+
+                Application applicationBefore = applicationsBefore[app.Id].FirstOrDefault();
+                if (applicationBefore != null)
+                {
+                    app.CommandLineArguments = applicationBefore.CommandLineArguments;
+                    app.IsElevated = applicationBefore.IsElevated;
+                }
+            }
         }
 
         private static string GetString(string key)

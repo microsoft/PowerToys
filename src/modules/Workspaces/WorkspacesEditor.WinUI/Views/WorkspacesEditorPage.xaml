@@ -24,7 +24,11 @@
         </DataTemplate>
 
         <DataTemplate x:Key="appTemplate" x:DataType="models:Application">
-            <Grid>
+            <Grid ColumnSpacing="8" DataContext="{x:Bind}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
                 <tkcontrols:SettingsExpander
                     HorizontalAlignment="Stretch"
                     HorizontalContentAlignment="Stretch"
@@ -59,21 +63,13 @@
                             Text="{x:Bind AppMainParams, Mode=OneWay}"
                             Visibility="{x:Bind IsAppMainParamVisible, Converter={StaticResource BoolToVis}, Mode=OneWay}" />
                     </tkcontrols:SettingsExpander.Description>
-                    <Button
-                        Grid.Column="4"
-                        Width="Auto"
-                        Margin="12,4"
-                        AutomationProperties.Name="{x:Bind DeleteButtonAccessibleName, Mode=OneWay}"
-                        Click="DeleteButtonClicked"
-                        Content="{x:Bind DeleteButtonContent, Mode=OneWay}"
-                        IsEnabled="True"
-                        Tag="{x:Bind}" />
                     <tkcontrols:SettingsExpander.Items>
 
                         <tkcontrols:SettingsCard x:Uid="LaunchAsAdminCard" ContentAlignment="Left">
                             <CheckBox
                                 x:Uid="LaunchAsAdminLabel"
                                 MinWidth="12"
+                                AutomationProperties.AutomationId="LaunchAsAdminCheckBox"
                                 IsChecked="{x:Bind IsElevated, Mode=TwoWay}"
                                 IsEnabled="{x:Bind CanLaunchElevated, Mode=OneWay}" />
                         </tkcontrols:SettingsCard>
@@ -85,6 +81,7 @@
                                 Margin="12,0,0,0"
                                 HorizontalAlignment="Stretch"
                                 VerticalContentAlignment="Center"
+                                AutomationProperties.AutomationId="CommandLineTextBox"
                                 Text="{x:Bind CommandLineArguments, Mode=TwoWay}"
                                 TextChanged="CommandLineTextBox_TextChanged" />
                         </tkcontrols:SettingsCard>
@@ -110,6 +107,7 @@
                                     x:Uid="LeftTextBox"
                                     MinWidth="60"
                                     Margin="0,0,8,0"
+                                    AutomationProperties.AutomationId="LeftTextBox"
                                     Text="{x:Bind Position.X, Mode=OneWay}"
                                     TextChanged="LeftTextBox_TextChanged" />
                                 <TextBlock
@@ -120,6 +118,7 @@
                                     x:Uid="TopTextBox"
                                     MinWidth="60"
                                     Margin="0,0,8,0"
+                                    AutomationProperties.AutomationId="TopTextBox"
                                     Text="{x:Bind Position.Y, Mode=OneWay}"
                                     TextChanged="TopTextBox_TextChanged" />
                                 <TextBlock
@@ -130,6 +129,7 @@
                                     x:Uid="WidthTextBox"
                                     MinWidth="60"
                                     Margin="0,0,8,0"
+                                    AutomationProperties.AutomationId="WidthTextBox"
                                     Text="{x:Bind Position.Width, Mode=OneWay}"
                                     TextChanged="WidthTextBox_TextChanged" />
                                 <TextBlock
@@ -139,12 +139,22 @@
                                 <TextBox
                                     x:Uid="HeightTextBox"
                                     MinWidth="60"
+                                    AutomationProperties.AutomationId="HeightTextBox"
                                     Text="{x:Bind Position.Height, Mode=OneWay}"
                                     TextChanged="HeightTextBox_TextChanged" />
                             </StackPanel>
                         </tkcontrols:SettingsCard>
                     </tkcontrols:SettingsExpander.Items>
                 </tkcontrols:SettingsExpander>
+                <Button
+                    Grid.Column="1"
+                    Margin="0,12,0,0"
+                    VerticalAlignment="Top"
+                    AutomationProperties.AutomationId="ToggleApplicationInclusionButton"
+                    AutomationProperties.Name="{x:Bind DeleteButtonAccessibleName, Mode=OneWay}"
+                    Click="DeleteButtonClicked"
+                    Content="{x:Bind DeleteButtonContent, Mode=OneWay}"
+                    Tag="{x:Bind}" />
             </Grid>
         </DataTemplate>
 
@@ -167,6 +177,7 @@
                 <Button
                     x:Name="RevertButton"
                     x:Uid="RevertButton"
+                    AutomationProperties.AutomationId="RevertButton"
                     Click="RevertButtonClicked"
                     IsEnabled="{x:Bind EditedProject.IsRevertEnabled, Mode=OneWay}"
                     Style="{StaticResource SubtleButtonStyle}">
@@ -178,6 +189,7 @@
                 <Button
                     x:Name="LaunchEditButton"
                     x:Uid="LaunchEditButton"
+                    AutomationProperties.AutomationId="LaunchEditButton"
                     Click="LaunchEditButtonClicked">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <FontIcon FontSize="16" Glyph="&#xE8A7;" />
@@ -193,6 +205,7 @@
                 <Button
                     x:Name="SaveButton"
                     x:Uid="SaveBtn"
+                    AutomationProperties.AutomationId="SaveButton"
                     Click="SaveButtonClicked"
                     IsEnabled="{x:Bind EditedProject.CanBeSaved, Mode=OneWay}"
                     Style="{ThemeResource AccentButtonStyle}">
@@ -212,6 +225,7 @@
                 <Button
                     x:Name="DeleteWorkspaceButton"
                     x:Uid="DeleteWorkspaceButton"
+                    AutomationProperties.AutomationId="DeleteWorkspaceButton"
                     Click="DeleteWorkspaceButtonClicked"
                     Style="{StaticResource SubtleButtonStyle}">
                     <ToolTipService.ToolTip>
@@ -241,19 +255,24 @@
                         ColumnSpacing="24"
                         CornerRadius="{StaticResource ControlCornerRadius}">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
 
-                        <Grid
-                            Width="160"
-                            Height="120"
-                            HorizontalAlignment="Left"
+                        <Border
+                            MinWidth="160"
+                            Height="200"
+                            HorizontalAlignment="Stretch"
                             VerticalAlignment="Top"
                             Background="{ThemeResource ControlAltFillColorTertiaryBrush}"
                             CornerRadius="8">
-                            <!--  THIS IS JUST A PLACEHOLDER.. SNAPSHOT IMAGE GOES HERE  -->
-                        </Grid>
+                            <Image
+                                x:Uid="WorkspacePreviewImage"
+                                Margin="8"
+                                AutomationProperties.AutomationId="WorkspacePreviewImage"
+                                Source="{x:Bind EditedProject.PreviewImage, Mode=OneWay}"
+                                Stretch="Uniform" />
+                        </Border>
                         <StackPanel
                             Grid.Column="1"
                             Orientation="Vertical"
@@ -263,6 +282,7 @@
                                 x:Uid="EditNameTextBox"
                                 Width="224"
                                 HorizontalAlignment="Left"
+                                AutomationProperties.AutomationId="EditNameTextBox"
                                 GotFocus="EditNameTextBox_GotFocus"
                                 KeyDown="EditNameTextBoxKeyDown"
                                 Text="{x:Bind EditedProject.Name, Mode=TwoWay}"
@@ -270,14 +290,19 @@
                             <CheckBox
                                 x:Uid="CreateShortcutCheckBox"
                                 Margin="0,4,0,0"
+                                AutomationProperties.AutomationId="CreateShortcutCheckBox"
                                 IsChecked="{x:Bind EditedProject.IsShortcutNeeded, Mode=TwoWay}" />
-                            <CheckBox x:Uid="MoveExistingWindowsCheckBox" IsChecked="{x:Bind EditedProject.MoveExistingWindows, Mode=TwoWay}" />
+                            <CheckBox
+                                x:Uid="MoveExistingWindowsCheckBox"
+                                AutomationProperties.AutomationId="MoveExistingWindowsCheckBox"
+                                IsChecked="{x:Bind EditedProject.MoveExistingWindows, Mode=TwoWay}" />
                         </StackPanel>
                     </Grid>
                     <ItemsRepeater
                         x:Name="CapturedAppList"
                         x:Uid="CapturedAppListControl"
                         Grid.Row="1"
+                        AutomationProperties.AutomationId="CapturedAppList"
                         ItemTemplate="{StaticResource AppListDataTemplateSelector}"
                         ItemsSource="{x:Bind EditedProject.ApplicationsListed, Mode=OneWay}">
                         <ItemsRepeater.Layout>

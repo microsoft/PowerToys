@@ -231,16 +231,6 @@ namespace WorkspacesEditor.Models
         public void InitializationFinished()
         {
             _isInitialized = true;
-            LoadIcon();
-        }
-
-        private void LoadIcon()
-        {
-            _iconImage = IconHelper.TryGetExecutableIcon(AppPath);
-            if (_iconImage == null && !string.IsNullOrEmpty(AppPath))
-            {
-                IsNotFound = true;
-            }
         }
 
         [ObservableProperty]
@@ -272,9 +262,23 @@ namespace WorkspacesEditor.Models
         }
 
         private BitmapImage _iconImage;
+        private bool _isIconImageLoaded;
 
         [JsonIgnore]
-        public BitmapImage IconImage => _iconImage;
+        public BitmapImage IconImage
+        {
+            get
+            {
+                // Create WinUI images only when the UI requests them, not during model initialization.
+                if (!_isIconImageLoaded)
+                {
+                    _iconImage = IconHelper.TryGetApplicationIcon(this);
+                    _isIconImageLoaded = true;
+                }
+
+                return _iconImage;
+            }
+        }
 
         internal void CommandLineTextChanged(string newCommandLineValue)
         {
@@ -290,6 +294,11 @@ namespace WorkspacesEditor.Models
                 value = 0;
             }
 
+            if (Position.X == value)
+            {
+                return;
+            }
+
             Position = new WindowPosition { X = value, Y = Position.Y, Width = Position.Width, Height = Position.Height };
             MarkPositionChanged();
         }
@@ -299,6 +308,11 @@ namespace WorkspacesEditor.Models
             if (!int.TryParse(text, out int value))
             {
                 value = 0;
+            }
+
+            if (Position.Y == value)
+            {
+                return;
             }
 
             Position = new WindowPosition { X = Position.X, Y = value, Width = Position.Width, Height = Position.Height };
@@ -312,6 +326,11 @@ namespace WorkspacesEditor.Models
                 value = 0;
             }
 
+            if (Position.Width == value)
+            {
+                return;
+            }
+
             Position = new WindowPosition { X = Position.X, Y = Position.Y, Width = value, Height = Position.Height };
             MarkPositionChanged();
         }
@@ -321,6 +340,11 @@ namespace WorkspacesEditor.Models
             if (!int.TryParse(text, out int value))
             {
                 value = 0;
+            }
+
+            if (Position.Height == value)
+            {
+                return;
             }
 
             Position = new WindowPosition { X = Position.X, Y = Position.Y, Width = Position.Width, Height = value };
