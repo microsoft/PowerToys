@@ -29,6 +29,11 @@ namespace FancyZonesEditorCommon.Data
             public int ZoneCount { get; set; }
 
             public int SensitivityRadius { get; set; }
+
+            // Zone (or inclusive zone range) a newly created window with no zone history falls back
+            // to on this layout. Null means the feature is off for this layout. Zero-based, same as
+            // the zone indexes already used elsewhere (e.g. app zone history).
+            public List<int> DefaultZoneSet { get; set; }
         }
 
         public struct TemplateLayoutsListWrapper

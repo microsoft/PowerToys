@@ -45,6 +45,7 @@ public:
     const HWND GetWorkAreaWindow() const noexcept { return m_window; }
     const GUID GetLayoutId() const noexcept;
     const FancyZonesUtils::Rect& GetWorkAreaRect() const noexcept { return m_workAreaRect; }
+    std::optional<ZoneIndexSet> GetDefaultZoneIndexSet() const noexcept { return m_layout ? m_layout->ValidatedDefaultZoneIndexSet() : std::nullopt; }
     
     void InitLayout();
     void InitSnappedWindows();
