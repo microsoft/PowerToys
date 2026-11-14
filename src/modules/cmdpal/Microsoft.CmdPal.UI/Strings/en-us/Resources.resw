@@ -512,6 +512,14 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
     <value>Alt+{0} to run; Alt+Shift+{0} to select</value>
     <comment>Tooltip shortcut text for running or selecting a quick access item. {0} is a digit from 1 through 9.</comment>
   </data>
+  <data name="ListItemsView_ItemsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Results</value>
+    <comment>Accessible name of the list that shows the commands matching the search text.</comment>
+  </data>
+  <data name="ListItemsView_ItemsGrid.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Results</value>
+    <comment>Accessible name of the grid that shows the commands matching the search text.</comment>
+  </data>
   <data name="ListItemNumberedShortcutAcceleratorFormat" xml:space="preserve">
     <value>Alt+{0}</value>
     <comment>UI Automation accelerator key for a numbered list item. {0} is a digit from 1 through 9. Localize the modifier key name and separator as appropriate.</comment>
@@ -1143,6 +1151,30 @@ Home: highest position. End: lowest position.</value>
   </data>
   <data name="Settings_GeneralPage_ColorizationMode_Image.Content" xml:space="preserve">
     <value>Image</value>
+  </data>
+  <data name="Settings_GeneralPage_ColorizationMode.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Background</value>
+    <comment>Accessible name of the combo box that picks the background type</comment>
+  </data>
+  <data name="Settings_GalleryPage_Refresh_Button.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Refresh</value>
+    <comment>Accessible name of the icon-only refresh button on the extension gallery page</comment>
+  </data>
+  <data name="Settings_GalleryPage_GalleryItemsView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Extensions</value>
+    <comment>Accessible name of the list of extensions in the gallery</comment>
+  </data>
+  <data name="Settings_GalleryItemPage_ViewRepository.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>View repository</value>
+    <comment>Accessible name of the link to the extension's repository</comment>
+  </data>
+  <data name="Settings_GalleryItemPage_ScreenshotsItemsView.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Screenshots</value>
+    <comment>Accessible name of the list of extension screenshots</comment>
+  </data>
+  <data name="FallbackRankerList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Fallback commands</value>
+    <comment>Accessible name of the reorderable list of fallback commands</comment>
   </data>
   <data name="Settings_GeneralPage_BackgroundImage_ChooseImageButton.Content" xml:space="preserve">
     <value>Browse...</value>
