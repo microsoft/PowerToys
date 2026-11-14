@@ -24,6 +24,7 @@ using Peek.UI.Models;
 using Peek.UI.Native;
 using Peek.UI.Telemetry.Events;
 using Windows.Foundation;
+using Windows.Media.Playback;
 using WinUIEx;
 
 namespace Peek.UI
@@ -44,6 +45,8 @@ namespace Peek.UI
         /// </summary>
         private bool _isDeleteInProgress;
         private bool _exitAfterClose;
+        private bool _mediaVolumeHooked;
+        private bool _applyingMediaVolume;
 
         private IntPtr _keyboardHookHandle;
         private NativeMethods.LowLevelKeyboardProc? _keyboardHookProc;
@@ -226,6 +229,7 @@ namespace Peek.UI
                 return;
             }
 
+            EnsureMediaVolumeHook();
             ViewModel.ScalingFactor = this.GetMonitorScale();
             this.Content.KeyUp -= Content_KeyUp;
             this.Content.KeyUp += Content_KeyUp;
@@ -258,6 +262,58 @@ namespace Peek.UI
                 {
                     Environment.Exit(0);
                 }
+            }
+        }
+
+        private void EnsureMediaVolumeHook()
+        {
+            if (_mediaVolumeHooked)
+            {
+                return;
+            }
+
+            _mediaVolumeHooked = true;
+            Hook(FilePreviewer.VideoPlayer);
+            Hook(FilePreviewer.AudioPlayer);
+
+            void Hook(MediaPlayer player)
+            {
+                player.MediaOpened += (_, _) => Apply(player);
+                player.VolumeChanged += (_, _) => Remember(player);
+                player.IsMutedChanged += (_, _) => Remember(player);
+                Apply(player);
+            }
+
+            void Apply(MediaPlayer player)
+            {
+                _applyingMediaVolume = true;
+                try
+                {
+                    if (userSettings.MediaVolume is double volume)
+                    {
+                        player.Volume = volume;
+                    }
+
+                    if (userSettings.MediaMuted is bool muted)
+                    {
+                        player.IsMuted = muted;
+                    }
+                }
+                finally
+                {
+                    _applyingMediaVolume = false;
+                }
+            }
+
+            void Remember(MediaPlayer player)
+            {
+                var state = player.PlaybackSession.PlaybackState;
+                if (_applyingMediaVolume || state is MediaPlaybackState.None or MediaPlaybackState.Opening)
+                {
+                    return;
+                }
+
+                userSettings.RememberMediaPlayback(player.Volume, player.IsMuted);
             }
         }
 
