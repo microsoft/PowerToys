@@ -107,6 +107,17 @@
                     <tkcontrols:SettingsCard Name="ColorPickerShowColorName" x:Uid="ColorPicker_ShowColorName">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard Name="ColorPickerSampleSize" x:Uid="ColorPicker_SampleSize">
+                        <ComboBox MinWidth="{StaticResource SettingActionControlMinWidth}" SelectedIndex="{x:Bind ViewModel.SampleSizeIndex, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="ColorPicker_SampleSize_1" />
+                            <ComboBoxItem x:Uid="ColorPicker_SampleSize_3" />
+                            <ComboBoxItem x:Uid="ColorPicker_SampleSize_5" />
+                            <ComboBoxItem x:Uid="ColorPicker_SampleSize_7" />
+                            <ComboBoxItem x:Uid="ColorPicker_SampleSize_9" />
+                            <ComboBoxItem x:Uid="ColorPicker_SampleSize_25" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
                     <!--
                 Disabling this until we have a safer way to reset cursor as
                 we can hit a state where the cursor doesn't reset

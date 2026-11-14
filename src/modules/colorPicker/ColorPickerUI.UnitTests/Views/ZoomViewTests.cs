@@ -7,6 +7,7 @@ using System.Numerics;
 using ColorPicker.Views;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
+using Windows.UI;
 
 namespace ColorPicker.UnitTests.Views
 {
@@ -125,6 +126,46 @@ namespace ColorPicker.UnitTests.Views
             bool expected)
         {
             Assert.AreEqual(expected, ZoomView.ShouldDrawPixelGrid(canvasSize, canvasSize));
+        }
+
+        [TestMethod]
+        public void Sample_cells_are_centered_on_the_pointer_pixel()
+        {
+            var sampleCells = ZoomView.GetSampleCells(bitmapSize: 50, pixelX: 25, pixelY: 25, sampleSize: 25);
+
+            Assert.AreEqual(new System.Drawing.Rectangle(13, 13, 25, 25), sampleCells);
+        }
+
+        [TestMethod]
+        public void Sample_cells_are_clipped_to_the_captured_region()
+        {
+            var sampleCells = ZoomView.GetSampleCells(bitmapSize: 50, pixelX: 1, pixelY: 48, sampleSize: 9);
+
+            Assert.AreEqual(new System.Drawing.Rectangle(0, 44, 6, 6), sampleCells);
+        }
+
+        [TestMethod]
+        public void Sample_color_of_a_single_pixel_is_the_pointer_pixel()
+        {
+            var pixels = new Color[3 * 3];
+            pixels[4] = Color.FromArgb(200, 10, 20, 30);
+
+            Assert.AreEqual(Color.FromArgb(200, 10, 20, 30), ZoomView.GetSampleColor(pixels, bitmapSize: 3, pixelX: 1, pixelY: 1, sampleSize: 1));
+        }
+
+        [TestMethod]
+        public void Sample_color_averages_the_sampled_block()
+        {
+            // 3x3 capture: the center pixel is white and the rest are black, so a 3x3 average is 255 / 9 = 28.3.
+            var pixels = new Color[3 * 3];
+            for (var i = 0; i < pixels.Length; i++)
+            {
+                pixels[i] = Color.FromArgb(255, 0, 0, 0);
+            }
+
+            pixels[4] = Color.FromArgb(255, 255, 255, 255);
+
+            Assert.AreEqual(Color.FromArgb(255, 28, 28, 28), ZoomView.GetSampleColor(pixels, bitmapSize: 3, pixelX: 1, pixelY: 1, sampleSize: 3));
         }
     }
 }

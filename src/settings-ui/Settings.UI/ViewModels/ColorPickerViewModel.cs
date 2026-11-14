@@ -253,6 +253,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        // The sample size combo box lists ColorPickerProperties.SupportedSampleSizes in order.
+        public int SampleSizeIndex
+        {
+            get => ColorPickerProperties.SupportedSampleSizes.IndexOf(ColorPickerProperties.NormalizeSampleSize(_colorPickerSettings.Properties.SampleSize));
+
+            set
+            {
+                if (value < 0 || value >= ColorPickerProperties.SupportedSampleSizes.Length)
+                {
+                    return;
+                }
+
+                var sampleSize = ColorPickerProperties.SupportedSampleSizes[value];
+                if (sampleSize != _colorPickerSettings.Properties.SampleSize)
+                {
+                    _colorPickerSettings.Properties.SampleSize = sampleSize;
+                    OnPropertyChanged(nameof(SampleSizeIndex));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
 
         public ObservableCollection<KeyValuePair<string, string>> ColorFormatsPreview => _colorFormatsPreview;

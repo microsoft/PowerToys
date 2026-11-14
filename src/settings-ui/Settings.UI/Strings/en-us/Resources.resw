@@ -2017,6 +2017,35 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">
     <value>Displays the color name while picking a color</value>
   </data>
+  <data name="ColorPicker_SampleSize.Header" xml:space="preserve">
+    <value>Sample size</value>
+  </data>
+  <data name="ColorPicker_SampleSize.Description" xml:space="preserve">
+    <value>Picks the average color of an area around the cursor instead of a single pixel</value>
+  </data>
+  <data name="ColorPicker_SampleSize_1.Content" xml:space="preserve">
+    <value>Single pixel</value>
+  </data>
+  <data name="ColorPicker_SampleSize_3.Content" xml:space="preserve">
+    <value>3 by 3 average</value>
+    <comment>Average of a 3 by 3 pixel area</comment>
+  </data>
+  <data name="ColorPicker_SampleSize_5.Content" xml:space="preserve">
+    <value>5 by 5 average</value>
+    <comment>Average of a 5 by 5 pixel area</comment>
+  </data>
+  <data name="ColorPicker_SampleSize_7.Content" xml:space="preserve">
+    <value>7 by 7 average</value>
+    <comment>Average of a 7 by 7 pixel area</comment>
+  </data>
+  <data name="ColorPicker_SampleSize_9.Content" xml:space="preserve">
+    <value>9 by 9 average</value>
+    <comment>Average of a 9 by 9 pixel area</comment>
+  </data>
+  <data name="ColorPicker_SampleSize_25.Content" xml:space="preserve">
+    <value>25 by 25 average</value>
+    <comment>Average of a 25 by 25 pixel area</comment>
+  </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
     <comment>The size of the image</comment>
