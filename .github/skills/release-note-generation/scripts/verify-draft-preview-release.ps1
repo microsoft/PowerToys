@@ -97,9 +97,8 @@ if ([string]$release.body -notmatch "<!-- BEGIN POWERTOYS PREVIEW AGENT -->" -or
     throw "Release '$Tag' is missing the managed preview body markers."
 }
 $managedBody = [regex]::Match([string]$release.body, '(?s)<!-- BEGIN POWERTOYS PREVIEW AGENT -->(.*?)<!-- END POWERTOYS PREVIEW AGENT -->').Groups[1].Value
-$heading = [regex]::Match($managedBody, '(?m)^# ([^\r\n]+)\r?$').Groups[1].Value
-if ($heading -cne $releaseTitle) {
-    throw "Managed release-note heading '$heading' does not match '$releaseTitle'."
+if ($managedBody -match '(?m)^ {0,3}#(?:[ \t]+|$)') {
+    throw "Managed release notes must not contain an H1 title; use the GitHub release title instead."
 }
 
 $localFiles = @(Get-PreviewReleaseAssets -AssetsDirectory $AssetsDirectory)

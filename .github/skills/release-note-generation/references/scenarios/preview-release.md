@@ -29,7 +29,7 @@ Use the first three numeric components of the resolved build version for the Git
 
 Keep the four-component `$context.version` for ADO artifact lookup, installer and GPO filenames, hashes, and build audit metadata. Installer download URLs use the three-component tag and the unchanged four-component filename. Older PowerToys updaters reject four-component release tags; this format remains parseable if the release is later promoted through the separate release-management process. This workflow still creates only draft prereleases and never sets a release as Latest.
 
-## Release title and body heading
+## Release title and body layout
 
 Use the shared title helper with the requested GitHub release type and the immutable build's source branch, rather than constructing a display title from the tag:
 
@@ -44,7 +44,7 @@ $releaseTitle = Get-PowerToysReleaseTitle -Tag $context.tag -SourceBranch $conte
 | Prerelease | `stable` | `Release preview v<four-component version>` |
 | Prerelease | `main` | `Dev preview v<four-component version>` |
 
-For build `0.102.2991.0`, display `Release preview v0.102.2991.0` from `stable`, or `Dev preview v0.102.2991.0` from `main`, in both the release title and body H1. The tag remains `v0.102.2991`. Pass `$context.sourceBranch` explicitly to creation and verification; do not infer it from a local checkout, target commit, or build intent/channel. Promotion to a stable release is a separate operation with title `Release v0.102.2991.0`.
+For build `0.102.2991.0`, use `Release preview v0.102.2991.0` from `stable`, or `Dev preview v0.102.2991.0` from `main`, only in the GitHub release title. Do not repeat the title as an H1 in the notes body: GitHub and Settings already display the release name. The tag remains `v0.102.2991`. Pass `$context.sourceBranch` explicitly to creation and verification; do not infer it from a local checkout, target commit, or build intent/channel. Promotion to a stable release is a separate operation with title `Release v0.102.2991.0`.
 
 ## Workflow
 
@@ -92,8 +92,8 @@ For build `0.102.2991.0`, display `Release preview v0.102.2991.0` from `stable`,
    - Do not assign milestones or change labels.
    - Put unlabeled PRs under `General`.
    - Use conservative title-based wording when summary confidence is low.
-   - Place `Installer Hashes` immediately after the title and short public introduction, before `Highlights` and all change sections.
-   - Use `# $releaseTitle` from the shared helper for the release-note H1, matching the GitHub draft's four-component display title.
+   - Start with the short public introduction, without an H1 title.
+   - Place `Installer Hashes` immediately after the introduction, before `Highlights` and all change sections. Use H2 for section headings.
    - Include removed PRs under `Differences from the previous preview`.
    - Include unattributed commits under `Changes needing final review`.
    - Enclose the generated body in the managed markers documented in [preview draft safety](../preview-draft-safety.md).
@@ -120,7 +120,7 @@ For build `0.102.2991.0`, display `Release preview v0.102.2991.0` from `stable`,
 
    Keep the generated `assets-manifest.json` in the local audit package. Do not upload it as a GitHub release asset.
 
-8. In dry-run mode, first prepare the managed notes with the same shared-title normalization as the live upsert, then verify the complete local package. Both commands below run without contacting GitHub. Keep the verifier strict: calling it directly on a stale heading must still fail.
+8. In dry-run mode, first prepare the managed notes with the same leading-H1 removal as the live upsert, then verify the complete local package. Both commands below run without contacting GitHub. Keep the verifier strict: calling it directly on notes containing an H1 must fail.
 
    ```powershell
    .\.github\skills\release-note-generation\scripts\upsert-draft-preview-release.ps1 `
