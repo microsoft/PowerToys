@@ -77,26 +77,59 @@ internal static class TestHelper
 
     internal static Session ActivateOverlay(UITestBase testBase, Key[] keys)
     {
-        for (var attempt = 1; attempt <= 3 && !IsOverlayVisible(); attempt++)
+        for (var attempt = 1; attempt <= 3; attempt++)
         {
-            FocusWindow(testBase.Session);
-            Step(testBase, $"Sending activation shortcut, attempt {attempt}/3.");
-            KeyboardHelper.SendChord(keys);
-            WaitForOverlay(visible: true, timeoutMS: 5_000);
+            if (!IsOverlayVisible())
+            {
+                FocusWindow(testBase.Session);
+                Step(testBase, $"Sending activation shortcut, attempt {attempt}/3.");
+                KeyboardHelper.SendChord(keys);
+                if (!WaitForOverlay(visible: true, timeoutMS: 5_000))
+                {
+                    continue;
+                }
+            }
+
+            var window = GetOverlayWindows().FirstOrDefault(IsVisibleOverlay);
+            if (window.Hwnd == IntPtr.Zero)
+            {
+                continue;
+            }
+
+            Step(testBase, $"Waiting for overlay HWND={window.Hwnd}, foreground, and its search control.");
+            var overlay = WindowsFinder.WaitForWindowByApp(
+                ShortcutGuideProcess,
+                candidate => candidate.Hwnd == window.Hwnd.ToInt64(),
+                timeoutMS: 15_000);
+            if (overlay is null)
+            {
+                continue;
+            }
+
+            var readiness = Stopwatch.StartNew();
+            while (IsOverlayVisible() && readiness.ElapsedMilliseconds < 30_000)
+            {
+                if (WindowControl.WaitForForeground(window.Hwnd, timeoutMS: 1_000, requiredConsecutiveMatches: 3) &&
+                    overlay.Has(By.AccessibilityId("ShortcutGuide_SearchBox"), 1_000) &&
+                    IsOverlayVisible() &&
+                    WindowControl.GetForegroundWindowHandle() == window.Hwnd)
+                {
+                    return overlay;
+                }
+
+                Thread.Sleep(100);
+            }
+
+            if (IsOverlayVisible())
+            {
+                break;
+            }
+
+            Step(testBase, "The overlay deactivated before content readiness; it is hidden, so activation can be retried.");
         }
 
-        var window = GetOverlayWindows().FirstOrDefault(IsVisibleOverlay);
-        Assert.AreNotEqual(IntPtr.Zero, window.Hwnd, $"Shortcut Guide overlay never appeared or hid before inspection. {GetDiagnostics()}");
-        Step(testBase, $"Waiting for overlay HWND={window.Hwnd} and its search control.");
-        var overlay = WindowsFinder.WaitForWindowByApp(
-            ShortcutGuideProcess,
-            candidate => candidate.Hwnd == window.Hwnd.ToInt64(),
-            timeoutMS: 15_000);
-        Assert.IsNotNull(overlay, $"The visible overlay was not exposed to UI Automation. {GetDiagnostics()}");
-        Assert.IsTrue(
-            overlay.Has(By.AccessibilityId("ShortcutGuide_SearchBox"), 30_000),
-            $"Shortcut Guide did not finish initializing its content. {GetDiagnostics()}");
-        return overlay;
+        Assert.Fail($"Shortcut Guide did not become visible, foreground, and initialized. {GetDiagnostics()}");
+        return null!;
     }
 
     internal static void DismissOverlay(UITestBase testBase, Session overlay)
