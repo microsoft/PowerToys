@@ -8,4 +8,14 @@ KNOWN_FOLDER_FLAG
 GetCurrentPackageId
 
 SHOW_WINDOW_CMD
-SEE_MASK_INVOKEIDLIST 
+SEE_MASK_INVOKEIDLIST
+CoInitializeEx
+CoUninitialize
+CoCreateInstance
+ShellWindows
+IShellWindows
+IWebBrowser2
+IShellFolderViewDual
+IShellDispatch2
+CSIDL_DESKTOP
+RPC_E_CHANGED_MODE

@@ -1,7 +1,5 @@
 IStream
 CoCreateInstance
-IApplicationActivationManager
-ApplicationActivationManager
 SHCreateStreamOnFileEx
 SHCreateItemFromParsingName
 IShellItem

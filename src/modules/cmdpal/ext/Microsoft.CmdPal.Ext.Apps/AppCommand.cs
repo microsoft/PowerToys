@@ -3,15 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps.Properties;
-using Microsoft.CmdPal.Ext.Apps.Utils;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.Win32;
-using Windows.Win32.System.Com;
-using Windows.Win32.UI.Shell;
 using WyHash;
 
 namespace Microsoft.CmdPal.Ext.Apps;
@@ -28,56 +23,20 @@ internal sealed partial class AppCommand : InvokableCommand
         Icon = Icons.GenericAppIcon;
     }
 
-    private static async Task StartApp(string aumid)
-    {
-        await Task.Run(() =>
-        {
-            unsafe
-            {
-                IApplicationActivationManager* appManager = null;
-                try
-                {
-                    PInvoke.CoCreateInstance(typeof(ApplicationActivationManager).GUID, null, CLSCTX.CLSCTX_INPROC_SERVER, out appManager).ThrowOnFailure();
-                    using var handle = new SafeComHandle((IntPtr)appManager);
-                    appManager->ActivateApplication(
-                        aumid,
-                        string.Empty,
-                        ACTIVATEOPTIONS.AO_NONE,
-                        out var unusedPid);
-                }
-                catch (System.Exception ex)
-                {
-                    Logger.LogError(ex.Message);
-                }
-            }
-        }).ConfigureAwait(false);
-    }
-
-    private static async Task StartExe(string path)
+    private async Task Launch()
     {
         await Task.Run(() =>
         {
             try
             {
-                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
+                var target = _app.IsPackaged ? "shell:AppsFolder\\" + _app.UserModelId : _app.ExePath;
+                ShellHelpers.OpenInShellOrThrow(target);
             }
             catch (System.Exception ex)
             {
                 Logger.LogError(ex.Message);
             }
-        });
-    }
-
-    private async Task Launch()
-    {
-        if (_app.IsPackaged)
-        {
-            await StartApp(_app.UserModelId);
-        }
-        else
-        {
-            await StartExe(_app.ExePath);
-        }
+        }).ConfigureAwait(false);
     }
 
     public override CommandResult Invoke()

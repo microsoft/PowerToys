@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Diagnostics;
-
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
 public partial class ShowFileInFolderCommand : InvokableCommand
@@ -24,14 +22,8 @@ public partial class ShowFileInFolderCommand : InvokableCommand
     {
         if (Path.Exists(_path))
         {
-            try
-            {
-                var argument = "/select, \"" + _path + "\"";
-                using var process = Process.Start("explorer.exe", argument);
-            }
-            catch (Exception)
-            {
-            }
+            var argument = "/select, \"" + _path + "\"";
+            ShellHelpers.OpenInShell("explorer.exe", argument);
         }
 
         return Result;

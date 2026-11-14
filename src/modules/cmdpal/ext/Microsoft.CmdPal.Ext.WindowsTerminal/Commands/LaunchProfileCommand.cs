@@ -3,11 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using ManagedCommon;
-using ManagedCsWin32;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -39,23 +35,10 @@ internal sealed partial class LaunchProfileCommand : InvokableCommand
 
     private void Launch(string appUserModelId, string profile)
     {
-        IApplicationActivationManager appManager;
-
-        try
-        {
-            appManager = ComHelper.CreateComInstance<IApplicationActivationManager>(ref Unsafe.AsRef(in CLSID.ApplicationActivationManager), CLSCTX.InProcServer);
-        }
-        catch (Exception e)
-        {
-            Logger.LogError($"Failed to create IApplicationActivationManager instance. ex: {e.Message}");
-            throw;
-        }
-
-        const ActivateOptions noFlags = ActivateOptions.None;
         var queryArguments = TerminalHelper.GetArguments(profile, _openNewTab, _openQuake);
         try
         {
-            appManager.ActivateApplication(appUserModelId, queryArguments, noFlags, out var unusedPid);
+            ShellHelpers.OpenInShellOrThrow("shell:AppsFolder\\" + appUserModelId, queryArguments);
         }
 #pragma warning disable IDE0059, CS0168
         catch (Exception ex)
