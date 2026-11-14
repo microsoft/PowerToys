@@ -45,7 +45,7 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
             return;
         }
 
-        var success = Uri.TryCreate(query, UriKind.Absolute, out _);
+        var success = Uri.TryCreate(query, UriKind.Absolute, out _) && !IsHostWithPort(query);
 
         // if url not contain schema, add http:// by default.
         if (!success)
@@ -59,6 +59,16 @@ internal sealed partial class FallbackOpenURLItem : FallbackCommandItem
         var browserName = _browserInfoService.GetDefaultBrowser()?.Name;
         Title = string.IsNullOrWhiteSpace(browserName) ? Resources.open_in_default_browser : string.Format(CultureInfo.CurrentCulture, PluginOpenUrlInBrowser, browserName);
         Subtitle = string.Format(CultureInfo.CurrentCulture, PluginOpenURL, query);
+    }
+
+    // Uri parses "example.com:8080/path" as scheme "example.com". If adding "https://"
+    // turns that scheme into the host, the input is a host with a port, not a scheme.
+    private static bool IsHostWithPort(string url)
+    {
+        return Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            && !url.Contains("://", StringComparison.Ordinal)
+            && Uri.TryCreate("https://" + url, UriKind.Absolute, out var httpsUri)
+            && string.Equals(httpsUri.Host, uri.Scheme, StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsValidUrl(string url)

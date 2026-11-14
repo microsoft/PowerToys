@@ -148,6 +148,8 @@ public class UrlHelperTests
     [DataRow("http://test.org")]
     [DataRow("ftp://files.example.net")]
     [DataRow("file://localhost/path/to/file.txt")]
+    [DataRow("https://example.com:8080/path")]
+    [DataRow("mailto:someone@example.com")]
     public void NormalizeUrl_ReturnsUnchanged_WhenUrlIsAlreadyWellFormed(string url)
     {
         // Act
@@ -162,6 +164,9 @@ public class UrlHelperTests
     [DataRow("example.org", "https://example.org")]
     [DataRow("github.com/user/repo", "https://github.com/user/repo")]
     [DataRow("stackoverflow.com/questions/123", "https://stackoverflow.com/questions/123")]
+    [DataRow("192.168.1.1:8080", "https://192.168.1.1:8080")]
+    [DataRow("example.com:8080/path", "https://example.com:8080/path")]
+    [DataRow("intranet.corp:8443", "https://intranet.corp:8443")]
     public void NormalizeUrl_AddsHttpsPrefix_WhenNoProtocolPresent(string input, string expected)
     {
         // Act
