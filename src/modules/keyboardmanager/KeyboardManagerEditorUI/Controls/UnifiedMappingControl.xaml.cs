@@ -748,6 +748,7 @@ namespace KeyboardManagerEditorUI.Controls
                 }
 
                 UpdateAppSpecificCheckBoxState();
+                AccessibilityAnnouncer.Announce(this, MappingAccessibility.RecordedKeysAnnouncement(true, _triggerKeys, ResourceHelper.GetString));
             }
             else if (_currentInputMode == KeyInputMode.RemappedKeys)
             {
@@ -756,6 +757,8 @@ namespace KeyboardManagerEditorUI.Controls
                 {
                     _actionKeys.Add(keyName);
                 }
+
+                AccessibilityAnnouncer.Announce(this, MappingAccessibility.RecordedKeysAnnouncement(false, _actionKeys, ResourceHelper.GetString));
             }
         }
 
@@ -1422,10 +1425,23 @@ namespace KeyboardManagerEditorUI.Controls
         {
             if (ValidationInfoBar != null)
             {
+                bool changed = !ValidationInfoBar.IsOpen
+                    || ValidationInfoBar.Title != title
+                    || ValidationInfoBar.Message != message;
+
                 ValidationInfoBar.Title = title;
                 ValidationInfoBar.Message = message;
                 ValidationInfoBar.Severity = severity;
                 ValidationInfoBar.IsOpen = true;
+
+                // Validation reruns on every key change; only speak when the message actually changes.
+                if (changed)
+                {
+                    AccessibilityAnnouncer.Announce(
+                        ValidationInfoBar,
+                        MappingAccessibility.MessageAnnouncement(title, message, ResourceHelper.GetString),
+                        interrupt: false);
+                }
             }
         }
 

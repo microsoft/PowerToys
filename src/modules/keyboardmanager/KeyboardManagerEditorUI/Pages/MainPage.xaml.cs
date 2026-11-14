@@ -115,6 +115,10 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _filterShift;
         private string? _appFilter; // null = all apps, GlobalOnlyToken = global only, else a specific app name.
         private bool _suppressFilterEvents;
+        private DispatcherQueueTimer? _filterAnnounceTimer;
+
+        // Set when a save succeeds so focus can move to the saved row once the dialog has closed.
+        private (List<string> Trigger, string AppName)? _savedMapping;
 
         // Cached composite formats for the (localized) bulk-delete strings, parsed lazily on first use.
         private CompositeFormat? _deleteSelectedFormat;
@@ -141,7 +145,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                     if (!_suppressFilterEvents)
                     {
-                        ApplyFilter();
+                        ApplyUserFilter();
                     }
                 }
             }
@@ -449,6 +453,7 @@ namespace KeyboardManagerEditorUI.Pages
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
             RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
+            _savedMapping = null;
 
             await RemappingDialog.ShowAsync();
 
@@ -457,6 +462,12 @@ namespace KeyboardManagerEditorUI.Pages
             _isEditMode = false;
             _editingItem = null;
             KeyboardHookHelper.Instance.CleanupHook();
+
+            if (_savedMapping is { } saved)
+            {
+                _savedMapping = null;
+                FocusSavedMappingAfterDialog(saved.Trigger, saved.AppName);
+            }
         }
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
@@ -525,6 +536,7 @@ namespace KeyboardManagerEditorUI.Pages
 
                 if (saved)
                 {
+                    _savedMapping = (new List<string>(triggerKeys), UnifiedMappingControl.GetAppName());
                     LoadAllMappings();
                 }
                 else
@@ -849,6 +861,9 @@ namespace KeyboardManagerEditorUI.Pages
 
             try
             {
+                var (deletedList, deletedIndex) = FindVisibleRow(menuFlyoutItem.Tag as IToggleableShortcut);
+                string deletedName = (menuFlyoutItem.Tag as IToggleableShortcut)?.AccessibleName ?? string.Empty;
+
                 switch (menuFlyoutItem.Tag)
                 {
                     case Remapping remapping:
@@ -862,6 +877,9 @@ namespace KeyboardManagerEditorUI.Pages
                         LoadAllMappings();
                         break;
                 }
+
+                // The deleted row held focus; move it to the next row so keyboard users are not dropped.
+                RestoreFocusAfterDelete(deletedList, deletedIndex, MappingAccessibility.DeletedAnnouncement(deletedName, ResourceHelper.GetString));
             }
             catch (Exception ex)
             {
@@ -1346,6 +1364,31 @@ namespace KeyboardManagerEditorUI.Pages
             UpdateHasAnyMappings();
         }
 
+        // Filter change made by the user: also tell screen reader users how many rows remain.
+        private void ApplyUserFilter()
+        {
+            ApplyFilter();
+
+            // Debounced so typing in the search box is not interrupted on every character.
+            _filterAnnounceTimer ??= CreateFilterAnnounceTimer();
+            _filterAnnounceTimer.Stop();
+            _filterAnnounceTimer.Start();
+        }
+
+        private DispatcherQueueTimer CreateFilterAnnounceTimer()
+        {
+            var timer = DispatcherQueue.CreateTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(600);
+            timer.IsRepeating = false;
+            timer.Tick += (_, _) => AccessibilityAnnouncer.Announce(
+                this,
+                MappingAccessibility.FilterResultAnnouncement(VisibleMappingCount, ResourceHelper.GetString));
+            return timer;
+        }
+
+        private int VisibleMappingCount =>
+            RemappingList.Count + DisabledList.Count + TextMappings.Count + ProgramShortcuts.Count + UrlShortcuts.Count;
+
         private void RebuildView<T>(List<T> source, ObservableCollection<T> view)
             where T : IToggleableShortcut
         {
@@ -1476,7 +1519,7 @@ namespace KeyboardManagerEditorUI.Pages
             _filterCtrl = CtrlFilterToggle.IsChecked == true;
             _filterAlt = AltFilterToggle.IsChecked == true;
             _filterShift = ShiftFilterToggle.IsChecked == true;
-            ApplyFilter();
+            ApplyUserFilter();
         }
 
         private void AppFilterCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1488,7 +1531,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             int index = AppFilterCombo.SelectedIndex;
             _appFilter = index <= 0 ? null : (index == 1 ? GlobalOnlyToken : AppFilterOptions[index]);
-            ApplyFilter();
+            ApplyUserFilter();
         }
 
         private void ClearFilters_Click(object sender, RoutedEventArgs e)
@@ -1510,7 +1553,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             _suppressFilterEvents = false;
 
-            ApplyFilter();
+            ApplyUserFilter();
         }
 
         private void SelectionModeButton_Click(object sender, RoutedEventArgs e)
@@ -1583,6 +1626,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            int deletedCount = 0;
             try
             {
                 // Snapshot the selection first; deletion mutates the collections and settings underneath.
@@ -1591,6 +1635,7 @@ namespace KeyboardManagerEditorUI.Pages
                 var texts = TextListView.SelectedItems.OfType<TextMapping>().ToList();
                 var programs = ProgramsListView.SelectedItems.OfType<ProgramShortcut>().ToList();
                 var urls = UrlsListView.SelectedItems.OfType<URLShortcut>().ToList();
+                deletedCount = remappings.Count + disabled.Count + texts.Count + programs.Count + urls.Count;
 
                 foreach (var item in remappings)
                 {
@@ -1625,6 +1670,82 @@ namespace KeyboardManagerEditorUI.Pages
             IsSelectionMode = false;
             LoadAllMappings();
             UpdateSelectedCount();
+            RestoreFocusAfterDelete(null, -1, MappingAccessibility.DeletedCountAnnouncement(deletedCount, ResourceHelper.GetString));
+        }
+
+        #endregion
+
+        #region Accessibility focus
+
+        private (ListView? List, int Index) FindVisibleRow(IToggleableShortcut? item)
+        {
+            if (item == null)
+            {
+                return (null, -1);
+            }
+
+            foreach (var list in MappingListViews)
+            {
+                int index = list.Items.IndexOf(item);
+                if (index >= 0)
+                {
+                    return (list, index);
+                }
+            }
+
+            return (null, -1);
+        }
+
+        private ListView[] MappingListViews => new[] { RemappingsListView, DisabledListView, TextListView, ProgramsListView, UrlsListView };
+
+        private void FocusSavedMappingAfterDialog(List<string> trigger, string appName)
+        {
+            // ContentDialog restores focus to the element focused before it opened (often a row that the
+            // reload removed), so defer until that has happened and then move focus explicitly.
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+            {
+                foreach (var list in MappingListViews)
+                {
+                    foreach (var obj in list.Items)
+                    {
+                        if (obj is IToggleableShortcut row &&
+                            row.Shortcut.SequenceEqual(trigger, StringComparer.OrdinalIgnoreCase) &&
+                            string.Equals(row.IsAllApps ? string.Empty : row.AppName, appName ?? string.Empty, StringComparison.OrdinalIgnoreCase))
+                        {
+                            FocusRow(list, list.Items.IndexOf(obj));
+                            AccessibilityAnnouncer.Announce(this, MappingAccessibility.SavedAnnouncement(row.AccessibleName, ResourceHelper.GetString), interrupt: false);
+                            return;
+                        }
+                    }
+                }
+
+                NewRemappingBtn.Focus(FocusState.Programmatic);
+            });
+        }
+
+        private void RestoreFocusAfterDelete(ListView? list, int index, string announcement)
+        {
+            DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+            {
+                if (list == null || list.Items.Count == 0 || !FocusRow(list, Math.Min(index, list.Items.Count - 1)))
+                {
+                    NewRemappingBtn.Focus(FocusState.Programmatic);
+                }
+
+                AccessibilityAnnouncer.Announce(this, announcement, interrupt: false);
+            });
+        }
+
+        private static bool FocusRow(ListView list, int index)
+        {
+            if (index < 0 || index >= list.Items.Count)
+            {
+                return false;
+            }
+
+            list.ScrollIntoView(list.Items[index]);
+            list.UpdateLayout();
+            return list.ContainerFromIndex(index) is Control container && container.Focus(FocusState.Programmatic);
         }
 
         #endregion

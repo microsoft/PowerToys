@@ -5,8 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using KeyboardManagerEditorUI.Helpers;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Windows.System;
@@ -89,6 +91,11 @@ namespace KeyboardManagerEditorUI.Controls
             bool hasKeyName = !string.IsNullOrEmpty(KeyName);
             KeyNamePresenter.Visibility = hasKeyName ? Visibility.Visible : Visibility.Collapsed;
             SelectKeyPlaceholderText.Visibility = hasKeyName ? Visibility.Collapsed : Visibility.Visible;
+
+            // The key glyph presenter is hidden from UIA, so name the button explicitly.
+            AutomationProperties.SetName(
+                KeyButton,
+                hasKeyName ? KeyName : ResourceHelper.GetString("KeyDropDownButton_SelectKeyAutomationName"));
         }
 
         private void KeyListView_ItemClick(object sender, ItemClickEventArgs e)

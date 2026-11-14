@@ -36,6 +36,7 @@
             <TextBlock x:Uid="TriggerLabel" FontWeight="SemiBold" />
             <ComboBox
                 x:Name="TriggerTypeComboBox"
+                x:Uid="TriggerTypeComboBox"
                 HorizontalAlignment="Stretch"
                 SelectionChanged="TriggerTypeComboBox_SelectionChanged">
                 <ComboBoxItem
@@ -72,6 +73,7 @@
                     <StackPanel Orientation="Vertical" Spacing="8">
                         <ToggleButton
                             x:Name="TriggerKeyToggleBtn"
+                            x:Uid="TriggerKeyToggleBtn"
                             MinHeight="86"
                             Padding="8,24,8,24"
                             HorizontalAlignment="Stretch"
@@ -198,6 +200,7 @@
             <TextBlock x:Uid="ActionLabel" FontWeight="SemiBold" />
             <ComboBox
                 x:Name="ActionTypeComboBox"
+                x:Uid="ActionTypeComboBox"
                 HorizontalAlignment="Stretch"
                 SelectionChanged="ActionTypeComboBox_SelectionChanged">
                 <ComboBoxItem
@@ -255,6 +258,7 @@
                 <tkcontrols:Case Value="KeyOrShortcut">
                     <ToggleButton
                         x:Name="ActionKeyToggleBtn"
+                        x:Uid="ActionKeyToggleBtn"
                         MinHeight="86"
                         Padding="8,24,8,24"
                         HorizontalAlignment="Stretch"
