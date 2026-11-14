@@ -230,7 +230,7 @@ public class PowerOCRTests : UITestBase
         var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(ProcessName);
         var combo = overlay.Find<ComboBox>(By.AccessibilityId("OCROverlayLanguagesComboBox"));
         Step("Reading the toolbar OCR languages");
-        ClickWithoutRaising(combo);
+        combo.Invoke(msPostAction: 0);
         var languages = ReadLanguageItems(process);
         int selectedIndex = ReadSelectedLanguageIndex(languages);
         Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify changing languages.");
@@ -255,7 +255,7 @@ public class PowerOCRTests : UITestBase
         }
 
         KeyboardHelper.SendKeys(Key.Enter);
-        ClickWithoutRaising(combo);
+        combo.Invoke(msPostAction: 0);
         languages = ReadLanguageItems(process, targetName);
         Assert.AreEqual(targetName, languages[ReadSelectedLanguageIndex(languages)].Name, "The toolbar should reflect the context-menu language change.");
     }
@@ -448,7 +448,7 @@ public class PowerOCRTests : UITestBase
             var overlay = Activate();
             var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(ProcessName);
             var combo = overlay.Find<ComboBox>(By.AccessibilityId("OCROverlayLanguagesComboBox"));
-            ClickWithoutRaising(combo);
+            combo.Invoke(msPostAction: 0);
             var languages = ReadLanguageItems(process);
             int selectedIndex = ReadSelectedLanguageIndex(languages);
             Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify the language shortcut.");
@@ -469,7 +469,7 @@ public class PowerOCRTests : UITestBase
 
             Step($"Selecting '{target.Name}' using its number shortcut immediately after the blank capture");
             KeyboardHelper.SendKeys((Key)((byte)Key.Num1 + target.Index));
-            ClickWithoutRaising(combo);
+            combo.Invoke(msPostAction: 0);
             languages = ReadLanguageItems(process, target.Name);
             Assert.AreEqual(
                 target.Name,
