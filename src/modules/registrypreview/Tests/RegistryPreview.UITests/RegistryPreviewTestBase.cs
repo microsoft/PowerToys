@@ -203,7 +203,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
         var session = Session.FromProcess(RegistryPreviewProcessName, PowerToysModule.RegistryPreview, timeoutMS: WindowTimeoutMS);
         Assert.IsTrue(
-            session.WaitFor(() => session.Has(By.AccessibilityId("commandBar"), timeoutMS: 1_000), WindowTimeoutMS, pollIntervalMS: 500),
+            session.WaitForElement(By.AccessibilityId("commandBar"), EditorTimeoutMS),
             "The Registry Preview window did not expose its command bar.");
 
         TryBringRegistryPreviewForward();
