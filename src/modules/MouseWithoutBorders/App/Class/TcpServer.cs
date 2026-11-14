@@ -137,6 +137,7 @@ namespace MouseWithoutBorders.Class
                         _ = proc.Start();
 
                         string status = proc.StandardOutput.ReadToEnd() + Environment.NewLine;
+                        proc.WaitForExit();
 
                         if (proc.ExitCode == 0)
                         {
@@ -146,30 +147,38 @@ namespace MouseWithoutBorders.Class
                             foreach (string portLogLine in portLog)
                             {
                                 int pid = 0;
-                                Process process = null;
+                                string processName = "unknown";
 
                                 try
                                 {
                                     // Assuming the format of netstat's output is fixed.
                                     pid = int.Parse(portLogLine.Split(Separator, StringSplitOptions.RemoveEmptyEntries).Last(), CultureInfo.CurrentCulture);
-                                    process = Process.GetProcessById(pid);
+                                    using Process process = Process.GetProcessById(pid);
+                                    processName = process.ProcessName;
                                 }
                                 catch (Exception)
                                 {
-                                    /* TODO: There was some telemetry here. Log instead? */
+                                    // The process may have exited, or belong to a session we can't query.
                                 }
 
-                                /* TODO: There was some telemetry here. Log instead? */
+                                Logger.Log($"Port in use: [{portLogLine.Trim()}] owned by process {pid} ({processName}).");
+
+                                // The standalone Microsoft Garage app ships "MouseWithoutBorders.exe"; ours is "PowerToys.MouseWithoutBorders.exe".
+                                if (processName.Equals("MouseWithoutBorders", StringComparison.OrdinalIgnoreCase) ||
+                                    processName.Equals("MouseWithoutBordersSvc", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    Logger.Log("The port is held by the standalone Microsoft Garage Mouse without Borders app. Uninstall it so PowerToys can use the port.");
+                                }
                             }
                         }
                         else
                         {
-                            /* TODO: There was some telemetry here. Log instead? */
+                            Logger.Log($"netstat exited with code {proc.ExitCode} while looking for the owner of the port.");
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
-                        /* TODO: There was some telemetry here. Log instead? */
+                        Logger.Log($"Couldn't find the owner of the port: {e.Message}");
                     }
                 },
                     System.Threading.CancellationToken.None,
