@@ -4,6 +4,20 @@
 
 namespace Microsoft.CmdPal.Core.Common.Helpers;
 
+/// <summary>
+/// Coalesces repeated requests to run an action.
+/// </summary>
+/// <remarks>
+/// <para>
+/// In the default debounce mode, the action runs on the thread pool when the delay expires.
+/// Ordinary calls restart the delay unless a priority run is pending.
+/// </para>
+/// <para>
+/// With <c>runImmediately</c> enabled, the first call runs the action on the calling thread.
+/// Calls during the cooldown trigger one more run when it ends.
+/// </para>
+/// <para>Calls can come from any thread. A zero interval runs the action immediately on the calling thread.</para>
+/// </remarks>
 public sealed partial class ThrottledDebouncedAction : IDisposable
 {
     private static readonly TimeSpan DefaultInterval = TimeSpan.FromMilliseconds(150);
@@ -14,15 +28,29 @@ public sealed partial class ThrottledDebouncedAction : IDisposable
     private readonly bool _runImmediately;
 
     private CancellationTokenSource? _cts;
+    private bool _pendingIsPriority;
     private bool _isRunning;
     private bool _isPending;
     private TimeSpan _pendingInterval;
 
+    /// <summary>
+    /// Creates a trailing-edge debounce with a 150 ms interval.
+    /// </summary>
+    /// <param name="action">The action to run.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="action"/> is null.</exception>
     public ThrottledDebouncedAction(Action action)
         : this(action, DefaultInterval)
     {
     }
 
+    /// <summary>
+    /// Creates a trailing-edge debounce, or a throttle when <paramref name="runImmediately"/> is set.
+    /// </summary>
+    /// <param name="action">The action to run.</param>
+    /// <param name="interval">The delay for calls that don't pass their own. Zero runs the action on every call.</param>
+    /// <param name="runImmediately">true to run the first call at once and throttle the rest; false to debounce on the trailing edge.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="action"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> is negative.</exception>
     public ThrottledDebouncedAction(Action action, TimeSpan interval, bool runImmediately = false)
     {
         ArgumentNullException.ThrowIfNull(action);
@@ -33,14 +61,50 @@ public sealed partial class ThrottledDebouncedAction : IDisposable
         _runImmediately = runImmediately;
     }
 
+    /// <summary>
+    /// Cancels any pending run, like <see cref="Cancel"/>.
+    /// </summary>
     public void Dispose()
     {
         Cancel();
     }
 
-    public void Invoke() => Invoke(null);
+    /// <summary>
+    /// Requests a run with the default interval, like <see cref="Invoke(TimeSpan?)"/> with null.
+    /// </summary>
+    public void Invoke()
+    {
+        Invoke(null);
+    }
 
+    /// <summary>
+    /// Requests a run. When debouncing, it replaces any pending run with one due after the interval,
+    /// unless a run requested by <see cref="InvokePriority"/> is pending; then it joins that run.
+    /// When throttling, it runs the action now if no cooldown is active, and otherwise asks for one
+    /// more run after the cooldown.
+    /// </summary>
+    /// <param name="interval">The delay for this call, or null for the default. Zero cancels any pending run and runs the action now on the calling thread.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> is negative.</exception>
     public void Invoke(TimeSpan? interval)
+    {
+        Invoke(interval, priority: false);
+    }
+
+    /// <summary>
+    /// Schedules the action with priority. In debounce mode, this replaces any pending run.
+    /// Only another priority call can reschedule it. Priority has no effect in throttle mode.
+    /// </summary>
+    /// <param name="interval">
+    /// The delay, or <see langword="null"/> to use the configured interval.
+    /// Zero cancels any pending run and executes the action immediately on the calling thread.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> is negative.</exception>
+    public void InvokePriority(TimeSpan? interval = null)
+    {
+        Invoke(interval, priority: true);
+    }
+
+    private void Invoke(TimeSpan? interval, bool priority)
     {
         var effectiveInterval = interval ?? _defaultInterval;
         ArgumentOutOfRangeException.ThrowIfLessThan(effectiveInterval, TimeSpan.Zero);
@@ -54,15 +118,23 @@ public sealed partial class ThrottledDebouncedAction : IDisposable
 
         if (!_runImmediately)
         {
-            // Trailing-edge debounce: each call resets the delay with the new interval.
+            // Trailing-edge debounce: each call resets the delay with the new interval, except that
+            // a plain call joins a pending priority run instead of postponing it.
             CancellationTokenSource? oldCts;
+            CancellationTokenSource cts;
             CancellationToken token;
 
             lock (_lock)
             {
+                if (!priority && _pendingIsPriority)
+                {
+                    return;
+                }
+
                 oldCts = _cts;
-                _cts = new CancellationTokenSource();
-                token = _cts.Token;
+                cts = _cts = new CancellationTokenSource();
+                token = cts.Token;
+                _pendingIsPriority = priority;
             }
 
             oldCts?.Cancel();
@@ -74,11 +146,21 @@ public sealed partial class ThrottledDebouncedAction : IDisposable
                     try
                     {
                         await Task.Delay(effectiveInterval, token).ConfigureAwait(false);
-                        if (token.IsCancellationRequested)
+
+                        // Claim the run before acting, so a call that arrives while the action
+                        // runs schedules a new run instead of joining this one.
+                        lock (_lock)
                         {
-                            return;
+                            if (!ReferenceEquals(_cts, cts))
+                            {
+                                return;
+                            }
+
+                            _cts = null;
+                            _pendingIsPriority = false;
                         }
 
+                        cts.Dispose();
                         _action();
                     }
                     catch (OperationCanceledException)
@@ -144,8 +226,14 @@ public sealed partial class ThrottledDebouncedAction : IDisposable
         }
     }
 
+    /// <summary>
+    /// Cancels any pending run and runs the action now on the calling thread.
+    /// </summary>
     public void InvokeImmediately() => Invoke(TimeSpan.Zero);
 
+    /// <summary>
+    /// Cancels any pending run, including a priority one. An action that's already running isn't interrupted.
+    /// </summary>
     public void Cancel()
     {
         CancellationTokenSource? toCancel;
@@ -153,6 +241,7 @@ public sealed partial class ThrottledDebouncedAction : IDisposable
         {
             toCancel = _cts;
             _cts = null;
+            _pendingIsPriority = false;
             _isPending = false;
             _isRunning = false;
         }
