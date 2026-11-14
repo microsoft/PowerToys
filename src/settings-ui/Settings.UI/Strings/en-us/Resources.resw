@@ -6960,4 +6960,13 @@ Text uses the current drawing color.</value>
   <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
     <value>Pairing could not be loaded or updated. Try again.</value>
   </data>
+  <data name="WindowTabs.ModuleTitle" xml:space="preserve"><value>Window Tabs</value></data>
+  <data name="WindowTabs.ModuleDescription" xml:space="preserve"><value>Hold Shift while dragging a window onto another window's title bar to create a tab group. Drag tabs to reorder or out of the strip to detach. Right-click a tab for more actions. Incompatible windows are left unchanged.</value></data>
+  <data name="Shell_WindowTabs.Content" xml:space="preserve"><value>Window Tabs</value></data>
+  <data name="WindowTabs_EnableToggleControl_HeaderText.Header" xml:space="preserve"><value>Enable Window Tabs</value></data>
+  <data name="WindowTabs_Activation_GroupSettings.Header" xml:space="preserve"><value>Grouping and shortcuts</value></data>
+  <data name="WindowTabs_NextTabShortcut.Header" xml:space="preserve"><value>Next tab</value></data>
+  <data name="WindowTabs_PreviousTabShortcut.Header" xml:space="preserve"><value>Previous tab</value></data>
+  <data name="WindowTabs_RestoreSession.Header" xml:space="preserve"><value>Restore groups</value></data>
+  <data name="WindowTabs_RestoreSession.Description" xml:space="preserve"><value>Reconnect saved groups when matching application windows reopen. Applications and documents are not launched automatically. Turning this off deletes the saved session.</value></data>
 </root>

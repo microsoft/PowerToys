@@ -291,6 +291,12 @@
                             AutomationProperties.AutomationId="AltWindowCycleNavItem"
                             Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowHopper.png}" />
                         <NavigationViewItem
+                            x:Name="WindowTabsNavigationItem"
+                            x:Uid="Shell_WindowTabs"
+                            helpers:NavHelper.NavigateTo="views:WindowTabsPage"
+                            AutomationProperties.AutomationId="WindowTabsNavItem"
+                            Icon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowHopper.png}" />
+                        <NavigationViewItem
                             x:Name="WorkspacesNavigationItem"
                             x:Uid="Shell_Workspaces"
                             helpers:NavHelper.NavigateTo="views:WorkspacesPage"
