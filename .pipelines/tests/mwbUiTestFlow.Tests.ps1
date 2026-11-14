@@ -240,9 +240,9 @@ function dotnet {
     }
 }
 
-Describe 'Failure-only pipeline diagnostic publication' {
+Describe 'Pipeline readiness and failure diagnostic publication' {
     It 'evaluates the actual artifact condition for <Scenario>' -TestCases @(
-        @{ Scenario = 'green'; Selected = 'true'; Passed = 'true'; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $false }
+        @{ Scenario = 'green'; Selected = 'true'; Passed = 'true'; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $true }
         @{ Scenario = 'unselected failure'; Selected = 'false'; Passed = ''; Cleaned = ''; Failed = $true; Canceled = $false; Publish = $false }
         @{ Scenario = 'missing TRX'; Selected = 'true'; Passed = ''; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $true }
         @{ Scenario = 'interrupted cleanup'; Selected = 'true'; Passed = 'true'; Cleaned = ''; Failed = $false; Canceled = $false; Publish = $true }
