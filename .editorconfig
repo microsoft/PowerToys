@@ -1,0 +1,4 @@
+# Preserve JSON defaults and public/XAML contracts when restricting collection setters.
+# Justify intentional DTO and compatibility exceptions on the member.
+[*.{cs,vb}]
+dotnet_diagnostic.CA2227.severity = warning
