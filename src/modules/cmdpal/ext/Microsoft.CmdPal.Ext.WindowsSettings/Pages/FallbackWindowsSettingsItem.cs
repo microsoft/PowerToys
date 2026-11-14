@@ -2,91 +2,64 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Globalization;
+using System;
 using System.Linq;
-using System.Text;
-using Microsoft.CmdPal.Ext.WindowsSettings.Commands;
-using Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsSettings.Properties;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Pages;
 
-internal sealed partial class FallbackWindowsSettingsItem : FallbackCommandItem
+internal sealed partial class FallbackWindowsSettingsItem : FallbackResultsItem
 {
     private const string _id = "com.microsoft.cmdpal.builtin.windows.settings.fallback";
 
     private readonly Classes.WindowsSettings _windowsSettings;
 
-    private static readonly CompositeFormat _titleFormat = CompositeFormat.Parse(Resources.settings_fallback_title);
-    private readonly string _subtitle = Resources.settings_fallback_subtitle;
-
     public FallbackWindowsSettingsItem(Classes.WindowsSettings windowsSettings)
-        : base(new NoOpCommand(), Resources.settings_title, _id)
+        : base(Resources.settings_title, _id)
     {
+        Title = Resources.settings_title;
         Icon = Icons.WindowsSettingsIcon;
         _windowsSettings = windowsSettings;
     }
 
-    public override void UpdateQuery(string query)
+    protected override Task<IFallbackCommandResult> QueryAsync(
+        FallbackQueryArgs args,
+        CancellationToken cancellationToken,
+        IProgress<IFallbackCommandResult> progress)
     {
-        Command = new NoOpCommand();
-        Title = string.Empty;
-        Subtitle = string.Empty;
-        Icon = null;
-        MoreCommands = null;
-
-        if (string.IsNullOrWhiteSpace(query) ||
-            _windowsSettings?.Settings is null)
-        {
-            return;
-        }
-
-        var filteredList = _windowsSettings.Settings
-            .Select(setting => ScoringHelper.SearchScoringPredicate(query, setting))
-            .Where(scoredSetting => scoredSetting.Score > 0)
-            .OrderByDescending(scoredSetting => scoredSetting.Score)
-            .ThenByDescending(ScoringHelper.IsWindowsSettingsExactMatch)
-            .ThenByDescending(ScoringHelper.IsPreferredNameMatch)
-            .ToList();
-
-        if (filteredList.Count == 0)
-        {
-            return;
-        }
-
-        var exactMatches = filteredList.Where(ScoringHelper.IsExactNameMatch).ToList();
-        if (filteredList.Count == 1 || exactMatches.Count == 1)
-        {
-            var setting = exactMatches.Count == 1 ? exactMatches[0].Setting : filteredList[0].Setting;
-
-            Title = setting.Name;
-            Subtitle = setting.JoinedFullSettingsPath;
-            Icon = Icons.WindowsSettingsIcon;
-            Command = new OpenSettingsCommand(setting)
+        return Task.Run<IFallbackCommandResult>(
+            () =>
             {
-                Icon = Icons.WindowsSettingsIcon,
-                Name = setting.Name,
-            };
+                cancellationToken.ThrowIfCancellationRequested();
+                if (args.RequestedItemCount == 0 || string.IsNullOrWhiteSpace(args.Query))
+                {
+                    return new FallbackQueryResult(args.Query, args.QueryId, []);
+                }
 
-            // There is a case with MMC snap-ins where we don't have .msc files fort them. Then we need to show the note for this results in subtitle too.
-            // These results have mmc.exe as command and their note property is filled.
-            if (setting.Command == "mmc.exe" && !string.IsNullOrEmpty(setting.Note))
+                var items = new WindowsSettingsListPage(_windowsSettings).Query(args.Query).ToArray<IListItem>();
+                cancellationToken.ThrowIfCancellationRequested();
+                var count = (int)Math.Min(args.RequestedItemCount, (uint)items.Length);
+                return CreateResult(args.Query, args.QueryId, items, count);
+            },
+            cancellationToken);
+    }
+
+    private static FallbackQueryResult CreateResult(string query, string queryId, IListItem[] items, int count)
+    {
+        return new FallbackQueryResult(
+            query,
+            queryId,
+            items.Take(count).ToArray(),
+            count < items.Length,
+            (requestedItemCount, cancellationToken, progress) =>
             {
-                Subtitle += $"\u0020\u0020\u002D\u0020\u0020{Resources.Note}: {setting.Note}"; // "\u0020\u0020\u002D\u0020\u0020" = "<space><space><minus><space><space>"
-            }
-
-            return;
-        }
-
-        // We found more than one result. Make our command take
-        // us to the Windows Settings search page, prepopulated with this search.
-        var settingsPage = new WindowsSettingsListPage(_windowsSettings, query);
-        Title = _subtitle;
-        Icon = Icons.WindowsSettingsIcon;
-        Subtitle = string.Format(CultureInfo.CurrentCulture, _titleFormat, query);
-        Command = settingsPage;
-
-        return;
+                cancellationToken.ThrowIfCancellationRequested();
+                var additionalCount = (int)Math.Min(requestedItemCount, (uint)(items.Length - count));
+                return Task.FromResult<IFallbackCommandResult>(CreateResult(query, queryId, items, count + additionalCount));
+            });
     }
 }
