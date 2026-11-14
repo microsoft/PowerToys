@@ -28,6 +28,7 @@ internal sealed partial class SearchQuery : IDisposable
     private IRowset? _currentRowset;
     private SearchSqlQueryPlan _queryPlan;
     private bool _fallbackAttempted;
+    private bool _primaryRowsReturned;
 
     public QueryState State { get; private set; } = QueryState.NotStarted;
 
@@ -57,6 +58,7 @@ internal sealed partial class SearchQuery : IDisposable
         SearchText = searchText;
         Cookie = cookie;
         _fallbackAttempted = false;
+        _primaryRowsReturned = false;
 
         try
         {
@@ -224,6 +226,11 @@ internal sealed partial class SearchQuery : IDisposable
                 return false;
             }
 
+            if (!_fallbackAttempted)
+            {
+                _primaryRowsReturned = true;
+            }
+
             // Marshal the row handles
             var rowHandles = new IntPtr[rowCountReturned];
             Marshal.Copy(prghRows, rowHandles, 0, (int)rowCountReturned);
@@ -260,7 +267,7 @@ internal sealed partial class SearchQuery : IDisposable
 
     private bool TryExecuteFallbackQuery(string reason)
     {
-        if (_fallbackAttempted || !_queryPlan.HasFallback || State == QueryState.Cancelled)
+        if (_fallbackAttempted || _primaryRowsReturned || !_queryPlan.HasFallback || State == QueryState.Cancelled)
         {
             return false;
         }
