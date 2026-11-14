@@ -183,6 +183,32 @@ public partial class MainViewModel
     }
 
     /// <summary>
+    /// Re-read display modes after a resolution, refresh-rate, or Extend/Duplicate change made
+    /// outside PowerDisplay. Lightweight: no DDC/CI rescan. The refresh-rate rows update
+    /// themselves from the monitor models.
+    /// </summary>
+    public void RefreshDisplayModes()
+    {
+        if (IsScanning || Monitors.Count == 0)
+        {
+            return;
+        }
+
+        var supportedBefore = Monitors.Select(vm => vm.SupportsRefreshRate).ToList();
+
+        _monitorManager.RefreshDisplayModes();
+
+        // A resolution change can add or remove refresh-rate options. Publish the new
+        // capability so Settings enables or disables the checkbox; user flags are preserved.
+        if (!Monitors.Select(vm => vm.SupportsRefreshRate).SequenceEqual(supportedBefore))
+        {
+            SaveMonitorsToSettings();
+        }
+
+        UIRefreshRequested?.Invoke(this, EventArgs.Empty);
+    }
+
+    /// <summary>
     /// Get set of hidden monitor IDs from settings
     /// </summary>
     private HashSet<string> GetHiddenMonitorIds(PowerDisplaySettings settings)

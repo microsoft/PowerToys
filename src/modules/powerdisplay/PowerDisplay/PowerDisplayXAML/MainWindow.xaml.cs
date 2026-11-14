@@ -30,10 +30,13 @@ namespace PowerDisplay
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicMethods)]
     public sealed partial class MainWindow : WindowEx, IDisposable
     {
+        private const uint WmDisplayChange = 0x007E;
+
         private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
         private MainViewModel? _viewModel;
         private HotkeyService? _hotkeyService;
         private WindowMessageHook? _messageHook;
+        private bool _displayModeRefreshPending;
 
         // Expose ViewModel as property for x:Bind
         public MainViewModel ViewModel => _viewModel ?? throw new InvalidOperationException("ViewModel not initialized");
@@ -72,10 +75,31 @@ namespace PowerDisplay
                 _hotkeyService = new HotkeyService(_settingsUtils, ToggleWindow);
                 _hotkeyService.Initialize(hwnd);
 
-                // 6. Subclass WndProc to route WM_HOTKEY messages into HotkeyService.
+                // 6. Subclass WndProc to route WM_HOTKEY messages into HotkeyService
+                //    and to observe WM_DISPLAYCHANGE (resolution / refresh-rate changes).
                 Logger.LogTrace("MainWindow constructor: Setting up WindowMessageHook");
                 _messageHook = new WindowMessageHook(this, (uMsg, wParam, _) =>
-                    _hotkeyService?.HandleMessage(uMsg, wParam) == true);
+                {
+                    if (uMsg == WmDisplayChange)
+                    {
+                        // WM_DISPLAYCHANGE can arrive re-entrantly while our own
+                        // ChangeDisplaySettingsEx call is still inside the ComboBox
+                        // selection handler, so defer the re-read until that unwinds.
+                        // A topology change sends several; coalesce them into one re-read.
+                        if (!_displayModeRefreshPending)
+                        {
+                            _displayModeRefreshPending = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                            {
+                                _displayModeRefreshPending = false;
+                                _viewModel?.RefreshDisplayModes();
+                            });
+                        }
+
+                        return false;
+                    }
+
+                    return _hotkeyService?.HandleMessage(uMsg, wParam) == true;
+                });
                 Logger.LogTrace("MainWindow constructor: HotkeyService initialized");
 
                 Logger.LogTrace("MainWindow constructor: Setting IsShownInSwitchers property");
@@ -176,6 +200,12 @@ namespace PowerDisplay
                 if (!_hasInitialized)
                 {
                     Logger.LogWarning("ShowWindow: Window not fully initialized yet, showing anyway");
+                }
+                else
+                {
+                    // Re-query display modes so the refresh-rate controls reflect changes made
+                    // elsewhere (e.g., Windows Settings) before the user can interact with them.
+                    _viewModel?.RefreshDisplayModes();
                 }
 
                 // Adjust size and position on the correct monitor
