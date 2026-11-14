@@ -6,6 +6,11 @@ on:
   issues:
     types: [opened, edited]
   roles: all
+# Only title or body edits can change triage input.
+if: >-
+  github.event.action != 'edited' ||
+  github.event.changes.title != null ||
+  github.event.changes.body != null
 user-rate-limit:
   max-runs-per-window: 5
   window: 60
@@ -203,6 +208,7 @@ safe-outputs:
           uses: actions/github-script@v9.0.0
           env:
             ISSUE_TRIAGE_VERIFIED_OUTPUT: ${{ runner.temp }}/verified-triage-output.json
+            ISSUE_TRIAGE_TEAM_AUTHORED: ${{ steps.refresh.outputs.team_authored }}
           with:
             script: |
               const fs = require('fs');
@@ -610,6 +616,23 @@ safe-outputs:
                 '<!-- gh-aw-workflow-id: issue-triage -->'
               );
               const body = bodyLines.join('\n');
+
+              // Team-authored issues (core team, extended team, code owners)
+              // keep the product label but get no comment, author-feedback
+              // label, or duplicate suggestion.
+              if (process.env.ISSUE_TRIAGE_TEAM_AUTHORED === 'true') {
+                if (await skipWriteIfClosed('triage label updates')) return;
+                const teamIssueLabels = new Set(verified.current_labels);
+                if (desiredProductLabel && !teamIssueLabels.has(desiredProductLabel)) {
+                  await github.rest.issues.addLabels({
+                    ...context.repo,
+                    issue_number: issueNumber,
+                    labels: [desiredProductLabel]
+                  });
+                }
+                core.info('Team-authored issue: applied labels without responding');
+                return;
+              }
 
               if (await skipWriteIfClosed('triage publication')) return;
               const comments = await github.paginate(github.rest.issues.listComments, {

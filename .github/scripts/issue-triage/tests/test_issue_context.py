@@ -53,10 +53,13 @@ class FakeApi:
         comments=None,
         latest_release=None,
         current_issue=None,
+        permissions=None,
     ):
         self.results = results or []
         self.comments = comments or []
         self.current_issue = current_issue
+        self.permissions = permissions or {}
+        self.permission_lookups = []
         self.latest_release = latest_release or {
             "tag_name": "v0.100.2",
             "prerelease": False,
@@ -68,6 +71,16 @@ class FakeApi:
 
     def get_issue(self, _issue_number):
         return self.current_issue
+
+    def get_repository_permission(self, username):
+        self.permission_lookups.append(username)
+        permission = self.permissions.get(
+            username,
+            {"role_name": "read", "permission": "read"},
+        )
+        if isinstance(permission, Exception):
+            raise permission
+        return permission
 
     def list_labels(self):
         return [{"name": "Product-Keyboard Manager"}]
@@ -569,6 +582,119 @@ class IssueContextTests(unittest.TestCase):
         noop.assert_called_once_with("Closed issues are not triaged")
         self.assertFalse(should_process)
 
+    @staticmethod
+    def open_issue(author="alice"):
+        return {
+            "number": 10,
+            "state": "open",
+            "title": "Keyboard Manager exits",
+            "body": BUG_BODY,
+            "user": {"login": author},
+            "labels": [],
+        }
+
+    @staticmethod
+    def canonical_comment(digest):
+        return {
+            "user": {"login": "github-actions[bot]"},
+            "body": (
+                f"{CONTEXT.CANONICAL_MARKER}\n"
+                f"<!-- powertoys-ai-triage:input-sha256:{digest} -->\n"
+                "Summary"
+            ),
+        }
+
+    def test_edit_without_existing_summary_is_skipped(self):
+        api = FakeApi()
+        with mock.patch.object(CONTEXT, "write_noop") as noop:
+            _, _, should_process = CONTEXT.prepare(
+                {"action": "edited", "issue": self.open_issue()},
+                api,
+            )
+        noop.assert_called_once_with(
+            "Edits only refresh issues that already have a triage summary"
+        )
+        self.assertFalse(should_process)
+        self.assertEqual(api.permission_lookups, [])
+
+    def test_edit_with_changed_content_refreshes_existing_summary(self):
+        api = FakeApi(comments=[self.canonical_comment("0" * 64)])
+        _, _, should_process = CONTEXT.prepare(
+            {"action": "edited", "issue": self.open_issue()},
+            api,
+        )
+        self.assertTrue(should_process)
+
+    def test_edit_with_unchanged_content_is_skipped(self):
+        issue = self.open_issue()
+        digest = CONTEXT.input_hash(issue, None)
+        api = FakeApi(comments=[self.canonical_comment(digest)])
+        with mock.patch.object(CONTEXT, "write_noop") as noop:
+            _, _, should_process = CONTEXT.prepare(
+                {"action": "edited", "issue": issue},
+                api,
+            )
+        noop.assert_called_once_with(
+            "The triage-relevant issue content has not changed"
+        )
+        self.assertFalse(should_process)
+
+    def test_team_authored_issue_is_triaged_silently(self):
+        for permission in (
+            {"role_name": "admin", "permission": "admin"},
+            {"role_name": "maintain", "permission": "write"},
+            {"role_name": "write", "permission": "write"},
+            {"role_name": "triage", "permission": "read"},
+            {"role_name": "custom-team-role", "permission": "write"},
+        ):
+            with self.subTest(permission=permission):
+                api = FakeApi(permissions={"teammate": permission})
+                _, _, should_process, evidence = CONTEXT.prepare_with_evidence(
+                    {"action": "opened", "issue": self.open_issue("teammate")},
+                    api,
+                )
+                self.assertTrue(should_process)
+                self.assertTrue(evidence["team_authored"])
+
+    def test_community_authored_issue_is_triaged(self):
+        api = FakeApi()
+        _, _, should_process, evidence = CONTEXT.prepare_with_evidence(
+            {"action": "opened", "issue": self.open_issue()},
+            api,
+        )
+        self.assertTrue(should_process)
+        self.assertFalse(evidence["team_authored"])
+        self.assertEqual(api.permission_lookups, ["alice"])
+
+    def test_permission_lookup_failure_responds_normally(self):
+        api = FakeApi(permissions={"alice": RuntimeError("GitHub API failed")})
+        _, _, should_process, evidence = CONTEXT.prepare_with_evidence(
+            {"action": "opened", "issue": self.open_issue()},
+            api,
+        )
+        self.assertTrue(should_process)
+        self.assertFalse(evidence["team_authored"])
+
+    def test_bot_author_does_not_query_permissions(self):
+        api = FakeApi()
+        self.assertFalse(CONTEXT.is_team_member(api, "dependabot[bot]"))
+        self.assertFalse(CONTEXT.is_team_member(api, None))
+        self.assertEqual(api.permission_lookups, [])
+
+    def test_force_evidence_reports_team_authorship(self):
+        issue = self.open_issue("teammate")
+        api = FakeApi(
+            current_issue=issue,
+            permissions={"teammate": {"role_name": "write", "permission": "write"}},
+        )
+        _, _, should_process, evidence = CONTEXT.prepare_with_evidence(
+            {"action": "edited", "issue": issue},
+            api,
+            force_evidence=True,
+        )
+        self.assertTrue(should_process)
+        self.assertTrue(evidence["team_authored"])
+
     def test_prepare_emits_bounded_ranked_candidates(self):
         issue = {
             "number": 10,
@@ -715,7 +841,7 @@ class IssueContextTests(unittest.TestCase):
             self.assertFalse(evidence_path.exists())
             self.assertEqual(
                 output_path.read_text(encoding="utf-8"),
-                "should_process=false\n",
+                "should_process=false\nteam_authored=false\n",
             )
 
     def test_candidate_retrieval_only_returns_older_issues(self):

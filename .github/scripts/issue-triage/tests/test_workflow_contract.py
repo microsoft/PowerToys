@@ -43,6 +43,28 @@ class WorkflowContractTests(unittest.TestCase):
         ):
             self.assertIn(f"--deny-tool '\\''shell({command})'\\''", generated)
 
+    def test_metadata_edits_are_gated_and_team_issues_publish_silently(self):
+        source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
+        generated = WORKFLOW_LOCK.read_text(encoding="utf-8")
+
+        self.assertNotIn("skip-roles", source)
+        self.assertNotIn("check_skip_roles", generated)
+        self.assertIn(
+            "if: github.event.action != 'edited' || "
+            "github.event.changes.title != null || "
+            "github.event.changes.body != null",
+            generated,
+        )
+        for workflow in (source, generated):
+            self.assertIn(
+                "ISSUE_TRIAGE_TEAM_AUTHORED: ${{ steps.refresh.outputs.team_authored }}",
+                workflow,
+            )
+        team_branch = generated.index("ISSUE_TRIAGE_TEAM_AUTHORED === 'true'")
+        self.assertLess(team_branch, generated.index("github.rest.issues.createComment"))
+        self.assertLess(team_branch, generated.index("labels: ['Needs-Author-Feedback']"))
+        self.assertLess(team_branch, generated.index("state_reason: 'duplicate'"))
+
     def test_workflow_never_manages_version_labels(self):
         source = WORKFLOW_SOURCE.read_text(encoding="utf-8")
         generated = WORKFLOW_LOCK.read_text(encoding="utf-8")

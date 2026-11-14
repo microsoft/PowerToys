@@ -15,6 +15,10 @@ MAX_BODY_CHARS = 7000
 MAX_CANDIDATES = 8
 MAX_CANDIDATE_BODY_CHARS = 1000
 MAX_SEARCH_RESULTS = 30
+# Core team, extended team, and code owners receive repository access through
+# these roles. Team membership itself is not readable with the workflow token.
+TEAM_ROLES = frozenset({"admin", "maintain", "write", "triage"})
+TEAM_BASE_PERMISSIONS = frozenset({"admin", "write"})
 CANONICAL_MARKER = "<!-- powertoys-ai-triage:canonical:v1 -->"
 HASH_PATTERN = re.compile(
     r"<!-- powertoys-ai-triage:input-sha256:([0-9a-f]{64}) -->"
@@ -169,6 +173,12 @@ class GitHubApi:
 
     def latest_stable_powertoys_release(self):
         return self.request("/repos/microsoft/PowerToys/releases/latest")
+
+    def get_repository_permission(self, username):
+        quoted = urllib.parse.quote(username, safe="")
+        return self.request(
+            f"/repos/{self.repository}/collaborators/{quoted}/permission"
+        )
 
 
 def compact(value, limit):
@@ -590,6 +600,19 @@ def existing_input_hash(comments):
     return None
 
 
+def is_team_member(api, login):
+    if not login or login.lower().endswith("[bot]"):
+        return False
+    try:
+        permission = api.get_repository_permission(login) or {}
+    except (RuntimeError, OSError, ValueError):
+        # Fail open so a lookup outage never silently drops community issues.
+        return False
+    role = str(permission.get("role_name") or "").lower()
+    base = str(permission.get("permission") or "").lower()
+    return role in TEAM_ROLES or base in TEAM_BASE_PERMISSIONS
+
+
 def should_process(event, report_comment):
     action = event.get("action")
     issue = event.get("issue") or {}
@@ -798,8 +821,15 @@ def prepare_with_evidence(event, api, force_evidence=False):
             False,
             None,
         )
-    if not force_evidence and not force and existing_input_hash(comments) == digest:
-        write_noop("The triage-relevant issue content has not changed")
+    existing_hash = existing_input_hash(comments)
+    skip_reason = None
+    if not force_evidence and not force:
+        if event.get("action") == "edited" and existing_hash is None:
+            skip_reason = "Edits only refresh issues that already have a triage summary"
+        elif existing_hash == digest:
+            skip_reason = "The triage-relevant issue content has not changed"
+    if skip_reason:
+        write_noop(skip_reason)
         return (
             "# Deterministic issue evidence\n\nAgent execution was skipped.\n",
             event,
@@ -812,6 +842,8 @@ def prepare_with_evidence(event, api, force_evidence=False):
         report_comment,
         api,
     )
+    # Team-authored issues are still labeled, but the publisher stays silent.
+    evidence["team_authored"] = is_team_member(api, author)
     normalized_event = dict(event)
     if report_comment:
         normalized_event["comment"] = report_comment
@@ -869,6 +901,8 @@ def main():
             json.dump(evidence, output_file, ensure_ascii=True, sort_keys=True)
             output_file.write("\n")
     write_step_output("should_process", "true" if should_process_event else "false")
+    team_authored = bool(evidence and evidence.get("team_authored"))
+    write_step_output("team_authored", "true" if team_authored else "false")
     print("Prepared deterministic issue evidence and duplicate candidates")
     return 0
 
