@@ -764,7 +764,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         TestWindow.SelectFromTaskbar(new IntPtr(window.WindowHandle), window.ProcessName);
 
     private static bool HasText(Session window, string text) =>
-        window.FindAll<TextBlock>(By.Name(text), 0).Any(element => element.Name == text);
+        window.FindAll<TextBlock>(By.AccessibilityId("ClipboardPreviewText"), 0).Any(element => element.Name == text);
 
     private static bool HasAction(Session window, string name) =>
         window.FindAll<Element>(By.Name(name), 0).Any(element =>
