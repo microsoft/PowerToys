@@ -197,11 +197,9 @@ public static class DepsJsonAudit
     public static AuditResult Collect(string root)
     {
         var options = new EnumerationOptions { RecurseSubdirectories = true, IgnoreInaccessible = true };
-        var files = new List<string>();
-        foreach (var f in Directory.EnumerateFiles(root, "*.deps.json", options))
-        {
-            if (!IsExcluded(f, Path.GetFileName(f))) files.Add(f);
-        }
+        var files = new List<string>(Directory.EnumerateFiles(root, "*.deps.json", options));
+        var scannedFilesCount = files.Count;
+        files.RemoveAll(path => IsExcluded(path, Path.GetFileName(path)));
 
         // Parse in parallel, then merge sequentially in file order so output is deterministic.
         var perFile = new List<KeyValuePair<string, string>>[files.Count];
@@ -236,7 +234,7 @@ public static class DepsJsonAudit
             }
         }
 
-        return new AuditResult { ScannedFilesCount = files.Count, Versions = all };
+        return new AuditResult { ScannedFilesCount = scannedFilesCount, Versions = all };
     }
 }
 '@
