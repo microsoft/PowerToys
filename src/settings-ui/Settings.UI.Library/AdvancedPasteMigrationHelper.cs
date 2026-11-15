@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -24,8 +23,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 return (null, false);
             }
-
-            configuration.Providers ??= new ObservableCollection<PasteAIProviderDefinition>();
 
             const string serviceTypeKey = "OpenAI";
             var existingProvider = configuration.Providers.FirstOrDefault(provider => string.Equals(provider.ServiceType, serviceTypeKey, StringComparison.OrdinalIgnoreCase));

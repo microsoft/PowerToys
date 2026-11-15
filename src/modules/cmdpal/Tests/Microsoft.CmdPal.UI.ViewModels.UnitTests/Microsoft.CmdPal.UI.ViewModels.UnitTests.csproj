@@ -10,6 +10,7 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +26,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\..\Microsoft.CmdPal.UI\Strings\en-us\Resources.resw" Link="SettingsPages\Resources.resw">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\..\Microsoft.CmdPal.UI.ViewModels\Assets\template.zip" Link="Assets\template.zip">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\Microsoft.CmdPal.UI\Package.appxmanifest;..\..\Microsoft.CmdPal.UI\Package-Dev.appxmanifest" Link="Manifests\%(Filename)%(Extension)">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\..\Microsoft.CmdPal.UI\Settings\GeneralPage.xaml;..\..\Microsoft.CmdPal.UI\Settings\AppearancePage.xaml;..\..\Microsoft.CmdPal.UI\Settings\ExtensionsPage.xaml;..\..\Microsoft.CmdPal.UI\Settings\ExtensionPage.xaml;..\..\Microsoft.CmdPal.UI\Settings\DockSettingsPage.xaml" Link="SettingsPages\%(Filename)%(Extension)">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

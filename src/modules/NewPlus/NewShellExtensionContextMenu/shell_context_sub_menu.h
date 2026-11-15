@@ -24,7 +24,6 @@ public:
 protected:
     std::vector<ComPtr<IExplorerCommand>> explorer_menu_item_commands;
     std::vector<ComPtr<IExplorerCommand>>::const_iterator current_command;
-    template_folder* templates;
     ComPtr<IUnknown> site_of_folder;
     POINT mouse_position_at_time_of_invoke{ -1, -1 };
 };

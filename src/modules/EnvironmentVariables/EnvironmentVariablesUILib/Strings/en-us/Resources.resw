@@ -276,6 +276,13 @@
   <data name="RemoveListItem.Text" xml:space="preserve">
     <value>Delete</value>
   </data>
+  <data name="RemoveDuplicatePathEntries.Content" xml:space="preserve">
+    <value>Remove duplicates</value>
+  </data>
+  <data name="RemoveDuplicatePathEntries.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Remove duplicate PATH entries</value>
+    <comment>Accessible name for a button that removes duplicate entries from the PATH environment variable.</comment>
+  </data>
   <data name="RemoveItem.Text" xml:space="preserve">
     <value>Remove</value>
   </data>

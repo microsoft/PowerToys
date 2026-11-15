@@ -1,10 +1,15 @@
 #include "pch.h"
 #include "AudioSampleGenerator.h"
+#include "AudioSamplePacer.h"
+#include "AudioQueueLimits.h"
 #include "CaptureFrameWait.h"
 #include "LoopbackCapture.h"
+#include "ZoomItMessages.h"
+#include <chrono>
 #include <wrl/client.h>
 
 extern TCHAR g_MicrophoneDeviceId[];
+extern HWND g_hWndMain;
 
 namespace
 {
@@ -49,6 +54,7 @@ AudioSampleGenerator::AudioSampleGenerator(bool captureMicrophone, bool captureS
     m_endEvent.create(wil::EventOptions::ManualReset);
     m_startEvent.create(wil::EventOptions::ManualReset);
     m_asyncInitialized.create(wil::EventOptions::ManualReset);
+    m_systemAudioStopEvent.create(wil::EventOptions::ManualReset);
 }
 
 AudioSampleGenerator::~AudioSampleGenerator()
@@ -71,6 +77,33 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         m_endEvent.ResetEvent();
         m_startEvent.ResetEvent();
 
+        if (m_captureSystemAudio)
+        {
+            m_loopbackCapture = std::make_unique<LoopbackCapture>();
+            auto hr = m_loopbackCapture->Initialize();
+            if (SUCCEEDED(hr) && m_loopbackCapture->GetFormat())
+            {
+                const auto format = m_loopbackCapture->GetFormat();
+                m_loopbackChannels = format->nChannels;
+                m_loopbackSampleRate = format->nSamplesPerSec;
+            }
+            else
+            {
+                if (SUCCEEDED(hr))
+                {
+                    hr = E_FAIL;
+                }
+                OutputDebugStringW((L"System audio capture unavailable: " +
+                    std::to_wstring(static_cast<unsigned>(hr)) + L"\n").c_str());
+                m_loopbackCapture.reset();
+                m_systemAudioUnavailable = true;
+            }
+        }
+
+        if (m_captureMicrophone)
+        {
+          try
+          {
         // Initialize the audio graph
         auto audioGraphSettings = winrt::AudioGraphSettings(winrt::AudioRenderCategory::Media);
         auto audioGraphResult = co_await winrt::AudioGraph::CreateAsync(audioGraphSettings);
@@ -138,77 +171,49 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         m_audioOutputNode = m_audioGraph.CreateFrameOutputNode(outputProps);
         m_submixNode.AddOutgoingConnection(m_audioOutputNode);
 
-        // Initialize WASAPI loopback capture for system audio (if enabled)
-        if (m_captureSystemAudio)
+        const auto defaultMicrophoneId = winrt::MediaDevice::GetDefaultAudioCaptureId(winrt::AudioDeviceRole::Default);
+        const auto microphoneId = (g_MicrophoneDeviceId[0] != 0)
+            ? winrt::to_hstring(g_MicrophoneDeviceId)
+            : defaultMicrophoneId;
+        std::vector<winrt::hstring> microphoneIds;
+        if (!microphoneId.empty())
         {
-            m_loopbackCapture = std::make_unique<LoopbackCapture>();
+            microphoneIds.push_back(microphoneId);
         }
-        if (m_loopbackCapture && SUCCEEDED(m_loopbackCapture->Initialize()))
+        if (!defaultMicrophoneId.empty() && defaultMicrophoneId != microphoneId)
         {
-            auto loopbackFormat = m_loopbackCapture->GetFormat();
-            if (loopbackFormat)
+            microphoneIds.push_back(defaultMicrophoneId);
+        }
+        for (auto const& id : microphoneIds)
+        {
+            try
             {
-                m_loopbackChannels = loopbackFormat->nChannels;
-                m_loopbackSampleRate = loopbackFormat->nSamplesPerSec;
-                m_resampleRatio = static_cast<double>(m_loopbackSampleRate) / static_cast<double>(m_graphSampleRate);
-
-                OutputDebugStringA(("Loopback initialized: " + std::to_string(m_loopbackSampleRate) +
-                    " Hz, " + std::to_string(m_loopbackChannels) + " ch, resample ratio=" +
-                    std::to_string(m_resampleRatio) + "\n").c_str());
+                const auto device = co_await winrt::DeviceInformation::CreateFromIdAsync(id);
+                const auto result = co_await m_audioGraph.CreateDeviceInputNodeAsync(
+                    winrt::MediaCategory::Media, m_audioGraph.EncodingProperties(), device);
+                if (result.Status() == winrt::AudioDeviceNodeCreationStatus::Success)
+                {
+                    auto inputNode = result.DeviceInputNode();
+                    inputNode.AddOutgoingConnection(m_submixNode);
+                    m_audioInputNode = inputNode;
+                    break;
+                }
             }
-        }
-        else if (m_captureSystemAudio)
-        {
-            OutputDebugStringA("WARNING: Failed to initialize loopback capture\n");
-            m_loopbackCapture.reset();
-        }
-
-        // Always initialize a microphone input node to keep the AudioGraph running at real-time pace.
-        // When mic capture is disabled, we mute it so only loopback audio is captured.
-        {
-            auto defaultMicrophoneId = winrt::MediaDevice::GetDefaultAudioCaptureId(winrt::AudioDeviceRole::Default);
-            auto microphoneId = (m_captureMicrophone && g_MicrophoneDeviceId[0] != 0)
-                ? winrt::to_hstring(g_MicrophoneDeviceId)
-                : defaultMicrophoneId;
-            if (!microphoneId.empty())
+            catch (winrt::hresult_error const& error)
             {
-                auto microphone = co_await winrt::DeviceInformation::CreateFromIdAsync(microphoneId);
-
-                // Initialize audio input node
-                auto inputNodeResult = co_await m_audioGraph.CreateDeviceInputNodeAsync(winrt::MediaCategory::Media, m_audioGraph.EncodingProperties(), microphone);
-                if (inputNodeResult.Status() != winrt::AudioDeviceNodeCreationStatus::Success && microphoneId != defaultMicrophoneId)
-                {
-                    // If the selected microphone failed, try again with the default
-                    microphone = co_await winrt::DeviceInformation::CreateFromIdAsync(defaultMicrophoneId);
-                    inputNodeResult = co_await m_audioGraph.CreateDeviceInputNodeAsync(winrt::MediaCategory::Media, m_audioGraph.EncodingProperties(), microphone);
-                }
-                if (inputNodeResult.Status() == winrt::AudioDeviceNodeCreationStatus::Success)
-                {
-                    m_audioInputNode = inputNodeResult.DeviceInputNode();
-                    m_audioInputNode.AddOutgoingConnection(m_submixNode);
-
-                    // If mic capture is disabled, mute the input so only loopback is captured
-                    if (!m_captureMicrophone)
-                    {
-                        m_audioInputNode.OutgoingGain(0.0);
-                        OutputDebugStringA("Mic input created but muted (loopback-only mode)\n");
-                    }
-                    else
-                    {
-                        OutputDebugStringA("Mic input created and active\n");
-                    }
-                }
+                OutputDebugStringW((L"Microphone device unavailable: " +
+                    std::to_wstring(static_cast<unsigned>(error.code())) + L"\n").c_str());
             }
         }
 
-        // Loopback capture is only required when system audio capture is enabled
-        if (m_captureSystemAudio && !m_loopbackCapture)
+        if (!m_audioInputNode)
         {
-            throw winrt::hresult_error(E_FAIL, L"Failed to initialize loopback audio capture!");
+            throw winrt::hresult_error(E_FAIL, L"No microphone input node available");
         }
+        OutputDebugStringA("Mic input created and active\n");
 
         // Initialize noise suppressor for microphone audio if enabled
-        if (m_useNoiseCancellation && m_captureMicrophone)
+        if (m_useNoiseCancellation)
         {
             m_noiseSuppressor = std::make_unique<NoiseSuppressor>();
             OutputDebugStringA("Noise cancellation enabled for microphone\n");
@@ -224,6 +229,35 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
         // sooner, which also triggers a desktop-content change that helps
         // unblock the WGC frame pool wait in OnMediaStreamSourceStarting.
         m_audioGraph.Start();
+          }
+          catch (winrt::hresult_error const& error)
+          {
+              OutputDebugStringW((L"Microphone capture unavailable: " +
+                  std::to_wstring(static_cast<unsigned>(error.code())) + L"\n").c_str());
+              m_microphoneUnavailable = true;
+              m_captureMicrophone = false;
+              m_audioInputNode = nullptr;
+              m_audioOutputNode = nullptr;
+              m_submixNode = nullptr;
+              if (m_audioGraph)
+              {
+                  m_audioGraph.Close();
+                  m_audioGraph = nullptr;
+              }
+          }
+        }
+
+        if (m_loopbackCapture)
+        {
+            if (!m_audioInputNode)
+            {
+                m_graphSampleRate = 48000;
+                m_graphChannels = 2;
+                m_outputProperties = winrt::AudioEncodingProperties::CreatePcm(m_graphSampleRate, m_graphChannels, 32);
+                m_outputProperties.Subtype(winrt::MediaEncodingSubtypes::Float());
+            }
+            m_resampleRatio = static_cast<double>(m_loopbackSampleRate) / m_graphSampleRate;
+        }
 
         m_asyncInitialized.SetEvent();
       }
@@ -246,7 +280,7 @@ winrt::IAsyncAction AudioSampleGenerator::InitializeAsync()
 winrt::AudioEncodingProperties AudioSampleGenerator::GetEncodingProperties()
 {
     CheckInitialized();
-    return m_audioOutputNode.EncodingProperties();
+    return m_audioInputNode ? m_audioOutputNode.EncodingProperties() : m_outputProperties;
 }
 
 winrt::fire_and_forget AudioSampleGenerator::DisposeAsync(
@@ -310,9 +344,7 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
             auto lock = m_lock.lock_exclusive();
             if (!m_samples.empty())
             {
-                std::optional result(m_samples.front());
-                m_samples.pop_front();
-                return result;
+                return PopSample();
             }
             return std::nullopt;
         }
@@ -331,13 +363,11 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
             }
             else if (!m_samples.empty())
             {
-                std::optional result(m_samples.front());
-                m_samples.pop_front();
-                return result;
+                return PopSample();
             }
+            m_audioEvent.ResetEvent();
         }
 
-        m_audioEvent.ResetEvent();
         std::vector<HANDLE> events = { m_endEvent.get(), m_audioEvent.get() };
         auto waitResult = WaitForMultipleObjectsEx(static_cast<DWORD>(events.size()), events.data(), false, INFINITE, false);
         auto eventIndex = -1;
@@ -357,9 +387,7 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
             auto lock = m_lock.lock_exclusive();
             if (!m_samples.empty())
             {
-                std::optional result(m_samples.front());
-                m_samples.pop_front();
-                return result;
+                return PopSample();
             }
             return std::nullopt;
         }
@@ -372,6 +400,7 @@ std::optional<winrt::MediaStreamSample> AudioSampleGenerator::TryGetNextSample()
 void AudioSampleGenerator::Start(int64_t videoStartTimestamp)
 {
     CheckInitialized();
+    auto stateLock = std::lock_guard(m_startStopLock);
     m_videoStartTimestamp = videoStartTimestamp;
     auto expected = false;
     if (m_started.compare_exchange_strong(expected, true))
@@ -392,7 +421,30 @@ void AudioSampleGenerator::Start(int64_t videoStartTimestamp)
             m_resampleInputBuffer.clear();
             m_resampleInputPos = 0.0;
 
-            m_loopbackCapture->Start();
+            const auto hr = m_loopbackCapture->Start();
+            if (FAILED(hr))
+            {
+                OutputDebugStringW((L"System audio capture could not start: " +
+                    std::to_wstring(static_cast<unsigned>(hr)) + L"\n").c_str());
+                m_systemAudioUnavailable = true;
+                if (!PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, 2, 0))
+                {
+                    OutputDebugStringW(L"Failed to notify user that system audio capture could not start\n");
+                }
+                if (!m_audioInputNode)
+                {
+                    m_started.store(false);
+                    m_endEvent.SetEvent();
+                    m_audioEvent.SetEvent();
+                    return;
+                }
+            }
+        }
+
+        if (!m_audioInputNode && m_loopbackCapture)
+        {
+            m_systemAudioStopEvent.ResetEvent();
+            m_systemAudioThread = std::thread(&AudioSampleGenerator::CaptureSystemAudio, this);
         }
 
         // AudioGraph was already started in InitializeAsync for mic warmup.
@@ -410,7 +462,14 @@ void AudioSampleGenerator::Stop()
         return;
     }
 
+    auto stateLock = std::lock_guard(m_startStopLock);
     m_asyncInitialized.wait();
+
+    if (m_systemAudioThread.joinable())
+    {
+        m_systemAudioStopEvent.SetEvent();
+        m_systemAudioThread.join();
+    }
 
     // Stop loopback capture first
     if (m_loopbackCapture)
@@ -418,8 +477,10 @@ void AudioSampleGenerator::Stop()
         m_loopbackCapture->Stop();
     }
 
-    // Flush any remaining samples from the loopback capture before stopping the audio graph
-    FlushRemainingAudio();
+    if (m_audioInputNode)
+    {
+        FlushRemainingAudio();
+    }
 
     // Stop the audio graph - no more quantum callbacks will run.
     // Guard against partial initialization: if InitializeAsync failed before
@@ -440,6 +501,12 @@ void AudioSampleGenerator::Stop()
     // Mark as stopped
     m_started.store(false);
 
+    if (m_droppedAudioSamples)
+    {
+        OutputDebugStringW((L"Recording audio samples dropped while transcoder lagged: " +
+            std::to_wstring(m_droppedAudioSamples) + L"\n").c_str());
+    }
+
     // Combine all remaining queued samples into one final sample so it can be
     // returned immediately without waiting for additional TryGetNextSample calls
     CombineQueuedSamples();
@@ -453,6 +520,141 @@ void AudioSampleGenerator::Stop()
     // consume remaining queued audio samples to avoid audio cutoff at end of recording.
     // TryGetNextSample() will return nullopt once m_samples is empty and
     // m_endEvent is signaled. Buffers will be cleaned up on destruction.
+}
+
+void AudioSampleGenerator::DrainLoopbackSamples(bool flushRemaining)
+{
+    if (!m_loopbackCapture)
+    {
+        return;
+    }
+
+    const auto captureError = m_loopbackCapture->GetCaptureError();
+    if (m_audioInputNode && FAILED(captureError) && !m_systemAudioUnavailable.exchange(true))
+    {
+        OutputDebugStringW((L"System audio capture stopped: " +
+            std::to_wstring(static_cast<unsigned>(captureError)) + L"\n").c_str());
+        if (!PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, 2, 0))
+        {
+            OutputDebugStringW(L"Failed to notify user that system audio capture stopped\n");
+        }
+    }
+
+    std::vector<float> rawLoopbackSamples;
+    std::vector<float> packet;
+    while (m_loopbackCapture->TryGetSamples(packet))
+    {
+        rawLoopbackSamples.insert(rawLoopbackSamples.end(), packet.begin(), packet.end());
+    }
+    AppendResampledLoopbackSamples(rawLoopbackSamples, flushRemaining);
+}
+
+void AudioSampleGenerator::CaptureSystemAudio()
+{
+    try
+    {
+        winrt::init_apartment(winrt::apartment_type::multi_threaded);
+        auto uninitialize = wil::scope_exit([] { winrt::uninit_apartment(); });
+        const auto start = std::chrono::steady_clock::now();
+        AudioSamplePacer pacer(m_graphSampleRate);
+        uint64_t firstFrame = 0;
+
+        while (WaitForSingleObject(m_systemAudioStopEvent.get(), 5) == WAIT_TIMEOUT)
+        {
+            const auto captureError = m_loopbackCapture->GetCaptureError();
+            if (FAILED(captureError))
+            {
+                OutputDebugStringW((L"System audio capture stopped: " +
+                    std::to_wstring(static_cast<unsigned>(captureError)) + L"\n").c_str());
+                m_endEvent.SetEvent();
+                m_audioEvent.SetEvent();
+                if (!PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, 2, 0))
+                {
+                    OutputDebugStringW(L"Failed to notify user that system audio capture stopped\n");
+                }
+                break;
+            }
+
+            const auto elapsed = std::chrono::steady_clock::now() - start;
+            const auto elapsedTicks = std::chrono::duration_cast<std::chrono::nanoseconds>(elapsed).count() / 100;
+            if (!pacer.NextChunk(elapsedTicks, firstFrame))
+            {
+                continue;
+            }
+
+            DrainLoopbackSamples();
+            const uint32_t byteCount = pacer.FramesPerChunk() * m_graphChannels * static_cast<uint32_t>(sizeof(float));
+            winrt::Buffer buffer(byteCount);
+            memset(buffer.data(), 0, byteCount);
+
+            {
+                auto lock = m_loopbackBufferLock.lock_exclusive();
+                const auto count = (std::min)(static_cast<size_t>(pacer.FramesPerChunk() * m_graphChannels), m_loopbackBuffer.size());
+                memcpy(buffer.data(), m_loopbackBuffer.data(), count * sizeof(float));
+                m_loopbackBuffer.erase(m_loopbackBuffer.begin(), m_loopbackBuffer.begin() + count);
+            }
+
+            buffer.Length(byteCount);
+            const auto timestamp = winrt::TimeSpan{
+                m_videoStartTimestamp + static_cast<int64_t>(firstFrame * 10'000'000 / m_graphSampleRate)
+            };
+            auto sample = winrt::MediaStreamSample::CreateFromBuffer(buffer, timestamp);
+            const auto duration = winrt::TimeSpan{
+                static_cast<int64_t>(pacer.FramesPerChunk()) * 10'000'000 / m_graphSampleRate
+            };
+            sample.Duration(duration);
+            {
+                auto lock = m_lock.lock_exclusive();
+                QueueSample(sample);
+                m_lastSampleTimestamp = timestamp;
+                m_lastSampleDuration = duration;
+                m_hasLastSampleTimestamp = true;
+            }
+            m_audioEvent.SetEvent();
+        }
+    }
+    catch (winrt::hresult_error const& error)
+    {
+        OutputDebugStringW((L"System audio capture failed: " +
+            std::to_wstring(static_cast<unsigned>(error.code())) + L"\n").c_str());
+        m_endEvent.SetEvent();
+        m_audioEvent.SetEvent();
+        if (!PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, 2, 0))
+        {
+            OutputDebugStringW(L"Failed to notify user that system audio capture stopped\n");
+        }
+    }
+    catch (std::exception const& error)
+    {
+        OutputDebugStringA(error.what());
+        m_endEvent.SetEvent();
+        m_audioEvent.SetEvent();
+        if (!PostMessage(g_hWndMain, WM_USER_RECORDING_AUDIO_UNAVAILABLE, 2, 0))
+        {
+            OutputDebugStringW(L"Failed to notify user that system audio capture stopped\n");
+        }
+    }
+}
+
+void AudioSampleGenerator::QueueSample(winrt::MediaStreamSample const& sample)
+{
+    m_samples.push_back(sample);
+    m_queuedSampleBytes += sample.Buffer().Length();
+    const auto maxBytes = audio_queue::MaxEncodedFloatBytes(m_graphSampleRate, m_graphChannels);
+    while (m_samples.size() > 1 && m_queuedSampleBytes > maxBytes)
+    {
+        m_queuedSampleBytes -= m_samples.front().Buffer().Length();
+        m_samples.pop_front();
+        ++m_droppedAudioSamples;
+    }
+}
+
+winrt::MediaStreamSample AudioSampleGenerator::PopSample()
+{
+    auto sample = m_samples.front();
+    m_queuedSampleBytes -= sample.Buffer().Length();
+    m_samples.pop_front();
+    return sample;
 }
 
 void AudioSampleGenerator::AppendResampledLoopbackSamples(std::vector<float> const& rawLoopbackSamples, bool flushRemaining)
@@ -562,7 +764,7 @@ void AudioSampleGenerator::AppendResampledLoopbackSamples(std::vector<float> con
     if (!resampledSamples.empty())
     {
         auto loopbackLock = m_loopbackBufferLock.lock_exclusive();
-        const size_t maxBufferSize = static_cast<size_t>(m_graphSampleRate) * m_graphChannels;
+        const size_t maxBufferSize = audio_queue::MaxLiveSampleCount(m_graphSampleRate, m_graphChannels);
 
         if (m_loopbackBuffer.size() + resampledSamples.size() > maxBufferSize)
         {
@@ -593,21 +795,7 @@ void AudioSampleGenerator::FlushRemainingAudio()
 
     auto lock = m_lock.lock_exclusive();
 
-    // Drain all remaining samples from the loopback capture client
-    std::vector<float> rawLoopbackSamples;
-    {
-        std::vector<float> tempSamples;
-        while (m_loopbackCapture->TryGetSamples(tempSamples))
-        {
-            rawLoopbackSamples.insert(rawLoopbackSamples.end(), tempSamples.begin(), tempSamples.end());
-        }
-    }
-
-    // Resample and channel-convert the loopback audio to match AudioGraph format
-    if (!rawLoopbackSamples.empty())
-    {
-        AppendResampledLoopbackSamples(rawLoopbackSamples, true);
-    }
+    DrainLoopbackSamples(true);
 
     // Now convert everything in m_loopbackBuffer to MediaStreamSamples
     auto loopbackLock = m_loopbackBufferLock.lock_exclusive();
@@ -648,7 +836,7 @@ void AudioSampleGenerator::FlushRemainingAudio()
 
             auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, timestamp);
             sample.Duration(duration);
-            m_samples.push_back(sample);
+            QueueSample(sample);
             m_audioEvent.SetEvent();
 
             m_lastSampleTimestamp = timestamp;
@@ -715,7 +903,8 @@ void AudioSampleGenerator::CombineQueuedSamples()
 
     // Clear queue and add combined sample
     m_samples.clear();
-    m_samples.push_back(combinedSample);
+    m_queuedSampleBytes = 0;
+    QueueSample(combinedSample);
 
     // Update timestamp tracking
     const uint32_t sampleCount = static_cast<uint32_t>(totalBytes) / sizeof(float);
@@ -798,24 +987,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
             m_noiseSuppressor->Process(micData, numMicSamples, m_graphChannels);
         }
 
-        // Drain loopback samples regardless of whether we have mic audio
-        if (m_loopbackCapture)
-        {
-            std::vector<float> rawLoopbackSamples;
-            {
-                std::vector<float> tempSamples;
-                while (m_loopbackCapture->TryGetSamples(tempSamples))
-                {
-                    rawLoopbackSamples.insert(rawLoopbackSamples.end(), tempSamples.begin(), tempSamples.end());
-                }
-            }
-
-            // Resample and channel-convert the loopback audio to match AudioGraph format
-            if (!rawLoopbackSamples.empty())
-            {
-                AppendResampledLoopbackSamples(rawLoopbackSamples);
-            }
-        }
+        DrainLoopbackSamples();
 
         // Determine the actual number of samples we'll output
         // Use mic sample count if mic is enabled
@@ -887,7 +1059,7 @@ void AudioSampleGenerator::OnAudioQuantumStarted(winrt::AudioGraph const& sender
             auto adjustedTs = winrt::TimeSpan{ timestamp.value().count() + m_timestampOffset };
 
             auto sample = winrt::MediaStreamSample::CreateFromBuffer(sampleBuffer, adjustedTs);
-            m_samples.push_back(sample);
+            QueueSample(sample);
 
             const uint32_t sampleCount = sampleBuffer.Length() / sizeof(float);
             const uint32_t frames = (m_graphChannels > 0) ? (sampleCount / m_graphChannels) : 0;

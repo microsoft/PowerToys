@@ -105,6 +105,38 @@ namespace UnitTestsCommonUtils
             Assert::IsTrue(res.accepted);
         }
 
+        TEST_METHOD (ServerIdentity_MatchingPeer_Accepts)
+        {
+            ConnectedPipe cp;
+            Assert::IsTrue(MakeConnectedPipe(cp));
+            const auto exe = CurrentExePath();
+            interop_auth::CallerPolicy policy;
+            policy.enabled = true;
+            policy.expectedDirectory = DirOf(exe);
+            policy.allowedBasenames = { BaseOf(exe) };
+            policy.expectedClientPid = GetCurrentProcessId();
+            policy.requireMicrosoftSignature = false;
+            interop_auth::VerificationCache cache;
+            const auto result = interop_auth::AuthenticateServer(cp.client, policy, cache);
+            Assert::IsTrue(result.accepted);
+            Assert::AreEqual(GetCurrentProcessId(), result.pid);
+        }
+
+        TEST_METHOD (ServerIdentity_UnexpectedPeer_Rejects)
+        {
+            ConnectedPipe cp;
+            Assert::IsTrue(MakeConnectedPipe(cp));
+            interop_auth::CallerPolicy policy;
+            policy.enabled = true;
+            policy.expectedDirectory = DirOf(CurrentExePath());
+            policy.allowedBasenames = { L"not-the-server.exe" };
+            policy.requireMicrosoftSignature = false;
+            interop_auth::VerificationCache cache;
+            const auto result = interop_auth::AuthenticateServer(cp.client, policy, cache);
+            Assert::IsFalse(result.accepted);
+            Assert::AreEqual(L"bad-basename", result.reasonCode);
+        }
+
         TEST_METHOD(GetModuleVersion_KnownBinary_NonZero)
         {
             wchar_t sys[MAX_PATH] = {};

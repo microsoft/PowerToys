@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>AltWindowCycle.TestApp</AssemblyName>
+    <RootNamespace>Microsoft.AltWindowCycle.TestApp</RootNamespace>
+    <ApplicationManifest>..\AltWindowCycle.UITests\app.manifest</ApplicationManifest>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>false</IsTestProject>
+    <EnableMSTestRunner>false</EnableMSTestRunner>
+    <IsTestingPlatformApplication>false</IsTestingPlatformApplication>
+    <TestingPlatformDotNetTestSupport>false</TestingPlatformDotNetTestSupport>
+    <TestingPlatformDisableCustomTestTarget>true</TestingPlatformDisableCustomTestTarget>
+    <RunVSTest>false</RunVSTest>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\AltWindowCycle.UITests\$(TargetFramework)\Fixture\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+</Project>

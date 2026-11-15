@@ -8,8 +8,6 @@
 
 namespace updating
 {
-    winrt::Windows::Foundation::IAsyncOperation<bool> uninstall_previous_msix_version_async();
-
     // Verifies that the installer at installerPath has a valid Authenticode signature that
     // chains to a trusted root AND that the signer is "Microsoft Corporation".
     //

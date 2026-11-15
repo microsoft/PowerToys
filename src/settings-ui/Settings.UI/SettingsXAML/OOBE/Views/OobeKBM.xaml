@@ -8,7 +8,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_KBM" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/KBM.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_KBM" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/KBM.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToCreateMappings" Style="{ThemeResource OobeSubtitleStyle}" />

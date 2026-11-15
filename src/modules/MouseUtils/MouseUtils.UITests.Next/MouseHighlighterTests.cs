@@ -208,12 +208,9 @@ public class MouseHighlighterTests : UITestBase
         var outside = (X: centerX + 120, Y: centerY);
         var insideBase = GetStablePixel(inside.X, inside.Y);
         var outsideBase = GetStablePixel(outside.X, outside.Y);
-        MouseHelper.MoveBy(160, 80, steps: 20, delayMs: 20);
-        var calibratedTarget = MouseHelper.GetMousePosition();
-        var movedInside = (X: calibratedTarget.X + 30, Y: calibratedTarget.Y);
-        var movedOutside = (X: calibratedTarget.X + 120, Y: calibratedTarget.Y);
-        var movedInsideBase = GetStablePixel(movedInside.X, movedInside.Y);
-        var movedOutsideBase = GetStablePixel(movedOutside.X, movedOutside.Y);
+        var monitor = MonitorInfo.GetPrimary();
+        Assert.IsNotNull(monitor, "No primary monitor was reported.");
+        using var desktopBaseline = CaptureMonitor(monitor);
         MouseHelper.MoveTo(centerX, centerY);
         Activate();
 
@@ -223,8 +220,18 @@ public class MouseHighlighterTests : UITestBase
         MouseHelper.MoveBy(160, 80, steps: 20, delayMs: 20);
         var moved = MouseHelper.GetMousePosition();
         Assert.IsTrue(
-            Distance(moved.X, moved.Y, calibratedTarget.X, calibratedTarget.Y) <= 10,
-            $"Calibrated relative movement ended at ({calibratedTarget.X},{calibratedTarget.Y}), but overlay movement ended at ({moved.X},{moved.Y}).");
+            Distance(moved.X, moved.Y, centerX, centerY) > 50,
+            $"Relative input did not move the cursor far enough: ({centerX},{centerY}) -> ({moved.X},{moved.Y}).");
+
+        var movedInside = (X: moved.X + 30, Y: moved.Y);
+        var movedOutside = (X: moved.X + 120, Y: moved.Y);
+        Assert.IsTrue(
+            movedInside.X >= monitor.Left && movedInside.X < monitor.Right &&
+            movedOutside.X >= monitor.Left && movedOutside.X < monitor.Right &&
+            moved.Y >= monitor.Top && moved.Y < monitor.Bottom,
+            $"Relative input ended too close to the primary monitor edge for Spotlight sampling: ({moved.X},{moved.Y}).");
+        var movedInsideBase = desktopBaseline.GetPixel(movedInside.X - monitor.Left, movedInside.Y - monitor.Top);
+        var movedOutsideBase = desktopBaseline.GetPixel(movedOutside.X - monitor.Left, movedOutside.Y - monitor.Top);
         AssertPixelNear(movedInside.X, movedInside.Y, movedInsideBase, 5, "transparent Spotlight hole after cursor movement");
         AssertPixelNear(movedOutside.X, movedOutside.Y, Blend(Color.Red, movedOutsideBase, 128), 5, "Spotlight tint after cursor movement");
     }
@@ -307,10 +314,10 @@ public class MouseHighlighterTests : UITestBase
         }
 
         Assert.IsTrue(observedNearGlow, "The configured high-intensity Ripple glow did not render near the click point.");
-        Assert.IsTrue(
-            observedOuterRipple,
+        string rippleMessage =
             $"The configured 120px, 1.8-second Ripple was absent outside the default maximum radius after 900ms on three complete attempts; " +
-            $"annulus={defaultMaximumRadius + 4}-{configuredMaximumRadius + 4}px, maximum changed pixels={maximumChangedOuterSamples}.");
+            $"annulus={defaultMaximumRadius + 4}-{configuredMaximumRadius + 4}px, maximum changed pixels={maximumChangedOuterSamples}.";
+        Assert.IsTrue(observedOuterRipple, rippleMessage);
         Assert.IsTrue(
             WaitForRippleToClear(nearPoint, farPoint, nearBase, farBase, 2_000),
             "Ripple remained after its configured 1.8-second duration.");
@@ -501,7 +508,7 @@ public class MouseHighlighterTests : UITestBase
                 Near = WindowHelper.GetPixelColor(nearPoint.X, nearPoint.Y),
                 Far = WindowHelper.GetPixelColor(farPoint.X, farPoint.Y),
             },
-            sample => IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
+            sample => sample is not null && IsNear(sample.Near, nearBase, 5) && IsNear(sample.Far, farBase, 5),
             timeoutMs,
             requiredConsecutiveMatches: 5,
             pollIntervalMS: 50).Succeeded;
@@ -513,6 +520,22 @@ public class MouseHighlighterTests : UITestBase
         {
             using var graphics = Graphics.FromImage(bitmap);
             graphics.CopyFromScreen(centerX - radius, centerY - radius, 0, 0, bitmap.Size);
+            return bitmap;
+        }
+        catch
+        {
+            bitmap.Dispose();
+            throw;
+        }
+    }
+
+    private static Bitmap CaptureMonitor(MonitorInfo.Monitor monitor)
+    {
+        var bitmap = new Bitmap(monitor.Width, monitor.Height);
+        try
+        {
+            using var graphics = Graphics.FromImage(bitmap);
+            graphics.CopyFromScreen(monitor.Left, monitor.Top, 0, 0, bitmap.Size);
             return bitmap;
         }
         catch

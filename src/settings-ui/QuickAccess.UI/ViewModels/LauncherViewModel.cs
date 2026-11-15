@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.ObjectModel;
 using global::PowerToys.GPOWrapper;
 using ManagedCommon;
@@ -15,7 +16,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.QuickAccess.ViewModels;
 
-public sealed class LauncherViewModel : Observable
+public sealed class LauncherViewModel : Observable, IDisposable
 {
     private readonly IQuickAccessCoordinator _coordinator;
     private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
@@ -44,5 +45,10 @@ public sealed class LauncherViewModel : Observable
             _resourceLoader);
         var updatingSettings = UpdatingSettings.LoadSettings() ?? new UpdatingSettings();
         IsUpdateAvailable = updatingSettings.State is UpdatingSettings.UpdatingState.ReadyToInstall or UpdatingSettings.UpdatingState.ReadyToDownload;
+    }
+
+    public void Dispose()
+    {
+        _quickAccessViewModel.Dispose();
     }
 }

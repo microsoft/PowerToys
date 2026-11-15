@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>PowerOCR.UITests</RootNamespace>
+    <AssemblyName>PowerOCR.UITests.Next</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <RunVSTest>false</RunVSTest>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\PowerOCR.UITests.Next\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <Compile Include="..\PowerOCR-UITests\CursorStateReader.cs" Link="CursorStateReader.cs" />
+  </ItemGroup>
+</Project>

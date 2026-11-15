@@ -41,13 +41,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public ColorPickerActivationAction ActivationAction { get; set; }
 
         [JsonPropertyName("colorhistory")]
-        public List<string> ColorHistory { get; set; }
+        public List<string> ColorHistory { get; init; }
 
         [JsonPropertyName("colorhistorylimit")]
         public int ColorHistoryLimit { get; set; }
 
         [JsonPropertyName("visiblecolorformats")]
-        public Dictionary<string, bool> VisibleColorFormats { get; set; }
+        public Dictionary<string, bool> VisibleColorFormats { get; init; }
 
         [JsonPropertyName("showcolorname")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]

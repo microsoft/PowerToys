@@ -75,12 +75,11 @@ namespace CentralizedHotkeys
     {
         for (auto it = actions.begin(); it != actions.end(); it++)
         {
-            auto val = std::find_if(it->second.begin(), it->second.end(), [moduleName](Action a) { return a.moduleName == moduleName; });
-            if (val != it->second.end())
+            const auto removed = std::erase_if(it->second, [&moduleName](const Action& action) { return action.moduleName == moduleName; });
+            if (removed != 0)
             {
-                it->second.erase(val);
-
-                if (it->second.empty())
+                // Window-owned hotkeys are already removed after WM_DESTROY.
+                if (it->second.empty() && IsWindow(runnerWindow))
                 {
                     if (!UnregisterHotKey(runnerWindow, ids[it->first]))
                     {

@@ -49,6 +49,21 @@ public partial class SamplesListPage : ListPage
             Title = "Dynamic List Page Command",
             Subtitle = "Changes the list of items in response to the typed query",
         },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: false))
+        {
+            Title = "Small-batch incremental loading (list)",
+            Subtitle = "Starts with one item and loads up to eight per batch, up to 512. Type to reset; use Ctrl+K to restart or switch layouts.",
+        },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: true))
+        {
+            Title = "Small-batch incremental loading (grid)",
+            Subtitle = "Starts with one tile and loads up to eight per batch, up to 512. Check keyboard navigation, viewport resizing, and switching layouts.",
+        },
+        new ListItem(new SampleIncrementalLoadingPage(useGrid: true, initialItemCount: 0))
+        {
+            Title = "Incremental loading from an empty grid",
+            Subtitle = "Starts empty and loads up to eight items per batch, up to 512. The first batch should appear without input.",
+        },
         new ListItem(new SampleGridsListPage())
         {
             Title = "Grid views and galleries",
@@ -63,6 +78,26 @@ public partial class SamplesListPage : ListPage
         {
             Title = "Sample Icon Page",
             Subtitle = "A demo of using icons in various ways",
+        },
+        new ListItem(new SampleSwatchIconPage())
+        {
+            Title = "Swatch Icon Palette",
+            Subtitle = "A 256-color circle and square swatch stress sample",
+        },
+        new ListItem(new SampleSvgIconPage())
+        {
+            Title = "SVG Icon Protocols",
+            Subtitle = "Plain, themed, semantic, and custom-color SVG icon samples",
+        },
+        new ListItem(new SampleShellItemIconPage())
+        {
+            Title = "System32 Shell Icons",
+            Subtitle = "A large real-world list for Shell icon identity and cache testing",
+        },
+        new ListItem(new SampleShellItemIconPage(useLegacyIndexerIcons: true))
+        {
+            Title = "System32 Legacy Indexer Icons",
+            Subtitle = "The same System32 list using pre-protocol ThumbnailHelper streams",
         },
         new ListItem(new SlowListPage())
         {
@@ -137,6 +172,11 @@ public partial class SamplesListPage : ListPage
         },
 
         // Data package samples
+        new ListItem(new SampleClipboardPage())
+        {
+            Title = "Clipboard Helper Samples",
+            Subtitle = "Test text, RTF, images, and custom data packages with ClipboardHelper",
+        },
         new ListItem(new SampleDataTransferPage())
         {
             Title = "Clipboard and Drag-and-Drop Demo",
@@ -165,11 +205,16 @@ public partial class SamplesListPage : ListPage
             Subtitle = "A demo of a command that takes multiple types of parameters",
         },
 
-        // List parameters aren't yet supported
+        // List parameters
         new ListItem(new CreateNoteParametersPage())
         {
             Title = "Create note sample",
             Subtitle = "A parameter page with both a string and list parameter",
+        },
+        new ListItem(new CreateNoteParametersPage(gridProperties: new MediumGridLayout { ShowTitle = true }))
+        {
+            Title = "Create note sample (grid view)",
+            Subtitle = "A parameter page with a string and a grid of folders",
         },
 
         // Evil edge cases

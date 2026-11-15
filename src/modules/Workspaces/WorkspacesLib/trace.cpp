@@ -23,6 +23,17 @@ void Trace::Workspaces::Enable(bool enabled) noexcept
         TraceLoggingBoolean(enabled, "Enabled"));
 }
 
+void Trace::Workspaces::CLICommand(_In_ PCWSTR commandName, _In_ bool successful) noexcept
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "Workspaces_CLICommand",
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE),
+        TraceLoggingWideString(commandName, "CommandName"),
+        TraceLoggingBoolean(successful, "Successful"));
+}
+
 void Trace::Workspaces::Launch(bool success, 
     const WorkspacesData::WorkspacesProject& project, 
     InvokePoint invokePoint, 

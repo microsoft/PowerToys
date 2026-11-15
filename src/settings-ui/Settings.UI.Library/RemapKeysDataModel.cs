@@ -10,11 +10,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class RemapKeysDataModel
     {
-        // Suppressing this warning because removing the setter breaks
-        // deserialization with System.Text.Json. This affects the UI display.
-        // See: https://github.com/dotnet/runtime/issues/30258
         [JsonPropertyName("inProcess")]
-        public List<KeysDataModel> InProcessRemapKeys { get; set; }
+        public List<KeysDataModel> InProcessRemapKeys { get; init; }
 
         public RemapKeysDataModel()
         {

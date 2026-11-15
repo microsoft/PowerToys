@@ -9,16 +9,11 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:vm="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
-        <CollectionViewSource
-            x:Name="LanguagesCustomViewSource"
-            IsSourceGrouped="True"
-            Source="{x:Bind ViewModel.LanguageGroups, Mode=OneWay}" />
-        <DataTemplate x:Key="LanguageViewTemplate" x:DataType="Lib:PowerAccentLanguageModel">
-            <TextBlock Text="{x:Bind Language}" />
-        </DataTemplate>
+        <CollectionViewSource x:Name="AvailableCharacterSetsViewSource" IsSourceGrouped="True" />
     </local:NavigablePage.Resources>
 
     <controls:SettingsPageControl
@@ -79,92 +74,28 @@
                         Name="QuickAccentSelectedLanguage"
                         x:Uid="QuickAccent_SelectedLanguage"
                         HeaderIcon="{ui:FontIcon Glyph=&#xF2B7;}"
-                        IsExpanded="False">
-                        <CheckBox
-                            x:Name="QuickAccent_SelectedLanguage_All"
-                            x:Uid="QuickAccent_SelectedLanguage_All"
-                            Checked="QuickAccent_SelectedLanguage_SelectAll"
-                            IsThreeState="True"
-                            Unchecked="QuickAccent_SelectedLanguage_UnselectAll" />
+                        IsExpanded="True">
+                        <Button
+                            x:Uid="QuickAccent_EditCharacterSets_Button"
+                            Click="EditCharacterSetsButton_Click"
+                            Style="{ThemeResource AccentButtonStyle}" />
                         <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Name="SelectedCharacterSetsCard" Description="{x:Bind ViewModel.SelectedLanguagesSummary, Mode=OneWay}" />
                             <tkcontrols:SettingsCard
-                                x:Name="LanguageSettingsCard"
-                                HorizontalContentAlignment="Stretch"
-                                ContentAlignment="Left"
-                                Loaded="LanguageSettingsCard_Loaded"
-                                SizeChanged="LanguageSettingsCard_SizeChanged">
-                                <ListView
-                                    x:Name="QuickAccent_Language_Select"
-                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
-                                    MinHeight="{StaticResource SettingActionControlMinWidth}"
-                                    HorizontalContentAlignment="Stretch"
-                                    VerticalContentAlignment="Stretch"
-                                    ItemTemplate="{StaticResource LanguageViewTemplate}"
-                                    ItemsSource="{x:Bind LanguagesCustomViewSource.View, Mode=OneWay}"
-                                    Loaded="QuickAccent_Language_Select_Loaded"
-                                    ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                    ScrollViewer.VerticalScrollMode="Disabled"
-                                    SelectionChanged="QuickAccent_SelectedLanguage_SelectionChanged"
-                                    SelectionMode="Multiple">
-                                    <ListView.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <ItemsWrapGrid Orientation="Horizontal" />
-                                        </ItemsPanelTemplate>
-                                    </ListView.ItemsPanel>
-                                    <ListView.ItemContainerStyle>
-                                        <Style TargetType="ListViewItem">
-                                            <Setter Property="Width" Value="280" />
-                                            <Setter Property="Template">
-                                                <Setter.Value>
-                                                    <ControlTemplate TargetType="ListViewItem">
-                                                        <ListViewItemPresenter
-                                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
-                                                            CheckBoxBorderBrush="{ThemeResource CheckBoxBorderThemeBrush}"
-                                                            CheckBoxBrush="{ThemeResource CheckBoxCheckBackgroundFillUnchecked}"
-                                                            CheckBoxCornerRadius="{ThemeResource ControlCornerRadius}"
-                                                            CheckBoxDisabledBorderBrush="{ThemeResource CheckBoxDisabledBorderThemeBrush}"
-                                                            CheckBoxDisabledBrush="{ThemeResource CheckBoxCheckBackgroundFillUncheckedDisabled}"
-                                                            CheckBoxPointerOverBorderBrush="{ThemeResource CheckBoxPointerOverBorderThemeBrush}"
-                                                            CheckBoxPointerOverBrush="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPointerOver}"
-                                                            CheckBoxPressedBorderBrush="{ThemeResource CheckBoxPressedBorderThemeBrush}"
-                                                            CheckBoxPressedBrush="{ThemeResource CheckBoxCheckBackgroundFillUncheckedPressed}"
-                                                            CheckBoxSelectedBrush="{ThemeResource CheckBoxCheckBackgroundFillChecked}"
-                                                            CheckBoxSelectedDisabledBrush="{ThemeResource CheckBoxCheckBackgroundFillCheckedDisabled}"
-                                                            CheckBoxSelectedPointerOverBrush="{ThemeResource CheckBoxCheckBackgroundFillCheckedPointerOver}"
-                                                            CheckBoxSelectedPressedBrush="{ThemeResource CheckBoxCheckBackgroundFillCheckedPressed}"
-                                                            CheckBrush="{ThemeResource CheckBoxCheckGlyphForegroundChecked}"
-                                                            CheckDisabledBrush="{ThemeResource CheckBoxCheckGlyphForegroundCheckedDisabled}"
-                                                            CheckMode="Inline"
-                                                            CheckPressedBrush="{ThemeResource CheckBoxCheckGlyphForegroundUncheckedPressed}"
-                                                            ContentMargin="{TemplateBinding Padding}"
-                                                            ContentTransitions="{TemplateBinding ContentTransitions}"
-                                                            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
-                                                            ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
-                                                            SelectionCheckMarkVisualEnabled="True" />
-                                                    </ControlTemplate>
-                                                </Setter.Value>
-                                            </Setter>
-                                        </Style>
-                                    </ListView.ItemContainerStyle>
-                                    <ListView.GroupStyle>
-                                        <GroupStyle>
-                                            <GroupStyle.HeaderTemplate>
-                                                <DataTemplate x:DataType="Lib:PowerAccentLanguageGroupModel">
-                                                    <Border AutomationProperties.AccessibilityView="Raw">
-                                                        <TextBlock
-                                                            AutomationProperties.AccessibilityView="Raw"
-                                                            Style="{ThemeResource SubtitleTextBlockStyle}"
-                                                            Text="{x:Bind Group}" />
-                                                    </Border>
-                                                </DataTemplate>
-                                            </GroupStyle.HeaderTemplate>
-                                        </GroupStyle>
-                                    </ListView.GroupStyle>
-                                </ListView>
-                            </tkcontrols:SettingsCard>
+                                x:Name="ReferenceGuideCard"
+                                x:Uid="QuickAccent_ReferenceGuide_Card"
+                                ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                                Click="ReferenceGuideButton_Click"
+                                IsClickEnabled="True" />
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
+                    <InfoBar
+                        x:Uid="QuickAccent_NoCharacterSets"
+                        IsClosable="False"
+                        IsOpen="True"
+                        IsTabStop="False"
+                        Severity="Warning"
+                        Visibility="{x:Bind ViewModel.HasSelectedLanguages, Mode=OneWay, Converter={StaticResource ReverseBoolToVisibilityConverter}}" />
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="QuickAccent_Toolbar" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
@@ -239,6 +170,103 @@
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
+
+                <ContentDialog
+                    x:Name="CharacterSetsDialog"
+                    x:Uid="QuickAccent_CharacterSetsDialog"
+                    DefaultButton="Primary"
+                    PrimaryButtonClick="CharacterSetsDialog_PrimaryButtonClick"
+                    PrimaryButtonStyle="{ThemeResource AccentButtonStyle}">
+                    <ContentDialog.Resources>
+                        <x:Double x:Key="ContentDialogMaxHeight">840</x:Double>
+                        <x:Double x:Key="ContentDialogMaxWidth">640</x:Double>
+                        <!--  Undo the app-wide ListViewItem override (App.xaml) so the list uses the stock look  -->
+                        <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem" />
+                    </ContentDialog.Resources>
+                    <Grid Width="540" RowSpacing="8">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <AutoSuggestBox
+                            x:Name="CharacterSetsSearchBox"
+                            x:Uid="QuickAccent_CharacterSetsDialog_Search"
+                            QueryIcon="Find"
+                            TextChanged="CharacterSetsSearchBox_TextChanged" />
+                        <Grid Grid.Row="1" Padding="0,4,0,4">
+                            <CheckBox
+                                x:Name="SelectAllCharacterSetsCheckBox"
+                                x:Uid="QuickAccent_CharacterSetsDialog_SelectAll"
+                                Click="SelectAllCharacterSetsCheckBox_Click" />
+                            <TextBlock
+                                x:Name="SelectedCharacterSetsCountText"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                Style="{StaticResource CaptionTextBlockStyle}" />
+                        </Grid>
+                        <ListView
+                            x:Name="AvailableCharacterSetsList"
+                            Grid.Row="2"
+                            Height="520"
+                            Margin="-14,-8,0,0"
+                            SelectionChanged="AvailableCharacterSetsList_SelectionChanged"
+                            SelectionMode="Multiple">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="vm:CharacterSetPickerItem">
+                                    <Grid
+                                        Padding="0,10"
+                                        AutomationProperties.Name="{x:Bind Language.Language}"
+                                        ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock
+                                            VerticalAlignment="Center"
+                                            Text="{x:Bind Language.Language}"
+                                            TextTrimming="CharacterEllipsis" />
+                                        <TextBlock
+                                            Grid.Column="1"
+                                            Margin="0,0,12,0"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}"
+                                            Text="{x:Bind Language.CharacterPreview}"
+                                            TextTrimming="CharacterEllipsis" />
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                            <ListView.GroupStyle>
+                                <GroupStyle>
+                                    <GroupStyle.HeaderContainerStyle>
+                                        <Style BasedOn="{StaticResource PlainListViewHeaderItemStyle}" TargetType="ListViewHeaderItem">
+                                            <Setter Property="Padding" Value="12,16,12,4" />
+                                        </Style>
+                                    </GroupStyle.HeaderContainerStyle>
+                                    <GroupStyle.HeaderTemplate>
+                                        <DataTemplate x:DataType="vm:CharacterSetPickerGroup">
+                                            <TextBlock
+                                                AutomationProperties.HeadingLevel="Level2"
+                                                Style="{StaticResource SecondaryTextStyle}"
+                                                Text="{x:Bind Header}" />
+                                        </DataTemplate>
+                                    </GroupStyle.HeaderTemplate>
+                                </GroupStyle>
+                            </ListView.GroupStyle>
+                        </ListView>
+                        <TextBlock
+                            x:Name="NoCharacterSetsFoundText"
+                            x:Uid="QuickAccent_CharacterSetsDialog_NoResults"
+                            Grid.Row="2"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Center"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Visibility="Collapsed" />
+                    </Grid>
+                </ContentDialog>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
 

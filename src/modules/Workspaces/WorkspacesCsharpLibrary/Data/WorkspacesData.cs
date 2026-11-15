@@ -14,7 +14,7 @@ public class WorkspacesData : WorkspacesEditorData<WorkspacesListWrapper>
 
     public struct WorkspacesListWrapper
     {
-        public List<ProjectWrapper> Workspaces { get; set; }
+        public List<ProjectWrapper> Workspaces { get; init; }
     }
 
     public enum OrderBy

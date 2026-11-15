@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EnvironmentVariablesUILib\EnvironmentVariablesUILib.csproj" />
+    <Compile Include="..\EnvironmentVariables\Helpers\NativeMethods.cs" Link="Helpers\NativeMethods.cs" />
   </ItemGroup>
 
   <ItemGroup>

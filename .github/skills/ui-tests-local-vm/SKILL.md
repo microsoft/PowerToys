@@ -1,6 +1,6 @@
 ---
 name: ui-tests-local-vm
-description: "Set up and run PowerToys UITest.Next suites in persistent local Hyper-V VMs driven over PowerShell Direct, created unattended from Windows install media. A module is done only when the full suite is green on both Windows 10 LTSC and Windows 11, in separate VMs, plus Windows 11 ARM64 on Windows on ARM hosts. Use for fast agentic UI-test iteration, reusable interactive desktops, non-admin scenarios, payload staging and refresh, evidence export, VM customization, checkpoint-based clean baselines, or hosts without nested virtualization. Keywords: Hyper-V, local VM, virtual machine, PowerShell Direct, Copy-VMFile, VMBus, checkpoint, unattend, autounattend, ISO, Windows 10, Windows 11, ARM64, Windows on ARM, UI tests, UITest.Next, winappcli, TRX."
+description: "Run PowerToys UITest.Next suites in persistent Hyper-V VMs over PowerShell Direct. Validate full default and constrained suites on Windows 10 and Windows 11, plus applicable ARM64 guests, then automatically hand implementation tasks to ui-tests-pipeline-ci for commit/push and CI validation. Local green is not end-to-end completion. Use for agentic UI-test iteration, reusable standard-user desktops, payload staging, evidence export, VM customization, clean baselines, or hosts without nested virtualization. Keywords: Hyper-V, local VM, virtual machine, PowerShell Direct, Copy-VMFile, VMBus, checkpoint, unattend, autounattend, ISO, Windows 10 LTSC, Windows 11, ARM64, Windows on ARM, UI tests, UITest.Next, winappcli, TRX, CI handoff."
 license: MIT
 ---
 
@@ -14,15 +14,22 @@ guest when clean-profile behavior must be validated.
 The guest is a Hyper-V virtual machine. Nothing runs nested, so the same scaffold works on x64 and on
 Windows on ARM, where nested virtualization is unavailable to any Linux-hosted emulator.
 
-A module is done when the **full** suite is green on Windows 10 **and** on Windows 11, in two
-separate VMs. Run Windows 10 Enterprise LTSC 2021 first because it gives the fastest feedback, then
-run the same unfiltered suite on Windows 11. Differences in the shell, compositor, theming, and
-timing break tests that contain nothing Windows 11-specific, and those are exactly the failures
-worth catching locally instead of in CI. On a Windows on ARM host, Windows 11 ARM64 is the only
-practical guest; run it with `-Platform ARM64` and get the Windows 10 half from an x64 host.
+The local correctness gate passes when the **full** suite is green on Windows 10 **and** on
+Windows 11, in two separate VMs. Run Windows 10 Enterprise LTSC 2021 first for the fastest
+feedback, then run the same unfiltered suite on Windows 11. Differences in the shell, compositor,
+theming, and timing break tests that contain nothing Windows 11-specific, and those are exactly
+the failures worth catching locally instead of in CI. On a Windows on ARM host, Windows 11 ARM64
+is the only practical guest; run it with `-Platform ARM64` and get the Windows 10 half from an x64 host.
 
 Start guests with the default resource profile: 4 vCPUs and 8 GB RAM. Get the target suite fully
 green before lowering resources with the `Constrained` profile (1 vCPU and 4 GB RAM).
+
+For **create, migrate, or stabilize** tasks, complete both profiles and then automatically invoke
+[ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md): pass its access preflight, commit and push
+the scoped changes, queue CI, and remain attached until terminal validation. **Do not mark the task
+complete at local green or wait for another user request to publish/run CI.** Respect explicit
+local-only/no-push/no-CI scope and the Microsoft FTE/access gates. Local execution or VM setup alone
+does not authorize publication. See the pipeline skill for the shared completion and blocker rules.
 
 ## How the host reaches the guest
 
@@ -57,6 +64,7 @@ are the behavior under test.
 |---|---|
 | `ui-tests-migration` | Test design, project scaffolding, framework APIs, assertions, lifecycle, and CI stability. |
 | `ui-tests-local-vm` | Fast persistent-VM setup, deployment, interactive execution, evidence export, and iteration. |
+| `ui-tests-pipeline-ci` | Required post-local commit/push, access preflight, scoped CI, and terminal sign-off for implementation tasks. |
 
 Do not modify stabilized tests merely to make the local VM green. First prove that the suite executes,
 produces assertion-bearing TRX, and has a useful success rate. Classify environment-specific failures
@@ -65,7 +73,7 @@ separately unless the task explicitly asks for stabilization.
 ## Guest OS policy
 
 - Two guests, two full suites. Windows 10 Enterprise LTSC 2021 (build 19044/21H2, newer than the
-  Windows 10 20H2 baseline) and Windows 11. Both must be fully green before a module is done.
+  Windows 10 20H2 baseline) and Windows 11. Both must be fully green before the local gate passes.
   LTSC is not available through Fido; `-Source Fido -Windows 10` automates Microsoft's official
   mobile-user-agent ISO page and is the practical public default. The public ISO/MCT images are too
   old for .NET 10 CET, so Setup Dynamic Update must bring Win10 to 1904x.5007+ before the baseline.
@@ -123,8 +131,16 @@ flowchart LR
     I --> J[Run same full suite on Win11]
     J --> K{Both fully green?}
     K -- No --> A
-    K -- Yes --> L[Optional checkpoint restore]
+    K -- Yes --> L[Full constrained suites on both OSes]
+    L --> M{Local matrix green?}
+    M -- No --> A
+    M -- Yes --> N[Clean-profile confirmation when required]
+    N --> O[ui-tests-pipeline-ci: preflight, commit, push]
+    O --> P[Scoped CI and synchronous terminal validation]
 ```
+
+The CI continuation applies to implementation tasks; explicit local-only and setup-only tasks stop
+at their requested local outcome.
 
 Create and maintain this task list:
 
@@ -149,8 +165,13 @@ Create and maintain this task list:
 - [ ] 8. Diagnose the first controlling failure without weakening assertions
 - [ ] 9. Rebuild and rerun with -ReuseStagedPayload
 - [ ] 10. Widen to the full module suite on Windows 10 and report pass rate/root-cause groups
-- [ ] 11. Run the same full suite in the Windows 11 VM; both must be green before the module is done
+- [ ] 11. Run the same full suite in the Windows 11 VM; both must be green before the local gate passes
 - [ ] 12. Restore the baseline checkpoint for clean-profile confirmation when required
+- [ ] 13. Run the full Constrained suite on both OSes; preserve default and constrained evidence
+- [ ] 14. For implementation tasks, invoke ui-tests-pipeline-ci without another user prompt, pass
+        access preflight, commit/push task-owned changes, and record the exact branch/SHA
+- [ ] 15. Queue scoped CI and wait synchronously for verified terminal results; local green alone
+        cannot complete the task unless the user explicitly requested local-only scope
 ```
 
 ## Quick start
@@ -217,12 +238,14 @@ starts or exits without status, summarizes TRX, and leaves the persistent VM run
 - Invoke every focused, full-suite, and constrained controller run synchronously. Keep the active
   agent turn attached until the controller returns matching status/TRX evidence; never background
   the controller or end the turn while it runs.
-- Finish on two green full suites: Windows 10 and Windows 11, in separate VMs. Windows 10 runs first
-  for speed; Windows 11 runs the same unfiltered suite, never a Win11-only subset. Narrow filters are
-  for iteration, not for sign-off. On a Windows on ARM host the ARM64 Windows 11 guest covers the
-  Windows 11 half and the Windows 10 half needs an x64 host.
+- Complete the local correctness gate with two green full suites: Windows 10 and Windows 11, in
+  separate VMs. Windows 10 runs first for speed; Windows 11 runs the same unfiltered suite, never a
+  Win11-only subset. Narrow filters are for iteration, not for sign-off. On a Windows on ARM host
+  the ARM64 Windows 11 guest covers the Windows 11 half and the Windows 10 half needs an x64 host.
 - Establish a fully green correctness baseline with the default (4 vCPU / 8 GB) resources before
   running the same tests under `Constrained` (1 vCPU / 4 GB) resources.
+- For implementation tasks, require both resource profiles and the subsequent pipeline handoff.
+  Report unavailable publication/CI prerequisites as blocked, not as full validation success.
 - Keep VM files and writable exchange folders outside the repository.
 - Keep the guest's default inbound network posture. The control channel does not need connectivity,
   so do not enable remoting, open ports, or attach the guest to a routable network for test dispatch.

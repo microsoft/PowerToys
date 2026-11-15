@@ -16,11 +16,13 @@ internal static class ModuleGpoHelper
         {
             ModuleType.AdvancedPaste => GPOWrapper.GetConfiguredAdvancedPasteEnabledValue(),
             ModuleType.AlwaysOnTop => GPOWrapper.GetConfiguredAlwaysOnTopEnabledValue(),
+            ModuleType.AutoHideCursor => GPOWrapper.GetConfiguredAutoHideCursorEnabledValue(),
             ModuleType.Awake => GPOWrapper.GetConfiguredAwakeEnabledValue(),
             ModuleType.CmdPal => GPOWrapper.GetConfiguredCmdPalEnabledValue(),
             ModuleType.ColorPicker => GPOWrapper.GetConfiguredColorPickerEnabledValue(),
             ModuleType.CropAndLock => GPOWrapper.GetConfiguredCropAndLockEnabledValue(),
             ModuleType.CursorWrap => GPOWrapper.GetConfiguredCursorWrapEnabledValue(),
+            ModuleType.MouseButtonLock => GPOWrapper.GetConfiguredMouseButtonLockEnabledValue(),
             ModuleType.EnvironmentVariables => GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue(),
             ModuleType.FancyZones => GPOWrapper.GetConfiguredFancyZonesEnabledValue(),
             ModuleType.FileLocksmith => GPOWrapper.GetConfiguredFileLocksmithEnabledValue(),

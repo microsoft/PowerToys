@@ -247,7 +247,14 @@ public static class SettingsConfigHelper
             }
             else
             {
-                File.Delete(path);
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (DirectoryNotFoundException)
+                {
+                    // A missing parent already satisfies the snapshot's original file absence.
+                }
             }
         }
     }

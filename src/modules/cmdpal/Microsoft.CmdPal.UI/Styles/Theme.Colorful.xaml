@@ -5,6 +5,24 @@
         <ResourceDictionary x:Key="Dark">
             <StaticResource x:Key="LayerOnAcrylicPrimaryBackgroundBrush" ResourceKey="LayerOnAccentAcrylicFillColorDefaultBrush" />
             <SolidColorBrush x:Key="LayerOnAcrylicSecondaryBackgroundBrush" Color="Transparent" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundBrush" ResourceKey="TextControlForeground" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundPointerOverBrush" ResourceKey="TextControlForegroundPointerOver" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundFocusedBrush" ResourceKey="TextControlForegroundFocused" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundDisabledBrush" ResourceKey="TextControlForegroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundPointerOverBrush" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundFocusedBrush" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundDisabledBrush" ResourceKey="TextControlPlaceholderForegroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundBrush" ResourceKey="TextControlBackground" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundPointerOverBrush" ResourceKey="TextControlBackgroundPointerOver" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundFocusedBrush" ResourceKey="TextControlBackgroundFocused" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundDisabledBrush" ResourceKey="TextControlBackgroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrushPointerOver" ResourceKey="ControlStrokeColorSecondaryBrush" />
+            <SolidColorBrush x:Key="CmdPal.ParameterBorderBrushFocused" Color="{ThemeResource SystemAccentColorLight2}" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrushDisabled" ResourceKey="TextControlBorderBrushDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterSelectionHighlightColor" ResourceKey="TextControlSelectionHighlightColor" />
+            <Thickness x:Key="CmdPal.ParameterBorderThicknessFocused">2</Thickness>
             <StaticResource x:Key="CmdPal.CommandBarBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="CmdPal.TopBarBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="CmdPal.DividerStrokeColorDefaultBrush" ResourceKey="CardStrokeColorDefaultBrush" />
@@ -12,6 +30,24 @@
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="LayerOnAcrylicPrimaryBackgroundBrush" Color="#A0FFFFFF" />
             <SolidColorBrush x:Key="LayerOnAcrylicSecondaryBackgroundBrush" Color="Transparent" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundBrush" ResourceKey="TextControlForeground" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundPointerOverBrush" ResourceKey="TextControlForegroundPointerOver" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundFocusedBrush" ResourceKey="TextControlForegroundFocused" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundDisabledBrush" ResourceKey="TextControlForegroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundBrush" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundPointerOverBrush" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundFocusedBrush" ResourceKey="TextFillColorTertiaryBrush" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundDisabledBrush" ResourceKey="TextControlPlaceholderForegroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundBrush" ResourceKey="TextControlBackground" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundPointerOverBrush" ResourceKey="TextControlBackgroundPointerOver" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundFocusedBrush" ResourceKey="TextControlBackgroundFocused" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundDisabledBrush" ResourceKey="TextControlBackgroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrush" ResourceKey="ControlStrokeColorDefaultBrush" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrushPointerOver" ResourceKey="ControlStrokeColorSecondaryBrush" />
+            <SolidColorBrush x:Key="CmdPal.ParameterBorderBrushFocused" Color="{ThemeResource SystemAccentColorLight2}" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrushDisabled" ResourceKey="TextControlBorderBrushDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterSelectionHighlightColor" ResourceKey="TextControlSelectionHighlightColor" />
+            <Thickness x:Key="CmdPal.ParameterBorderThicknessFocused">2</Thickness>
             <StaticResource x:Key="CmdPal.CommandBarBorderBrush" ResourceKey="CardStrokeColorDefaultBrush" />
             <StaticResource x:Key="CmdPal.TopBarBorderBrush" ResourceKey="DividerStrokeColorDefaultBrush" />
             <StaticResource x:Key="CmdPal.DividerStrokeColorDefaultBrush" ResourceKey="CardStrokeColorDefaultBrush" />
@@ -19,6 +55,24 @@
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="LayerOnAcrylicPrimaryBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="LayerOnAcrylicSecondaryBackgroundBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundBrush" ResourceKey="TextControlForeground" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundPointerOverBrush" ResourceKey="TextControlForegroundPointerOver" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundFocusedBrush" ResourceKey="TextControlForegroundFocused" />
+            <StaticResource x:Key="CmdPal.ParameterForegroundDisabledBrush" ResourceKey="TextControlForegroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundBrush" ResourceKey="TextControlPlaceholderForeground" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundPointerOverBrush" ResourceKey="TextControlPlaceholderForegroundPointerOver" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundFocusedBrush" ResourceKey="TextControlPlaceholderForegroundFocused" />
+            <StaticResource x:Key="CmdPal.ParameterPlaceholderForegroundDisabledBrush" ResourceKey="TextControlPlaceholderForegroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundBrush" ResourceKey="TextControlBackground" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundPointerOverBrush" ResourceKey="TextControlBackgroundPointerOver" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundFocusedBrush" ResourceKey="TextControlBackgroundFocused" />
+            <StaticResource x:Key="CmdPal.ParameterBackgroundDisabledBrush" ResourceKey="TextControlBackgroundDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrush" ResourceKey="TextControlBorderBrush" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrushPointerOver" ResourceKey="TextControlBorderBrushPointerOver" />
+            <SolidColorBrush x:Key="CmdPal.ParameterBorderBrushFocused" Color="{ThemeResource SystemColorHighlightColor}" />
+            <StaticResource x:Key="CmdPal.ParameterBorderBrushDisabled" ResourceKey="TextControlBorderBrushDisabled" />
+            <StaticResource x:Key="CmdPal.ParameterSelectionHighlightColor" ResourceKey="TextControlSelectionHighlightColor" />
+            <Thickness x:Key="CmdPal.ParameterBorderThicknessFocused">2</Thickness>
             <SolidColorBrush x:Key="CmdPal.CommandBarBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="CmdPal.TopBarBorderBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="CmdPal.DividerStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />

@@ -73,19 +73,24 @@ $build = (Invoke-AzDevOpsRest -Uri '_apis/build/builds/123?api-version=7.1').Bod
 `Get-AzDevOpsPagedValues` follows every `x-ms-continuationtoken` response header. Use it whenever an
 endpoint can paginate; never infer completeness from one page.
 
-REST writes mutate Azure state. Queue, cancel, retry, or approve only when the user's CI request
-authorizes that action. The absence of a per-call authentication dialog is not authorization.
+REST writes mutate Azure state. A create, migrate, or stabilize UI-test task includes the scoped
+commit/push and CI-validation continuation described in the three skills; it does not need a second
+"run CI" request. Explicit local-only/no-push/no-CI scope overrides that default. A status question,
+VM setup, or local run of existing tests does not authorize publication. Cancel, retry, or approve
+only within the requested validation and the ownership rules below. Cached authentication alone
+never authorizes unrelated mutations.
 
-## 1. Prove the local gate
+## 1. Prove the local gate and publish the revision
 
-Before touching Azure DevOps, record:
+Before publishing or queueing, record:
 
-- Exact pushed branch and commit SHA.
 - Clean x64 and ARM64 builds where applicable.
 - Complete suite on Windows 10 and Windows 11 under the default profile.
 - Complete suite under `Constrained` (1 vCPU, 4 GB).
 - Windows 11 ARM64 guest evidence on a Windows-on-ARM host when applicable.
 - Zero skipped, inconclusive, or not-executed tests and zero export errors.
+- Exact test-source revision/diff and product/payload identity used locally. Distinguish an official
+  runtime from a current-source build; do not claim they are the same revision.
 
 Do not substitute a focused run for full sign-off. If a required local environment is unavailable,
 stop and ask the user before consuming CI.
@@ -97,6 +102,26 @@ FancyZonesEditor.UITests.Next
 ```
 
 The list must be non-empty and contain only the projects currently being changed.
+
+### Commit and push are part of the handoff
+
+After the local gate and setup preflight pass, publish the tested work without waiting for a new
+user request. Respect explicit local-only/no-push/no-CI scope and existing commit instructions.
+
+1. Inspect `git status --short`, the current branch, remotes, and the full task diff. Preserve
+   unrelated work; stage explicit task-owned paths, not the whole worktree.
+2. Use the task's feature branch. If on a protected/default branch or detached HEAD, create a
+   descriptive feature branch rather than pushing there. Never force-push or amend unrelated work.
+3. Commit logical changes, including the suite's solution/pipeline registration and documentation.
+   Ensure the committed test source matches the successful local payload; code changes since the
+   local run must pass the affected local gates again.
+4. Push the feature branch to the configured task remote (`git push -u origin HEAD` when `origin`
+   is that remote). Verify its remote ref resolves to `git rev-parse HEAD`.
+5. Record the exact `refs/heads/...` branch and 40-character SHA, then continue directly to preview
+   and queueing. Push/credential/protection failure is a blocker, not permission to bypass it.
+
+Keep publication and CI TODOs open until their own gates pass. "Ready for CI", a successful commit,
+or a successful push is not the final result of an end-to-end UI-test implementation task.
 
 ## 2. Discover the pipeline and serialize the branch
 

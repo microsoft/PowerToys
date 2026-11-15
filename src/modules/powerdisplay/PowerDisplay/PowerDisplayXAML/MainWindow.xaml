@@ -526,6 +526,7 @@
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
                                                         helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelIncrement, Mode=OneWay}"
+                                                        AutomationProperties.AutomationId="{x:Bind Id}"
                                                         IsEnabled="{x:Bind IsBrightnessSliderEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -773,6 +774,7 @@
                         </ToggleButton>
                         <Button
                             x:Uid="RefreshTooltip"
+                            AutomationProperties.AutomationId="RefreshMenuButton"
                             Content="{ui:FontIcon Glyph=&#xE777;,
                                                   FontSize=16}"
                             Style="{StaticResource SubtleButtonStyle}">

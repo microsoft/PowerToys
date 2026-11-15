@@ -20,7 +20,7 @@ namespace QoiThumbnailProviderUnitTests
 
             QoiThumbnailProvider provider = new QoiThumbnailProvider(filePath);
 
-            Bitmap bitmap = provider.GetThumbnail(256);
+            Bitmap? bitmap = provider.GetThumbnail(256);
 
             Assert.IsTrue(bitmap != null);
         }
@@ -33,7 +33,7 @@ namespace QoiThumbnailProviderUnitTests
 
             QoiThumbnailProvider provider = new QoiThumbnailProvider(filePath);
 
-            Bitmap bitmap = provider.GetThumbnail(0);
+            Bitmap? bitmap = provider.GetThumbnail(0);
 
             Assert.IsTrue(bitmap == null);
         }
@@ -46,7 +46,7 @@ namespace QoiThumbnailProviderUnitTests
 
             QoiThumbnailProvider provider = new QoiThumbnailProvider(filePath);
 
-            Bitmap bitmap = provider.GetThumbnail(10001);
+            Bitmap? bitmap = provider.GetThumbnail(10001);
 
             Assert.IsTrue(bitmap == null);
         }
@@ -54,7 +54,7 @@ namespace QoiThumbnailProviderUnitTests
         [TestMethod]
         public void CheckNoQoiNullStringShouldReturnNullBitmap()
         {
-            Bitmap thumbnail = QoiThumbnailProvider.GetThumbnail(null, 256);
+            Bitmap? thumbnail = QoiThumbnailProvider.GetThumbnail(null, 256);
             Assert.IsTrue(thumbnail == null);
         }
     }

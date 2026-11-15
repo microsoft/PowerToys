@@ -25,5 +25,6 @@ public interface IPersistenceService
     /// <param name="model">The model to persist.</param>
     /// <param name="filePath">Target JSON file path.</param>
     /// <param name="typeInfo">AOT-compatible type metadata.</param>
-    void Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo);
+    /// <returns>Whether the file was successfully written.</returns>
+    bool Save<T>(T model, string filePath, JsonTypeInfo<T> typeInfo);
 }

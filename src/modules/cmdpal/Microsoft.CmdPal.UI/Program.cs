@@ -38,6 +38,12 @@ internal sealed class Program
             return 0;
         }
 
+        // CmdPal is not single-file, so it doesn't need its runtime directory variable after startup.
+        // Clear it so launched apps don't inherit it: https://github.com/microsoft/PowerToys/issues/51225
+        // Keep this after upgrading WinAppSDK. The 2.4 fix (https://github.com/microsoft/WindowsAppSDK/issues/5987)
+        // only protects apps built on WinAppSDK 2.4+ or 1.8.11+; apps on older runtimes still use the inherited value.
+        Environment.SetEnvironmentVariable("MICROSOFT_WINDOWSAPPRUNTIME_BASE_DIRECTORY", null);
+
         try
         {
             Logger.InitializeLogger("\\CmdPal\\Logs\\");
@@ -164,7 +170,6 @@ internal sealed class Program
     private static void OnActivated(object? sender, AppActivationArguments args)
     {
         // If we already have a form, display the message now.
-        // Otherwise, add it to the collection for displaying later.
         if (App.Current?.AppWindow is MainWindow mainWindow)
         {
             // LOAD BEARING
@@ -173,6 +178,15 @@ internal sealed class Program
             // The sending instance remains blocked until this returns; afterward it may quit,
             // causing the activation arguments to be lost.
             mainWindow.HandleLaunchNonUI(args);
+        }
+        else
+        {
+            // TODO: Buffer these arguments and replay them once OnLaunched has created MainWindow.
+            // AppInstance.Activated is wired in DecideRedirection before Application.Start, so a
+            // redirect arriving while this instance is still starting finds no window. The sending
+            // instance is blocked in RedirectActivationToAsync until this returns and then exits,
+            // so the activation is lost with no feedback to the caller.
+            Logger.LogWarning("Dropping a redirected activation because the main window is not ready.");
         }
     }
 }

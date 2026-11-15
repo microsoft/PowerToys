@@ -19,9 +19,10 @@ public sealed class OutputDirectoryOption : Option<string>
     private static readonly CompositeFormat InvalidOutputDirectoryError = CompositeFormat.Parse(Resources.InvalidOutputDirectoryError);
 
     public OutputDirectoryOption()
-        : base("--outputDir", Resources.OutputDirectoryOptionDescription)
+        : base("--outputDir")
     {
-        AddValidator(OptionValidator);
+        Description = Resources.OutputDirectoryOptionDescription;
+        Validators.Add(OptionValidator);
     }
 
     /// <summary>
@@ -33,11 +34,11 @@ public sealed class OutputDirectoryOption : Option<string>
         var value = result.GetValueOrDefault<string>() ?? string.Empty;
         if (string.IsNullOrEmpty(value))
         {
-            result.ErrorMessage = Resources.OutputDirectoryEmptyOrNullError;
+            result.AddError(Resources.OutputDirectoryEmptyOrNullError);
         }
         else if (!Directory.Exists(value))
         {
-            result.ErrorMessage = string.Format(CultureInfo.InvariantCulture, InvalidOutputDirectoryError, value);
+            result.AddError(string.Format(CultureInfo.InvariantCulture, InvalidOutputDirectoryError, value));
         }
     }
 }

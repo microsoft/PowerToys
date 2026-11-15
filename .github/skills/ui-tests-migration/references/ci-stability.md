@@ -295,8 +295,9 @@ pipeline already has the supported mechanism:
 
 For a new selected suite that drives module enable/disable through Settings:
 
-1. Add the exact project family to the existing `$requiresAuthenticatedSettingsIpc` selection
-  condition. Preserve existing project families and all-module behavior.
+1. Add the exact test-project stem to `$authenticatedSettingsIpcModules` in
+  `.pipelines/v2/templates/job-test-project.yml` (or its shared module-specific list). Preserve
+  existing stems and all-module behavior; do not replace the list with substring matching.
 2. Keep both companion filenames in the shared required-file list. Do not copy the signing block.
 3. Preview the pipeline and require the signing branch in every requested platform/install-mode job.
 4. In CI logs, require `Successfully signed` and `Verified required Authenticode file(s)` for both

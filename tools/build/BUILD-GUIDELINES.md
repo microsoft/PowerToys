@@ -21,6 +21,7 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
 2) `build.ps1` (from any folder)
    - Builds any `.sln/.csproj/.vcxproj` in the current directory.
    - Auto-detects Platform; initializes VS Dev environment automatically.
+   - For a `.csproj`/`.vcxproj`, passes `/p:SolutionDir=` set to the folder of the solution that lists the project (`PowerToys.slnx`, so the repo/worktree root, for most projects; `installer\` for installer projects), so `$(SolutionDir)`-based `IntDir`/`OutDir` match a solution build. A `/p:SolutionDir=` in the extra args overrides it.
    - Accepts extra MSBuild args (forwarded to msbuild):
      - `./tools/build/build.ps1 '/p:CIBuild=true' '/p:SomeProp=Value'`
    - Restore only:
@@ -34,7 +35,7 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
      - `./tools/build/build-installer.ps1 -Platform x64 -Configuration Release -PerUser true -InstallerSuffix wix5`
 
 ## Logs and troubleshooting
-- On failure, see logs next to the solution/project being built:
+- On failure, see logs in `artifacts\logs\<project>\` at the root of the repo/worktree that contains the project being built (the first parent folder with `PowerToys.slnx`, even when the `tools\build` scripts come from another clone on PATH), where `<project>` is the solution/project file name without its extension:
   - `build.<configuration>.<platform>.all.log` — full text log
   - `build.<configuration>.<platform>.errors.log` — errors only
   - `build.<configuration>.<platform>.warnings.log` — warnings only

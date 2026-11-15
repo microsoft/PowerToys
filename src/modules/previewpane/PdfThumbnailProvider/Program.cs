@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
 {
     internal static class Program
     {
-        private static PdfThumbnailProvider _thumbnailProvider;
+        private static PdfThumbnailProvider? _thumbnailProvider;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Pdf
                     uint cx = Convert.ToUInt32(args[1], 10);
 
                     _thumbnailProvider = new PdfThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                    Bitmap? thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null)
                     {
                         filePath = filePath.Replace(".pdf", ".bmp");

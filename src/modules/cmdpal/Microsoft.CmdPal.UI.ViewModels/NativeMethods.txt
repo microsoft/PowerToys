@@ -21,3 +21,5 @@ CoCancelCall
 CoEnableCallCancellation
 CoDisableCallCancellation
 GetCurrentThreadId
+SHGetPropertyStoreForWindow
+IPropertyStore

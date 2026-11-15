@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class RemoveMetadataOption : Option<bool>
     {
-        private static readonly string[] _aliases = ["--remove-metadata"];
-
         public RemoveMetadataOption()
-            : base(_aliases, Properties.Resources.CLI_Option_RemoveMetadata)
+            : base("--remove-metadata")
         {
+            Description = Properties.Resources.CLI_Option_RemoveMetadata;
         }
     }
 }

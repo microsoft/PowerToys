@@ -5,7 +5,6 @@
 #nullable enable
 
 using System.Collections.ObjectModel;
-using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.ViewModels;
@@ -31,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
         {
             this.InitializeComponent();
             ViewModel = new ProfileEditorViewModel(availableMonitors, defaultName, profileId);
+            Closed += ProfileEditorDialog_Closed;
 
             // Set localized strings for ContentDialog
             var resourceLoader = ResourceLoaderInstance.ResourceLoader;
@@ -52,56 +52,17 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             ResultProfile = null;
         }
 
+        private void ProfileEditorDialog_Closed(ContentDialog sender, ContentDialogClosedEventArgs args)
+        {
+            ViewModel.Dispose();
+        }
+
         /// <summary>
         /// Pre-fill the dialog with existing profile data
         /// </summary>
         public void PreFillProfile(PowerDisplayProfile profile)
         {
-            if (profile == null || ViewModel == null)
-            {
-                return;
-            }
-
-            // Set profile name
-            ViewModel.ProfileName = profile.Name;
-
-            // Pre-fill monitor settings from existing profile
-            foreach (var monitorSetting in profile.MonitorSettings)
-            {
-                var monitorItem = ViewModel.Monitors.FirstOrDefault(m => m.Monitor.Id == monitorSetting.MonitorId);
-                if (monitorItem != null)
-                {
-                    monitorItem.IsSelected = true;
-
-                    // Set brightness if included in profile
-                    if (monitorSetting.Brightness.HasValue)
-                    {
-                        monitorItem.IncludeBrightness = true;
-                        monitorItem.Brightness = monitorSetting.Brightness.Value;
-                    }
-
-                    // Set color temperature if included in profile
-                    if (monitorSetting.ColorTemperatureVcp.HasValue)
-                    {
-                        monitorItem.IncludeColorTemperature = true;
-                        monitorItem.ColorTemperature = monitorSetting.ColorTemperatureVcp.Value;
-                    }
-
-                    // Set contrast if included in profile
-                    if (monitorSetting.Contrast.HasValue)
-                    {
-                        monitorItem.IncludeContrast = true;
-                        monitorItem.Contrast = monitorSetting.Contrast.Value;
-                    }
-
-                    // Set volume if included in profile
-                    if (monitorSetting.Volume.HasValue)
-                    {
-                        monitorItem.IncludeVolume = true;
-                        monitorItem.Volume = monitorSetting.Volume.Value;
-                    }
-                }
-            }
+            ViewModel.PreFillProfile(profile);
         }
     }
 }

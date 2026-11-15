@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -51,7 +52,7 @@ public partial class SearchTelemetryTests
         public override string ToString() => Title;
     }
 
-    private static RoScored<IListItem> Scored(IListItem item, int score) => new(item, score);
+    private static RoScored<InProcObject<IListItem>> Scored(IListItem item, int score) => new(new InProcObject<IListItem>(item), score);
 
     [TestMethod]
     public void SearchResultsMessage_CapturesQueryLengthNotText()
@@ -128,14 +129,14 @@ public partial class SearchTelemetryTests
         var exact = new MockListItem { Title = "Visual Studio" };
         var fuzzy = new MockListItem { Title = "Notepad" };
 
-        var packed = new List<RoScored<IListItem>>
+        var packed = new List<RoScored<InProcObject<IListItem>>>
         {
             Scored(exact, MainListRanker.Pack(RankTier.ExactTitle, withinTierScore: 500)),
             Scored(fuzzy, MainListRanker.Pack(RankTier.Fuzzy, withinTierScore: 10)),
         };
 
-        Assert.AreEqual(RankTier.ExactTitle, MainListPageSearchTelemetry.ResolveSelectedTier(exact, packed, fallbackResults: null));
-        Assert.AreEqual(RankTier.Fuzzy, MainListPageSearchTelemetry.ResolveSelectedTier(fuzzy, packed, fallbackResults: null));
+        Assert.AreEqual(RankTier.ExactTitle, MainListPageSearchTelemetry.ResolveSelectedTier(new(exact), packed, fallbackResults: null));
+        Assert.AreEqual(RankTier.Fuzzy, MainListPageSearchTelemetry.ResolveSelectedTier(new(fuzzy), packed, fallbackResults: null));
     }
 
     [TestMethod]
@@ -145,9 +146,9 @@ public partial class SearchTelemetryTests
 
         // Common fallbacks carry small rank-based (non-packed) scores. They must be reported at the
         // fallback floor rather than being decoded as a packed tier.
-        var fallbacks = new List<RoScored<IListItem>> { Scored(fallback, 3) };
+        var fallbacks = new List<RoScored<InProcObject<IListItem>>> { Scored(fallback, 3) };
 
-        Assert.AreEqual(RankTier.FallbackFloor, MainListPageSearchTelemetry.ResolveSelectedTier(fallback, packedResults: null, fallbacks));
+        Assert.AreEqual(RankTier.FallbackFloor, MainListPageSearchTelemetry.ResolveSelectedTier(new(fallback), packedResults: null, fallbacks));
     }
 
     [TestMethod]
@@ -156,9 +157,9 @@ public partial class SearchTelemetryTests
         var known = new MockListItem { Title = "Known" };
         var unknown = new MockListItem { Title = "Unknown" };
 
-        var packed = new List<RoScored<IListItem>> { Scored(known, MainListRanker.Pack(RankTier.Prefix, 1)) };
+        var packed = new List<RoScored<InProcObject<IListItem>>> { Scored(known, MainListRanker.Pack(RankTier.Prefix, 1)) };
 
-        Assert.AreEqual(RankTier.None, MainListPageSearchTelemetry.ResolveSelectedTier(unknown, packed, fallbackResults: null));
+        Assert.AreEqual(RankTier.None, MainListPageSearchTelemetry.ResolveSelectedTier(new(unknown), packed, fallbackResults: null));
     }
 
     [TestMethod]

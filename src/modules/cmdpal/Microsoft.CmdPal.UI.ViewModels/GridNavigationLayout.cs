@@ -51,6 +51,9 @@ public sealed class GridNavigationLayout
         }
     }
 
+    /// <summary>Gets the number of items represented by this layout.</summary>
+    public int ItemCount => _itemCount;
+
     public int GetColumn(int index)
     {
         var group = FindGroup(index);

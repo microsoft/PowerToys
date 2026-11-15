@@ -8,7 +8,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.PowerToys.FileLocksmith.UITests</RootNamespace>
     <AssemblyName>FileLocksmith.UITests</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>

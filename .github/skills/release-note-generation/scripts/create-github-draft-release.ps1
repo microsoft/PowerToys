@@ -8,6 +8,11 @@
     update a draft release and upload the assets. Asset filenames use the
     numeric product version; -TagName may include channel suffixes such as
     v0.100.2607.08001-preview.
+
+    Default titles are Release <tag> for stable releases, Release preview <tag>
+    for prereleases built from stable, and Development preview <tag> for
+    prereleases built from main. Pass -SourceBranch from the build metadata
+    when generating a prerelease title; -Target may be an immutable commit.
 #>
 param(
     [Parameter(Mandatory = $true)]
@@ -18,6 +23,9 @@ param(
     [string]$TagName,
 
     [string]$Target,
+
+    [ValidateSet("refs/heads/main", "refs/heads/stable")]
+    [string]$SourceBranch,
 
     [string]$Title,
 
@@ -33,6 +41,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+. (Join-Path $PSScriptRoot "release-title.ps1")
 
 function Resolve-ExistingPath {
     param([Parameter(Mandatory)][string]$Path, [Parameter(Mandatory)][string]$Description)
@@ -138,8 +148,11 @@ if (-not $TagName) {
     $TagName = "v$numericVersion"
 }
 if (-not $Title) {
-    $displayVersion = $TagName.TrimStart('v', 'V') -replace '-preview$', ''
-    $Title = if ($Prerelease) { "PowerToys v$displayVersion Preview" } else { "Release v$numericVersion" }
+    $titleParameters = @{ Tag = $TagName; Prerelease = [bool]$Prerelease }
+    if ($SourceBranch) {
+        $titleParameters.SourceBranch = $SourceBranch
+    }
+    $Title = Get-PowerToysReleaseTitle @titleParameters
 }
 
 $filesByName = @{}

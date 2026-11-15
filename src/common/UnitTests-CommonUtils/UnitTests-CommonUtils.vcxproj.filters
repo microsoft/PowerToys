@@ -60,6 +60,9 @@
     <ClCompile Include="Threading.Tests.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>
+    <ClCompile Include="ContextMenuLifecycle.Tests.cpp">
+      <Filter>Source Files\Threading</Filter>
+    </ClCompile>
     <ClCompile Include="AppMutex.Tests.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>
@@ -70,6 +73,9 @@
       <Filter>Source Files\Process</Filter>
     </ClCompile>
     <ClCompile Include="ProcessApi.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
+    <ClCompile Include="ThumbnailProvider.Tests.cpp">
       <Filter>Source Files\Process</Filter>
     </ClCompile>
     <ClCompile Include="Window.Tests.cpp">
@@ -134,13 +140,13 @@
     <ClInclude Include="TestHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ThumbnailProviderTestProtocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="UnitTests-CommonUtils.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
 </Project>

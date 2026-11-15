@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
@@ -10,7 +11,7 @@ public sealed partial class OpenGallerySettingsCommand : OpenSettingsCommand
 {
     public OpenGallerySettingsCommand()
         : base(
-            settingsPageTag: "Gallery",
+            settingsPageTag: SettingsPageTags.Gallery,
             name: Properties.Resources.builtin_open_gallery_name,
             glyph: "\uE719",
             id: "com.microsoft.cmdpal.opengallerysettings") /* #no-spell-check-line */

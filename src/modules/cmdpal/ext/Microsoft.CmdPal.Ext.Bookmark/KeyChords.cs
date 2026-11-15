@@ -16,5 +16,7 @@ internal static class KeyChords
 
     internal static KeyChord OpenInConsole => WellKnownKeyChords.OpenInConsole;
 
+    internal static KeyChord RunAsAdministrator => WellKnownKeyChords.RunAsAdministrator;
+
     internal static KeyChord DeleteBookmark => KeyChordHelpers.FromModifiers(ctrl: true, shift: true, vkey: VirtualKey.Delete);
 }

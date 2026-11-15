@@ -58,6 +58,10 @@ host and running it in a VM), so the build machine never gains a test trust anch
 .PARAMETER ExportCertificatePath
 Write the public certificate to this path so the machine that registers the package can trust it.
 
+.PARAMETER CertificateFriendlyName
+Optional identity scope for a disposable signing run. The default preserves shared UI-test signing;
+an isolated payload can use a run-specific name without reusing another run's private key.
+
 .EXAMPLE
 .\signSparsePackages.ps1 -PackageRoot "$env:ProgramFiles\PowerToys" `
     -RequiredPackage ImageResizerContextMenuPackage.msix
@@ -95,12 +99,15 @@ param(
     [switch]$SkipLocalTrust,
 
     [Parameter()]
-    [string]$ExportCertificatePath
+    [string]$ExportCertificatePath,
+
+    [ValidateNotNullOrEmpty()]
+    [string]$CertificateFriendlyName = 'PowerToys UI Test Signing'
 )
 
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.IO.Compression.FileSystem
-$testCertificateFriendlyName = 'PowerToys UI Test Signing'
+$testCertificateFriendlyName = $CertificateFriendlyName
 
 function Select-SignToolByArch {
     param([string[]]$Paths)

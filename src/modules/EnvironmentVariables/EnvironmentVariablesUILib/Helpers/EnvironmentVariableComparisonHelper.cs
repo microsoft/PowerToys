@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 using EnvironmentVariablesUILib.Models;
@@ -42,4 +43,17 @@ internal static class EnvironmentVariableComparisonHelper
     internal static IEnumerable<IGrouping<string, Variable>> GetDuplicateNameGroups(IEnumerable<Variable> variables) =>
         variables.GroupBy(x => x.Name, StringComparer.OrdinalIgnoreCase)
             .Where(g => g.Count() > 1);
+
+    internal static string RemoveDuplicatePathEntries(string value)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        return string.Join(';', value.Split(';').Where(entry => seen.Add(NormalizePathEntry(entry))));
+    }
+
+    private static string NormalizePathEntry(string entry)
+    {
+        var expanded = Environment.ExpandEnvironmentVariables(entry.Trim());
+        var normalizedSeparators = expanded.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
+        return Path.TrimEndingDirectorySeparator(normalizedSeparators);
+    }
 }

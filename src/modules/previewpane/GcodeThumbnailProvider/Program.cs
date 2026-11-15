@@ -8,7 +8,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
 {
     internal static class Program
     {
-        private static GcodeThumbnailProvider _thumbnailProvider;
+        private static GcodeThumbnailProvider? _thumbnailProvider;
 
         /// <summary>
         ///  The main entry point for the application.
@@ -25,7 +25,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Gcode
                     uint cx = Convert.ToUInt32(args[1], 10);
 
                     _thumbnailProvider = new GcodeThumbnailProvider(filePath);
-                    Bitmap thumbnail = _thumbnailProvider.GetThumbnail(cx);
+                    Bitmap? thumbnail = _thumbnailProvider.GetThumbnail(cx);
                     if (thumbnail != null)
                     {
                         filePath = filePath.Replace(".gcode", ".bmp");

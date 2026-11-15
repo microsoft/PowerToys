@@ -14,7 +14,7 @@ using Microsoft.Windows.ApplicationModel.Resources;
 
 namespace Microsoft.PowerToys.Settings.UI.Controls
 {
-    public partial class QuickAccessViewModel : Observable
+    public partial class QuickAccessViewModel : Observable, IDisposable
     {
         private readonly ISettingsRepository<GeneralSettings> _settingsRepository;
 
@@ -27,6 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
         private readonly ResourceLoader _resourceLoader;
         private readonly DispatcherQueue _dispatcherQueue;
         private GeneralSettings _generalSettings;
+        private bool _disposed;
 
         public ObservableCollection<QuickAccessItem> Items { get; } = new();
 
@@ -54,12 +55,30 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             InitializeItems();
         }
 
+        public void Dispose()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+            _settingsRepository.SettingsChanged -= OnSettingsChanged;
+            _kbmSettingsRepository.SettingsChanged -= OnKbmSettingsChanged;
+            GC.SuppressFinalize(this);
+        }
+
         private void OnSettingsChanged(GeneralSettings newSettings)
         {
             if (_dispatcherQueue != null)
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = newSettings;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
@@ -96,11 +115,12 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
 
             Items.Add(new QuickAccessItem
             {
-                Title = _resourceLoader.GetString(Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleLabelResourceName(moduleType)),
+                Title = GetModuleItemTitle(moduleType),
                 Tag = moduleType,
                 Visible = GetItemVisibility(moduleType),
                 Description = GetModuleToolTip(moduleType),
-                Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers.ModuleHelper.GetModuleTypeFluentIconName(moduleType),
+                Icon = Microsoft.PowerToys.Settings.UI.Library.Helpers
+                    .ModuleHelper.GetModuleTypeFluentIconName(moduleType),
                 Command = new RelayCommand(() => _launcher.Launch(moduleType)),
             });
         }
@@ -111,6 +131,11 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             {
                 _dispatcherQueue.TryEnqueue(() =>
                 {
+                    if (_disposed)
+                    {
+                        return;
+                    }
+
                     _generalSettings = _settingsRepository.SettingsConfig;
                     _generalSettings.AddEnabledModuleChangeNotification(ModuleEnabledChanged);
                     RefreshItemsVisibility();
@@ -154,6 +179,18 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             }
 
             return visible;
+        }
+
+        private string GetModuleItemTitle(ModuleType moduleType)
+        {
+            return moduleType switch
+            {
+                ModuleType.MouseWithoutBorders => _resourceLoader.GetString(
+                    "MouseWithoutBorders_ReconnectButton/Text"),
+                _ => _resourceLoader.GetString(
+                    Microsoft.PowerToys.Settings.UI.Library.Helpers
+                        .ModuleHelper.GetModuleLabelResourceName(moduleType)),
+            };
         }
 
         private string GetModuleToolTip(ModuleType moduleType)

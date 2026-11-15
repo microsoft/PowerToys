@@ -34,14 +34,7 @@ public partial class ListPage : Page, IListPage
 
     protected void RaiseItemsChanged(int totalItems = -1)
     {
-        try
-        {
-            // TODO #181 - This is the same thing that BaseObservable has to deal with.
-            ItemsChanged?.Invoke(this, new ItemsChangedEventArgs(totalItems));
-        }
-        catch
-        {
-        }
+        EventHelpers.Raise(ItemsChanged, this, new ItemsChangedEventArgs(totalItems), handler => ItemsChanged -= handler);
     }
 
     protected void SetSearchNoUpdate(string newSearchText)
