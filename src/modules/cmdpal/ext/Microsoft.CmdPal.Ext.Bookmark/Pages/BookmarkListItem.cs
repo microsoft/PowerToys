@@ -13,6 +13,7 @@ using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.CmdPal.Ext.Bookmarks.Persistence;
 using Microsoft.CmdPal.Ext.Bookmarks.Services;
 using Microsoft.CmdPal.Ext.Indexer;
+using Microsoft.CmdPal.Ext.Indexer.Helpers;
 using Microsoft.CommandPalette.Extensions;
 using Windows.Foundation;
 
@@ -84,9 +85,15 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
 
         try
         {
+            var addressChanged = !string.Equals(_bookmark.Bookmark, data.Bookmark, StringComparison.Ordinal);
             _bookmark = data;
             OnPropertyChanged(nameof(BookmarkTitle));
             OnPropertyChanged(nameof(BookmarkAddress));
+
+            if (addressChanged)
+            {
+                DataPackage = null;
+            }
 
             Subtitle = Resources.bookmarks_item_refreshing;
             _ = _classificationGate.ExecuteAsync();
@@ -114,6 +121,12 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         BuildSpecificContextMenuItems(classification, contextMenu);
         AddCommonContextMenuItems(_bookmark, _bookmarksManager, bookmarkSavedHandler, contextMenu);
 
+        var localFilePath =
+            classification.Kind is CommandKind.FileExecutable or CommandKind.FileDocument or CommandKind.Shortcut or CommandKind.InternetShortcut &&
+            File.Exists(classification.Target)
+                ? classification.Target
+                : null;
+
         // If we're a band AND the classification kind was directory , then flip
         // the command and the first contextMenu item
         if (_isBandItem && classification.Kind == CommandKind.Directory && contextMenu.Count > 0)
@@ -135,7 +148,8 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
             command,
             title,
             subtitle,
-            contextMenu.ToArray());
+            contextMenu.ToArray(),
+            localFilePath);
     }
 
     private void ApplyClassificationResult(BookmarkListItemReclassifyResult classificationResult)
@@ -152,6 +166,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         Title = classificationResult.Title;
         Subtitle = classificationResult.Subtitle;
         MoreCommands = classificationResult.MoreCommands;
+        DataPackage = DataPackageHelper.CreateDataPackageForPath(this, classificationResult.LocalFilePath);
 
         _initializationTcs.TrySetResult();
     }
@@ -164,9 +179,20 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         // TODO: unify across all built-in extensions
         var bookmarkTargetType = classification.Kind;
 
-        // TODO: add "Run as administrator" for executables/shortcuts
         if (!classification.IsPlaceholder)
         {
+            if ((bookmarkTargetType == CommandKind.Shortcut ||
+                (bookmarkTargetType is CommandKind.FileExecutable or CommandKind.PathCommand or CommandKind.FileDocument &&
+                    RunAsAdministratorCommand.IsSupportedFileType(classification.Target))) &&
+                classification.Launch == LaunchMethod.ShellExecute &&
+                File.Exists(classification.Target))
+            {
+                contextMenu.Add(new CommandContextItem(new RunAsAdministratorCommand(classification.Target, classification.Arguments, classification.WorkingDirectory))
+                {
+                    RequestedShortcut = KeyChords.RunAsAdministrator,
+                });
+            }
+
             if (bookmarkTargetType == CommandKind.FileDocument && File.Exists(classification.Target))
             {
                 contextMenu.Add(new CommandContextItem(new OpenWithCommand(classification.Input)));
@@ -323,6 +349,7 @@ internal sealed partial class BookmarkListItem : ListItem, IDisposable
         ICommand Command,
         string Title,
         string Subtitle,
-        IContextItem[] MoreCommands
+        IContextItem[] MoreCommands,
+        string? LocalFilePath
     );
 }

@@ -71,6 +71,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 "FixSpellingAndGrammar",
                 "PasteAsTxtFile",
                 "PasteAsPngFile",
+                "PasteAsJpgFile",
                 "PasteAsHtmlFile",
                 "TranscodeToMp3",
                 "TranscodeToMp4",

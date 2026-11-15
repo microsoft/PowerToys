@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Linq;
-
 using Wox.Plugin.Logger;
 
 namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
@@ -50,7 +48,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
                 }
 
                 // Generating path values.
-                if (!(settings.Areas is null) && settings.Areas.Any())
+                if (!(settings.Areas is null) && settings.Areas.Count > 0)
                 {
                     var areaValue = string.Join(_pathDelimiterSequence, settings.Areas);
                     settings.JoinedAreaPath = areaValue;

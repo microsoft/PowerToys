@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Commands;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Helpers;
 using Microsoft.CmdPal.Ext.WindowsTerminal.Properties;
@@ -105,20 +106,27 @@ internal sealed partial class ProfilesListPage : ListPage, INotifyItemsChanged
                 continue;
             }
 
-            var iconPath = TerminalHelper.ResolveProfileIcon(profile);
-
-            result.Add(new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, iconPath, openNewTab, openQuake, _appSettingsManager))
-            {
-                Title = profile.Name,
-                Subtitle = profile.Terminal.DisplayName,
-                Icon = new IconInfo(iconPath),
-                MoreCommands = [
-                    new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, openNewTab, openQuake, _appSettingsManager)),
-                ],
-            });
+            result.Add(CreateProfileItem(profile, openNewTab, openQuake, _appSettingsManager));
         }
 
         return result;
+    }
+
+    internal static ListItem CreateProfileItem(TerminalProfile profile, bool openNewTab, bool openQuake, AppSettingsManager appSettingsManager)
+    {
+        var iconPath = TerminalHelper.ResolveProfileIcon(profile);
+        return new ListItem(new LaunchProfileCommand(profile.Terminal.AppUserModelId, profile.Name, iconPath, openNewTab, openQuake, appSettingsManager))
+        {
+            Title = profile.Name,
+            Subtitle = profile.Terminal.DisplayName,
+            Icon = new IconInfo(iconPath),
+            MoreCommands = [
+                new CommandContextItem(new LaunchProfileAsAdminCommand(profile.Terminal.AppUserModelId, profile.Name, openNewTab, openQuake, appSettingsManager))
+                {
+                    RequestedShortcut = WellKnownKeyChords.RunAsAdministrator,
+                },
+            ],
+        };
     }
 
     private void EnsureInitialized()

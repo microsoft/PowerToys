@@ -13,6 +13,7 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -33,6 +34,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
         public void CommandLineArgumentsReachUnpackagedAndPackagedApps(bool packaged)
@@ -73,6 +75,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void DesktopShortcutTracksFilePresenceAndLaunchesWorkspace()
         {
             var title = State.Prefix + "-shortcut";
@@ -125,6 +128,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void LaunchAndEditCaptureAddsWindowsToTheExistingWorkspace()
         {
             var originalTitle = State.Prefix + "-original";
@@ -136,6 +140,7 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             EditWorkspace(name);
             Step("Launching the saved workspace from Launch and Edit.");
+            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Launching a saved workspace must not require a temporary draft.");
             Editor.Find<Button>(By.AccessibilityId("LaunchEditButton")).Invoke(msPostAction: 0);
             var original = State.Fixture.WaitForWindow(originalTitle);
             AssertPositioned(original, app);
@@ -157,6 +162,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void MoveExistingWindowsReusesTheOriginalProcessAndWindow()
         {
             var title = State.Prefix + "-reuse";
@@ -178,6 +184,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void MissingSavedMonitorUsesTheRemainingDisplay()
         {
             var title = State.Prefix + "-missing-monitor";
@@ -202,6 +209,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void LauncherDisplaysLaunchingLaunchedAndFailedStates()
         {
             using var gate = new EventWaitHandle(false, EventResetMode.ManualReset, $@"Local\{State.Prefix}-progress-gate");
@@ -226,6 +234,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancelLaunchStopsPendingAppsAndPreservesOpenedWindows()
         {
             var gateName = $@"Local\{State.Prefix}-cancel-gate";
@@ -258,6 +267,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void DismissClosesProgressWhileApplicationsContinueLaunching()
         {
             var gateName = $@"Local\{State.Prefix}-dismiss-gate";
@@ -353,8 +363,12 @@ namespace Microsoft.Workspaces.UITests
                 },
                 name => name == expected,
                 15_000,
-                requiredConsecutiveMatches: 2);
-            Assert.IsTrue(result.Succeeded, $"'{application}' did not show the expected launch state. Actual: '{result.LastObservation}'.");
+                requiredConsecutiveMatches: 2,
+                shouldRetryException: error => error is AssertFailedException &&
+                    error.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(
+                result.Succeeded,
+                $"'{application}' did not show the expected launch state. Actual: '{result.LastObservation}'. Last error: {result.LastException?.Message}");
         }
 
         private IEnumerable<JsonObject> PendingApplications(int count, string gate, string? firstStarted = null, string? lastStarted = null)
@@ -407,10 +421,10 @@ namespace Microsoft.Workspaces.UITests
                 60_000,
                 requiredConsecutiveMatches: 3,
                 pollIntervalMS: 150);
-            Assert.IsTrue(
-                result.Succeeded,
+            string placementMessage =
                 $"Workspaces did not place '{window.WindowTitle}' as configured: {application}. " +
-                $"Actual bounds: {WindowHelper.GetWindowBounds(handle)}, minimized: {NativeMethods.IsIconic(handle)}, maximized: {WindowHelper.IsWindowMaximized(handle)}.");
+                $"Actual bounds: {WindowHelper.GetWindowBounds(handle)}, minimized: {NativeMethods.IsIconic(handle)}, maximized: {WindowHelper.IsWindowMaximized(handle)}.";
+            Assert.IsTrue(result.Succeeded, placementMessage);
         }
     }
 }

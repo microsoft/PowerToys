@@ -793,10 +793,12 @@ internal static class MachineStuff
     internal static void ShowSetupForm(bool reopenSockets = false)
     {
         Logger.LogDebug("========== BEGIN THE SETUP EXPERIENCE ==========", true);
-        Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+        var key = Encryption.CreateRandomKey();
+        Setting.Values.MyKey = key;
+        Encryption.MyKey = key;
         Encryption.GeneratedKey = true;
 
-        if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+        if (!WinAPI.IsCurrentSessionAllowed())
         {
             Logger.Log("Not physical console session.");
             _ = MessageBox.Show(
@@ -842,7 +844,7 @@ internal static class MachineStuff
             return;
         }
 
-        if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+        if (!WinAPI.IsCurrentSessionAllowed())
         {
             Common.ShowToolTip(Application.ProductName + " cannot be used in a remote desktop or virtual machine session.", 5000);
         }
@@ -850,7 +852,7 @@ internal static class MachineStuff
 #if NEW_SETTINGS_FORM
         Common.ShowSetupForm();
 #else
-        if (Setting.Values.FirstRun && !Common.AtLeastOneSocketConnected())
+        if (Setting.Values.FirstRun && !Setting.Values.IsPairingKeyModeMismatch && !Common.AtLeastOneSocketConnected())
         {
             MachineStuff.ShowSetupForm();
         }

@@ -91,7 +91,7 @@ public sealed partial class ToastWindow : TransparentWindow,
         Hide();
 
         // ShowWindowIfPage summons the palette when the command is a page.
-        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command.Model) { ShowWindowIfPage = true });
+        WeakReferenceMessenger.Default.Send<PerformCommandMessage>(new(command) { ShowWindowIfPage = true });
     }
 
     public void Receive(QuitMessage message)

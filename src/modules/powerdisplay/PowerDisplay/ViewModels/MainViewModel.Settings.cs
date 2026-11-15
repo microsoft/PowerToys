@@ -65,7 +65,8 @@ public partial class MainViewModel
         try
         {
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-            settings.Properties.ExcludedFromSyncMonitorIds = _excludedMonitorIds.ToList();
+            settings.Properties.ExcludedFromSyncMonitorIds.Clear();
+            settings.Properties.ExcludedFromSyncMonitorIds.AddRange(_excludedMonitorIds);
 
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
@@ -536,7 +537,8 @@ public partial class MainViewModel
                 retentionDays: PowerDisplaySettings.MonitorEntryRetentionDays);
 
             // Update monitors list
-            settings.Properties.Monitors = monitors;
+            settings.Properties.Monitors.Clear();
+            settings.Properties.Monitors.AddRange(monitors);
 
             // Save back to settings.json using source-generated context for AOT
             _settingsUtils.SaveSettings(
@@ -751,13 +753,12 @@ public partial class MainViewModel
 
             // Populate value list for Settings UI ComboBox
             // Store raw name (without formatting) so Settings UI can format it consistently
-            result.ValueList = info.SupportedValues
+            result.ValueList.AddRange(info.SupportedValues
                 .Select(v => new Microsoft.PowerToys.Settings.UI.Library.VcpValueInfo
                 {
                     Value = $"0x{v:X2}",
                     Name = Common.Utils.VcpNames.GetValueName(code, v),
-                })
-                .ToList();
+                }));
         }
         else
         {

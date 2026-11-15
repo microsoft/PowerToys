@@ -32,6 +32,8 @@ namespace Peek.FilePreviewer.Models
 
         public bool SourceCodeMinimap { get; private set; }
 
+        public long SourceCodeMaxFileSizeBytes { get; private set; }
+
         public PreviewSettings()
         {
             _settingsUtils = SettingsUtils.Default;
@@ -40,10 +42,21 @@ namespace Peek.FilePreviewer.Models
             SourceCodeFontSize = 14;
             SourceCodeStickyScroll = true;
             SourceCodeMinimap = false;
+            SourceCodeMaxFileSizeBytes = ToMaxFileSizeBytes(PeekPreviewSettings.DefaultSourceCodeMaxFileSize);
 
             LoadSettingsFromJson();
 
             _watcher = Helper.GetFileWatcher(PeekSettings.ModuleName, PeekPreviewSettings.FileName, () => LoadSettingsFromJson());
+        }
+
+        /// <summary>
+        /// Converts the persisted preview cap (in kilobytes) to bytes, clamped to the range the settings UI allows.
+        /// The NumberBox bounds only apply to UI input, so a hand-edited settings file could otherwise disable
+        /// every preview (zero or negative) or remove the memory cap entirely (very large values).
+        /// </summary>
+        public static long ToMaxFileSizeBytes(int kilobytes)
+        {
+            return (long)Math.Clamp(kilobytes, PeekPreviewSettings.MinSourceCodeMaxFileSize, PeekPreviewSettings.MaxSourceCodeMaxFileSize) * 1024;
         }
 
         private void LoadSettingsFromJson()
@@ -74,6 +87,7 @@ namespace Peek.FilePreviewer.Models
                             SourceCodeFontSize = settings.SourceCodeFontSize.Value;
                             SourceCodeStickyScroll = settings.SourceCodeStickyScroll.Value;
                             SourceCodeMinimap = settings.SourceCodeMinimap.Value;
+                            SourceCodeMaxFileSizeBytes = ToMaxFileSizeBytes(settings.SourceCodeMaxFileSize.Value);
                         }
 
                         retry = false;

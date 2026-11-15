@@ -5,7 +5,34 @@
     <XesUseOneStoreVersioning>true</XesUseOneStoreVersioning>
     <XesBaseYearForStoreVersion>2025</XesBaseYearForStoreVersion>
     <VersionMajor>0</VersionMajor>
-    <VersionMinor>12</VersionMinor>
+    <VersionMinor>13</VersionMinor>
     <VersionInfoProductName>Microsoft Command Palette</VersionInfoProductName>
+    <!--
+      Keep the .NET SDK's generated assembly info. Otherwise XES sets GenerateAssemblyInfo=false,
+      which drops [SupportedOSPlatform], [TargetPlatform] and [NeutralResourcesLanguage] from
+      release builds and makes CA1416 fire on every Windows API call. XES still stamps the
+      native version resource; PTUseXesAssemblyVersion below feeds the same nine values XES would
+      have written (version, file/informational version, company, product, copyright, title,
+      description, trademark) to the SDK.
+    -->
+    <XesDisableAssemblyInfoWrite>True</XesDisableAssemblyInfoWrite>
   </PropertyGroup>
+
+  <Target Name="PTUseXesAssemblyVersion" BeforeTargets="GetAssemblyAttributes">
+    <PropertyGroup>
+      <AssemblyVersion>$(AssemblyStringVersion)</AssemblyVersion>
+      <FileVersion>$(XefFileStringVersion)</FileVersion>
+      <Company>$(VersionInfoCompanyName)</Company>
+      <Product>$(VersionInfoProductName)</Product>
+      <Description>$(VersionInfoFileDescription)</Description>
+      <Copyright>$(VersionInfoCopyRight)</Copyright>
+      <AssemblyTitle>$(VersionInfoTitle)</AssemblyTitle>
+      <InformationalVersion>$(NuGetPackVersion)</InformationalVersion>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(VersionInfoLegalTradeMarks)' != ''">
+      <AssemblyAttribute Include="System.Reflection.AssemblyTrademarkAttribute">
+        <_Parameter1>$(VersionInfoLegalTradeMarks)</_Parameter1>
+      </AssemblyAttribute>
+    </ItemGroup>
+  </Target>
 </Project>

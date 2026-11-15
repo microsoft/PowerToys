@@ -239,6 +239,7 @@ public class LanguageServiceTests
         var service = new LanguageService([systemLanguage], [expectedLanguage], isCiBuild: true);
 
         Assert.AreEqual(expectedLanguage, service.GetEffectiveLanguageTag(string.Empty));
+        Assert.AreEqual(expectedLanguage, service.GetEffectiveLanguageTag(systemLanguage));
         Assert.AreEqual(expectedLanguage, service.GetEffectiveLanguageTag(expectedLanguage));
     }
 

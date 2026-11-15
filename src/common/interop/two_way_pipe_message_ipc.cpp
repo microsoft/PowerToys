@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <iterator>
 #include <system_error>
+#include <wil/resource.h>
 
 constexpr DWORD BUFSIZE = 1024;
 constexpr DWORD PipeClientAccess = FILE_READ_DATA |
@@ -171,7 +172,7 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
     std::wstring _input_pipe_name,
     std::wstring _output_pipe_name,
     callback_function p_func) :
-    impl(new TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl(
+    impl(std::make_unique<TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl>(
         _input_pipe_name,
         _output_pipe_name,
         p_func))
@@ -181,7 +182,6 @@ TwoWayPipeMessageIPC::TwoWayPipeMessageIPC(
 TwoWayPipeMessageIPC::~TwoWayPipeMessageIPC()
 {
     impl->end();
-    delete impl;
 }
 
 void TwoWayPipeMessageIPC::send(std::wstring msg)
@@ -428,14 +428,14 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
         return;
     }
 
-    HANDLE write_complete_event = CreateEventW(nullptr, TRUE, FALSE, nullptr);
+    wil::unique_handle write_complete_event{ CreateEventW(nullptr, TRUE, FALSE, nullptr) };
     if (!write_complete_event)
     {
         return;
     }
 
     OVERLAPPED write_overlapped{};
-    write_overlapped.hEvent = write_complete_event;
+    write_overlapped.hEvent = write_complete_event.get();
     DWORD bytes_written = 0;
     const DWORD bytes_to_write = (lstrlen(message_send)) * sizeof(WCHAR);
     BOOL write_succeeded = FALSE;
@@ -446,7 +446,6 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
         std::scoped_lock lock(output_pipe_mutex);
         if (closed.load())
         {
-            CloseHandle(write_complete_event);
             return;
         }
         active_output_pipe_handle = output_pipe_handle;
@@ -460,7 +459,6 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
     {
         if (GetLastError() != ERROR_IO_PENDING)
         {
-            CloseHandle(write_complete_event);
             clear_active_output_pipe();
             return;
         }
@@ -473,7 +471,6 @@ void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::send_pipe_message(std::wstr
         GetOverlappedResult(output_pipe_handle, &write_overlapped, &bytes_written, TRUE);
     }
 
-    CloseHandle(write_complete_event);
     clear_active_output_pipe();
 }
 
@@ -578,7 +575,7 @@ VOID TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::FreeLogonSID(PSID* ppsid)
 
 bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_pipe_security_attributes(HANDLE token, PipeSecurityAttributes& security_attributes)
 {
-    HANDLE process_token = nullptr;
+    wil::unique_handle process_token;
     EXPLICIT_ACCESS entries[3]{};
     bool success = false;
     DWORD administrators_sid_size = 0;
@@ -598,11 +595,11 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_pipe_security_attrib
 
     if (!token)
     {
-        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &process_token))
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, process_token.put()))
         {
             return false;
         }
-        token = process_token;
+        token = process_token.get();
     }
 
     if (!GetLogonSID(token, &security_attributes.logon_sid))
@@ -637,21 +634,16 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_pipe_security_attrib
         // Administrators-owned path below, which is the security boundary this transport needs.
         DWORD token_user_size = 0;
         GetTokenInformation(token, TokenUser, nullptr, 0, &token_user_size);
-        auto* token_user = static_cast<TOKEN_USER*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, token_user_size));
+        const wil::unique_process_heap_ptr<TOKEN_USER> token_user{ static_cast<TOKEN_USER*>(HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, token_user_size)) };
         if (!token_user ||
-            !GetTokenInformation(token, TokenUser, token_user, token_user_size, &token_user_size))
+            !GetTokenInformation(token, TokenUser, token_user.get(), token_user_size, &token_user_size))
         {
-            if (token_user)
-            {
-                HeapFree(GetProcessHeap(), 0, token_user);
-            }
             goto Cleanup;
         }
 
         const DWORD server_sid_size = GetLengthSid(token_user->User.Sid);
         const bool copied = server_sid_size <= ARRAYSIZE(security_attributes.server_sid) &&
                             CopySid(server_sid_size, security_attributes.server_sid, token_user->User.Sid) == TRUE;
-        HeapFree(GetProcessHeap(), 0, token_user);
         if (!copied)
         {
             goto Cleanup;
@@ -703,16 +695,12 @@ bool TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_pipe_security_attrib
     success = true;
 
 Cleanup:
-    if (process_token)
-    {
-        CloseHandle(process_token);
-    }
     return success;
 }
 
 HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_token()
 {
-    HANDLE restricted_token_handle;
+    wil::unique_handle restricted_token_handle;
     SAFER_LEVEL_HANDLE level_handle = NULL;
     DWORD sid_size = SECURITY_MAX_SID_SIZE;
     BYTE medium_sid[SECURITY_MAX_SID_SIZE];
@@ -720,7 +708,7 @@ HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_t
     {
         return NULL;
     }
-    if (!SaferComputeTokenFromLevel(level_handle, NULL, &restricted_token_handle, 0, NULL))
+    if (!SaferComputeTokenFromLevel(level_handle, NULL, restricted_token_handle.put(), 0, NULL))
     {
         SaferCloseLevel(level_handle);
         return NULL;
@@ -729,7 +717,6 @@ HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_t
 
     if (!CreateWellKnownSid(WinMediumLabelSid, nullptr, medium_sid, &sid_size))
     {
-        CloseHandle(restricted_token_handle);
         return NULL;
     }
 
@@ -737,13 +724,12 @@ HANDLE TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::create_medium_integrity_t
     integrity_level.Label.Attributes = SE_GROUP_INTEGRITY;
     integrity_level.Label.Sid = reinterpret_cast<PSID>(medium_sid);
 
-    if (!SetTokenInformation(restricted_token_handle, TokenIntegrityLevel, &integrity_level, sizeof(integrity_level)))
+    if (!SetTokenInformation(restricted_token_handle.get(), TokenIntegrityLevel, &integrity_level, sizeof(integrity_level)))
     {
-        CloseHandle(restricted_token_handle);
         return NULL;
     }
 
-    return restricted_token_handle;
+    return restricted_token_handle.release();
 }
 
 void TwoWayPipeMessageIPC::TwoWayPipeMessageIPCImpl::handle_pipe_connection(const std::shared_ptr<ConnectionHandler>& handler)

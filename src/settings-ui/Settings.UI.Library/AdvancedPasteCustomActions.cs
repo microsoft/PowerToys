@@ -15,8 +15,14 @@ public sealed class AdvancedPasteCustomActions
         WriteIndented = true,
     };
 
+    private readonly ObservableCollection<AdvancedPasteCustomAction> _value = [];
+
     [JsonPropertyName("value")]
-    public ObservableCollection<AdvancedPasteCustomAction> Value { get; set; } = [];
+    public ObservableCollection<AdvancedPasteCustomAction> Value
+    {
+        get => _value;
+        init => _value = value ?? [];
+    }
 
     public AdvancedPasteCustomActions()
     {

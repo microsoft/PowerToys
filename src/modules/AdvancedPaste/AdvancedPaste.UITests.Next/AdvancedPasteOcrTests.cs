@@ -44,7 +44,13 @@ public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
         Step("Accepting the offline OCR preview");
         if (acceptWithEnter)
         {
-            paste.Focus();
+            // The preview flyout focuses Paste when opened; activate its owner without overriding that focus.
+            var keyboardWindow = WindowsFinder.WaitForWindowByApp(
+                ProcessName,
+                window => window.ClassName == "WinUIDesktopWin32WindowClass" && window.Width > 100 && window.Height > 100,
+                timeoutMS: 15_000);
+            Assert.IsNotNull(keyboardWindow, "The OCR preview's top-level WinUI window was not discoverable.");
+            TestWindow.SelectFromTaskbar(new IntPtr(keyboardWindow.WindowHandle), keyboardWindow.ProcessName);
             SendShortcut(Key.Enter);
         }
         else

@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Globalization;
 using System.Linq;
 
@@ -23,20 +22,20 @@ internal sealed partial class SetHotkeyCommand : FancyZonesBaseCommand
     public SetHotkeyCommand()
         : base("set-hotkey", Properties.Resources.cmd_set_hotkey)
     {
-        AddAlias("shk");
+        Aliases.Add("shk");
 
-        _key = new Argument<int>("key", Properties.Resources.set_hotkey_arg_key);
-        _layout = new Argument<string>("layout", Properties.Resources.set_hotkey_arg_layout);
+        _key = new Argument<int>("key") { Description = Properties.Resources.set_hotkey_arg_key };
+        _layout = new Argument<string>("layout") { Description = Properties.Resources.set_hotkey_arg_layout };
 
-        AddArgument(_key);
-        AddArgument(_layout);
+        Arguments.Add(_key);
+        Arguments.Add(_layout);
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         // FancyZones running guard is handled by FancyZonesBaseCommand.
-        int key = context.ParseResult.GetValueForArgument(_key);
-        string layoutInput = context.ParseResult.GetValueForArgument(_layout);
+        int key = parseResult.GetValue(_key);
+        string layoutInput = parseResult.GetValue(_layout);
 
         if (key < 0 || key > 9)
         {

@@ -125,14 +125,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 #pragma warning restore CS0618
         }
 
+        public string ToSnapshotJson()
+        {
+            return JsonSerializer.Serialize(this, _serializerOptions);
+        }
+
         public virtual void Save(SettingsUtils settingsUtils)
         {
-            // Save settings to file
-            var options = _serializerOptions;
-
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
-            settingsUtils.SaveSettings(JsonSerializer.Serialize(this, options), ModuleName);
+            settingsUtils.SaveSettings(ToSnapshotJson(), ModuleName);
         }
     }
 }

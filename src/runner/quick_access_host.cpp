@@ -229,6 +229,7 @@ namespace QuickAccessHost
         }
 
         quick_access_process.reset(process_info.hProcess);
+        const wil::unique_handle quick_access_thread{ process_info.hThread };
 
         // Assign to job object to ensure the process is killed if the runner exits unexpectedly (e.g. debugging stop)
         quick_access_job.reset(CreateJobObjectW(nullptr, nullptr));
@@ -253,8 +254,7 @@ namespace QuickAccessHost
             Logger::warn(L"QuickAccessHost: failed to create job object. error={}", GetLastError());
         }
 
-        ResumeThread(process_info.hThread);
-        CloseHandle(process_info.hThread);
+        ResumeThread(quick_access_thread.get());
     }
 
     void show()

@@ -8,6 +8,113 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
+    <UserControl.Resources>
+        <!--
+            A recreation of the WPF Fluent scrollbar's resting track insets without its
+            invisible arrow buttons.
+        -->
+        <Style x:Key="AccentScrollBarStyle" TargetType="ScrollBar">
+            <Setter Property="Height" Value="12" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid
+                            x:Name="HorizontalRoot"
+                            Height="4"
+                            Background="{TemplateBinding Background}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <RepeatButton
+                                x:Name="HorizontalLargeDecrease"
+                                Width="0"
+                                IsTabStop="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate TargetType="RepeatButton">
+                                        <Grid Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                            <Thumb
+                                x:Name="HorizontalThumb"
+                                Grid.Column="1"
+                                Height="2"
+                                MinWidth="30"
+                                VerticalAlignment="Center"
+                                Background="{ThemeResource ScrollBarPanningThumbBackground}">
+                                <Thumb.Template>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="1" />
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+                            <RepeatButton
+                                x:Name="HorizontalLargeIncrease"
+                                Grid.Column="2"
+                                IsTabStop="False">
+                                <RepeatButton.Template>
+                                    <ControlTemplate TargetType="RepeatButton">
+                                        <Grid Background="Transparent" />
+                                    </ControlTemplate>
+                                </RepeatButton.Template>
+                            </RepeatButton>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--
+            Keep the native scrollbar wiring, but omit the auto-hide visual states, as
+            this keyboard-only overlay never receives the pointer input that would reveal
+            them.
+        -->
+        <Style x:Key="AccentScrollViewerStyle" TargetType="ScrollViewer">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollViewer">
+                        <Grid Background="{TemplateBinding Background}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid
+                                Grid.RowSpan="2"
+                                Margin="{TemplateBinding Padding}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <ScrollContentPresenter
+                                    x:Name="ScrollContentPresenter"
+                                    ContentTemplate="{TemplateBinding ContentTemplate}" />
+                                <Grid
+                                    Grid.Row="1"
+                                    Height="4"
+                                    Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" />
+                            </Grid>
+                            <ScrollBar
+                                x:Name="HorizontalScrollBar"
+                                Grid.Row="1"
+                                Margin="8,0"
+                                IndicatorMode="MouseIndicator"
+                                IsTabStop="False"
+                                Maximum="{TemplateBinding ScrollableWidth}"
+                                Orientation="Horizontal"
+                                Style="{StaticResource AccentScrollBarStyle}"
+                                ViewportSize="{TemplateBinding ViewportWidth}"
+                                Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}"
+                                Value="{TemplateBinding HorizontalOffset}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <controls:TransientSurface x:Name="Surface" Margin="24,24,24,16">
         <Grid x:Name="RootContent">
             <Grid.RowDefinitions>
@@ -24,11 +131,14 @@
                     IsHitTestVisible="False"
                     IsItemClickEnabled="False"
                     ItemsSource="{x:Bind ViewModel.Characters, Mode=OneWay}"
-                    ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+                    ScrollViewer.HorizontalScrollBarVisibility="Auto"
                     ScrollViewer.HorizontalScrollMode="Enabled"
                     ScrollViewer.VerticalScrollBarVisibility="Disabled"
                     ScrollViewer.VerticalScrollMode="Disabled"
                     SelectionMode="Single">
+                    <ListView.Resources>
+                        <Style BasedOn="{StaticResource AccentScrollViewerStyle}" TargetType="ScrollViewer" />
+                    </ListView.Resources>
                     <!--
                         Disable default ListView item animations: the bar is rebuilt on every keystroke,
                         and the built-in slide/fade transitions read as lag on a typing aid.

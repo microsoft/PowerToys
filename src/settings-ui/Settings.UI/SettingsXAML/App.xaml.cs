@@ -38,6 +38,8 @@ namespace Microsoft.PowerToys.Settings.UI
 
         private ShortcutConflictWindow shortcutConflictWindow;
 
+        private PowerAccentReferenceGuideWindow powerAccentReferenceGuideWindow;
+
         private enum Arguments
         {
             PTPipeName = 1,
@@ -350,7 +352,7 @@ namespace Microsoft.PowerToys.Settings.UI
         public static bool IsSecondaryWindowOpen()
         {
             var app = (App)Current;
-            return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null;
+            return app.oobeWindow != null || app.scoobeWindow != null || app.shortcutConflictWindow != null || app.powerAccentReferenceGuideWindow != null;
         }
 
         public void OpenScoobe()
@@ -414,6 +416,26 @@ namespace Microsoft.PowerToys.Settings.UI
             else
             {
                 WindowHelpers.BringToForeground(shortcutConflictWindow.GetWindowHandle());
+            }
+        }
+
+        public void OpenPowerAccentReferenceGuideWindow(string[] selectedLanguageCodes)
+        {
+            if (powerAccentReferenceGuideWindow == null)
+            {
+                powerAccentReferenceGuideWindow = new PowerAccentReferenceGuideWindow(selectedLanguageCodes);
+
+                powerAccentReferenceGuideWindow.Closed += (_, _) =>
+                {
+                    powerAccentReferenceGuideWindow = null;
+                    settingsWindow?.CloseHiddenWindow();
+                };
+
+                powerAccentReferenceGuideWindow.Activate();
+            }
+            else
+            {
+                WindowHelpers.BringToForeground(powerAccentReferenceGuideWindow.GetWindowHandle());
             }
         }
 

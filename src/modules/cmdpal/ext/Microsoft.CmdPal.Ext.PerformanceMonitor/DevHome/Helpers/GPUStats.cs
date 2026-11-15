@@ -48,7 +48,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
     // Guards structural access to _stats, _knownLuids, and _adaptersByLuid. They
     // are mutated on the perf-counter timer thread (GetData -> DiscoverGpus) but
-    // read on the UI / command thread (GetGPUName, GetPrev/NextGPUIndex, etc.),
+    // read on the UI / command thread (GetGPUDisplayInfo, GetPrev/NextGPUIndex, etc.),
     // and List<T> is not safe for concurrent add/read.
     private readonly object _statsLock = new();
 
@@ -57,9 +57,13 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     private bool _gpuEnumerationFailureLogged;
     private bool _gpuReadFailureLogged;
 
+    internal sealed record DisplayInfo(string Name, string ShortName, int AdapterCount);
+
     public sealed class Data
     {
         public string? Name { get; set; }
+
+        public string ShortName { get; init; } = string.Empty;
 
         public long LuidKey { get; set; }
 
@@ -71,11 +75,22 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     }
 
     public GPUStats()
+        : this(GpuAdapterNames.GetByLuid(), [])
     {
         _gpuEngineCategory = CreatePerformanceCounterCategory(GpuEngineCategoryName);
-        _adaptersByLuid = GpuAdapterNames.GetByLuid();
-
         DiscoverGPUsFromCounters();
+    }
+
+    internal GPUStats(Dictionary<long, GpuAdapterNames.AdapterInfo> adaptersByLuid, IEnumerable<long> gpuLuids)
+    {
+        _adaptersByLuid = adaptersByLuid;
+        lock (_statsLock)
+        {
+            foreach (var luid in gpuLuids)
+            {
+                AddGpuLocked(luid);
+            }
+        }
     }
 
     private void DiscoverGPUsFromCounters()
@@ -311,7 +326,7 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
             ? GpuNamePrefix + _stats.Count
             : info.Description;
 
-        _stats.Add(new Data() { LuidKey = luidKey, Name = name });
+        _stats.Add(new Data() { LuidKey = luidKey, Name = name, ShortName = GpuAdapterNames.GetShortName(name) });
     }
 
     // True if DXGI reports at least one non-software adapter in the system. DXGI
@@ -344,16 +359,38 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         }
     }
 
-    internal string GetGPUName(int gpuActiveIndex)
+    internal DisplayInfo GetGPUDisplayInfo(int gpuActiveIndex)
     {
         lock (_statsLock)
         {
-            if (_stats.Count <= gpuActiveIndex)
+            // Include idle hardware that has not produced a performance-counter instance yet.
+            var hardwareCount = 0;
+            foreach (var adapter in _adaptersByLuid.Values)
             {
-                return string.Empty;
+                if (!adapter.IsSoftware)
+                {
+                    hardwareCount++;
+                }
             }
 
-            return _stats[gpuActiveIndex].Name ?? string.Empty;
+            var adapterCount = Math.Max(hardwareCount, _stats.Count);
+            if ((uint)gpuActiveIndex >= (uint)_stats.Count)
+            {
+                return new(string.Empty, string.Empty, adapterCount);
+            }
+
+            var gpu = _stats[gpuActiveIndex];
+            var shortName = gpu.ShortName;
+            for (var index = 0; index < _stats.Count; index++)
+            {
+                if (index != gpuActiveIndex && string.Equals(shortName, _stats[index].ShortName, StringComparison.OrdinalIgnoreCase))
+                {
+                    shortName += " (" + gpuActiveIndex.ToString(CultureInfo.InvariantCulture) + ")";
+                    break;
+                }
+            }
+
+            return new(gpu.Name ?? string.Empty, shortName, adapterCount);
         }
     }
 

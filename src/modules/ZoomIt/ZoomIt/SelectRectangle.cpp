@@ -80,6 +80,7 @@ bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor, COLORREF border
     }
 
     m_cancel = false;
+    m_dragStarted = false;
     auto rect = GetMonitorRectFromCursor();
     SelectRectangleDebugLog( L"[SelectRectangle] Monitor rect=(%ld,%ld)-(%ld,%ld)\n",
                              rect.left,
@@ -136,6 +137,7 @@ bool SelectRectangle::Start( HWND ownerWindow, bool fullMonitor, COLORREF border
         if( m_cancel )
         {
             SelectRectangleDebugLog( L"[SelectRectangle] Start cancelled via Stop()\n" );
+            NotifyCancelled();
             return false;
         }
         if( m_selected )
@@ -181,6 +183,8 @@ void SelectRectangle::Stop()
         m_setClip = false;
     }
 
+    NotifyCancelled();
+
     HWND window = m_window.release();
     if( window != nullptr && IsWindow( window ) )
     {
@@ -191,6 +195,113 @@ void SelectRectangle::Stop()
     m_selectedRect = {};
     m_cancel = true;
     m_stopping = false;
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyDragStarted
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyDragStarted()
+{
+    if( m_dragStarted )
+    {
+        return;
+    }
+
+    m_dragStarted = true;
+    if( m_onDragStarted )
+    {
+        m_onDragStarted();
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifySelectionChanged
+//
+// Reports the live selection in screen coordinates. The selection is tracked
+// in client coordinates, so it has to be translated by the window origin the
+// same way ShowSelected does.
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifySelectionChanged()
+{
+    if( !m_onSelectionChanged || !m_window )
+    {
+        return;
+    }
+
+    RECT windowRect;
+    if( !GetWindowRect( m_window.get(), &windowRect ) )
+    {
+        return;
+    }
+
+    RECT screenRect = m_selectedRect;
+    OffsetRect( &screenRect, windowRect.left, windowRect.top );
+    m_onSelectionChanged( screenRect );
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyDragCompleted
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyDragCompleted()
+{
+    if( !m_dragStarted )
+    {
+        return;
+    }
+
+    m_dragStarted = false;
+    if( m_onDragCompleted )
+    {
+        m_onDragCompleted();
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyCancelled
+//
+// Raised when the selection is abandoned after the drag began, so that
+// listeners can discard anything they started collecting.
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyCancelled()
+{
+    if( !m_dragStarted )
+    {
+        return;
+    }
+
+    m_dragStarted = false;
+    if( m_onCancelled )
+    {
+        m_onCancelled();
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// SelectRectangle::NotifyDictateRequested
+//
+// Raised when the dictation key is tapped mid-drag.
+//
+//----------------------------------------------------------------------------
+void SelectRectangle::NotifyDictateRequested()
+{
+    if( !m_dragStarted )
+    {
+        return;
+    }
+
+    if( m_onDictateRequested )
+    {
+        m_onDictateRequested();
+    }
 }
 
 //----------------------------------------------------------------------------
@@ -208,15 +319,31 @@ void SelectRectangle::ShowSelected()
                              m_selectedRect.bottom,
                              m_dpi );
 
-    // Set the alpha to match the Windows graphics capture API yellow border
-    // and set the window to be transparent and disabled, so it will be skipped
-    // for hit testing and as a candidate for the next foreground window.
-    const BOOL layered = SetLayeredWindowAttributes( m_window.get(), 0, 191, LWA_ALPHA );
-    SelectRectangleDebugLog( L"[SelectRectangle] ShowSelected SetLayeredWindowAttributes(alpha=191) success=%d err=%lu\n",
+    // Preserve the dimmed exterior's opacity, or match the graphics capture
+    // border when only the border remains. Disable hit testing and activation.
+    const BYTE alpha = m_retainDimmedExterior ? Alpha() : 191;
+    const BOOL layered = SetLayeredWindowAttributes( m_window.get(), 0, alpha, LWA_ALPHA );
+    SelectRectangleDebugLog( L"[SelectRectangle] ShowSelected SetLayeredWindowAttributes(alpha=%u) success=%d err=%lu\n",
+                             alpha,
                              layered ? 1 : 0,
                              layered ? 0 : GetLastError() );
     SetWindowLong( m_window.get(), GWL_EXSTYLE, GetWindowLong( m_window.get(), GWL_EXSTYLE ) | WS_EX_TRANSPARENT );
     EnableWindow( m_window.get(), FALSE );
+
+    if( m_retainDimmedExterior )
+    {
+        RECT clientRect{};
+        GetClientRect( m_window.get(), &clientRect );
+        RECT innerRect = m_selectedRect;
+        InflateRect( &innerRect, -ScaleForDpi( 2, m_dpi ), -ScaleForDpi( 2, m_dpi ) );
+
+        wil::unique_hrgn region{ CreateRectRgnIndirect( &clientRect ) };
+        wil::unique_hrgn insideRegion{ CreateRectRgnIndirect( &innerRect ) };
+        CombineRgn( region.get(), region.get(), insideRegion.get(), RGN_XOR );
+        SetWindowRgn( m_window.get(), region.release(), true );
+        RedrawWindow( m_window.get(), nullptr, nullptr, RDW_INVALIDATE | RDW_UPDATENOW | RDW_FRAME );
+        return;
+    }
 
     POINT point{ m_selectedRect.left, m_selectedRect.top };
     auto rect = m_selectedRect;
@@ -356,6 +483,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
             ClipCursor( &m_oldClipRect );
             m_setClip = false;
         }
+        NotifyCancelled();
         m_selected = false;
         m_selectedRect = {};
         m_cancel = true;
@@ -368,6 +496,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
 
         m_startPoint = { GET_X_LPARAM( longParam ), GET_Y_LPARAM( longParam ) };
         SelectRectangleDebugLog( L"[SelectRectangle] WM_LBUTTONDOWN startPoint=(%ld,%ld)\n", m_startPoint.x, m_startPoint.y );
+        NotifyDragStarted();
         [[fallthrough]];
     }
     case WM_MOUSEMOVE:
@@ -412,6 +541,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
                 m_selectedRect = ForceRectInBounds( m_selectedRect, rect );
             }
 
+            NotifySelectionChanged();
             SelectRectangleDebugLog( L"[SelectRectangle] Drag rect=(%ld,%ld)-(%ld,%ld)\n",
                                      m_selectedRect.left,
                                      m_selectedRect.top,
@@ -431,6 +561,15 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
         {
             SelectRectangleDebugLog( L"[SelectRectangle] WM_KEYDOWN Escape pressed\n" );
             Stop();
+        }
+        else if( wordParam == VK_SPACE && ( longParam & 0x40000000 ) == 0 )
+        {
+            //
+            // Ignore auto-repeat so that holding the key does not restart
+            // dictation repeatedly.
+            //
+            SelectRectangleDebugLog( L"[SelectRectangle] WM_KEYDOWN Space pressed\n" );
+            NotifyDictateRequested();
         }
         return 0;
 
@@ -461,6 +600,7 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
         }
         ReleaseCapture();
 
+        NotifyDragCompleted();
         ShowSelected();
         return 0;
     }
@@ -486,6 +626,28 @@ LRESULT SelectRectangle::WindowProc( HWND window, UINT message, WPARAM wordParam
                             rect.left, rect.top, rect.right, rect.bottom, window );
                 OutputDebugStringW( dbg );
             }
+            if( m_retainDimmedExterior )
+            {
+                FillRect( deviceContext, &rect, static_cast<HBRUSH>(GetStockObject( BLACK_BRUSH )) );
+
+                wil::unique_hbrush border{ CreateSolidBrush( m_borderColor ) };
+                RECT borderRect = m_selectedRect;
+                const int width = ScaleForDpi( 2, m_dpi );
+                for( int index = 0; index < width; ++index )
+                {
+                    FrameRect( deviceContext, &borderRect, border.get() );
+                    InflateRect( &borderRect, -1, -1 );
+                }
+
+                EndPaint( window, &paint );
+                return 0;
+            }
+
+            SelectRectangleDebugLog( L"[SelectRectangle] WM_PAINT selected border rect=(%ld,%ld)-(%ld,%ld)\n",
+                                     rect.left,
+                                     rect.top,
+                                     rect.right,
+                                     rect.bottom );
 
             // Draw a border matching the Windows graphics capture API border.
             // Default: 1px outer color + 1px inner black.

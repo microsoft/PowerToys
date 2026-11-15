@@ -7,6 +7,7 @@ This file provides reusable helper functions used by the build scripts:
 - Get-BuildPaths: returns ScriptDir, OriginalCwd, RepoRoot (repo root detection)
 - RunMSBuild: wrapper around msbuild.exe (accepts optional Platform/Configuration)
 - RestoreThenBuild: performs restore and optionally builds the solution/project
+- Get-ProjectSolutionDir: returns the $(SolutionDir) a solution build would give a single project
 - BuildProjectsInDirectory: discovers and builds local .slnx/.csproj/.vcxproj files
 - Ensure-VsDevEnvironment: initializes the Visual Studio developer environment when possible.
   It prefers the DevShell PowerShell module (Microsoft.VisualStudio.DevShell.dll / Enter-VsDevShell),
@@ -18,7 +19,9 @@ Dot-source this file from a script to load helpers:
 . "$PSScriptRoot\build-common.ps1"
 
 ERROR DETAILS
-When a build fails, check the logs written next to the solution/project folder:
+When a build fails, check the logs in <repo>\artifacts\logs\<project name>\, where <repo> is the repo/worktree
+containing the project being built (first parent folder with PowerToys.slnx) and <project name> is the
+solution or project file name without its extension:
 - build.<configuration>.<platform>.all.log — full MSBuild text log
 - build.<configuration>.<platform>.errors.log — extracted errors only
 - build.<configuration>.<platform>.warnings.log — extracted warnings only
@@ -28,6 +31,40 @@ When a build fails, check the logs written next to the solution/project folder:
 Do not execute this file directly; dot-source it from `build.ps1` or `build-installer.ps1` so helpers are available in your script scope.
 #>
 
+function Get-ProjectRepoRoot {
+    param (
+        [string]$Solution
+    )
+
+    # Use the repo/worktree that contains the project being built (first ancestor with PowerToys.slnx),
+    # so builds in another clone don't write logs into the clone whose tools\build scripts ran.
+    # Falls back to the repo that contains these scripts.
+    # Relative paths are resolved against $script:RepoRoot because msbuild runs from there.
+    $fallback = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\..'))
+    if (-not $Solution) { return $fallback }
+
+    try {
+        $fullPath = $Solution
+        if (-not [System.IO.Path]::IsPathRooted($fullPath)) {
+            $base = $script:RepoRoot
+            if (-not $base) { $base = (Get-Location).Path }
+            $fullPath = Join-Path $base $fullPath
+        }
+        $dir = Split-Path ([System.IO.Path]::GetFullPath($fullPath)) -Parent
+        while ($dir) {
+            if (Test-Path -LiteralPath (Join-Path $dir 'PowerToys.slnx') -PathType Leaf) {
+                return $dir
+            }
+            $parent = Split-Path $dir -Parent
+            if ($parent -eq $dir) { break }
+            $dir = $parent
+        }
+    } catch {
+    }
+
+    return $fallback
+}
+
 function RunMSBuild {
     param (
         [string]$Solution,
@@ -36,9 +73,12 @@ function RunMSBuild {
         [string]$Configuration
     )
 
-    # Prefer the solution's folder for logs; fall back to current directory
-    $logRoot = Split-Path -Path $Solution
-    if (-not $logRoot) { $logRoot = '.' }
+    # Logs go to <repo>\artifacts\logs\<project name>\, not the project folder: the context-menu
+    # projects run MakeAppx on their own folder before compiling, and MSBuild's open log files
+    # there make it fail with 0x80070020 (file in use).
+    $projectName = [System.IO.Path]::GetFileNameWithoutExtension($Solution)
+    $logRoot = Join-Path (Get-ProjectRepoRoot $Solution) "artifacts\logs\$projectName"
+    New-Item -ItemType Directory -Path $logRoot -Force | Out-Null
 
     $cfg = $null
     if ($Configuration) { $cfg = $Configuration.ToLower() } else { $cfg = 'unknown' }
@@ -98,6 +138,42 @@ function RestoreThenBuild {
     }
 }
 
+function Get-ProjectSolutionDir {
+    param (
+        [string]$ProjectPath
+    )
+
+    # Returns the $(SolutionDir) (with a trailing '\') that a solution build gives this project, or $null
+    # when the project is outside a PowerToys repo/worktree. Checks PowerToys.slnx first, then the nearest
+    # parent folder whose .sln/.slnx lists the project (e.g. installer\PowerToysSetup.slnx), then falls
+    # back to the repo root.
+    $projectFull = [System.IO.Path]::GetFullPath($ProjectPath)
+    $repoRoot = (Get-ProjectRepoRoot $projectFull).TrimEnd('\')
+    if (-not $projectFull.StartsWith("$repoRoot\", [System.StringComparison]::OrdinalIgnoreCase)) {
+        return $null
+    }
+
+    $solutions = @(Join-Path $repoRoot 'PowerToys.slnx')
+    $dir = Split-Path $projectFull -Parent
+    while ($dir.Length -gt $repoRoot.Length) {
+        $solutions += Get-ChildItem -LiteralPath $dir -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -in '.sln', '.slnx' } |
+            ForEach-Object { $_.FullName }
+        $dir = Split-Path $dir -Parent
+    }
+
+    foreach ($sln in $solutions) {
+        $slnDir = Split-Path $sln -Parent
+        $relativePath = $projectFull.Substring($slnDir.Length).TrimStart('\')
+        $content = Get-Content -LiteralPath $sln -Raw -ErrorAction SilentlyContinue
+        if ($content -and ($content -replace '/', '\').IndexOf("`"$relativePath`"", [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+            return "$slnDir\"
+        }
+    }
+
+    return "$repoRoot\"
+}
+
 function BuildProjectsInDirectory {
     param(
         [string]$DirectoryPath,
@@ -134,6 +210,18 @@ function BuildProjectsInDirectory {
             RestoreThenBuild $f.FullName $ExtraArgs $Platform $Configuration $RestoreOnly
         } else {
             $buildArgs = '/m'
+            if ($f.Extension -in '.csproj', '.vcxproj') {
+                # Without this, $(SolutionDir) is the project folder, so projects with IntDir/OutDir under it
+                # write intermediates there (and the context-menu projects pack them into their MSIX).
+                # ExtraArgs come later, so a caller's /p:SolutionDir still wins.
+                $solutionDir = Get-ProjectSolutionDir $f.FullName
+                if ($solutionDir -and $solutionDir.Contains(' ')) {
+                    # RunMSBuild splits ExtraArgs on spaces.
+                    Write-Warning ("[LOCAL BUILD] Not passing SolutionDir because its path contains spaces: {0}" -f $solutionDir)
+                } elseif ($solutionDir) {
+                    $buildArgs = "$buildArgs /p:SolutionDir=$solutionDir"
+                }
+            }
             if ($ExtraArgs) { $buildArgs = "$buildArgs $ExtraArgs" }
             RunMSBuild $f.FullName $buildArgs $Platform $Configuration
         }

@@ -43,6 +43,19 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     public static readonly DependencyProperty AllowDisableProperty = DependencyProperty.Register("AllowDisable", typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnAllowDisableChanged));
 
+    public static readonly DependencyProperty UseWindowsKeyProperty = DependencyProperty.Register(nameof(UseWindowsKey), typeof(bool), typeof(ShortcutControl), new PropertyMetadata(false, OnUseWindowsKeyChanged));
+
+    public bool AllowWindowsKey { get; set; }
+
+    public bool UseWindowsKey
+    {
+        get => (bool)GetValue(UseWindowsKeyProperty);
+        set => SetValue(UseWindowsKeyProperty, value);
+    }
+
+    private static void OnUseWindowsKeyChanged(DependencyObject sender, DependencyPropertyChangedEventArgs args) =>
+        ((ShortcutControl)sender).SetKeys();
+
     private static ResourceLoader resourceLoader = Microsoft.CmdPal.UI.Helpers.ResourceLoaderInstance.ResourceLoader;
 
     private static void OnAllowDisableChanged(DependencyObject d, DependencyPropertyChangedEventArgs? e)
@@ -129,6 +142,8 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         };
         shortcutDialog.SecondaryButtonClick += ShortcutDialog_Reset;
         shortcutDialog.RightTapped += ShortcutDialog_Disable;
+        c.WindowsKeyOption.Checked += WindowsKeyOption_Changed;
+        c.WindowsKeyOption.Unchecked += WindowsKeyOption_Changed;
 
         // The original ShortcutControl from PowerToys would hook up the bodies
         // of DoLoad and DoUnload as `Loaded` and `Unloaded` handlers for `this`.
@@ -269,6 +284,13 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
             return false;
         }
 
+        if (AllowWindowsKey && (c.WindowsKeyOption.IsChecked == true ||
+            (FocusManager.GetFocusedElement(LayoutRoot.XamlRoot) is DependencyObject focused &&
+            (focused == c.WindowsKeyOption || focused.FindAscendant<CheckBox>() == c.WindowsKeyOption))))
+        {
+            return false;
+        }
+
         // If the current key press is tab, based on the other keys ignore the key press so as to shift focus out of the hotkey control.
         if ((VirtualKey)key == VirtualKey.Tab)
         {
@@ -367,14 +389,11 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private void ShortcutDialog_Opened(ContentDialog sender, ContentDialogOpenedEventArgs args)
     {
-        if (!ComboIsValid(hotkeySettings))
-        {
-            DisableKeys();
-        }
-        else
-        {
-            EnableKeys();
-        }
+        internalSettings = new HotkeySettings();
+        lastValidSettings = hotkeySettings;
+        c.WindowsKeyOption.Visibility = AllowWindowsKey ? Visibility.Visible : Visibility.Collapsed;
+        c.WindowsKeyOption.IsChecked = AllowWindowsKey && UseWindowsKey;
+        UpdateDialogShortcut();
 
         // Reset the status on entering the hotkey each time.
         _modifierKeysOnEntering.Clear();
@@ -406,6 +425,33 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         }
 
         _isActive = true;
+    }
+
+    private void WindowsKeyOption_Changed(object sender, RoutedEventArgs args)
+    {
+        internalSettings = new HotkeySettings();
+        UpdateDialogShortcut();
+        if (_isActive && c.IsKeyCaptureEnabled)
+        {
+            c.FocusKeyCapture();
+        }
+    }
+
+    private void UpdateDialogShortcut()
+    {
+        var useWindowsKey = AllowWindowsKey && c.WindowsKeyOption.IsChecked == true;
+        var shortcut = useWindowsKey ? new HotkeySettings(true, false, false, false, 0) : lastValidSettings;
+        c.Keys = shortcut?.GetKeysList() ?? [];
+        c.IsKeyCaptureEnabled = !useWindowsKey;
+        c.IsWarningAltGr = !useWindowsKey && shortcut is { Ctrl: true, Alt: true, Win: false, Code: > 0 };
+        if (useWindowsKey || ComboIsValid(shortcut))
+        {
+            EnableKeys();
+        }
+        else
+        {
+            DisableKeys();
+        }
     }
 
     private async void OpenDialogButton_Click(object sender, RoutedEventArgs e)
@@ -441,6 +487,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private void ShortcutDialog_Reset(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
+        UseWindowsKey = false;
         hotkeySettings = null;
 
         SetValue(HotkeySettingsProperty, hotkeySettings);
@@ -452,11 +499,13 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private void ShortcutDialog_PrimaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
     {
-        if (lastValidSettings is not null && ComboIsValid(lastValidSettings))
+        var useWindowsKey = AllowWindowsKey && c.WindowsKeyOption.IsChecked == true;
+        if (!useWindowsKey && lastValidSettings is not null && ComboIsValid(lastValidSettings))
         {
             HotkeySettings = lastValidSettings with { };
         }
 
+        UseWindowsKey = useWindowsKey;
         SetKeys();
         shortcutDialog.Hide();
     }
@@ -469,6 +518,7 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
         }
 
         var empty = new HotkeySettings();
+        UseWindowsKey = false;
         HotkeySettings = empty;
         SetKeys();
         shortcutDialog.Hide();
@@ -529,14 +579,15 @@ public sealed partial class ShortcutControl : UserControl, IDisposable, IRecipie
 
     private void SetKeys()
     {
-        var keys = HotkeySettings?.GetKeysList();
+        var shortcut = UseWindowsKey ? new HotkeySettings(true, false, false, false, 0) : HotkeySettings;
+        var keys = shortcut?.GetKeysList();
 
         if (keys != null && keys.Count > 0)
         {
             VisualStateManager.GoToState(this, "Configured", true);
             PreviewKeysControl.ItemsSource = keys;
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-            AutomationProperties.SetHelpText(EditButton, HotkeySettings.ToString());
+            AutomationProperties.SetHelpText(EditButton, shortcut.ToString());
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
         else

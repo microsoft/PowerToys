@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
@@ -76,6 +77,97 @@ public partial class ListViewModelTests
         public void TriggerItemsChanged(int totalItems) => RaiseItemsChanged(totalItems);
     }
 
+    private sealed partial class EarlyPublishingPage : ListPage
+    {
+        private readonly Lock _gate = new();
+        private IListItem[] _items = [new ListItem(new NoOpCommand() { Name = "Item 0" })];
+        private int _loadMoreCount;
+        private int _activeLoads;
+        private int _maxConcurrentLoads;
+
+        public ManualResetEventSlim? Release { get; init; }
+
+        public int LoadMoreCount => Volatile.Read(ref _loadMoreCount);
+
+        public int MaxConcurrentLoads => Volatile.Read(ref _maxConcurrentLoads);
+
+        public override IListItem[] GetItems() => Volatile.Read(ref _items);
+
+        public override void LoadMore()
+        {
+            lock (_gate)
+            {
+                _maxConcurrentLoads = Math.Max(_maxConcurrentLoads, ++_activeLoads);
+            }
+
+            try
+            {
+                var count = Interlocked.Increment(ref _loadMoreCount);
+                Volatile.Write(ref _items, [.. GetItems(), new ListItem(new NoOpCommand() { Name = $"Item {count}" })]);
+
+                // Raising ItemsChanged inline lets the batch publish before LoadMore returns.
+                RaiseItemsChanged(GetItems().Length);
+                Release?.Wait(TimeSpan.FromSeconds(5));
+            }
+            finally
+            {
+                lock (_gate)
+                {
+                    _activeLoads--;
+                }
+            }
+        }
+    }
+
+    private sealed partial class DelayedAvailabilityPage : ListPage
+    {
+        private IListItem[] _items = [new ListItem(new NoOpCommand() { Name = "Item 0" })];
+        private volatile bool _available = true;
+        private int _blockNextRead;
+        private int _loadMoreCount;
+
+        public ManualResetEventSlim? ReadStarted { get; init; }
+
+        public ManualResetEventSlim? ReleaseRead { get; init; }
+
+        public int LoadMoreCount => Volatile.Read(ref _loadMoreCount);
+
+        public override bool HasMoreItems
+        {
+            get
+            {
+                // Capture the answer before stalling, like a slow provider call.
+                var available = _available;
+                if (Interlocked.Exchange(ref _blockNextRead, 0) == 1)
+                {
+                    ReadStarted?.Set();
+                    ReleaseRead?.Wait(TimeSpan.FromSeconds(5));
+                }
+
+                return available;
+            }
+        }
+
+        public override IListItem[] GetItems() => Volatile.Read(ref _items);
+
+        public override void LoadMore() => Interlocked.Increment(ref _loadMoreCount);
+
+        public void ReportExhaustionWithSlowRead()
+        {
+            _available = false;
+            Volatile.Write(ref _blockNextRead, 1);
+            OnPropertyChanged(nameof(HasMoreItems));
+        }
+
+        public void StartQueryWithMoreItems()
+        {
+            // No change notification: only a fresh provider check can see the new availability.
+            _available = true;
+            Volatile.Write(ref _items, [new ListItem(new NoOpCommand() { Name = "New query" })]);
+            RaiseItemsChanged(1);
+        }
+    }
+
     private sealed partial class LaunchFilters : Filters
     {
         public LaunchFilters()
@@ -124,6 +216,8 @@ public partial class ListViewModelTests
 
         public string? FilterWhenSearchChanged { get; private set; }
 
+        public IListItem[] Items { get; set; } = [new ListItem(new NoOpCommand() { Name = "Result" })];
+
         public SearchableDynamicPage()
         {
             Filters = new LaunchFilters();
@@ -132,6 +226,7 @@ public partial class ListViewModelTests
         public override void UpdateSearchText(string oldSearch, string newSearch)
         {
             FilterWhenSearchChanged = Filters?.CurrentFilterId;
+            RaiseItemsChanged(Items.Length);
         }
 
         public override IListItem[] GetItems()
@@ -139,8 +234,10 @@ public partial class ListViewModelTests
             GetItemsCallCount++;
             SearchAtFirstGetItems ??= SearchText;
             FilterAtFirstGetItems ??= Filters?.CurrentFilterId;
-            return [new ListItem(new NoOpCommand() { Name = "Result" })];
+            return Items;
         }
+
+        public void TriggerItemsChanged(int totalItems) => RaiseItemsChanged(totalItems);
     }
 
     private static ListViewModel CreateViewModel(IListPage page) =>
@@ -197,6 +294,63 @@ public partial class ListViewModelTests
             Assert.AreEqual("running", page.FilterAtFirstGetItems);
             Assert.AreEqual("ssh", page.SearchAtFirstGetItems);
             Assert.AreEqual("ssh", viewModel.SearchTextBox);
+        }
+        finally
+        {
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false, -1, false, true)]
+    [DataRow(false, 1, false, true)]
+    [DataRow(false, 2, false, false)]
+    [DataRow(false, 1, true, false)]
+    [DataRow(false, 2, true, false)]
+    [DataRow(false, -1, true, false)]
+    [DataRow(true, 2, false, true)]
+    [DataRow(true, 1, true, false)]
+    public async Task ReorderedStableResults_PreserveSelectionIntent(bool isRootPage, int selectedIndex, bool incremental, bool forceFirst)
+    {
+        var section = new Separator("Apps");
+        var winaero = new ListItem(new NoOpCommand() { Name = "Winaero" });
+        var word = new ListItem(new NoOpCommand() { Name = "Word" });
+        var page = new SearchableDynamicPage { Items = [section, winaero, word] };
+        var viewModel = CreateViewModel(page);
+        viewModel.IsRootPage = isRootPage;
+
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+            var originalWinaero = viewModel.FilteredItems[1];
+            var originalWord = viewModel.FilteredItems[2];
+            viewModel.UpdateSelectedItemCommand.Execute(selectedIndex < 0 ? null : viewModel.FilteredItems[selectedIndex]);
+            page.Items = [section, word, winaero];
+
+            var update = await ObserveNextItemsUpdateAsync(viewModel, () =>
+            {
+                if (incremental)
+                {
+                    page.TriggerItemsChanged(ListViewModel.IncrementalRefresh);
+                }
+                else
+                {
+                    viewModel.SearchTextBox = "winword";
+                }
+            });
+
+            Assert.AreSame(originalWord, viewModel.FilteredItems[1]);
+            Assert.AreSame(originalWinaero, viewModel.FilteredItems[2]);
+            Assert.AreEqual(forceFirst, update.ForceFirstItem);
+
+            if (incremental)
+            {
+                // Moving a selected row can change its position without changing selection.
+                page.Items = [section, winaero, word];
+                var nextUpdate = await ObserveNextItemsUpdateAsync(viewModel, () => viewModel.SearchTextBox = "winword");
+                Assert.AreEqual(isRootPage || selectedIndex < 0 || selectedIndex == 2, nextUpdate.ForceFirstItem);
+            }
         }
         finally
         {
@@ -302,6 +456,106 @@ public partial class ListViewModelTests
         {
             viewModel.SafeCleanup();
             viewModel.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task LoadMoreRequestedAfterEarlyPublicationQueuesNextBatch()
+    {
+        using var release = new ManualResetEventSlim();
+        var page = new EarlyPublishingPage
+        {
+            Id = "list.page",
+            Name = "List Page",
+            Title = "List Page",
+            HasMoreItems = true,
+            Release = release,
+        };
+
+        var viewModel = CreateViewModel(page);
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+
+            // The first batch publishes while its LoadMore call is still blocked.
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.LoadMoreIfNeeded);
+            await WaitUntilAsync(() => !IsLoadMorePending(viewModel));
+            Assert.AreEqual(1, page.LoadMoreCount);
+
+            // A request after publication must not be absorbed by the still-running call.
+            viewModel.LoadMoreIfNeeded();
+            release.Set();
+
+            await WaitUntilAsync(() => page.LoadMoreCount == 2);
+            Assert.AreEqual(1, page.MaxConcurrentLoads, "LoadMore calls must not overlap.");
+        }
+        finally
+        {
+            release.Set();
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task HasMoreItemsReadOlderThanFetchDoesNotRestoreExhaustion()
+    {
+        using var readStarted = new ManualResetEventSlim();
+        using var releaseRead = new ManualResetEventSlim();
+        var page = new DelayedAvailabilityPage
+        {
+            Id = "list.page",
+            Name = "List Page",
+            Title = "List Page",
+            ReadStarted = readStarted,
+            ReleaseRead = releaseRead,
+        };
+
+        var viewModel = CreateViewModel(page);
+        try
+        {
+            await ObserveNextItemsUpdateAsync(viewModel, viewModel.InitializeProperties);
+
+            // The change-notification re-read captures "no more items", then stalls.
+            page.ReportExhaustionWithSlowRead();
+            Assert.IsTrue(readStarted.Wait(TimeSpan.FromSeconds(5)));
+
+            // A newer fetch resets availability to unknown before that read finishes.
+            await ObserveNextItemsUpdateAsync(viewModel, page.StartQueryWithMoreItems);
+            releaseRead.Set();
+            await DrainLoadMoreSchedulerAsync(viewModel);
+
+            Assert.IsTrue(await viewModel.TryLoadMoreBeforeWrapAsync(), "The wrap must ask the provider again.");
+            Assert.AreEqual(1, page.LoadMoreCount);
+        }
+        finally
+        {
+            releaseRead.Set();
+            viewModel.SafeCleanup();
+            viewModel.Dispose();
+        }
+    }
+
+    private static Task DrainLoadMoreSchedulerAsync(ListViewModel viewModel)
+    {
+        // The LoadMore scheduler runs one task at a time, in order.
+        var factory = (TaskFactory)typeof(ListViewModel).GetField("_loadMoreTaskFactory", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(viewModel)!;
+        return factory.StartNew(static () => { });
+    }
+
+    private static bool IsLoadMorePending(ListViewModel viewModel)
+    {
+        var guard = typeof(ListViewModel).GetField("_isLoadingMore", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(viewModel)!;
+        return (bool)guard.GetType().GetProperty("Value")!.GetValue(guard)!;
+    }
+
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        var deadline = DateTime.UtcNow + TimeSpan.FromSeconds(5);
+        while (!condition())
+        {
+            Assert.IsTrue(DateTime.UtcNow < deadline, "Condition was not met in time.");
+            await Task.Delay(10);
         }
     }
 

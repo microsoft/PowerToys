@@ -172,7 +172,7 @@ internal static class FancyZonesDataService
             return (false, "Monitor not found.");
         }
 
-        return ApplyLayoutToMonitors(layout, [monitorData.Value]);
+        return ApplyLayoutToMonitors(layout, new[] { monitorData.Value });
     }
 
     private static (bool Success, string Message) ApplyLayoutToMonitors(FancyZonesLayoutDescriptor layout, IEnumerable<EditorParameters.NativeMonitorDataWrapper> monitors)
@@ -187,7 +187,10 @@ internal static class FancyZonesDataService
             appliedFile = existingFile;
         }
 
-        appliedFile.AppliedLayouts ??= new List<AppliedLayouts.AppliedLayoutWrapper>();
+        appliedFile = new AppliedLayouts.AppliedLayoutsListWrapper
+        {
+            AppliedLayouts = appliedFile.AppliedLayouts ?? new List<AppliedLayouts.AppliedLayoutWrapper>(),
+        };
 
         var currentVirtualDesktop = FancyZonesVirtualDesktop.GetCurrentVirtualDesktopIdString();
 

@@ -15,6 +15,20 @@ public sealed partial class ShortcutDialogContentControl : UserControl
         this.InitializeComponent();
     }
 
+    internal CheckBox WindowsKeyOption => WindowsKeyCheckBox;
+
+    internal void FocusKeyCapture() => KeysControl.Focus(FocusState.Programmatic);
+
+    internal bool IsKeyCaptureEnabled
+    {
+        get => KeysControl.IsEnabled;
+        set
+        {
+            KeysControl.IsEnabled = value;
+            ShortcutGuidance.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+        }
+    }
+
     public List<object> Keys
     {
         get { return (List<object>)GetValue(KeysProperty); }

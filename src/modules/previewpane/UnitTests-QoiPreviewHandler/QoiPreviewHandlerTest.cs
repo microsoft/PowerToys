@@ -51,6 +51,7 @@ namespace QoiPreviewHandlerUnitTests
                 // Act
                 qoiPreviewHandlerControl.DoPreview(mockStream.Object);
                 var textBox = qoiPreviewHandlerControl.Controls[0] as RichTextBox;
+                Assert.IsNotNull(textBox);
 
                 // Assert
                 Assert.IsFalse(string.IsNullOrWhiteSpace(textBox.Text));

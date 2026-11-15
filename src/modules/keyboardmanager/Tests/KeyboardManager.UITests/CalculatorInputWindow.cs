@@ -12,6 +12,8 @@ internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
 {
     private const string ApplicationFrameWindowClass = "ApplicationFrameWindow";
     private const string WindowTitle = "Calculator";
+    private const int StartupSettleMS = 1_000;
+    private const int FocusAttempts = 3;
 
     private readonly Session window;
     private bool disposed;
@@ -41,11 +43,35 @@ internal sealed class CalculatorInputWindow : IKeyboardInputWindow, IDisposable
                 IsCalculatorWindow,
                 timeoutMS: 15_000);
             window = launchedWindow ?? throw new AssertFailedException("A new Calculator window did not open.");
-            ClassName = WindowsFinder.ListAll()
-                .First(candidate => candidate.Hwnd == window.WindowHandle)
-                .ClassName;
 
-            Assert.IsTrue(FocusInput(), "Calculator did not own foreground after launch.");
+            // Calculator can briefly show a transient window during startup. Let it settle, then
+            // re-resolve to the visible (uncloaked) Calculator window before verifying foreground.
+            var focused = false;
+            for (var attempt = 1; attempt <= FocusAttempts && !focused; attempt++)
+            {
+                Thread.Sleep(StartupSettleMS);
+                var stableWindow = WindowsFinder.WaitForWindow(
+                    candidate => IsCalculatorWindow(candidate) && !WindowHelper.IsWindowCloaked(new IntPtr(candidate.Hwnd)),
+                    timeoutMS: 5_000);
+                if (stableWindow is not null)
+                {
+                    window = stableWindow;
+                }
+
+                focused = FocusInput(timeoutMS: 5_000);
+            }
+
+            ClassName = WindowsFinder.ListAll()
+                .FirstOrDefault(candidate => candidate.Hwnd == window.WindowHandle)?
+                .ClassName ?? string.Empty;
+
+            if (!focused)
+            {
+                Assert.Fail(
+                    $"Calculator did not own foreground after launch ({FocusAttempts} attempts). " +
+                    $"Calculator HWND: 0x{window.WindowHandle:X}, class '{ClassName}'. " +
+                    $"Current foreground: {WindowControl.GetForegroundWindowInfo()}");
+            }
         }
         catch
         {

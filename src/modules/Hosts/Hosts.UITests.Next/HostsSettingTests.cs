@@ -106,12 +106,35 @@ namespace Hosts.UITests
                 "Should show warning dialog");
 
             // Quit Hosts File Editor.
+            int quitAttempts = 1;
             hostsSession.FindExact<Button>("Quit").Invoke(msPostAction: 0);
 
             // Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed.
+            var quitResult = WaitHelper.WaitForStable(
+                IsHostsFileEditorClosed,
+                closed => closed,
+                15_000,
+                requiredConsecutiveMatches: 3,
+                recover: _ =>
+                {
+                    // Quit is idempotent while the warning remains; never resend after the window closes.
+                    var buttons = hostsSession.FindAll<Button>(By.Name("Quit"), 0)
+                        .Where(button => string.Equals(button.Name, "Quit", StringComparison.Ordinal))
+                        .ToArray();
+                    Assert.IsTrue(buttons.Length <= 1, $"Expected at most one startup Quit button, found {buttons.Length}.");
+                    if (buttons.Length == 1 && buttons[0].IsEnabled)
+                    {
+                        quitAttempts++;
+                        TestContext.WriteLine($"Retrying startup Quit, attempt {quitAttempts}; PID={hostsSession.ProcessId}, HWND={hostsSession.WindowHandle}.");
+                        buttons[0].Invoke(msPostAction: 0);
+                    }
+                },
+                shouldRetryException: error => ShellMenu.IsTransientElementException(error) ||
+                    (error is AssertFailedException && IsHostsFileEditorClosed()));
             Assert.IsTrue(
-                settingsSession.WaitFor(IsHostsFileEditorClosed, 15_000, pollIntervalMS: 250),
-                "Hosts File Editor should be closed after click Quit button in Warning Dialog");
+                quitResult.Succeeded,
+                $"Hosts File Editor should be closed after click Quit button in Warning Dialog; attempts={quitAttempts}, windows={string.Join(", ", WindowsFinder.ListByApp("PowerToys.Hosts"))}, error={quitResult.LastException}.");
+            TestContext.WriteLine($"Startup Quit closed the editor after {quitAttempts} invocation attempt(s).");
 
             // Re-launch Hosts File Editor from Settings.
             settingsSession.FindExact<Button>("Open Hosts File Editor").Click();

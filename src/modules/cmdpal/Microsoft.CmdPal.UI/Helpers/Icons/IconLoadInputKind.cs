@@ -11,4 +11,11 @@ internal enum IconLoadInputKind
     ShellBinary,
     Stream,
     SpecializedAppIcon,
+    GeneratedSwatch,
+    GeneratedInitials,
+    SvgFile,
+    SvgInline,
+    ThemedSvgFile,
+    ThemedSvgInline,
+    ShellItemIcon,
 }

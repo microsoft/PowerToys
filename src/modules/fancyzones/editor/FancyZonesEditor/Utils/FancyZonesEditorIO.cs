@@ -264,8 +264,10 @@ namespace FancyZonesEditor.Utils
         {
             Logger.LogTrace();
 
-            AppliedLayouts.AppliedLayoutsListWrapper layouts = new AppliedLayouts.AppliedLayoutsListWrapper { };
-            layouts.AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>();
+            AppliedLayouts.AppliedLayoutsListWrapper layouts = new AppliedLayouts.AppliedLayoutsListWrapper
+            {
+                AppliedLayouts = new List<AppliedLayouts.AppliedLayoutWrapper>(),
+            };
 
             // Serialize used layouts
             foreach (var monitor in App.Overlay.Monitors)
@@ -320,8 +322,10 @@ namespace FancyZonesEditor.Utils
 
         public void SerializeLayoutHotkeys()
         {
-            LayoutHotkeys.LayoutHotkeysWrapper hotkeys = new LayoutHotkeys.LayoutHotkeysWrapper { };
-            hotkeys.LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper>();
+            LayoutHotkeys.LayoutHotkeysWrapper hotkeys = new LayoutHotkeys.LayoutHotkeysWrapper
+            {
+                LayoutHotkeys = new List<LayoutHotkeys.LayoutHotkeyWrapper>(),
+            };
 
             foreach (var pair in MainWindowSettingsModel.LayoutHotkeys.SelectedKeys)
             {
@@ -359,8 +363,10 @@ namespace FancyZonesEditor.Utils
 
         public void SerializeLayoutTemplates()
         {
-            LayoutTemplates.TemplateLayoutsListWrapper templates = new LayoutTemplates.TemplateLayoutsListWrapper { };
-            templates.LayoutTemplates = new List<LayoutTemplates.TemplateLayoutWrapper>();
+            LayoutTemplates.TemplateLayoutsListWrapper templates = new LayoutTemplates.TemplateLayoutsListWrapper
+            {
+                LayoutTemplates = new List<LayoutTemplates.TemplateLayoutWrapper>(),
+            };
 
             foreach (LayoutModel layout in MainWindowSettingsModel.TemplateModels)
             {
@@ -396,8 +402,10 @@ namespace FancyZonesEditor.Utils
         public void SerializeCustomLayouts()
         {
             CustomLayouts serializer = new CustomLayouts();
-            CustomLayouts.CustomLayoutListWrapper layouts = new CustomLayouts.CustomLayoutListWrapper { };
-            layouts.CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>();
+            CustomLayouts.CustomLayoutListWrapper layouts = new CustomLayouts.CustomLayoutListWrapper
+            {
+                CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>(),
+            };
 
             foreach (LayoutModel layout in MainWindowSettingsModel.CustomModels)
             {
@@ -496,8 +504,10 @@ namespace FancyZonesEditor.Utils
 
         public void SerializeDefaultLayouts()
         {
-            DefaultLayouts.DefaultLayoutsListWrapper layouts = new DefaultLayouts.DefaultLayoutsListWrapper { };
-            layouts.DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper>();
+            DefaultLayouts.DefaultLayoutsListWrapper layouts = new DefaultLayouts.DefaultLayoutsListWrapper
+            {
+                DefaultLayouts = new List<DefaultLayouts.DefaultLayoutWrapper>(),
+            };
 
             foreach (LayoutModel layout in MainWindowSettingsModel.TemplateModels)
             {
@@ -731,7 +741,7 @@ namespace FancyZonesEditor.Utils
                 models.Add(layout);
             }
 
-            MainWindowSettingsModel.CustomModels = models;
+            MainWindowSettingsModel.SetCustomModels(models);
 
             return result;
         }

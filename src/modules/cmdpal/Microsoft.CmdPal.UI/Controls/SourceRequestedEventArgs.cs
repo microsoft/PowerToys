@@ -12,15 +12,44 @@ namespace Microsoft.CmdPal.UI.Controls;
 /// <summary>
 /// See <see cref="IconBox.SourceRequested"/> event.
 /// </summary>
-public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs
+public class SourceRequestedEventArgs(object? key, ElementTheme requestedTheme, double scale = 1.0) : DeferredEventArgs, IIconRequestDemand, IIconRequestProgress
 {
+    private IconRequestDemandState _demandState;
+    private Func<IconSource, Action<bool>?, bool>? _intermediateSourceReporter;
+
     public object? Key { get; private set; } = key;
 
     public IconSource? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets an optional source to display while <see cref="Value"/> is being resolved.
+    /// Handlers should set this before their first asynchronous suspension so the control can present it immediately.
+    /// </summary>
+    public IconSource? FallbackSource { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this request is expected to resolve to an image.
+    /// This lets image-oriented placements reject a glyph produced by a final fallback path
+    /// without affecting ordinary glyph requests.
+    /// </summary>
+    internal bool ExpectsImageSource { get; set; }
 
     public ElementTheme Theme => requestedTheme;
 
     public double Scale => scale;
 
     internal IconRequestMeasurement Diagnostics { get; set; }
+
+    internal void SetIntermediateSourceReporter(Func<IconSource, Action<bool>?, bool> reporter) =>
+        _intermediateSourceReporter = reporter;
+
+    void IIconRequestDemand.Attach(IconLoadDemand loadDemand) => _demandState.Attach(loadDemand);
+
+    void IIconRequestDemand.Release() => _demandState.Release();
+
+    bool IIconRequestProgress.TryReportIntermediate(IconSource source, Action<bool>? presentationCompleted)
+    {
+        FallbackSource = source;
+        return Volatile.Read(ref _intermediateSourceReporter)?.Invoke(source, presentationCompleted) == true;
+    }
 }

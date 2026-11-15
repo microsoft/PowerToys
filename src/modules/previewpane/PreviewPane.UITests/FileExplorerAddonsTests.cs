@@ -74,15 +74,16 @@ public class FileExplorerAddonsTests : UITestBase
         FileExplorerSettings = SettingsConfigHelper.PreserveModuleSettings("File Explorer");
         try
         {
-            SettingsConfigHelper.UpdateModuleSettings(
-                "File Explorer",
-                """
+            const string DefaultFileExplorerSettings = """
                 {
                   "name": "File Explorer",
                   "version": "1.0",
                   "properties": {}
                 }
-                """,
+                """;
+            SettingsConfigHelper.UpdateModuleSettings(
+                "File Explorer",
+                DefaultFileExplorerSettings,
                 settings =>
                 {
                     var properties = settings["properties"] as JsonObject ?? new JsonObject();
@@ -353,19 +354,11 @@ public class FileExplorerAddonsTests : UITestBase
 
         var providerLog = WaitForProviderLog(
             providerLogDirectory,
-            $"Start PowerToys.{providerName}.exe",
+            $"{providerName} logger is initialized",
             ExplorerTimeoutMS);
         Assert.IsNotNull(
             providerLog,
             $"Windows Shell did not invoke the PowerToys {providerName} shim for the cold {extension} thumbnail.");
-        var providerLogText = ReadAllTextWithRetry(providerLog!);
-        Assert.IsFalse(
-            providerLogText.Contains("Bmp file not generated", StringComparison.OrdinalIgnoreCase) ||
-            providerLogText.Contains("Failed to start", StringComparison.OrdinalIgnoreCase),
-            $"The PowerToys {providerName} shim reported a generation failure.{Environment.NewLine}{providerLogText}");
-        var persistedLogPath = ArtifactPath($"{scenario}-provider", ".log");
-        File.WriteAllText(persistedLogPath, providerLogText);
-        TestContext.AddResultFile(persistedLogPath);
 
         var extraLarge = CaptureStableFileItem(explorer, assetName, $"{scenario}-extra-large");
 
@@ -385,6 +378,14 @@ public class FileExplorerAddonsTests : UITestBase
             minimumItemHeight: large.Height / 2,
             maximumItemHeight: large.Height * 9 / 10);
         var medium = CaptureStableFileItem(explorer, assetName, $"{scenario}-medium");
+
+        var providerLogText = ReadAllTextWithRetry(providerLog!);
+        var persistedLogPath = ArtifactPath($"{scenario}-provider", ".log");
+        File.WriteAllText(persistedLogPath, providerLogText);
+        TestContext.AddResultFile(persistedLogPath);
+        Assert.IsFalse(
+            ThumbnailProviderLog.HasGenerationFailure(providerLogText, providerName),
+            $"The PowerToys {providerName} shim reported a generation failure.{Environment.NewLine}{providerLogText}");
 
         AssertThumbnailSizes(extraLarge, large, medium, extension);
 
@@ -613,10 +614,10 @@ public class FileExplorerAddonsTests : UITestBase
             ExplorerTimeoutMS,
             requiredConsecutiveMatches: 4);
 
-        Assert.IsTrue(
-            selection.Succeeded,
+        string selectionMessage =
             $"Explorer did not establish a stable selection for '{filePath}'. " +
-            $"Last focused path: '{selection.LastObservation?.FocusedPath ?? "<none>"}'.");
+            $"Last focused path: '{selection.LastObservation?.FocusedPath ?? "<none>"}'.";
+        Assert.IsTrue(selection.Succeeded, selectionMessage);
     }
 
     private void SetExplorerViewAndWait(
@@ -884,13 +885,15 @@ public class FileExplorerAddonsTests : UITestBase
         ThumbnailCapture medium,
         string extension)
     {
-        Assert.IsTrue(
+        bool descendingSizes =
             extraLarge.Height >= 180 &&
             extraLarge.Height > large.Height &&
-            large.Height > medium.Height,
+            large.Height > medium.Height;
+        string sizesMessage =
             $"Explorer did not apply descending icon sizes for {extension}. " +
             $"Extra large: {extraLarge.Width}x{extraLarge.Height}; " +
-            $"large: {large.Width}x{large.Height}; medium: {medium.Width}x{medium.Height}.");
+            $"large: {large.Width}x{large.Height}; medium: {medium.Width}x{medium.Height}.";
+        Assert.IsTrue(descendingSizes, sizesMessage);
     }
 
     private static void AssertImageHasVisualDetail(string imagePath, string extension)
@@ -907,10 +910,10 @@ public class FileExplorerAddonsTests : UITestBase
             }
         }
 
-        Assert.IsTrue(
-            colorBuckets.Count >= 6,
+        string bucketsMessage =
             $"The captured {extension} Explorer item has only {colorBuckets.Count} sampled color buckets; " +
-            "the thumbnail appears blank or generic.");
+            "the thumbnail appears blank or generic.";
+        Assert.IsTrue(colorBuckets.Count >= 6, bucketsMessage);
     }
 
     private static string? WaitForProviderLog(string logDirectory, string expectedText, int timeoutMS)

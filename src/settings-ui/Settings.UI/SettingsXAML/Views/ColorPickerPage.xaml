@@ -97,7 +97,7 @@
                             x:Name="ColorPicker_ComboBox"
                             MinWidth="{StaticResource SettingActionControlMinWidth}"
                             DisplayMemberPath="Value"
-                            ItemsSource="{Binding ColorFormatsPreview, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            ItemsSource="{Binding ColorFormatsPreview, Mode=OneWay}"
                             Loaded="ColorPicker_ComboBox_Loaded"
                             SelectedIndex="{Binding ColorFormatsPreviewIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                             SelectedValue="{Binding SelectedColorRepresentationValue, Mode=TwoWay}"

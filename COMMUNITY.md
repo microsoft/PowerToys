@@ -227,9 +227,6 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@zadjii-msft](https://github.com/zadjii-msft) - Mike Griese - Dev
 - [@khmyznikov](https://github.com/khmyznikov) - Gleb Khmyznikov - Dev
 - [@chatasweetie](https://github.com/chatasweetie) - Jessica Earley-Cha - Dev
-- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
-- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
-- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev
 - [@crutkas](https://github.com/crutkas/) - Clint Rutkas - Overhead
 
 ## Former PowerToys core team members
@@ -262,3 +259,6 @@ ZoomIt source code was originally implemented by [Sysinternals](https://sysinter
 - [@zhaopy536](https://github.com/zhaopy536) - Peiyao Zhao - Dev
 - [@wang563681252](https://github.com/wang563681252) - Zhaopeng Wang - Dev
 - [@jamrobot](https://github.com/jamrobot) - Jerry Xu - Dev Lead
+- [@MichaelJolley](https://github.com/MichaelJolley) - Michael Jolley - Dev
+- [@Jaylyn-Barbee](https://github.com/Jaylyn-Barbee) - Jaylyn Barbee - Dev
+- [@zateutsch](https://github.com/zateutsch) - Zach Teutsch - Dev

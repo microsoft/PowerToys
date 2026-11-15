@@ -137,6 +137,183 @@ The integration of ZoomIt into PowerToys involved these key steps:
 
 ## Special Implementation Details
 
+### Snip With Dictation
+
+Enable dictation in ZoomIt's SNIP options, then `Ctrl+6` and start dragging. Tapping `Space`
+at any point during the drag opens the microphone, and on mouse up the captured image and
+the transcription are published together. A single paste then delivers a screenshot plus a
+spoken annotation or instruction into targets such as Copilot Chat.
+
+#### Delivering both halves in one paste
+
+`ClipboardPayload` publishes the snip in every format that can carry it. Only two mainstream
+Windows clipboard formats carry text and an image in a single payload, and both are
+published: `CF_HTML` (with the image inlined as a base64 `<img>`) and `Rich Text Format`
+(with the image embedded as a `\pict\pngblip`). Everything else on the clipboard is
+single-payload by definition, so there is no third option. `CF_HTML` and RTF are published
+first, ahead of `CF_DIB` and `CF_UNICODETEXT`, because clipboard enumeration order is
+`SetClipboardData` call order and some consumers take the first format they recognize.
+
+That is enough for applications that read a rich format - OneNote and Word paste the image
+and the text together. It is not enough for chat surfaces. The GitHub Copilot CLI and the
+Visual Studio Code chat input choose exactly one payload, and prefer text: the CLI's paste
+handler reads the clipboard text and, if it is non-empty, inserts it and never looks at the
+image; only when the text is empty does it fall through to attaching the image. No
+combination of clipboard formats changes that, because the choice is made in the
+application, not by the clipboard.
+
+`PasteChaperone` closes that gap by splitting the user's single gesture into two pastes. It
+publishes the image on its own, installs a low level keyboard hook, and waits. When it sees
+a physical `Ctrl+V` it stops hooking, lets the target consume the image, then swaps the
+clipboard to the transcription and synthesizes a second `Ctrl+V`. Once that is delivered the
+full multi-format payload is restored so a later paste into OneNote or Word still gets
+everything. The user presses `Ctrl+V` once and receives the screenshot as an attachment
+followed by the dictated instruction.
+
+The details that matter:
+
+- The hook must ignore `LLKHF_INJECTED`, or the synthesized paste retriggers the sequence.
+- A low level keyboard hook is dispatched on the thread that installed it and that thread
+  must be pumping messages, hence the dedicated chaperone thread.
+- `SetTimer` with a `NULL` window ignores the requested id and returns a new one, so the
+  returned values have to be stored and compared against `msg.wParam`.
+- Every stage records `GetClipboardSequenceNumber`. If it no longer matches, the user copied
+  something else and the sequence abandons quietly rather than overwriting their clipboard.
+- Arming succeeds only after the image is published and the low-level hook is installed.
+  If either step fails, the caller publishes the combined payload instead of leaving an
+  image-only clipboard behind.
+- Electron applications can hold the clipboard open while asynchronously creating an image
+  attachment. Stage transitions retry for a bounded interval while the clipboard sequence
+  and foreground target remain unchanged.
+- The second paste waits for the physical `Ctrl` to come up first, so the synthesized key
+  events do not interleave with the user's own.
+- If no paste arrives within a minute the combined payload is restored, leaving the user
+  exactly where they would have been had the chaperone never armed.
+
+The behavior is always enabled for dictation snips.
+
+Arming dictation from inside the drag rather than from a global chord is deliberate. The
+snip hotkeys have already consumed `Ctrl+6` (snip), `Ctrl+Shift+6` (snip to file) and
+`Ctrl+Alt+6` (snip with OCR), leaving only cumbersome combinations. The modal drag loop in
+`SelectRectangle` consumed nothing but `ESC`, so a keystroke there costs no global hotkey
+namespace, and the user's hand is already on the mouse. It also matches the way the feature
+is actually used: the decision to annotate usually comes after the selection is up.
+
+Starting is one way for the duration of a drag; there is no stop, so a stray second tap
+cannot discard words that have already been transcribed. Key auto repeat is filtered with
+bit 30 of `lParam`.
+
+#### Recognition engines
+
+`DictationSession` tries two engines and silently falls back, which is what lets the
+feature work with no setup at all:
+
+1. `whisper.cpp` with a quantized multilingual `base` model. The model is split into three
+   source files below GitHub's per-file warning threshold and linked as `RCDATA`; the runtime loader
+   presents those resources as one contiguous model stream without extracting anything to
+   disk. Recognition is offline and works identically in packaged PowerToys and standalone
+   ZoomIt. Recognition uses the current user's Windows display language, reduced to
+   its ISO language code (for example, `de-DE` becomes `de`). If Windows language
+   lookup fails or Whisper does not support that language, a diagnostic is logged
+   and automatic language detection is used. Transcription is not translated.
+2. SAPI (`CLSID_SpInprocRecognizer`) with a dictation grammar. Entirely on device, needs no
+   privacy consent or package identity, and remains available if the embedded model or
+   Whisper capture path cannot initialize.
+
+#### Recognition accuracy
+
+ZoomIt embeds `ggml-base-q5_1.bin` (59,707,625 bytes), whose SHA-256 is
+`422f1ae452ade6f30a004d7e5c6a43195e4433bc370bf23fac9cc591f01a8898`. The quantized
+`base` model supports multilingual transcription while reducing the embedded model
+and inference working set compared with `small.en`.
+
+`Prewarm` loads the model on the dictation worker while the user begins selecting the snip.
+Audio is captured during the drag, converted to mono floating-point PCM, resampled to
+Whisper's 16 kHz input rate, and transcribed when the mouse is released. Finalization is
+allowed up to twenty seconds for Whisper because inference, unlike SAPI event draining, is
+CPU-bound. The completed selection border, dimmed exterior, and badge remain visible, the
+pointer returns to the normal arrow, and the badge shows `Transcribing - Press Esc to cancel.`
+alongside a drawn, rotating progress ring. Capture exclusion keeps the selection overlay
+out of the screenshot without hiding it, and its exterior opacity stays unchanged on
+release. Escape cancels inference and abandons the snip without changing the clipboard.
+If a recognizer does not quiesce by the bounded deadline, ZoomIt requests cancellation,
+releases the selection UI, and lets the application-lifetime recognition worker drain in
+the background rather than retaining the modal desktop overlay.
+
+The badge fits its status and transcript text, with a maximum width of 520 DIPs and up to
+three wrapped transcript lines. Its initial width accommodates both the startup and listening
+labels, so opening the microphone does not resize the popup.
+It publishes its rendered pixels with `UpdateLayeredWindow`
+so the status and animation remain visible while finalization blocks the UI message loop,
+even when the selection overlay has pending paint messages.
+During transcription it reserves space for the whole spinner and keeps the text, width,
+and position fixed throughout the animation.
+The native `BadgeWindowTests` regression tests compare client-rendered badge pixels and
+window bounds, covering worker-thread startup updates and spinner rendering without
+pumping the UI queue during finalization.
+The native `SelectionWindowTests` exercise the real overlay and desktop capture to confirm
+that a retained selection keeps its opacity and is excluded from screenshots while still
+visible. These tests require an unlocked interactive Windows desktop.
+
+Audio capture for recording is independent from dictation. The microphone chooser applies
+to both features, but disabling "Include microphone in recording" does not disable
+dictation.
+
+Two things are easy to get wrong in the SAPI path and produce an engine that runs happily
+while hearing nothing:
+
+- The in process recognizer has no audio source until one is set, and passing `nullptr` to
+  `SetInput` does **not** select a default. A capture device has to be resolved explicitly
+  from the `SPCAT_AUDIOIN` token category.
+- The thread that calls `ISpRecoContext::GetEvents` must have joined the same multithreaded
+  apartment the context was created in, so the event loop calls `CoInitializeEx` itself.
+
+#### Choosing the microphone
+
+Dictation captures from the microphone selected on the Record page, so there is a single
+microphone setting for the whole application. Whisper enumerates Core Audio capture
+endpoints and matches the endpoint id embedded in the Windows `DeviceInformation` id that
+ZoomIt persists in `MicrophoneDeviceId`. An empty, stale, or unplugged selection falls back
+to the normal Windows default capture endpoint.
+
+SAPI identifies capture devices by its own token ids. Its fallback path resolves the stored
+Windows device id to a friendly name and matches that against `SPCAT_AUDIOIN` token
+descriptions.
+
+Descriptions are read directly from the token rather than with `SpGetDescription`, because
+`sphelper.h` pulls in ATL and a number of deprecated APIs.
+
+Components:
+
+| File | Responsibility |
+|------|----------------|
+| `SelectRectangle.{h,cpp}` | Raises `OnDragStarted` / `OnDictateRequested` / `OnSelectionChanged` / `OnDragCompleted` / `OnCancelled` so the caller can react to the drag without owning the modal loop |
+| `DictationSession.{h,cpp}` | Speech to text on a dedicated MTA worker thread. The UI thread is blocked inside the modal selection loop, so recognition cannot run on it |
+| `WhisperRecognizer.{h,cpp}` | Loads the embedded model, captures the selected Core Audio endpoint, resamples it to 16 kHz mono, and runs CPU inference |
+| `DictationBadge.{h,cpp}` | Layered, capture excluded overlay showing dictation status, centered on the top edge of the selection and following it as it is dragged |
+| `ClipboardPayload.{h,cpp}` | Publishes `CF_HTML`, `Rich Text Format`, `PNG`, `CF_DIB`, `CF_BITMAP`, `CF_HDROP` and `CF_UNICODETEXT` in one clipboard transaction |
+| `PasteChaperone.{h,cpp}` | Splits one Ctrl+V into an image paste followed by a text paste, for applications that accept only one of the two |
+
+Notes:
+
+- Format order matters. `CF_HTML` and `Rich Text Format` are published first because they are
+  the only formats that carry text and image together, and enumeration order is
+  `SetClipboardData` call order; applications otherwise choose whichever format they prefer.
+- `Start` only queues work on the recognition thread, so it cannot report whether the
+  microphone actually opened. The badge is driven by `OnStatusChanged` instead, and `Stop`
+  waits for a queued start to land before deciding there is nothing to finalize; otherwise
+  a quick drag silently discards the dictation.
+- Dictation is off by default because it opens the microphone. When `SnipDictateEnabled` is
+  clear, `Space` during a drag does nothing and a snip behaves exactly as it always has.
+- The options UI is deliberately just the enable toggle.
+  `SnipDictateToggleKey` (a snip that starts already listening), `SnipDictateOnSnip`,
+  `SnipDictatePrefix`, `SnipDictateGrace` and `SnipDictateClipboardFormats` remain registry
+  only settings.
+- The default backend is embedded Whisper. It needs no package identity or network access,
+  so it works in both the PowerToys build and the standalone Sysinternals build.
+- With nothing transcribed the clipboard receives image formats only, so a silent dictation
+  snip behaves like a plain snip.
+
 ### Font Selection
 
 ZoomIt requires storing font information as a binary LOGFONT structure in the registry. This required special handling:

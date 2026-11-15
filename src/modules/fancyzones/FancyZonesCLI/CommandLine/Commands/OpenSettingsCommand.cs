@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.CommandLine.Invocation;
+using System.CommandLine;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -15,10 +15,10 @@ internal sealed partial class OpenSettingsCommand : FancyZonesBaseCommand
     public OpenSettingsCommand()
         : base("open-settings", Properties.Resources.cmd_open_settings)
     {
-        AddAlias("settings");
+        Aliases.Add("settings");
     }
 
-    protected override string Execute(InvocationContext context)
+    protected override string Execute(ParseResult parseResult)
     {
         // Check in the same directory as the CLI (typical for dev builds)
         var powertoysExe = Path.Combine(AppContext.BaseDirectory, "PowerToys.exe");

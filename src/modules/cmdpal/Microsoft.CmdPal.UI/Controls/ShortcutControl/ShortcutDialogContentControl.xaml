@@ -17,6 +17,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition MinHeight="110" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0" IsTabStop="True" />
@@ -29,6 +30,7 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             HorizontalContentAlignment="Center"
+            IsTabStop="True"
             ItemsSource="{x:Bind Keys, Mode=OneWay}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -51,8 +53,16 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <StackPanel
+        <ptcontrols:CheckBoxWithDescriptionControl
+            x:Name="WindowsKeyCheckBox"
+            x:Uid="Settings_GeneralPage_UseWindowsKey_SettingsCard"
             Grid.Row="2"
+            Margin="0,24,0,0"
+            AutomationProperties.AutomationId="CmdPal_ShortcutDialog_UseWindowsKey"
+            Visibility="Collapsed" />
+
+        <StackPanel
+            Grid.Row="3"
             Margin="0,24,0,0"
             VerticalAlignment="Top"
             Orientation="Vertical"
@@ -74,6 +84,7 @@
                     Severity="Warning" />
             </Grid>
             <tkcontrols:MarkdownTextBlock
+                x:Name="ShortcutGuidance"
                 x:Uid="InvalidShortcutWarningLabel"
                 Background="Transparent"
                 FontSize="12"

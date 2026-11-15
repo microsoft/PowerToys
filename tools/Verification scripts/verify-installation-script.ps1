@@ -403,6 +403,7 @@ function Test-CoreFiles {
         
         # Mouse utilities
         'PowerToys.FindMyMouse.dll',
+        'PowerToys.MouseButtonLock.dll',
         'PowerToys.MouseHighlighter.dll',
         'PowerToys.MouseJump.dll',
         'PowerToys.MouseJump.Common.dll',
@@ -425,10 +426,10 @@ function Test-CoreFiles {
         'PowerToys.WorkspacesSnapshotTool.exe',
         'PowerToys.WorkspacesLauncher.exe',
         'PowerToys.WorkspacesWindowArranger.exe',
-        'PowerToys.WorkspacesEditor.exe',
-        'PowerToys.WorkspacesEditor.dll',
-        'PowerToys.WorkspacesLauncherUI.exe',
-        'PowerToys.WorkspacesLauncherUI.dll',
+        'WinUI3Apps\PowerToys.WorkspacesEditor.exe',
+        'WinUI3Apps\PowerToys.WorkspacesEditor.dll',
+        'WinUI3Apps\PowerToys.WorkspacesLauncherUI.exe',
+        'WinUI3Apps\PowerToys.WorkspacesLauncherUI.dll',
         'PowerToys.WorkspacesModuleInterface.dll',
         'PowerToys.WorkspacesCsharpLibrary.dll',
         
@@ -442,8 +443,7 @@ function Test-CoreFiles {
         'PowerToys.ZoomItSettingsInterop.dll',
         
         # Command Palette
-        'PowerToys.CmdPalModuleInterface.dll',
-        'CmdPalKeyboardService.dll'
+        'PowerToys.CmdPalModuleInterface.dll'
     )
     
     # WinUI3Apps signed files (in WinUI3Apps subdirectory)

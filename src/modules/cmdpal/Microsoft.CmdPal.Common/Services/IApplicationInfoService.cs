@@ -25,6 +25,11 @@ public interface IApplicationInfoService
     string LogDirectory { get; }
 
     /// <summary>
+    /// Gets the current log file path, or null when the logger is unavailable.
+    /// </summary>
+    string? LogFile { get; }
+
+    /// <summary>
     /// Gets the directory path where application configuration files are stored.
     /// </summary>
     string ConfigDirectory { get; }
@@ -52,6 +57,12 @@ public interface IApplicationInfoService
     /// </summary>
     /// <param name="getLogDirectory">Delegate to retrieve the log directory path.</param>
     void SetLogDirectory(Func<string> getLogDirectory);
+
+    /// <summary>
+    /// Sets the delegate used to retrieve the current log file path.
+    /// </summary>
+    /// <param name="getLogFile">Delegate to retrieve the current log file path.</param>
+    void SetLogFile(Func<string?> getLogFile);
 
     /// <summary>
     /// Sets the language override configured by the user.

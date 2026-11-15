@@ -15,7 +15,6 @@
 #include "../../src/common/version/version.h"
 #include "../../src/common/Telemetry/EtwTrace/EtwTrace.h"
 #include "../../src/common/utils/package.h"
-#include "../../src/common/utils/clean_video_conference.h"
 
 #include <winrt/Windows.ApplicationModel.h>
 #include <winrt/Windows.Foundation.h>
@@ -335,19 +334,6 @@ UINT __stdcall CheckGPOCA(MSIHANDLE hInstall)
 
 LExit:
     UINT er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
-    return WcaFinalize(er);
-}
-
-// We've deprecated Video Conference Mute. This Custom Action cleans up any stray registry entry for the driver dll.
-UINT __stdcall CleanVideoConferenceRegistryCA(MSIHANDLE hInstall)
-{
-    HRESULT hr = S_OK;
-    UINT er = ERROR_SUCCESS;
-    hr = WcaInitialize(hInstall, "CleanVideoConferenceRegistry");
-    ExitOnFailure(hr, "Failed to initialize");
-    clean_video_conference();
-LExit:
-    er = SUCCEEDED(hr) ? ERROR_SUCCESS : ERROR_INSTALL_FAILURE;
     return WcaFinalize(er);
 }
 
@@ -1586,6 +1572,7 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.PowerLauncher.exe",
         L"PowerToys.Settings.exe",
         L"PowerToys.AdvancedPaste.exe",
+        L"PowerToys.AdvancedPaste.Cli.exe",
         L"PowerToys.Awake.exe",
         L"PowerToys.FancyZones.exe",
         L"PowerToys.FancyZonesEditor.exe",
@@ -1605,9 +1592,13 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.ImageResizerCLI.exe",
         L"PowerToys.ImageResizer.CLI.exe",
         L"PowerToys.LightSwitchService.exe",
+        // Also matches the installed shim PowerToys.LightSwitch.CLI.exe.
+        L"PowerToys.LightSwitch.Cli.exe",
         L"PowerToys.PowerDisplay.exe",
         // Also matches the installed shim PowerToys.PowerDisplay.CLI.exe.
         L"PowerToys.PowerDisplay.Cli.exe",
+        // Also matches the installed shim PowerToys.Settings.CLI.exe.
+        L"PowerToys.Settings.Cli.exe",
         L"PowerToys.GcodeThumbnailProvider.exe",
         L"PowerToys.BgcodeThumbnailProvider.exe",
         L"PowerToys.PdfThumbnailProvider.exe",
@@ -1630,8 +1621,10 @@ UINT __stdcall TerminateProcessesCA(MSIHANDLE hInstall)
         L"PowerToys.QuickAccess.exe",
         L"PowerToys.WorkspacesSnapshotTool.exe",
         L"PowerToys.WorkspacesLauncher.exe",
+        L"PowerToys.WorkspacesCLI.exe",
+        L"PowerToys.Workspaces.CLI.exe",
         L"PowerToys.WorkspacesLauncherUI.exe",
-        L"PowerToys.WorkspacesEditor.exe",
+        L"WinUI3Apps\\PowerToys.WorkspacesEditor.exe",
         L"PowerToys.WorkspacesWindowArranger.exe",
         L"Microsoft.CmdPal.UI.exe",
         L"Microsoft.CmdPal.Ext.PowerToys.exe",

@@ -174,19 +174,18 @@ HICON template_item::get_explorer_icon_handle() const
 std::filesystem::path template_item::copy_object_to(const HWND window_handle, const std::filesystem::path destination) const
 {
     // SHFILEOPSTRUCT wants the from and to paths to be terminated with two NULLs.
-    wchar_t double_terminated_path_from[MAX_PATH + 1] = { 0 };
-    wcsncpy_s(double_terminated_path_from, this->path.c_str(), this->path.wstring().length());
-    double_terminated_path_from[this->path.wstring().length() + 1] = 0;
+    // std::wstring::c_str() supplies one terminating NULL, so append the second one.
+    std::wstring double_terminated_path_from = this->path.wstring();
+    double_terminated_path_from.push_back(L'\0');
 
-    wchar_t double_terminated_path_to[MAX_PATH + 1] = { 0 };
-    wcsncpy_s(double_terminated_path_to, destination.c_str(), destination.wstring().length());
-    double_terminated_path_to[destination.wstring().length() + 1] = 0;
+    std::wstring double_terminated_path_to = destination.wstring();
+    double_terminated_path_to.push_back(L'\0');
 
     SHFILEOPSTRUCT file_operation_params = { 0 };
     file_operation_params.wFunc = FO_COPY;
     file_operation_params.hwnd = window_handle;
-    file_operation_params.pFrom = double_terminated_path_from;
-    file_operation_params.pTo = double_terminated_path_to;
+    file_operation_params.pFrom = double_terminated_path_from.c_str();
+    file_operation_params.pTo = double_terminated_path_to.c_str();
     file_operation_params.fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMMKDIR | FOF_NOCOPYSECURITYATTRIBS;
 
     const int result = SHFileOperation(&file_operation_params);

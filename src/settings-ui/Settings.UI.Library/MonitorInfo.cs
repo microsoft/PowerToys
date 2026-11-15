@@ -371,20 +371,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public List<VcpCodeDisplayInfo> VcpCodesFormatted
         {
             get => _vcpCodesFormatted;
-            set
+            init => ReplaceVcpCodesFormatted(value);
+        }
+
+        public void ReplaceVcpCodesFormatted(IEnumerable<VcpCodeDisplayInfo> value)
+        {
+            var newValue = value?.ToList() ?? new List<VcpCodeDisplayInfo>();
+
+            // Only update if content actually changed (compare by VCP code list content)
+            if (AreVcpCodesEqual(_vcpCodesFormatted, newValue))
             {
-                var newValue = value ?? new List<VcpCodeDisplayInfo>();
-
-                // Only update if content actually changed (compare by VCP code list content)
-                if (AreVcpCodesEqual(_vcpCodesFormatted, newValue))
-                {
-                    return;
-                }
-
-                _vcpCodesFormatted = newValue;
-                OnPropertyChanged();
-                InvalidateColorPresetCache();
+                return;
             }
+
+            _vcpCodesFormatted = newValue;
+            OnPropertyChanged(nameof(VcpCodesFormatted));
+            InvalidateColorPresetCache();
         }
 
         /// <summary>
@@ -761,7 +763,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             EnableColorTemperature = other.EnableColorTemperature;
             EnablePowerState = other.EnablePowerState;
             CapabilitiesRaw = other.CapabilitiesRaw;
-            VcpCodesFormatted = other.VcpCodesFormatted;
+            ReplaceVcpCodesFormatted(other.VcpCodesFormatted);
             SupportsBrightness = other.SupportsBrightness;
             SupportsContrast = other.SupportsContrast;
             SupportsColorTemperature = other.SupportsColorTemperature;

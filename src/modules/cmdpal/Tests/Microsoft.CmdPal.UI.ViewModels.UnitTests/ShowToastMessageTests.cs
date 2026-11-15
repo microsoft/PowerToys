@@ -24,10 +24,12 @@ public class ShowToastMessageTests
     [TestMethod]
     public void ActionToastKeepsLongerDuration()
     {
-        var command = new CommandViewModel(new NoOpCommand(), new WeakReference<IPageContext>(Mock.Of<IPageContext>()));
+        var context = Mock.Of<IPageContext>();
+        var command = new CommandViewModel(new NoOpCommand(), new WeakReference<IPageContext>(context));
         var message = new ShowToastMessage("Action toast", Command: command);
 
         Assert.AreEqual(TimeSpan.FromSeconds(5), message.VisibleDuration);
+        GC.KeepAlive(context);
     }
 
     [TestMethod]

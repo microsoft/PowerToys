@@ -5,7 +5,11 @@
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
@@ -14,16 +18,7 @@ namespace Microsoft.CmdPal.UI.Helpers;
 /// </summary>
 public static partial class IconProvider
 {
-    /*
-      Memory Usage Considerations (raw estimates):
-      | Icon Size | Per Icon | Count |    Total | Per Icon @ 200% | Total @ 200% | Per Icon @ 300% | Total @ 300% |
-      | --------- | -------: | ----: | -------: | --------------: | -----------: | --------------: | -----------: |
-      | 20×20     |   1.6 KB |  1024 |   1.6 MB |          6.4 KB |       6.4 MB |         14.4 KB |      14.4 MB |
-      | 32×32     |   4.0 KB |   512 |   2.0 MB |           16 KB |       8.0 MB |         36.0 KB |      18.0 MB |
-      | 48×48     |   9.0 KB |   256 |   2.3 MB |           36 KB |       9.0 MB |         81.0 KB |      20.3 MB |
-      | 64×64     |  16.0 KB |    64 |   1.0 MB |           64 KB |       4.0 MB |        144.0 KB |       9.0 MB |
-      | 256×256   | 256.0 KB |    64 |  16.0 MB |            1 MB |      64.0 MB |          2.3 MB |       144 MB |
-    */
+    private static readonly Uri AppIconFallbackUri = new("ms-appx:///Assets/Icons/AppIconFallback.svg");
 
     private static IIconSourceProvider _provider16 = null!;
     private static IIconSourceProvider _provider20 = null!;
@@ -31,6 +26,7 @@ public static partial class IconProvider
     private static IIconSourceProvider _provider64 = null!;
     private static IIconSourceProvider _provider256 = null!;
     private static IIconSourceProvider _providerUnbound = null!;
+    private static ImageIconSource? _appIconFallbackSource;
 
     public static void Initialize(IServiceProvider serviceProvider)
     {
@@ -53,15 +49,29 @@ public static partial class IconProvider
 
         try
         {
-            args.Value = args.Key switch
+            var iconData = args.Key switch
             {
-                IconDataViewModel iconData => await service.GetIconSource(iconData, args.Scale, args.Diagnostics),
-                IconInfoViewModel iconInfo => await service.GetIconSource(
-                    args.Theme == Microsoft.UI.Xaml.ElementTheme.Light ? iconInfo.Light : iconInfo.Dark,
-                    args.Scale,
-                    args.Diagnostics),
+                IconDataViewModel value => value,
+                IconInfoViewModel value => value.IconForTheme(args.Theme == ElementTheme.Light),
                 _ => null,
             };
+            if (iconData is not null && AppIconProtocol.IsProtocol(iconData.Icon))
+            {
+                args.FallbackSource = _appIconFallbackSource ??= new ImageIconSource
+                {
+                    ImageSource = new SvgImageSource(AppIconFallbackUri),
+                };
+                args.ExpectsImageSource = true;
+            }
+
+            args.Value = iconData is null
+                ? null
+                : await service.GetIconSource(
+                    iconData,
+                    args.Scale,
+                    args.Diagnostics,
+                    args,
+                    args.Theme);
         }
         catch (Exception ex)
         {

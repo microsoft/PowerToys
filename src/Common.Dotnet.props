@@ -4,7 +4,7 @@
   <!-- Common Framework and Platform Settings -->
   <PropertyGroup>
     <CoreTargetFramework>net10.0</CoreTargetFramework>
-    <WindowsSdkPackageVersion>10.0.26100.68-preview</WindowsSdkPackageVersion>
+    <WindowsSdkPackageVersion>10.0.26100.87</WindowsSdkPackageVersion>
     <TargetFramework>$(CoreTargetFramework)-windows10.0.26100.0</TargetFramework>
     <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
     <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
@@ -16,7 +16,7 @@
     <WarningLevel>4</WarningLevel>
     <NoWarn></NoWarn>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>CA1824;CA1416;CA1720;CA1859;CA2263;CA2022;MVVMTK0045;MVVMTK0049</WarningsNotAsErrors>
+    <WarningsNotAsErrors>CA1859;CA2263;CA2022</WarningsNotAsErrors>
   </PropertyGroup>
 
   <!-- Debug Configuration -->

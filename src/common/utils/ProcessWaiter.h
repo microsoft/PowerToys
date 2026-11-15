@@ -1,5 +1,7 @@
 #include <functional>
+#include <memory>
 #include <string>
+#include <type_traits>
 #include <Windows.h>
 #include <thread>
 
@@ -20,33 +22,23 @@ namespace ProcessWaiter
             }
             return;
         }
+        // Detached on purpose: the INFINITE wait must never block the caller or process shutdown.
         std::thread([=]() {
-            HANDLE process = OpenProcess(SYNCHRONIZE, FALSE, pid);
-            if (process != nullptr)
-            {
-                if (WaitForSingleObject(process, INFINITE) == WAIT_OBJECT_0)
-                {
-                    CloseHandle(process);
-                    if (callback)
-                    {
-                        callback(ERROR_SUCCESS);
-                    }
-                }
-                else
-                {
-                    CloseHandle(process);
-                    if (callback)
-                    {
-                        callback(GetLastError());
-                    }
-                }
-            }
-            else
+            std::unique_ptr<std::remove_pointer_t<HANDLE>, decltype(&CloseHandle)> process{ OpenProcess(SYNCHRONIZE, FALSE, pid), &CloseHandle };
+            if (!process)
             {
                 if (callback)
                 {
                     callback(GetLastError());
                 }
+                return;
+            }
+
+            const DWORD result = WaitForSingleObject(process.get(), INFINITE) == WAIT_OBJECT_0 ? ERROR_SUCCESS : GetLastError();
+            process.reset();
+            if (callback)
+            {
+                callback(result);
             }
         }).detach();
     }

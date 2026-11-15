@@ -31,6 +31,7 @@ using Microsoft.CmdPal.Ext.WinGet;
 using Microsoft.CmdPal.UI.Controls;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Services;
+using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.BuiltinCommands;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -100,6 +101,7 @@ public partial class App : Application, IDisposable
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
+                Logger.LogInfo("Command Palette exit requested: PowerToys exit event.");
                 EtwTrace?.Dispose();
                 AppWindow?.Close();
                 Environment.Exit(0);
@@ -110,8 +112,9 @@ public partial class App : Application, IDisposable
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
 
-        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        // Now that CoreLogger is initialized, initialize the logger delegates in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
+        appInfoService.SetLogFile(() => Logger.CurrentLogFile);
     }
 
     /// <summary>
@@ -124,6 +127,12 @@ public partial class App : Application, IDisposable
 
         var activatedEventArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
         ((MainWindow)AppWindow).HandleLaunchNonUI(activatedEventArgs);
+
+        // Initialize the palette window before creating dock windows.
+        if (Services.GetRequiredService<ISettingsService>().Settings.EnableDock)
+        {
+            WeakReferenceMessenger.Default.Send(new ShowHideDockMessage(true));
+        }
     }
 
     /// <summary>
@@ -266,7 +275,9 @@ public partial class App : Application, IDisposable
         services.AddSingleton(persistenceService);
         services.AddSingleton(settingsService);
         services.AddSingleton<IAppStateService, AppStateService>();
+        services.AddSingleton<ISettingsLinkResolver, SettingsLinkResolver>();
         services.AddSingleton<ICmdPalProtocolActivation, CmdPalProtocolActivation>();
+        services.AddTransient<SettingsLinkContextMenuService>();
         services.AddSingleton<IAtRestDataProtector, CurrentUserDataProtector>();
         services.AddSingleton<IExternalCommandPermissionStore, ExternalCommandPermissionStore>();
 
@@ -277,6 +288,7 @@ public partial class App : Application, IDisposable
         services.AddSingleton<TopLevelCommandManager>();
         services.AddSingleton<AliasManager>();
         services.AddSingleton<HotkeyManager>();
+        services.AddSingleton<AccessKeyModeController>();
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<TrayIconService>();

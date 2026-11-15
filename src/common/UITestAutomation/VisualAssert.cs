@@ -5,12 +5,10 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
-using CoenM.ImageHash;
-using CoenM.ImageHash.HashAlgorithms;
+using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace Microsoft.PowerToys.UITest
 {
@@ -129,75 +127,117 @@ namespace Microsoft.PowerToys.UITest
         }
 
         /// <summary>
-        /// Test if two images are equal using ImageHash comparison
+        /// Test if two images are equal using structural similarity (SSIM).
+        /// Mirrors Microsoft.PowerToys.UITest.Next.VisualAssert until legacy tests are migrated.
         /// </summary>
         /// <param name="baselineImage">baseline image</param>
         /// <param name="testImage">test image</param>
         /// <returns>true if are equal,otherwise false</returns>
         private static bool AreEqual(Bitmap baselineImage, Bitmap testImage)
         {
-            try
+            const int SimilarityThreshold = 95;
+
+            if (baselineImage.Size != testImage.Size)
             {
-                // Define a threshold for similarity percentage
-                const int SimilarityThreshold = 95;
-
-                // Use CoenM.ImageHash for perceptual hash comparison
-                var hashAlgorithm = new AverageHash();
-
-                // Convert System.Drawing.Bitmap to SixLabors.ImageSharp.Image
-                using var baselineImageSharp = ConvertBitmapToImageSharp(baselineImage);
-                using var testImageSharp = ConvertBitmapToImageSharp(testImage);
-
-                // Calculate hashes for both images
-                var baselineHash = hashAlgorithm.Hash(baselineImageSharp);
-                var testHash = hashAlgorithm.Hash(testImageSharp);
-
-                // Compare hashes using CompareHash method
-                // Returns similarity percentage (0-100, where 100 is identical)
-                var similarity = CompareHash.Similarity(baselineHash, testHash);
-
-                // Consider images equal if similarity is very high
-                // Allow for minor rendering differences (threshold can be adjusted)
-                return similarity >= SimilarityThreshold; // 95% similarity threshold
+                return false;
             }
-            catch
-            {
-                // Fallback to pixel-by-pixel comparison if hash comparison fails
-                if (baselineImage.Width != testImage.Width || baselineImage.Height != testImage.Height)
-                {
-                    return false;
-                }
 
-                // WinAppDriver sometimes adds a border to the screenshot (around 2 pix width), and it is not always consistent.
-                // So we exclude the border when comparing the images, and usually it is the edge of the windows, won't affect the comparison.
-                int excludeBorderWidth = 5, excludeBorderHeight = 5;
-
-                for (int x = excludeBorderWidth; x < baselineImage.Width - excludeBorderWidth; x++)
-                {
-                    for (int y = excludeBorderHeight; y < baselineImage.Height - excludeBorderHeight; y++)
-                    {
-                        if (!VisualHelper.PixIsSame(baselineImage.GetPixel(x, y), testImage.GetPixel(x, y)))
-                        {
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
-            }
+            return CalculateSimilarity(baselineImage, testImage) >= SimilarityThreshold;
         }
 
         /// <summary>
-        /// Convert System.Drawing.Bitmap to SixLabors.ImageSharp.Image
+        /// Mean 8x8-block SSIM, weighted by pixel count so partial edge blocks are included.
+        /// RGB and alpha are compared independently; the lower score is returned.
         /// </summary>
-        /// <param name="bitmap">The bitmap to convert</param>
-        /// <returns>ImageSharp Image</returns>
-        private static Image<Rgba32> ConvertBitmapToImageSharp(Bitmap bitmap)
+        internal static double CalculateSimilarity(Bitmap baselineImage, Bitmap testImage)
         {
-            using var memoryStream = new MemoryStream();
-            bitmap.Save(memoryStream, System.Drawing.Imaging.ImageFormat.Png);
-            memoryStream.Position = 0;
-            return SixLabors.ImageSharp.Image.Load<Rgba32>(memoryStream);
+            ArgumentNullException.ThrowIfNull(baselineImage);
+            ArgumentNullException.ThrowIfNull(testImage);
+            if (baselineImage.Size != testImage.Size)
+            {
+                throw new ArgumentException("Visual comparison requires equal image dimensions.", nameof(testImage));
+            }
+
+            const int BlockSize = 8;
+            const double LuminanceStabilizer = 6.5025; // (0.01 * 255)^2
+            const double ContrastStabilizer = 58.5225; // (0.03 * 255)^2
+            var baseline = ReadPixels(baselineImage);
+            var actual = ReadPixels(testImage);
+            var width = baselineImage.Width;
+            var height = baselineImage.Height;
+            double colorScore = 0;
+            double alphaScore = 0;
+
+            for (var top = 0; top < height; top += BlockSize)
+            {
+                for (var left = 0; left < width; left += BlockSize)
+                {
+                    var right = Math.Min(left + BlockSize, width);
+                    var bottom = Math.Min(top + BlockSize, height);
+                    var count = (right - left) * (bottom - top);
+                    for (var channel = 0; channel < 4; channel++)
+                    {
+                        double sumBaseline = 0;
+                        double sumActual = 0;
+                        double squaredBaseline = 0;
+                        double squaredActual = 0;
+                        double product = 0;
+                        for (var y = top; y < bottom; y++)
+                        {
+                            for (var x = left; x < right; x++)
+                            {
+                                var index = (y * width) + x;
+                                var first = (baseline[index] >> (channel * 8)) & 255;
+                                var second = (actual[index] >> (channel * 8)) & 255;
+                                sumBaseline += first;
+                                sumActual += second;
+                                squaredBaseline += first * first;
+                                squaredActual += second * second;
+                                product += first * second;
+                            }
+                        }
+
+                        var meanBaseline = sumBaseline / count;
+                        var meanActual = sumActual / count;
+                        var varianceBaseline = Math.Max(0, (squaredBaseline / count) - (meanBaseline * meanBaseline));
+                        var varianceActual = Math.Max(0, (squaredActual / count) - (meanActual * meanActual));
+                        var covariance = (product / count) - (meanBaseline * meanActual);
+                        var similarity =
+                            (((2 * meanBaseline * meanActual) + LuminanceStabilizer) * ((2 * covariance) + ContrastStabilizer)) /
+                            (((meanBaseline * meanBaseline) + (meanActual * meanActual) + LuminanceStabilizer) *
+                            (varianceBaseline + varianceActual + ContrastStabilizer));
+                        if (channel == 3)
+                        {
+                            alphaScore += similarity * count;
+                        }
+                        else
+                        {
+                            colorScore += similarity * count;
+                        }
+                    }
+                }
+            }
+
+            return Math.Clamp(Math.Min(colorScore / (baseline.Length * 3d), alphaScore / baseline.Length) * 100, 0, 100);
+        }
+
+        private static int[] ReadPixels(Bitmap image)
+        {
+            var pixels = new int[checked(image.Width * image.Height)];
+            var data = image.LockBits(new Rectangle(Point.Empty, image.Size), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+            try
+            {
+                for (var row = 0; row < image.Height; row++)
+                {
+                    Marshal.Copy(IntPtr.Add(data.Scan0, row * data.Stride), pixels, row * image.Width, image.Width);
+                }
+            }
+            finally
+            {
+                image.UnlockBits(data);
+            }
+
+            return pixels;
         }
     }
 }

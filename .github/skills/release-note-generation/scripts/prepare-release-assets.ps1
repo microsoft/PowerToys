@@ -11,6 +11,10 @@
     validates installer signatures, ADO-published hashes, ZIP integrity, and
     GPO contents, then writes hashes.md and assets-manifest.json.
 
+    For preview preparation, pass -ReleaseTag from the resolved build context
+    to use three-component tags in download URLs without renaming assets.
+    Omitting -ReleaseTag preserves the existing full-version URL convention.
+
     Requires: az login (Azure CLI authenticated), az devops extension.
 
 .EXAMPLE
@@ -22,6 +26,9 @@ param(
     [int]$BuildId,
 
     [string]$Version,
+
+    [ValidatePattern('^v[0-9]+\.[0-9]+\.[0-9]+$')]
+    [string]$ReleaseTag,
 
     [string]$BuildMetadataPath,
 
@@ -221,6 +228,9 @@ if (-not $versionParam) {
 }
 if ($versionParam -notmatch "^\d+\.\d+\.\d+\.0$") {
     throw "Resolved version '$versionParam' is not a valid four-component PowerToys version."
+}
+if ($ReleaseTag -and $ReleaseTag -cne "v$($versionParam -replace '\.0$', '')") {
+    throw "ReleaseTag '$ReleaseTag' must match the first three components of version '$versionParam'."
 }
 Write-Host "  Version: $versionParam" -ForegroundColor DarkGray
 
@@ -484,8 +494,8 @@ foreach ($zipName in @($gpoFileName, "symbols-x64.zip", "symbols-arm64.zip")) {
 }
 
 # --- Step 8: Build the installer hash markdown and manifests ---
-$releaseTag = "v$versionParam"
-$releaseBaseUrl = "https://github.com/$GitHubRepo/releases/download/$releaseTag"
+$resolvedTag = if ($ReleaseTag) { $ReleaseTag } else { "v$versionParam" }
+$releaseBaseUrl = "https://github.com/$GitHubRepo/releases/download/$resolvedTag"
 $sb = [System.Text.StringBuilder]::new()
 [void]$sb.AppendLine("## Installer Hashes")
 [void]$sb.AppendLine("")
