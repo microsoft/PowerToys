@@ -32,7 +32,7 @@ public static partial class Program
     internal const int RuntimeErrorExitCode = 1;
     internal const int ArgumentErrorExitCode = 2;
     internal const int MaximumInputCharacters = 16 * 1024 * 1024;
-    private const string SupportedActions = "plain-text, markdown, json, fix-spelling-and-grammar, image-to-text, paste-as-txt-file, paste-as-png-file, paste-as-html-file, transcode-to-mp3, transcode-to-mp4, or paste-with-ai";
+    private const string SupportedActions = "plain-text, markdown, json, fix-spelling-and-grammar, image-to-text, paste-as-txt-file, paste-as-png-file, paste-as-jpg-file, paste-as-html-file, transcode-to-mp3, transcode-to-mp4, or paste-with-ai";
     private const string TransformUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe transform (--action <name>|--custom-action <id-or-name>) [--input <path>|--stdin|--clipboard] [--output <path>|--stdout|--output-clipboard] [--prompt <text>] [--provider <id>] [--json]";
     private const string ActionsListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe actions list [--json]";
     private const string ProvidersListUsage = "Usage: PowerToys.AdvancedPaste.CLI.exe providers list [--json]";
@@ -665,15 +665,15 @@ public static partial class Program
 
         internal Command ProvidersList { get; } = new("list", "List configured AI provider IDs for --provider without making AI requests.");
 
-        internal IEnumerable<Option> ValueOptions =>
-        [
+        internal IEnumerable<Option> ValueOptions => new Option[]
+        {
             Action,
             CustomAction,
             Prompt,
             Provider,
             Input,
             Output,
-        ];
+        };
     }
 
     [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]

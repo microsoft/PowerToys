@@ -8,9 +8,9 @@ namespace Awake.Core;
 
 internal static class AwakeStateCalculator
 {
-    internal static ExecutionState ComputeAwakeState(bool keepDisplayOn, bool isScreenLocked)
+    internal static ExecutionState ComputeAwakeState(bool keepDisplayOn,     bool isScreenLocked, bool allowDisplayOffWhileLocked = true)
     {
-        return keepDisplayOn && !isScreenLocked
+            return keepDisplayOn && !(isScreenLocked && allowDisplayOffWhileLocked)
             ? ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_DISPLAY_REQUIRED | ExecutionState.ES_CONTINUOUS
             : ExecutionState.ES_SYSTEM_REQUIRED | ExecutionState.ES_CONTINUOUS;
     }

@@ -64,6 +64,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
         additional["image-to-text"]!["shortcut"] = DirectShortcut(Key.I);
         additional["paste-as-file"]!["paste-as-txt-file"]!["shortcut"] = DirectShortcut(Key.T);
         additional["paste-as-file"]!["paste-as-png-file"]!["shortcut"] = DirectShortcut(Key.P);
+        additional["paste-as-file"]!["paste-as-jpg-file"]!["shortcut"] = DirectShortcut(Key.K);
         additional["paste-as-file"]!["paste-as-html-file"]!["shortcut"] = DirectShortcut(Key.H);
         additional["transcode"]!["transcode-to-mp3"]!["shortcut"] = DirectShortcut(Key.F7);
         additional["transcode"]!["transcode-to-mp4"]!["shortcut"] = DirectShortcut(Key.F8);

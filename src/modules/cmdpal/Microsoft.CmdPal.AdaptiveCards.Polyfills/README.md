@@ -12,9 +12,10 @@
 
 The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Adaptive Cards schema. This library fills the gaps until it does:
 
-- The `Chart.Line` element.
+- The `Chart.Line`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
+- `roundedCorners` and `showBorder` on containers, column sets, and columns.
 
-Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. Nothing here is specific to Command Palette, so each piece can move to the open-source renderer and be deleted here (see [Upstream](#upstream)).
+Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. These are partial implementations, not full schema conformance; see [Bar chart limitations](#bar-chart-limitations). Each piece can serve as a reference when adding support to the open-source renderer (see [Upstream](#upstream)).
 
 ## Use it
 
@@ -31,6 +32,8 @@ The library is self-contained, so deleting it only means removing these calls an
 - **Strings.** The `AdaptiveChart_*` strings live in this library's `Properties\Resources.resx`: chart names and summaries for screen readers, and the suffixes of compact numbers such as 12.3K.
 - **Element JSON.** `AdaptiveCustomElementJson` is internal. Command Palette's settings inputs keep their own copy, so nothing outside this library depends on it.
 
+The host provides **container styles**. `roundedCorners` and `showBorder` apply the `CmdPal.Adaptive.Container.Rounded`, `CmdPal.Adaptive.Container.Bordered`, and `CmdPal.Adaptive.Container.RoundedBordered` styles from the renderer's override styles (`CardOverrideStyles` in `ContentFormControl.xaml`).
+
 ## How an element works
 
 Each element has two parts, joined in `AdaptiveCardPolyfills`:
@@ -44,11 +47,27 @@ Models read only the properties that the element's page in the [Adaptive Cards e
 
 A model whose `RendersItself` is false can't draw itself, so the element shows its `fallback` instead. `AdaptiveFallbackRenderer` draws it, since the WinUI 3 renderer drops fallback content.
 
+`AdaptiveContainerDecoratorRenderer` wraps the built-in container, column set, and column renderers to apply the container styles.
+
 ## Theming
 
 - `ChartPalette` resolves color names (semantic, categorical, sequential, and diverging) to a light theme and a dark theme variant.
-- `ChartTheme` adds the accent color, text and track colors, and high contrast: data takes the contrast theme's colors in turn, and line series also differ by dash pattern.
+- `ChartTheme` adds the accent color, text and track colors, and high contrast: data takes the contrast theme's colors in turn, line series also differ by dash pattern, and every third and fourth part is an outline.
 - The host config sets text sizes, spacing, and container styles. Command Palette's is in `AdaptiveCardsConfig`.
+
+## Icons
+
+`Icon` elements and the `Badge` `icon` property name icons from the Fluent System Icons catalog that Adaptive Cards uses, such as `Calendar` or `Wifi1`. They're drawn with Segoe Fluent Icons, the font Command Palette already uses for glyphs, so `FluentIconGlyphs` maps each name to the Segoe Fluent Icons glyph that draws the same symbol, with a filled glyph where one exists. Names without a matching glyph aren't listed. For them, `AdaptiveFallbackRenderer` draws the icon's `fallback`, since the WinUI 3 renderer drops fallback content, and `IconModel.HasGlyph` tells the incremental updater that the icon doesn't draw itself.
+
+Icon sizes map to font sizes from 12 to 48 device-independent pixels (DIPs), with a default of 24 DIPs. `IconModel.FontSizeInDips` is assigned directly to WinUI's `FontIcon.FontSize`, so display scaling determines the physical pixel size; it does not specify the glyph's exact visible bounds.
+
+To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName` type of `@microsoft/teams.cards`), and compare the two glyphs side by side before adding it. Some glyphs, such as `RAM`, are only in Segoe Fluent Icons; on Windows 10 without that font they don't draw, as with other Command Palette glyphs.
+
+## Bar chart limitations
+
+`Chart.VerticalBar` supports negative values. `Chart.HorizontalBar` and `Chart.HorizontalBar.Stacked` currently support only nonnegative values. Their parsers warn when negative data is supplied: horizontal bars clamp it to zero, and stacked bars omit negative segments from the drawing and totals. Original signed values remain in the model and accessibility summaries. A warning does not invoke the element's fallback.
+
+Supporting signed horizontal data requires a common zero baseline, bars extending to either side, and separate positive and negative totals for stacked groups. `PartToWhole` also needs an explicit policy for negative inputs before it can claim support.
 
 ## Add an element
 
@@ -63,7 +82,9 @@ Everything here is registered through the WinUI 3 renderer's public custom eleme
 
 | Piece | What upstream needs |
 |---|---|
-| `Chart.Line` | An object model class and a XAML renderer. This control and its tests are a reference implementation. |
+| The chart elements | New object model classes and XAML renderers. These controls and their tests are a reference implementation. |
+| `ProgressBar`, `Badge`, `Icon` | The object model classes from the shared C++ model in [microsoft/AdaptiveCards-Mobile](https://github.com/microsoft/AdaptiveCards-Mobile), and XAML renderers. |
+| `roundedCorners`, `showBorder` | The parsing from AdaptiveCards-Mobile's shared model, and support in the container renderers. |
 | `AdaptiveFallbackRenderer` | A fix in `XamlBuilder::RenderAsUIElement`, which renders an element's fallback but returns an empty result. |
 
 When a renderer release adds one:

@@ -88,6 +88,7 @@ void Trace::AdvancedPaste_SettingsTelemetry(const PowertoyModuleIface::Hotkey& p
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"ImageToText"), "ImageToTextHotkey"),
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsTxtFile"), "PasteAsTxtFileHotkey"),
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsPngFile"), "PasteAsPngFileHotkey"),
+        TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsJpgFile"), "PasteAsJpgFileHotkey"),
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"PasteAsHtmlFile"), "PasteAsHtmlFileHotkey"),
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"TranscodeToMp3"), "TranscodeToMp3Hotkey"),
         TraceLoggingWideString(getAdditionalActionHotkeyCStr(L"TranscodeToMp4"), "TranscodeToMp4Hotkey")

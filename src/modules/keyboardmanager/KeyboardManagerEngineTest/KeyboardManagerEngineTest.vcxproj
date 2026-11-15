@@ -41,6 +41,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AppSpecificShortcutRemappingTests.cpp" />
+    <ClCompile Include="CloseAndEndTaskTests.cpp" />
     <ClCompile Include="MockedInputSanityTests.cpp" />
     <ClCompile Include="SetKeyEventTests.cpp" />
     <ClCompile Include="OSLevelShortcutRemappingTests.cpp" />
