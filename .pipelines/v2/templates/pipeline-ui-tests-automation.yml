@@ -94,7 +94,10 @@ stages:
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             uiTestModules: ${{ parameters.uiTestModules }}
-            umdfHidSmokeOnly: ${{ parameters.umdfHidSmokeOnly }}
+            ${{ if eq(parameters.umdfHidSmokeOnly, true) }}:
+              executionMode: smokeOnly
+            ${{ else }}:
+              executionMode: fullProduct
             cohorts: ${{ parameters.uiTestDiagnosticCohorts }}
       - ${{ if and(eq(length(parameters.uiTestDiagnosticCohorts), 0), or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim'))) }}:
         - template: pipeline-ui-tests-full-build.yml

@@ -18,9 +18,9 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
-  - name: umdfHidSmokeOnly
-    type: boolean
-    values: [false]
+  - name: executionMode
+    type: string
+    values: [fullProduct]
   - name: cohorts
     type: object
 
