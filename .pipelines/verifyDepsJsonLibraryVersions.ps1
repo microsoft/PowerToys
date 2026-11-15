@@ -12,6 +12,10 @@
     If any dll is referenced with different versions, the script will exit with a non-zero
     exit code and print the dlls and their versions.
 
+    Invalid JSON or a malformed root, targets, target, package, or runtime structure in a
+    non-excluded manifest terminates the audit with a non-zero exit code. Packages
+    without runtime data and empty object-valued targets or runtime data are allowed.
+
     Requires PowerShell 7+ (System.Text.Json).
 
 .PARAMETER targetDir
@@ -20,7 +24,8 @@
 .OUTPUTS
     Writes the name of any dlls with mismatched versions, along with the versions and the
     deps.json files that reference them. Exits with code 1 if any mismatches are found,
-    and with 0 if all dlls are referenced with the same version.
+    no manifests are discovered, or parsing or structural validation fails. Exits with 0
+    if the audit completes without conflicts, including when all manifests are excluded.
 #>
 #Requires -Version 7
 [CmdletBinding()]
@@ -139,7 +144,7 @@ public static class DepsJsonAudit
                 !doc.RootElement.TryGetProperty("targets", out var targets) ||
                 targets.ValueKind != JsonValueKind.Object)
             {
-                return result;
+                throw new InvalidDataException($"Invalid deps.json structure in {path}: expected an object with an object-valued 'targets' property.");
             }
 
             // targets.<tfm>.<package>.runtime.<dll>.fileVersion
@@ -147,16 +152,24 @@ public static class DepsJsonAudit
             {
                 if (target.Value.ValueKind != JsonValueKind.Object)
                 {
-                    continue;
+                    throw new InvalidDataException($"Invalid deps.json structure in {path}: target '{target.Name}' must be an object.");
                 }
 
                 foreach (var package in target.Value.EnumerateObject())
                 {
-                    if (package.Value.ValueKind != JsonValueKind.Object ||
-                        !package.Value.TryGetProperty("runtime", out var runtime) ||
-                        runtime.ValueKind != JsonValueKind.Object)
+                    if (package.Value.ValueKind != JsonValueKind.Object)
+                    {
+                        throw new InvalidDataException($"Invalid deps.json structure in {path}: package '{package.Name}' must be an object.");
+                    }
+
+                    if (!package.Value.TryGetProperty("runtime", out var runtime))
                     {
                         continue;
+                    }
+
+                    if (runtime.ValueKind != JsonValueKind.Object)
+                    {
+                        throw new InvalidDataException($"Invalid deps.json structure in {path}: package '{package.Name}' has a non-object runtime value.");
                     }
 
                     foreach (var entry in runtime.EnumerateObject())
