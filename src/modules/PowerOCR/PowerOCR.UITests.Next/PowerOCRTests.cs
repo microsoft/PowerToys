@@ -273,11 +273,11 @@ public class PowerOCRTests : UITestBase
             Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
             if (initial == "On")
             {
-                ClickWithoutRaising(button);
+                ClickToolbarButton(overlay, id);
                 AssertToggleState(button, "Off", $"{id} should reset to off.");
             }
 
-            ClickWithoutRaising(button);
+            ClickToolbarButton(overlay, id);
             AssertToggleState(button, "On", $"{id} should turn on.");
         }
 
@@ -480,6 +480,23 @@ public class PowerOCRTests : UITestBase
 
     private static bool IsOverlay(WindowsFinder.WindowInfo window) =>
         window.Title == "Text Extractor" && window.Width >= 400 && window.Height >= 400;
+
+    private static void ClickToolbarButton(Session overlay, string automationId)
+    {
+        // The native selection HWND can own foreground while the WinUI toolbar is covered.
+        // Raise only for toolbar input; selection and post-capture shortcut tests must not refocus it.
+        var handle = new IntPtr(overlay.WindowHandle);
+        var ready = WaitHelper.WaitForStable(
+            () => overlay.FindAll<Element>(By.AccessibilityId(automationId), 0).SingleOrDefault(),
+            button => button is not null && button.Width > 0 && button.Height > 0 &&
+                WindowControl.GetForegroundWindowHandle() == handle &&
+                WindowControl.IsPointOwnedByWindow(handle, button.X + (button.Width / 2), button.Y + (button.Height / 2)),
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            recover: _ => WindowControl.TryBringToForeground(handle));
+        Assert.IsTrue(ready.Succeeded, $"The toolbar should own physical input for {automationId}. Foreground: {WindowControl.GetForegroundWindowInfo()}");
+        ClickWithoutRaising(ready.LastObservation!);
+    }
 
     private static void ClickWithoutRaising(Element element)
     {
