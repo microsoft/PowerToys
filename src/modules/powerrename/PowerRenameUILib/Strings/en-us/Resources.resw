@@ -315,10 +315,10 @@
   <data name="ToggleButton_SentenceCase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Sentence case</value>
   </data>
-  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+  <data name="ToggleButton_TitleCase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Capitalize major words, keep minor words lowercase (title case)</value>
   </data>
-  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_TitleCase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Title case</value>
   </data>
   <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">

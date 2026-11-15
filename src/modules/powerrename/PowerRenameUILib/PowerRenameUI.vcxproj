@@ -200,6 +200,7 @@
       <SubType>Designer</SubType>
     </PRIResource>
     <_WildCardPRIResource Include="Strings\*\Resources.resw" />
+    <_WildCardPRIResource Remove="Strings\en-us\Resources.resw" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\common\logger\logger.vcxproj">
