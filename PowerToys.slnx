@@ -1436,7 +1436,7 @@
     <BuildDependency Project="src/common/updating/updating.vcxproj" />
   </Project>
   <Project Path="src/PackageIdentity/PackageIdentity.vcxproj" Id="e2a5a82e-1e5b-4c8d-9a4f-2b1a8f9e5c3d" />
-  <Project Path="src/runner/runner.vcxproj" Id="9412d5c6-2cf2-4fc2-a601-b55508ea9b27">
+  <Project DefaultStartup="true" Path="src/runner/runner.vcxproj" Id="9412d5c6-2cf2-4fc2-a601-b55508ea9b27">
     <BuildDependency Project="src/ActionRunner/ActionRunner.vcxproj" />
     <BuildDependency Project="src/common/notifications/BackgroundActivator/BackgroundActivator.vcxproj" />
     <BuildDependency Project="src/common/notifications/BackgroundActivatorDLL/BackgroundActivatorDLL.vcxproj" />
