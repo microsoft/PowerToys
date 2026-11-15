@@ -31,6 +31,7 @@
 	  <Compile Include="..\HostsUILib\Helpers\IHostsService.cs" Link="IHostsService.cs" />
 	  <Compile Include="..\HostsUILib\Helpers\ILogger.cs" Link="ILogger.cs" />
 	  <Compile Include="..\HostsUILib\Helpers\LoggerInstance.cs" Link="LoggerInstance.cs" />
+	  <Compile Include="..\HostsUILib\Helpers\NullLogger.cs" Link="NullLogger.cs" />
 	  <Compile Include="..\HostsUILib\Models\AddressType.cs" Link="AddressType.cs" />
 	  <Compile Include="..\HostsUILib\Models\Entry.cs" Link="Entry.cs" />
 	  <Compile Include="..\HostsUILib\Models\HostsData.cs" Link="HostsData.cs" />
