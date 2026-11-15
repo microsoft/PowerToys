@@ -13,7 +13,9 @@ function Get-UiTestFlowStep {
     $steps = [regex]::Matches($yaml, '(?ms)^  - pwsh: \|\r?\n(?<script>.*?)(?=^    displayName:)    displayName: "?(?<name>[^"\r\n]+)"?')
     $step = @($steps | Where-Object { $_.Groups['name'].Value -eq $Name })
     if ($step.Count -ne 1) { throw "Expected one pipeline step named $Name." }
-    [regex]::Replace($step[0].Groups['script'].Value, '(?m)^      ', '')
+    ([regex]::Replace($step[0].Groups['script'].Value, '(?m)^      ', '')).
+        Replace('${{ join('';'', parameters.uiTestExecutionModules) }}', '').
+        Replace('${{ parameters.uiTestDiagnosticCohort }}', 'False')
 }
 
 Describe 'Bounded isolated MWB pipeline phases' {

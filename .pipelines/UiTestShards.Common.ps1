@@ -59,3 +59,22 @@ function Get-UiTestShardSuites {
 
     return @($plan[$ShardIndex - 1].Suites)
 }
+
+function Get-UiTestExecutionCohort {
+    param(
+        [AllowEmptyCollection()] [string[]] $AvailableSuites,
+        [AllowEmptyCollection()] [string[]] $ExecutionSuites,
+        [int] $ShardCount
+    )
+
+    if ($ShardCount -ne 1) { throw 'Diagnostic cohorts require one unsharded job per cohort.' }
+    if ($ExecutionSuites.Count -eq 0) { throw 'A diagnostic cohort must execute at least one suite.' }
+    $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
+    foreach ($suite in $ExecutionSuites) {
+        if ([string]::IsNullOrWhiteSpace($suite) -or $AvailableSuites -notcontains $suite) {
+            throw "Diagnostic cohort suite is unavailable: '$suite'."
+        }
+        if (-not $seen.Add($suite)) { throw "Duplicate diagnostic cohort suite: '$suite'." }
+    }
+    return $ExecutionSuites
+}

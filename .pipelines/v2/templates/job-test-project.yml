@@ -25,6 +25,12 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: uiTestExecutionModules
+    type: object
+    default: []
+  - name: uiTestDiagnosticCohort
+    type: boolean
+    default: false
   - name: autoSelectUiTests
     type: boolean
     default: false
@@ -583,6 +589,23 @@ jobs:
         if ($entries.Count -eq 0 -and -not $runMwbSandbox) {
           Write-Host "Shard $shardIndex/$shardCount has no suites to run."
         }
+      }
+
+      # Filter execution only: installer, signing and OS prerequisites above still use uiTestModules.
+      $executionRaw = '${{ join(';', parameters.uiTestExecutionModules) }}'
+      $diagnosticCohort = '${{ parameters.uiTestDiagnosticCohort }}' -eq 'True'
+      if ($diagnosticCohort -or -not [string]::IsNullOrWhiteSpace($executionRaw)) {
+        . "$(Build.SourcesDirectory)\.pipelines\UiTestShards.Common.ps1"
+        $available = @($entries | ForEach-Object { $_.Name -replace '\.runtimeconfig\.json$', '' })
+        if ($runMwbSandbox) { $available += 'MouseWithoutBorders.UITests' }
+        $cohort = @(Get-UiTestExecutionCohort -AvailableSuites $available `
+          -ExecutionSuites ($executionRaw -split ';') -ShardCount $shardCount)
+        $entries = @($entries | Where-Object { $cohort -contains ($_.Name -replace '\.runtimeconfig\.json$', '') })
+        if ($runMwbSandbox -and $cohort -notcontains 'MouseWithoutBorders.UITests') {
+          $runMwbSandbox = $false
+          Write-Host "##vso[task.setvariable variable=RunMwbSandbox]false"
+        }
+        Write-Host "Diagnostic execution cohort: $($cohort -join ', '); prerequisite selection: $modulesRaw"
       }
 
       $resultsDir = "$(Common.TestResultsDirectory)"
