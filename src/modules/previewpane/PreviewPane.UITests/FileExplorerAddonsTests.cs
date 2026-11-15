@@ -774,14 +774,24 @@ public class FileExplorerAddonsTests : UITestBase
 
         var path = ArtifactPath(name);
         EnsureExplorerForeground(explorer);
-        using (var bitmap = new Bitmap(item!.Width, item.Height))
+        var bounds = WindowHelper.GetVisibleBounds(new IntPtr(explorer.WindowHandle));
+        var windowPath = CaptureWindow(explorer, $"{name}-window");
+        try
         {
-            using var graphics = Graphics.FromImage(bitmap);
-            graphics.CopyFromScreen(item.X, item.Y, 0, 0, bitmap.Size);
+            using var windowImage = new Bitmap(windowPath);
+            var itemBounds = new Rectangle(item!.X - bounds.Left, item.Y - bounds.Top, item.Width, item.Height);
+            Assert.IsTrue(
+                new Rectangle(0, 0, windowImage.Width, windowImage.Height).Contains(itemBounds),
+                $"The '{fileName}' item bounds did not fit the captured Explorer frame.");
+            using var bitmap = windowImage.Clone(itemBounds, windowImage.PixelFormat);
             bitmap.Save(path, System.Drawing.Imaging.ImageFormat.Png);
         }
+        finally
+        {
+            File.Delete(windowPath);
+        }
 
-        return new ThumbnailCapture(path, item.Width, item.Height);
+        return new ThumbnailCapture(path, item!.Width, item.Height);
     }
 
     private static Element? FindVisibleFileItem(Session explorer, string fileName, int timeoutMS)
