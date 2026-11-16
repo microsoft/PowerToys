@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
 
 namespace Microsoft.LightSwitch.UITests;
 
@@ -418,6 +419,21 @@ internal sealed class TestHelper
         context.AddResultFile(prefix + "-settings.json");
         File.WriteAllText(prefix + "-state.txt", $"Theme: {TestState.ReadTheme()}\nService PIDs: {string.Join(", ", ObserveService())}\nForeground: {WindowControl.GetForegroundWindowInfo()}");
         context.AddResultFile(prefix + "-state.txt");
+
+        const string ConsentPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location";
+        const string PolicyPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors";
+        var locationState = new
+        {
+            MachineConsent = Registry.GetValue($@"HKEY_LOCAL_MACHINE\{ConsentPath}", "Value", null),
+            UserConsent = Registry.GetValue($@"HKEY_CURRENT_USER\{ConsentPath}", "Value", null),
+            DesktopConsent = Registry.GetValue($@"HKEY_CURRENT_USER\{ConsentPath}\NonPackaged", "Value", null),
+            ServiceEnabled = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration", "Status", null),
+            ServiceStart = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lfsvc", "Start", null),
+            PolicyDisableLocation = Registry.GetValue(PolicyPath, "DisableLocation", null),
+            PolicyDisableProvider = Registry.GetValue(PolicyPath, "DisableWindowsLocationProvider", null),
+        };
+        File.WriteAllText(prefix + "-location.json", JsonSerializer.Serialize(locationState));
+        context.AddResultFile(prefix + "-location.json");
     }
 
     private void SetCheck(string id, bool expected)
