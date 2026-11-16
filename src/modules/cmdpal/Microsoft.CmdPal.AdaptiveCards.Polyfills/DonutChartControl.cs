@@ -84,7 +84,7 @@ internal sealed partial class DonutChartControl : AdaptiveVisualControl
         Content = root;
         var name = !string.IsNullOrWhiteSpace(_model.Title)
             ? _model.Title
-            : ChartStrings.Get(_model.IsPie ? "AdaptiveChart_PieChart" : "AdaptiveChart_DonutChart");
+            : _model.IsPie ? Properties.Resources.AdaptiveChart_PieChart : Properties.Resources.AdaptiveChart_DonutChart;
         AutomationProperties.SetName(this, name);
         AutomationProperties.SetHelpText(this, CreateSummary(shares));
     }

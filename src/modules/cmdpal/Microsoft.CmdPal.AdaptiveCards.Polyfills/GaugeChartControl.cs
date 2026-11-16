@@ -158,7 +158,7 @@ internal sealed partial class GaugeChartControl : AdaptiveVisualControl
         }
 
         Content = root;
-        AutomationProperties.SetName(this, FirstNonEmpty(_model.Title, _model.SubLabel) ?? ChartStrings.Get("AdaptiveChart_Gauge"));
+        AutomationProperties.SetName(this, FirstNonEmpty(_model.Title, _model.SubLabel) ?? Properties.Resources.AdaptiveChart_Gauge);
         AutomationProperties.SetHelpText(this, valueText.Text);
     }
 
