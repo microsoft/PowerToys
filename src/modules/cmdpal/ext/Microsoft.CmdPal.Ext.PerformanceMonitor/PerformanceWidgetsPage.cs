@@ -822,15 +822,45 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
             ContentData["allMem"] = MemUlongToString(currentData.AllMem);
             ContentData["usedMem"] = MemUlongToString(currentData.UsedMem);
+            ContentData["availableMem"] = MemUlongToString(currentData.MemAvailable);
             ContentData["memUsage"] = FloatToPercentString(currentData.MemUsage);
+            ContentData["memUsageOfTotal"] = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.GetResource("Memory_Widget_Template/UsageOfTotal"),
+                FloatToPercentString(currentData.MemUsage),
+                MemUlongToString(currentData.AllMem));
+            ContentData["memUsedOfTotal"] = FormatUsedOfTotal(currentData.UsedMem, currentData.AllMem);
+
+            // Memory hardware, as on Task Manager's memory page.
+            if (MemoryHardware.Modules is MemoryModules modules)
+            {
+                if (modules.SpeedMegaTransfers > 0)
+                {
+                    ContentData["memSpeed"] = string.Format(CultureInfo.CurrentCulture, "{0} MT/s", modules.SpeedMegaTransfers);
+                }
+
+                ContentData["memSlots"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Widget_Template/Slots_Used_Value"), modules.SlotsUsed, modules.SlotCount);
+                if (MemoryHardware.GetFormFactorName(modules.FormFactor) is string formFactor)
+                {
+                    ContentData["memFormFactor"] = formFactor;
+                }
+            }
+
+            if (MemoryHardware.InstalledBytes > currentData.AllMem)
+            {
+                ContentData["memReserved"] = MemUlongToString(MemoryHardware.InstalledBytes - currentData.AllMem);
+            }
+
             ContentData["committedMem"] = MemUlongToString(currentData.MemCommitted);
             ContentData["committedLimitMem"] = MemUlongToString(currentData.MemCommitLimit);
             ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
             ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
             ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
-            ContentData["memGraphUrl"] = currentData.CreateMemImageUrl();
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["memSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("Memory_Widget_Template/Chart_Y_Axis"),
+                PerformanceChartData.MemoryColor,
+                PerformanceChartData.Snapshot(currentData.MemChartValues)));
+            ContentData["memComposition"] = CreateComposition(currentData);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -842,6 +872,32 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
             ContentData["errorMessage"] = e.Message;
             return;
         }
+    }
+
+    /// <summary>Builds a stacked bar of in use, modified, standby, and free memory, as in Task Manager.</summary>
+    private JsonArray CreateComposition(MemoryStats stats)
+    {
+        static JsonObject Part(string legend, ulong bytes, string color) => new()
+        {
+            ["legend"] = legend,
+            ["value"] = Math.Round(bytes / 1048576.0),
+            ["color"] = color,
+        };
+
+        string Legend(string key, ulong bytes) => string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.GetResource(key),
+            MemUlongToString(bytes));
+
+        var parts = new JsonArray
+        {
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_InUse", stats.MemInUse), stats.MemInUse, PerformanceChartData.MemoryColor),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Modified", stats.MemModified), stats.MemModified, "categoricalMarigold"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Standby", stats.MemStandby), stats.MemStandby, "categoricalLightBlue"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Free", stats.MemFree), stats.MemFree, "neutral"),
+        };
+
+        return new JsonArray { (JsonNode)new JsonObject { ["data"] = parts } };
     }
 
     protected override string GetTemplatePath(WidgetPageState page)
@@ -1328,10 +1384,30 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
             ContentData["gpuName"] = _gpuDisplayInfo.Name;
+            ContentData["gpuShortName"] = _gpuDisplayInfo.ShortName;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
-            ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["gpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
+                PerformanceChartData.GpuColor,
+                stats.GetGPUHistory(_gpuActiveIndex)));
+            ContentData["gpuEngines"] = CreateEngines(stats, _gpuActiveIndex);
+
+            var memory = stats.GetGPUMemory(_gpuActiveIndex);
+            var dedicated = FormatUsedOfTotal(memory.DedicatedUsed, memory.DedicatedTotal);
+            var shared = FormatUsedOfTotal(memory.SharedUsed, memory.SharedTotal);
+            ContentData["hasDedicatedMemory"] = memory.DedicatedTotal > 0;
+            ContentData["hasSharedMemory"] = memory.SharedTotal > 0;
+            ContentData["gpuDedicatedMemory"] = dedicated;
+            ContentData["gpuDedicatedPercent"] = GetPercent(memory.DedicatedUsed, memory.DedicatedTotal);
+            ContentData["gpuSharedMemory"] = shared;
+            ContentData["gpuSharedPercent"] = GetPercent(memory.SharedUsed, memory.SharedTotal);
+            if (memory.DedicatedTotal > 0 || memory.SharedTotal > 0)
+            {
+                ContentData["gpuMemoryLabel"] = Resources.GetResource(memory.DedicatedTotal > 0
+                    ? "GPUUsage_Widget_Template/Dedicated_Memory"
+                    : "GPUUsage_Widget_Template/Shared_Memory");
+                ContentData["gpuMemory"] = memory.DedicatedTotal > 0 ? dedicated : shared;
+            }
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1359,6 +1435,30 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             _ => throw new NotImplementedException(),
         };
     }
+
+    /// <summary>Lists each engine type, such as 3D and Copy, with its utilization and history, as in Task Manager.</summary>
+    private static JsonArray CreateEngines(GPUStats stats, int gpuIndex)
+    {
+        var array = new JsonArray();
+        foreach (var engine in stats.GetGPUEngines(gpuIndex))
+        {
+            array.Add((JsonNode)CreateEngine(
+                Resources.GetResource($"GPUUsage_Widget_Template/Engine_{GPUStats.EngineTypes[engine.Type]}"),
+                engine.Percent,
+                stats.GetGPUEngineHistory(gpuIndex, engine.Type)));
+        }
+
+        return array;
+    }
+
+    /// <summary>One engine tile: its name, its utilization, and a sparkline of its history.</summary>
+    internal static JsonObject CreateEngine(string name, float percent, float[] history) => new()
+    {
+        ["name"] = name,
+        ["text"] = FloatToPercentString(percent / 100f),
+        ["chartMax"] = PerformanceChartData.GetSparklineMax(PerformanceChartData.Max(history)),
+        ["series"] = PerformanceChartData.Create(new PerformanceChartData.Series(name, PerformanceChartData.GpuColor, history)),
+    };
 
     public string GetItemTitle(bool isBandPage)
     {
