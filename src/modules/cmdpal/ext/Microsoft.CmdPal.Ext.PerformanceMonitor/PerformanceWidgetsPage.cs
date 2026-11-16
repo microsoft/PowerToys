@@ -1197,7 +1197,6 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         try
         {
             ContentData.Clear();
-            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -1249,7 +1248,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             var received = history.Received.Snapshot();
             var (divisor, unit) = PerformanceChartData.GetRateScale(_settingsManager.NetworkSpeedUnit, PerformanceChartData.Max(sent, received));
             ContentData["netChartAxis"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("NetworkUsage_Widget_Template/Chart_Y_Axis"), unit);
-            ContentJson["netSeries"] = PerformanceChartData.Create(
+            ContentData["netSeries"] = PerformanceChartData.Create(
                 new PerformanceChartData.Series(Resources.GetResource("NetworkUsage_Widget_Template/Received"), PerformanceChartData.InColor, PerformanceChartData.Scale(received, divisor)),
                 new PerformanceChartData.Series(Resources.GetResource("NetworkUsage_Widget_Template/Sent"), PerformanceChartData.OutColor, PerformanceChartData.Scale(sent, divisor)));
 
@@ -1260,7 +1259,6 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         catch (Exception e)
         {
             ContentData.Clear();
-            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
