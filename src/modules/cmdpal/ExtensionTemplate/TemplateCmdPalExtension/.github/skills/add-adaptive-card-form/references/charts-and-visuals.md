@@ -86,14 +86,14 @@ Names have a light theme and a dark theme variant. Without a color, items take t
 | `color`, `colorSet` | Series colors when a series doesn't set its own. |
 | `showLegend` | Shows the legend; the default is `true`. A single series without a `legend` has nothing to show. |
 
-Command Palette draws smooth lines with a soft fill under them. A line chart narrower than 400 pixels draws as a sparkline: just the lines, without the title, axis labels, grid lines, or legend. Only the chart's width counts. In a typical Command Palette window, a chart in one of three tiles in a row is narrow enough, but a chart in a tile that spans the card isn't (see [Tiles](#tiles-with-roundedcorners-and-showborder)).
+Command Palette draws smooth lines with a soft fill under them. A line chart narrower than 400 device-independent pixels (DIPs) draws as a sparkline: just the lines, without the title, axis labels, grid lines, or legend. Only the chart's width counts. In a typical Command Palette window, a chart in one of three tiles in a row is narrow enough, but a chart in a tile that spans the card isn't (see [Tiles](#tiles-with-roundedcorners-and-showborder)).
 
 ## Chart.Gauge
 
 | Property | Description |
 |----------|-------------|
 | `value`, `min`, `max` | The value and its range. Without `max`, the segments' total sets it. |
-| `segments` | Optional colored ranges: `[{ "legend": "Normal", "size": 60, "color": "good" }]`. The gauge fills up to the value, in the color of the segment that the value falls in, and the segments form a thin scale along the inside of the arc. Without segments, the fill uses the accent color. |
+| `segments` | Optional colored ranges: `[{ "legend": "Normal", "size": 60, "color": "good" }]`. Sizes can't be negative. The gauge fills up to the value, in the color of the segment that the value falls in, and the segments form a thin scale along the inside of the arc. Without segments, the fill uses the accent color. |
 | `valueFormat` | `Percentage` (default) or `Fraction`, such as `3/5`. |
 | `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
 | `subLabel` | A label under the value. |
@@ -103,7 +103,7 @@ Command Palette draws smooth lines with a soft fill under them. A line chart nar
 
 | Property | Description |
 |----------|-------------|
-| `data` | Slices: `[{ "legend": "Apps", "value": 182, "color": "categoricalBlue" }]`. The legend shows each slice's share. |
+| `data` | Slices: `[{ "legend": "Apps", "value": 182, "color": "categoricalBlue" }]`. Values can't be negative. The legend shows each slice's share. |
 | `title`, `showTitle` | A title, shown only when `showTitle` is `true`. |
 | `colorSet` | Colors for slices that don't set one. |
 | `value` | `Chart.Donut`: a label in the center, such as `"512 GB"`. |
@@ -120,7 +120,7 @@ Command Palette draws smooth lines with a soft fill under them. A line chart nar
 | `yMin`, `yMax` | The value range. Without them, the axis starts at 0, or lower for negative data, and its top rounds up to a grid line. |
 | `color`, `colorSet` | One color for every bar, or a color per bar. |
 
-The chart thins its labels so that their centers are at least 56 pixels apart. It doesn't measure them, so long labels can still overlap; keep them short.
+The chart thins its labels so that their centers are at least 56 DIPs apart. It doesn't measure them, so long labels can still overlap; keep them short.
 
 ## Chart.HorizontalBar
 
@@ -158,7 +158,7 @@ Labels longer than 40% of the chart's width are trimmed, with the full label in 
 
 `name` is a Fluent icon name from the Adaptive Cards icon catalog, such as `Calendar`, `Wifi1`, or `Battery7`. Command Palette draws icons with Segoe Fluent Icons, so it supports the common names that have a matching glyph, including system names (`DeveloperBoard`, `Ram`, `HardDrive`, `Desktop`, `NetworkAdapter`, `Wifi1` to `Wifi4`, `Battery0` to `Battery10`, `BatteryCharge`), status names (`Checkmark`, `CheckmarkCircle`, `Warning`, `ErrorCircle`, `Info`), and common actions. For other names, Command Palette draws the icon's `fallback`, so give each icon a `fallback`: `"drop"`, or a `TextBlock` or an `Image`.
 
-- `size`: `xxSmall` (12 px), `xSmall` (16), `Small` (20), `Standard` (24, the default), `Medium` (28), `Large` (32), `xLarge` (40), or `xxLarge` (48).
+- `size`: `xxSmall` (12 DIPs), `xSmall` (16), `Small` (20), `Standard` (24, the default), `Medium` (28), `Large` (32), `xLarge` (40), or `xxLarge` (48).
 - `style`: `Regular` (default) or `Filled`. Icons without a filled glyph use the regular one.
 - `color`: `Default`, `Dark`, `Light`, `Accent`, `Good`, `Warning`, or `Attention`, as for text.
 - `horizontalAlignment`: `left` (default), `center`, or `right`.
@@ -192,7 +192,7 @@ Command Palette doesn't render `Chart.VerticalBar.Grouped` or `ProgressRing`. Li
 
 ## Tiles with roundedCorners and showBorder
 
-Use an emphasis container with rounded corners and a border for a dashboard tile. Set `"height": "stretch"` so tiles in a row line up. A line chart narrower than 400 pixels draws as a sparkline, so put tiles with charts three to a row. A chart in a tile that spans the card is usually wider, so it draws in full.
+Use an emphasis container with rounded corners and a border for a dashboard tile. Set `"height": "stretch"` so tiles in a row line up. A line chart narrower than 400 DIPs draws as a sparkline, so put tiles with charts three to a row. A chart in a tile that spans the card is usually wider, so it draws in full.
 
 ```json
 {
