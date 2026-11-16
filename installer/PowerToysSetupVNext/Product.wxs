@@ -21,6 +21,14 @@
 
       
 
+    <!-- Default Schedule (afterInstallValidate): the old product's files/registry are entirely
+         removed before the new product installs. generateAllFileComponents.ps1-generated components
+         rely on this order — a component's GUID changes whenever its file set changes (see
+         Get-ComponentGuid), and a remove-first schedule means there's never a moment where two
+         different GUIDs claim the same registry keypath/files at once. Do not change this to
+         Schedule="afterInstallExecute" without first redesigning component generation to keep
+         stable per-file/per-path components, or the new product's files can be deleted by the old
+         product's removal (or vice versa) when the file set has changed between versions. -->
     <MajorUpgrade DowngradeErrorMessage="A later version of [ProductName] is already installed." />
 
     <Upgrade Id="$(var.UpgradeCodeGUID)">

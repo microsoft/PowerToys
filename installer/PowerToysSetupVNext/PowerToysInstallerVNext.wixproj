@@ -31,46 +31,6 @@ call "..\..\..\publish.cmd" arm64
 call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
     </PreBuildEvent>
   </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>Always</RunPostBuildEvent>
-    <PostBuildEvent>
-      call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs
-      call move /Y ..\..\..\Awake.wxs.bk ..\..\..\Awake.wxs
-      call move /Y ..\..\..\BaseApplications.wxs.bk ..\..\..\BaseApplications.wxs
-      call move /Y ..\..\..\CmdPal.wxs.bk ..\..\..\CmdPal.wxs
-      call move /Y ..\..\..\ColorPicker.wxs.bk ..\..\..\ColorPicker.wxs
-      call move /Y ..\..\..\Core.wxs.bk ..\..\..\Core.wxs
-      call move /Y ..\..\..\DscResources.wxs.bk ..\..\..\DscResources.wxs
-      call move /Y ..\..\..\EnvironmentVariables.wxs.bk ..\..\..\EnvironmentVariables.wxs
-      call move /Y ..\..\..\FileExplorerPreview.wxs.bk ..\..\..\FileExplorerPreview.wxs
-      call move /Y ..\..\..\FileLocksmith.wxs.bk ..\..\..\FileLocksmith.wxs
-      call move /Y ..\..\..\Hosts.wxs.bk ..\..\..\Hosts.wxs
-      call move /Y ..\..\..\LightSwitch.wxs.bk ..\..\..\LightSwitch.wxs
-      call move /Y ..\..\..\ImageResizer.wxs.bk ..\..\..\ImageResizer.wxs
-      call move /Y ..\..\..\KeyboardManager.wxs.bk ..\..\..\KeyboardManager.wxs
-      call move /Y ..\..\..\MouseWithoutBorders.wxs.bk ..\..\..\MouseWithoutBorders.wxs
-      call move /Y ..\..\..\NewPlus.wxs.bk ..\..\..\NewPlus.wxs
-      call move /Y ..\..\..\Peek.wxs.bk ..\..\..\Peek.wxs
-      call move /Y ..\..\..\PowerRename.wxs.bk ..\..\..\PowerRename.wxs
-      call move /Y ..\..\..\PowerDisplay.wxs.bk ..\..\..\PowerDisplay.wxs
-      call move /Y ..\..\..\Product.wxs.bk ..\..\..\Product.wxs
-      call move /Y ..\..\..\RegistryPreview.wxs.bk ..\..\..\RegistryPreview.wxs
-      call move /Y ..\..\..\Resources.wxs.bk ..\..\..\Resources.wxs
-      call move /Y ..\..\..\Run.wxs.bk ..\..\..\Run.wxs
-      call move /Y ..\..\..\Settings.wxs.bk ..\..\..\Settings.wxs
-      call move /Y ..\..\..\ShortcutGuide.wxs.bk ..\..\..\ShortcutGuide.wxs
-      call move /Y ..\..\..\Tools.wxs.bk ..\..\..\Tools.wxs
-      call move /Y ..\..\..\WinAppSDK.wxs.bk ..\..\..\WinAppSDK.wxs
-      call move /Y ..\..\..\WinUI3Applications.wxs.bk ..\..\..\WinUI3Applications.wxs
-      call move /Y ..\..\..\Workspaces.wxs.bk ..\..\..\Workspaces.wxs
-    </PostBuildEvent>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(RunBuildEvents)'=='false'">
-    <PostBuildEvent></PostBuildEvent>
-    <RunPostBuildEvent></RunPostBuildEvent>
-    <PreBuildEventUseInBuild>false</PreBuildEventUseInBuild>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
-  </PropertyGroup>
   <PropertyGroup Label="UserMacros" Condition=" '$(PerUser)' == 'true' ">
     <DefineConstants>$(DefineConstants);PerUser=true</DefineConstants>
   </PropertyGroup>
@@ -101,6 +61,9 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <!-- 1026 - warning: file ID is too long -->
     <SuppressIces>ICE91</SuppressIces>
     <SuppressSpecificWarnings>1026;1076</SuppressSpecificWarnings>
+    <!-- generateAllFileComponents.ps1 (run by the PowerToysSetupCustomActionsVNext pre-build event)
+         populates copies of the checked-in template .wxs files here; the templates are never modified. -->
+    <GeneratedWxsDir>$(MSBuildThisFileDirectory)obj\$(Platform)\Generated\</GeneratedWxsDir>
   </PropertyGroup>
   <PropertyGroup>
     <OutputPath Condition=" '$(PerUser)' != 'true' ">$(Platform)\$(Configuration)\MachineSetup</OutputPath>
@@ -113,37 +76,59 @@ call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuil
     <Compile Include="CustomDialogs\PTInstallDirDlg.wxs" />
     <Compile Include="CustomDialogs\PTLicenseDlg.wxs" />
     <Compile Include="CustomDialogs\WixUI_PTInstallDir.wxs" />
-    <Compile Include="NewPlus.wxs" />
+    <Compile Include="$(GeneratedWxsDir)NewPlus.wxs" />
+    <None Include="NewPlus.wxs" />
     <Compile Include="Product.wxs" />
-    <Compile Include="AdvancedPaste.wxs" />
-    <Compile Include="Awake.wxs" />
-    <Compile Include="BaseApplications.wxs" />
+    <Compile Include="$(GeneratedWxsDir)AdvancedPaste.wxs" />
+    <None Include="AdvancedPaste.wxs" />
+    <Compile Include="$(GeneratedWxsDir)Awake.wxs" />
+    <None Include="Awake.wxs" />
+    <Compile Include="$(GeneratedWxsDir)BaseApplications.wxs" />
+    <None Include="BaseApplications.wxs" />
     <Compile Include="CmdPal.wxs" />
-    <Compile Include="ColorPicker.wxs" />
-    <Compile Include="EnvironmentVariables.wxs" />
-    <Compile Include="FileExplorerPreview.wxs" />
-    <Compile Include="FileLocksmith.wxs" />
-    <Compile Include="Hosts.wxs" />
-    <Compile Include="ImageResizer.wxs" />
-    <Compile Include="LightSwitch.wxs" />
-    <Compile Include="KeyboardManager.wxs" />
-    <Compile Include="Peek.wxs" />
-    <Compile Include="PowerRename.wxs" />
-    <Compile Include="PowerDisplay.wxs" />
-    <Compile Include="DscResources.wxs" />
-    <Compile Include="RegistryPreview.wxs" />
-    <Compile Include="Run.wxs" />
-    <Compile Include="Settings.wxs" />
-    <Compile Include="ShortcutGuide.wxs" />
+    <Compile Include="$(GeneratedWxsDir)ColorPicker.wxs" />
+    <None Include="ColorPicker.wxs" />
+    <Compile Include="$(GeneratedWxsDir)EnvironmentVariables.wxs" />
+    <None Include="EnvironmentVariables.wxs" />
+    <Compile Include="$(GeneratedWxsDir)FileExplorerPreview.wxs" />
+    <None Include="FileExplorerPreview.wxs" />
+    <Compile Include="$(GeneratedWxsDir)FileLocksmith.wxs" />
+    <None Include="FileLocksmith.wxs" />
+    <Compile Include="$(GeneratedWxsDir)Hosts.wxs" />
+    <None Include="Hosts.wxs" />
+    <Compile Include="$(GeneratedWxsDir)ImageResizer.wxs" />
+    <None Include="ImageResizer.wxs" />
+    <Compile Include="$(GeneratedWxsDir)LightSwitch.wxs" />
+    <None Include="LightSwitch.wxs" />
+    <Compile Include="$(GeneratedWxsDir)KeyboardManager.wxs" />
+    <None Include="KeyboardManager.wxs" />
+    <Compile Include="$(GeneratedWxsDir)Peek.wxs" />
+    <None Include="Peek.wxs" />
+    <Compile Include="$(GeneratedWxsDir)PowerRename.wxs" />
+    <None Include="PowerRename.wxs" />
+    <Compile Include="$(GeneratedWxsDir)PowerDisplay.wxs" />
+    <None Include="PowerDisplay.wxs" />
+    <Compile Include="$(GeneratedWxsDir)DscResources.wxs" />
+    <None Include="DscResources.wxs" />
+    <Compile Include="$(GeneratedWxsDir)RegistryPreview.wxs" />
+    <None Include="RegistryPreview.wxs" />
+    <Compile Include="$(GeneratedWxsDir)Run.wxs" />
+    <None Include="Run.wxs" />
+    <Compile Include="$(GeneratedWxsDir)Settings.wxs" />
+    <None Include="Settings.wxs" />
+    <Compile Include="$(GeneratedWxsDir)ShortcutGuide.wxs" />
+    <None Include="ShortcutGuide.wxs" />
     <Compile Include="Tools.wxs" />
     <Compile Include="CliShims.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
-    <Compile Include="WinUI3Applications.wxs" />
+    <Compile Include="$(GeneratedWxsDir)WinUI3Applications.wxs" />
+    <None Include="WinUI3Applications.wxs" />
     <Compile Include="MonacoSRC.wxs" />
     <Compile Include="Core.wxs" />
     <Compile Include="Resources.wxs" />
     <Compile Include="WinAppSDK.wxs" />
-    <Compile Include="Workspaces.wxs" />
+    <Compile Include="$(GeneratedWxsDir)Workspaces.wxs" />
+    <None Include="Workspaces.wxs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="CustomDialogs" />
