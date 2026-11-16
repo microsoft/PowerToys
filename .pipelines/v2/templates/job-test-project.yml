@@ -80,8 +80,17 @@ jobs:
     BuildConfiguration: ${{ parameters.configuration }}
     SrcPath: $(Build.Repository.LocalPath)
     TestArtifactsName: build-${{ variables.BuildPlatform }}-${{ parameters.configuration }}${{ parameters.inputArtifactStem }}
+    # Resolve selection at job creation, not through a PowerShell logging-command side effect.
+    UiTestArtifactSeparator: |-
+      /**
+      **/tests/
     ${{ if eq(parameters.autoSelectUiTests, true) }}:
       AutoUiTestModules: $[ dependencies.Resolve.outputs['resolve.uiTestModules'] ]
+      UiTestArtifactPattern: $[ format('**/tests/{0}/**', replace(variables.AutoUiTestModules, ';', variables.UiTestArtifactSeparator)) ]
+    ${{ elseif gt(length(parameters.uiTestModules), 0) }}:
+      UiTestArtifactPattern: ${{ format('**/tests/{0}/**', join(variables.UiTestArtifactSeparator, parameters.uiTestModules)) }}
+    ${{ else }}:
+      UiTestArtifactPattern: '**/tests/*UITest*/**'
   pool:
     ${{ if eq(parameters.umdfHidArm64Dedicated, true) }}:
       ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
@@ -235,43 +244,31 @@ jobs:
       # the selected UI test projects' output folders, or to every *UITest* folder when none are
       # selected. Fixtures (e.g. TestApp msix) are staged into each UI test project's own folder.
       - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          . "$(Build.SourcesDirectory)\.pipelines\UiTestArtifacts.Common.ps1"
+          $planDirectory = "$(Agent.TempDirectory)\UiTestPayload"
+          New-Item -ItemType Directory -Path $planDirectory -Force | Out-Null
           $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
           if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
             $modulesRaw = $env:AUTO_UI_TEST_MODULES
           }
           $modules = @($modulesRaw -split ';' | ForEach-Object { $_.Trim() } | Where-Object { $_ })
-
-          if ($modules.Count -eq 0) {
-            $patterns = @('**/tests/*UITest*/**')
-          } else {
-            # Map each selected project (csproj or assembly name) to its OutputPath folder under tests\.
-            $projects = @(Get-ChildItem -Path "$(Build.SourcesDirectory)\src" -Filter '*.csproj' -File -Recurse)
-            $folders = foreach ($module in $modules) {
-              $folder = $module
-              $escaped = [regex]::Escape($module)
-              $project = $projects | Where-Object { $_.BaseName -eq $module } | Select-Object -First 1
-              if (-not $project) {
-                $project = $projects |
-                  Where-Object { [IO.File]::ReadAllText($_.FullName) -match "<AssemblyName>$escaped</AssemblyName>" } |
-                  Select-Object -First 1
-              }
-              if ($project -and [IO.File]::ReadAllText($project.FullName) -match '<OutputPath>[^<]*\\tests\\([^\\<]+)') {
-                $folder = $Matches[1]
-              }
-              $folder
-            }
-            $folders = @($folders | Sort-Object -Unique)
-            $patterns = @($folders | ForEach-Object { "**/tests/$_/**" })
+          Assert-UiTestArtifactPattern -Pattern $env:UI_TEST_ARTIFACT_PATTERN -Modules $modules
+          $selection = @(Get-UiTestArtifactSelection -RepoRoot "$(Build.SourcesDirectory)" `
+            -Modules $modules -Platform "$(BuildPlatform)")
+          $plan = [pscustomobject]@{
+            BuildId = "$(Build.BuildId)"
+            SourceRevision = "$(Build.SourceVersion)"
+            ArtifactName = "$(TestArtifactsName)"
+            Selection = $selection
           }
-
-          # One pattern per line: the artifact download does not expand {a,b} braces, and
-          # setvariable decodes %0A to a newline that the task splits into separate patterns.
-          Write-Host "UI test artifact patterns:"
-          $patterns | ForEach-Object { Write-Host "  $_" }
-          Write-Host "##vso[task.setvariable variable=UiTestArtifactPattern]$($patterns -join '%0A')"
-        displayName: Compute UI test artifact pattern
-        ${{ if eq(parameters.autoSelectUiTests, true) }}:
-          env:
+          $plan | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath "$planDirectory\selection.json" -ErrorAction Stop
+          Write-Host "Validated $($selection.Count) UI-test selections; persisted required payload files."
+        displayName: Validate UI test artifact selection
+        condition: and(succeeded(), or(eq(variables['RunGenericUiTests'], 'true'), eq(variables['RunMwbSandbox'], 'true')))
+        env:
+          UI_TEST_ARTIFACT_PATTERN: $(UiTestArtifactPattern)
+          ${{ if eq(parameters.autoSelectUiTests, true) }}:
             AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
       - task: DownloadPipelineArtifact@2
         displayName: Download artifacts (slim)
@@ -286,6 +283,32 @@ jobs:
             mwb-sandbox-ci/**
             umdf-hid/**
             powerdisplay-idd/**
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          . "$(Build.SourcesDirectory)\.pipelines\UiTestArtifacts.Common.ps1"
+          $planDirectory = "$(Agent.TempDirectory)\UiTestPayload"
+          $plan = Get-Content -LiteralPath "$planDirectory\selection.json" -Raw -ErrorAction Stop | ConvertFrom-Json
+          if ($plan.BuildId -ne "$(Build.BuildId)" -or $plan.SourceRevision -ne "$(Build.SourceVersion)" -or
+              $plan.ArtifactName -ne "$(TestArtifactsName)") {
+            throw 'UI-test payload selection does not belong to this source/artifact.'
+          }
+          $receipt = @(Assert-UiTestArtifactPayload -ArtifactRoot "$(Pipeline.Workspace)\$(TestArtifactsName)" `
+            -Selection @($plan.Selection))
+          [pscustomobject]@{
+            BuildId = $plan.BuildId
+            SourceRevision = $plan.SourceRevision
+            ArtifactName = $plan.ArtifactName
+            Payloads = $receipt
+          } | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath "$planDirectory\receipt.json" -ErrorAction Stop
+          Write-Host "Verified selected UI-test entrypoints, runtime manifests and staged MSIX fixtures before signing."
+        displayName: Verify downloaded UI test payload
+        condition: and(succeeded(), or(eq(variables['RunGenericUiTests'], 'true'), eq(variables['RunMwbSandbox'], 'true')))
+      - task: PublishPipelineArtifact@1
+        displayName: Publish UI test payload selection and receipt
+        condition: and(always(), or(eq(variables['RunGenericUiTests'], 'true'), eq(variables['RunMwbSandbox'], 'true')))
+        inputs:
+          targetPath: '$(Agent.TempDirectory)\UiTestPayload'
+          artifactName: 'ui-test-payload-$(TestPlatform)-$(System.JobId)'
   - ${{ else }}:
       # buildNow (whole tree, run in place) and the official path (small tests-only artifact) both
       # download the full named artifact via the Azure CLI ArtifactTool (bulk dedup, parallel). The

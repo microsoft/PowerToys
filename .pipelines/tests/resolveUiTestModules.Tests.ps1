@@ -120,6 +120,7 @@ Describe 'resolveUiTestModules' {
         foreach ($file in @(
             '.pipelines/v2/templates/job-test-project.yml',
             '.pipelines\signSparsePackages.ps1',
+            '.pipelines\UiTestArtifacts.Common.ps1',
             'src/common/UITestAutomation.Next/Session.cs'
         )) {
             $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $file
