@@ -1655,7 +1655,6 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
         try
         {
             ContentData.Clear();
-            ContentJson.Clear();
 
             var stats = _dataManager.GetBatteryStats();
 
@@ -1668,7 +1667,7 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
                 ContentData["batteryTimeRemaining"] = string.Empty;
                 ContentData["batteryStatusStyle"] = "default";
                 ContentData["batteryIcon"] = string.Empty;
-                ContentJson["batteryPercent"] = 0;
+                ContentData["batteryPercent"] = 0;
                 ContentData["batteryColor"] = "accent";
                 return;
             }
@@ -1682,7 +1681,7 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
             ContentData["batteryStatusStyle"] = stats.IsCharging ? "good" : stats.IsOnAcPower ? "informative" : "accent";
             ContentData["batteryColor"] = GetChargeColor(stats.IsCharging, stats.ChargePercent);
             ContentData["batteryIcon"] = GetChargeIconName(stats.IsCharging, stats.ChargePercent);
-            ContentJson["batteryPercent"] = Math.Round(Math.Max(0, stats.ChargePercent) * 100);
+            ContentData["batteryPercent"] = Math.Round(Math.Max(0, stats.ChargePercent) * 100);
 
             stats.ReadReport();
             if (GetDisplayedRate(stats.IsCharging, stats.IsOnAcPower, stats.ChargeRateMilliwatts) is int rate)
@@ -1704,7 +1703,6 @@ internal sealed partial class SystemBatteryUsageWidgetPage : WidgetPage, IDispos
         catch (Exception e)
         {
             ContentData.Clear();
-            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             CurrentIcon = Icons.BatteryGlyph(-1, false, false);
             return;
