@@ -10,10 +10,7 @@ constexpr DWORD DefaultPipeTimeoutMillis = 200;
 
 namespace ipc
 {
-    Writer::Writer()
-    {
-        start();
-    }
+    Writer::Writer() { }
 
     Writer::~Writer()
     {
