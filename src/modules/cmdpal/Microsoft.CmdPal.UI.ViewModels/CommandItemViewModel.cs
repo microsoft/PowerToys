@@ -379,6 +379,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
+                var currentIcon = Icon;
+
                 // Updating the command detaches this item's handler from the command it
                 // displaces, so there is no manual unsubscribe to remember here.
                 if (!UpdateCommand(model))
@@ -406,7 +408,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
-                UpdateProperty(nameof(Icon));
+
+                // A needless notification restarts icon loading
+                if (!ReferenceEquals(currentIcon, Icon))
+                {
+                    UpdateProperty(nameof(Icon));
+                }
+
                 UpdateProperty(nameof(HasText));
                 UpdateProperty(nameof(CanOpenContextMenu));
                 break;
@@ -490,7 +498,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
             case nameof(Command.Icon):
                 UpdateDefaultContextItemIcon();
-                UpdateProperty(nameof(Icon));
+
+                // Our own icon have precedence over the command icon
+                if (!_icon.IsSet)
+                {
+                    UpdateProperty(nameof(Icon));
+                }
+
                 break;
         }
     }
