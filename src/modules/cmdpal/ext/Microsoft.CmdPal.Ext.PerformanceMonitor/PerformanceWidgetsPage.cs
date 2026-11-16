@@ -984,7 +984,6 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         try
         {
             ContentData.Clear();
-            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -1012,14 +1011,14 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             var written = history.Write.Snapshot();
             var (divisor, unit) = PerformanceChartData.GetRateScale(_settingsManager.DiskSpeedUnit, PerformanceChartData.Max(read, written));
             ContentData["diskChartAxis"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("DiskUsage_Widget_Template/Chart_Y_Axis"), unit);
-            ContentJson["diskSeries"] = PerformanceChartData.Create(
+            ContentData["diskSeries"] = PerformanceChartData.Create(
                 new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Read"), PerformanceChartData.InColor, PerformanceChartData.Scale(read, divisor)),
                 new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Write"), PerformanceChartData.OutColor, PerformanceChartData.Scale(written, divisor)));
-            ContentJson["diskActiveSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+            ContentData["diskActiveSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
                 Resources.GetResource("DiskUsage_Widget_Template/Disk_Usage"),
                 PerformanceChartData.DiskColor,
                 history.ActiveTime.Snapshot()));
-            ContentJson["volumes"] = DiskVolumes.Create(diskName);
+            ContentData["volumes"] = DiskVolumes.Create(diskName);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1028,7 +1027,6 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         catch (Exception e)
         {
             ContentData.Clear();
-            ContentJson.Clear();
             ContentData["errorMessage"] = e.Message;
             return;
         }
