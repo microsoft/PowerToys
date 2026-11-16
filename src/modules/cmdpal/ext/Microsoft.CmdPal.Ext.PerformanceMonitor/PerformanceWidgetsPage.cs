@@ -1373,7 +1373,6 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         try
         {
             ContentData.Clear();
-            ContentJson.Clear();
 
             var timer = Stopwatch.StartNew();
 
@@ -1387,21 +1386,21 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             ContentData["gpuName"] = _gpuDisplayInfo.Name;
             ContentData["gpuShortName"] = _gpuDisplayInfo.ShortName;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
-            ContentJson["gpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+            ContentData["gpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
                 Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
                 PerformanceChartData.GpuColor,
                 stats.GetGPUHistory(_gpuActiveIndex)));
-            ContentJson["gpuEngines"] = CreateEngines(stats, _gpuActiveIndex);
+            ContentData["gpuEngines"] = CreateEngines(stats, _gpuActiveIndex);
 
             var memory = stats.GetGPUMemory(_gpuActiveIndex);
             var dedicated = FormatUsedOfTotal(memory.DedicatedUsed, memory.DedicatedTotal);
             var shared = FormatUsedOfTotal(memory.SharedUsed, memory.SharedTotal);
-            ContentJson["hasDedicatedMemory"] = memory.DedicatedTotal > 0;
-            ContentJson["hasSharedMemory"] = memory.SharedTotal > 0;
+            ContentData["hasDedicatedMemory"] = memory.DedicatedTotal > 0;
+            ContentData["hasSharedMemory"] = memory.SharedTotal > 0;
             ContentData["gpuDedicatedMemory"] = dedicated;
-            ContentJson["gpuDedicatedPercent"] = GetPercent(memory.DedicatedUsed, memory.DedicatedTotal);
+            ContentData["gpuDedicatedPercent"] = GetPercent(memory.DedicatedUsed, memory.DedicatedTotal);
             ContentData["gpuSharedMemory"] = shared;
-            ContentJson["gpuSharedPercent"] = GetPercent(memory.SharedUsed, memory.SharedTotal);
+            ContentData["gpuSharedPercent"] = GetPercent(memory.SharedUsed, memory.SharedTotal);
             if (memory.DedicatedTotal > 0 || memory.SharedTotal > 0)
             {
                 ContentData["gpuMemoryLabel"] = Resources.GetResource(memory.DedicatedTotal > 0
@@ -1417,7 +1416,6 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
         catch (Exception e)
         {
             ContentData.Clear();
-            ContentJson.Clear();
             if (_gpuDisplayInfo is { } previous)
             {
                 _gpuDisplayInfo = previous with { Name = string.Empty, ShortName = string.Empty };
