@@ -15,6 +15,9 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
+    <PackageReference Include="Microsoft.ML.OnnxRuntime.Managed">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

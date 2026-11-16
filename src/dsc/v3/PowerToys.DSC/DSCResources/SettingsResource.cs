@@ -58,6 +58,7 @@ public sealed class SettingsResource : BaseResource
             { nameof(ModuleType.PowerRename),               CreateModuleFunctionData<PowerRenameSettings> },
             { nameof(ModuleType.PowerAccent),               CreateModuleFunctionData<PowerAccentSettings> },
             { nameof(ModuleType.RegistryPreview),           CreateModuleFunctionData<RegistryPreviewSettings> },
+            { nameof(ModuleType.RobocopyUI),                CreateModuleFunctionData<RobocopyUISettings> },
             { nameof(ModuleType.MeasureTool),               CreateModuleFunctionData<MeasureToolSettings> },
             { nameof(ModuleType.ShortcutGuide),             CreateModuleFunctionData<ShortcutGuideSettings> },
             { nameof(ModuleType.PowerOCR),                  CreateModuleFunctionData<PowerOcrSettings> },

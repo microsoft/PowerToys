@@ -78,6 +78,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     }
 
                     return true;
+                case ModuleType.RobocopyUI:
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RobocopyUILaunchEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
                 case ModuleType.RegistryPreview:
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.RegistryPreviewTriggerEvent()))
                     {

@@ -25,8 +25,8 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
     public IChatClient? GetIChatClient(string modelId)
     {
         Logger.LogInfo($"[FoundryLocal] GetIChatClient called with url: {modelId}");
-        InitializeAsync().GetAwaiter().GetResult();
 
+        InitializeAsync().GetAwaiter().GetResult();
         if (string.IsNullOrWhiteSpace(modelId))
         {
             Logger.LogError("[FoundryLocal] Model ID is empty after extraction");
@@ -74,11 +74,56 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         var endpointUri = new Uri($"{baseUri.ToString().TrimEnd('/')}/v1");
         Logger.LogInfo($"[FoundryLocal] Creating OpenAI client with endpoint: {endpointUri}");
 
+        // The OpenAI-compatible endpoint only recognizes fully qualified variant names, so an alias
+        // that passed the catalog and load checks would still come back as HTTP 404 "Model not found".
+        var requestModelId = ResolveCatalogName(modelId);
+        if (!string.Equals(requestModelId, modelId, StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.LogInfo($"[FoundryLocal] Resolved model alias '{modelId}' to catalog name '{requestModelId}'");
+        }
+
         return new OpenAIClient(
             new ApiKeyCredential("none"),
             new OpenAIClientOptions { Endpoint = endpointUri, NetworkTimeout = TimeSpan.FromMinutes(5) })
-            .GetChatClient(modelId)
+            .GetChatClient(requestModelId)
             .AsIChatClient();
+    }
+
+    /// <summary>
+    /// Maps a model reference to the catalog's fully qualified name, which is what the inference
+    /// endpoint expects. Returns the input unchanged when no catalog entry matches.
+    /// </summary>
+    private string ResolveCatalogName(string modelId)
+    {
+        if (_catalogModels is null)
+        {
+            return modelId;
+        }
+
+        var exact = _catalogModels.FirstOrDefault(m => string.Equals(m.Name, modelId, StringComparison.OrdinalIgnoreCase));
+        if (exact is not null)
+        {
+            return exact.Name;
+        }
+
+        var byAlias = _catalogModels.FirstOrDefault(m => string.Equals(m.Alias, modelId, StringComparison.OrdinalIgnoreCase));
+        if (byAlias is not null)
+        {
+            return byAlias.Name;
+        }
+
+        var separator = modelId.LastIndexOf(':');
+        if (separator > 0)
+        {
+            var withoutVersion = modelId[..separator];
+            var byName = _catalogModels.FirstOrDefault(m => string.Equals(m.Name, withoutVersion, StringComparison.OrdinalIgnoreCase));
+            if (byName is not null)
+            {
+                return byName.Name;
+            }
+        }
+
+        return modelId;
     }
 
     public string GetIChatClientString(string url)
@@ -167,10 +212,18 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
         return available;
     }
 
+    /// <summary>
+    /// Confirms the model reference names something in the catalog.
+    /// </summary>
+    /// <remarks>
+    /// A catalog entry is addressable either by its fully qualified variant <c>Name</c>
+    /// (<c>qwen2.5-coder-0.5b-instruct-qnn-npu:1</c>) or by its shorter <c>Alias</c>
+    /// (<c>qwen2.5-coder-0.5b</c>). Matching only on <c>Name</c> rejected every alias as unsupported,
+    /// so accept both, along with a variant name whose trailing <c>:version</c> has been dropped.
+    /// </remarks>
     private bool EnsureModelInCatalog(string modelId)
     {
-        var isInCatalog = _catalogModels?.Any(m => m.Name == modelId) ?? false;
-        if (isInCatalog)
+        if (MatchesCatalog(modelId))
         {
             return true;
         }
@@ -181,7 +234,23 @@ public sealed class FoundryLocalModelProvider : ILanguageModelProvider
             return false;
         }
 
-        return _catalogModels?.Any(m => m.Name == modelId) ?? false;
+        return MatchesCatalog(modelId);
+    }
+
+    private bool MatchesCatalog(string modelId)
+    {
+        if (_catalogModels is null)
+        {
+            return false;
+        }
+
+        var separator = modelId.LastIndexOf(':');
+        var withoutVersion = separator > 0 ? modelId[..separator] : modelId;
+
+        return _catalogModels.Any(m =>
+            string.Equals(m.Name, modelId, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(m.Alias, modelId, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(m.Name, withoutVersion, StringComparison.OrdinalIgnoreCase));
     }
 
     private bool EnsureModelLoadedWithRefresh(string modelId)

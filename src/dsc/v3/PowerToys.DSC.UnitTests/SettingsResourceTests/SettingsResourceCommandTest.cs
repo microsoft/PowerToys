@@ -43,6 +43,7 @@ public sealed class SettingsResourceCommandTest : BaseDscTest
             nameof(ModuleType.PowerRename),
             nameof(ModuleType.PowerAccent),
             nameof(ModuleType.RegistryPreview),
+            nameof(ModuleType.RobocopyUI),
             nameof(ModuleType.MeasureTool),
             nameof(ModuleType.ShortcutGuide),
             nameof(ModuleType.PowerOCR),
