@@ -347,6 +347,17 @@ namespace FancyZonesUnitTests
             const auto actual = HexToRGB(L"zzz");
             Assert::AreEqual(expected, actual);
         }
+
+        TEST_METHOD (TestHexToRGB_nonNullTerminatedInput)
+        {
+            // Regression test for passing wstring_view::data() to std::stoll:
+            // the view must be the only input, characters past its end must be ignored.
+            const std::wstring buffer = L"A3F6FF1234";
+            const std::wstring_view hex{ buffer.data(), 6 }; // "A3F6FF", not null-terminated
+            const auto expected = RGB(163, 246, 255);
+            const auto actual = HexToRGB(hex);
+            Assert::AreEqual(expected, actual);
+        }
     };
 
     TEST_CLASS (PickNextLayoutIdUnitTests)
