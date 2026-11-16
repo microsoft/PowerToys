@@ -12,6 +12,8 @@ namespace Microsoft.CmdPal.AdaptiveCards.Polyfills;
 /// </summary>
 internal sealed class DonutChartModel : IAdaptiveVisualModel
 {
+    private readonly IReadOnlyList<ChartDataPoint> _data = [];
+
     public bool IsPie { get; init; }
 
     public string? Title { get; init; }
@@ -24,23 +26,20 @@ internal sealed class DonutChartModel : IAdaptiveVisualModel
 
     public bool ShowLegend { get; init; } = true;
 
-    public IReadOnlyList<ChartDataPoint> Data { get; init; } = [];
+    public IReadOnlyList<ChartDataPoint> Data
+    {
+        get => _data;
+        init
+        {
+            _data = value;
+            Total = value.Sum(point => Math.Max(0, point.Value));
+        }
+    }
 
     public string IncrementalState { get; init; } = "{}";
 
-    public double Total
-    {
-        get
-        {
-            var total = 0d;
-            foreach (var point in Data)
-            {
-                total += Math.Max(0, point.Value);
-            }
-
-            return total;
-        }
-    }
+    /// <summary>Gets the sum of the slices' values, calculated once. Negative values count as zero.</summary>
+    public double Total { get; private init; }
 
     /// <summary>Returns the share of the total for each slice, in data order.</summary>
     public IReadOnlyList<double> GetShares()
@@ -69,6 +68,12 @@ internal sealed class DonutChartModel : IAdaptiveVisualModel
             var centerLabel = element.ValueKind == JsonValueKind.Object && element.TryGetProperty("value", out var value)
                 ? ChartJson.ToLabel(value)
                 : null;
+            var data = ChartJson.GetDataPoints(element, "data", "legend", "value", warnings);
+            if (data.Any(point => point.Value < 0))
+            {
+                warnings.Add($"{(isPie ? "Chart.Pie" : "Chart.Donut")} does not support negative values; negative slices are not drawn.");
+            }
+
             return new DonutChartModel
             {
                 IsPie = isPie,
@@ -77,7 +82,7 @@ internal sealed class DonutChartModel : IAdaptiveVisualModel
                 CenterLabel = isPie ? null : centerLabel,
                 ColorSet = ChartJson.GetString(element, "colorSet"),
                 ShowLegend = ChartJson.GetBoolean(element, "showLegend") ?? true,
-                Data = ChartJson.GetDataPoints(element, "data", "legend", "value", warnings),
+                Data = data,
                 IncrementalState = ChartJson.Canonicalize(element),
             };
         }

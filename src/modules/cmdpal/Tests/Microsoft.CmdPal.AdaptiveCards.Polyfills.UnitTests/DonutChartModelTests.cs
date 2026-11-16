@@ -76,6 +76,19 @@ public class DonutChartModelTests
     }
 
     [TestMethod]
+    [DataRow(false, "Chart.Donut")]
+    [DataRow(true, "Chart.Pie")]
+    public void NegativeValuesWarn(bool isPie, string type)
+    {
+        var warnings = new List<string>();
+        var model = DonutChartModel.Parse($$"""{ "type": "{{type}}", "data": [{ "legend": "A", "value": -3 }, { "legend": "B", "value": 1 }] }""", isPie, warnings);
+
+        Assert.AreEqual(1, warnings.Count);
+        StringAssert.StartsWith(warnings[0], type);
+        Assert.AreEqual(1d, model.Total);
+    }
+
+    [TestMethod]
     public void MissingDataWarns()
     {
         var warnings = new List<string>();

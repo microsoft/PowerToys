@@ -55,7 +55,7 @@ internal sealed class GaugeChartModel : IAdaptiveVisualModel
         var start = Min;
         for (var i = 0; i < Segments.Count; i++)
         {
-            var end = start + Segments[i].Value;
+            var end = start + Math.Max(0, Segments[i].Value);
             if (Value >= start && (Value < end || i == Segments.Count - 1))
             {
                 return i;
@@ -75,6 +75,11 @@ internal sealed class GaugeChartModel : IAdaptiveVisualModel
             var element = document.RootElement;
 
             var segments = ChartJson.GetDataPoints(element, "segments", "legend", "size", warnings);
+            if (segments.Any(segment => segment.Value < 0))
+            {
+                warnings.Add("Chart.Gauge does not support negative segment sizes; negative segments are not drawn.");
+            }
+
             var min = ChartJson.GetNumber(element, "min") ?? 0;
             var segmentTotal = 0d;
             foreach (var segment in segments)

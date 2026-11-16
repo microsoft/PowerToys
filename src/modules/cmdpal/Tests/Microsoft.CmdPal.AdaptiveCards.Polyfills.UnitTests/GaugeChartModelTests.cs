@@ -113,6 +113,30 @@ public class GaugeChartModelTests
     }
 
     [TestMethod]
+    public void NegativeSegmentsWarnAndTakeNoSpace()
+    {
+        var warnings = new List<string>();
+        var model = GaugeChartModel.Parse(
+            """
+            {
+              "type": "Chart.Gauge",
+              "value": 35,
+              "segments": [
+                { "legend": "Low", "size": 30 },
+                { "legend": "Invalid", "size": -20 },
+                { "legend": "Medium", "size": 20 },
+                { "legend": "High", "size": 50 }
+              ]
+            }
+            """,
+            warnings);
+
+        Assert.AreEqual(1, warnings.Count);
+        Assert.AreEqual(100d, model.Max);
+        Assert.AreEqual(2, model.GetActiveSegment());
+    }
+
+    [TestMethod]
     public void FractionIsClamped()
     {
         Assert.AreEqual(1d, new GaugeChartModel { Value = 150 }.Fraction);

@@ -15,7 +15,7 @@ The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Ad
 - The `Chart.Line`, `Chart.Gauge`, `Chart.Donut`, `Chart.Pie`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
 - `roundedCorners` and `showBorder` on containers, column sets, and columns.
 
-Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. These are partial implementations, not full schema conformance; see [Bar chart limitations](#bar-chart-limitations). Each piece can serve as a reference when adding support to the open-source renderer (see [Upstream](#upstream)).
+Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. These are partial implementations, not full schema conformance; see [Bar chart limitations](#bar-chart-limitations) and [Gauge, donut, and pie chart limitations](#gauge-donut-and-pie-chart-limitations). Each piece can serve as a reference when adding support to the open-source renderer (see [Upstream](#upstream)).
 
 ## Use it
 
@@ -68,6 +68,10 @@ To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName
 `Chart.VerticalBar` supports negative values. `Chart.HorizontalBar` and `Chart.HorizontalBar.Stacked` currently support only nonnegative values. Their parsers warn when negative data is supplied: horizontal bars clamp it to zero, and stacked bars omit negative segments from the drawing and totals. Original signed values remain in the model and accessibility summaries. A warning does not invoke the element's fallback.
 
 Supporting signed horizontal data requires a common zero baseline, bars extending to either side, and separate positive and negative totals for stacked groups. `PartToWhole` also needs an explicit policy for negative inputs before it can claim support.
+
+## Gauge, donut, and pie chart limitations
+
+`Chart.Donut` and `Chart.Pie` slices and `Chart.Gauge` segment sizes must be nonnegative. Their parsers warn when a negative value is supplied, and the value is drawn as an empty slice or segment and left out of the total. A warning does not invoke the element's fallback.
 
 ## Add an element
 
