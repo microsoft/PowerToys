@@ -73,7 +73,6 @@ internal sealed partial class SystemOverviewWidgetPage : WidgetPage, IDisposable
     protected override void LoadContentData()
     {
         ContentData.Clear();
-        ContentJson.Clear();
 
         var hasBattery = false;
         var snapshots = new Dictionary<string, JsonObject>();
@@ -89,12 +88,12 @@ internal sealed partial class SystemOverviewWidgetPage : WidgetPage, IDisposable
             }
 
             snapshots[key] = data;
-            ContentJson[key] = data;
+            ContentData[key] = data;
             hasBattery |= key == "battery";
         }
 
-        ContentJson["hasBattery"] = hasBattery;
-        ContentJson["sparkMax"] = new JsonObject
+        ContentData["hasBattery"] = hasBattery;
+        ContentData["sparkMax"] = new JsonObject
         {
             ["cpu"] = GetSparklineMax(snapshots.GetValueOrDefault("cpu"), "cpuSeries"),
             ["gpu"] = GetSparklineMax(snapshots.GetValueOrDefault("gpu"), "gpuSeries"),
