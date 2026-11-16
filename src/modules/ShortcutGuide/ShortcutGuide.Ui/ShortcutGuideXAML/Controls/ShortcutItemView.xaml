@@ -7,7 +7,15 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:ShortcutGuide.Models"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    IsTabStop="True"
+    UseSystemFocusVisuals="True"
+    AutomationProperties.Name="{x:Bind Shortcut.Name, Mode=OneWay}">
+    <UserControl.ContextFlyout>
+        <MenuFlyout Opening="PinFlyout_Opening">
+            <MenuFlyoutItem x:Name="PinMenuItem" Click="Pin_Click" />
+        </MenuFlyout>
+    </UserControl.ContextFlyout>
     <Grid
         Padding="16,8,16,8"
         BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
@@ -16,11 +24,6 @@
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="160" />
         </Grid.ColumnDefinitions>
-        <Grid.ContextFlyout>
-            <MenuFlyout Opening="PinFlyout_Opening">
-                <MenuFlyoutItem x:Name="PinMenuItem" Click="Pin_Click" />
-            </MenuFlyout>
-        </Grid.ContextFlyout>
         <StackPanel
             Grid.Column="0"
             VerticalAlignment="Center"
