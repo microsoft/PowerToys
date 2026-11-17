@@ -10,7 +10,7 @@ namespace WorkspacesEditor.Services
     {
         bool Exists(Project project);
 
-        void Apply(Project project);
+        void Apply(Project project, string previousName = null);
 
         void Remove(Project project);
     }

@@ -254,10 +254,7 @@ namespace WorkspacesEditor.ViewModels
             }
 
             EditEvent editEvent = EditEventFactory.Create(_editedProject, projectToSave);
-            if (!string.Equals(_editedProject.Name, projectToSave.Name, StringComparison.Ordinal))
-            {
-                _shortcuts.Remove(_editedProject);
-            }
+            string previousName = _editedProject.Name;
 
             _editedProject.Name = projectToSave.Name;
             _editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
@@ -269,7 +266,7 @@ namespace WorkspacesEditor.ViewModels
             _editedProject.NotifyApplicationsChanged();
             _editedProject.InitializePreview();
             _serializeWorkspaces(Workspaces.ToList());
-            _shortcuts.Apply(_editedProject);
+            _shortcuts.Apply(_editedProject, previousName);
             RefreshWorkspacesView();
 
             _writeEditTelemetry(editEvent);
@@ -479,13 +476,16 @@ namespace WorkspacesEditor.ViewModels
 
             IsLoading = false;
 
-            Project project = _workspacesEditorIO.ParseTempProject();
+            ProcessCapturedProject(_workspacesEditorIO.ParseTempProject());
+        }
+
+        private void ProcessCapturedProject(Project project)
+        {
             if (project != null)
             {
                 if (_isExistingProjectLaunched)
                 {
                     project.UpdateAfterLaunchAndEdit(_projectBeforeLaunch);
-                    CheckShortcutPresence(project);
                     project.EditorWindowTitle = GetString("EditWorkspace");
                     project.InitializePreview();
 
@@ -521,7 +521,6 @@ namespace WorkspacesEditor.ViewModels
         {
             if (!_isDisposed && _projectBeforeLaunch != null)
             {
-                CheckShortcutPresence(_projectBeforeLaunch);
                 _projectBeforeLaunch.InitializePreview();
                 StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(_projectBeforeLaunch));
             }

@@ -3,7 +3,9 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
 using ManagedCommon;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
@@ -15,70 +17,244 @@ namespace WorkspacesEditor.Services
 {
     internal sealed class WorkspaceShortcutService : IWorkspaceShortcutService
     {
-        public bool Exists(Project project) => File.Exists(GetDesktopShortcutAddress(project));
+        private const string LauncherFileName = "PowerToys.WorkspacesLauncher.exe";
+        private readonly string _desktopFolder;
+        private readonly string _iconFolder;
+        private readonly string _launcherPath;
 
-        public void Apply(Project project)
+        public WorkspaceShortcutService()
+            : this(
+                FolderUtils.Desktop(),
+                Path.Combine(FolderUtils.DataFolder(), "WorkspacesIcons"),
+                Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Environment.ProcessPath)), LauncherFileName))
         {
-            if (!project.IsShortcutNeeded)
-            {
-                Remove(project);
-                return;
-            }
+        }
 
+        internal WorkspaceShortcutService(string desktopFolder, string iconFolder, string launcherPath)
+        {
+            _desktopFolder = desktopFolder;
+            _iconFolder = iconFolder;
+            _launcherPath = launcherPath;
+        }
+
+        private enum ShortcutState
+        {
+            Missing,
+            Owned,
+            OtherOrUnreadable,
+        }
+
+        public bool Exists(Project project)
+        {
             try
             {
-                var basePath = Path.GetDirectoryName(Path.GetDirectoryName(Environment.ProcessPath));
-                var shortcutAddress = GetDesktopShortcutAddress(project);
-                var shortcutIconFilename = GetShortcutStoreAddress(project);
-
-                using var icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), ThemeHelper.IsDarkTheme());
-                WorkspacesIcon.SaveIcon(icon, shortcutIconFilename);
-
-                File.WriteAllBytes(shortcutAddress, Array.Empty<byte>());
-
-                Shell32.Shell shell = new();
-                Shell32.Folder directory = shell.NameSpace(FolderUtils.Desktop());
-                Shell32.FolderItem folderItem = directory.Items().Item($"{project.Name}.lnk");
-                Shell32.ShellLinkObject link = (Shell32.ShellLinkObject)folderItem.GetLink;
-
-                link.Description = $"Project Launcher {project.Id}";
-                link.Path = Path.Combine(basePath, "PowerToys.WorkspacesLauncher.exe");
-                link.Arguments = $"{project.Id} {(int)InvokePoint.Shortcut}";
-                link.WorkingDirectory = basePath;
-                link.SetIconLocation(shortcutIconFilename, 0);
-                link.Save(shortcutAddress);
+                return Guid.TryParse(project?.Id, out Guid workspaceId) &&
+                    GetShortcutState(GetDesktopShortcutAddress(project.Name), workspaceId) == ShortcutState.Owned;
             }
             catch (Exception ex)
             {
-                Logger.LogError($"Shortcut creation error: {ex.Message}");
+                Logger.LogError("Failed to check the workspace shortcut", ex);
+                return false;
+            }
+        }
+
+        public void Apply(Project project, string previousName = null)
+        {
+            try
+            {
+                if (!Guid.TryParse(project?.Id, out Guid workspaceId))
+                {
+                    return;
+                }
+
+                string shortcutAddress = GetDesktopShortcutAddress(project.Name);
+                string previousAddress = previousName == null ? shortcutAddress : GetDesktopShortcutAddress(previousName);
+                bool renamed = !string.Equals(shortcutAddress, previousAddress, StringComparison.OrdinalIgnoreCase);
+                string shortcutIconFilename = GetShortcutStoreAddress(project);
+
+                if (!project.IsShortcutNeeded)
+                {
+                    bool currentRemoved = TryRemoveOwnedShortcut(shortcutAddress, workspaceId);
+                    bool previousRemoved = !renamed || TryRemoveOwnedShortcut(previousAddress, workspaceId);
+                    if (currentRemoved && previousRemoved)
+                    {
+                        RemoveIcon(shortcutIconFilename);
+                    }
+
+                    return;
+                }
+
+                if (GetShortcutState(shortcutAddress, workspaceId) == ShortcutState.OtherOrUnreadable)
+                {
+                    Logger.LogWarning("The workspace shortcut name is already in use by another or unreadable link.");
+                    return;
+                }
+
+                SaveIcon(project, shortcutIconFilename);
+                SaveShortcut(workspaceId, shortcutAddress, shortcutIconFilename);
+
+                if (renamed)
+                {
+                    // Both names use the same per-workspace icon; retire only the old link.
+                    TryRemoveOwnedShortcut(previousAddress, workspaceId);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to update the workspace shortcut", ex);
             }
         }
 
         public void Remove(Project project)
         {
-            string shortcutAddress = GetDesktopShortcutAddress(project);
-            string shortcutIconFilename = GetShortcutStoreAddress(project);
-
-            if (File.Exists(shortcutIconFilename))
+            try
             {
-                File.Delete(shortcutIconFilename);
+                if (Guid.TryParse(project?.Id, out Guid workspaceId) &&
+                    TryRemoveOwnedShortcut(GetDesktopShortcutAddress(project.Name), workspaceId))
+                {
+                    RemoveIcon(GetShortcutStoreAddress(project));
+                }
             }
-
-            if (File.Exists(shortcutAddress))
+            catch (Exception ex)
             {
-                File.Delete(shortcutAddress);
+                Logger.LogError("Failed to remove the workspace shortcut", ex);
             }
         }
 
-        private static string GetDesktopShortcutAddress(Project project) => Path.Combine(FolderUtils.Desktop(), project.Name + ".lnk");
-
-        private static string GetShortcutStoreAddress(Project project)
+        private ShortcutState GetShortcutState(string shortcutAddress, Guid workspaceId)
         {
-            var dataFolder = FolderUtils.DataFolder();
-            Directory.CreateDirectory(dataFolder);
-            var shortcutStoreFolder = Path.Combine(dataFolder, "WorkspacesIcons");
-            Directory.CreateDirectory(shortcutStoreFolder);
-            return Path.Combine(shortcutStoreFolder, project.Id + ".ico");
+            IWshRuntimeLibrary.WshShell shell = null;
+            IWshRuntimeLibrary.IWshShortcut shortcut = null;
+            try
+            {
+                if ((File.GetAttributes(shortcutAddress) & FileAttributes.Directory) != 0)
+                {
+                    return ShortcutState.OtherOrUnreadable;
+                }
+
+                shell = new IWshRuntimeLibrary.WshShell();
+                shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
+                string[] arguments = shortcut.Arguments.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                // Recognize only the generated launcher arguments. In particular, never infer
+                // ownership from a stale Description after the target workspace was edited.
+                bool owned = string.Equals(Path.GetFileName(shortcut.TargetPath), LauncherFileName, StringComparison.OrdinalIgnoreCase) &&
+                    arguments.Length == 2 &&
+                    Guid.TryParseExact(arguments[0], "B", out Guid shortcutWorkspaceId) && shortcutWorkspaceId == workspaceId &&
+                    arguments[1] == ((int)InvokePoint.Shortcut).ToString(CultureInfo.InvariantCulture);
+                return owned ? ShortcutState.Owned : ShortcutState.OtherOrUnreadable;
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                return ShortcutState.Missing;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to read the workspace shortcut", ex);
+                return ShortcutState.OtherOrUnreadable;
+            }
+            finally
+            {
+                ReleaseComObject(shortcut);
+                ReleaseComObject(shell);
+            }
+        }
+
+        private bool TryRemoveOwnedShortcut(string shortcutAddress, Guid workspaceId)
+        {
+            ShortcutState state = GetShortcutState(shortcutAddress, workspaceId);
+            if (state == ShortcutState.Missing)
+            {
+                return true;
+            }
+
+            if (state != ShortcutState.Owned)
+            {
+                return false;
+            }
+
+            try
+            {
+                // The probe releases its COM objects before the file is deleted.
+                File.Delete(shortcutAddress);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to delete the workspace shortcut link", ex);
+                return false;
+            }
+        }
+
+        private static void SaveIcon(Project project, string shortcutIconFilename)
+        {
+            string iconFolder = Path.GetDirectoryName(shortcutIconFilename);
+            Directory.CreateDirectory(iconFolder);
+            string temporaryIconFilename = Path.Combine(iconFolder, $"{Guid.NewGuid():N}.tmp.ico");
+            try
+            {
+                using var icon = WorkspacesIcon.DrawIcon(WorkspacesIcon.IconTextFromProjectName(project.Name), ThemeHelper.IsDarkTheme());
+                WorkspacesIcon.SaveIcon(icon, temporaryIconFilename);
+                File.Move(temporaryIconFilename, shortcutIconFilename, overwrite: true);
+            }
+            finally
+            {
+                File.Delete(temporaryIconFilename);
+            }
+        }
+
+        private void SaveShortcut(Guid workspaceId, string shortcutAddress, string shortcutIconFilename)
+        {
+            IWshRuntimeLibrary.WshShell shell = null;
+            IWshRuntimeLibrary.IWshShortcut shortcut = null;
+            try
+            {
+                string launcherPath = GetAbsolutePath(_launcherPath);
+                string canonicalId = workspaceId.ToString("B");
+                shell = new IWshRuntimeLibrary.WshShell();
+                shortcut = (IWshRuntimeLibrary.IWshShortcut)shell.CreateShortcut(shortcutAddress);
+                shortcut.Description = $"Project Launcher {canonicalId}";
+                shortcut.TargetPath = launcherPath;
+                shortcut.Arguments = $"{canonicalId} {(int)InvokePoint.Shortcut}";
+                shortcut.WorkingDirectory = Path.GetDirectoryName(launcherPath);
+                shortcut.IconLocation = $"\"{shortcutIconFilename}\",0";
+                shortcut.Save();
+            }
+            finally
+            {
+                ReleaseComObject(shortcut);
+                ReleaseComObject(shell);
+            }
+        }
+
+        private string GetDesktopShortcutAddress(string name) => Path.GetFullPath(Path.Combine(GetAbsolutePath(_desktopFolder), name + ".lnk"));
+
+        private string GetShortcutStoreAddress(Project project) => Path.Combine(GetAbsolutePath(_iconFolder), project.Id + ".ico");
+
+        private static string GetAbsolutePath(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || !Path.IsPathFullyQualified(path))
+            {
+                throw new DirectoryNotFoundException("The workspace shortcut path is unavailable.");
+            }
+
+            return Path.GetFullPath(path);
+        }
+
+        private static void RemoveIcon(string iconFilename)
+        {
+            if (File.Exists(iconFilename))
+            {
+                File.Delete(iconFilename);
+            }
+        }
+
+        private static void ReleaseComObject(object value)
+        {
+            if (value != null && Marshal.IsComObject(value))
+            {
+                Marshal.FinalReleaseComObject(value);
+            }
         }
     }
 }
