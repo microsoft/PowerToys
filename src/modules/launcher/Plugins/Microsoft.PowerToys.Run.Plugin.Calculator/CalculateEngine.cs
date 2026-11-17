@@ -92,6 +92,13 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 return default;
             }
 
+            if (result is double doubleResult && double.IsFinite(doubleResult) &&
+                (doubleResult >= (double)decimal.MaxValue || doubleResult <= (double)decimal.MinValue))
+            {
+                // Return the result as a double, since it is outside the decimal range.
+                return new CalculateResult { LargeResult = doubleResult };
+            }
+
             var decimalResult = Convert.ToDecimal(result, cultureInfo);
             var roundedResult = Round(decimalResult);
 

@@ -14,42 +14,43 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 {
     public static class ResultHelper
     {
-        public static Result CreateResult(CalculateResult result, string iconPath, CultureInfo inputCulture, CultureInfo outputCulture)
-        {
-            return CreateResult(result.RoundedResult, iconPath, inputCulture, outputCulture);
-        }
+        public static Result CreateResult(CalculateResult result, string iconPath, CultureInfo inputCulture, CultureInfo outputCulture) =>
+             result.LargeResult is double largeResult
+                ? CreateResult(largeResult.ToString(outputCulture), largeResult.ToString(inputCulture), iconPath)
+                : CreateResult(result.RoundedResult, iconPath, inputCulture, outputCulture);
 
-        public static Result CreateResult(decimal? roundedResult, string iconPath, CultureInfo inputCulture, CultureInfo outputCulture)
-        {
-            // Return null when the expression is not a valid calculator query.
-            if (roundedResult == null)
-            {
-                return null;
-            }
+        public static Result CreateResult(decimal? roundedResult, string iconPath, CultureInfo inputCulture, CultureInfo outputCulture) =>
+            CreateResult(roundedResult?.ToString(outputCulture), roundedResult?.ToString(inputCulture), iconPath);
 
-            return new Result
-            {
-                // Using CurrentCulture since this is user facing
-                Title = roundedResult?.ToString(outputCulture),
-                IcoPath = iconPath,
-                Score = 300,
-                SubTitle = Properties.Resources.wox_plugin_calculator_copy_number_to_clipboard,
-                Action = c => Action(roundedResult, outputCulture),
-                QueryTextDisplay = roundedResult?.ToString(inputCulture),
-            };
-        }
+        // Returns null when the expression is not a valid calculator query.
+        private static Result CreateResult(string resultText, string queryText, string iconPath) =>
+            resultText is null ?
+                null :
+                new Result
+                {
+                    // Using CurrentCulture since this is user facing
+                    Title = resultText,
+                    IcoPath = iconPath,
+                    Score = 300,
+                    SubTitle = Properties.Resources.wox_plugin_calculator_copy_number_to_clipboard,
+                    Action = c => Action(resultText),
+                    QueryTextDisplay = queryText,
+                };
 
-        public static bool Action(decimal? roundedResult, CultureInfo culture)
+        public static bool Action(decimal? roundedResult, CultureInfo culture) =>
+            Action(roundedResult?.ToString(culture));
+
+        private static bool Action(string resultText)
         {
             var ret = false;
 
-            if (roundedResult != null)
+            if (resultText != null)
             {
                 var thread = new Thread(() =>
                 {
                     try
                     {
-                        ClipboardHelper.SetText(roundedResult?.ToString(culture));
+                        ClipboardHelper.SetText(resultText);
                         ret = true;
                     }
                     catch (ExternalException ex)
