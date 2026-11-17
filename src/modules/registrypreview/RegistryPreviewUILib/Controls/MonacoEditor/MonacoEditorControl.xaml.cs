@@ -12,6 +12,7 @@ using System.Timers;
 using System.Web;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
 using Windows.ApplicationModel.DataTransfer;
@@ -190,7 +191,7 @@ namespace RegistryPreviewUILib
                 _editorReady = true;
                 Browser.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
                 IsLoading = false;
-                EditorHost.IsEnabled = true;
+                AutomationProperties.SetAutomationId(Browser, "Browser");
                 Browser.Focus(FocusState.Programmatic);
             }
             catch (Exception ex)

@@ -503,21 +503,15 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
     private static bool WaitForEditorReadyStable(Session window)
     {
-        var selector = By.AccessibilityId("MonacoEditor");
-        if (!window.WaitForElement(selector, WindowTimeoutMS))
-        {
-            return false;
-        }
-
-        var editor = window.Find<Element>(selector, WindowTimeoutMS);
-        if (!editor.WaitForProperty("IsEnabled", "True", EditorTimeoutMS))
+        var selector = By.AccessibilityId("Browser");
+        if (!window.WaitForElement(selector, EditorTimeoutMS))
         {
             return false;
         }
 
         return WaitHelper.WaitForStable(
-            () => editor.IsEnabled,
-            enabled => enabled,
+            () => window.Has(selector, timeoutMS: 2_000),
+            present => present,
             timeoutMS: 2_000,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 250).Succeeded;
