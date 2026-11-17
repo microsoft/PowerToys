@@ -265,29 +265,41 @@ public class PowerOCRTests : UITestBase
     [TestCategory("PowerOCR Toolbar")]
     public void ToolbarModesTest()
     {
-        const int activationCount = 3;
-        for (int activation = 0; activation < activationCount; activation++)
+        const int coldStartCount = 3;
+        const int activationCount = 2;
+        for (int coldStart = 0; coldStart < coldStartCount; coldStart++)
         {
-            Step($"Testing cold/reopened toolbar activation {activation + 1}/{activationCount}");
-            var overlay = Activate();
-            foreach (string id in new[] { "SingleLineToggleButton", "TableToggleButton" })
+            if (coldStart > 0)
             {
-                Step($"Toggling toolbar mode {id}");
-                var button = overlay.Find<Element>(By.AccessibilityId(id));
-                string initial = button.GetProperty("ToggleState");
-                Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
-                if (initial == "On")
-                {
-                    ClickToolbarButton(overlay, id);
-                    AssertToggleState(button, "Off", $"{id} should reset to off.");
-                }
-
-                ClickToolbarButton(overlay, id);
-                AssertToggleState(button, "On", $"{id} should turn on.");
+                Step("Restarting the owned OCR process and Runner to exercise first-frame initialization");
+                Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(ProcessName), "The previous OCR process should exit before another cold start.");
+                RestartScope();
+                NavigateToTextExtractor();
             }
 
-            KeyboardHelper.SendKeys(Key.Esc);
-            AssertOverlayClosed();
+            for (int activation = 0; activation < activationCount; activation++)
+            {
+                Step($"Testing toolbar cold start {coldStart + 1}/{coldStartCount}, activation {activation + 1}/{activationCount}");
+                var overlay = Activate();
+                foreach (string id in new[] { "SingleLineToggleButton", "TableToggleButton" })
+                {
+                    Step($"Toggling toolbar mode {id}");
+                    var button = overlay.Find<Element>(By.AccessibilityId(id));
+                    string initial = button.GetProperty("ToggleState");
+                    Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
+                    if (initial == "On")
+                    {
+                        ClickToolbarButton(overlay, id);
+                        AssertToggleState(button, "Off", $"{id} should reset to off.");
+                    }
+
+                    ClickToolbarButton(overlay, id);
+                    AssertToggleState(button, "On", $"{id} should turn on.");
+                }
+
+                KeyboardHelper.SendKeys(Key.Esc);
+                AssertOverlayClosed();
+            }
         }
     }
 
