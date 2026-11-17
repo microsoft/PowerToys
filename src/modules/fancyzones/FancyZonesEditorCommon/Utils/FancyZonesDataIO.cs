@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using FancyZonesEditorCommon.Data;
 
@@ -17,13 +18,31 @@ namespace FancyZonesEditorCommon.Utils
         private static TWrapper ReadData<TData, TWrapper>(
             Func<TData> createInstance,
             Func<TData, string> fileSelector,
-            Func<TData, string, TWrapper> readFunc)
+            Func<TData, string, TWrapper> readFunc,
+            Func<TWrapper> createDefault = null)
         {
             var instance = createInstance();
             string filePath = fileSelector(instance);
 
             if (!File.Exists(filePath))
             {
+                if (createDefault != null)
+                {
+                    // Only missing files are optional; access and other I/O errors must still surface.
+                    try
+                    {
+                        _ = File.GetAttributes(filePath);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        return createDefault();
+                    }
+                    catch (DirectoryNotFoundException)
+                    {
+                        return createDefault();
+                    }
+                }
+
                 throw new FileNotFoundException($"File not found: {Path.GetFileName(filePath)}", filePath);
             }
 
@@ -64,10 +83,16 @@ namespace FancyZonesEditorCommon.Utils
         // CustomLayouts operations
         public static CustomLayouts.CustomLayoutListWrapper ReadCustomLayouts()
         {
+            return ReadCustomLayouts(FancyZonesPaths.CustomLayouts);
+        }
+
+        internal static CustomLayouts.CustomLayoutListWrapper ReadCustomLayouts(string filePath)
+        {
             return ReadData(
                 () => new CustomLayouts(),
-                instance => instance.File,
-                (instance, file) => instance.Read(file));
+                _ => filePath,
+                (instance, file) => instance.Read(file),
+                () => new CustomLayouts.CustomLayoutListWrapper { CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>() });
         }
 
         public static void WriteCustomLayouts(CustomLayouts.CustomLayoutListWrapper data)
@@ -82,10 +107,46 @@ namespace FancyZonesEditorCommon.Utils
         // LayoutTemplates operations
         public static LayoutTemplates.TemplateLayoutsListWrapper ReadLayoutTemplates()
         {
+            return ReadLayoutTemplates(FancyZonesPaths.LayoutTemplates);
+        }
+
+        internal static LayoutTemplates.TemplateLayoutsListWrapper ReadLayoutTemplates(string filePath)
+        {
             return ReadData(
                 () => new LayoutTemplates(),
-                instance => instance.File,
-                (instance, file) => instance.Read(file));
+                _ => filePath,
+                (instance, file) => instance.Read(file),
+                CreateDefaultLayoutTemplates);
+        }
+
+        private static LayoutTemplates.TemplateLayoutsListWrapper CreateDefaultLayoutTemplates()
+        {
+            var templates = new List<LayoutTemplates.TemplateLayoutWrapper>();
+            Constants.TemplateLayout[] types =
+            [
+                Constants.TemplateLayout.Empty,
+                Constants.TemplateLayout.Focus,
+                Constants.TemplateLayout.Columns,
+                Constants.TemplateLayout.Rows,
+                Constants.TemplateLayout.Grid,
+                Constants.TemplateLayout.PriorityGrid,
+            ];
+
+            foreach (var type in types)
+            {
+                bool isBlank = type == Constants.TemplateLayout.Empty;
+                bool isGrid = type != Constants.TemplateLayout.Empty && type != Constants.TemplateLayout.Focus;
+                templates.Add(new LayoutTemplates.TemplateLayoutWrapper
+                {
+                    Type = Constants.TemplateLayoutJsonTags[type],
+                    ZoneCount = isBlank ? 0 : LayoutDefaultSettings.DefaultZoneCount,
+                    SensitivityRadius = isBlank ? 0 : LayoutDefaultSettings.DefaultSensitivityRadius,
+                    ShowSpacing = isGrid && LayoutDefaultSettings.DefaultShowSpacing,
+                    Spacing = isGrid ? LayoutDefaultSettings.DefaultSpacing : 0,
+                });
+            }
+
+            return new LayoutTemplates.TemplateLayoutsListWrapper { LayoutTemplates = templates };
         }
 
         public static void WriteLayoutTemplates(LayoutTemplates.TemplateLayoutsListWrapper data)
