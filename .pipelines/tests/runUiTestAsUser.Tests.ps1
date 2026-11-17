@@ -578,6 +578,8 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
 Describe 'UI-test pipeline non-elevated dispatch' {
     It 'stops dispatch after a launcher exception instead of overlapping desktop suites' {
+        # Assert the expected Azure error command without emitting it into the live build log.
+        Mock Write-Host {}
         $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
         $handler = [regex]::Match($template,
             '(?ms)^ {8}\} catch \{\r?\n(?<body> {10}Write-Host "##vso\[task\.logissue type=error\]UI tests failed for \$\{base\}:.*?)(?=^ {8}\} finally \{)').Groups['body'].Value
@@ -588,6 +590,9 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         $dispatch = [scriptblock]::Create("try { throw 'injected launcher failure' } catch {`n$handler`n}")
 
         { & $dispatch } | Should Throw 'injected launcher failure'
+        Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Object -eq '##vso[task.logissue type=error]UI tests failed for MouseUtils.UITests.Next: injected launcher failure'
+        }
     }
 
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
