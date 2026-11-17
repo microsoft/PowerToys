@@ -1270,7 +1270,7 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
         >= 1e9 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Gbps", bitsPerSecond / 1e9),
         >= 1e6 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Mbps", bitsPerSecond / 1e6),
         > 0 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Kbps", bitsPerSecond / 1e3),
-        _ => "—",
+        _ => "-",
     };
 
     /// <summary>
