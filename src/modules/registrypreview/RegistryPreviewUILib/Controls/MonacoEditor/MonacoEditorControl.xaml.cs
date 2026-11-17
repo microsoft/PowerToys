@@ -25,6 +25,7 @@ namespace RegistryPreviewUILib
     {
         private readonly Timer _textChangedThrottle;
         private bool _textChangedThrottled;
+        private bool _editorReady;
 
         public string Text { get; private set; }
 
@@ -49,10 +50,9 @@ namespace RegistryPreviewUILib
         {
             Text = text;
 
-            if (!IsLoading)
+            if (_editorReady)
             {
-                var encodedText = HttpUtility.JavaScriptStringEncode(text);
-                await Browser.CoreWebView2.ExecuteScriptAsync($"editor.setValue('{encodedText}')");
+                await SetEditorTextAsync(text);
             }
         }
 
@@ -89,6 +89,7 @@ namespace RegistryPreviewUILib
             Browser.CoreWebView2.NavigationCompleted += CoreWebView2_NavigationCompleted;
             Browser.CoreWebView2.PermissionRequested += CoreWebView2_PermissionRequested;
             Browser.CoreWebView2.NewWindowRequested += CoreWebView2_NewWindowRequested;
+            Browser.CoreWebView2.WebMessageReceived += CoreWebView2_InitializationMessageReceived;
             Browser.CoreWebView2.Settings.AreDefaultScriptDialogsEnabled = false;
             Browser.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
             Browser.CoreWebView2.Settings.AreHostObjectsAllowed = false;
@@ -132,14 +133,21 @@ namespace RegistryPreviewUILib
             }
         }
 
-        private async void CoreWebView2_NavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+        private void CoreWebView2_NavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
         {
-            await SetThemeAsync();
-            IsLoading = false;
-            await SetTextAsync(Text);
+            if (!args.IsSuccess)
+            {
+                Trace.TraceError($"RegistryPreview: Monaco navigation failed with status {args.WebErrorStatus}.");
+            }
+        }
 
-            Browser.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
-            Browser.Focus(FocusState.Programmatic);
+        private async void CoreWebView2_InitializationMessageReceived(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
+        {
+            var json = JsonNode.Parse(args.WebMessageAsJson);
+            if (json?["id"]?.ToString().Equals("editorReady", StringComparison.OrdinalIgnoreCase) == true)
+            {
+                await InitializeEditorAsync();
+            }
         }
 
         private void CoreWebView2_WebMessageReceived(CoreWebView2 sender, CoreWebView2WebMessageReceivedEventArgs args)
@@ -166,13 +174,50 @@ namespace RegistryPreviewUILib
             ThrottleTextChanged();
         }
 
-        private async Task SetThemeAsync()
+        private async Task InitializeEditorAsync()
         {
-            if (Browser.CoreWebView2 == null)
+            if (_editorReady)
             {
                 return;
             }
 
+            try
+            {
+                await ApplyThemeAsync();
+                await SetEditorTextAsync(Text);
+                await Browser.CoreWebView2.ExecuteScriptAsync("startEditorChangeTracking()");
+                Browser.CoreWebView2.WebMessageReceived -= CoreWebView2_InitializationMessageReceived;
+                _editorReady = true;
+                Browser.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
+                IsLoading = false;
+                Browser.IsEnabled = true;
+                Browser.Focus(FocusState.Programmatic);
+            }
+            catch (Exception ex)
+            {
+                _editorReady = false;
+                Trace.TraceError($"RegistryPreview: failed to initialize the Monaco editor after loading: {ex}");
+            }
+        }
+
+        private async Task SetEditorTextAsync(string text)
+        {
+            var encodedText = HttpUtility.JavaScriptStringEncode(text);
+            await Browser.CoreWebView2.ExecuteScriptAsync($"editor.setValue('{encodedText}')");
+        }
+
+        private async Task SetThemeAsync()
+        {
+            if (!_editorReady || Browser.CoreWebView2 == null)
+            {
+                return;
+            }
+
+            await ApplyThemeAsync();
+        }
+
+        private async Task ApplyThemeAsync()
+        {
             var theme = Application.Current.RequestedTheme == ApplicationTheme.Light ? "vs" : "vs-dark";
             await Browser.CoreWebView2.ExecuteScriptAsync($"monaco.editor.setTheme('{theme}')");
         }

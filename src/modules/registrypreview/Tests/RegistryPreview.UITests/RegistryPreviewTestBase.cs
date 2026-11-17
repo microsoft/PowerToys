@@ -504,15 +504,23 @@ public abstract class RegistryPreviewTestBase : UITestBase
     private static bool WaitForEditorReadyStable(Session window)
     {
         var selector = By.AccessibilityId("Browser");
-        if (!window.WaitForElement(selector, EditorTimeoutMS))
+        if (!window.WaitForElement(selector, WindowTimeoutMS))
         {
             return false;
         }
 
-        // IsLoading starts false during initial layout, so require the peer to remain visible after
-        // Browser_Loaded has had time to switch into (or finish) the real WebView initialization.
-        Thread.Sleep(1_000);
-        return window.Has(selector, timeoutMS: 2_000);
+        var editor = window.Find<Element>(selector, WindowTimeoutMS);
+        if (!editor.WaitForProperty("IsEnabled", "True", EditorTimeoutMS))
+        {
+            return false;
+        }
+
+        return WaitHelper.WaitForStable(
+            () => editor.IsEnabled,
+            enabled => enabled,
+            timeoutMS: 2_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 250).Succeeded;
     }
 
     protected static void AssertExactElement(Session session, string name, string description, int timeoutMS = ActionTimeoutMS)
