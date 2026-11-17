@@ -111,6 +111,9 @@ namespace PowerDisplay.Common.Drivers
                         GdiDeviceName = gdiDeviceName,
                         FriendlyName = friendlyName ?? string.Empty,
                         MonitorNumber = i + 1, // 1-based, matches Windows Display Settings
+                        RefreshRate = path.TargetInfo.RefreshRate.Denominator != 0
+                            ? (double)path.TargetInfo.RefreshRate.Numerator / path.TargetInfo.RefreshRate.Denominator
+                            : 0,
                     };
                 }
             }

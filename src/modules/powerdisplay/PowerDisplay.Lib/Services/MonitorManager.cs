@@ -442,7 +442,18 @@ namespace PowerDisplay.Common.Services
                 RefreshAllOrientations();
             }
 
-            RefreshAllRefreshRates();
+            // Target rates resolve hardware-default (0/1) readings from EnumDisplaySettings.
+            var targetRates = new Dictionary<string, double>(MonitorIdComparer.Instance);
+            foreach (var display in inventory.Values)
+            {
+                var id = MonitorIdentity.FromDevicePath(display.DevicePath);
+                if (!string.IsNullOrEmpty(id))
+                {
+                    targetRates[id] = display.RefreshRate;
+                }
+            }
+
+            RefreshAllRefreshRates(targetRates);
         }
 
         /// <summary>
@@ -515,7 +526,7 @@ namespace PowerDisplay.Common.Services
         /// Uses EnumDisplaySettings only (no DDC/CI), so it is cheap enough to call on
         /// WM_DISPLAYCHANGE or before the flyout is shown.
         /// </summary>
-        public void RefreshAllRefreshRates()
+        public void RefreshAllRefreshRates(IReadOnlyDictionary<string, double> targetRates)
         {
             foreach (var monitor in _monitors)
             {
@@ -533,13 +544,62 @@ namespace PowerDisplay.Common.Services
                     monitor.AvailableRefreshRates = rates;
                 }
 
-                var currentRate = _refreshRateService.GetCurrentRefreshRate(monitor.GdiDeviceName);
-                if (currentRate > 0)
+                targetRates.TryGetValue(monitor.Id, out var targetRate);
+                var currentRate = ResolveCurrentRefreshRate(
+                    _refreshRateService.GetCurrentRefreshRate(monitor.GdiDeviceName),
+                    targetRate,
+                    monitor.AvailableRefreshRates);
+                if (currentRate.HasValue)
                 {
-                    monitor.CurrentRefreshRate = currentRate;
-                    monitor.ReadValues |= MonitorReadFlags.RefreshRate;
+                    monitor.CurrentRefreshRate = currentRate.Value;
+                    if (currentRate.Value > 0)
+                    {
+                        monitor.ReadValues |= MonitorReadFlags.RefreshRate;
+                    }
+                    else
+                    {
+                        monitor.ReadValues &= ~MonitorReadFlags.RefreshRate;
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Turn an EnumDisplaySettings reading into the current rate to show. 0 and 1 mean the
+        /// hardware default, so the numeric rate comes from the path's target rate instead,
+        /// matched to a listed option within 1 Hz (59.94 Hz may be listed as 59 or 60).
+        /// </summary>
+        /// <returns>
+        /// The rate in Hz; -1 if a default reading can't be resolved, which clears the selection
+        /// so any listed rate stays selectable; or null if the read failed and the cached value
+        /// should be kept.
+        /// </returns>
+        internal static int? ResolveCurrentRefreshRate(int enumRate, double targetRate, IReadOnlyList<int> availableRates)
+        {
+            if (enumRate < 0)
+            {
+                return null;
+            }
+
+            if (DisplayRefreshRateService.IsSelectableRefreshRate(enumRate))
+            {
+                return enumRate;
+            }
+
+            if (targetRate <= 1)
+            {
+                return -1;
+            }
+
+            // EnumDisplaySettings usually truncates (59.94 Hz is listed as 59), so prefer that.
+            var truncated = (int)targetRate;
+            if (availableRates.Contains(truncated))
+            {
+                return truncated;
+            }
+
+            var nearest = availableRates.OrderBy(rate => Math.Abs(rate - targetRate)).FirstOrDefault();
+            return nearest > 0 && Math.Abs(nearest - targetRate) < 1 ? nearest : (int)Math.Round(targetRate);
         }
 
         /// <summary>
