@@ -9,13 +9,17 @@
     mc:Ignorable="d">
 
     <Grid>
-        <controls:WebView2
-            x:Name="Browser"
-            HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            AutomationProperties.AutomationId="Browser"
-            IsEnabled="False"
-            Loaded="Browser_Loaded" />
+        <Border
+            x:Name="EditorHost"
+            AutomationProperties.AutomationId="MonacoEditor"
+            IsEnabled="False">
+            <controls:WebView2
+                x:Name="Browser"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                AutomationProperties.AutomationId="Browser"
+                Loaded="Browser_Loaded" />
+        </Border>
         <ProgressRing
             Width="48"
             Height="48"

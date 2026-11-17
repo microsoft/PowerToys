@@ -503,7 +503,7 @@ public abstract class RegistryPreviewTestBase : UITestBase
 
     private static bool WaitForEditorReadyStable(Session window)
     {
-        var selector = By.AccessibilityId("Browser");
+        var selector = By.AccessibilityId("MonacoEditor");
         if (!window.WaitForElement(selector, WindowTimeoutMS))
         {
             return false;

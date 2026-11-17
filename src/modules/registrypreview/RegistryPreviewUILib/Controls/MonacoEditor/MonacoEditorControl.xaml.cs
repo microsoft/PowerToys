@@ -190,7 +190,7 @@ namespace RegistryPreviewUILib
                 _editorReady = true;
                 Browser.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
                 IsLoading = false;
-                Browser.IsEnabled = true;
+                EditorHost.IsEnabled = true;
                 Browser.Focus(FocusState.Programmatic);
             }
             catch (Exception ex)
