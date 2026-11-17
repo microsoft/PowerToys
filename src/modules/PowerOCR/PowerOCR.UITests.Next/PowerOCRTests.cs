@@ -16,6 +16,7 @@ namespace PowerOCR.UITests;
 public class PowerOCRTests : UITestBase
 {
     private const string ProcessName = "PowerToys.PowerOCR";
+    private const string NativeSelectionClassPrefix = "PowerOCR.NativeSelection.";
     private const string CaptureText = "PowerToys Text Extractor";
     private const string LanguageMenuItemPrefix = "OCRLanguageMenuItem_";
     private const string DefaultSettings = """
@@ -264,25 +265,30 @@ public class PowerOCRTests : UITestBase
     [TestCategory("PowerOCR Toolbar")]
     public void ToolbarModesTest()
     {
-        var overlay = Activate();
-        foreach (string id in new[] { "SingleLineToggleButton", "TableToggleButton" })
+        const int activationCount = 3;
+        for (int activation = 0; activation < activationCount; activation++)
         {
-            Step($"Toggling toolbar mode {id}");
-            var button = overlay.Find<Element>(By.AccessibilityId(id));
-            string initial = button.GetProperty("ToggleState");
-            Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
-            if (initial == "On")
+            Step($"Testing cold/reopened toolbar activation {activation + 1}/{activationCount}");
+            var overlay = Activate();
+            foreach (string id in new[] { "SingleLineToggleButton", "TableToggleButton" })
             {
+                Step($"Toggling toolbar mode {id}");
+                var button = overlay.Find<Element>(By.AccessibilityId(id));
+                string initial = button.GetProperty("ToggleState");
+                Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
+                if (initial == "On")
+                {
+                    ClickToolbarButton(overlay, id);
+                    AssertToggleState(button, "Off", $"{id} should reset to off.");
+                }
+
                 ClickToolbarButton(overlay, id);
-                AssertToggleState(button, "Off", $"{id} should reset to off.");
+                AssertToggleState(button, "On", $"{id} should turn on.");
             }
 
-            ClickToolbarButton(overlay, id);
-            AssertToggleState(button, "On", $"{id} should turn on.");
+            KeyboardHelper.SendKeys(Key.Esc);
+            AssertOverlayClosed();
         }
-
-        KeyboardHelper.SendKeys(Key.Esc);
-        AssertOverlayClosed();
     }
 
     [TestMethod]
@@ -494,7 +500,23 @@ public class PowerOCRTests : UITestBase
             timeoutMS: 10_000,
             requiredConsecutiveMatches: 2,
             recover: _ => WindowControl.TryBringToForeground(handle));
-        Assert.IsTrue(ready.Succeeded, $"The toolbar should own physical input for {automationId}. Foreground: {WindowControl.GetForegroundWindowInfo()}");
+        if (!ready.Succeeded)
+        {
+            var button = ready.LastObservation;
+            var owners = button is null
+                ? Array.Empty<WindowControl.ProcessWindow>()
+                : WindowControl.EnumerateAllWindows()
+                    .Where(window => WindowControl.IsPointOwnedByWindow(window.Hwnd, button.X + (button.Width / 2), button.Y + (button.Height / 2)))
+                    .ToArray();
+            var windows = WindowControl.EnumerateProcessWindows([overlay.ProcessId])
+                .Select(window => $"{window}, Cloaked={WindowHelper.IsWindowCloaked(window.Hwnd)}");
+            Assert.Fail(
+                $"The toolbar should own physical input for {automationId}. " +
+                $"Control bounds: {button?.X},{button?.Y},{button?.Width},{button?.Height}; " +
+                $"point owners: {string.Join("; ", owners)}; OCR windows: {string.Join("; ", windows)}; " +
+                $"foreground: {WindowControl.GetForegroundWindowInfo()}");
+        }
+
         ClickWithoutRaising(ready.LastObservation!);
     }
 
@@ -652,6 +674,14 @@ public class PowerOCRTests : UITestBase
                     (captureBounds.Left, captureBounds.Top, captureBounds.Right, captureBounds.Bottom),
             timeoutMS: 10_000);
         Assert.IsNotNull(overlay, "The overlay should finish positioning on the fixture's capture monitor.");
+        var nativeSelection = WindowsFinder.WaitForWindowByApp(
+            ProcessName,
+            window => window.ProcessId == overlay.ProcessId &&
+                window.ClassName.StartsWith(NativeSelectionClassPrefix, StringComparison.Ordinal) &&
+                WindowHelper.GetWindowBounds(new IntPtr(window.Hwnd)) ==
+                    (captureBounds.Left, captureBounds.Top, captureBounds.Right, captureBounds.Bottom),
+            timeoutMS: 10_000);
+        Assert.IsNotNull(nativeSelection, "The native selection surface should appear after the WinUI frame is ready.");
 
         // The native selection surface and the WinUI toolbar are independent topmost HWNDs.
         // Raising the toolbar's full-screen host would cover the native cross-cursor surface.
@@ -668,7 +698,8 @@ public class PowerOCRTests : UITestBase
     private void AssertOverlayClosed()
     {
         var result = WaitHelper.WaitForStable(
-            () => WindowsFinder.ListByApp(ProcessName).Count(IsOverlay),
+            () => WindowsFinder.ListByApp(ProcessName).Count(window =>
+                IsOverlay(window) || window.ClassName.StartsWith(NativeSelectionClassPrefix, StringComparison.Ordinal)),
             count => count == 0,
             timeoutMS: 10_000,
             requiredConsecutiveMatches: 2);
