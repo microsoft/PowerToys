@@ -188,7 +188,7 @@
         <Grid
             Grid.Row="1"
             Grid.Column="0"
-            MaxWidth="359"
+            MaxWidth="400"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Stretch">
             <Grid.RowDefinitions>
