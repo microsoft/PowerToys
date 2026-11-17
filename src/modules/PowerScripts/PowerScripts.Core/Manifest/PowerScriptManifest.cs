@@ -167,6 +167,9 @@ public sealed class PowerScriptManifest
     public List<string> Capabilities { get; set; } = new();
 
     [JsonIgnore]
+    public PowerScripts.Core.Cli.HostCliPermission? HostCli { get; set; }
+
+    [JsonIgnore]
     public bool HasDescriptor { get; internal set; }
 
     [JsonIgnore]

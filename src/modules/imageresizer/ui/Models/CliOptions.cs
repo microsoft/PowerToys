@@ -124,7 +124,9 @@ namespace ImageResizer.Models
             options.SizeIndex = GetValidOptionValue(parseResult, command.SizeOption);
 
             options.ShrinkOnly = ToBoolOrNull(GetValidOptionValue(parseResult, command.ShrinkOnlyOption));
-            options.Replace = ToBoolOrNull(GetValidOptionValue(parseResult, command.ReplaceOption));
+            options.Replace = parseResult.GetResult(command.ReplaceOption) is { Implicit: false }
+                ? GetValidOptionValue(parseResult, command.ReplaceOption)
+                : null;
             options.IgnoreOrientation = ToBoolOrNull(GetValidOptionValue(parseResult, command.IgnoreOrientationOption));
             options.RemoveMetadata = ToBoolOrNull(GetValidOptionValue(parseResult, command.RemoveMetadataOption));
             options.KeepDateModified = ToBoolOrNull(GetValidOptionValue(parseResult, command.KeepDateModifiedOption));

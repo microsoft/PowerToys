@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AdvancedPaste.Local.CLI\AdvancedPaste.Local.CLI.csproj" ReferenceOutputAssembly="false" />
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>AdvancedPaste.Cli.UnitTests</_Parameter1>
     </AssemblyAttribute>

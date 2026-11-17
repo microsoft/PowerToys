@@ -38,11 +38,20 @@ public sealed class TemplateConfigurationTests
         Assert.AreEqual(JsonValueKind.False, options.Operation.Bindings["json"].Constant.ValueKind);
     }
 
+    [TestMethod]
+    public void CliContentIsAnExplicitChoiceSeparateFromOperations()
+    {
+        var options = TemplateConfiguration.Parse("""{"projectName":"Layouts","cliContent":"fancyzones"}""");
+        Assert.AreEqual("fancyzones", options.CliContent);
+        Assert.IsNull(options.Operation);
+    }
+
     [DataTestMethod]
     [DataRow("null")]
     [DataRow("[]")]
     [DataRow("""{"projectName":"first","projectName":"second"}""")]
     [DataRow("""{"projectName":"Inspect","operation":{"commandId":"filelocksmith.query","bindings":{"json":{"constant":true,"constant":false}}}}""")]
+    [DataRow("""{"projectName":"Inspect","cliContent":"file-locksmith","cliBindings":{"Json":{"source":"fixed","value":true,"value":false}}}""")]
     public void InvalidShapesAndDuplicatePropertiesAreRejected(string json) =>
         Assert.ThrowsException<InvalidDataException>(() => TemplateConfiguration.Parse(json));
 
@@ -50,6 +59,7 @@ public sealed class TemplateConfigurationTests
     [DataRow("""{"projectName":"Example","unrecognized":true}""")]
     [DataRow("""{"projectName":"Inspect","operation":{"commandId":"filelocksmith.query","executable":"other.exe"}}""")]
     [DataRow("""{"projectName":"Inspect","operation":{"commandId":"filelocksmith.query","bindings":{"path":{"parameter":"path","unrecognized":true}}}}""")]
+    [DataRow("""{"projectName":"Inspect","cliContent":"file-locksmith","cliBindings":{"Json":{"source":"fixed","value":true,"unrecognized":true}}}""")]
     public void UnknownMembersCannotBeSilentlyIgnored(string json) =>
         Assert.ThrowsException<JsonException>(() => TemplateConfiguration.Parse(json));
 

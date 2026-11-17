@@ -38,6 +38,11 @@ internal static class ConsentPrompt
 
         var publisher = string.IsNullOrWhiteSpace(manifest.Publisher) ? "(unknown)" : manifest.Publisher;
         var source = string.IsNullOrWhiteSpace(manifest.Source) ? "(local)" : manifest.Source;
+        var hostCliNotice = manifest.HostCli is { } hostCli
+            ? $"Approved host CLI recipe: {hostCli.Id}\n" +
+                "With MXC on, script code stays contained, but this approved action runs on the host with standard-user permissions, " +
+                "outside the script's filesystem, network and desktop restrictions. Review the descriptor's hostCli bindings before approval.\n\n"
+            : string.Empty;
 
         var text =
             $"A PowerScript is about to run for the first time (or its contents changed).\n\n" +
@@ -48,6 +53,7 @@ internal static class ConsentPrompt
             $"Runtime:       {manifest.Runtime}\n" +
             $"Declares:      {capabilities}\n" +
             $"Script file:    {manifest.EntryFullPath}\n\n" +
+            hostCliNotice +
             "Only allow scripts you trust. Allow this script to run?";
 
         var result = MessageBoxW(

@@ -3,11 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -15,6 +17,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
+using PowerScripts.Client;
 using PowerScripts.Editor.Helpers;
 using PowerScripts.UI.Helpers;
 using PowerScripts.UI.ViewModels;
@@ -23,9 +26,20 @@ namespace PowerScripts.Editor.Views;
 
 public sealed partial class PowerScriptTemplatesPage : Page
 {
+    private readonly Dictionary<string, string> _selectedCliActions = new(StringComparer.Ordinal);
     private bool _isCreating;
     private int _nextParameterId;
     private string _customIconPath;
+    private bool _updatingGuidance;
+    private bool _loadingCliContent;
+    private bool _isActive;
+    private bool _updatingCliSelection;
+
+    private bool IsCliContent => (ContentKindComboBox?.SelectedItem as ComboBoxItem)?.Tag as string == "cli";
+
+    private PowerScriptOperationTemplate SelectedCliContent => IsCliContent ? (CliContentComboBox?.SelectedItem as ComboBoxItem)?.Tag as PowerScriptOperationTemplate : null;
+
+    private PowerScriptCliModule SelectedCliModule => (CliModuleComboBox?.SelectedItem as ComboBoxItem)?.Tag as PowerScriptCliModule;
 
     private PowerScriptsViewModel ViewModel { get; set; }
 
@@ -44,12 +58,22 @@ public sealed partial class PowerScriptTemplatesPage : Page
         base.OnNavigatedTo(e);
         ViewModel = e.Parameter as PowerScriptsViewModel
             ?? throw new ArgumentException("Creation navigation requires the PowerScripts view model.", nameof(e));
+        _isActive = true;
         RuntimeComboBox.SelectedIndex = 0;
+        ContentKindComboBox.SelectedIndex = 0;
         InputComboBox.SelectedIndex = 0;
         OutputComboBox.SelectedIndex = 1;
         IconGrid.SelectedIndex = 0;
         TemplateBreadcrumb.ItemsSource = new[] { "PowerScripts", ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_CreateScriptTitle") };
         UpdatePreview();
+    }
+
+    protected override void OnNavigatedFrom(NavigationEventArgs e)
+    {
+        _isActive = false;
+        CliModuleComboBox.IsDropDownOpen = false;
+        CliContentComboBox.IsDropDownOpen = false;
+        base.OnNavigatedFrom(e);
     }
 
     private void BackButton_Click(object sender, RoutedEventArgs e)
@@ -85,8 +109,8 @@ public sealed partial class PowerScriptTemplatesPage : Page
                 InputComboBox.SelectedItem is not null && OutputComboBox.SelectedItem is not null;
             var hasFileCounts = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string != "files" ||
                 (!double.IsNaN(MinimumFilesNumberBox.Value) && !double.IsNaN(MaximumFilesNumberBox.Value));
-            CreateButton.IsEnabled = !_isCreating && !string.IsNullOrWhiteSpace(ProjectNameTextBox.Text) &&
-                hasOptions && hasFileCounts;
+            CreateButton.IsEnabled = !_isCreating && (!IsCliContent || !_loadingCliContent) && !string.IsNullOrWhiteSpace(ProjectNameTextBox.Text) &&
+                hasOptions && hasFileCounts && ValidateCliArguments(out _);
         }
     }
 
@@ -97,7 +121,227 @@ public sealed partial class PowerScriptTemplatesPage : Page
             _customIconPath = null;
         }
 
+        if (_loadingCliContent || _updatingCliSelection)
+        {
+            return;
+        }
+
         UpdateOptions();
+    }
+
+    private void Consumer_Changed(object sender, RoutedEventArgs e) => UpdateOptions();
+
+    private async void Content_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (ViewModel is null)
+        {
+            return;
+        }
+
+        if (IsCliContent)
+        {
+            RuntimeComboBox.SelectedIndex = 0;
+        }
+
+        UpdateOptions();
+        if (IsCliContent && CliModuleComboBox.Items.Count == 0 && !_loadingCliContent)
+        {
+            await LoadCliContentAsync();
+        }
+    }
+
+    private void RestrictedOperation_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_isCreating && !Frame.Navigate(typeof(PowerToysOperationsPage), ViewModel))
+        {
+            TemplateStatus.Severity = InfoBarSeverity.Error;
+            TemplateStatus.Message = PowerScriptsViewModel.GetResourceString("PowerScripts_OperationNavigationFailed");
+            TemplateStatus.IsOpen = true;
+        }
+    }
+
+    private void CliModule_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!_loadingCliContent && !_updatingCliSelection)
+        {
+            UpdateCliActions();
+            UpdateOptions();
+        }
+    }
+
+    private bool AllowsCliTemplate(PowerScriptOperationTemplate template) =>
+        PossibleCliInputs(template).Any(input => PowerScriptConsumerGuidance.Allows(SelectedConsumers, input, template.Output));
+
+    private void UpdateCliActions()
+    {
+        _updatingCliSelection = true;
+        try
+        {
+            if (SelectedCliContent is { } previous)
+            {
+                _selectedCliActions[previous.ModuleId] = previous.Id;
+            }
+
+            CliContentComboBox.Items.Clear();
+            if (SelectedCliModule is not { } module)
+            {
+                return;
+            }
+
+            foreach (var template in module.Templates)
+            {
+                var item = new ComboBoxItem { Content = template.Name, Tag = template, IsEnabled = AllowsCliTemplate(template) };
+                AutomationProperties.SetAutomationId(item, "PowerScriptsTemplateCliContent_" + template.Id);
+                CliContentComboBox.Items.Add(item);
+            }
+
+            _selectedCliActions.TryGetValue(module.Id, out var preferred);
+            var items = CliContentComboBox.Items.Cast<ComboBoxItem>().ToArray();
+            CliContentComboBox.SelectedItem = items.FirstOrDefault(item =>
+                item.IsEnabled && ((PowerScriptOperationTemplate)item.Tag).Id == preferred) ?? items.FirstOrDefault(item => item.IsEnabled);
+        }
+        finally
+        {
+            _updatingCliSelection = false;
+        }
+    }
+
+    private async void CliCatalogueRetry_Click(object sender, RoutedEventArgs e) => await LoadCliContentAsync();
+
+    private async Task LoadCliContentAsync()
+    {
+        if (_loadingCliContent || !_isActive)
+        {
+            return;
+        }
+
+        _loadingCliContent = true;
+        CliCatalogueStatus.Severity = InfoBarSeverity.Informational;
+        CliCatalogueStatus.Message = PowerScriptsViewModel.GetResourceString("PowerScripts_CliCatalogueLoading");
+        CliCatalogueStatus.IsOpen = true;
+        CliCatalogueRetry.Visibility = Visibility.Collapsed;
+        CliModuleComboBox.PlaceholderText = CliCatalogueStatus.Message;
+        UpdateOptions();
+        try
+        {
+            var templates = await ViewModel.LoadCliContentTemplatesAsync();
+            if (!_isActive)
+            {
+                return;
+            }
+
+            if (templates.Count == 0)
+            {
+                throw new InvalidDataException(ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCliEmpty"));
+            }
+
+            var modules = PowerScriptCliModule.FromTemplates(templates);
+            CliModuleComboBox.Items.Clear();
+            foreach (var module in modules)
+            {
+                var item = new ComboBoxItem { Content = module.Name, Tag = module, IsEnabled = module.Templates.Any(AllowsCliTemplate) };
+                AutomationProperties.SetAutomationId(item, "PowerScriptsTemplateCliModule_" + module.Id);
+                CliModuleComboBox.Items.Add(item);
+            }
+
+            CliModuleComboBox.SelectedItem = CliModuleComboBox.Items.Cast<ComboBoxItem>().FirstOrDefault(item => item.IsEnabled);
+            UpdateCliActions();
+            CliCatalogueStatus.IsOpen = false;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Unable to load PowerShell module CLI content.", ex);
+            if (_isActive)
+            {
+                CliContentComboBox.Items.Clear();
+                CliModuleComboBox.Items.Clear();
+                CliCatalogueStatus.Severity = InfoBarSeverity.Error;
+                CliCatalogueStatus.Message = ex.Message;
+                CliCatalogueStatus.IsOpen = true;
+                CliCatalogueRetry.Visibility = Visibility.Visible;
+            }
+        }
+        finally
+        {
+            _loadingCliContent = false;
+            if (_isActive)
+            {
+                CliModuleComboBox.PlaceholderText = PowerScriptsViewModel.GetResourceString("PowerScripts_TemplateCliModule.PlaceholderText");
+                UpdateOptions();
+            }
+        }
+    }
+
+    private void UpdateConsumerGuidance()
+    {
+        if (_updatingGuidance || ConsumerChoices is null || InputComboBox is null || OutputComboBox is null)
+        {
+            return;
+        }
+
+        _updatingGuidance = true;
+        try
+        {
+            var choices = ConsumerChoices.Children.OfType<CheckBox>().ToArray();
+            var selected = SelectedConsumers;
+            var cli = SelectedCliContent;
+            foreach (var choice in choices)
+            {
+                choice.IsEnabled = choice.IsChecked == true ||
+                    (cli is null ? PowerScriptConsumerGuidance.CanCombine(selected.Append((string)choice.Tag)) :
+                        PowerScriptConsumerGuidance.Allows(selected.Append((string)choice.Tag), CliInput, cli.Output));
+            }
+
+            if (CliContentComboBox is not null)
+            {
+                foreach (var item in CliModuleComboBox.Items.Cast<ComboBoxItem>())
+                {
+                    item.IsEnabled = ((PowerScriptCliModule)item.Tag).Templates.Any(AllowsCliTemplate);
+                }
+
+                foreach (var item in CliContentComboBox.Items.Cast<ComboBoxItem>())
+                {
+                    var template = (PowerScriptOperationTemplate)item.Tag;
+                    item.IsEnabled = PossibleCliInputs(template).Any(input => PowerScriptConsumerGuidance.Allows(selected, input, template.Output));
+                }
+            }
+
+            foreach (var argument in CliArguments)
+            {
+                argument.CanUseInput = argument.SourceIndex == 1 ||
+                    (CliArguments.Where(other => other != argument && other.SourceIndex == 1).All(other => other.InputType == argument.InputType) &&
+                        PowerScriptConsumerGuidance.Allows(selected, argument.InputType, cli.Output));
+            }
+
+            var inputs = InputComboBox.Items.Cast<GridViewItem>().ToArray();
+            var outputs = OutputComboBox.Items.Cast<GridViewItem>().ToArray();
+            foreach (var item in inputs)
+            {
+                item.IsEnabled = (cli is null || (string)item.Tag == CliInput) &&
+                    outputs.Any(output => PowerScriptConsumerGuidance.Allows(selected, (string)item.Tag, (string)output.Tag));
+            }
+
+            if (InputComboBox.SelectedItem is not GridViewItem { IsEnabled: true })
+            {
+                InputComboBox.SelectedItem = inputs.FirstOrDefault(item => item.IsEnabled);
+            }
+
+            var input = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string;
+            foreach (var item in outputs)
+            {
+                item.IsEnabled = input is not null && (cli is null || (string)item.Tag == cli.Output) &&
+                    PowerScriptConsumerGuidance.Allows(selected, input, (string)item.Tag);
+            }
+
+            if (OutputComboBox.SelectedItem is not GridViewItem { IsEnabled: true })
+            {
+                OutputComboBox.SelectedItem = outputs.FirstOrDefault(item => item.IsEnabled);
+            }
+        }
+        finally
+        {
+            _updatingGuidance = false;
+        }
     }
 
     private async void CustomIconButton_Click(object sender, RoutedEventArgs e)
@@ -173,12 +417,27 @@ public sealed partial class PowerScriptTemplatesPage : Page
 
     private void UpdateOptions()
     {
+        UpdateCliArguments();
+        UpdateConsumerGuidance();
         if (FileInputOptions is null || PythonHelp is null)
         {
             return;
         }
 
         FileInputOptions.Visibility = (InputComboBox.SelectedItem as GridViewItem)?.Tag as string == "files" ? Visibility.Visible : Visibility.Collapsed;
+        if (ContentKindComboBox is not null && RuntimeComboBox is not null)
+        {
+            RuntimeComboBox.IsEnabled = !IsCliContent;
+            CliContentOptions.Visibility = BoolToVisibility(IsCliContent);
+            CliModuleComboBox.IsEnabled = !_loadingCliContent && CliModuleComboBox.Items.Count > 0;
+            CliContentComboBox.IsEnabled = !_loadingCliContent && CliContentComboBox.Items.Count > 0;
+            var cli = SelectedCliContent;
+            CliDescription.Text = cli?.Description ?? string.Empty;
+            ValidateCliArguments(out var cliError);
+            CliBindingValidation.Text = cliError ?? string.Empty;
+            CliBindingValidation.Visibility = BoolToVisibility(cliError is not null);
+        }
+
         PythonHelp.Visibility = (RuntimeComboBox.SelectedItem as ComboBoxItem)?.Tag as string == "python" ? Visibility.Visible : Visibility.Collapsed;
         if (CustomIconName is not null)
         {
@@ -289,7 +548,9 @@ public sealed partial class PowerScriptTemplatesPage : Page
                 input == "files" ? FileCount(MaximumFilesNumberBox) : 0,
                 new JsonArray(Parameters.Select(parameter => (JsonNode)parameter.ToTemplateParameter()).ToArray()),
                 IconGrid.SelectedItem is PowerScriptTemplateIcon { HasIcon: true } icon ? icon.Id : null,
-                _customIconPath);
+                _customIconPath,
+                cliContent: SelectedCliContent?.Id,
+                cliBindings: CreateCliBindings());
             TemplateStatus.Severity = InfoBarSeverity.Success;
             TemplateStatus.Message = ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateCreated") +
                 Environment.NewLine + Path.GetDirectoryName(entry);

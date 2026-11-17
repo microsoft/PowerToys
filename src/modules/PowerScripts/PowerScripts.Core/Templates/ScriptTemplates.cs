@@ -34,7 +34,9 @@ public sealed record ScriptTemplateOptions(
     IReadOnlyList<ScriptTemplateParameter>? Parameters = null,
     string? IconPreset = null,
     string? IconSource = null,
-    PowerToysOperationTemplateOptions? Operation = null);
+    PowerToysOperationTemplateOptions? Operation = null,
+    string? CliContent = null,
+    IReadOnlyDictionary<string, PowerShellCliBinding>? CliBindings = null);
 
 public sealed record ScriptTemplateParameter(
     string Name,
@@ -59,6 +61,11 @@ public static partial class ScriptTemplates
 
     public static CreatedScriptTemplate Create(string id, string scriptsRoot, ScriptTemplateOptions? options = null)
     {
+        if (options?.CliContent is not null || options?.CliBindings is not null)
+        {
+            throw new ArgumentException("Editable CLI content requires configured creation without an educational or operation template ID.", nameof(options));
+        }
+
         if (id.StartsWith(OperationTemplatePrefix, StringComparison.Ordinal))
         {
             var commandId = id[OperationTemplatePrefix.Length..];

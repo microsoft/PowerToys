@@ -19,6 +19,7 @@ namespace PowerScripts.UI.ViewModels;
 public partial class PowerScriptsViewModel
 {
     private static readonly string[] OperationTemplateListArguments = new[] { "template", "list" };
+    private static readonly string[] CliContentListArguments = new[] { "template", "cli-list" };
     private int _catalogueGeneration;
     private string _loadedScriptsRoot;
 
@@ -34,7 +35,9 @@ public partial class PowerScriptsViewModel
         JsonArray parameters = null,
         string iconPreset = null,
         string iconSource = null,
-        JsonObject operation = null)
+        JsonObject operation = null,
+        string cliContent = null,
+        JsonObject cliBindings = null)
     {
         var request = new JsonObject
         {
@@ -49,6 +52,8 @@ public partial class PowerScriptsViewModel
             ["parameters"] = parameters,
             ["iconPreset"] = iconPreset,
             ["iconSource"] = iconSource,
+            ["cliContent"] = cliContent,
+            ["cliBindings"] = cliBindings,
         };
         if (operation is not null)
         {
@@ -81,6 +86,26 @@ public partial class PowerScriptsViewModel
         }
 
         return operations;
+    }
+
+    public async Task<IReadOnlyList<PowerScriptOperationTemplate>> LoadCliContentTemplatesAsync()
+    {
+        var json = await InvokeHostAsync(CliContentListArguments);
+        var templates = JsonSerializer.Deserialize<List<PowerScriptOperationTemplate>>(json, JsonOptions)
+            ?? throw new InvalidDataException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+        if (templates.Any(template => string.IsNullOrWhiteSpace(template.Id) || string.IsNullOrWhiteSpace(template.Name) ||
+            template.Input is not ("none" or "text" or "files") || template.Output is not ("none" or "text" or "files") ||
+            (template.Input != "none" && (string.IsNullOrWhiteSpace(template.InputArgument?.Name) ||
+                template.InputArgument.Schema?["type"]?.GetValue<string>() != "string" ||
+                (template.Input == "files") != (template.InputArgument.Schema?["format"]?.GetValue<string>() == "file-path"))) ||
+            template.Parameters is null || template.Parameters.Any(parameter => parameter is null ||
+                string.IsNullOrWhiteSpace(parameter.Name) || parameter.Schema is null)) ||
+            templates.Select(template => template.Id).Distinct(StringComparer.Ordinal).Count() != templates.Count)
+        {
+            throw new InvalidDataException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+        }
+
+        return templates;
     }
 
     public async Task ReloadScriptsAsync(bool preserveEditorOrder = false)

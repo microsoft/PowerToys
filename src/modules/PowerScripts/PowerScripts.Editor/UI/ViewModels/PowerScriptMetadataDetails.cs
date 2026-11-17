@@ -103,6 +103,7 @@ public static class PowerScriptMetadataDetails
             "fileWrite" => Text("FileWrite"),
             "network" => Text("Network"),
             "ui" => Text("Ui"),
+            "hostPowerToysCli" => Text("HostCli"),
             _ => Value(value),
         });
         var capabilitiesDisplay = capabilities is { Count: > 0 } ? string.Join(", ", capabilityNames) : Text("None");
@@ -183,6 +184,13 @@ public static class PowerScriptMetadataDetails
             Row("Runtime", "Runtime", runtime),
             Row("ExecutionMode", "ExecutionMode", Text(powerToysOperation ? "PowerToysOperationMode" : execute is null ? "BuiltIn" : "Custom")),
         };
+        if (extension["hostCli"] is JsonObject hostCli)
+        {
+            execution.Add(Row("HostCliBoundary", "HostCli", Text("HostCliBoundary")));
+            execution.Add(Row("HostCliRecipe", "HostCliRecipe", Optional(hostCli["id"])));
+            execution.Add(Row("HostCliBindings", "HostCliBindings", Optional(hostCli["bindings"])));
+        }
+
         if (execute is not null && !powerToysOperation)
         {
             foreach (var (field, label) in new[]

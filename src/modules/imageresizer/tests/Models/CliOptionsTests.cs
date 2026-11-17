@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ImageResizer.Cli;
 using ImageResizer.Cli.Commands;
 using ImageResizer.Models;
 using ImageResizer.Properties;
@@ -122,6 +123,37 @@ namespace ImageResizer.Tests.Models
             var options = CliOptions.Parse(args);
 
             Assert.AreEqual(true, options.Replace);
+        }
+
+        [DataTestMethod]
+        [DataRow("--replace", "false")]
+        [DataRow("--replace=false", null)]
+        [DataRow("-r", "false")]
+        public void Parse_WithExplicitFalseReplacement_OverridesSavedReplacement(string option, string value)
+        {
+            var args = value is null ? new[] { option, "test.jpg" } : new[] { option, value, "test.jpg" };
+            var options = CliOptions.ParseForCli(args);
+            var settings = new Settings { Replace = true };
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(0, options.ParseErrors.Count);
+            Assert.AreEqual(false, options.Replace);
+            Assert.IsFalse(settings.Replace);
+            Assert.AreEqual(1, options.Files.Count);
+            Assert.AreEqual("test.jpg", options.Files.Single());
+        }
+
+        [TestMethod]
+        public void Parse_WithoutReplacementOption_PreservesSavedReplacement()
+        {
+            var options = CliOptions.ParseForCli(["test.jpg"]);
+            var settings = new Settings { Replace = true };
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.IsNull(options.Replace);
+            Assert.IsTrue(settings.Replace);
         }
 
         [TestMethod]
@@ -590,12 +622,12 @@ namespace ImageResizer.Tests.Models
         }
 
         [TestMethod]
-        public void Parse_WithExplicitBundledBooleanValue_PreservesCompatibility()
+        public void Parse_WithExplicitBundledBooleanValue_PreservesFalseReplacement()
         {
             var options = CliOptions.ParseForCli(["-r=false", "photo.jpg"]);
 
             Assert.AreEqual(0, options.ParseErrors.Count);
-            Assert.IsNull(options.Replace);
+            Assert.AreEqual(false, options.Replace);
             CollectionAssert.Contains(options.Files.ToList(), "photo.jpg");
         }
 

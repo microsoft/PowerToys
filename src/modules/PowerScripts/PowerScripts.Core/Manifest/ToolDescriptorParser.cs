@@ -35,6 +35,14 @@ public static class ToolDescriptorParser
         using (var document = JsonDocument.Parse(json, new JsonDocumentOptions { MaxDepth = JsonOptions.MaxDepth }))
         {
             if (document.RootElement.ValueKind == JsonValueKind.Object &&
+                document.RootElement.TryGetProperty("x-powerscript", out var extension) &&
+                extension.ValueKind == JsonValueKind.Object &&
+                extension.TryGetProperty("hostCli", out _))
+            {
+                CliActionProvider.CheckDuplicateProperties(document.RootElement);
+            }
+
+            if (document.RootElement.ValueKind == JsonValueKind.Object &&
                 document.RootElement.EnumerateObject().Any(property => property.Name == "x-execute" &&
                     property.Value.ValueKind == JsonValueKind.Object &&
                     property.Value.EnumerateObject().Any(member => member.Name == "provider")))
@@ -90,6 +98,7 @@ public static class ToolDescriptorParser
             Source = extension?.Source,
             Icon = extension?.Icon,
             Capabilities = extension?.Capabilities ?? new(),
+            HostCli = extension?.HostCli,
         };
         if (input == PowerScriptDataFormat.Files)
         {

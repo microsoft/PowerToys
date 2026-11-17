@@ -17,4 +17,18 @@
     <ProjectReference Include="..\PowerScripts.Client\PowerScripts.Client.csproj" />
   </ItemGroup>
   <Import Project="..\Mxc.Runtime.targets" />
+  <Target Name="DeployPowerScriptsHost" AfterTargets="Build"
+          Condition="'$(DesignTimeBuild)' != 'true' and ('$(Platform)' == 'x64' or '$(Platform)' == 'ARM64')">
+    <PropertyGroup>
+      <PowerScriptsDeploymentDirectory>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..\..\..\$(Platform)\$(Configuration)\PowerScripts\'))</PowerScriptsDeploymentDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <PowerScriptsHostDeploymentFiles Include="$(TargetDir)**\*" Exclude="$(TargetDir)publish\**" />
+    </ItemGroup>
+    <Copy SourceFiles="@(PowerScriptsHostDeploymentFiles)"
+          DestinationFiles="@(PowerScriptsHostDeploymentFiles->'$(PowerScriptsDeploymentDirectory)%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
+    <Error Condition="!Exists('$(PowerScriptsDeploymentDirectory)PowerScripts.Host.exe')"
+           Text="The PowerScripts Host was not deployed beside the PowerToys Runner." />
+  </Target>
 </Project>

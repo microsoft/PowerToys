@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using PowerScripts.Core.Manifest;
+using PowerScripts.Core.Cli;
 
 namespace PowerScripts.Core.Security;
 
@@ -19,6 +20,8 @@ public sealed class ProcessExecutionContext
     public IReadOnlyList<string> InputPaths { get; init; } = Array.Empty<string>();
 
     public IReadOnlyList<string> FileParameterNames { get; init; } = Array.Empty<string>();
+
+    internal HostCliInvocation? HostCli { get; set; }
 
     public static ProcessExecutionContext FromManifest(
         PowerScriptManifest manifest,
