@@ -74,6 +74,192 @@
             <layout:ManagementPage.ModuleContent>
                 <StackPanel Spacing="12">
                     <TextBlock x:Uid="PowerScripts_TemplatesHelp" TextWrapping="Wrap" />
+                    <ComboBox
+                        x:Name="ContentKindComboBox"
+                        x:Uid="PowerScripts_TemplateContent"
+                        HorizontalAlignment="Stretch"
+                        AutomationProperties.AutomationId="PowerScriptsTemplateContent"
+                        SelectionChanged="Content_SelectionChanged">
+                        <ComboBoxItem x:Uid="PowerScripts_TemplateContentExample" Tag="example" />
+                        <ComboBoxItem x:Uid="PowerScripts_TemplateContentCli" Tag="cli" />
+                    </ComboBox>
+                    <Border Style="{StaticResource EditorSurfaceStyle}">
+                        <StackPanel Spacing="8">
+                            <TextBlock x:Uid="PowerScripts_TemplateConsumers" Style="{StaticResource SubtitleTextBlockStyle}" />
+                            <TextBlock x:Uid="PowerScripts_TemplateConsumersHelp" TextWrapping="Wrap" />
+                            <StackPanel x:Name="ConsumerChoices" Spacing="4">
+                                <CheckBox
+                                    x:Uid="PowerScripts_TemplateConsumerAdvancedPaste"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerAdvancedPaste"
+                                    Checked="Consumer_Changed"
+                                    Tag="advanced-paste"
+                                    Unchecked="Consumer_Changed" />
+                                <CheckBox
+                                    x:Uid="PowerScripts_TemplateConsumerKeyboardManager"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerKeyboardManager"
+                                    Checked="Consumer_Changed"
+                                    Tag="keyboard-manager"
+                                    Unchecked="Consumer_Changed" />
+                                <CheckBox
+                                    x:Uid="PowerScripts_TemplateConsumerCommandPalette"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerCommandPalette"
+                                    Checked="Consumer_Changed"
+                                    Tag="command-palette"
+                                    Unchecked="Consumer_Changed" />
+                                <CheckBox
+                                    x:Uid="PowerScripts_TemplateConsumerExplorer"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerExplorer"
+                                    Checked="Consumer_Changed"
+                                    Tag="file-explorer"
+                                    Unchecked="Consumer_Changed" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource EditorSurfaceStyle}">
+                        <StackPanel Spacing="12">
+                            <ComboBox
+                                x:Name="RuntimeComboBox"
+                                x:Uid="PowerScripts_TemplateRuntime"
+                                HorizontalAlignment="Stretch"
+                                AutomationProperties.AutomationId="PowerScriptsTemplateRuntime"
+                                SelectionChanged="Options_SelectionChanged">
+                                <ComboBoxItem Content="PowerShell" Tag="powershell" />
+                                <ComboBoxItem Content="Python" Tag="python" />
+                            </ComboBox>
+                            <TextBlock
+                                x:Name="PythonHelp"
+                                x:Uid="PowerScripts_TemplatePythonHelp"
+                                TextWrapping="Wrap"
+                                Visibility="Collapsed" />
+                            <StackPanel
+                                x:Name="CliContentOptions"
+                                Spacing="12"
+                                Visibility="Collapsed">
+                                <TextBlock x:Uid="PowerScripts_TemplateCliHelp" TextWrapping="Wrap" />
+                                <ComboBox
+                                    x:Name="CliModuleComboBox"
+                                    x:Uid="PowerScripts_TemplateCliModule"
+                                    HorizontalAlignment="Stretch"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateCliModule"
+                                    MaxDropDownHeight="320"
+                                    SelectionChanged="CliModule_SelectionChanged" />
+                                <ComboBox
+                                    x:Name="CliContentComboBox"
+                                    x:Uid="PowerScripts_TemplateCliAction"
+                                    HorizontalAlignment="Stretch"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateCliAction"
+                                    MaxDropDownHeight="320"
+                                    SelectionChanged="Options_SelectionChanged" />
+                                <InfoBar
+                                    x:Name="CliCatalogueStatus"
+                                    AutomationProperties.AutomationId="PowerScriptsCliCatalogueStatus"
+                                    IsClosable="False"
+                                    IsOpen="False"
+                                    Severity="Informational">
+                                    <InfoBar.ActionButton>
+                                        <Button
+                                            x:Name="CliCatalogueRetry"
+                                            x:Uid="PowerScripts_OperationTemplateRetry"
+                                            AutomationProperties.AutomationId="PowerScriptsCliCatalogueRetry"
+                                            Click="CliCatalogueRetry_Click"
+                                            Visibility="Collapsed" />
+                                    </InfoBar.ActionButton>
+                                </InfoBar>
+                                <TextBlock x:Name="CliDescription" TextWrapping="Wrap" />
+                                <TextBlock x:Uid="PowerScripts_CliArgumentsHeading" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                <ItemsRepeater ItemsSource="{x:Bind CliArguments}">
+                                    <ItemsRepeater.Layout>
+                                        <StackLayout Spacing="20" />
+                                    </ItemsRepeater.Layout>
+                                    <ItemsRepeater.ItemTemplate>
+                                        <DataTemplate x:DataType="viewModels:PowerScriptCliArgument">
+                                            <StackPanel Spacing="6">
+                                                <TextBlock
+                                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                    Text="{x:Bind Value.DisplayLabel}"
+                                                    TextWrapping="Wrap" />
+                                                <TextBlock
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind Value.Description}"
+                                                    TextWrapping="Wrap" />
+                                                <ComboBox
+                                                    HorizontalAlignment="Stretch"
+                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Source')}"
+                                                    AutomationProperties.Name="{x:Bind Value.Label}"
+                                                    SelectedIndex="{x:Bind SourceIndex, Mode=TwoWay}">
+                                                    <ComboBoxItem x:Uid="PowerScripts_CliArgumentFixed" />
+                                                    <ComboBoxItem x:Uid="PowerScripts_CliArgumentInput" IsEnabled="{x:Bind CanUseInput, Mode=OneWay}" />
+                                                    <ComboBoxItem x:Uid="PowerScripts_CliArgumentParameter" />
+                                                </ComboBox>
+                                                <TextBlock
+                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                    Text="{x:Bind SourceHelp, Mode=OneWay}"
+                                                    TextWrapping="Wrap" />
+                                                <Grid Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsFixed), Mode=OneWay}">
+                                                    <TextBox
+                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Text')}"
+                                                        AutomationProperties.Name="{x:Bind Value.Label}"
+                                                        Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsText)}" />
+                                                    <TextBox
+                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Integer')}"
+                                                        AutomationProperties.Name="{x:Bind Value.Label}"
+                                                        InputScope="Number"
+                                                        Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsInteger)}" />
+                                                    <ToggleSwitch
+                                                        x:Uid="PowerScripts_OperationsBoolean"
+                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Boolean')}"
+                                                        AutomationProperties.Name="{x:Bind Value.Label}"
+                                                        IsOn="{x:Bind Value.BooleanValue, Mode=TwoWay}"
+                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsBoolean)}" />
+                                                    <ComboBox
+                                                        HorizontalAlignment="Stretch"
+                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Choice')}"
+                                                        AutomationProperties.Name="{x:Bind Value.Label}"
+                                                        ItemsSource="{x:Bind Value.Choices}"
+                                                        SelectedItem="{x:Bind SelectedChoice, Mode=TwoWay}"
+                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsChoice)}" />
+                                                    <Grid ColumnSpacing="8" Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsFile)}">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBox
+                                                            AutomationProperties.AutomationId="{x:Bind ControlId('File')}"
+                                                            AutomationProperties.Name="{x:Bind Value.Label}"
+                                                            Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                        <Button
+                                                            x:Uid="PowerScripts_RunBrowse"
+                                                            Grid.Column="1"
+                                                            AutomationProperties.AutomationId="{x:Bind ControlId('Browse')}"
+                                                            AutomationProperties.Name="{x:Bind Value.BrowseLabel}"
+                                                            Click="CliBrowseFile_Click"
+                                                            Tag="{x:Bind}" />
+                                                    </Grid>
+                                                </Grid>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsRepeater.ItemTemplate>
+                                </ItemsRepeater>
+                                <TextBlock
+                                    x:Name="CliBindingValidation"
+                                    AutomationProperties.AutomationId="PowerScriptsCliBindingValidation"
+                                    AutomationProperties.LiveSetting="Polite"
+                                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                    TextWrapping="Wrap"
+                                    Visibility="Collapsed" />
+                                <TextBlock
+                                    x:Uid="PowerScripts_TemplateCliSafety"
+                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                    TextWrapping="Wrap" />
+                                <HyperlinkButton
+                                    x:Uid="PowerScripts_TemplateRestrictedOperation"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateRestrictedOperation"
+                                    Click="RestrictedOperation_Click" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
                     <Border Style="{StaticResource EditorSurfaceStyle}">
                         <StackPanel Spacing="16">
                             <GridView
@@ -438,20 +624,6 @@
                                 MaxLength="500"
                                 TextChanged="ProjectName_TextChanged"
                                 TextWrapping="Wrap" />
-                            <ComboBox
-                                x:Name="RuntimeComboBox"
-                                x:Uid="PowerScripts_TemplateRuntime"
-                                HorizontalAlignment="Stretch"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateRuntime"
-                                SelectionChanged="Options_SelectionChanged">
-                                <ComboBoxItem Content="PowerShell" Tag="powershell" />
-                                <ComboBoxItem Content="Python" Tag="python" />
-                            </ComboBox>
-                            <TextBlock
-                                x:Name="PythonHelp"
-                                x:Uid="PowerScripts_TemplatePythonHelp"
-                                TextWrapping="Wrap"
-                                Visibility="Collapsed" />
                             <TextBlock x:Uid="PowerScripts_TemplateIcons" Style="{StaticResource BodyStrongTextBlockStyle}" />
                             <TextBlock
                                 x:Uid="PowerScripts_TemplateIconsHelp"

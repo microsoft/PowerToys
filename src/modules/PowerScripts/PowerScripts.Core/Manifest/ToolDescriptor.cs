@@ -228,6 +228,9 @@ public sealed class PowerScriptExtension
     [JsonPropertyName("capabilities")]
     public List<string>? Capabilities { get; set; }
 
+    [JsonPropertyName("hostCli")]
+    public PowerScripts.Core.Cli.HostCliPermission? HostCli { get; set; }
+
     [JsonPropertyName("publisher")]
     public string? Publisher { get; set; }
 

@@ -644,6 +644,18 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_DetailsUi" xml:space="preserve">
     <value>Display user interface</value>
   </data>
+  <data name="PowerScripts_DetailsHostCli" xml:space="preserve">
+    <value>Approved PowerToys CLI execution outside MXC</value>
+  </data>
+  <data name="PowerScripts_DetailsHostCliBoundary" xml:space="preserve">
+    <value>With MXC on, script code stays contained, but one approved built-in CLI action runs on the host with standard-user permissions. The host action is outside the script's filesystem, network and desktop restrictions.</value>
+  </data>
+  <data name="PowerScripts_DetailsHostCliRecipe" xml:space="preserve">
+    <value>Approved host CLI recipe</value>
+  </data>
+  <data name="PowerScripts_DetailsHostCliBindings" xml:space="preserve">
+    <value>Reviewed host CLI argument sources and fixed values</value>
+  </data>
   <data name="PowerScripts_CreateScriptButton.Text" xml:space="preserve">
     <value>New script</value>
   </data>
@@ -1262,7 +1274,8 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_OperationTemplateExecutionRestricted.Title" xml:space="preserve"><value>Running this operation is restricted</value></data>
   <data name="PowerScripts_OperationTemplateCreationStillAvailable" xml:space="preserve"><value>You can still create and edit this script. Current restrictions will also apply when it runs.</value></data>
   <data name="PowerScripts_CreateCustomScript.Text" xml:space="preserve"><value>Custom script</value></data>
-  <data name="PowerScripts_CreatePowerToysOperations.Text" xml:space="preserve"><value>PowerToys operations</value></data>
+  <data name="PowerScripts_CreateModuleCall.Text" xml:space="preserve"><value>Call a PowerToys module (PowerShell)</value></data>
+  <data name="PowerScripts_CreatePowerToysOperations.Text" xml:space="preserve"><value>Restricted PowerToys operation (no script code)</value></data>
   <data name="PowerScripts_OperationNavigationFailed" xml:space="preserve"><value>Could not open PowerToys operations. Try again.</value></data>
   <data name="PowerScripts_OperationsTitle" xml:space="preserve"><value>PowerToys operations</value></data>
   <data name="PowerScripts_OperationsPage.ModuleTitle" xml:space="preserve"><value>PowerToys operations</value></data>
@@ -1290,4 +1303,32 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_OperationsTestWhileSaving" xml:space="preserve"><value>Wait for the script to finish saving.</value></data>
   <data name="PowerScripts_OperationsTestChooseOperation" xml:space="preserve"><value>Choose an operation before testing.</value></data>
   <data name="PowerScripts_OperationsTestCompleteParameters" xml:space="preserve"><value>Complete the required parameter values before testing.</value></data>
+  <data name="PowerScripts_TemplateConsumers.Text" xml:space="preserve"><value>I want the script to be used by (optional)</value></data>
+  <data name="PowerScripts_TemplateConsumersHelp.Text" xml:space="preserve"><value>Select modules to guide input and output choices. Modules can be combined when they share a supported contract. This does not restrict where the finished script can be used or guarantee runtime availability.</value></data>
+  <data name="PowerScripts_TemplateConsumerAdvancedPaste.Content" xml:space="preserve"><value>Advanced Paste</value></data>
+  <data name="PowerScripts_TemplateConsumerKeyboardManager.Content" xml:space="preserve"><value>Keyboard Manager</value></data>
+  <data name="PowerScripts_TemplateConsumerCommandPalette.Content" xml:space="preserve"><value>Command Palette</value></data>
+  <data name="PowerScripts_TemplateConsumerExplorer.Content" xml:space="preserve"><value>File Explorer</value></data>
+  <data name="PowerScripts_TemplateContent.Header" xml:space="preserve"><value>Script type</value></data>
+  <data name="PowerScripts_TemplateContentExample.Content" xml:space="preserve"><value>General script</value></data>
+  <data name="PowerScripts_TemplateContentCli.Content" xml:space="preserve"><value>PowerToys module script</value></data>
+  <data name="PowerScripts_TemplateRestrictedOperation.Content" xml:space="preserve"><value>Create a restricted operation instead (no script code)</value></data>
+  <data name="PowerScripts_CliCatalogueLoading" xml:space="preserve"><value>Loading PowerToys module actions...</value></data>
+  <data name="PowerScripts_TemplateCliModule.Header" xml:space="preserve"><value>PowerToys module</value></data>
+  <data name="PowerScripts_TemplateCliModule.PlaceholderText" xml:space="preserve"><value>Choose a module with a CLI</value></data>
+  <data name="PowerScripts_TemplateCliAction.Header" xml:space="preserve"><value>Module action</value></data>
+  <data name="PowerScripts_TemplateCliAction.PlaceholderText" xml:space="preserve"><value>Choose the module action this script will call</value></data>
+  <data name="PowerScripts_TemplateCliEmpty" xml:space="preserve"><value>No module CLI templates are available in this Host deployment.</value></data>
+  <data name="PowerScripts_TemplateCliHelp.Text" xml:space="preserve"><value>Create a script that calls an existing PowerToys module through its command-line interface. Choose an action, then decide where each argument gets its value.</value></data>
+  <data name="PowerScripts_TemplateCliSafety.Text" xml:space="preserve"><value>Requires the installed module and PowerShell 7. Supported CLI actions work with the script sandbox on by default. Script code stays sandboxed; the approved module action runs on the host with standard-user permissions. Review actions that change settings, launch apps, access the network or write files. Creating a script does not run or approve it.</value></data>
+  <data name="PowerScripts_CliArgumentsHeading.Text" xml:space="preserve"><value>Where should each argument get its value?</value></data>
+  <data name="PowerScripts_CliArgumentFixed.Content" xml:space="preserve"><value>Fixed value</value></data>
+  <data name="PowerScripts_CliArgumentInput.Content" xml:space="preserve"><value>Script input</value></data>
+  <data name="PowerScripts_CliArgumentParameter.Content" xml:space="preserve"><value>Ask when the script runs</value></data>
+  <data name="PowerScripts_CliArgumentFixedHelp" xml:space="preserve"><value>Always use the value below. It is saved in the script; do not enter secrets.</value></data>
+  <data name="PowerScripts_CliArgumentFilesHelp" xml:space="preserve"><value>Use files provided by the caller. The script's input type becomes Files.</value></data>
+  <data name="PowerScripts_CliArgumentTextHelp" xml:space="preserve"><value>Use text provided by the caller. The script's input type becomes Text.</value></data>
+  <data name="PowerScripts_CliArgumentParameterHelp" xml:space="preserve"><value>Expose this as a named script parameter, using the module's default if available.</value></data>
+  <data name="PowerScripts_CliArgumentMixedInput" xml:space="preserve"><value>A script has one primary input. Use either text or files for input-bound arguments, not both.</value></data>
+  <data name="PowerScripts_CliArgumentIncompatible" xml:space="preserve"><value>This argument setup does not match the selected consumer modules. Choose a compatible Script input argument or change the module selection.</value></data>
 </root>

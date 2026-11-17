@@ -102,6 +102,7 @@ public static class ManifestValidator
         }
 
         ValidateParameters(manifest, errors);
+        errors.AddRange(HostCliBroker.Validate(manifest));
 
         return errors;
     }

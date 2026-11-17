@@ -14,6 +14,31 @@ namespace ViewModelTests;
 public class PowerScriptMetadataTests
 {
     [TestMethod]
+    public void HostCliDetailsDiscloseTheExecutionBoundaryAndReviewedBindings()
+    {
+        var descriptor = JsonNode.Parse("""
+            {
+              "x-powerscript": {
+                "capabilities": ["hostPowerToysCli"],
+                "hostCli": {
+                  "id": "fancyzones",
+                  "bindings": {"Command": {"source": "fixed", "value": "get-monitors"}}
+                }
+              }
+            }
+            """)!.AsObject();
+        var original = descriptor.ToJsonString();
+        var rows = PowerScriptMetadataDetails.Create(descriptor, key => key).SelectMany(section => section.Rows).ToDictionary(row => row.Key);
+        Assert.AreEqual("PowerScripts_DetailsHostCli", rows["Capabilities"].Value);
+        Assert.AreEqual("PowerScripts_DetailsHostCliBoundary", rows["HostCliBoundary"].Value);
+        Assert.AreEqual("fancyzones", rows["HostCliRecipe"].Value);
+        StringAssert.Contains(rows["HostCliBindings"].Value, "Command");
+        StringAssert.Contains(rows["HostCliBindings"].Value, "fixed");
+        StringAssert.Contains(rows["HostCliBindings"].Value, "get-monitors");
+        Assert.AreEqual(original, descriptor.ToJsonString());
+    }
+
+    [TestMethod]
     public void MediaDetailsShowMimeTypesCollectionBoundsAndBothDirections()
     {
         var descriptor = JsonNode.Parse("""

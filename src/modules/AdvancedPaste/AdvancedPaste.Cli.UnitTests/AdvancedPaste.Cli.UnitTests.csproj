@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\AdvancedPaste.Local.CLI\AdvancedPaste.Local.CLI.csproj" />
     <ProjectReference Include="..\AdvancedPaste.CLI\AdvancedPaste.CLI.csproj" />
     <ProjectReference Include="..\AdvancedPaste.Core\AdvancedPaste.Core.csproj" />
   </ItemGroup>

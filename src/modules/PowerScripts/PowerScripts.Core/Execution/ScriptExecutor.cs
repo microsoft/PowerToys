@@ -137,6 +137,7 @@ public sealed class ScriptExecutor
         }
 
         var context = Security.ProcessExecutionContext.FromManifest(manifest, files, parameters);
+        context.HostCli = HostCliBroker.CreateInvocation(manifest, files, parameters, text);
         var result = Security.ProcessRunner.Run(psi, context, request.ToJsonString(), mxcSettings: _mxcSettings);
 
         return ValidateOutput(manifest, new ScriptExecutionResult

@@ -25,6 +25,15 @@ public sealed class PowerScriptOperationTemplate
     [JsonPropertyName("moduleId")]
     public string ModuleId { get; set; }
 
+    [JsonPropertyName("input")]
+    public string Input { get; set; }
+
+    [JsonPropertyName("output")]
+    public string Output { get; set; }
+
+    [JsonPropertyName("inputArgument")]
+    public PowerScriptOperationTemplateParameter InputArgument { get; set; }
+
     [JsonPropertyName("commandId")]
     public string CommandId { get; set; }
 

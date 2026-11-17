@@ -37,6 +37,23 @@ If incompatible, explain alternatives. Do not change settings or invent metadata
 overrides. Advanced `x-execute` recipes do not select built-in Python environments;
 explicit `wsl.exe` recipes are refused with MXC enabled.
 
+## Approved PowerToys CLI recipes
+
+Generated PowerShell module recipes declare `hostPowerToysCli` and `hostCli`
+recipe/bindings in the descriptor. With MXC on, script code stays contained,
+but one approved built-in CLI action runs on the host with standard-user
+permissions, outside script filesystem/network/desktop restrictions. This is
+an explicit trust-reviewed exception, not an executable-folder exemption.
+The Host pins executables to its own installation and authorizes exact fixed
+values/current consumer input. Script-authored code and executable paths are
+never executed on the host. Arbitrary child launches remain contained.
+
+The handoff is terminal: no return into editable code, multiple host actions,
+or script-defined host postprocessing. No automatic retry outside MXC.
+Review the descriptor and command side effects before approval; creation
+does not grant trust. Native prerequisites still apply, including matching
+backends, existing user data/hardware and the Settings CLI's Runner lock.
+
 ## Paths and lifetime
 
 - Consumers supply Windows paths. The Host translates primary files and

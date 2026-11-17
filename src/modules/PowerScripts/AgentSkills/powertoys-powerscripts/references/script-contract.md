@@ -116,3 +116,16 @@ Consumer owns saving/pasting. Read [examples](examples.md) only for code samples
 
 Valid package-relative ICO, at most 1 MiB. No symlink/junction, absolute/URL,
 or traversal escape. Metadata describes intent, not sandbox permissions.
+
+## Approved host CLI action
+
+Host-generated PowerShell module recipes additionally declare
+`x-powerscript.capabilities: ["hostPowerToysCli", ...]` and
+`x-powerscript.hostCli: {"id":"known-recipe","bindings":{...}}`.
+Each argument binding is `{"source":"fixed","value":...}`,
+`{"source":"input"}`, or `{"source":"parameter"}`. Use Host scaffolding;
+unknown recipes/arguments and custom launchers cannot grant host execution.
+
+These fields participate in the normal script approval hash. With MXC on,
+the reviewed permission authorizes one built-in host CLI action, not arbitrary
+script code outside containment. See [runtime boundaries](runtimes.md).

@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using PowerScripts.Core.Cli;
 using PowerScripts.Core.Execution;
 
 namespace PowerScripts.Core.Security;
@@ -63,6 +64,7 @@ public static class MxcProcessRunner
         string? runDirectory = null;
         string? configPath = null;
         var preserveWorkspace = false;
+        var elapsed = Stopwatch.StartNew();
 
         try
         {
@@ -97,6 +99,14 @@ public static class MxcProcessRunner
             // container and return its normal timeout result before the host kills wxc-exec itself.
             var executorTimeout = timeoutMs > 0 ? checked(timeoutMs + 5000) : 0;
             var result = launcher.Run(executor, standardInput, executorTimeout);
+            if (result.ExitCode == 0 && context.HostCli is { } hostCli)
+            {
+                var remaining = timeoutMs > 0 ? timeoutMs - elapsed.Elapsed.TotalMilliseconds : 0;
+                var hostResult = timeoutMs > 0 && remaining <= 0
+                    ? new ProcessRunResult(124, string.Empty, "Script timed out before the approved host CLI action could start.")
+                    : hostCli.Run(result.StdOut, workspace, timeoutMs > 0 ? Math.Max(1, (int)remaining) : 0);
+                result = hostResult with { StdErr = result.StdErr + hostResult.StdErr };
+            }
 
             // Produced files commonly live below cwd/TEMP. Keep successful non-empty workspaces so
             // returned paths remain valid after this method returns; stale runs are pruned later.
@@ -157,7 +167,7 @@ public static class MxcProcessRunner
         var process = new Dictionary<string, object?>
         {
             ["cwd"] = workspace,
-            ["env"] = BuildSanitizedEnvironment(target, resolvedTargetPath, workspace),
+            ["env"] = BuildSanitizedEnvironment(target, resolvedTargetPath, workspace, context.HostCli?.Token),
             ["timeout"] = timeoutMs,
         };
 
@@ -371,7 +381,8 @@ public static class MxcProcessRunner
     private static List<string> BuildSanitizedEnvironment(
         ProcessStartInfo target,
         string resolvedTargetPath,
-        string workspace)
+        string workspace,
+        string? hostCliToken)
     {
         var environment = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         CopyEnvironment(target, environment, "SystemRoot");
@@ -384,6 +395,10 @@ public static class MxcProcessRunner
         environment["TEMP"] = workspace;
         environment["TMP"] = workspace;
         environment[WorkspaceEnvironmentVariable] = workspace;
+        if (hostCliToken is not null)
+        {
+            environment[HostCliBroker.EnvironmentVariable] = hostCliToken;
+        }
 
         var pathDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {

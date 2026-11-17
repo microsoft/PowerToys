@@ -5,9 +5,11 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using PowerScripts.Core.Cli;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Security;
 using PowerScripts.Core.Storage;
+using PowerScripts.Core.Templates;
 
 namespace PowerScripts.Core.Tests;
 
@@ -471,6 +473,78 @@ public class MxcTests
     }
 
     [TestMethod]
+    public void Host_Cli_Token_Is_Added_Only_For_An_Authorized_Invocation()
+    {
+        var target = new ProcessStartInfo { FileName = Path.Combine(Environment.SystemDirectory, "cmd.exe") };
+        target.Environment[HostCliBroker.EnvironmentVariable] = "untrusted-inherited-token";
+        var context = new ProcessExecutionContext
+        {
+            ScriptId = "demo",
+            ScriptDirectory = Path.Combine(_root, "scripts"),
+            ScriptsRoot = Path.Combine(_root, "scripts"),
+        };
+        var workspace = Path.Combine(_root, "workspace");
+        var policy = MxcPolicyResolver.Resolve(new MxcSettings());
+
+        using var unapproved = JsonDocument.Parse(MxcProcessRunner.BuildConfigurationJson(
+            target, target.FileName, context, policy, workspace, 0));
+        Assert.IsFalse(unapproved.RootElement.GetProperty("process").GetProperty("env").EnumerateArray()
+            .Any(value => value.GetString()!.StartsWith(HostCliBroker.EnvironmentVariable + "=", StringComparison.Ordinal)));
+
+        context.HostCli = new HostCliInvocation(
+            PowerShellCliTemplates.All.Single(recipe => recipe.Id == "settings-query"),
+            new Dictionary<string, JsonElement>(),
+            [],
+            _root);
+        using var approved = JsonDocument.Parse(MxcProcessRunner.BuildConfigurationJson(
+            target, target.FileName, context, policy, workspace, 0));
+        CollectionAssert.Contains(
+            approved.RootElement.GetProperty("process").GetProperty("env").EnumerateArray().Select(value => value.GetString()).ToArray(),
+            HostCliBroker.EnvironmentVariable + "=" + context.HostCli.Token);
+    }
+
+    [DataTestMethod]
+    [DataRow(17, 0, 17)]
+    [DataRow(0, 30, 124)]
+    [DataRow(0, 0, 2)]
+    public void Host_Cli_Never_Falls_Back_After_Contained_Failure_Timeout_Or_Invalid_Request(
+        int containedExitCode, int delayMs, int expectedExitCode)
+    {
+        var context = new ProcessExecutionContext
+        {
+            ScriptId = "demo",
+            ScriptDirectory = Path.Combine(_root, "scripts"),
+            ScriptsRoot = Path.Combine(_root, "scripts"),
+            HostCli = new HostCliInvocation(
+                PowerShellCliTemplates.All.Single(recipe => recipe.Id == "settings-query"),
+                new Dictionary<string, JsonElement>(),
+                [],
+                _root),
+        };
+        var result = MxcProcessRunner.Run(
+            new ProcessStartInfo { FileName = "cmd.exe" },
+            context,
+            MxcPolicyResolver.Resolve(new MxcSettings()),
+            new MxcSettings(),
+            timeoutMs: delayMs > 0 ? 1 : 10000,
+            launcher: new ResultLauncher(containedExitCode, delayMs),
+            executorResolver: _ => "wxc-exec.exe",
+            runDirectoryFactory: () => Path.Combine(_root, "run"));
+
+        Assert.AreEqual(expectedExitCode, result.ExitCode);
+        StringAssert.Contains(result.StdErr, "contained diagnostic");
+        if (expectedExitCode == 124)
+        {
+            StringAssert.Contains(result.StdErr, "before the approved host CLI action");
+        }
+        else if (expectedExitCode == 2)
+        {
+            StringAssert.Contains(result.StdErr, "refused the host CLI request");
+            Assert.AreEqual(string.Empty, result.StdOut);
+        }
+    }
+
+    [TestMethod]
     public void Successful_Run_Preserves_NonEmpty_Workspace_Output()
     {
         var scriptsRoot = Path.Combine(_root, "scripts");
@@ -524,6 +598,15 @@ public class MxcTests
         {
             onRun();
             return new ProcessRunResult(0, string.Empty, string.Empty);
+        }
+    }
+
+    private sealed class ResultLauncher(int exitCode, int delayMs) : IProcessLauncher
+    {
+        public ProcessRunResult Run(ProcessStartInfo startInfo, string? standardInput, int timeoutMs)
+        {
+            Thread.Sleep(delayMs);
+            return new ProcessRunResult(exitCode, "not-a-request", "contained diagnostic\n");
         }
     }
 

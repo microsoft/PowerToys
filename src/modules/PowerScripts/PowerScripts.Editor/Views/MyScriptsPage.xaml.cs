@@ -117,15 +117,6 @@ namespace PowerScripts.Editor.Views
             }
         }
 
-        private void CreatePowerToysOperations_Click(object sender, RoutedEventArgs e)
-        {
-            if (!Frame.Navigate(typeof(PowerToysOperationsPage), ViewModel))
-            {
-                ShowScriptSettingsError(new InvalidOperationException(
-                    ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_OperationNavigationFailed")));
-            }
-        }
-
         private async Task RefreshScriptsAsync()
         {
             try

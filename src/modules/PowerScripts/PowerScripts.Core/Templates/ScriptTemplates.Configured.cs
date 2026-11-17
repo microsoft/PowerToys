@@ -5,6 +5,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using PowerScripts.Core.Manifest;
+using PowerScripts.Core.Cli;
 
 namespace PowerScripts.Core.Templates;
 
@@ -22,6 +23,21 @@ public static partial class ScriptTemplates
     public static CreatedScriptTemplate Create(string scriptsRoot, ScriptTemplateOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
+        if (options.CliBindings is not null && options.CliContent is null)
+        {
+            throw new ArgumentException("CLI argument bindings require a module-call content template.", nameof(options));
+        }
+
+        if (options.CliContent is not null)
+        {
+            if (options.Operation is not null)
+            {
+                throw new ArgumentException("Choose either editable CLI content or a PowerToys operation.", nameof(options));
+            }
+
+            options = PowerShellCliTemplates.Configure(options);
+        }
+
         if (options.Operation is not null)
         {
             return CreateOperation(scriptsRoot, options);
@@ -49,12 +65,19 @@ public static partial class ScriptTemplates
 
         var entryName = options.Runtime == "python" ? "script.py" : "script.ps1";
         var capabilities = new JsonArray();
-        if (options.Input == "files" || options.Parameters?.Any(parameter => parameter?.Schema?.IsFileParameter == true) == true)
+        if (options.CliContent is not null)
+        {
+            foreach (var capability in PowerShellCliTemplates.HostCapabilities(options.CliContent))
+            {
+                capabilities.Add(capability);
+            }
+        }
+        else if (options.Input == "files" || options.Parameters?.Any(parameter => parameter?.Schema?.IsFileParameter == true) == true)
         {
             capabilities.Add("fileRead");
         }
 
-        if (options.Output == "files")
+        if (options.CliContent is null && options.Output == "files")
         {
             capabilities.Add("fileWrite");
         }
@@ -65,11 +88,18 @@ public static partial class ScriptTemplates
         {
             ["inputSchema"] = inputSchema,
             ["outputSchema"] = CreateSchema(options.Output),
-            ["x-powerscript"] = new JsonObject { ["capabilities"] = capabilities },
+            ["x-powerscript"] = new JsonObject
+            {
+                ["capabilities"] = capabilities,
+                ["hostCli"] = options.CliContent is null ? null :
+                    JsonSerializer.SerializeToNode(PowerShellCliTemplates.CreateHostPermission(options), ToolDescriptorParser.JsonOptions),
+            },
         };
         return CreatePackage(scriptsRoot, options.ProjectName, options.Description ?? string.Empty,
-            entryName, descriptor, options.Runtime == "python" ? CreatePython(options) : CreatePowerShell(options),
-            CreateGuide(options, entryName), iconPreset: options.IconPreset, iconSource: options.IconSource);
+            entryName, descriptor, options.CliContent is not null ? PowerShellCliTemplates.CreateScript(options) :
+                options.Runtime == "python" ? CreatePython(options) : CreatePowerShell(options),
+            CreateGuide(options, entryName) + (options.CliContent is not null ? PowerShellCliTemplates.CreateGuide(options.CliContent) : string.Empty),
+            iconPreset: options.IconPreset, iconSource: options.IconSource);
     }
 
     private static void AddParameters(JsonObject inputSchema, IReadOnlyList<ScriptTemplateParameter>? parameters)

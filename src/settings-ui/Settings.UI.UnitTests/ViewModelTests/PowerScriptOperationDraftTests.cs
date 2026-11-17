@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Json.Nodes;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.UI.ViewModels;
@@ -15,6 +16,76 @@ public class PowerScriptOperationDraftTests
 {
     private static readonly string[] BooleanChoiceLabels = { "JSON", "Text" };
     private static readonly string[] StringChoiceLabels = { "fast", "full" };
+    private static readonly string[] CliModuleIds = { "settings", "awake" };
+
+    [TestMethod]
+    public void CliModulesGroupInterleavedActionsWithoutLosingTheirOrder()
+    {
+        var first = new PowerScriptOperationTemplate { Id = "settings-query", ModuleId = "settings", Group = "Settings" };
+        var awake = new PowerScriptOperationTemplate { Id = "awake", ModuleId = "awake", Group = "Awake" };
+        var second = new PowerScriptOperationTemplate
+        {
+            Id = "settings-state", ModuleId = "settings", Group = "Settings",
+        };
+        var modules = PowerScriptCliModule.FromTemplates(new[] { first, awake, second });
+
+        CollectionAssert.AreEqual(CliModuleIds, modules.Select(module => module.Id).ToArray());
+        CollectionAssert.AreEqual(new[] { first, second }, modules[0].Templates.ToArray());
+    }
+
+    [TestMethod]
+    public void CliModulesRejectMissingOrConflictingMetadataInsteadOfPublishingBlankChoices()
+    {
+        Assert.ThrowsException<ArgumentException>(() => PowerScriptCliModule.FromTemplates(new[]
+        {
+            new PowerScriptOperationTemplate { Id = "query", Group = "Module" },
+        }));
+        Assert.ThrowsException<ArgumentException>(() => PowerScriptCliModule.FromTemplates(new[]
+        {
+            new PowerScriptOperationTemplate { Id = "query", ModuleId = "module", Group = "Module" },
+            new PowerScriptOperationTemplate { Id = "change", ModuleId = "module", Group = "Different module" },
+        }));
+    }
+
+    [TestMethod]
+    [DataRow("""{"type":"integer","default":1}""", "1")]
+    [DataRow("""{"type":"string","default":"literal path"}""", "\"literal path\"")]
+    [DataRow("""{"type":"string","enum":["fast","full"],"default":"fast"}""", "\"fast\"")]
+    public void ClearingAnInactiveCliChoicePreservesFixedArgumentValues(string schema, string expectedJson)
+    {
+        var argument = new PowerScriptCliArgument(
+            new PowerScriptOperationTemplateParameter { Name = "value", Schema = JsonNode.Parse(schema).AsObject() },
+            useInput: false);
+
+        argument.SelectedChoice = null;
+
+        Assert.AreEqual(expectedJson, argument.ToBinding()["value"].ToJsonString());
+    }
+
+    [TestMethod]
+    public void CliChoiceChangesPreserveTypedBindingsAndNotifyTheSelection()
+    {
+        var argument = new PowerScriptCliArgument(
+            new PowerScriptOperationTemplateParameter
+            {
+                Name = "mode",
+                Schema = JsonNode.Parse("""{"type":"string","enum":["fast","full"],"default":"fast"}""").AsObject(),
+            },
+            useInput: false);
+        var changed = new List<string>();
+        argument.PropertyChanged += (_, args) => changed.Add(args.PropertyName);
+        argument.SelectedChoice = "full";
+
+        Assert.AreEqual("full", argument.ToBinding()["value"].GetValue<string>());
+        CollectionAssert.Contains(changed, nameof(PowerScriptCliArgument.SelectedChoice));
+
+        argument.SourceIndex = 1;
+        Assert.AreEqual("input", argument.ToBinding()["source"].GetValue<string>());
+        Assert.IsFalse(argument.ToBinding().ContainsKey("value"));
+        argument.SourceIndex = 2;
+        Assert.AreEqual("parameter", argument.ToBinding()["source"].GetValue<string>());
+        Assert.IsFalse(argument.ToBinding().ContainsKey("value"));
+    }
 
     [TestMethod]
     public void RequiredFileMustBeConfiguredBeforeSavingOrTesting()
