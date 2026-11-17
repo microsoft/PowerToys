@@ -10,6 +10,60 @@ namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 [TestClass]
 public sealed class WindowControlTests
 {
+    private static readonly string[] ExpectedCaptionClickActions = ["check", "move", "check", "click"];
+
+    [TestMethod]
+    public void CaptionRecoveryDoesNotClickCoveredOrNonCaptionPoints()
+    {
+        Assert.IsFalse(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) => false,
+            (_, _) => throw new AssertFailedException("No safe caption was found; the pointer must not move."),
+            () => Assert.Fail("No safe caption was found; no click is allowed.")));
+    }
+
+    [TestMethod]
+    public void CaptionRecoveryRechecksOwnershipAfterMovingBeforeOneClick()
+    {
+        var actions = new List<string>();
+        Assert.IsTrue(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) =>
+            {
+                actions.Add("check");
+                return true;
+            },
+            (_, _) =>
+            {
+                actions.Add("move");
+                return true;
+            },
+            () => actions.Add("click")));
+        CollectionAssert.AreEqual(ExpectedCaptionClickActions, actions);
+    }
+
+    [TestMethod]
+    public void CaptionRecoveryDoesNotClickAfterOwnershipChanges()
+    {
+        var checks = 0;
+        Assert.IsFalse(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) => ++checks == 1,
+            (_, _) => true,
+            () => Assert.Fail("Caption ownership changed after pointer movement.")));
+        Assert.AreEqual(2, checks);
+    }
+
+    [TestMethod]
+    public void CaptionRecoveryDoesNotClickWhenPointerDoesNotSettle()
+    {
+        Assert.IsFalse(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) => true,
+            (_, _) => false,
+            () => Assert.Fail("The pointer did not reach the verified caption point.")));
+    }
+
     [TestMethod]
     [DataRow(0, false)]
     [DataRow(1, false)]
