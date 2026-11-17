@@ -270,7 +270,16 @@ public sealed partial class MainListPage : DynamicListPage,
             _fullRefreshRequested.Set();
         }
 
-        _refreshThrottledDebouncedAction.Invoke(interval);
+        // A typed query's refresh is due soon and renders every change made before it, so other
+        // refreshes join it rather than push it back. Typing again still reschedules it.
+        if (interval.HasValue)
+        {
+            _refreshThrottledDebouncedAction.InvokePriority(interval);
+        }
+        else
+        {
+            _refreshThrottledDebouncedAction.Invoke();
+        }
     }
 
     private void ReapplySearchInBackground()
