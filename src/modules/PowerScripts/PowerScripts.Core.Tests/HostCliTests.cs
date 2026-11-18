@@ -16,6 +16,7 @@ using PowerScripts.Core;
 using PowerScripts.Core.Activity;
 using PowerScripts.Core.Storage;
 using PowerScripts.Core.Manifest;
+using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Tests;
 
@@ -218,6 +219,33 @@ public class HostCliTests
         {
             Console.SetError(previousError);
             SettingsStore.Current = previous;
+        }
+    }
+
+    [TestMethod]
+    [DataRow("WslcListSessionImages failed: HRESULT 0x80370102", "virtualization_unavailable")]
+    [DataRow("WSLC image 'python:test' not found locally.", "image_not_cached")]
+    [DoNotParallelize]
+    public void LinuxPrerequisiteStatusIsNotReadyAndDoesNotOfferRuntimeRecovery(string diagnostic, string expectedStatus)
+    {
+        var program = Assembly.LoadFrom(Path.ChangeExtension(_hostPath, ".dll")).EntryPoint!.DeclaringType!;
+        var writeStatus = program.GetMethod("WriteLinuxStatus", BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(writeStatus);
+        var previousOutput = Console.Out;
+        using var output = new StringWriter(System.Globalization.CultureInfo.InvariantCulture);
+        try
+        {
+            Console.SetOut(output);
+            writeStatus.Invoke(null, new object[] { "python:test", new ProcessRunResult(1, diagnostic, string.Empty) });
+            using var json = JsonDocument.Parse(output.ToString());
+            Assert.IsFalse(json.RootElement.GetProperty("isReady").GetBoolean());
+            Assert.IsFalse(json.RootElement.GetProperty("canRecover").GetBoolean());
+            Assert.AreEqual(expectedStatus, json.RootElement.GetProperty("status").GetString());
+            StringAssert.Contains(json.RootElement.GetProperty("message").GetString()!, diagnostic);
+        }
+        finally
+        {
+            Console.SetOut(previousOutput);
         }
     }
 

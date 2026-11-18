@@ -167,7 +167,7 @@ internal static class Program
                     var setup = MxcLinuxProcessRunner.Setup(image);
                     if (setup.ExitCode != 0)
                     {
-                        Console.Error.WriteLine(setup.StdErr);
+                        Console.Error.WriteLine(ProcessFailureDiagnostics.DescribeFailure(setup, linux: true, managedLinux: true));
                         return setup.ExitCode;
                     }
                 }
@@ -909,7 +909,9 @@ internal static class Program
         {
             isReady = result.ExitCode == 0,
             image,
-            message = result.ExitCode == 0 ? result.StdOut.Trim() : result.StdErr.Trim(),
+            message = result.ExitCode == 0
+                ? result.StdOut.Trim()
+                : ProcessFailureDiagnostics.DescribeFailure(result, linux: true, managedLinux: true).Trim(),
             status,
             canRecover = status is "runtime_unavailable" or "recovery_required" or "check_failed",
         }));

@@ -280,7 +280,8 @@ public sealed class PythonRuntime
                     return MxcLinuxProcessRunner.Run(
                         scriptPath, payload, ScriptIo.Resolve(manifest).Output, context, policy, settings, _settings.Wsl.ContainerImage, timeout);
                 },
-                translateResultPaths: false);
+                translateResultPaths: false,
+                managedLinux: true);
         }
         catch (Exception ex) when (ex is ArgumentException or NotSupportedException or IOException)
         {
@@ -421,11 +422,12 @@ public sealed class PythonRuntime
             (context, timeout) => ProcessRunner.Run(psi, context, payload, timeout, settings),
             translateResultPaths);
 
-    private PythonTransformResult RunAndParse(
+    internal PythonTransformResult RunAndParse(
         PowerScriptManifest manifest,
         PythonTransformInput input,
         Func<ProcessExecutionContext, int, ProcessRunResult> execute,
-        bool translateResultPaths)
+        bool translateResultPaths,
+        bool managedLinux = false)
     {
         try
         {
@@ -448,7 +450,12 @@ public sealed class PythonRuntime
 
             if (run.ExitCode != 0)
             {
-                return new PythonTransformResult { ExitCode = run.ExitCode, StdErr = string.IsNullOrEmpty(stderr) ? "Python script failed." : stderr };
+                return new PythonTransformResult
+                {
+                    ExitCode = run.ExitCode,
+                    StdErr = ProcessFailureDiagnostics.DescribeFailure(run,
+                        linux: translateResultPaths || managedLinux, managedLinux: managedLinux),
+                };
             }
 
             PythonTransformResult result;

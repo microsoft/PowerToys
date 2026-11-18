@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using PowerScripts.Core.Execution;
+
 namespace PowerScripts.Core.Security;
 
 public static class MxcLinuxRecovery
@@ -30,6 +32,11 @@ public static class MxcLinuxRecovery
         if (result.StdErr.StartsWith(RecoveryRequired, StringComparison.Ordinal))
         {
             return "recovery_required";
+        }
+
+        if (ProcessFailureDiagnostics.LinuxStatus(result) is { } prerequisiteFailure)
+        {
+            return prerequisiteFailure;
         }
 
         if (IsRpcUnavailable(result))
