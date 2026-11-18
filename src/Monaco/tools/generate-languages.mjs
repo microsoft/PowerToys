@@ -1,121 +1,79 @@
-// Regenerates monaco_languages.json from the built bundle (dist/monaco.js), so the list matches exactly
-// what the previewers register: monaco-editor's languages plus the PowerToys layer in src/languages.js.
-// The runner, installer, and preview handlers read that file to decide which extensions Monaco handles.
+// Regenerates monaco_languages.json from src/languages.js, which holds every language registration in the
+// bundle: monaco-editor's built-in languages plus the PowerToys layer. The runner, installer, and preview
+// handlers read that file to decide which extensions Monaco handles.
 //
 //   node tools/generate-languages.mjs          rewrite monaco_languages.json
 //   node tools/generate-languages.mjs --check  exit 1 if monaco_languages.json is out of date
 //
-// Monaco needs a DOM, so this loads the bundle in headless Microsoft Edge (--dump-dom). Set
-// PT_EDGE_PATH to use a specific msedge.exe.
-import { execFile, execFileSync } from 'node:child_process';
+// Registering languages needs Monaco's language registry but not the editor or a DOM. esbuild bundles
+// src/languages.js for Node with monaco-editor's editor API replaced by a stand-in whose register() and
+// getLanguages() use monaco-editor's own ModesRegistry, exactly as the standalone editor does at runtime.
 import fs from 'node:fs';
-import http from 'node:http';
-import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const distDir = path.join(root, 'dist');
 const outputFile = path.join(root, 'monaco_languages.json');
 const check = process.argv.includes('--check');
 
-function findEdge() {
-    const candidates = [
-        process.env.PT_EDGE_PATH,
-        path.join(process.env['ProgramFiles(x86)'] ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-        path.join(process.env.ProgramFiles ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-        path.join(process.env.LOCALAPPDATA ?? '', 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
-    ];
-    return candidates.find((candidate) => candidate && fs.existsSync(candidate));
-}
-
-const page = `<!doctype html>
-<meta charset="utf-8">
-<body>
-<script type="module">
-    import { monaco } from './monaco.js';
-    const list = monaco.languages.getLanguages();
-    const json = JSON.stringify({ list });
-    // Base64 keeps the payload intact through --dump-dom's HTML serialization.
-    const bytes = new TextEncoder().encode(json);
-    let binary = '';
-    for (const b of bytes) binary += String.fromCharCode(b);
-    const out = document.createElement('pre');
-    out.id = 'pt-languages';
-    out.textContent = btoa(binary);
-    document.body.append(out);
-</script>
-</body>`;
-
-function serve() {
-    const server = http.createServer((req, res) => {
-        const name = decodeURIComponent(new URL(req.url, 'http://localhost').pathname).replace(/^\/+/, '');
-        if (name === 'languages.html') {
-            res.writeHead(200, { 'Content-Type': 'text/html' }).end(page);
-            return;
-        }
-
-        const file = path.join(distDir, path.basename(name));
-        if (!fs.existsSync(file)) {
-            res.writeHead(404).end();
-            return;
-        }
-
-        const type = { '.js': 'text/javascript', '.css': 'text/css', '.ttf': 'font/ttf' }[path.extname(file)] ?? 'application/octet-stream';
-        res.writeHead(200, { 'Content-Type': type });
-        fs.createReadStream(file).pipe(res);
-    });
-    return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
-}
-
-function dumpDom(edge, url) {
-    const profile = fs.mkdtempSync(path.join(os.tmpdir(), 'pt-monaco-edge-'));
-    const args = [
-        '--headless=new',
-        '--disable-gpu',
-        '--no-first-run',
-        '--no-default-browser-check',
-        '--disable-extensions',
-        `--user-data-dir=${profile}`,
-        '--virtual-time-budget=15000',
-        '--dump-dom',
-        url,
-    ];
-    return new Promise((resolve, reject) => {
-        execFile(edge, args, { maxBuffer: 32 * 1024 * 1024, timeout: 120000, windowsHide: true }, (error, stdout) => {
-            fs.rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
-            if (error) {
-                reject(error);
-            } else {
-                resolve(stdout);
-            }
-        });
-    });
-}
-
-execFileSync(process.execPath, [path.join(root, 'build.mjs')], { cwd: root, stdio: 'inherit' });
-
-const edge = findEdge();
-if (!edge) {
-    console.error('Microsoft Edge (msedge.exe) was not found. Install Edge or set PT_EDGE_PATH.');
+let build;
+try {
+    ({ build } = await import('esbuild'));
+} catch {
+    console.error('esbuild is not installed. Run "npm ci" in src/Monaco first.');
     process.exit(2);
 }
 
-const server = await serve();
-let dom;
-try {
-    dom = await dumpDom(edge, `http://127.0.0.1:${server.address().port}/languages.html`);
-} finally {
-    server.close();
-}
+const editorApiStandIn = `
+import { ModesRegistry } from 'monaco-editor/editor/common/languages/modesRegistry';
 
-const match = /<pre id="pt-languages">([A-Za-z0-9+/=]+)<\/pre>/.exec(dom);
-if (!match) {
-    console.error('Edge did not produce the language list. Is dist/monaco.js loadable?');
-    process.exit(1);
-}
+// Everything other than register/getLanguages (tokens providers, language configuration, enums used by
+// grammar configurations) is irrelevant to the language list.
+const ignored = new Proxy(function () {}, {
+    get: (_target, prop) => (prop === Symbol.toPrimitive ? () => 0 : ignored),
+    apply: () => ignored,
+    construct: () => ignored,
+});
 
-const generated = `${Buffer.from(match[1], 'base64').toString('utf8')}\r\n`;
+export const languages = new Proxy({
+    register: (language) => ModesRegistry.registerLanguage(language),
+    getLanguages: () => ModesRegistry.getLanguages(),
+}, { get: (target, prop) => (prop in target ? target[prop] : ignored) });
+
+export {
+    ignored as CancellationTokenSource, ignored as Emitter, ignored as KeyCode, ignored as KeyMod,
+    ignored as MarkerSeverity, ignored as MarkerTag, ignored as Position, ignored as Range, ignored as Selection,
+    ignored as SelectionDirection, ignored as Token, ignored as Uri, ignored as editor,
+};
+`;
+
+const entry = `
+import { languages } from 'monaco-editor/editor';
+import { registerPowerToysLanguages } from './src/languages.js';
+registerPowerToysLanguages();
+export const list = languages.getLanguages();
+`;
+
+const result = await build({
+    absWorkingDir: root,
+    stdin: { contents: entry, resolveDir: root, sourcefile: 'generate-languages-entry.js', loader: 'js' },
+    bundle: true,
+    platform: 'node',
+    format: 'esm',
+    write: false,
+    logLevel: 'error',
+    plugins: [{
+        name: 'monaco-editor-api-stand-in',
+        setup(b) {
+            b.onResolve({ filter: /^monaco-editor\/editor$|\/editor\/editor\.api\.js$/ }, () => ({ path: 'editor-api', namespace: 'pt-stand-in' }));
+            b.onLoad({ filter: /.*/, namespace: 'pt-stand-in' }, () => ({ contents: editorApiStandIn, resolveDir: root, loader: 'js' }));
+        },
+    }],
+});
+
+const bundle = Buffer.from(result.outputFiles[0].contents).toString('base64');
+const { list } = await import(`data:text/javascript;base64,${bundle}`);
+const generated = `${JSON.stringify({ list })}\r\n`;
 const current = fs.existsSync(outputFile) ? fs.readFileSync(outputFile, 'utf8').replace(/\r?\n/g, '\r\n') : '';
 
 if (check) {
@@ -124,8 +82,8 @@ if (check) {
         process.exit(1);
     }
 
-    console.log('monaco_languages.json is up to date.');
+    console.log(`monaco_languages.json is up to date (${list.length} languages).`);
 } else {
     fs.writeFileSync(outputFile, generated);
-    console.log(`Wrote ${path.relative(process.cwd(), outputFile)} (${JSON.parse(generated).list.length} languages).`);
+    console.log(`Wrote ${path.relative(process.cwd(), outputFile)} (${list.length} languages).`);
 }

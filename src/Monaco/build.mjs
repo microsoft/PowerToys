@@ -123,13 +123,10 @@ async function bundle() {
         loader: { '.ttf': 'file' },
     });
 
-    // Workers are classic scripts created by src/main.js (MonacoEnvironment.getWorker).
+    // The worker is a classic script created by src/main.js (MonacoEnvironment.getWorker).
     await build({
         ...common,
-        entryPoints: {
-            'editor.worker': 'monaco-editor/editor/editor.worker',
-            'json.worker': 'monaco-editor/languages/features/json/json.worker',
-        },
+        entryPoints: { 'editor.worker': 'monaco-editor/editor/editor.worker' },
         format: 'iife',
     });
 }

@@ -86,5 +86,5 @@ import * as php from 'monaco-editor/languages/definitions/php/php';
 
 After updating Monaco Editor and/or adding a new language, regenerate it:
 
-1. In `src/Monaco`, run `npm run gen:languages`. It builds the bundle, loads it in headless Microsoft Edge, and writes the language list. Set `PT_EDGE_PATH` if Edge isn't installed in the default location.
+1. In `src/Monaco`, run `npm run gen:languages`. It runs the registrations in [`src/Monaco/src/languages.js`](/src/Monaco/src/languages.js) in Node (no browser needed) and writes the language list.
 2. Review the diff and commit the file. CI runs the same tool with `--check` (`npm run check:languages`) and fails if the file is out of date.

@@ -1,18 +1,16 @@
 // PowerToys Monaco bundle entry. Built by build.mjs from the pinned monaco-editor package;
 // everything PowerToys needs is layered on through public monaco-editor entry points.
 import * as monaco from 'monaco-editor/editor';
-import 'monaco-editor/languages/definitions/register.all';
-import 'monaco-editor/languages/features/json/register';
 import './features.js';
 import { customTokenThemeRules } from './customTokenThemeRules.js';
 import { registerPowerToysLanguages } from './languages.js';
 
-// Host pages are loaded from file:// or NavigateToString while the bundle is served from the
-// WebView2 virtual host, so worker scripts are cross-origin. A same-origin blob worker can still
-// importScripts() them.
+// The editor worker computes links and word-based completions. Host pages are loaded from file:// or
+// NavigateToString while the bundle is served from the WebView2 virtual host, so the worker script is
+// cross-origin. A same-origin blob worker can still importScripts() it.
 self.MonacoEnvironment = {
     getWorker(_workerId, label) {
-        const script = new URL(label === 'json' ? 'json.worker.js' : 'editor.worker.js', import.meta.url).href;
+        const script = new URL('editor.worker.js', import.meta.url).href;
         const bootstrap = URL.createObjectURL(new Blob([`importScripts(${JSON.stringify(script)});`], { type: 'text/javascript' }));
         return new Worker(bootstrap, { name: label });
     },

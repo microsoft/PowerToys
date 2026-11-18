@@ -21,9 +21,9 @@ PowerToys doesn't check in Monaco's source. It builds a bundle from a pinned npm
 
 - [`src/Monaco/package.json`](/src/Monaco/package.json) pins `monaco-editor` (exact version) and `esbuild`. [`package-lock.json`](/src/Monaco/package-lock.json) holds the integrity hashes.
 - [`src/Monaco/src`](/src/Monaco/src) is the PowerToys layer on top of the pinned package:
-  - [`main.js`](/src/Monaco/src/main.js): the bundle entry point. It sets the `monaco` global and creates the web workers.
-  - [`features.js`](/src/Monaco/src/features.js): the editor features PowerToys enables. Refactoring and language-service features are left out, which also keeps their entries out of the context menu.
-  - [`languages.js`](/src/Monaco/src/languages.js): extra file extensions for existing languages, and the PowerToys languages in [`customLanguages`](/src/Monaco/src/customLanguages).
+  - [`main.js`](/src/Monaco/src/main.js): the bundle entry point. It sets the `monaco` global and creates the web worker.
+  - [`features.js`](/src/Monaco/src/features.js): the editor features PowerToys enables. Refactoring and language-service features are left out, which also keeps their entries out of the context menu. Registry Preview edits files, so the everyday editing features stay.
+  - [`languages.js`](/src/Monaco/src/languages.js): every language registration: monaco-editor's built-in languages, extra file extensions for existing languages, and the PowerToys languages in [`customLanguages`](/src/Monaco/src/customLanguages). JSON uses a PowerToys grammar because monaco-editor's JSON language service also loads every editor feature.
   - [`customTokenThemeRules.js`](/src/Monaco/src/customTokenThemeRules.js): token colors for the PowerToys languages.
 - The layer only uses public `monaco-editor` entry points. Never edit `node_modules` or copy Monaco source into the repo.
 - [`src/Monaco.props`](/src/Monaco.props) runs [`build.mjs`](/src/Monaco/build.mjs) while building `FilePreviewCommon` and `RegistryPreviewUILib`. It runs `npm ci` when the lockfile changes, bundles into `src/Monaco/dist` (git-ignored), and copies the result to `Assets\Monaco`. It's a no-op when nothing changed.
@@ -38,7 +38,7 @@ PowerToys doesn't check in Monaco's source. It builds a bundle from a pinned npm
 |------|---------|
 | `index.html` | Host page for the Preview Pane and Peek. The `[[PT_*]]` placeholders are filled in by `MonacoPreviewHandlerControl` and Peek's `MonacoHelper`. |
 | `monaco.js`, `monaco.css`, `codicon.ttf` | The editor bundle. |
-| `editor.worker.js`, `json.worker.js` | Web workers (link detection, JSON validation). |
+| `editor.worker.js` | Web worker for link detection and word-based completions. |
 | `monaco_languages.json` | Languages and file extensions Monaco handles. |
 
 Registry Preview has its own host page in `RegistryPreviewUILib/Assets/RegistryPreview/index.html`. Every host loads the bundle from the `PowerToysLocalMonaco` WebView2 virtual host, which maps to `Assets\Monaco`.
@@ -52,7 +52,7 @@ The Monaco version is the `monaco-editor` entry in [`src/Monaco/package.json`](/
 ### Update Process
 
 1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`. This updates `package.json` and `package-lock.json`.
-2. Run `npm run gen:languages` to regenerate `monaco_languages.json`, and review its diff. CI fails if the file doesn't match the bundle.
+2. Run `npm run gen:languages` to regenerate `monaco_languages.json`, and review its diff. CI fails if the file doesn't match `src/Monaco/src/languages.js`.
 3. Build, then smoke-test the Preview Pane, Peek, and Registry Preview. Check the [Monaco changelog](https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md) for breaking changes.
 
 For more detail, see the [FilePreviewCommon documentation](FilePreviewCommon.md#update-monaco-editor).

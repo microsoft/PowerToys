@@ -1,5 +1,7 @@
-// Languages PowerToys adds on top of monaco-editor. IDs and extensions must stay in sync with
-// monaco_languages.json, which the runner, installer, and preview handlers read.
+// Every language registration for the PowerToys Monaco bundle: monaco-editor's built-in languages plus the
+// PowerToys layer. tools/generate-languages.mjs runs this module to produce monaco_languages.json, which the
+// runner, installer, and preview handlers read, so keep all registrations here and in this order.
+import 'monaco-editor/languages/definitions/register.all';
 import * as monaco from 'monaco-editor/editor';
 import * as cpp from 'monaco-editor/languages/definitions/cpp/cpp';
 import * as ini from 'monaco-editor/languages/definitions/ini/ini';
@@ -8,11 +10,19 @@ import * as shell from 'monaco-editor/languages/definitions/shell/shell';
 import * as vb from 'monaco-editor/languages/definitions/vb/vb';
 import * as xml from 'monaco-editor/languages/definitions/xml/xml';
 import { gitignoreDefinition } from './customLanguages/gitignore.js';
+import * as json from './customLanguages/json.js';
 import { regDefinition } from './customLanguages/reg.js';
 import { srtDefinition } from './customLanguages/srt.js';
 
-// Extra extensions mapped onto an upstream grammar. A null grammar means plain text.
-// monaco-editor has no Monarch grammar for JSON, so jsonExt stays plain text as it did with the AMD build.
+// Same registration monaco-editor's JSON language service makes; see customLanguages/json.js for why it isn't used.
+const jsonLanguage = {
+    id: 'json',
+    extensions: ['.json', '.bowerrc', '.jshintrc', '.jscsrc', '.eslintrc', '.babelrc', '.har'],
+    aliases: ['JSON', 'json'],
+    mimetypes: ['application/json'],
+};
+
+// Extra extensions mapped onto an existing grammar. A null grammar means plain text.
 const aliasLanguages = [
     ['cppExt', ['.ino', '.pde'], cpp],
     ['xmlExt', ['.wsdl', '.projitems', '.csproj', '.fsproj', '.shproj', '.vcxproj', '.vbproj', '.resx', '.resw'], xml],
@@ -21,7 +31,7 @@ const aliasLanguages = [
     ['vbExt', ['.vbs'], vb],
     ['iniExt', ['.inf', '.gitconfig', '.gitattributes', '.editorconfig'], ini],
     ['shellExt', ['.ksh', '.zsh', '.bsh'], shell],
-    ['jsonExt', ['.uplugin', '.uproject'], null],
+    ['jsonExt', ['.uplugin', '.uproject'], json],
 ];
 
 const customLanguages = [
@@ -31,6 +41,10 @@ const customLanguages = [
 ];
 
 export function registerPowerToysLanguages() {
+    monaco.languages.register(jsonLanguage);
+    monaco.languages.setLanguageConfiguration(jsonLanguage.id, json.conf);
+    monaco.languages.setMonarchTokensProvider(jsonLanguage.id, json.language);
+
     for (const [id, extensions, grammar] of aliasLanguages) {
         monaco.languages.register({ id, extensions });
         if (grammar) {
