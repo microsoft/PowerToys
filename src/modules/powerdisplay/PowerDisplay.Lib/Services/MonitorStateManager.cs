@@ -47,6 +47,8 @@ namespace PowerDisplay.Common.Services
 
             public int? Volume { get; set; }
 
+            public int? RefreshRate { get; set; }
+
             public Dictionary<byte, KnownGoodVcpFeature> KnownGoodVcpFeatures { get; } = new();
         }
 
@@ -114,6 +116,9 @@ namespace PowerDisplay.Common.Services
                         case "Volume":
                             state.Volume = value;
                             break;
+                        case "RefreshRate":
+                            state.RefreshRate = value;
+                            break;
                         default:
                             Logger.LogWarning($"Unknown property: {property}");
                             shouldSave = false;
@@ -137,7 +142,7 @@ namespace PowerDisplay.Common.Services
         /// </summary>
         /// <param name="monitorId">The monitor's unique Id (new DevicePath-based format, e.g., <c>\\?\DISPLAY#DELD1A8#5&amp;abc&amp;0&amp;UID1</c>).</param>
         /// <returns>A tuple of (Brightness, ColorTemperatureVcp, Contrast, Volume) or null if not found.</returns>
-        public (int? Brightness, int? ColorTemperatureVcp, int? Contrast, int? Volume)? GetMonitorParameters(string monitorId)
+        public (int? Brightness, int? ColorTemperatureVcp, int? Contrast, int? Volume, int? RefreshRate)? GetMonitorParameters(string monitorId)
         {
             if (string.IsNullOrEmpty(monitorId))
             {
@@ -148,7 +153,7 @@ namespace PowerDisplay.Common.Services
             {
                 lock (state)
                 {
-                    return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume);
+                    return (state.Brightness, state.ColorTemperatureVcp, state.Contrast, state.Volume, state.RefreshRate);
                 }
             }
 
@@ -277,6 +282,7 @@ namespace PowerDisplay.Common.Services
                 clone.ColorTemperatureVcp = source.ColorTemperatureVcp;
                 clone.Contrast = source.Contrast;
                 clone.Volume = source.Volume;
+                clone.RefreshRate = source.RefreshRate;
 
                 foreach (var feature in source.KnownGoodVcpFeatures)
                 {
@@ -295,6 +301,7 @@ namespace PowerDisplay.Common.Services
                 canonical.ColorTemperatureVcp ??= legacy.ColorTemperatureVcp;
                 canonical.Contrast ??= legacy.Contrast;
                 canonical.Volume ??= legacy.Volume;
+                canonical.RefreshRate ??= legacy.RefreshRate;
 
                 foreach (var feature in legacy.KnownGoodVcpFeatures)
                 {
@@ -334,6 +341,7 @@ namespace PowerDisplay.Common.Services
                             ColorTemperatureVcp = entry.ColorTemperatureVcp,
                             Contrast = entry.Contrast,
                             Volume = entry.Volume,
+                            RefreshRate = entry.RefreshRate,
                         };
 
                         // Guarded like stateFile.Monitors above: an explicit JSON null lands here
@@ -466,6 +474,7 @@ namespace PowerDisplay.Common.Services
                         ColorTemperatureVcp = state.ColorTemperatureVcp,
                         Contrast = state.Contrast,
                         Volume = state.Volume,
+                        RefreshRate = state.RefreshRate,
                         KnownGoodVcpFeatures = state.KnownGoodVcpFeatures.Values
                             .OrderBy(feature => feature.Code)
                             .Select(feature => feature.Clone())
