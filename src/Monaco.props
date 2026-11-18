@@ -27,4 +27,43 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <!--
+    Monaco editor bundle built from the pinned monaco-editor npm package (src\Monaco\package.json).
+    build.mjs is shared by every project importing this file; it serializes itself with a lock file
+    and is a no-op when the bundle is current. Requires Node.js on PATH (or PowerToysNodeExe).
+  -->
+  <PropertyGroup>
+    <PowerToysMonacoDir>$(MSBuildThisFileDirectory)Monaco\</PowerToysMonacoDir>
+    <PowerToysMonacoDistDir>$(PowerToysMonacoDir)dist\</PowerToysMonacoDistDir>
+    <PowerToysNodeExe Condition="'$(PowerToysNodeExe)' == ''">node</PowerToysNodeExe>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PowerToysMonacoBundleInput Include="$(PowerToysMonacoDir)package.json;$(PowerToysMonacoDir)package-lock.json;$(PowerToysMonacoDir).npmrc;$(PowerToysMonacoDir)build.mjs;$(PowerToysMonacoDir)customTokenThemeRules.js" />
+    <PowerToysMonacoBundleInput Include="$(PowerToysMonacoDir)src\**\*.js;$(PowerToysMonacoDir)customLanguages\**\*.js" />
+  </ItemGroup>
+
+  <Target Name="PowerToysBuildMonacoBundle"
+          Condition="'$(DesignTimeBuild)' != 'true'"
+          Inputs="@(PowerToysMonacoBundleInput)"
+          Outputs="$(PowerToysMonacoDistDir).stamp">
+    <Exec Command="&quot;$(PowerToysNodeExe)&quot; --version" IgnoreExitCode="true" IgnoreStandardErrorWarningFormat="true" StandardOutputImportance="low" StandardErrorImportance="low">
+      <Output TaskParameter="ExitCode" PropertyName="_PowerToysNodeExitCode" />
+    </Exec>
+    <Error Condition="'$(_PowerToysNodeExitCode)' != '0'"
+           Text="Node.js 20 or later is required to build the Monaco editor bundle (src\Monaco). Install it with 'winget install OpenJS.NodeJS.LTS', or set the PowerToysNodeExe property to node.exe." />
+    <Exec Command="&quot;$(PowerToysNodeExe)&quot; build.mjs" WorkingDirectory="$(PowerToysMonacoDir)" />
+  </Target>
+
+  <!-- Added inside a target so a clean build picks up files build.mjs just produced. -->
+  <Target Name="PowerToysIncludeMonacoBundle" DependsOnTargets="PowerToysBuildMonacoBundle" BeforeTargets="AssignTargetPaths">
+    <ItemGroup>
+      <_PowerToysMonacoBundleFile Include="$(PowerToysMonacoDistDir)**" Exclude="$(PowerToysMonacoDistDir).stamp" />
+      <None Include="@(_PowerToysMonacoBundleFile)">
+        <Link>Assets\Monaco\dist\%(_PowerToysMonacoBundleFile.RecursiveDir)%(_PowerToysMonacoBundleFile.Filename)%(_PowerToysMonacoBundleFile.Extension)</Link>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+  </Target>
 </Project>

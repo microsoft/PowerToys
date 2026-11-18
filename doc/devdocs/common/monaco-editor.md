@@ -15,6 +15,18 @@ Monaco is primarily used in:
 
 Monaco is embedded into PowerToys' WinUI 3 applications using WebView2. This integration allows PowerToys to leverage Monaco's web-based capabilities within desktop applications.
 
+### Building Monaco from npm
+
+PowerToys is moving from a checked-in copy of Monaco (`src/Monaco/monacoSRC`) to a bundle built from a pinned npm package:
+
+- [`src/Monaco/package.json`](/src/Monaco/package.json) pins `monaco-editor` (exact version) and `esbuild`. `package-lock.json` holds the integrity hashes.
+- [`src/Monaco/src`](/src/Monaco/src) is the PowerToys layer: the editor features we enable, the extra languages and aliases, and the theme rules. It only uses public `monaco-editor` entry points; never edit `node_modules`.
+- [`src/Monaco.props`](/src/Monaco.props) runs `node build.mjs` during the normal build of `FilePreviewCommon` and `RegistryPreviewUILib`. It runs `npm ci` when the lockfile changes, bundles into `src/Monaco/dist` (git-ignored), and copies that to `Assets\Monaco\dist`. It's a no-op when nothing changed.
+- Building requires **Node.js 20 or later** on `PATH` (`winget install OpenJS.NodeJS.LTS`, or `tools\build\setup-dev-environment.ps1`). To use a different `node.exe`, set the `PowerToysNodeExe` MSBuild property.
+- Official builds resolve npm packages through the PowerToys Azure Artifacts feed ([`steps-setup-monaco-npm.yml`](/.pipelines/v2/templates/steps-setup-monaco-npm.yml)).
+
+Until the preview hosts move to the bundle, they still load the AMD build from `monacoSRC`.
+
 ### Directory Structure
 
 The Monaco editor files are located in the relevant module directories. For example, in Registry Preview, Monaco files are bundled with the application resources.

@@ -355,7 +355,10 @@ jobs:
            "vcpkg"
         path: $(LOCALAPPDATA)\vcpkg\archives
 
-
+  - template: .\steps-setup-monaco-npm.yml
+    parameters:
+      official: ${{ parameters.official }}
+      enablePackageCaching: ${{ parameters.enablePackageCaching }}
 
   - ${{ parameters.beforeBuildSteps }}
 

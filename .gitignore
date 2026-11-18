@@ -269,6 +269,10 @@ FakesAssemblies/
 .ntvs_analysis.dat
 node_modules/
 
+# Monaco editor bundle built from npm (src/Monaco/build.mjs)
+src/Monaco/dist/
+src/Monaco/.build.lock
+
 # Visual Studio 6 build log
 *.plg
 
