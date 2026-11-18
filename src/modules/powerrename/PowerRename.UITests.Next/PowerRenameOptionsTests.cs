@@ -20,13 +20,14 @@ public sealed partial class PowerRenameTests
 {
     private const string Uppercase = "toggleButton_upperCase";
     private const string Lowercase = "toggleButton_lowerCase";
+    private const string SentenceCase = "toggleButton_sentenceCase";
     private const string TitleCase = "toggleButton_titleCase";
     private const string CapitalizeEachWord = "toggleButton_capitalize";
     private const string IncludeFiles = "toggleButton_includeFiles";
     private const string IncludeFolders = "toggleButton_includeFolders";
     private const string IncludeSubfolders = "toggleButton_includeSubfolders";
 
-    private static readonly string[] TextFormattingModes = { Uppercase, Lowercase, TitleCase, CapitalizeEachWord };
+    private static readonly string[] TextFormattingModes = { Uppercase, Lowercase, SentenceCase, TitleCase, CapitalizeEachWord };
 
     [TestMethod("PowerRename.Preview.SearchAndReplace")]
     [TestCategory("PowerRename")]
@@ -72,6 +73,7 @@ public sealed partial class PowerRenameTests
     [TestCategory("PowerRename")]
     [DataRow(Uppercase, "HELLO WORLD.TXT")]
     [DataRow(Lowercase, "hello world.txt")]
+    [DataRow(SentenceCase, "Hello world.TXT")]
     [DataRow(TitleCase, "Hello World.TXT")]
     public void TextFormattingRenamesUsingTheSelectedMode(string modeAutomationId, string expectedName)
     {
