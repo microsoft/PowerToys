@@ -4,7 +4,7 @@ if ($wingetModules)
   $needsUpdate = $true;
   foreach ($mod in $wingetModules)
   {
-    if ($mod.Version -ge "1.8.1133")
+    if ($mod.Version -ge "1.29.380")
     {
       $needsUpdate = $false;
       break;
@@ -18,7 +18,7 @@ if ($wingetModules)
     $updated = $false;
     foreach ($mod in $wingetModules)
     {
-      if ($mod.Version -ge "1.8.1133")
+      if ($mod.Version -ge "1.29.380")
       {
         $updated = $true;
         break;
