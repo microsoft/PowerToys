@@ -13,7 +13,7 @@ namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 
 /// <summary>
 /// Shared helper for positioning and sizing flyout-style WinUI 3 windows
-/// (e.g. Quick Access, PowerDisplay) that are pinned to a corner of the work area.
+/// (e.g. Quick Access, PowerDisplay) near an anchor or at a corner of the work area.
 ///
 /// The public API takes sizes in device-independent pixels (DIP). The helper resolves the
 /// target monitor's effective DPI and converts to physical pixels. All window positioning
@@ -25,6 +25,7 @@ public static partial class FlyoutWindowHelper
 {
     private const uint MdtEffectiveDpi = 0;
     private const int DefaultDpi = 96;
+    private const uint AbmGetTaskbarPos = 0x00000005;
 
     [StructLayout(LayoutKind.Sequential)]
     private struct POINT
@@ -33,12 +34,35 @@ public static partial class FlyoutWindowHelper
         public int Y;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    private struct NativeRect
+    {
+        public int Left;
+        public int Top;
+        public int Right;
+        public int Bottom;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct AppBarData
+    {
+        public uint CbSize;
+        public nint HWnd;
+        public uint CallbackMessage;
+        public uint Edge;
+        public NativeRect Rect;
+        public nint LParam;
+    }
+
     [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool GetCursorPos(out POINT lpPoint);
 
     [LibraryImport("shcore.dll")]
     private static partial int GetDpiForMonitor(nint hMonitor, uint dpiType, out uint dpiX, out uint dpiY);
+
+    [LibraryImport("shell32.dll", EntryPoint = "SHAppBarMessage")]
+    private static partial nuint SHAppBarMessage(uint message, ref AppBarData data);
 
     /// <summary>
     /// Get the DPI scale factor for a given <see cref="DisplayArea"/>.
@@ -81,6 +105,95 @@ public static partial class FlyoutWindowHelper
 
         displayArea = DisplayArea.GetFromPoint(new PointInt32(cursorPos.X, cursorPos.Y), DisplayAreaFallback.Nearest);
         return displayArea is not null;
+    }
+
+    /// <summary>
+    /// Capture placement at a notification icon or point anchor without sampling the cursor.
+    /// </summary>
+    public static bool TryCreatePlacementAtAnchor(RectInt32 anchor, out FlyoutPlacementContext? context)
+    {
+        context = null;
+        var displayArea = GetDisplayAreaForAnchor(anchor);
+        return displayArea is not null && TryCreatePlacement(displayArea, anchor, out context);
+    }
+
+    /// <summary>
+    /// Capture the cursor's display once, using the notification icon only if it is on that display.
+    /// Otherwise use a point at the tray end of that display's taskbar edge. Falls back to the primary
+    /// display if the cursor cannot be queried.
+    /// </summary>
+    public static bool TryCreatePlacementAtCursor(RectInt32? trayAnchor, out FlyoutPlacementContext? context)
+    {
+        context = null;
+        var displayArea = GetCursorPos(out var cursor)
+            ? DisplayArea.GetFromPoint(new PointInt32(cursor.X, cursor.Y), DisplayAreaFallback.Nearest)
+            : DisplayArea.Primary;
+        if (displayArea is null)
+        {
+            return false;
+        }
+
+        var work = displayArea.WorkArea;
+        var edge = GetTaskbarEdge(displayArea);
+        RectInt32 anchor = GetWorkAreaEdgeAnchor(work, edge);
+        if (trayAnchor is RectInt32 candidate &&
+            GetDisplayAreaForAnchor(candidate)?.DisplayId.Value == displayArea.DisplayId.Value)
+        {
+            anchor = candidate;
+        }
+
+        return TryCreatePlacement(displayArea, anchor, edge, out context);
+    }
+
+    /// <summary>
+    /// Check that the captured display geometry is still current without sampling the cursor
+    /// or choosing a different anchor.
+    /// </summary>
+    public static bool IsPlacementCurrent(FlyoutPlacementContext context)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        var displayArea = DisplayArea.GetFromDisplayId(new global::Microsoft.UI.DisplayId { Value = context.DisplayIdValue });
+        return displayArea is not null &&
+            displayArea.OuterBounds == context.OuterBounds &&
+            displayArea.WorkArea == context.WorkArea &&
+            GetDpiScale(displayArea) == context.DpiScale &&
+            GetTaskbarEdge(displayArea) == context.TaskbarEdge;
+    }
+
+    /// <summary>
+    /// Position a flyout using its captured anchor and display geometry. The caller can use
+    /// <see cref="IsPlacementCurrent"/> to invalidate a presentation after display geometry changes.
+    /// </summary>
+    /// <returns>False if the target display is gone or no visible window size is available.</returns>
+    public static bool PositionWindowNearAnchor(
+        WindowEx window,
+        FlyoutPlacementContext context,
+        int widthDip,
+        int heightDip,
+        int gapDip = 12)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+        ArgumentNullException.ThrowIfNull(context);
+
+        var displayArea = DisplayArea.GetFromDisplayId(new global::Microsoft.UI.DisplayId { Value = context.DisplayIdValue });
+        if (displayArea is null)
+        {
+            return false;
+        }
+
+        var rect = FlyoutPlacementCalculator.Calculate(
+            context,
+            ScaleToPhysicalPixels(widthDip, context.DpiScale),
+            ScaleToPhysicalPixels(heightDip, context.DpiScale),
+            ScaleToPhysicalPixels(gapDip, context.DpiScale));
+        if (rect.Width <= 0 || rect.Height <= 0)
+        {
+            return false;
+        }
+
+        MoveAndResizeOnDisplay(window, displayArea, rect);
+        return true;
     }
 
     /// <summary>
@@ -196,6 +309,80 @@ public static partial class FlyoutWindowHelper
         }
 
         window.AppWindow.MoveAndResize(finalRect);
+    }
+
+    private static DisplayArea? GetDisplayAreaForAnchor(RectInt32 anchor)
+    {
+        if (anchor.Width < 0 || anchor.Height < 0)
+        {
+            return null;
+        }
+
+        return anchor.Width == 0 || anchor.Height == 0
+            ? DisplayArea.GetFromPoint(new PointInt32(anchor.X, anchor.Y), DisplayAreaFallback.Nearest)
+            : DisplayArea.GetFromRect(anchor, DisplayAreaFallback.Nearest);
+    }
+
+    private static bool TryCreatePlacement(DisplayArea displayArea, RectInt32 anchor, out FlyoutPlacementContext? context)
+    {
+        return TryCreatePlacement(displayArea, anchor, GetTaskbarEdge(displayArea), out context);
+    }
+
+    private static bool TryCreatePlacement(
+        DisplayArea displayArea,
+        RectInt32 anchor,
+        FlyoutPlacementEdge edge,
+        out FlyoutPlacementContext? context)
+    {
+        context = null;
+        var outer = displayArea.OuterBounds;
+        var work = displayArea.WorkArea;
+        double dpiScale = GetDpiScale(displayArea);
+        if (outer.Width <= 0 || outer.Height <= 0 || work.Width <= 0 || work.Height <= 0 ||
+            !double.IsFinite(dpiScale) || dpiScale <= 0)
+        {
+            return false;
+        }
+
+        context = new FlyoutPlacementContext(displayArea.DisplayId.Value, anchor, outer, work, dpiScale, edge);
+        return true;
+    }
+
+    private static RectInt32 GetWorkAreaEdgeAnchor(RectInt32 work, FlyoutPlacementEdge edge)
+    {
+        return edge switch
+        {
+            FlyoutPlacementEdge.Top => new RectInt32(work.X + work.Width, work.Y, 0, 0),
+            FlyoutPlacementEdge.Left => new RectInt32(work.X, work.Y + work.Height, 0, 0),
+            _ => new RectInt32(work.X + work.Width, work.Y + work.Height, 0, 0),
+        };
+    }
+
+    private static FlyoutPlacementEdge GetTaskbarEdge(DisplayArea displayArea)
+    {
+        var data = new AppBarData
+        {
+            CbSize = (uint)Marshal.SizeOf<AppBarData>(),
+        };
+
+        // ABM_GETTASKBARPOS returns the system taskbar rectangle. Do not apply a primary-display
+        // rectangle to another display; use that display's work area instead.
+        if (SHAppBarMessage(AbmGetTaskbarPos, ref data) != 0)
+        {
+            long width = (long)data.Rect.Right - data.Rect.Left;
+            long height = (long)data.Rect.Bottom - data.Rect.Top;
+            if (width > 0 && width <= int.MaxValue && height > 0 && height <= int.MaxValue)
+            {
+                var taskbar = new RectInt32(data.Rect.Left, data.Rect.Top, (int)width, (int)height);
+                var taskbarDisplay = DisplayArea.GetFromRect(taskbar, DisplayAreaFallback.Nearest);
+                if (taskbarDisplay?.DisplayId.Value == displayArea.DisplayId.Value)
+                {
+                    return FlyoutPlacementCalculator.GetTaskbarEdge(displayArea.OuterBounds, displayArea.WorkArea, taskbar);
+                }
+            }
+        }
+
+        return FlyoutPlacementCalculator.GetTaskbarEdge(displayArea.OuterBounds, displayArea.WorkArea, null);
     }
 
     private static int GetEffectiveDpi(nint hMonitor)

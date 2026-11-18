@@ -45,7 +45,7 @@ namespace PowerDisplay.Helpers
         private const uint MaxSampleAgeMs = 500;
 
         private readonly SettingsUtils _settingsUtils;
-        private readonly Action _toggleWindowAction;
+        private readonly Action<TrayIconBounds?> _toggleWindowAction;
         private readonly Action _exitAction;
         private readonly Action _openSettingsAction;
         private readonly uint _wmTaskbarRestart;
@@ -91,7 +91,7 @@ namespace PowerDisplay.Helpers
 
         public TrayIconService(
             SettingsUtils settingsUtils,
-            Action toggleWindowAction,
+            Action<TrayIconBounds?> toggleWindowAction,
             Action exitAction,
             Action openSettingsAction)
         {
@@ -383,6 +383,14 @@ namespace PowerDisplay.Helpers
             _mouseWheelListener?.Arm(bounds, _hoverGeneration);
         }
 
+        /// <summary>
+        /// Gets the current notification icon rectangle before activating another window.
+        /// </summary>
+        internal TrayIconBounds? GetTrayIconBounds()
+        {
+            return TryQueryTrayIconBounds(out var bounds) ? bounds : null;
+        }
+
         private unsafe bool TryQueryTrayIconBounds(out TrayIconBounds bounds)
         {
             bounds = default;
@@ -405,7 +413,7 @@ namespace PowerDisplay.Helpers
                 if (!_boundsFailureLogged)
                 {
                     Logger.LogWarning(
-                        $"[TrayWheel] Shell_NotifyIconGetRect failed with HRESULT 0x{result:X8}");
+                        $"[TrayIcon] Shell_NotifyIconGetRect failed with HRESULT 0x{result:X8}");
                     _boundsFailureLogged = true;
                 }
 
@@ -575,7 +583,9 @@ namespace PowerDisplay.Helpers
 
                                 break;
                             case PInvoke.WM_LBUTTONUP:
-                                _toggleWindowAction?.Invoke();
+                                // Capture the overflow icon's position before opening the flyout
+                                // dismisses the Shell's notification-area overflow panel.
+                                _toggleWindowAction?.Invoke(GetTrayIconBounds());
                                 break;
                             case WmMouseMove:
                                 HandleTrayMouseMove();

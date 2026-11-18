@@ -36,6 +36,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Exercise the UI-free placement model and session without loading WinUI. -->
+    <Compile Include="..\..\..\common\Common.UI.Controls\Window\FlyoutPlacementEdge.cs" Link="Shared\FlyoutPlacementEdge.cs" />
+    <Compile Include="..\..\..\common\Common.UI.Controls\Window\FlyoutPlacementContext.cs" Link="Shared\FlyoutPlacementContext.cs" />
+    <Compile Include="..\..\..\common\Common.UI.Controls\Window\FlyoutPlacementCalculator.cs" Link="Shared\FlyoutPlacementCalculator.cs" />
+    <Compile Include="..\PowerDisplay\Helpers\FlyoutPlacementSession.cs" Link="Shared\FlyoutPlacementSession.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\PowerDisplay.Lib\PowerDisplay.Lib.csproj" />
     <ProjectReference Include="..\..\..\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />
   </ItemGroup>
