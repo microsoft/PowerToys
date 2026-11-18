@@ -32,7 +32,7 @@ if ($wingetModules)
     }
     else
     {
-      Write-Host "WinGet Client module detected."
+      Write-Host "WinGet Client module needs to be updated."
       # This message will be compared against in Command Not Found Settings page code behind. Take care when changing it.
     }
   }

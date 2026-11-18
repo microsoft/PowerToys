@@ -269,7 +269,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsWinGetClientModuleDetected = true;
             }
-            else if (result.Contains("WinGet Client module not detected."))
+            else if (result.Contains("WinGet Client module not detected.") || result.Contains("WinGet Client module needs to be updated."))
             {
                 IsWinGetClientModuleDetected = false;
             }
