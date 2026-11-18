@@ -368,6 +368,35 @@ namespace PowerRenameManagerTests
             Assert::AreEqual(L"just a test.txt", result);
         }
 
+        TEST_METHOD (VerifySentenceCaseUnicodeTransform)
+        {
+            wchar_t result[MAX_PATH] = { 0 };
+
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\u03A6\u03A9\u03A3.txt", SentenceCase, false)));
+            Assert::AreEqual(L"\u03A6\u03C9\u03C2.txt", result);
+
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\u03A6\u03A9\u03A3\u0301 TEST.TXT", SentenceCase, false)));
+            Assert::AreEqual(L"\u03A6\u03C9\u03C2\u0301 test.TXT", result);
+
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\U00010428 TEST.txt", SentenceCase, false)));
+            Assert::AreEqual(L"\U00010400 test.txt", result);
+
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"01 - \U00010428 \U00010400 TEST.TXT", SentenceCase, false)));
+            Assert::AreEqual(L"01 - \U00010400 \U00010428 test.TXT", result);
+
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\U00010428 TEST.folder", SentenceCase, true)));
+            Assert::AreEqual(L"\U00010400 test.folder", result);
+
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\u00DF TEST.txt", SentenceCase, false)));
+            Assert::AreEqual(L"SS test.txt", result);
+
+            Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\U00010428 TEST.TXT", SentenceCase | ExtensionOnly, false)));
+            Assert::AreEqual(L"\U00010428 TEST.TXT", result);
+
+            wchar_t smallResult[4] = { 0 };
+            Assert::AreEqual(STRSAFE_E_INSUFFICIENT_BUFFER, GetTransformedFileName(smallResult, ARRAYSIZE(smallResult), L"\u00DF AB", SentenceCase, false));
+        }
+
         TEST_METHOD (VerifyNameOnlyTransform)
         {
             rename_pairs renamePairs[] = {

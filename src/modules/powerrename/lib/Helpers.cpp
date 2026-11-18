@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
+#include <icu.h>
+
+#pragma comment(lib, "icu.lib")
 
 namespace fs = std::filesystem;
 
@@ -16,6 +19,43 @@ namespace
     const int MAX_INPUT_STRING_LEN = 1024;
 
     const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
+
+    HRESULT ChangeUnicodeCase(const std::u16string& text, bool uppercase, std::u16string& mapped)
+    {
+        if (text.size() > INT32_MAX)
+        {
+            return E_INVALIDARG;
+        }
+
+        auto map = uppercase ? u_strToUpper : u_strToLower;
+        UErrorCode status = U_ZERO_ERROR;
+        int32_t length =
+            map(nullptr, 0, text.data(), static_cast<int32_t>(text.size()), nullptr, &status);
+
+        if (status != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(status))
+        {
+            return E_FAIL;
+        }
+
+        if (length == INT32_MAX)
+        {
+            return E_INVALIDARG;
+        }
+
+        mapped.resize(static_cast<size_t>(length) + 1);
+        status = U_ZERO_ERROR;
+        length = map(
+            mapped.data(), static_cast<int32_t>(mapped.size()), text.data(), static_cast<int32_t>(text.size()), nullptr, &status);
+
+        if (U_FAILURE(status))
+        {
+            return E_FAIL;
+        }
+
+        mapped.resize(length);
+
+        return S_OK;
+    }
 
     // Helper function: Find the longest matching pattern starting at the given position
     // Returns the matched pattern name, or empty string if no match found
@@ -290,20 +330,40 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
             {
                 std::wstring stem = isFolder ? source : fs::path(source).stem().wstring();
                 std::wstring extension = isFolder ? L"" : fs::path(source).extension().wstring();
-                bool isFirstAlpha = true;
 
-                for (size_t i = 0; i < stem.length(); i++)
+                // Lowercase the whole stem so mappings such as Greek final sigma retain
+                // word context.
+                std::u16string mappedStem;
+                hr = ChangeUnicodeCase(std::u16string(stem.begin(), stem.end()), false, mappedStem);
+                if (FAILED(hr))
                 {
-                    if (isFirstAlpha && iswalpha(stem[i]))
+                    return hr;
+                }
+
+                // Find the first alphabetic character and uppercase it, leaving the rest
+                // of the stem in lowercase.
+                for (int32_t i = 0; i < static_cast<int32_t>(mappedStem.size());)
+                {
+                    int32_t start = i;
+                    UChar32 character;
+                    U16_NEXT(mappedStem.data(), i, static_cast<int32_t>(mappedStem.size()), character);
+
+                    if (u_isalpha(character))
                     {
-                        stem[i] = towupper(stem[i]);
-                        isFirstAlpha = false;
-                    }
-                    else
-                    {
-                        stem[i] = towlower(stem[i]);
+                        size_t characterLength = static_cast<size_t>(i) - static_cast<size_t>(start);
+                        std::u16string uppercase;
+                        hr = ChangeUnicodeCase(mappedStem.substr(start, characterLength), true, uppercase);
+                        if (FAILED(hr))
+                        {
+                            return hr;
+                        }
+
+                        mappedStem.replace(start, characterLength, uppercase);
+                        break;
                     }
                 }
+
+                stem.assign(mappedStem.begin(), mappedStem.end());
                 hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
             }
             else
