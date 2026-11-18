@@ -944,6 +944,17 @@ Describe 'MWB image servicing diagnosis' {
         $report.QueryErrors.Count | Should Be 0
     }
 
+    It 'references the job inventory without re-running DISM and reads the current reboot reasons' {
+        $baseline = Get-MwbImageServicingReport
+        $script:wuPending = $true
+        $next = Get-MwbImageServicingReport -UseJobInventory
+        $baseline.RebootChecks.WindowsUpdate.Required | Should Be $false
+        $next.RebootChecks.WindowsUpdate.Required | Should Be $true
+        $next.InventorySource | Should Be 'image-servicing-job-start.json'
+        Assert-MockCalled Get-WindowsPackage -Times 1 -Exactly -Scope It
+        Assert-MockCalled Get-HotFix -Times 1 -Exactly -Scope It
+    }
+
     It 'preserves the pre-query state when DISM starts pending servicing work' {
         $script:servicingStarted = $true
         $report = Get-MwbImageServicingReport

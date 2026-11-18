@@ -103,6 +103,8 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:invalidProbeSignature = $false
         $script:cleanupSnapshotJson = '{"Version":2,"Monitors":[{"Connected":false},{"Connected":false}]}'
         $script:bootTime = [datetime]::new(2026, 11, 4, 0, 0, 0, [DateTimeKind]::Utc)
+        $script:bootRecord = 14825L
+        Mock Get-WinEvent { [pscustomobject]@{ RecordId = $script:bootRecord } }
         $IsolatedGuest = $true
         Mock Test-Administrator { $true }
         Mock Get-CimInstance {
@@ -447,8 +449,8 @@ Describe 'Virtual display fixture ownership and approval' {
         $script:removeOnReboot = $true
         { & $cleanupAction } | Should Throw $Expected
         $retained = Get-Content $StatePath -Raw | ConvertFrom-Json
-        $retained.RemovalPendingBootTicks | Should Be $script:bootTime.Ticks
-        $retained.PSObject.Properties.Remove('RemovalPendingBootTicks')
+        $retained.RemovalPendingBootRecord | Should Be $script:bootRecord
+        $retained.PSObject.Properties.Remove('RemovalPendingBootRecord')
         ($retained | ConvertTo-Json) | Should Be $originalJournal.TrimEnd()
         (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $false
         $script:devices.Count | Should Be 0
@@ -488,11 +490,23 @@ Describe 'Virtual display fixture ownership and approval' {
         Assert-MockCalled pnputil.exe -Times 1 -Exactly -Scope It
         Assert-MockCalled Remove-Item -Times 0 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
         $script:bootTime = $script:bootTime.AddHours(1)
+        { & $cleanupAction } | Should Throw 'requires an actual reboot'
+        Get-Content $StatePath -Raw | Should Be $retainedJournal
+        $script:bootRecord++
         & $cleanupAction
         Test-Path -LiteralPath $StatePath | Should Be $false
         (Get-Content (Join-Path $ResultsDirectory 'cleanup.json') -Raw | ConvertFrom-Json).Removed | Should Be $true
         Assert-MockCalled pnputil.exe -Times 1 -Exactly -Scope It
         Assert-MockCalled Remove-Item -Times 1 -Exactly -Scope It -ParameterFilter { $Path -like 'Cert:*' }
+    }
+
+    It 'anchors an old timestamp-only journal to this boot before allowing cleanup' {
+        $journal.RemovalPendingBootTicks = $script:bootTime.Ticks
+        $journal | ConvertTo-Json | Set-Content $StatePath
+        { & $cleanupAction } | Should Throw 'requires an actual reboot'
+        (Get-Content $StatePath -Raw | ConvertFrom-Json).RemovalPendingBootRecord | Should Be $script:bootRecord
+        { & $cleanupAction } | Should Throw 'requires an actual reboot'
+        Assert-MockCalled pnputil.exe -Times 0 -Exactly -Scope It
     }
 
     It 'retains ownership and trust when package removal fails' {

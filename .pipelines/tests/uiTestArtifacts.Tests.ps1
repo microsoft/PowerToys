@@ -67,6 +67,16 @@ Describe 'UI test artifact selection and payload' {
         { Assert-UiTestArtifactPattern -Pattern '**/tests/*/**' -Modules '*' } | Should Throw 'Invalid UI-test project stem'
     }
 
+    It 'passes queue-time module lists only as data and rejects non-stem characters' {
+        $yaml = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $bindings = @($yaml -split '\r?\n' | Where-Object { $_ -match 'join\('';'', parameters\.uiTest(?:Execution)?Modules\)' })
+        $bindings.Count | Should BeGreaterThan 0
+        foreach ($binding in $bindings) {
+            $binding.Trim() | Should Match '^(SELECTED_UI_TEST_MODULES|UI_TEST_EXECUTION_MODULES): \$\{\{'
+        }
+        { Assert-UiTestProjectStems @('Alpha.UITests', "Beta's.UITests") } | Should Throw 'Invalid UI-test project stem'
+    }
+
     It 'rejects an unknown selected project' {
         { Get-UiTestArtifactSelection -RepoRoot $script:artifactCaseRoot -Modules 'Missing.UITests' -Platform x64 } |
             Should Throw "Expected one UI-test project"

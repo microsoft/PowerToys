@@ -1,5 +1,5 @@
 {
-  "comment": "Approximate wall minutes per UI test suite on x64Win11, used only to balance UI-test shards. Suites missing here use defaultMinutes, so new suites need no edit. Other platforms scale by platformMultipliers.",
+  "comment": "Approximate suite wall times (x64Win11 minutes) for longest-first packing. Missing suites use defaultMinutes. Platform multipliers scale the displayed shard estimates, not the relative weights.",
   "defaultMinutes": 5,
   "platformMultipliers": {
     "x64Win11": 1.0,
@@ -10,6 +10,7 @@
     "FancyZonesEditor.UITests.Next": 31.2,
     "ZoomIt.UITests": 24.6,
     "AdvancedPaste.UITests.Next": 21.7,
+    "Microsoft.CmdPal.UITests.Next": 19.4,
     "MouseWithoutBorders.UITests": 15.6,
     "Workspaces.UITests.Next": 11.8,
     "FancyZones.UITests.Next": 10.2,
@@ -29,6 +30,7 @@
     "Settings.UITests": 3.5,
     "OOBE.UITests.Next": 3.4,
     "GrabAndMove.UITests": 3.3,
+    "PowerOCR.UITests.Next": 3.2,
     "LightSwitch.UITests.Next": 3.0,
     "PreviewPane.UITests": 3.0,
     "CropAndLock.UITests": 2.4,

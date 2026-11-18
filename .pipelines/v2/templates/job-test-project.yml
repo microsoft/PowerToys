@@ -122,10 +122,13 @@ jobs:
 
   - pwsh: |
       . "$(Build.SourcesDirectory)\.pipelines\mwb\MwbSandboxCi.Common.ps1"
+      . "$(Build.SourcesDirectory)\.pipelines\UiTestArtifacts.Common.ps1"
       $modules = @($env:SELECTED_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       if ('${{ parameters.autoSelectUiTests }}' -eq 'True') {
         $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       }
+      Assert-UiTestProjectStems $modules
+      if ($env:UI_TEST_EXECUTION_MODULES) { Assert-UiTestProjectStems ($env:UI_TEST_EXECUTION_MODULES -split ';') }
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
       $hidSelection = Get-UmdfUiTestSelection -Modules $modules -Platform '$(TestPlatform)' `
         -AutoSelect ('${{ parameters.autoSelectUiTests }}' -eq 'True') `
@@ -173,7 +176,18 @@ jobs:
       if ($selection.Reason -eq 'SkippedRequiresCurrentBuildBundle') {
         Write-Host "##vso[task.logissue type=warning]Skipping implicit MWB selection: its Sandbox suite requires buildNow or buildNowSlim. Other suites will run against the selected official build."
       }
-      if ($selection.Run) {
+      $collectMwbBaseline = $selection.Run
+      if ($collectMwbBaseline -and [int]$env:SHARD_COUNT -gt 1) {
+        # MWB is x64-only. On those jobs there is no dedicated ARM64 routing to subtract.
+        . "$(Build.SourcesDirectory)\.pipelines\UiTestShards.Common.ps1"
+        $candidates = $modules
+        if (-not $candidates) {
+          $candidates = (Get-UiTestArtifactSelection -RepoRoot "$(Build.SourcesDirectory)" -Platform x64).Name
+        }
+        $mine = @(Get-UiTestShardSuites -Suites $candidates -ShardCount $env:SHARD_COUNT -ShardIndex $env:SHARD_INDEX -Platform '$(TestPlatform)')
+        $collectMwbBaseline = $mine -contains 'MouseWithoutBorders.UITests'
+      }
+      if ($collectMwbBaseline) {
         $imageDirectory = Get-MwbPrerequisiteDirectory "$(Common.TestResultsDirectory)" "$(System.JobId)"
         $null = New-Item -ItemType Directory -Path $imageDirectory -Force
         Get-MwbImageServicingReport | ConvertTo-Json -Depth 8 |
@@ -187,13 +201,17 @@ jobs:
         } finally {
           $identity.Dispose()
         }
-        if ('${{ parameters.inputArtifactStem }}' -ne '') {
-          throw 'MWB Sandbox requires the same unmodified Release artifact identity as the other selected modules.'
-        }
+      }
+      if ($selection.Run -and $env:INPUT_ARTIFACT_STEM) {
+        throw 'MWB Sandbox requires the same unmodified Release artifact identity as the other selected modules.'
       }
     displayName: Select UI test suites
     env:
       SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      UI_TEST_EXECUTION_MODULES: ${{ join(';', parameters.uiTestExecutionModules) }}
+      INPUT_ARTIFACT_STEM: ${{ parameters.inputArtifactStem }}
+      SHARD_COUNT: ${{ parameters.uiTestShardCount }}
+      SHARD_INDEX: $(System.JobPositionInPhase)
       UMDF_HID_ARM64_IMAGE: ${{ parameters.umdfHidArm64Image }}
       ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
@@ -248,7 +266,7 @@ jobs:
           . "$(Build.SourcesDirectory)\.pipelines\UiTestArtifacts.Common.ps1"
           $planDirectory = "$(Agent.TempDirectory)\UiTestPayload"
           New-Item -ItemType Directory -Path $planDirectory -Force | Out-Null
-          $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+          $modulesRaw = $env:SELECTED_UI_TEST_MODULES
           if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
             $modulesRaw = $env:AUTO_UI_TEST_MODULES
           }
@@ -268,6 +286,7 @@ jobs:
         condition: and(succeeded(), or(eq(variables['RunGenericUiTests'], 'true'), eq(variables['RunMwbSandbox'], 'true')))
         env:
           UI_TEST_ARTIFACT_PATTERN: $(UiTestArtifactPattern)
+          SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
           ${{ if eq(parameters.autoSelectUiTests, true) }}:
             AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
       - task: DownloadPipelineArtifact@2
@@ -390,7 +409,7 @@ jobs:
         "$(Pipeline.Workspace)\$(TestArtifactsName)",
         "$env:ProgramFiles\PowerToys",
         "$env:LOCALAPPDATA\PowerToys")
-      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      $modulesRaw = $env:SELECTED_UI_TEST_MODULES
       if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
         $modulesRaw = $env:AUTO_UI_TEST_MODULES
       }
@@ -497,14 +516,15 @@ jobs:
       }
     displayName: "Sign sparse MSIX packages (test trust)"
     condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
-    ${{ if eq(parameters.autoSelectUiTests, true) }}:
-      env:
+    env:
+      SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
   - powershell: |
       $ErrorActionPreference = 'Stop'
       Write-Host '##vso[task.setvariable variable=PowerOcrLanguagesReady]false'
-      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      $modulesRaw = $env:SELECTED_UI_TEST_MODULES
       if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
         $modulesRaw = $env:AUTO_UI_TEST_MODULES
       }
@@ -537,8 +557,9 @@ jobs:
     continueOnError: true
     timeoutInMinutes: 90
     condition: and(succeeded(), eq(variables['RunGenericUiTests'], 'true'))
-    ${{ if eq(parameters.autoSelectUiTests, true) }}:
-      env:
+    env:
+      SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      ${{ if eq(parameters.autoSelectUiTests, true) }}:
         AUTO_UI_TEST_MODULES: $(AutoUiTestModules)
 
   - pwsh: |
@@ -551,8 +572,7 @@ jobs:
         exit 1
       }
 
-      # uiTestModules is a template parameter; flatten it to a delimited string for the script.
-      $modulesRaw = '${{ join(';', parameters.uiTestModules) }}'
+      $modulesRaw = $env:SELECTED_UI_TEST_MODULES
       if (-not [string]::IsNullOrWhiteSpace($env:AUTO_UI_TEST_MODULES)) {
         $modulesRaw = $env:AUTO_UI_TEST_MODULES
       }
@@ -594,41 +614,17 @@ jobs:
         exit 1
       }
 
-      # Sharding: every parallel job packs the same suite list identically and keeps only its share.
+      . "$(Build.SourcesDirectory)\.pipelines\UiTestShards.Common.ps1"
       $shardCount = if ($env:SHARD_COUNT) { [int]$env:SHARD_COUNT } else { 1 }
-      $shardIndex = 1
-      if ($shardCount -gt 1) {
-        $shardIndex = [int]$env:SHARD_INDEX
-        . "$(Build.SourcesDirectory)\.pipelines\UiTestShards.Common.ps1"
-        $candidates = @($entries | ForEach-Object { $_.Name -replace '\.runtimeconfig\.json$', '' })
-        if ($runMwbSandbox) { $candidates += 'MouseWithoutBorders.UITests' }
-        $mine = @(Get-UiTestShardSuites -Suites $candidates -ShardIndex $shardIndex -ShardCount $shardCount -Platform '$(TestPlatform)')
-        $entries = @($entries | Where-Object { $mine -contains ($_.Name -replace '\.runtimeconfig\.json$', '') })
-        if ($runMwbSandbox -and $mine -notcontains 'MouseWithoutBorders.UITests') {
-          # Another shard owns MWB; turn off its cleanup, diagnostics and TRX requirement here too.
-          $runMwbSandbox = $false
-          Write-Host "##vso[task.setvariable variable=RunMwbSandbox]false"
-        }
-        if ($entries.Count -eq 0 -and -not $runMwbSandbox) {
-          Write-Host "Shard $shardIndex/$shardCount has no suites to run."
-        }
-      }
-
-      # Filter execution only: installer, signing and OS prerequisites above still use uiTestModules.
-      $executionRaw = '${{ join(';', parameters.uiTestExecutionModules) }}'
-      $diagnosticCohort = '${{ parameters.uiTestDiagnosticCohort }}' -eq 'True'
-      if ($diagnosticCohort -or -not [string]::IsNullOrWhiteSpace($executionRaw)) {
-        . "$(Build.SourcesDirectory)\.pipelines\UiTestShards.Common.ps1"
-        $available = @($entries | ForEach-Object { $_.Name -replace '\.runtimeconfig\.json$', '' })
-        if ($runMwbSandbox) { $available += 'MouseWithoutBorders.UITests' }
-        $cohort = @(Get-UiTestExecutionCohort -AvailableSuites $available `
-          -ExecutionSuites ($executionRaw -split ';') -ShardCount $shardCount)
-        $entries = @($entries | Where-Object { $cohort -contains ($_.Name -replace '\.runtimeconfig\.json$', '') })
-        if ($runMwbSandbox -and $cohort -notcontains 'MouseWithoutBorders.UITests') {
-          $runMwbSandbox = $false
-          Write-Host "##vso[task.setvariable variable=RunMwbSandbox]false"
-        }
-        Write-Host "Diagnostic execution cohort: $($cohort -join ', '); prerequisite selection: $modulesRaw"
+      $shardIndex = if ($shardCount -gt 1) { [int]$env:SHARD_INDEX } else { 1 }
+      $execution = @(if ($env:UI_TEST_EXECUTION_MODULES) { $env:UI_TEST_EXECUTION_MODULES -split ';' })
+      $plan = Select-UiTestExecutionPlan -Entries $entries -RunMwbSandbox $runMwbSandbox -Platform '$(TestPlatform)' `
+        -ShardCount $shardCount -ShardIndex $shardIndex -ExecutionModules $execution `
+        -DiagnosticCohort:('${{ parameters.uiTestDiagnosticCohort }}' -eq 'True')
+      $entries = $plan.Entries
+      if ($runMwbSandbox -and -not $plan.RunMwbSandbox) {
+        $runMwbSandbox = $false
+        Write-Host "##vso[task.setvariable variable=RunMwbSandbox]false"
       }
 
       $resultsDir = "$(Common.TestResultsDirectory)"
@@ -673,6 +669,7 @@ jobs:
         $exe = Join-Path $dir "$base.exe"
         $dll = Join-Path $dir "$base.dll"
         $suiteFailed = $false
+        $desktopWorkerUnconfirmed = $false
         $fixtureContext = $null
         $testFilter = if ($base -eq 'PowerDisplay.UITests') { $env:POWERDISPLAY_UI_TEST_FILTER } else { '' }
         Write-Host "##[group]Run UI tests: $base"
@@ -703,7 +700,7 @@ jobs:
               throw "$base requires its staged executable for non-elevated dispatch; missing runner: $exe"
             }
             & "$(build.sourcesdirectory)\.pipelines\runUiTestAsUser.ps1" `
-              -TestExecutable $exe -ResultsDirectory $resultsDir -Filter $testFilter
+              -TestExecutable $exe -ResultsDirectory $resultsDir -Filter $testFilter -DesktopWorkerUnconfirmed ([ref]$desktopWorkerUnconfirmed)
           } elseif (Test-Path $exe) {
             & $exe --report-trx --results-directory $resultsDir
           } elseif (Test-Path $dll) {
@@ -718,8 +715,7 @@ jobs:
         } catch {
           Write-Host "##vso[task.logissue type=error]UI tests failed for ${base}: $($_.Exception.Message)"
           $suiteFailed = $true
-          if ($nonElevatedSuites -contains $base) {
-            # A failed launcher may leave a desktop worker alive; do not overlap another suite.
+          if ($desktopWorkerUnconfirmed) {
             throw
           }
         } finally {
@@ -776,6 +772,8 @@ jobs:
     # set `env: { platform: $(TestPlatform) }`; the MTP migration to this pwsh step dropped it.
     env:
       platform: $(TestPlatform)
+      SELECTED_UI_TEST_MODULES: ${{ join(';', parameters.uiTestModules) }}
+      UI_TEST_EXECUTION_MODULES: ${{ join(';', parameters.uiTestExecutionModules) }}
       WINAPP_CLI_PATH: $(WINAPP_CLI_PATH)
       RUN_GENERIC_UI_TESTS: $(RunGenericUiTests)
       RUN_MWB_SANDBOX: $(RunMwbSandbox)

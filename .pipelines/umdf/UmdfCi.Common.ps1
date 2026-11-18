@@ -126,7 +126,7 @@ function Stop-UmdfFixture {
             if ($DeferRemovalToVmDisposal) {
                 $jobId = [guid]::Empty
                 if ($env:TF_BUILD -ne 'True' -or -not [guid]::TryParse($env:SYSTEM_JOBID, [ref]$jobId)) {
-                    throw 'Deferring UMDF removal requires an explicitly disposable Azure Pipelines job.'
+                    throw 'Deferring UMDF removal requires Azure Pipelines and a valid job ID; the caller must ensure the VM is disposable.'
                 }
                 New-Item -ItemType Directory -Path $Context.Arguments.ResultsDirectory -Force | Out-Null
                 [ordered]@{

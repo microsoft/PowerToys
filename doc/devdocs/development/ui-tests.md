@@ -294,7 +294,7 @@ explicit tool/runtime paths and are excluded from this fast gate.
   - `['FancyZones.UITests.Next', 'MouseUtils.UITests.Next']` - Multiple specific modules
   - Leave empty to build and run all UI test modules
 
-  **Important**: The `uiTestModules` parameter values must match both the test project names (for `.csproj` selection during build) and the test assembly names (for `.dll` execution during testing).
+  **Important**: The project file stem, assembly name and `tests/<stem>/` output folder must match, including case. Declare staged MSIX fixtures as `FileWrites Include="$(TargetDir)FixtureName.msix"`; the repository contract is tested in `.pipelines/tests/uiTestArtifacts.Tests.ps1`.
 
   **Mouse Without Borders**: Selecting `MouseWithoutBorders.UITests` automatically
   prepares its current-source x64 Release runtime bundle and runs the dedicated
@@ -315,6 +315,10 @@ explicit tool/runtime paths and are excluded from this fast gate.
   for failed, canceled or incomplete runs, including setup failures without TRX.
   Successful runs retain their normal test-result attachments without an extra
   prerequisite artifact.
+
+- **uiTestShardsX64Win10**, **uiTestShardsX64Win11**, **uiTestShardsArm64**: Number of workers per platform for fresh full builds, from 1 (default) to 6. Each worker uses the same [duration estimates](../../../.pipelines/uiTestDurations.json) to assign the longest remaining suite to the lightest shard. Unlisted suites use `defaultMinutes` (5); platform multipliers scale the printed estimates, not the assignments. Shared prerequisites (artifact selection/download, installer and signing where applicable) repeat per worker. Only the owning shard takes the full MWB servicing inventory, provisions Sandbox, or installs a suite's driver fixture.
+
+- **uiTestDiagnosticCohorts**: Optional execution-only groups, for example `[{"name":"Desktop","modules":["AdvancedPaste.UITests.Next","PreviewPane.UITests"]},{"name":"Sandbox","modules":["MouseWithoutBorders.UITests"]}]`. Include these suites in `uiTestModules` for shared prerequisites. Each cohort runs unsharded on a fresh x64 worker per selected x64 OS; use `buildPlatforms: [x64]` and `buildNow` or `buildNowSlim`, without smoke-only mode. Leave cohorts empty for normal CI.
 
 ### Build Modes
 

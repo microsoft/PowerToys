@@ -629,9 +629,16 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
     private Button GetProfileButton(int profileId, string buttonId)
     {
-        var button = FindVisibleProfileButton(profileId, buttonId);
+        var result = WaitHelper.WaitForStable(
+            () => FindVisibleProfileButton(profileId, buttonId),
+            candidate => candidate is not null,
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 1,
+            shouldRetryException: ex => ex is AssertFailedException &&
+                (ex.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase) ||
+                 ex.Message.Contains("RuntimeId hash", StringComparison.OrdinalIgnoreCase)));
+        var button = result.LastObservation;
         Assert.IsNotNull(button, $"Expected one visible {buttonId} for profile {profileId}.");
-        Assert.IsTrue(button.HelpText.Contains(ProfileName(profileId), StringComparison.Ordinal), $"The {buttonId} HelpText did not identify profile {profileId}.");
         return button;
     }
 
@@ -644,7 +651,12 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
             $"Settings did not obtain keyboard input. Foreground: {WindowControl.GetForegroundWindowInfo()}");
         var button = GetProfileButton(profileId, buttonId);
         button.Focus();
-        Assert.IsTrue(button.WaitForProperty("HasKeyboardFocus", "True"), $"{buttonId} for profile {profileId} did not receive keyboard focus.");
+        var focused = Session.GetFocused();
+        Assert.IsTrue(
+            focused.TryGetProperty("element", out var element) && element.ValueKind == JsonValueKind.Object &&
+            SnapshotText(element, "automationId") == buttonId &&
+            FindProfileRow(profileId) is { } row && IsInsideProfileRow(row, element),
+            $"{buttonId} for profile {profileId} did not receive keyboard focus.");
     }
 
     private void AssertStableOrder(string expectedOrder, int timeoutMS = 20_000)
@@ -681,13 +693,17 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
     private Button? FindVisibleProfileButton(int profileId, string buttonId)
     {
         var row = FindProfileRow(profileId);
-        var node = FindProfileButtonNode(row, buttonId);
-        if (node.ValueKind == JsonValueKind.Undefined)
+        if (row is null || row.IsOffscreen)
         {
             return null;
         }
 
-        return Session.Find<Button>(By.Slug(SnapshotText(node, "selector")), 1_000);
+        // Resolve by stable ID, not a RuntimeId from the earlier virtualized tree. HelpText is
+        // the profile DisplayName; check it on the live button immediately before returning it.
+        return Session.FindAll<Button>(By.AccessibilityId(buttonId), 0).SingleOrDefault(button =>
+            button.Width > 0 && button.Height > 0 && button.X >= row.X && button.Y >= row.Y &&
+            button.X + button.Width <= row.X + row.Width && button.Y + button.Height <= row.Y + row.Height &&
+            button.HelpText == row.Name);
     }
 
     private ProfileRow? FindProfileRow(int profileId) => FindProfileRow(ReadProfileRows(ReadProfilesTree()), profileId);
@@ -746,11 +762,14 @@ public sealed class PowerDisplayProfileKeyboardReorderingTests : UITestBase
 
         return SnapshotNodes(row.Tree).SingleOrDefault(node =>
             SnapshotText(node, "type") == "Button" && SnapshotText(node, "automationId") == buttonId &&
-            SnapshotOnscreen(node) && SnapshotNumber(node, "width") > 0 && SnapshotNumber(node, "height") > 0 &&
-            SnapshotNumber(node, "x") >= row.X && SnapshotNumber(node, "y") >= row.Y &&
-            SnapshotNumber(node, "x") + SnapshotNumber(node, "width") <= row.X + row.Width &&
-            SnapshotNumber(node, "y") + SnapshotNumber(node, "height") <= row.Y + row.Height);
+            SnapshotOnscreen(node) && IsInsideProfileRow(row, node));
     }
+
+    private static bool IsInsideProfileRow(ProfileRow row, JsonElement node) =>
+        SnapshotNumber(node, "width") > 0 && SnapshotNumber(node, "height") > 0 &&
+        SnapshotNumber(node, "x") >= row.X && SnapshotNumber(node, "y") >= row.Y &&
+        SnapshotNumber(node, "x") + SnapshotNumber(node, "width") <= row.X + row.Width &&
+        SnapshotNumber(node, "y") + SnapshotNumber(node, "height") <= row.Y + row.Height;
 
     private static IEnumerable<JsonElement> SnapshotNodes(JsonElement node)
     {

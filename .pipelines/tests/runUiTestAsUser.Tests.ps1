@@ -276,7 +276,7 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
             $requestFile = Get-ChildItem -LiteralPath $state.ResultsDirectory -Filter request.json -Recurse
             $state.CapturedRequest = Get-Content -LiteralPath $requestFile.FullName -Raw | ConvertFrom-Json
             if ($state.WriteStatus) {
-                $status = @{ RunId = $state.CapturedRequest.RunId }
+                $status = @{ RunId = $state.CapturedRequest.RunId; TestProcessInactive = $true }
                 foreach ($name in $state.StatusFields.Keys) {
                     $status[$name] = $state.StatusFields[$name]
                 }
@@ -556,10 +556,10 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
     It 'restores the DACL when registration fails' {
         $state.FailRegistration = $true
-
-        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory } |
+        $marker = [ref]$false
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -DesktopWorkerUnconfirmed $marker } |
             Should Throw 'registration failed'
-
+        $marker.Value | Should Be $false
         $state.AclWrites.Count | Should Be 2
         $state.AclWrites[1].Dacl | Should Be $state.OriginalDacl
         Assert-MockCalled Unregister-ScheduledTask -Times 0 -Exactly -Scope It
@@ -567,12 +567,21 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
     It 'restores the DACL even when task cleanup fails' {
         $state.FailCleanup = $true
-
-        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory } |
+        $marker = [ref]$false
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -DesktopWorkerUnconfirmed $marker } |
             Should Throw 'task cleanup failed'
-
+        $marker.Value | Should Be $false
         $state.AclWrites.Count | Should Be 2
         $state.AclWrites[1].Dacl | Should Be $state.OriginalDacl
+    }
+
+    It 'preserves uncertain worker lifetime through task cleanup errors' {
+        $state.FailCleanup = $true
+        $state.StatusFields.TestProcessInactive = $false
+        $marker = [ref]$false
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -DesktopWorkerUnconfirmed $marker } |
+            Should Throw 'task cleanup failed'
+        $marker.Value | Should Be $true
     }
 }
 
@@ -585,7 +594,7 @@ Describe 'UI-test pipeline non-elevated dispatch' {
             '(?ms)^ {8}\} catch \{\r?\n(?<body> {10}Write-Host "##vso\[task\.logissue type=error\]UI tests failed for \$\{base\}:.*?)(?=^ {8}\} finally \{)').Groups['body'].Value
         $handler | Should Not BeNullOrEmpty
         $base = 'MouseUtils.UITests.Next'
-        $nonElevatedSuites = @($base)
+        $desktopWorkerUnconfirmed = $true
         $suiteFailed = $false
         $dispatch = [scriptblock]::Create("try { throw 'injected launcher failure' } catch {`n$handler`n}")
 

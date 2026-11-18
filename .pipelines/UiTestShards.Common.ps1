@@ -21,7 +21,7 @@ function Get-UiTestShardPlan {
         if ($durations.suites.PSObject.Properties.Name -contains $_) {
             $minutes = [double]$durations.suites.$_
         }
-        [pscustomobject]@{ Suite = $_; Minutes = [math]::Round($minutes * $multiplier, 2) }
+        [pscustomobject]@{ Suite = $_; Minutes = $minutes }
     })
 
     $shards = @(1..$ShardCount | ForEach-Object {
@@ -35,6 +35,9 @@ function Get-UiTestShardPlan {
         $target.Minutes = [math]::Round($target.Minutes + $item.Minutes, 2)
     }
 
+    foreach ($shard in $shards) {
+        $shard.Minutes = [math]::Round($shard.Minutes * $multiplier, 2)
+    }
     return $shards
 }
 
@@ -51,7 +54,7 @@ function Get-UiTestShardSuites {
         throw "Shard index $ShardIndex is outside 1..$ShardCount."
     }
 
-    $plan = Get-UiTestShardPlan -Suites $Suites -ShardCount $ShardCount -Platform $Platform -DurationsPath $DurationsPath
+    $plan = @(Get-UiTestShardPlan -Suites $Suites -ShardCount $ShardCount -Platform $Platform -DurationsPath $DurationsPath)
     foreach ($shard in $plan) {
         $marker = if ($shard.Index -eq $ShardIndex) { '>>' } else { '  ' }
         Write-Host ("{0} shard {1}/{2} ~{3,6:N1} min: {4}" -f $marker, $shard.Index, $ShardCount, $shard.Minutes, ($shard.Suites -join ', '))
@@ -74,7 +77,34 @@ function Get-UiTestExecutionCohort {
         if ([string]::IsNullOrWhiteSpace($suite) -or $AvailableSuites -notcontains $suite) {
             throw "Diagnostic cohort suite is unavailable: '$suite'."
         }
+
         if (-not $seen.Add($suite)) { throw "Duplicate diagnostic cohort suite: '$suite'." }
     }
     return $ExecutionSuites
+}
+
+function Select-UiTestExecutionPlan {
+    param(
+        [object[]] $Entries,
+        [bool] $RunMwbSandbox,
+        [ValidateRange(1, 6)][int] $ShardCount = 1,
+        [int] $ShardIndex = 1,
+        [string] $Platform = 'x64Win11',
+        [string[]] $ExecutionModules = @(),
+        [switch] $DiagnosticCohort
+    )
+
+    $available = @($Entries | Where-Object { $_ } | ForEach-Object { $_.Name -replace '\.runtimeconfig\.json$', '' })
+    if ($RunMwbSandbox) { $available += 'MouseWithoutBorders.UITests' }
+    $selected = $available
+    if ($DiagnosticCohort -or $ExecutionModules.Count) {
+        $selected = @(Get-UiTestExecutionCohort -AvailableSuites $available -ExecutionSuites $ExecutionModules -ShardCount $ShardCount)
+        Write-Host "Diagnostic execution cohort: $($selected -join ', ')"
+    } elseif ($ShardCount -gt 1) {
+        $selected = @(Get-UiTestShardSuites -Suites $available -ShardCount $ShardCount -ShardIndex $ShardIndex -Platform $Platform)
+    }
+    [pscustomobject]@{
+        Entries = @($Entries | Where-Object { $_ -and $selected -contains ($_.Name -replace '\.runtimeconfig\.json$', '') })
+        RunMwbSandbox = $selected -contains 'MouseWithoutBorders.UITests'
+    }
 }

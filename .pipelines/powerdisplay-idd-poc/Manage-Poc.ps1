@@ -49,13 +49,22 @@ if ($Action -eq 'Cleanup') {
     $cleanupTraceDirectory = $null
     $errors = [Collections.Generic.List[string]]::new()
     try {
-        $lastBoot = (Get-CimInstance Win32_OperatingSystem -ErrorAction Stop).LastBootUpTime
-        if ($lastBoot -isnot [datetime]) { throw 'Cannot determine the guest boot identity for safe fixture cleanup.' }
-        $bootTicks = $lastBoot.ToUniversalTime().Ticks
-        $barrier = $state.PSObject.Properties['RemovalPendingBootTicks']
+        $boot = Get-WinEvent -FilterHashtable @{ LogName = 'System'; ProviderName = 'Microsoft-Windows-Kernel-General'; Id = 12 } -MaxEvents 1 -ErrorAction Stop
+        $bootRecord = $boot.RecordId
+        if ($bootRecord -isnot [long] -or $bootRecord -le 0) { throw 'Cannot determine the guest boot record for safe fixture cleanup.' }
+        $barrier = $state.PSObject.Properties['RemovalPendingBootRecord']
+        $legacy = $state.PSObject.Properties['RemovalPendingBootTicks']
+        if ($legacy) {
+            if ($barrier -or $legacy.Value -isnot [long] -or $legacy.Value -le 0) { throw 'Invalid fixture removal reboot barrier.' }
+            # Old timestamps cannot prove a reboot. Upgrade conservatively and require one from now.
+            $state.PSObject.Properties.Remove('RemovalPendingBootTicks')
+            $state | Add-Member -NotePropertyName RemovalPendingBootRecord -NotePropertyValue $bootRecord
+            Save-Journal
+            throw 'Legacy fixture removal journal requires an actual reboot before cleanup can retry.'
+        }
         if ($barrier) {
-            if ($barrier.Value -isnot [long] -or $barrier.Value -le 0) { throw 'Invalid fixture removal reboot barrier.' }
-            if ($bootTicks -le $barrier.Value) {
+            if (($barrier.Value -isnot [long] -and $barrier.Value -isnot [int]) -or $barrier.Value -le 0) { throw 'Invalid fixture removal reboot barrier.' }
+            if ($bootRecord -le $barrier.Value) {
                 throw 'An interrupted or reboot-required fixture removal requires an actual reboot before cleanup can retry.'
             }
         }
@@ -109,7 +118,7 @@ if ($Action -eq 'Cleanup') {
         $ownedInfs = @(Find-OwnedInfs)
         if ($devices.Count -or $ownedInfs.Count) {
             # Persist before PnP so disappearance or interruption cannot bypass a same-boot retry barrier.
-            $state | Add-Member -NotePropertyName RemovalPendingBootTicks -NotePropertyValue $bootTicks -Force
+            $state | Add-Member -NotePropertyName RemovalPendingBootRecord -NotePropertyValue $bootRecord -Force
             Save-Journal
             $removalCompleted = $false
             $rebootRequired = $false
@@ -122,7 +131,7 @@ if ($Action -eq 'Cleanup') {
             }
             finally {
                 if ($removalCompleted -and -not $rebootRequired) {
-                    $state.PSObject.Properties.Remove('RemovalPendingBootTicks')
+                    $state.PSObject.Properties.Remove('RemovalPendingBootRecord')
                     Save-Journal
                 }
             }

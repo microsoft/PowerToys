@@ -773,6 +773,7 @@ function Get-MwbRebootRegistryReport {
 }
 
 function Get-MwbImageServicingReport {
+    param([switch] $UseJobInventory)
     $report = [ordered]@{
         SchemaVersion = 1
         GeneratedUtc = [DateTime]::UtcNow.ToString('o')
@@ -798,6 +799,15 @@ function Get-MwbImageServicingReport {
         $report.OSBuildRevision = '{0}.{1}' -f $version.CurrentBuild, $version.UBR
     }
     catch { $errors.Add((Get-MwbDiagnosticError $_ 'UpdateRevisionQueryFailed')) }
+    if ($UseJobInventory) {
+        # The job-start report owns the expensive inventory; never reuse its reboot decisions.
+        $report.InventorySource = 'image-servicing-job-start.json'
+        $report.Remove('InstalledHotFixes')
+        $report.Remove('ServicingPackages')
+        $report.Remove('RebootChecksAfterInventory')
+        $report.QueryErrors = $errors.ToArray()
+        return $report
+    }
     try {
         $report.InstalledHotFixes = @(
             Get-HotFix -ErrorAction Stop | ForEach-Object {
@@ -838,7 +848,7 @@ function Get-MwbImageServicingReport {
 }
 
 function Get-MwbSandboxPrerequisiteReport {
-    param([string] $Platform)
+    param([string] $Platform, [switch] $UseJobInventory)
 
     # A stage that could not be evaluated (an earlier unrelated exception, or a
     # dependency the identity/environment does not support) is recorded explicitly in
@@ -853,7 +863,7 @@ function Get-MwbSandboxPrerequisiteReport {
         OSBuildNumber = $null
         OSVersionString = $null
         OSQueryError = $null
-        ImageServicing = Get-MwbImageServicingReport
+        ImageServicing = Get-MwbImageServicingReport -UseJobInventory:$UseJobInventory
         SandboxFeatureState = $null
         SandboxFeatureQueryError = $null
         AllUsersPackages = $null
@@ -930,7 +940,10 @@ function Write-MwbSandboxPrerequisiteReport {
     $directory = Get-MwbPrerequisiteDirectory $ResultsDirectory $RunId
     Assert-MwbCiPlainPath $directory
     $null = New-Item -ItemType Directory -Path $directory -Force
-    try { $report = Get-MwbSandboxPrerequisiteReport -Platform $Platform }
+    try {
+        $hasBaseline = Test-Path -LiteralPath (Join-Path $directory 'image-servicing-job-start.json') -PathType Leaf
+        $report = Get-MwbSandboxPrerequisiteReport -Platform $Platform -UseJobInventory:$hasBaseline
+    }
     catch {
         $report = [ordered]@{
             SchemaVersion = 3; CollectionContext = 'ElevatedPrepareInventory'

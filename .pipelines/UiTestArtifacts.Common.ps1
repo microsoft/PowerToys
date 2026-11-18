@@ -1,17 +1,21 @@
 # Copyright (c) Microsoft Corporation
 # The Microsoft Corporation licenses this file to you under the MIT license.
 
+function Assert-UiTestProjectStems {
+    param([string[]] $Modules)
+    foreach ($module in $Modules) {
+        if ($module -cnotmatch '\A[A-Za-z0-9][A-Za-z0-9._-]*\z') {
+            throw 'Invalid UI-test project stem: use only ASCII letters, digits, dots, underscores or hyphens.'
+        }
+    }
+}
+
 function Assert-UiTestArtifactPattern {
     param(
         [AllowEmptyString()][string] $Pattern,
         [string[]] $Modules = @()
     )
-
-    foreach ($module in $Modules) {
-        if ($module -notmatch '^[A-Za-z0-9][A-Za-z0-9._-]*$') {
-            throw "Invalid UI-test project stem: '$module'."
-        }
-    }
+    Assert-UiTestProjectStems $Modules
     $expected = if ($Modules.Count -eq 0) {
         @('**/tests/*UITest*/**')
     } else {

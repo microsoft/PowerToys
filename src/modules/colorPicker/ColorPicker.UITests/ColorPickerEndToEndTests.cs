@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -529,9 +528,9 @@ public class ColorPickerEndToEndTests : UITestBase
 
             // -- 14. Incomplete RGB/HEX edits must not remain visible after focus leaves -----
             editor.Find<Button>(By.AccessibilityId("CurrentColorButton"), timeoutMS: 2_000).Invoke();
-            var flyout = WindowsFinder.WaitForWindowByApp(
-                editor.ProcessId.ToString(CultureInfo.InvariantCulture),
-                window => window.ClassName == "Microsoft.UI.Content.PopupWindowSiteBridge",
+            var flyout = WindowsFinder.WaitForPopupContaining(
+                editor.ProcessId,
+                By.AccessibilityId("RNumberBox"),
                 timeoutMS: 5_000);
             Assert.IsNotNull(flyout, "The Adjust Color flyout did not expose its popup window.");
             Assert.IsTrue(

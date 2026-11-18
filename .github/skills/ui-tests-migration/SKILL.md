@@ -1,6 +1,6 @@
 ---
 name: ui-tests-migration
-description: "Create, migrate, and stabilize PowerToys UI tests with Microsoft.PowerToys.UITest.Next and winappcli, through local VM success, commit/push, and CI validation. Use for ports, new UITest projects, flaky CI tests, persistent Hyper-V validation, Settings IPC authentication/test signing, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or foreground failures. Covers APIs, scaffolding, test design, diagnostics, and the required handoff to ui-tests-pipeline-ci. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Settings IPC, not-microsoft-signed, Authenticode, local VM, Hyper-V, checkpoint, migrate, flaky, CI stability, Explorer, Shell extension, WebView2."
+description: "Create and stabilize PowerToys UI suites using the existing Microsoft.PowerToys.UITest.Next framework and winappcli. Use for new UITest projects, flaky CI, Settings IPC and signing, Explorer/Shell selection, preview and thumbnail handlers, hotkeys, foreground ownership, and WinUI/WebView visual assertions. Covers test design, Hyper-V validation and the required CI handoff. WinAppDriver/Selenium migration guidance is historical and applies only to older branches that still contain the legacy framework."
 license: Complete terms in LICENSE.txt
 ---
 

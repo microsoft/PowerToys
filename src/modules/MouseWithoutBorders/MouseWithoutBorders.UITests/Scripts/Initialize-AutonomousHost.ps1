@@ -97,7 +97,7 @@ elseif (-not [string]::IsNullOrWhiteSpace($SandboxWinAppPath)) {
     throw 'A Sandbox preview CLI is only accepted for the explicit WinApp backend.'
 }
 Write-ProvisioningPhase 'Checking pending image reboot'
-# Record CBS state diagnostically; the Sandbox feature and actual backend readiness gate this fixture.
+# Get-MwbImageServicingReport captures CBS RebootPending; only Windows Update RebootRequired blocks here.
 if (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired') {
     Write-ProvisioningPhase 'Pending image reboot confirmed'
     throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot before provisioning the test.'

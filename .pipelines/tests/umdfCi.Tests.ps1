@@ -117,7 +117,7 @@ Describe 'Shared UMDF fixture lifecycle orchestration' {
         $env:POWERTOYS_POWERDISPLAY_IDD_PROBE | Should Be $(if ($Suite -eq 'PowerDisplay.UITests') { 'preserved-parent-value' } else { 'temporary-fixture-value' })
     }
 
-    It 'refuses a deferred-removal request outside a disposable CI job: <Case>' -TestCases @(
+    It 'refuses a deferred-removal request without a valid Azure Pipelines job: <Case>' -TestCases @(
         @{ Case = 'local process'; Ci = ''; Job = 'a6a296ae-4044-427e-a3eb-8e1686f6b77c' }
         @{ Case = 'missing job'; Ci = 'True'; Job = '' }
     ) {
@@ -128,7 +128,7 @@ Describe 'Shared UMDF fixture lifecycle orchestration' {
         $env:TF_BUILD = $Ci
         $env:SYSTEM_JOBID = $Job
         $env:POWERTOYS_POWERDISPLAY_IDD_PROBE = 'temporary-fixture-value'
-        { Stop-UmdfFixture -Context $context -DeferRemovalToVmDisposal } | Should Throw 'disposable Azure Pipelines job'
+        { Stop-UmdfFixture -Context $context -DeferRemovalToVmDisposal } | Should Throw 'Azure Pipelines and a valid job ID'
         $script:actions.Count | Should Be 0
         Test-Path $context.Arguments.StatePath | Should Be $true
         $env:POWERTOYS_POWERDISPLAY_IDD_PROBE | Should Be 'preserved-parent-value'

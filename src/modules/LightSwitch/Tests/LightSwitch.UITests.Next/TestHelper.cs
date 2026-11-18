@@ -194,9 +194,9 @@ internal sealed class TestHelper
         scheduleUpdate = new LogCursor();
         RequireForeground();
         FindDescendant<Button>(pickerId, "Button").Invoke(msPostAction: 0);
-        var flyout = WindowsFinder.WaitForWindowByApp(
-            window.ProcessId.ToString(CultureInfo.InvariantCulture),
-            candidate => candidate.ClassName == "Microsoft.UI.Content.PopupWindowSiteBridge",
+        var flyout = WindowsFinder.WaitForPopupContaining(
+            window.ProcessId,
+            By.AccessibilityId("MinuteLoopingSelector"),
             timeoutMS: 10_000);
         Assert.IsNotNull(flyout, $"The {pickerId} time picker did not expose its popup window.");
         var minute = flyout.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);

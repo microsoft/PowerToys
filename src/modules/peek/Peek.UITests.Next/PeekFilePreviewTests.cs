@@ -226,9 +226,15 @@ public class PeekFilePreviewTests : UITestBase
         Assert.IsTrue(WindowControl.WaitForForeground(peekHandle), "Peek should own foreground before the Explorer recovery.");
 
         Assert.IsTrue(WindowControl.TryClickExposedCaption(explorer), "Explorer should expose a safe caption for physical activation.");
-        Assert.IsTrue(
-            SetAndWaitForExplorerSelection(explorerWindowHandle, [imagePath], imagePath, ExplorerOpenTimeoutMS),
-            "The original Explorer HWND should regain foreground with the exact selected and focused file.");
+
+        // Observe only: another activation or selection write would hide a missed caption click.
+        var restored = WaitHelper.WaitForStable(
+            () => WindowControl.GetForegroundWindowHandle() == explorer ? ExplorerShell.TryGetSelection(explorer) : null,
+            selection => selection is not null && selection.SelectedPaths.SetEquals([imagePath]) &&
+                string.Equals(selection.FocusedPath, imagePath, StringComparison.OrdinalIgnoreCase),
+            ExplorerOpenTimeoutMS,
+            ExplorerSelectionStableSamples);
+        Assert.IsTrue(restored.Succeeded, "The caption click should restore the original Explorer foreground without changing its selection or focused item.");
         Assert.IsTrue(
             WindowsFinder.ListByApp(PeekProcessName).Any(window => window.Hwnd == peek.WindowHandle),
             "Foreground recovery must not close or restart the existing Peek window.");

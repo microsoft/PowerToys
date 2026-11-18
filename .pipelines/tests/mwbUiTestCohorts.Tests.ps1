@@ -52,63 +52,72 @@ Describe 'Controlled UI execution cohorts' {
 
 Describe 'Diagnostic execution leaves prerequisite selection unchanged' {
     BeforeEach {
-        $repository = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-        $yaml = Get-Content (Join-Path $repository '.pipelines\v2\templates\job-test-project.yml') -Raw
-        $block = [regex]::Match($yaml, '(?ms)^      # Filter execution only:.*?(?=^      \$resultsDir =)').Value
-        if (-not $block) { throw 'Diagnostic execution block was not found.' }
         $entries = @(
             [pscustomobject]@{ Name = 'AdvancedPaste.UITests.Next.runtimeconfig.json' }
             [pscustomobject]@{ Name = 'PreviewPane.UITests.runtimeconfig.json' }
         )
-        $modulesRaw = 'AdvancedPaste.UITests.Next;PreviewPane.UITests;MouseWithoutBorders.UITests'
-        $runMwbSandbox = $true
-        $shardCount = 1
     }
 
     It 'keeps desktop execution separate from Sandbox execution' {
-        $block = $block.Replace('${{ join('';'', parameters.uiTestExecutionModules) }}',
-            'AdvancedPaste.UITests.Next;PreviewPane.UITests').Replace('${{ parameters.uiTestDiagnosticCohort }}', 'True')
-        $block = $block.Replace('$(Build.SourcesDirectory)', $repository)
-        . ([scriptblock]::Create($block))
-
-        $entries.Count | Should Be 2
-        $runMwbSandbox | Should Be $false
-        $modulesRaw | Should Be 'AdvancedPaste.UITests.Next;PreviewPane.UITests;MouseWithoutBorders.UITests'
+        $plan = Select-UiTestExecutionPlan $entries $true -DiagnosticCohort -ExecutionModules 'AdvancedPaste.UITests.Next','PreviewPane.UITests'
+        $plan.Entries.Count | Should Be 2
+        $plan.RunMwbSandbox | Should Be $false
     }
 
     It 'runs only Sandbox while preserving the original installer and signing selection' {
-        $block = $block.Replace('${{ join('';'', parameters.uiTestExecutionModules) }}',
-            'MouseWithoutBorders.UITests').Replace('${{ parameters.uiTestDiagnosticCohort }}', 'True')
-        $block = $block.Replace('$(Build.SourcesDirectory)', $repository)
-        . ([scriptblock]::Create($block))
-
-        $entries.Count | Should Be 0
-        $runMwbSandbox | Should Be $true
-        $modulesRaw | Should Be 'AdvancedPaste.UITests.Next;PreviewPane.UITests;MouseWithoutBorders.UITests'
+        $plan = Select-UiTestExecutionPlan $entries $true -DiagnosticCohort -ExecutionModules 'MouseWithoutBorders.UITests'
+        $plan.Entries.Count | Should Be 0
+        $plan.RunMwbSandbox | Should Be $true
+        $entries.Count | Should Be 2
     }
 
     It 'rejects an empty diagnostic request instead of running the entire selection' {
-        $block = $block.Replace('${{ join('';'', parameters.uiTestExecutionModules) }}',
-            '').Replace('${{ parameters.uiTestDiagnosticCohort }}', 'True')
-        $block = $block.Replace('$(Build.SourcesDirectory)', $repository)
-        $emptyCohortScript = [scriptblock]::Create($block)
-
-        $refusal = $null
-        try {
-            . $emptyCohortScript
-        }
-        catch {
-            $refusal = $_.Exception.Message
-        }
-        $refusal | Should Match 'Diagnostic cohort suite is unavailable|at least one suite'
+        { Select-UiTestExecutionPlan $entries $true -DiagnosticCohort } | Should Throw 'at least one suite'
     }
 
     It 'does not alter normal execution when diagnostics are disabled' {
-        $block = $block.Replace('${{ join('';'', parameters.uiTestExecutionModules) }}',
-            '').Replace('${{ parameters.uiTestDiagnosticCohort }}', 'False')
-        . ([scriptblock]::Create($block))
+        $plan = Select-UiTestExecutionPlan $entries $true
+        $plan.Entries.Count | Should Be 2
+        $plan.RunMwbSandbox | Should Be $true
+    }
 
-        $entries.Count | Should Be 2
-        $runMwbSandbox | Should Be $true
+    It 'assigns each runtime entry and Sandbox to exactly one executing worker' {
+        $jobs = @(1..3 | ForEach-Object { Select-UiTestExecutionPlan $entries $true -ShardCount 3 -ShardIndex $_ })
+        @($jobs | Where-Object RunMwbSandbox).Count | Should Be 1
+        ($jobs.Entries.Name | Sort-Object) -join ',' | Should Be (($entries.Name | Sort-Object) -join ',')
+    }
+}
+
+Describe 'Deterministic UI suite sharding' {
+    BeforeEach {
+        $durations = Join-Path $TestDrive 'durations.json'
+        '{"suites":{"A":8,"B":6,"C":3,"D":3},"defaultMinutes":2,"platformMultipliers":{"arm64":1.5}}' |
+            Set-Content -LiteralPath $durations
+    }
+
+    It 'makes a complete disjoint stable partition for <Count> shards' -TestCases @(1..6 | ForEach-Object { @{ Count = $_ } }) {
+        param($Count)
+        $names = @('D','A','E','B','F','C')
+        $plan = @(Get-UiTestShardPlan $names $Count -DurationsPath $durations)
+        $plan.Count | Should Be $Count
+        (@($plan | ForEach-Object { $_.Suites } | Sort-Object) -join ',') | Should Be 'A,B,C,D,E,F'
+        $expected = ($plan | ForEach-Object { $_.Suites -join ',' }) -join ';'
+        [array]::Reverse($names)
+        foreach ($platform in @('x64Win11','arm64')) {
+            $again = @(Get-UiTestShardPlan $names $Count -Platform $platform -DurationsPath $durations)
+            (($again | ForEach-Object { $_.Suites -join ',' }) -join ';') | Should Be $expected
+        }
+    }
+
+    It 'packs heaviest first with a default weight for unknown suites and scales the displayed estimate' {
+        $plan = @(Get-UiTestShardPlan @('E','B','A','F','D','C') 2 -Platform arm64 -DurationsPath $durations)
+        ($plan[0].Suites -join ',') | Should Be 'A,D,F'
+        ($plan[1].Suites -join ',') | Should Be 'B,C,E'
+        $plan[0].Minutes | Should Be 19.5
+        $plan[1].Minutes | Should Be 16.5
+    }
+
+    It 'rejects a shard index outside the plan' {
+        { Get-UiTestShardSuites @('A') -ShardIndex 3 -ShardCount 2 -DurationsPath $durations } | Should Throw 'outside'
     }
 }

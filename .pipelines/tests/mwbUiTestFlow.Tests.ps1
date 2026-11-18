@@ -14,7 +14,6 @@ function Get-UiTestFlowStep {
     $step = @($steps | Where-Object { $_.Groups['name'].Value -eq $Name })
     if ($step.Count -ne 1) { throw "Expected one pipeline step named $Name." }
     ([regex]::Replace($step[0].Groups['script'].Value, '(?m)^      ', '')).
-        Replace('${{ join('';'', parameters.uiTestExecutionModules) }}', '').
         Replace('${{ parameters.uiTestDiagnosticCohort }}', 'False')
 }
 
@@ -108,6 +107,7 @@ Describe 'Shared UI pipeline dispatch without host mutation' {
         $fixture = (New-Item -ItemType Directory (Join-Path $TestDrive ([guid]::NewGuid().ToString('N')))).FullName
         $mwb = (New-Item -ItemType Directory "$fixture\.pipelines\mwb" -Force).FullName
         Copy-Item "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1" $mwb
+        Copy-Item "$PSScriptRoot\..\UiTestShards.Common.ps1", "$PSScriptRoot\..\uiTestDurations.json" "$fixture\.pipelines"
         $umdf = New-Item -ItemType Directory "$fixture\.pipelines\umdf" -Force
         Copy-Item "$PSScriptRoot\..\umdf\UmdfCi.Common.ps1" $umdf.FullName
         $phase = @'
@@ -143,7 +143,8 @@ function Restore-LightSwitchLocation {
         $environment = @{}
         foreach ($name in @('POWERTOYS_INSTALL_DIR', 'useInstallerForTest', 'MWB_FLOW_LOG', 'MWB_FLOW_FAILURE',
             'RUN_GENERIC_UI_TESTS', 'RUN_MWB_SANDBOX', 'MWB_SELECTION_BLOCKED', 'AUTO_UI_TEST_MODULES',
-            'TF_BUILD', 'SYSTEM_JOBID', 'POWERTOYS_POWERDISPLAY_IDD_PROBE')) {
+            'TF_BUILD', 'SYSTEM_JOBID', 'POWERTOYS_POWERDISPLAY_IDD_PROBE', 'SELECTED_UI_TEST_MODULES',
+            'UI_TEST_EXECUTION_MODULES', 'SHARD_COUNT', 'SHARD_INDEX')) {
             $environment[$name] = [Environment]::GetEnvironmentVariable($name)
         }
         $env:POWERTOYS_INSTALL_DIR = 'original-product'
@@ -151,6 +152,9 @@ function Restore-LightSwitchLocation {
         $env:MWB_FLOW_LOG = Join-Path $fixture 'phases.log'
         $env:MWB_FLOW_FAILURE = ''
         $env:AUTO_UI_TEST_MODULES = ''
+        $env:SELECTED_UI_TEST_MODULES = 'ColorPicker.UITests;MouseWithoutBorders.UITests'
+        $env:UI_TEST_EXECUTION_MODULES = ''
+        $env:SHARD_COUNT = '1'
         $env:MWB_SELECTION_BLOCKED = 'false'
         $env:RUN_MWB_SANDBOX = 'true'
         $env:RUN_GENERIC_UI_TESTS = 'true'
@@ -169,6 +173,9 @@ function Restore-LightSwitchLocation {
         @{ Scenario = 'unrelated selection'; Platform = 'x64Win10'; Generic = $true; Mwb = $false; Failure = ''; Blocked = $false; Expected = 'Generic'; ExitCode = 0 }
         @{ Scenario = 'ARM64'; Platform = 'arm64'; Generic = $true; Mwb = $false; Failure = ''; Blocked = $false; Expected = 'Generic'; ExitCode = 0 }
         @{ Scenario = 'generic failure'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'Generic'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
+        @{ Scenario = 'missing non-elevated executable'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'MissingRunner'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
+        @{ Scenario = 'confirmed worker timeout'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'CompletedWorker'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
+        @{ Scenario = 'unconfirmed worker'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'UnconfirmedWorker'; Blocked = $false; Expected = 'Generic'; ExitCode = 1 }
         @{ Scenario = 'client setup failure'; Platform = 'x64Win11'; Generic = $true; Mwb = $true; Failure = 'Install'; Blocked = $false; Expected = 'Generic,Install'; ExitCode = 1 }
         @{ Scenario = 'preparation failure'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'Prepare'; Blocked = $false; Expected = 'Generic,Prepare'; ExitCode = 1 }
         @{ Scenario = 'test failure'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'Run'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
@@ -180,14 +187,27 @@ function Restore-LightSwitchLocation {
         $env:RUN_MWB_SANDBOX = $Mwb.ToString().ToLowerInvariant()
         $env:MWB_SELECTION_BLOCKED = $Blocked.ToString().ToLowerInvariant()
         $env:MWB_FLOW_FAILURE = $Failure
+        if ($Failure -in @('MissingRunner','CompletedWorker','UnconfirmedWorker')) {
+            $env:SELECTED_UI_TEST_MODULES += ';MouseUtils.UITests.Next'
+            $suite = 'MouseUtils.UITests.Next'
+            $runner = New-Item -ItemType Directory "$fixture\artifact\tests\$suite" -Force
+            '{}' | Set-Content "$runner\$suite.runtimeconfig.json"
+            if ($Failure -ne 'MissingRunner') {
+                'fixture' | Set-Content "$runner\$suite.exe"
+                @'
+param($TestExecutable, $ResultsDirectory, $Filter, [ref]$DesktopWorkerUnconfirmed)
+$DesktopWorkerUnconfirmed.Value = $env:MWB_FLOW_FAILURE -eq 'UnconfirmedWorker'
+throw 'fixture launcher failure'
+'@ | Set-Content "$fixture\.pipelines\runUiTestAsUser.ps1"
+            }
+        }
         $step = Get-UiTestFlowStep 'Run UI Tests'
         $step = $step.Replace('$(Pipeline.Workspace)\$(TestArtifactsName)', "$fixture\artifact").
             Replace('$(Build.SourcesDirectory)', $fixture).Replace('$(build.sourcesdirectory)', $fixture).
             Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
             Replace('$(System.JobId)', [guid]::NewGuid().ToString()).Replace('$(TestPlatform)', $Platform).
             Replace('$(BuildPlatform)', $(if ($Platform -eq 'arm64') { 'arm64' } else { 'x64' })).
-            Replace('$(Build.SourceVersion)', 'revision').Replace('$(BuildConfiguration)', 'Release').
-            Replace('${{ join('';'', parameters.uiTestModules) }}', 'ColorPicker.UITests;MouseWithoutBorders.UITests')
+            Replace('$(Build.SourceVersion)', 'revision').Replace('$(BuildConfiguration)', 'Release')
         $prefix = @'
 $PSStyle.OutputRendering = 'PlainText'
 function dotnet {
@@ -206,7 +226,7 @@ function dotnet {
             $result.Output | Should Match ([regex]::Escape("MWB phase stdout: $phase"))
             $result.Output | Should Match ([regex]::Escape("MWB phase stderr: $phase"))
         }
-        if ($Mwb -and $Failure -notin @('Install', 'Prepare', 'Run')) {
+        if ($Mwb -and $Failure -notin @('Install', 'Prepare', 'Run','UnconfirmedWorker')) {
             $result.Output | Should Match 'variable=MwbUiTestsPassed\]true'
         } else {
             $result.Output | Should Not Match 'variable=MwbUiTestsPassed\]true'
@@ -223,13 +243,14 @@ function dotnet {
         $env:TF_BUILD = 'True'
         $env:SYSTEM_JOBID = [guid]::NewGuid().ToString()
         $env:MWB_FLOW_FAILURE = $Failure
+        $env:SELECTED_UI_TEST_MODULES = 'ColorPicker.UITests;GrabAndMove.UITests;PowerDisplay.UITests;MouseWithoutBorders.UITests'
         foreach ($suite in @('GrabAndMove.UITests', 'PowerDisplay.UITests')) {
             $runner = New-Item -ItemType Directory "$fixture\artifact\tests\$suite" -Force
             '{}' | Set-Content "$runner\$suite.runtimeconfig.json"
             'not-executable' | Set-Content "$runner\$suite.exe"
         }
         @'
-param($TestExecutable, $ResultsDirectory, $Filter)
+param($TestExecutable, $ResultsDirectory, $Filter, [ref]$DesktopWorkerUnconfirmed)
 $suite = [IO.Path]::GetFileNameWithoutExtension($TestExecutable)
 $suite | Add-Content $env:MWB_FLOW_LOG
 $global:LASTEXITCODE = if ($env:MWB_FLOW_FAILURE -eq $suite) { 23 } else { 0 }
@@ -254,9 +275,7 @@ New-Item -ItemType Directory (Split-Path $StatePath -Parent) -Force | Out-Null
             Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
             Replace('$(System.JobId)', $env:SYSTEM_JOBID).Replace('$(TestPlatform)', 'x64Win10').
             Replace('$(BuildPlatform)', 'x64').Replace('$(Build.SourceVersion)', 'revision').
-            Replace('$(BuildConfiguration)', 'Release').
-            Replace('${{ join('';'', parameters.uiTestModules) }}',
-                'ColorPicker.UITests;GrabAndMove.UITests;PowerDisplay.UITests;MouseWithoutBorders.UITests')
+            Replace('$(BuildConfiguration)', 'Release')
         $prefix = @'
 function dotnet {
     'Generic' | Add-Content $env:MWB_FLOW_LOG
