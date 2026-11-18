@@ -246,7 +246,7 @@ namespace ViewModelTests
 
             // In the dialog, after the privacy note and the near-miss note; in the panel, right under Copy.
             XElement box = RepositoryFiles.WithName(page, "ReplacementBox");
-            Assert.AreSame(RepositoryFiles.WithName(page, "HistoryOffNote"), box.ElementsAfterSelf().ElementAt(2));
+            Assert.AreSame(RepositoryFiles.WithName(page, "HistoryOffNote"), box.ElementsAfterSelf().First().Elements().ElementAt(2));
             Assert.AreSame(RepositoryFiles.WithName(page, "ClipboardHistoryOffNote"), RepositoryFiles.WithName(page, "ClipboardCopyBox").ElementsAfterSelf().First());
         }
 

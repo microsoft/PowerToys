@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.TextExpander.UITests;
 internal sealed class SnippetEditor
 {
     public const string ProcessName = "PowerToys.TextExpander.Editor";
-    public const string Title = "PowerToys Text Expander - Manage snippets";
+    public const string Title = "Text expander";
 
     private const string TriggerId = "TextExpander_Trigger";
     private const string ReplacementId = "TextExpander_Replacement";

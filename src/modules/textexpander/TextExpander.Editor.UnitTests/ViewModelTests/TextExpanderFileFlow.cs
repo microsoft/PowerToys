@@ -111,8 +111,8 @@ namespace ViewModelTests
             CollectionAssert.AreEqual(
                 new[]
                 {
-                    new TextExpanderSyncStep("Select ", "Move snippets database\u2026", " and save it in OneDrive or another synced folder."),
-                    new TextExpanderSyncStep("On each of your other PCs, select ", "Sync from another PC\u2026", " and pick that database."),
+                    new TextExpanderSyncStep("Select ", "Move snippets database..", " and save it in OneDrive or another synced folder."),
+                    new TextExpanderSyncStep("On each of your other PCs, select ", "Sync from another PC..", " and pick that database."),
                 },
                 local.SyncSteps.ToArray());
 
@@ -121,8 +121,8 @@ namespace ViewModelTests
             Assert.IsTrue(inOneDrive.IsSnippetsFileInOneDrive);
             Assert.AreEqual("Use these snippets on your other PCs", inOneDrive.SyncHeading);
             TextExpanderSyncStep note = inOneDrive.SyncSteps.Single();
-            Assert.AreEqual("Sync from another PC\u2026", note.Button, "The button's name is shown bold.");
-            Assert.AreEqual("On each PC, select Sync from another PC\u2026 and pick this database.", note.Before + note.Button + note.After);
+            Assert.AreEqual("Sync from another PC..", note.Button, "The button's name is shown bold.");
+            Assert.AreEqual("On each PC, select Sync from another PC.. and pick this database.", note.Before + note.Button + note.After);
         }
 
         [TestMethod]

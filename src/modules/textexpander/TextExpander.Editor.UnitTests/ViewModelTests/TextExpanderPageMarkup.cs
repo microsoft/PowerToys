@@ -43,7 +43,6 @@ namespace ViewModelTests
         // Loaded by name or set through x:Uid, so nothing but this test notices one going missing.
         private static readonly string[] EditorKeys =
         {
-            "Attribution_TextExpander.Content",
             "TextExpander_SnippetFile_SyncHeading",
             "TextExpander_SnippetFile_SyncStepMove",
             "TextExpander_SnippetFile_SyncStepUse",
@@ -159,9 +158,6 @@ namespace ViewModelTests
             Assert.AreEqual("{x:Bind AddSnippetLabel}", (string)add.Attribute("AutomationProperties.LabeledBy"));
             Assert.AreEqual("TextExpander_AddSnippetButton", (string)WithName(add, "AddSnippetLabel").Attribute(Uid));
 
-            // The count isn't shown over the empty state (E35).
-            Assert.AreEqual("{x:Bind ViewModel.ShowsSnippetCount, Mode=OneWay}", (string)WithName(page, "SnippetsHeading").Parent.Attribute("Visibility"));
-
             // The caption buttons follow the theme (E01), and the dialog is named for what it does (E09).
             string app = Text(EditorApp);
             StringAssert.Contains(app, "_window.ExtendsContentIntoTitleBar = true;");
@@ -171,20 +167,59 @@ namespace ViewModelTests
         }
 
         [TestMethod]
-        public void AttributionCreditsTheAuthorAndLinksToTheCurrentPublicWebsite()
+        public void TheSnippetHeadingIsAboveTheCardWithoutACountOrHeaderDivider()
         {
-            XElement link = WithUid(Xml(EditorPage), "Attribution_TextExpander");
-            Assert.AreEqual("HyperlinkButton", link.Name.LocalName);
-            Assert.AreEqual("https://howdygary.github.io/text-expander/", (string)link.Attribute("NavigateUri"));
+            XDocument page = Xml(EditorPage);
+            XElement heading = WithName(page, "SnippetsHeading");
+            XElement card = WithName(page, "SnippetsCard");
 
-            // With Good to know, behind its button, which also has the input method note.
-            XElement flyout = link.Ancestors().First(element => element.Name.LocalName == "Flyout");
-            Assert.AreEqual("TextExpander_GoodToKnowButton", (string)flyout.Parent.Parent.Attribute(Uid));
-            Assert.AreEqual("GoodToKnowFlyout", (string)flyout.Attribute(Name), "A flyout's name is its AutomationId.");
-            WithUid(flyout, "TextExpander_PrivacyNotice_InputMethod");
+            Assert.AreSame(card.Parent, heading.Parent);
+            Assert.AreEqual("1", (string)heading.Attribute("Grid.Row"));
+            Assert.AreEqual("2", (string)card.Attribute("Grid.Row"));
+            Assert.IsFalse(card.Elements().Any(element => element.Name.LocalName == "Rectangle"));
+            Assert.IsFalse(page.Descendants().Any(element => ((string)element.Attribute("Text"))?.Contains("SnippetCountText", StringComparison.Ordinal) == true));
+            Assert.AreEqual("{x:Bind SnippetsHeading}", (string)WithName(card, "SnippetList").Attribute("AutomationProperties.LabeledBy"));
+        }
 
-            XElement credit = Xml(EditorResources).Root.Elements("data").Single(data => (string)data.Attribute("name") == "Attribution_TextExpander.Content");
-            Assert.AreEqual("Created by Gary Hsu", (string)credit.Element("value"));
+        [TestMethod]
+        public void SnippetRowsCenterTheirTriggerDescriptionPreviewAndMenu()
+        {
+            XDocument page = Xml(EditorPage);
+            foreach (string key in new[] { "TriggerKeycapStyle", "RowChipStyle" })
+            {
+                XElement style = page.Descendants().Single(element => (string)element.Attribute(XName.Get("Key", Name.NamespaceName)) == key);
+                Assert.AreEqual("Center", (string)style.Elements().Single(element => (string)element.Attribute("Property") == "VerticalAlignment").Attribute("Value"));
+            }
+
+            XElement list = WithName(page, "SnippetList");
+            XElement lead = list.Descendants().Single(element => (string)element.Attribute("Segments") == "{x:Bind LeadSegments, Mode=OneWay}");
+            XElement menu = WithUid(list, "TextExpander_MoreOptions");
+            Assert.AreEqual("Center", (string)lead.Attribute("VerticalAlignment"));
+            Assert.AreEqual("Center", (string)menu.Attribute("VerticalAlignment"));
+            Assert.IsNull(lead.Attribute("Margin"));
+            Assert.IsNull(menu.Attribute("Margin"));
+            Assert.IsNull(menu.Parent.Attribute("RowSpacing"), "Hidden warnings must not leave space beneath the centered row.");
+        }
+
+        [TestMethod]
+        public void SnippetFieldsMatchHeightsAndInsertVariableUsesACompactHyperlink()
+        {
+            XElement dialog = WithName(Xml(EditorPage), "SnippetDialog");
+            XElement trigger = WithName(dialog, "TriggerBox");
+            XElement replacement = WithName(dialog, "ReplacementBox");
+            XElement insert = WithName(dialog, "InsertVariableButton");
+            Assert.AreSame(trigger.Parent.Parent, replacement.Parent);
+            Assert.AreSame(replacement.Parent, insert.Parent.Parent);
+            Assert.AreEqual((string)replacement.Attribute("Grid.Row"), (string)trigger.Parent.Attribute("Grid.Row"));
+            Assert.AreEqual((string)replacement.Attribute("Margin"), (string)trigger.Parent.Attribute("Margin"));
+            Assert.AreEqual((string)replacement.Attribute("MinHeight"), (string)trigger.Attribute("MinHeight"));
+            Assert.AreEqual((string)replacement.Attribute("MaxHeight"), (string)trigger.Attribute("MaxHeight"));
+            Assert.AreEqual("HyperlinkButton", insert.Name.LocalName);
+            Assert.AreEqual("0", (string)insert.Attribute("Padding"));
+            Assert.AreEqual("0", (string)insert.Attribute("MinHeight"));
+            Assert.AreEqual("InsertVariableButton_Click", (string)insert.Attribute("Click"));
+            WithName(insert, "VariableFlyout");
+            StringAssert.Contains(Member(Text(EditorPage + ".cs"), "private void InsertVariableButton_Click("), "FlyoutBase.ShowAttachedFlyout(InsertVariableButton)");
         }
 
         [TestMethod]
@@ -194,7 +229,7 @@ namespace ViewModelTests
             XDocument page = Xml(EditorPage);
             XElement caption = WithName(page, "SensitiveInfoWarning");
             Assert.AreEqual("TextExpander_Dialog_SensitiveInfo", (string)caption.Attribute(Uid));
-            Assert.AreEqual("ReplacementBox", (string)caption.Parent.ElementsBeforeSelf().Last().Attribute(Name));
+            Assert.AreEqual("ReplacementBox", (string)caption.Parent.Parent.ElementsBeforeSelf().Last().Attribute(Name));
             StringAssert.Contains(Text(EditorPage + ".cs"), "AutomationProperties.SetHelpText(ReplacementBox, $\"{AutomationProperties.GetHelpText(ReplacementBox)} {SensitiveInfoWarning.Text}\".Trim());");
 
             // W5b: the first bullet of Good to know, in its long form.
@@ -209,6 +244,14 @@ namespace ViewModelTests
         public void EmptyStatusDoesNotReserveSpaceAboveSnippetRows()
         {
             Assert.AreEqual("Collapsed", (string)WithName(Xml(EditorPage), "SnippetStatus").Attribute("Visibility"));
+        }
+
+        [TestMethod]
+        public void SnippetChangesAnnounceWithoutShowingASuccessBanner()
+        {
+            string announce = Member(Text(EditorPage + ".cs"), "private void AnnounceSnippetChange(");
+            StringAssert.Contains(announce, "Announce(SnippetList, message, \"textExpanderSnippetChanged\")");
+            Assert.IsFalse(announce.Contains("SetSnippetStatus(", StringComparison.Ordinal));
         }
 
         [TestMethod]
@@ -338,9 +381,12 @@ namespace ViewModelTests
             XElement button = WithName(Xml(EditorPage), "SnippetFolderButton");
             Assert.AreEqual("{x:Bind ViewModel.CanEditSnippets}", (string)button.Attribute("IsEnabled"));
             Assert.AreEqual("{x:Bind ViewModel.SnippetFolderLabel, Mode=OneWay}", (string)button.Attribute("AutomationProperties.Name"));
+            Assert.AreEqual("{StaticResource SubtleDropDownButtonStyle}", (string)button.Attribute("Style"));
+            Assert.IsNull(button.Attribute("Background"));
+            Assert.IsNull(button.Attribute("BorderBrush"));
 
             XElement flyout = WithName(button, "SnippetFolderFlyout");
-            Assert.IsTrue(flyout.Descendants().Any(element => (string)element.Attribute("Text") == "{x:Bind ViewModel.SnippetFileSummary, Mode=OneWay}"));
+            Assert.IsTrue(flyout.Descendants().Any(element => (string)element.Attribute("Text") == "{x:Bind ViewModel.SnippetFolderLabel, Mode=OneWay}"));
 
             // FL4: within WinUI's 456 px for a flyout with its padding; the advice on other PCs has its own region, between
             // the file's own actions and the two that change the file.

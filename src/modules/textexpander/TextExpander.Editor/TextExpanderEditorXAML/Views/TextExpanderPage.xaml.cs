@@ -443,6 +443,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
             FocusAfterLayout(ReplacementBox);
         }
 
+        private void InsertVariableButton_Click(object sender, RoutedEventArgs e) => FlyoutBase.ShowAttachedFlyout(InsertVariableButton);
+
         private void InsertVariable_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not MenuFlyoutItem item || item.Tag is not string token)
@@ -1409,7 +1411,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
                 message += " " + ResourceLoaderInstance.ResourceLoader.GetString("TextExpander_SearchStillActive");
             }
 
-            SetSnippetStatus(message, "textExpanderSnippetChanged");
+            Announce(SnippetList, message, "textExpanderSnippetChanged");
         }
 
         private void SetSnippetStatus(string text, string activityId = null)

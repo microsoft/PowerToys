@@ -174,7 +174,7 @@ namespace ViewModelTests
             // Right under the box and its privacy note, so Tab from the box reaches Use next.
             XElement box = RepositoryFiles.WithName(page, "ReplacementBox");
             XElement note = RepositoryFiles.WithName(page, "NearMissNote");
-            Assert.AreSame(note, box.ElementsAfterSelf().ElementAt(1), "The privacy note, then this one.");
+            Assert.AreSame(note, box.ElementsAfterSelf().First().Elements().ElementAt(1), "The privacy note, then this one.");
             Assert.AreEqual("Collapsed", (string)note.Attribute("Visibility"));
             XElement use = RepositoryFiles.WithName(note, "NearMissUseButton");
             Assert.AreEqual("NearMissUse_Click", (string)use.Attribute("Click"));

@@ -49,7 +49,6 @@
                                 <!--  Only Automatic chooses by length, so the other methods disable it.  -->
                                 <tkcontrols:SettingsCard
                                     x:Uid="TextExpander_ClipboardThreshold"
-                                    HeaderIcon="{ui:FontIcon Glyph=&#xE8C8;}"
                                     IsEnabled="{x:Bind ViewModel.IsClipboardThresholdEnabled, Mode=OneWay}">
                                     <NumberBox
                                         MinWidth="{StaticResource SettingActionControlMinWidth}"

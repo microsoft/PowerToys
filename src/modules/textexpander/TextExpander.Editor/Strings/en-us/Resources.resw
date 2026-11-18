@@ -113,11 +113,11 @@
     <value>Not available while PowerToys runs as administrator</value>
   </data>
   <data name="TextExpander_SnippetFile_Move.Content" xml:space="preserve">
-    <value>Move snippets database…</value>
+    <value>Move snippets database..</value>
     <comment>Button: opens the Windows Save dialog to choose a new place for the snippets database, such as a folder OneDrive syncs. Text Expander writes the snippets there and uses that database; the previous one stays where it was. "Snippets database" means the user's JSON file of snippets.</comment>
   </data>
   <data name="TextExpander_SnippetFile_Use.Content" xml:space="preserve">
-    <value>Sync from another PC…</value>
+    <value>Sync from another PC..</value>
     <comment>Button: opens the Windows Open dialog to choose an existing snippets database, such as the one another PC saved in OneDrive. Text Expander uses that database from then on and writes nothing. "Snippets database" means the user's JSON file of snippets.</comment>
   </data>
   <data name="TextExpander_SnippetFile_OpenButton.Content" xml:space="preserve">
@@ -1061,12 +1061,8 @@ Your name</value>
     <comment>Shown instead of saving a change when the snippets database holds text that can't be written back, such as half of an emoji left by another app in a part Text Expander doesn't use. Its snippets still work, and nothing was changed. "Snippets database" means the user's JSON file of snippets.</comment>
   </data>
   <data name="TextExpander_EditorTitle" xml:space="preserve">
-    <value>PowerToys Text Expander - Manage snippets</value>
-    <comment>Title of the snippet editor window. {Locked="PowerToys"}</comment>
-  </data>
-  <data name="Attribution_TextExpander.Content" xml:space="preserve">
-    <value>Created by Gary Hsu</value>
-    <comment>Gary Hsu is a person's name. Do not localize the name; localize the attribution wording.</comment>
+    <value>Text expander</value>
+    <comment>Title of the snippet editor window.</comment>
   </data>
   <data name="TextExpander_MoreOptions.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>More options</value>
