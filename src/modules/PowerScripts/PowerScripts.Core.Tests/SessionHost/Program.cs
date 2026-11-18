@@ -14,11 +14,16 @@ while (await PowerScriptsSessionProtocol.ReadAsync(input) is { } frame)
     var command = document.RootElement.GetProperty("arguments").EnumerateArray().Select(value => value.GetString()!).ToArray();
     if (command[0] is "block" or "exit")
     {
-        await File.AppendAllTextAsync(command[1], Environment.ProcessId.ToString(CultureInfo.InvariantCulture) + Environment.NewLine);
+        var marker = Environment.ProcessId.ToString(CultureInfo.InvariantCulture) + Environment.NewLine;
         if (command[0] == "exit")
         {
+            await File.AppendAllTextAsync(command[1], marker);
             return 7;
         }
+
+        var temporaryMarker = command[1] + ".tmp";
+        await File.WriteAllTextAsync(temporaryMarker, marker);
+        File.Move(temporaryMarker, command[1]);
 
         while (!File.Exists(command[2]))
         {
