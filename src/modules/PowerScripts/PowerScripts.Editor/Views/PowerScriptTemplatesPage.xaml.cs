@@ -451,12 +451,12 @@ public sealed partial class PowerScriptTemplatesPage : Page
 
     private void UpdatePreview()
     {
-        if (PreviewCard is null || RuntimeComboBox?.SelectedItem is not ComboBoxItem runtime)
+        if (PreviewRow is null || RuntimeComboBox?.SelectedItem is not ComboBoxItem runtime)
         {
             return;
         }
 
-        PreviewCard.Script = new PowerScriptListItem
+        var preview = new PowerScriptListItem
         {
             Name = string.IsNullOrWhiteSpace(ProjectNameTextBox.Text)
                 ? ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_CreationUntitled") : ProjectNameTextBox.Text,
@@ -468,12 +468,26 @@ public sealed partial class PowerScriptTemplatesPage : Page
                 Output = (OutputComboBox.SelectedItem as GridViewItem)?.Tag as string ?? "text",
             },
         };
+        PreviewName.Text = preview.Name;
+        PreviewSummary.Text = preview.CatalogueSummary;
+        AutomationProperties.SetName(PreviewRow, preview.Name);
+        PreviewIconGlyph.Glyph = preview.DefaultIconGlyph;
+        PreviewIconImage.Source = preview.HasIcon ? new BitmapImage(new Uri(preview.IconSourcePath)) : null;
+        PreviewIconImage.Visibility = preview.HasIcon ? Visibility.Visible : Visibility.Collapsed;
+        PreviewIconGlyph.Visibility = preview.HasIcon ? Visibility.Collapsed : Visibility.Visible;
+
         var entry = (string)runtime.Tag == "python" ? "script.py" : "script.ps1";
         PreviewFiles.Text = entry + Environment.NewLine + entry + ".tool.json" + Environment.NewLine + "README.md";
-        if (PreviewCard.Script.HasIcon)
+        if (preview.HasIcon)
         {
             PreviewFiles.Text += Environment.NewLine + "icon.ico";
         }
+    }
+
+    private void PreviewIcon_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+    {
+        PreviewIconImage.Visibility = Visibility.Collapsed;
+        PreviewIconGlyph.Visibility = Visibility.Visible;
     }
 
     private static string SelectedToken(Control control)

@@ -22,6 +22,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" />
     <PackageReference Include="CommunityToolkit.WinUI.Controls.Primitives" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Segmented" />
     <PackageReference Include="CommunityToolkit.WinUI.Extensions" />
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="Microsoft.Web.WebView2" />
@@ -38,7 +39,7 @@
     <Compile Include="$(SettingsSource)Helpers\OpenFileName.cs" Link="Helpers\OpenFileName.cs" />
     <Compile Include="$(SettingsSource)Helpers\ShellGetFolder.cs" Link="Helpers\ShellGetFolder.cs" />
     <PRIResource Include="$(IntermediateOutputPath)Strings\en-US\Resources.resw" Link="Strings\en-US\Resources.resw" />
-    <Content Include="$(SettingsSource)Assets\Settings\Icons\AdvancedPaste.png;$(SettingsSource)Assets\Settings\Icons\KeyboardManager.png;$(SettingsSource)Assets\Settings\Icons\CmdPal.png;$(SettingsSource)Assets\Settings\Icons\FileExplorerPreview.png"
+    <Content Include="$(SettingsSource)Assets\Settings\Icons\AdvancedPaste.png;$(SettingsSource)Assets\Settings\Icons\KeyboardManager.png;$(SettingsSource)Assets\Settings\Icons\CmdPal.png;$(SettingsSource)Assets\Settings\Icons\FileExplorerPreview.png;$(SettingsSource)Assets\Settings\Icons\PowerToys.png"
              Link="Assets\Settings\Icons\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(RepoRoot)src\modules\PowerScripts\PowerScripts.Core\Templates\Icons\*.ico"
              Link="Assets\PowerScripts\Icons\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />

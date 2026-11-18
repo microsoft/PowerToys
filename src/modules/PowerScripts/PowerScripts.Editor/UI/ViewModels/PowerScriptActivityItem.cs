@@ -77,6 +77,7 @@ public sealed class PowerScriptActivityItem : Observable
         Status = snapshot.Status;
         ExitCode = snapshot.ExitCode;
         DurationMilliseconds = snapshot.DurationMilliseconds;
+        OnPropertyChanged(nameof(Status));
         OnPropertyChanged(nameof(Outcome));
     }
 }

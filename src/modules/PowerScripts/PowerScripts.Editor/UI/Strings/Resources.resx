@@ -260,7 +260,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_OutputFilterNone.Content" xml:space="preserve">
     <value>None (no output)</value>
   </data>
-  <data name="PowerScripts_CatalogueSort.Header" xml:space="preserve">
+  <data name="PowerScripts_CatalogueSort.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Sort by</value>
   </data>
   <data name="PowerScripts_FilterAll.Content" xml:space="preserve">
@@ -332,9 +332,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_CatalogueCount" xml:space="preserve">
     <value>{0} of {1} scripts</value>
   </data>
-  <data name="PowerScripts_CatalogueNoMatches.Message" xml:space="preserve">
-    <value>No scripts match your search and filters. Try another name or select all input and output types.</value>
-  </data>
   <data name="PowerScripts_IconWarning.Header" xml:space="preserve">
     <value>Script icon unavailable</value>
   </data>
@@ -379,9 +376,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_SettingsTimeout" xml:space="preserve">
     <value>PowerScripts Host did not respond in time. Your edits have been kept. Refresh to check whether the operation completed before trying again.</value>
-  </data>
-  <data name="PowerScripts_SettingsEmptyCatalogue.Message" xml:space="preserve">
-    <value>No PowerScripts found. Create one from a template, or place a script and its sibling .tool.json directly in the scripts folder or one subfolder below it. Helper files without descriptors are ignored.</value>
   </data>
   <data name="PowerScripts_SettingsConfigurationErrors.Header" xml:space="preserve">
     <value>Configuration needs attention — this script cannot run</value>
@@ -660,7 +654,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>New script</value>
   </data>
   <data name="PowerScripts_CreateScriptAction.AutomationProperties.Name" xml:space="preserve">
-    <value>Create Script</value>
+    <value>New script</value>
   </data>
   <data name="PowerScripts_CreateScriptTitle" xml:space="preserve">
     <value>Create Script</value>
@@ -669,13 +663,10 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>New script</value>
   </data>
   <data name="PowerScripts_TemplatesPage.ModuleDescription" xml:space="preserve">
-    <value>Choose a runtime and input/output contract to generate a starter script.</value>
+    <value>Pick what it takes and what it gives back. You get a starter script to edit.</value>
   </data>
   <data name="PowerScripts_TemplateNavigationFailed" xml:space="preserve">
     <value>Could not open the script creation page. Try again.</value>
-  </data>
-  <data name="PowerScripts_TemplatesHelp.Text" xml:space="preserve">
-    <value>Create an editable script, .tool.json descriptor and README guide in your scripts folder. Each guide explains the fields and safe policy choices. Creation does not run the script, approve trust or change isolation.</value>
   </data>
   <data name="PowerScripts_TemplateCreate.Content" xml:space="preserve">
     <value>Create script</value>
@@ -711,7 +702,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>Choose a runtime</value>
   </data>
   <data name="PowerScripts_TemplatePythonHelp.Text" xml:space="preserve">
-    <value>Python scripts execute top-level code and read typed JSON from stdin. Enable Python execution before running them; creation does not change runtime settings.</value>
+    <value>Python scripts read typed JSON from stdin. Turn on Python execution in Settings before running them.</value>
   </data>
   <data name="PowerScripts_TemplateInput.Header" xml:space="preserve">
     <value>Primary input type (required)</value>
@@ -741,10 +732,10 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>The script was created, but its folder could not be opened.</value>
   </data>
   <data name="PowerScripts_TemplateParameters.Text" xml:space="preserve">
-    <value>3  Parameters</value>
+    <value>Parameters</value>
   </data>
   <data name="PowerScripts_TemplateParametersHelp.Text" xml:space="preserve">
-    <value>Add named options for consumers to collect when running your script. Choose a type, optional choices and defaults. Names must start with a letter and use only letters, digits or underscores.</value>
+    <value>Options people set before it runs, like a size or a folder. Names start with a letter and use only letters, digits or underscores.</value>
   </data>
   <data name="PowerScripts_TemplateParameterAdd.Content" xml:space="preserve">
     <value>Add parameter</value>
@@ -777,34 +768,31 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>File path</value>
   </data>
   <data name="PowerScripts_TemplateParameterTitle.Header" xml:space="preserve">
-    <value>Display name (optional)</value>
+    <value>Display name</value>
   </data>
   <data name="PowerScripts_TemplateParameterDescription.Header" xml:space="preserve">
-    <value>Description (optional)</value>
+    <value>Description</value>
   </data>
   <data name="PowerScripts_TemplateParameterRequired.Content" xml:space="preserve">
     <value>Required</value>
   </data>
   <data name="PowerScripts_TemplateParameterEnum.Header" xml:space="preserve">
-    <value>Allowed values (enum, optional)</value>
-  </data>
-  <data name="PowerScripts_TemplateParameterEnumHelp.Text" xml:space="preserve">
-    <value>One value per line. Leave blank to accept any string. A default must match one of these values exactly.</value>
+    <value>Choices</value>
   </data>
   <data name="PowerScripts_TemplateParameterMinimum.Header" xml:space="preserve">
-    <value>Minimum (optional)</value>
+    <value>Minimum</value>
   </data>
   <data name="PowerScripts_TemplateParameterMaximum.Header" xml:space="preserve">
-    <value>Maximum (optional)</value>
+    <value>Maximum</value>
   </data>
   <data name="PowerScripts_TemplateParameterExtensions.Header" xml:space="preserve">
-    <value>Allowed file extensions (optional; for example .txt, .json)</value>
+    <value>File types</value>
   </data>
   <data name="PowerScripts_TemplateParameterHasDefault.Content" xml:space="preserve">
-    <value>Provide a default value (optional)</value>
+    <value>Fill in a default value</value>
   </data>
   <data name="PowerScripts_TemplateParameterDefaultHelp.Text" xml:space="preserve">
-    <value>A required parameter without a default must be provided when running the script. File paths normally come from a file picker. An optional parameter without a default can be omitted.</value>
+    <value>A required option without a default must be filled in before it runs.</value>
   </data>
   <data name="PowerScripts_TemplateParameterDefault.Header" xml:space="preserve">
     <value>Default value</value>
@@ -974,13 +962,10 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ActivityCard.Description" xml:space="preserve">
     <value>See recent script runs and the module that started them.</value>
   </data>
-  <data name="PowerScripts_ActivityHelp.Text" xml:space="preserve">
-    <value>The latest 200 invocations, newest first. Refreshes every 5 seconds while open. Only script names, IDs, calling modules, times and results are kept on this device. Inputs, parameters and outputs are never recorded. Sources are caller-supplied, not verified identities.</value>
-  </data>
-  <data name="PowerScripts_ActivityRefresh.Content" xml:space="preserve">
+  <data name="PowerScripts_ActivityRefreshText.Text" xml:space="preserve">
     <value>Refresh</value>
   </data>
-  <data name="PowerScripts_ActivityClear.Content" xml:space="preserve">
+  <data name="PowerScripts_ActivityClearText.Text" xml:space="preserve">
     <value>Clear history</value>
   </data>
   <data name="PowerScripts_ActivityClearTitle" xml:space="preserve">
@@ -992,14 +977,11 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ActivityClearHelp" xml:space="preserve">
     <value>Remove completed and interrupted invocations. Running invocations are kept. This does not cancel scripts or change trust approvals.</value>
   </data>
-  <data name="PowerScripts_ActivityEmpty.Text" xml:space="preserve">
-    <value>No script activity yet.</value>
-  </data>
   <data name="PowerScripts_ActivityList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Recent script activity</value>
   </data>
   <data name="PowerScripts_ActivityError.Title" xml:space="preserve">
-    <value>Activity could not be updated. Previously loaded entries may be out of date.</value>
+    <value>Couldn't refresh. Showing earlier entries.</value>
   </data>
   <data name="PowerScripts_ActivityAdvancedPaste" xml:space="preserve">
     <value>Advanced Paste</value>
@@ -1166,14 +1148,13 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_WorkspaceSearch.AutomationProperties.Name" xml:space="preserve"><value>Search scripts</value></data>
   <data name="PowerScripts_WorkspaceSettings.Content" xml:space="preserve"><value>Settings</value></data>
   <data name="PowerScripts_LibraryHeading.Text" xml:space="preserve"><value>My scripts</value></data>
-  <data name="PowerScripts_LibraryHelp.Text" xml:space="preserve"><value>Your tools. Your workflow. Ready where you need them.</value></data>
   <data name="PowerScripts_CreationPreview.Text" xml:space="preserve"><value>Preview</value></data>
   <data name="PowerScripts_CreationUntitled" xml:space="preserve"><value>Untitled script</value></data>
   <data name="PowerScripts_CreationFiles.Text" xml:space="preserve"><value>Files it creates</value></data>
   <data name="PowerScripts_CreationSafety.Text" xml:space="preserve"><value>Creating a script does not run code, approve it or change sandbox protection.</value></data>
-  <data name="PowerScripts_CreationInput.Header" xml:space="preserve"><value>1  What does it start with?</value></data>
-  <data name="PowerScripts_CreationOutput.Header" xml:space="preserve"><value>2  What does it give back?</value></data>
-  <data name="PowerScripts_CreationName.Text" xml:space="preserve"><value>4  Name it and make it yours</value></data>
+  <data name="PowerScripts_CreationInput.Header" xml:space="preserve"><value>What it takes</value></data>
+  <data name="PowerScripts_CreationOutput.Header" xml:space="preserve"><value>What it gives back</value></data>
+  <data name="PowerScripts_CreationName.Text" xml:space="preserve"><value>Name it</value></data>
   <data name="PowerScripts_TemplateIcons.Text" xml:space="preserve"><value>Icon</value></data>
   <data name="PowerScripts_TemplateIconsHelp.Text" xml:space="preserve"><value>Choose a preset or your own .ico file (up to 1 MiB). The icon is copied into the script package. Keep Default to use the runtime icon.</value></data>
   <data name="PowerScripts_TemplateCustomIcon.Content" xml:space="preserve"><value>Choose custom icon...</value></data>
@@ -1331,4 +1312,151 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_CliArgumentParameterHelp" xml:space="preserve"><value>Expose this as a named script parameter, using the module's default if available.</value></data>
   <data name="PowerScripts_CliArgumentMixedInput" xml:space="preserve"><value>A script has one primary input. Use either text or files for input-bound arguments, not both.</value></data>
   <data name="PowerScripts_CliArgumentIncompatible" xml:space="preserve"><value>This argument setup does not match the selected consumer modules. Choose a compatible Script input argument or change the module selection.</value></data>
+  <data name="PowerScripts_FilterButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Filter scripts</value>
+  </data>
+  <data name="PowerScripts_FilterButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filter scripts</value>
+  </data>
+  <data name="PowerScripts_ClearFilters.Content" xml:space="preserve">
+    <value>Clear filters</value>
+  </data>
+  <data name="PowerScripts_OpenFolderButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Open scripts folder</value>
+  </data>
+  <data name="PowerScripts_OpenFolderButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Open scripts folder</value>
+  </data>
+  <data name="PowerScripts_EmptyCatalogueTitle.Text" xml:space="preserve">
+    <value>No scripts yet</value>
+  </data>
+  <data name="PowerScripts_EmptyCatalogueDescription.Text" xml:space="preserve">
+    <value>Create one, or add a script and its .tool.json to the scripts folder.</value>
+  </data>
+  <data name="PowerScripts_NoMatchesTitle.Text" xml:space="preserve">
+    <value>No matches</value>
+  </data>
+  <data name="PowerScripts_NoMatchesDescription.Text" xml:space="preserve">
+    <value>No scripts match your search or filters.</value>
+  </data>
+  <data name="PowerScripts_ScriptList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Scripts</value>
+  </data>
+  <data name="PowerScripts_ScriptMoreButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="PowerScripts_ScriptMoreButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>More options</value>
+  </data>
+  <data name="PowerScripts_OpenScriptMenuItem.Text" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="PowerScripts_EditScriptMenuItem.Text" xml:space="preserve">
+    <value>Edit script</value>
+  </data>
+  <data name="PowerScripts_ShowInExplorerMenuItem.Text" xml:space="preserve">
+    <value>Show in File Explorer</value>
+  </data>
+  <data name="PowerScripts_ScriptCaptionCannotRun" xml:space="preserve">
+    <value>Can't run</value>
+  </data>
+  <data name="PowerScripts_ScriptCaptionNotAllowed" xml:space="preserve">
+    <value>Not allowed yet</value>
+  </data>
+  <data name="PowerScripts_NewScriptDialog.Title" xml:space="preserve">
+    <value>New script</value>
+  </data>
+  <data name="PowerScripts_NewScriptDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="PowerScripts_NewScriptDialogDescription.Text" xml:space="preserve">
+    <value>Write your own, or start from a PowerToys action.</value>
+  </data>
+  <data name="PowerScripts_NewScriptChoiceScript.Header" xml:space="preserve">
+    <value>Script</value>
+  </data>
+  <data name="PowerScripts_NewScriptChoiceScript.Description" xml:space="preserve">
+    <value>Your own PowerShell or Python code. Runs on text, files, images or audio.</value>
+  </data>
+  <data name="PowerScripts_NewScriptChoiceOperation.Header" xml:space="preserve">
+    <value>PowerToys action</value>
+  </data>
+  <data name="PowerScripts_NewScriptChoiceOperation.Description" xml:space="preserve">
+    <value>A ready-made PowerToys command, like applying a FancyZones layout or keeping the PC awake. No code.</value>
+  </data>
+  <data name="PowerScripts_ActivityFilter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Show</value>
+  </data>
+  <data name="PowerScripts_ActivityFilterAll.Content" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="PowerScripts_ActivityFilterFailed.Content" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="PowerScripts_ActivityEmptyTitle.Text" xml:space="preserve">
+    <value>No runs yet</value>
+  </data>
+  <data name="PowerScripts_ActivityEmptyDescription.Text" xml:space="preserve">
+    <value>Runs from anywhere show up here.</value>
+  </data>
+  <data name="PowerScripts_ActivityShowAll.Content" xml:space="preserve">
+    <value>Show all</value>
+  </data>
+  <data name="PowerScripts_ActivityPrivacy.Text" xml:space="preserve">
+    <value>Inputs and outputs are never recorded.</value>
+  </data>
+  <data name="PowerScripts_ChoiceInputNoneHelp.Text" xml:space="preserve">
+    <value>Starts on its own. Nothing to pick first.</value>
+  </data>
+  <data name="PowerScripts_ChoiceInputTextHelp.Text" xml:space="preserve">
+    <value>Gets text, like a selection or what you copied.</value>
+  </data>
+  <data name="PowerScripts_ChoiceInputFilesHelp.Text" xml:space="preserve">
+    <value>Gets file paths, like a File Explorer selection.</value>
+  </data>
+  <data name="PowerScripts_ChoiceInputImageHelp.Text" xml:space="preserve">
+    <value>Gets an image, like a screenshot or a copied picture.</value>
+  </data>
+  <data name="PowerScripts_ChoiceInputAudioHelp.Text" xml:space="preserve">
+    <value>Gets an audio clip, like a recording.</value>
+  </data>
+  <data name="PowerScripts_ChoiceOutputNoneHelp.Text" xml:space="preserve">
+    <value>Does its job and returns nothing.</value>
+  </data>
+  <data name="PowerScripts_ChoiceOutputTextHelp.Text" xml:space="preserve">
+    <value>Returns text to read or copy.</value>
+  </data>
+  <data name="PowerScripts_ChoiceOutputFilesHelp.Text" xml:space="preserve">
+    <value>Returns the files it creates.</value>
+  </data>
+  <data name="PowerScripts_ChoiceOutputImageHelp.Text" xml:space="preserve">
+    <value>Returns an image to view or copy.</value>
+  </data>
+  <data name="PowerScripts_ChoiceOutputAudioHelp.Text" xml:space="preserve">
+    <value>Returns an audio clip to play.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterName.Description" xml:space="preserve">
+    <value>What your code calls it, like Size.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterTitle.Description" xml:space="preserve">
+    <value>What people see, like Image size.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterDescription.Description" xml:space="preserve">
+    <value>Shown under it when it runs.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterEnum.Description" xml:space="preserve">
+    <value>One per line. Leave empty to allow any text. A default must match one exactly.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterMinimum.Description" xml:space="preserve">
+    <value>Leave empty for no limit.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterMaximum.Description" xml:space="preserve">
+    <value>Leave empty for no limit.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterExtensions.Description" xml:space="preserve">
+    <value>Like .txt, .json. Leave empty for any file.</value>
+  </data>
+  <data name="PowerScripts_TemplateParameterDefault.Description" xml:space="preserve">
+    <value>Filled in ahead of time. People can change it.</value>
+  </data>
 </root>
