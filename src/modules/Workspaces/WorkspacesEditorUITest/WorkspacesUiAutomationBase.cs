@@ -5,7 +5,6 @@
 using System.Diagnostics;
 using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using WorkspacesCsharpLibrary.Data;
 
 namespace WorkspacesEditorUITest
 {
@@ -89,18 +88,10 @@ namespace WorkspacesEditorUITest
         protected List<Element> GetWorkspaceCards()
         {
             AssertMainPage();
-            var storage = new WorkspacesData();
-            List<ProjectWrapper> saved = File.Exists(storage.File) ? storage.Read(storage.File).Workspaces ?? [] : [];
-            var namesById = saved.Where(project => Guid.TryParse(project.Id, out _))
-                .ToDictionary(project => Guid.Parse(project.Id), project => project.Name);
 
-            // ItemsRepeater is absent from the WinUI UIA tree. Its SettingsCards remain Button peers
-            // with stable GUID IDs; require their persisted names so labels and suggestions cannot match.
-            return FindAll<Button>(By.XPath("//*[@AutomationId]"), timeoutMS: 1000)
-                .Where(button => button.ControlType == "ControlType.Button"
-                    && Guid.TryParse(button.AutomationId, out var id)
-                    && namesById.TryGetValue(id, out var name)
-                    && string.Equals(button.Name, name, StringComparison.Ordinal))
+            // ItemsRepeater has no automation peer; its clickable SettingsCards expose the workspace GUID as AutomationId.
+            return FindAll<Button>(By.ClassName("SettingsCard"), timeoutMS: 1000)
+                .Where(card => Guid.TryParse(card.AutomationId, out _))
                 .Cast<Element>()
                 .OrderBy(element => element.Rect?.Top)
                 .ToList();
@@ -113,20 +104,22 @@ namespace WorkspacesEditorUITest
             return cards[0];
         }
 
-        protected void OpenWorkspace(string name)
+        protected Guid OpenWorkspace(string name)
         {
             AttachWorkspacesEditor();
-            GetWorkspaceCard(name).Click();
+            var card = GetWorkspaceCard(name);
+            var workspaceId = Guid.Parse(card.AutomationId);
+            card.Click();
             Assert.AreEqual(name, Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Text, "The card should open its workspace for editing.");
+            return workspaceId;
         }
 
         protected void DeleteWorkspace(string name)
         {
-            OpenWorkspace(name);
+            var workspaceId = OpenWorkspace(name);
             Find<Button>(By.AccessibilityId("DeleteWorkspaceButton")).Click();
             Find<Button>(By.Name("Remove")).Click();
-            AssertMainPage();
-            Assert.IsFalse(GetWorkspaceCards().Any(card => card.Name == name), "The workspace should be removed from the list.");
+            Assert.IsFalse(GetWorkspaceCards().Any(card => Guid.Parse(card.AutomationId) == workspaceId), "The workspace should be removed from the list.");
         }
 
         protected void SelectSortOrder(string automationId)
