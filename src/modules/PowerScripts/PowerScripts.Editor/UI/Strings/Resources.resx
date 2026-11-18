@@ -1116,7 +1116,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
     <value>The cached image is in use, not missing. Close other apps using MXC Linux and select Check Python again. If this persists with those apps closed, save your work and restart Windows; do not delete or download the image again.</value>
   </data>
   <data name="PowerScripts_MyScriptsTab.Content" xml:space="preserve">
-    <value>My scripts</value>
+    <value>Scripts</value>
   </data>
   <data name="PowerScripts_ConsumerModulesTab.Content" xml:space="preserve">
     <value>Modules</value>
@@ -1135,8 +1135,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_FileExplorerConsumer.Header" xml:space="preserve"><value>File Explorer</value></data>
   <data name="PowerScripts_ExecutionSettings.Header" xml:space="preserve"><value>Execution settings</value></data>
-  <data name="PowerScripts_OpenGlobalSettingsButton.AutomationProperties.Name" xml:space="preserve"><value>Open PowerToys Settings</value></data>
-  <data name="PowerScripts_OpenGlobalSettingsButton.ToolTipService.ToolTip" xml:space="preserve"><value>Open PowerToys Settings</value></data>
   <data name="PowerScripts_EditorFolder.Header" xml:space="preserve"><value>Scripts folder</value></data>
   <data name="PowerScripts_OpenFolder.Content" xml:space="preserve"><value>Open folder</value></data>
   <data name="PowerScripts_EditorDisabled.Message" xml:space="preserve"><value>PowerScripts is disabled. Enable it in PowerToys Settings to manage and run scripts. Your scripts and bindings are kept.</value></data>
@@ -1147,7 +1145,7 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_WorkspaceSearch.PlaceholderText" xml:space="preserve"><value>Search scripts</value></data>
   <data name="PowerScripts_WorkspaceSearch.AutomationProperties.Name" xml:space="preserve"><value>Search scripts</value></data>
   <data name="PowerScripts_WorkspaceSettings.Content" xml:space="preserve"><value>Settings</value></data>
-  <data name="PowerScripts_LibraryHeading.Text" xml:space="preserve"><value>My scripts</value></data>
+  <data name="PowerScripts_LibraryHeading.Text" xml:space="preserve"><value>Scripts</value></data>
   <data name="PowerScripts_CreationPreview.Text" xml:space="preserve"><value>Preview</value></data>
   <data name="PowerScripts_CreationUntitled" xml:space="preserve"><value>Untitled script</value></data>
   <data name="PowerScripts_CreationFiles.Text" xml:space="preserve"><value>Files it creates</value></data>
@@ -1357,10 +1355,10 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ShowInExplorerMenuItem.Text" xml:space="preserve">
     <value>Show in File Explorer</value>
   </data>
-  <data name="PowerScripts_ScriptCaptionCannotRun" xml:space="preserve">
+  <data name="PowerScripts_ScriptStatusCannotRun.Text" xml:space="preserve">
     <value>Can't run</value>
   </data>
-  <data name="PowerScripts_ScriptCaptionNotAllowed" xml:space="preserve">
+  <data name="PowerScripts_ScriptStatusNotAllowed.Text" xml:space="preserve">
     <value>Not allowed yet</value>
   </data>
   <data name="PowerScripts_NewScriptDialog.Title" xml:space="preserve">
@@ -1458,5 +1456,35 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_TemplateParameterDefault.Description" xml:space="preserve">
     <value>Filled in ahead of time. People can change it.</value>
+  </data>
+  <data name="PowerScripts_LastRunNever" xml:space="preserve">
+    <value>Never run</value>
+  </data>
+  <data name="PowerScripts_LastRunJustNow" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="PowerScripts_LastRunMinutes" xml:space="preserve">
+    <value>{0} min ago</value>
+  </data>
+  <data name="PowerScripts_LastRunHours" xml:space="preserve">
+    <value>{0} h ago</value>
+  </data>
+  <data name="PowerScripts_LastRunYesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="PowerScripts_LastRunDays" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
+  <data name="PowerScripts_ShowsInAdvancedPaste.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Advanced Paste</value>
+  </data>
+  <data name="PowerScripts_ShowsInCommandPalette.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Command Palette</value>
+  </data>
+  <data name="PowerScripts_ShowsInFileExplorer.ToolTipService.ToolTip" xml:space="preserve">
+    <value>File Explorer</value>
+  </data>
+  <data name="PowerScripts_ShowsNowhere.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Not shown anywhere yet</value>
   </data>
 </root>

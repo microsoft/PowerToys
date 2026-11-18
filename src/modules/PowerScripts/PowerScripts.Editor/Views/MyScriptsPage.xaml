@@ -2,12 +2,15 @@
     x:Class="PowerScripts.Editor.Views.MyScriptsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:helpers="using:PowerScripts.Editor.Helpers"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:PowerScripts.UI.ViewModels"
     xmlns:views="using:PowerScripts.Editor.Views"
     AutomationProperties.LandmarkType="Main">
-    <Grid Margin="32,24,32,24" RowSpacing="16">
+    <Grid
+        MaxWidth="1144"
+        Padding="32,28,32,32">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -16,48 +19,30 @@
         </Grid.RowDefinitions>
         <TextBlock
             x:Uid="PowerScripts_LibraryHeading"
+            Margin="0,0,0,20"
             AutomationProperties.HeadingLevel="Level1"
             Style="{StaticResource TitleTextBlockStyle}" />
-        <StackPanel Grid.Row="1" Spacing="8">
+        <StackPanel Grid.Row="1">
             <InfoBar
                 x:Uid="PowerScripts_EditorDisabled"
+                Margin="0,0,0,12"
                 AutomationProperties.AutomationId="PowerScriptsEditorDisabled"
                 IsClosable="False"
                 IsOpen="{x:Bind views:MyScriptsPage.IsDisabled(ViewModel.IsEnabled), Mode=OneWay}"
-                Severity="Informational" />
+                Severity="Informational"
+                Visibility="{x:Bind views:MyScriptsPage.InvertBoolToVisibility(ViewModel.IsEnabled), Mode=OneWay}" />
             <InfoBar
                 x:Name="ScriptSettingsError"
+                Margin="0,0,0,12"
                 AutomationProperties.AutomationId="PowerScriptsSettingsError"
                 IsClosable="False"
-                Severity="Error" />
-            <Border Padding="16,12" Style="{StaticResource EditorSurfaceStyle}">
-                <Grid ColumnSpacing="16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <FontIcon
-                        VerticalAlignment="Center"
-                        Foreground="{ThemeResource SystemFillColorAttentionBrush}"
-                        Glyph="&#xE72E;" />
-                    <TextBlock
-                        Grid.Column="1"
-                        VerticalAlignment="Center"
-                        Text="{x:Bind ViewModel.ExecutionSettingsSummary, Mode=OneWay}"
-                        TextWrapping="Wrap" />
-                    <Button
-                        x:Uid="PowerScripts_OpenGlobalSettingsButton"
-                        Grid.Column="2"
-                        AutomationProperties.AutomationId="PowerScriptsOpenGlobalSettings"
-                        Click="OpenGlobalSettings_Click"
-                        Content="{ui:FontIcon Glyph=&#xE713;,
-                                              FontSize=16}"
-                        Style="{StaticResource SubtleButtonStyle}" />
-                </Grid>
-            </Border>
+                Severity="Error"
+                Visibility="Collapsed" />
         </StackPanel>
-        <Grid Grid.Row="2" ColumnSpacing="8">
+        <Grid
+            Grid.Row="2"
+            Margin="0,0,0,12"
+            ColumnSpacing="8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
@@ -84,7 +69,7 @@
                 Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.HasScripts), Mode=OneWay}">
                 <ComboBox
                     x:Uid="PowerScripts_CatalogueSort"
-                    MinWidth="160"
+                    MinWidth="128"
                     AutomationProperties.AutomationId="PowerScriptsSortComboBox"
                     SelectedIndex="{x:Bind ViewModel.ScriptSortIndex, Mode=TwoWay}">
                     <ComboBoxItem x:Uid="PowerScripts_SortNameAscending" />
@@ -167,144 +152,278 @@
         </Grid>
         <Grid
             Grid.Row="3"
+            VerticalAlignment="Top"
             Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
             BorderThickness="1"
-            CornerRadius="{ThemeResource OverlayCornerRadius}">
+            CornerRadius="{ThemeResource OverlayCornerRadius}"
+            Visibility="{x:Bind views:MyScriptsPage.ListVisibility(ViewModel.HasScripts, ViewModel.HasNoMatchingScripts), Mode=OneWay}">
             <ListView
                 x:Uid="PowerScripts_ScriptList"
-                Padding="0,4"
+                Margin="0,0,0,-1"
                 AutomationProperties.AutomationId="PowerScriptsScriptGrid"
                 IsItemClickEnabled="True"
                 ItemClick="ScriptList_ItemClick"
                 ItemsSource="{x:Bind ViewModel.VisibleScripts, Mode=OneWay}"
                 SelectionMode="None">
+                <ListView.ItemContainerStyle>
+                    <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                        <Setter Property="Padding" Value="0" />
+                        <Setter Property="Margin" Value="0" />
+                        <Setter Property="MinHeight" Value="64" />
+                        <Setter Property="CornerRadius" Value="0" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                    </Style>
+                </ListView.ItemContainerStyle>
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:PowerScriptListItem">
                         <Grid
-                            MinHeight="56"
-                            Padding="0,8"
+                            Background="Transparent"
                             AutomationProperties.AutomationId="{x:Bind CardAutomationId, Mode=OneWay}"
                             AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
-                            ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="240" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                            PointerEntered="ScriptRow_PointerEntered"
+                            PointerExited="ScriptRow_PointerExited">
                             <Grid
-                                Width="40"
-                                Height="40"
-                                Background="{ThemeResource ControlFillColorDefaultBrush}"
-                                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="{ThemeResource ControlCornerRadius}">
-                                <FontIcon
-                                    FontSize="20"
-                                    Glyph="{x:Bind DefaultIconGlyph, Mode=OneWay}"
-                                    Visibility="{x:Bind views:MyScriptsPage.InvertBoolToVisibility(HasIcon), Mode=OneWay}" />
-                                <Image
-                                    Width="24"
-                                    Height="24"
-                                    ImageFailed="ScriptIcon_ImageFailed"
-                                    Source="{Binding IconSourcePath, Mode=OneWay}"
-                                    Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(HasIcon), Mode=OneWay}" />
-                            </Grid>
-                            <StackPanel
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Spacing="2">
-                                <TextBlock Text="{x:Bind Name, Mode=OneWay}" TextTrimming="CharacterEllipsis" />
+                                MinHeight="64"
+                                Padding="16,10,4,10"
+                                ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="150" />
+                                    <ColumnDefinition Width="88" />
+                                    <ColumnDefinition Width="104" />
+                                    <ColumnDefinition Width="40" />
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter
+                                    Width="40"
+                                    Height="40"
+                                    helpers:ScriptTileTint.Kind="{x:Bind TileKind, Mode=OneWay}"
+                                    BorderThickness="1"
+                                    CornerRadius="8">
+                                    <Grid>
+                                        <FontIcon
+                                            FontSize="20"
+                                            Glyph="{x:Bind DefaultIconGlyph, Mode=OneWay}"
+                                            Visibility="{x:Bind views:MyScriptsPage.InvertBoolToVisibility(HasIcon), Mode=OneWay}" />
+                                        <Image
+                                            Width="24"
+                                            Height="24"
+                                            ImageFailed="ScriptIcon_ImageFailed"
+                                            Source="{Binding IconSourcePath, Mode=OneWay}"
+                                            Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(HasIcon), Mode=OneWay}" />
+                                    </Grid>
+                                </ContentPresenter>
+                                <StackPanel
+                                    Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    Spacing="2">
+                                    <TextBlock
+                                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                                        Text="{x:Bind Name, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind Description, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(IsReady), Mode=OneWay}" />
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="6"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(NeedsTrust), Mode=OneWay}">
+                                        <FontIcon
+                                            FontSize="12"
+                                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                            Glyph="&#xE7BA;" />
+                                        <TextBlock
+                                            x:Uid="PowerScripts_ScriptStatusNotAllowed"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}" />
+                                    </StackPanel>
+                                    <StackPanel
+                                        Orientation="Horizontal"
+                                        Spacing="6"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(HasConfigurationErrors), Mode=OneWay}">
+                                        <FontIcon
+                                            FontSize="12"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Glyph="&#xE783;" />
+                                        <TextBlock
+                                            x:Uid="PowerScripts_ScriptStatusCannotRun"
+                                            FontWeight="SemiBold"
+                                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                            Style="{StaticResource CaptionTextBlockStyle}" />
+                                    </StackPanel>
+                                </StackPanel>
+                                <StackPanel
+                                    Grid.Column="2"
+                                    VerticalAlignment="Center"
+                                    Spacing="2">
+                                    <TextBlock
+                                        Text="{x:Bind ContractDisplay, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                    <TextBlock
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Style="{StaticResource CaptionTextBlockStyle}"
+                                        Text="{x:Bind RuntimeDisplay, Mode=OneWay}"
+                                        TextTrimming="CharacterEllipsis"
+                                        TextWrapping="NoWrap" />
+                                </StackPanel>
+                                <StackPanel
+                                    Grid.Column="3"
+                                    VerticalAlignment="Center"
+                                    Orientation="Horizontal"
+                                    Spacing="8">
+                                    <Image
+                                        x:Uid="PowerScripts_ShowsInAdvancedPaste"
+                                        Width="16"
+                                        Height="16"
+                                        Source="ms-appx:///Assets/Settings/Icons/AdvancedPaste.png"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ShowsInAdvancedPaste), Mode=OneWay}" />
+                                    <Image
+                                        x:Uid="PowerScripts_ShowsInCommandPalette"
+                                        Width="16"
+                                        Height="16"
+                                        Source="ms-appx:///Assets/Settings/Icons/CmdPal.png"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ShowsInCommandPalette), Mode=OneWay}" />
+                                    <Image
+                                        x:Uid="PowerScripts_ShowsInFileExplorer"
+                                        Width="16"
+                                        Height="16"
+                                        Source="ms-appx:///Assets/Settings/Icons/FileExplorerPreview.png"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ShowsInFileExplorer), Mode=OneWay}" />
+                                    <TextBlock
+                                        x:Uid="PowerScripts_ShowsNowhere"
+                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                        Text="&#x2014;"
+                                        Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ShowsNowhere), Mode=OneWay}" />
+                                </StackPanel>
                                 <TextBlock
+                                    Grid.Column="4"
+                                    VerticalAlignment="Center"
                                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                     Style="{StaticResource CaptionTextBlockStyle}"
-                                    Text="{x:Bind views:MyScriptsPage.ScriptCaption(HasConfigurationErrors, Trusted, Description), Mode=OneWay}"
-                                    TextTrimming="CharacterEllipsis"
+                                    Text="{x:Bind LastRunDisplay, Mode=OneWay}"
+                                    TextAlignment="Right"
                                     TextWrapping="NoWrap" />
-                            </StackPanel>
-                            <TextBlock
-                                Grid.Column="2"
-                                VerticalAlignment="Center"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="{x:Bind CatalogueSummary, Mode=OneWay}"
-                                TextTrimming="CharacterEllipsis"
-                                TextWrapping="NoWrap" />
-                            <Button
-                                x:Uid="PowerScripts_ScriptMoreButton"
-                                Grid.Column="3"
-                                VerticalAlignment="Center"
-                                Content="{ui:FontIcon Glyph=&#xE712;,
-                                                      FontSize=14}"
-                                Style="{StaticResource SubtleButtonStyle}">
-                                <Button.Flyout>
-                                    <MenuFlyout Placement="BottomEdgeAlignedRight">
-                                        <MenuFlyoutItem
-                                            x:Uid="PowerScripts_OpenScriptMenuItem"
-                                            Click="OpenScriptMenuItem_Click"
-                                            Icon="{ui:FontIcon Glyph=&#xE8A7;}"
-                                            Tag="{x:Bind}" />
-                                        <MenuFlyoutItem
-                                            x:Uid="PowerScripts_EditScriptMenuItem"
-                                            Click="EditScriptMenuItem_Click"
-                                            Icon="{ui:FontIcon Glyph=&#xE70F;}"
-                                            Tag="{x:Bind}" />
-                                        <MenuFlyoutItem
-                                            x:Uid="PowerScripts_ShowInExplorerMenuItem"
-                                            Click="ShowInExplorerMenuItem_Click"
-                                            Icon="{ui:FontIcon Glyph=&#xE838;}"
-                                            Tag="{x:Bind}" />
-                                    </MenuFlyout>
-                                </Button.Flyout>
-                            </Button>
+                                <Button
+                                    x:Uid="PowerScripts_ScriptMoreButton"
+                                    Grid.Column="5"
+                                    Width="32"
+                                    Height="32"
+                                    Padding="0"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Content="{ui:FontIcon Glyph=&#xE712;,
+                                                          FontSize=14}"
+                                    GotFocus="ScriptMoreButton_GotFocus"
+                                    Opacity="0"
+                                    Style="{StaticResource SubtleButtonStyle}">
+                                    <Button.Flyout>
+                                        <MenuFlyout Placement="BottomEdgeAlignedRight">
+                                            <MenuFlyoutItem
+                                                x:Uid="PowerScripts_OpenScriptMenuItem"
+                                                Click="OpenScriptMenuItem_Click"
+                                                Icon="{ui:FontIcon Glyph=&#xE8A7;}"
+                                                Tag="{x:Bind}" />
+                                            <MenuFlyoutItem
+                                                x:Uid="PowerScripts_EditScriptMenuItem"
+                                                Click="EditScriptMenuItem_Click"
+                                                Icon="{ui:FontIcon Glyph=&#xE70F;}"
+                                                Tag="{x:Bind}" />
+                                            <MenuFlyoutItem
+                                                x:Uid="PowerScripts_ShowInExplorerMenuItem"
+                                                Click="ShowInExplorerMenuItem_Click"
+                                                Icon="{ui:FontIcon Glyph=&#xE838;}"
+                                                Tag="{x:Bind}" />
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </Button>
+                            </Grid>
+                            <Rectangle
+                                Height="1"
+                                VerticalAlignment="Bottom"
+                                Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
                         </Grid>
                     </DataTemplate>
                 </ListView.ItemTemplate>
             </ListView>
+        </Grid>
+        <Grid
+            Grid.Row="3"
+            VerticalAlignment="Top"
+            AutomationProperties.AutomationId="PowerScriptsEmptyCatalogue"
+            Visibility="{x:Bind views:MyScriptsPage.InvertBoolToVisibility(ViewModel.HasScripts), Mode=OneWay}">
+            <Rectangle
+                RadiusX="8"
+                RadiusY="8"
+                Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                StrokeDashArray="4,3"
+                StrokeThickness="1" />
             <StackPanel
+                Padding="24,64"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsEmptyCatalogue"
-                Spacing="8"
-                Visibility="{x:Bind views:MyScriptsPage.InvertBoolToVisibility(ViewModel.HasScripts), Mode=OneWay}">
+                Spacing="8">
                 <FontIcon
-                    FontSize="24"
+                    Margin="0,0,0,8"
+                    FontSize="40"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE943;" />
-                <TextBlock x:Uid="PowerScripts_EmptyCatalogueTitle" TextAlignment="Center" />
+                <TextBlock
+                    x:Uid="PowerScripts_EmptyCatalogueTitle"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    TextAlignment="Center" />
                 <TextBlock
                     x:Uid="PowerScripts_EmptyCatalogueDescription"
+                    MaxWidth="360"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
                 <Button
                     x:Uid="PowerScripts_OpenFolder"
-                    Margin="0,8,0,0"
+                    Margin="0,12,0,0"
                     HorizontalAlignment="Center"
                     Click="OpenScriptsFolderButton_Click" />
             </StackPanel>
+        </Grid>
+        <Grid
+            Grid.Row="3"
+            VerticalAlignment="Top"
+            AutomationProperties.AutomationId="PowerScriptsCatalogueNoMatches"
+            Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.HasNoMatchingScripts), Mode=OneWay}">
+            <Rectangle
+                RadiusX="8"
+                RadiusY="8"
+                Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                StrokeDashArray="4,3"
+                StrokeThickness="1" />
             <StackPanel
+                Padding="24,64"
                 HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsCatalogueNoMatches"
-                Spacing="8"
-                Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.HasNoMatchingScripts), Mode=OneWay}">
+                Spacing="8">
                 <FontIcon
-                    FontSize="24"
+                    Margin="0,0,0,8"
+                    FontSize="40"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Glyph="&#xE721;" />
-                <TextBlock x:Uid="PowerScripts_NoMatchesTitle" TextAlignment="Center" />
+                <TextBlock
+                    x:Uid="PowerScripts_NoMatchesTitle"
+                    Style="{StaticResource SubtitleTextBlockStyle}"
+                    TextAlignment="Center" />
                 <TextBlock
                     x:Uid="PowerScripts_NoMatchesDescription"
+                    MaxWidth="360"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
                     TextAlignment="Center"
                     TextWrapping="Wrap" />
                 <Button
                     x:Uid="PowerScripts_ClearFilters"
-                    Margin="0,8,0,0"
+                    Margin="0,12,0,0"
                     HorizontalAlignment="Center"
                     Click="ClearFilters_Click" />
             </StackPanel>

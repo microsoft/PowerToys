@@ -78,6 +78,7 @@ public partial class PowerScriptsViewModel
             }
 
             ActivityError = string.Empty;
+            ApplyLastRuns();
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or
             InvalidOperationException or JsonException or TimeoutException or Win32Exception)
@@ -89,6 +90,17 @@ public partial class PowerScriptsViewModel
         {
             IsActivityBusy = false;
             NotifyActivityState();
+        }
+    }
+
+    private void ApplyLastRuns()
+    {
+        var lastRuns = ActivityItems
+            .GroupBy(item => item.ScriptId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Max(item => item.StartedUtc), StringComparer.OrdinalIgnoreCase);
+        foreach (var script in Scripts)
+        {
+            script.SetLastRun(script.Id is not null && lastRuns.TryGetValue(script.Id, out var started) ? started : null);
         }
     }
 

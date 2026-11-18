@@ -11,8 +11,8 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using PowerScripts.Editor.Helpers;
 using PowerScripts.UI.Helpers;
 using PowerScripts.UI.ViewModels;
 
@@ -48,15 +48,8 @@ namespace PowerScripts.Editor.Views
         public static Visibility FilterBadgeVisibility(int inputFilterIndex, int outputFilterIndex) =>
             BoolToVisibility(inputFilterIndex > 0 || outputFilterIndex > 0);
 
-        public static string ScriptCaption(bool hasConfigurationErrors, bool trusted, string description)
-        {
-            if (hasConfigurationErrors)
-            {
-                return ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_ScriptCaptionCannotRun");
-            }
-
-            return trusted ? description : ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_ScriptCaptionNotAllowed");
-        }
+        public static Visibility ListVisibility(bool hasScripts, bool hasNoMatchingScripts) =>
+            BoolToVisibility(hasScripts && !hasNoMatchingScripts);
 
         public async Task RefreshConfigurationAsync()
         {
@@ -77,6 +70,7 @@ namespace PowerScripts.Editor.Views
                 }
 
                 await RefreshScriptsAsync();
+                await ViewModel.RefreshActivityAsync();
             }
             catch (Exception exception)
             {
@@ -90,15 +84,44 @@ namespace PowerScripts.Editor.Views
 
         private static PowerScriptListItem ScriptFromMenu(object sender) => (PowerScriptListItem)((FrameworkElement)sender).Tag;
 
-        private void OpenGlobalSettings_Click(object sender, RoutedEventArgs e)
+        private static void SetMoreButtonOpacity(object row, double opacity)
         {
-            try
+            if (row is Grid { Children.Count: > 0 } outer
+                && outer.Children[0] is Grid inner
+                && inner.Children[^1] is Button more)
             {
-                EditorNavigation.OpenGlobalSettings();
+                more.Opacity = opacity;
             }
-            catch (Exception exception)
+        }
+
+        private void ScriptRow_PointerEntered(object sender, PointerRoutedEventArgs e) => SetMoreButtonOpacity(sender, 1);
+
+        private void ScriptRow_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Grid { Children.Count: > 0 } outer
+                && outer.Children[0] is Grid inner
+                && inner.Children[^1] is Button { Flyout.IsOpen: true })
             {
-                ShowScriptSettingsError(exception);
+                return;
+            }
+
+            SetMoreButtonOpacity(sender, 0);
+        }
+
+        private void ScriptMoreButton_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            button.Opacity = 1;
+            button.LostFocus -= ScriptMoreButton_LostFocus;
+            button.LostFocus += ScriptMoreButton_LostFocus;
+        }
+
+        private void ScriptMoreButton_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            if (button.Flyout is not { IsOpen: true })
+            {
+                button.Opacity = 0;
             }
         }
 
@@ -163,6 +186,7 @@ namespace PowerScripts.Editor.Views
             {
                 await ViewModel.ReloadScriptsAsync();
                 ScriptSettingsError.IsOpen = false;
+                ScriptSettingsError.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
@@ -240,6 +264,7 @@ namespace PowerScripts.Editor.Views
         {
             Logger.LogError("Unable to manage PowerScripts.", exception);
             ScriptSettingsError.Message = exception.Message;
+            ScriptSettingsError.Visibility = Visibility.Visible;
             ScriptSettingsError.IsOpen = true;
         }
 

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
@@ -28,9 +29,14 @@ namespace PowerScripts.UI.ViewModels
             nameof(Io), nameof(Input), nameof(Capabilities), nameof(Trusted), nameof(FolderPath), nameof(EntryFullPath),
             nameof(InputDisplay), nameof(OutputDisplay), nameof(CatalogueSummary), nameof(CardAutomationId),
             nameof(RuntimeDisplay), nameof(TrustDisplay), nameof(HasFolderPath), nameof(OpenFolderAutomationId),
+            nameof(ContractDisplay), nameof(NeedsTrust), nameof(IsReady), nameof(TileKind),
+            nameof(ShowsInAdvancedPaste), nameof(ShowsInCommandPalette), nameof(ShowsInFileExplorer), nameof(ShowsNowhere),
         };
 
         private bool _iconLoadFailed;
+        private bool _advancedPasteEnabled;
+        private bool _commandPaletteEnabled;
+        private bool _fileExplorerEnabled;
 
         public string Id { get; set; } = string.Empty;
 
@@ -100,6 +106,30 @@ namespace PowerScripts.UI.ViewModels
 
         public string OpenFolderAutomationId => $"PowerScripts_{Id}_OpenFolder";
 
+        public string ContractDisplay => $"{DisplayIoValue(Io?.Input)} \u2192 {DisplayIoValue(Io?.Output)}";
+
+        public bool NeedsTrust => !HasConfigurationErrors && !Trusted;
+
+        public bool IsReady => !HasConfigurationErrors && Trusted;
+
+        public string TileKind => IsPowerToysOperation ? "operation" : Io?.Input?.ToLowerInvariant() switch
+        {
+            "text" or "image" or "files" or "audio" => Io.Input.ToLowerInvariant(),
+            _ => "none",
+        };
+
+        public bool ShowsInAdvancedPaste => _advancedPasteEnabled && PowerScriptsViewModel.PowerScriptConsumerItem.AppliesTo("advanced-paste", this);
+
+        public bool ShowsInCommandPalette => _commandPaletteEnabled && PowerScriptsViewModel.PowerScriptConsumerItem.AppliesTo("command-palette", this);
+
+        public bool ShowsInFileExplorer => _fileExplorerEnabled && PowerScriptsViewModel.PowerScriptConsumerItem.AppliesTo("file-explorer", this);
+
+        public bool ShowsNowhere => !ShowsInAdvancedPaste && !ShowsInCommandPalette && !ShowsInFileExplorer;
+
+        public DateTimeOffset? LastRunUtc { get; private set; }
+
+        public string LastRunDisplay => FormatLastRun(LastRunUtc, DateTimeOffset.UtcNow);
+
         public bool IsMxcEffectivelyEnabled { get; private set; } = true;
 
         public bool IsFilesystemRestrictionEffective { get; private set; } = true;
@@ -161,6 +191,41 @@ namespace PowerScripts.UI.ViewModels
             OnPropertyChanged(nameof(HasIconWarning));
         }
 
+        internal void SetEnabledPlaces(bool advancedPaste, bool commandPalette, bool fileExplorer)
+        {
+            _advancedPasteEnabled = advancedPaste;
+            _commandPaletteEnabled = commandPalette;
+            _fileExplorerEnabled = fileExplorer;
+            OnPropertyChanged(nameof(ShowsInAdvancedPaste));
+            OnPropertyChanged(nameof(ShowsInCommandPalette));
+            OnPropertyChanged(nameof(ShowsInFileExplorer));
+            OnPropertyChanged(nameof(ShowsNowhere));
+        }
+
+        internal void SetLastRun(DateTimeOffset? lastRunUtc)
+        {
+            LastRunUtc = lastRunUtc;
+            OnPropertyChanged(nameof(LastRunUtc));
+            OnPropertyChanged(nameof(LastRunDisplay));
+        }
+
+        internal static string FormatLastRun(DateTimeOffset? lastRunUtc, DateTimeOffset nowUtc)
+        {
+            if (lastRunUtc is not { } started)
+            {
+                return GetResourceString("PowerScripts_LastRunNever");
+            }
+
+            var elapsed = nowUtc - started;
+            var localDays = (nowUtc.ToLocalTime().Date - started.ToLocalTime().Date).Days;
+            return elapsed.TotalMinutes < 1 ? GetResourceString("PowerScripts_LastRunJustNow")
+                : elapsed.TotalHours < 1 ? FormatResource("PowerScripts_LastRunMinutes", (int)elapsed.TotalMinutes)
+                : localDays == 0 ? FormatResource("PowerScripts_LastRunHours", (int)elapsed.TotalHours)
+                : localDays == 1 ? GetResourceString("PowerScripts_LastRunYesterday")
+                : localDays < 7 ? FormatResource("PowerScripts_LastRunDays", localDays)
+                : started.ToLocalTime().ToString("d", CultureInfo.CurrentCulture);
+        }
+
         internal void SetExecutionSummary(string summary, string isolation, string blocked, bool managedLinux)
         {
             ExecutionSummary = summary;
@@ -218,5 +283,8 @@ namespace PowerScripts.UI.ViewModels
         };
 
         private static string GetResourceString(string resourceName) => ResourceLoaderInstance.ResourceLoader.GetString(resourceName);
+
+        private static string FormatResource(string resourceName, int value) =>
+            GetResourceString(resourceName).Replace("{0}", value.ToString(CultureInfo.CurrentCulture), StringComparison.Ordinal);
     }
 }
