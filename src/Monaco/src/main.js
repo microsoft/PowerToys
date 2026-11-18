@@ -4,7 +4,7 @@ import * as monaco from 'monaco-editor/editor';
 import 'monaco-editor/languages/definitions/register.all';
 import 'monaco-editor/languages/features/json/register';
 import './features.js';
-import { customTokenThemeRules } from '../customTokenThemeRules.js';
+import { customTokenThemeRules } from './customTokenThemeRules.js';
 import { registerPowerToysLanguages } from './languages.js';
 
 // Host pages are loaded from file:// or NavigateToString while the bundle is served from the

@@ -5,7 +5,9 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "build": "node build.mjs"
+    "build": "node build.mjs",
+    "gen:languages": "node tools/generate-languages.mjs",
+    "check:languages": "node tools/generate-languages.mjs --check"
   },
   "dependencies": {
     "monaco-editor": "0.57.0"

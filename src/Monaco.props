@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Include Monaco Editor source code -->
+<!--
+  Monaco editor for the developer-file previewers (Preview Pane, Peek) and Registry Preview.
+  The editor is bundled from the pinned monaco-editor npm package (src\Monaco\package.json) plus the
+  PowerToys layer in src\Monaco\src by src\Monaco\build.mjs, and lands flat in Assets\Monaco.
+-->
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)\Monaco\customTokenThemeRules.js">
-      <Link>Assets\Monaco\customTokenThemeRules.js</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="$(MSBuildThisFileDirectory)\Monaco\monacoSpecialLanguages.js">
-      <Link>Assets\Monaco\monacoSpecialLanguages.js</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Include="$(MSBuildThisFileDirectory)\Monaco\index.html">
       <Link>Assets\Monaco\index.html</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -18,18 +14,9 @@
       <Link>Assets\Monaco\monaco_languages.json</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="$(MSBuildThisFileDirectory)\Monaco\monacoSRC\**">
-      <Link>Assets\Monaco\monacoSRC\%(RecursiveDir)%(FileName)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-   <None Include="$(MSBuildThisFileDirectory)\Monaco\customLanguages\**">
-      <Link>Assets\Monaco\customLanguages\%(RecursiveDir)%(FileName)%(Extension)</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
   <!--
-    Monaco editor bundle built from the pinned monaco-editor npm package (src\Monaco\package.json).
     build.mjs is shared by every project importing this file; it serializes itself with a lock file
     and is a no-op when the bundle is current. Requires Node.js on PATH (or PowerToysNodeExe).
   -->
@@ -40,8 +27,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PowerToysMonacoBundleInput Include="$(PowerToysMonacoDir)package.json;$(PowerToysMonacoDir)package-lock.json;$(PowerToysMonacoDir).npmrc;$(PowerToysMonacoDir)build.mjs;$(PowerToysMonacoDir)customTokenThemeRules.js" />
-    <PowerToysMonacoBundleInput Include="$(PowerToysMonacoDir)src\**\*.js;$(PowerToysMonacoDir)customLanguages\**\*.js" />
+    <PowerToysMonacoBundleInput Include="$(PowerToysMonacoDir)package.json;$(PowerToysMonacoDir)package-lock.json;$(PowerToysMonacoDir).npmrc;$(PowerToysMonacoDir)build.mjs" />
+    <PowerToysMonacoBundleInput Include="$(PowerToysMonacoDir)src\**\*.js" />
   </ItemGroup>
 
   <Target Name="PowerToysBuildMonacoBundle"
@@ -59,9 +46,9 @@
   <!-- Added inside a target so a clean build picks up files build.mjs just produced. -->
   <Target Name="PowerToysIncludeMonacoBundle" DependsOnTargets="PowerToysBuildMonacoBundle" BeforeTargets="AssignTargetPaths">
     <ItemGroup>
-      <_PowerToysMonacoBundleFile Include="$(PowerToysMonacoDistDir)**" Exclude="$(PowerToysMonacoDistDir).stamp" />
+      <_PowerToysMonacoBundleFile Include="$(PowerToysMonacoDistDir)*" Exclude="$(PowerToysMonacoDistDir).stamp" />
       <None Include="@(_PowerToysMonacoBundleFile)">
-        <Link>Assets\Monaco\dist\%(_PowerToysMonacoBundleFile.RecursiveDir)%(_PowerToysMonacoBundleFile.Filename)%(_PowerToysMonacoBundleFile.Extension)</Link>
+        <Link>Assets\Monaco\%(_PowerToysMonacoBundleFile.Filename)%(_PowerToysMonacoBundleFile.Extension)</Link>
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </None>
     </ItemGroup>

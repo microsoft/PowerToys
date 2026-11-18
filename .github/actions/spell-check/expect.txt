@@ -259,6 +259,7 @@ coclass
 CODENAME
 codereview
 Codespaces
+codicon
 Coen
 cognitiveservices
 COINIT

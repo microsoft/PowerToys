@@ -7,9 +7,9 @@ import * as razor from 'monaco-editor/languages/definitions/razor/razor';
 import * as shell from 'monaco-editor/languages/definitions/shell/shell';
 import * as vb from 'monaco-editor/languages/definitions/vb/vb';
 import * as xml from 'monaco-editor/languages/definitions/xml/xml';
-import { gitignoreDefinition } from '../customLanguages/gitignore.js';
-import { regDefinition } from '../customLanguages/reg.js';
-import { srtDefinition } from '../customLanguages/srt.js';
+import { gitignoreDefinition } from './customLanguages/gitignore.js';
+import { regDefinition } from './customLanguages/reg.js';
+import { srtDefinition } from './customLanguages/srt.js';
 
 // Extra extensions mapped onto an upstream grammar. A null grammar means plain text.
 // monaco-editor has no Monarch grammar for JSON, so jsonExt stays plain text as it did with the AMD build.

@@ -388,6 +388,17 @@ jobs:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
+  # monaco_languages.json drives preview-handler registration; it must match what the bundle registers.
+  - pwsh: |-
+      node src/Monaco/tools/generate-languages.mjs --check
+      if ($LASTEXITCODE -eq 2) {
+        Write-Host '##vso[task.logissue type=warning]Microsoft Edge is not installed on this agent; skipped the monaco_languages.json check.'
+        exit 0
+      }
+      exit $LASTEXITCODE
+    displayName: Verify monaco_languages.json matches the Monaco bundle
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'x64'))
+
   - task: VSBuild@1
     displayName: Generate DSC artifacts for ARM64
     condition: and(succeeded(), eq(variables['BuildPlatform'], 'arm64'))

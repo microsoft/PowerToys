@@ -14,7 +14,7 @@ const lockFile = path.join(root, '.build.lock');
 const depsMarker = path.join(root, 'node_modules', '.pt-deps-hash');
 
 const depsInputs = ['package.json', 'package-lock.json', '.npmrc'];
-const bundleInputs = [...depsInputs, 'build.mjs', 'src', 'customLanguages', 'customTokenThemeRules.js'];
+const bundleInputs = [...depsInputs, 'build.mjs', 'src'];
 
 function listFiles(relPath) {
     const full = path.join(root, relPath);
