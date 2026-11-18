@@ -182,10 +182,11 @@ internal static class Logger
             $"\r\n" +
             $"{sb}\r\n";
 
-        // obfuscate the current encryption key
-        if (!string.IsNullOrEmpty(Encryption.myKey))
+        // Free-form dump text can contain the current key outside named fields.
+        var currentKey = Encryption.MyKey;
+        if (!string.IsNullOrEmpty(currentKey))
         {
-            log = log.Replace(Encryption.MyKey, Logger.GetChecksum(Encryption.MyKey));
+            log = log.Replace(currentKey, "<private_data>", StringComparison.Ordinal);
         }
 
         log += Thread.DumpThreadsStack();
@@ -270,6 +271,14 @@ internal static class Logger
             return false;
         }
 
+        if (objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("SecurityKey", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("<MyKey>k__BackingField", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("<SecurityKey>k__BackingField", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         var objString = obj.ToString();
         var values = new string[7];
         values[0] = new string('-', Math.Max(level - 1, 0) * 2);
@@ -277,24 +286,22 @@ internal static class Logger
         /* values[2] = " "; */
         /* values[3] = t.FullName; */
         values[4] = " = ";
-        values[5] = objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
-            ? Logger.GetChecksum(objString)
-            : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
-                ? string.Empty
-                : objString
-                    .Replace("System.Windows.Forms.", string.Empty)
-                    .Replace("System.Net.Sockets.", string.Empty)
-                    .Replace("System.Security.Cryptography.", string.Empty)
-                    .Replace("System.Threading.", string.Empty)
-                    .Replace("System.ComponentModel.", string.Empty)
-                    .Replace("System.Runtime.", string.Empty)
-                    .Replace("System.Drawing.", string.Empty)
-                    .Replace("System.Object", "O")
-                    .Replace("System.Diagnostics.", string.Empty)
-                    .Replace("System.Collections.", string.Empty)
-                    .Replace("System.Drawing.", string.Empty)
-                    .Replace("System.Int", string.Empty)
-                    .Replace("System.EventHandler.", string.Empty);
+        values[5] = objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
+            ? string.Empty
+            : objString
+                .Replace("System.Windows.Forms.", string.Empty)
+                .Replace("System.Net.Sockets.", string.Empty)
+                .Replace("System.Security.Cryptography.", string.Empty)
+                .Replace("System.Threading.", string.Empty)
+                .Replace("System.ComponentModel.", string.Empty)
+                .Replace("System.Runtime.", string.Empty)
+                .Replace("System.Drawing.", string.Empty)
+                .Replace("System.Object", "O")
+                .Replace("System.Diagnostics.", string.Empty)
+                .Replace("System.Collections.", string.Empty)
+                .Replace("System.Drawing.", string.Empty)
+                .Replace("System.Int", string.Empty)
+                .Replace("System.EventHandler.", string.Empty);
         values[6] = "\r\n";
         _ = sb.Append(string.Concat(values).Replace(Common.BinaryName, "MM"));
 
