@@ -1177,14 +1177,27 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            // Capture the row and the profile BEFORE the confirmation is shown. An engine-driven profile
+            // switch can rebuild the list while the dialog is open; the recycled menu item's Tag then
+            // points at the row of the new profile in the same position, and reading it after the
+            // await deleted that row instead.
+            object? target = menuFlyoutItem.Tag;
+            string profileAtOpen = _mappingService.ConfigurationName;
+
             if (await DeleteConfirmationDialog.ShowAsync() != ContentDialogResult.Primary)
             {
                 return;
             }
 
+            if (!IsStillEditingProfile(profileAtOpen))
+            {
+                Logger.LogWarning("Delete cancelled: the active profile changed while the confirmation was open.");
+                return;
+            }
+
             try
             {
-                switch (menuFlyoutItem.Tag)
+                switch (target)
                 {
                     case Remapping remapping:
                         HandleRemappingDelete(remapping);
@@ -1203,6 +1216,11 @@ namespace KeyboardManagerEditorUI.Pages
                 Logger.LogError("Error deleting mapping: " + ex.Message);
             }
         }
+
+        // True when the editor is still showing the profile a confirmation dialog was opened for.
+        private bool IsStillEditingProfile(string profileAtOpen) =>
+            _mappingService != null &&
+            string.Equals(_mappingService.ConfigurationName, profileAtOpen, StringComparison.OrdinalIgnoreCase);
 
         private void HandleRemappingDelete(Remapping remapping)
         {
@@ -1931,8 +1949,21 @@ namespace KeyboardManagerEditorUI.Pages
             _bulkDeleteConfirmationFormat ??= CompositeFormat.Parse(ResourceHelper.GetString("BulkDeleteConfirmation_Format"));
             BulkDeleteConfirmationText.Text = string.Format(CultureInfo.CurrentCulture, _bulkDeleteConfirmationFormat, SelectedCount);
 
+            // The selection is read after the confirmation, so refuse if an engine-driven profile switch
+            // rebuilt the lists while it was open (see DeleteMapping_Click): whatever is selected then
+            // is not what the count in the dialog referred to.
+            string profileAtOpen = _mappingService.ConfigurationName;
+
             if (await BulkDeleteConfirmationDialog.ShowAsync() != ContentDialogResult.Primary)
             {
+                return;
+            }
+
+            if (!IsStillEditingProfile(profileAtOpen))
+            {
+                Logger.LogWarning("Bulk delete cancelled: the active profile changed while the confirmation was open.");
+                IsSelectionMode = false;
+                UpdateSelectedCount();
                 return;
             }
 
