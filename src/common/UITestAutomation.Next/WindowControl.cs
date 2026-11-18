@@ -534,15 +534,20 @@ public static class WindowControl
             (x, y) =>
             {
                 if (x is < short.MinValue or > short.MaxValue ||
-                    y is < short.MinValue or > short.MaxValue ||
-                    !IsPointOwnedByWindow(window, x, y))
+                    y is < short.MinValue or > short.MaxValue)
                 {
                     return false;
                 }
 
+                var atPoint = WindowFromPoint(new POINT { X = x, Y = y });
                 var point = new IntPtr(unchecked(((ushort)y << 16) | (ushort)x));
-                return SendMessageTimeoutW(window, WM_NCHITTEST, IntPtr.Zero, point, AbortIfHung, 250, out var hit) != IntPtr.Zero &&
-                    hit.ToInt64() == HitCaption;
+                return IsExposedCaption(
+                    window,
+                    atPoint,
+                    child => GetAncestor(child, GaRoot),
+                    child => SendMessageTimeoutW(child, WM_NCHITTEST, IntPtr.Zero, point, AbortIfHung, 250, out var hit) != IntPtr.Zero
+                        ? hit.ToInt64()
+                        : 0);
             },
             (x, y) =>
             {
@@ -554,6 +559,19 @@ public static class WindowControl
                     requiredConsecutiveMatches: 2).Succeeded;
             },
             MouseHelper.LeftClick);
+    }
+
+    internal static bool IsExposedCaption(
+        IntPtr window,
+        IntPtr atPoint,
+        Func<IntPtr, IntPtr> getRoot,
+        Func<IntPtr, long> hitTest)
+    {
+        ArgumentNullException.ThrowIfNull(getRoot);
+        ArgumentNullException.ThrowIfNull(hitTest);
+
+        // Win11 Explorer's caption is a child HWND; its CabinetWClass root reports HTCLIENT.
+        return window != IntPtr.Zero && atPoint != IntPtr.Zero && getRoot(atPoint) == window && hitTest(atPoint) == HitCaption;
     }
 
     internal static bool TryClickExposedCaption(

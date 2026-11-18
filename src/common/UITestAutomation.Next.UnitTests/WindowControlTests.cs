@@ -13,6 +13,39 @@ public sealed class WindowControlTests
     private static readonly string[] ExpectedCaptionClickActions = ["check", "move", "check", "click"];
 
     [TestMethod]
+    public void CaptionHitTestUsesTheOwnedChildRatherThanTheClientRoot()
+    {
+        var root = new IntPtr(1);
+        var child = new IntPtr(2);
+        Assert.IsTrue(WindowControl.IsExposedCaption(
+            root,
+            child,
+            _ => root,
+            target => target == child ? 2 : 1));
+    }
+
+    [TestMethod]
+    public void CaptionHitTestRejectsAnotherWindowsCaption()
+    {
+        Assert.IsFalse(WindowControl.IsExposedCaption(
+            new IntPtr(1),
+            new IntPtr(2),
+            _ => new IntPtr(3),
+            _ => throw new AssertFailedException("A foreign window must not be hit-tested or clicked.")));
+    }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(8)]
+    [DataRow(9)]
+    [DataRow(20)]
+    public void CaptionHitTestRejectsClientContentAndCaptionButtons(int hit)
+    {
+        var window = new IntPtr(1);
+        Assert.IsFalse(WindowControl.IsExposedCaption(window, window, _ => window, _ => hit));
+    }
+
+    [TestMethod]
     public void CaptionRecoveryDoesNotClickCoveredOrNonCaptionPoints()
     {
         Assert.IsFalse(WindowControl.TryClickExposedCaption(
