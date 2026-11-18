@@ -54,6 +54,7 @@ The Monaco version is the `monaco-editor` entry in [`src/Monaco/package.json`](/
 1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`. This updates `package.json` and `package-lock.json`.
 2. Run `npm run gen:languages` to regenerate `monaco_languages.json`, and review its diff. CI fails if the file doesn't match `src/Monaco/src/languages.js`.
 3. Build, then smoke-test the Preview Pane, Peek, and Registry Preview. Check the [Monaco changelog](https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md) for breaking changes.
+4. Check the third-party code bundled inside `monaco-editor` (currently marked and DOMPurify, listed under each Monaco Editor entry in [`NOTICE.md`](/NOTICE.md)). If the `dependencies` in `node_modules/monaco-editor/package.json` changed, update `NOTICE.md`.
 
 For more detail, see the [FilePreviewCommon documentation](FilePreviewCommon.md#update-monaco-editor).
 
