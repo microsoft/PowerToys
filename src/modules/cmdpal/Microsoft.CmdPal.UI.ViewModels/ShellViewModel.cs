@@ -213,16 +213,29 @@ public partial class ShellViewModel : ObservableObject,
 
     private void PerformCommand(PerformCommandMessage message)
     {
+        // QueryToken is cancelled every time the home page search changes. If it's
+        // already cancelled, the user picked a result that is no longer current.
         var fallbackContext = message.FallbackContext;
         if (fallbackContext?.CanInvoke == false)
         {
             return;
         }
 
+        // The snapshot lease keeps the extension's result objects alive while we
+        // use them. If the snapshot already closed, those objects are gone.
         IDisposable? invocationLease = null;
-        if (fallbackContext is not null && !fallbackContext.TryAcquireSnapshotLease(out invocationLease))
+        if (fallbackContext is not null &&
+            !fallbackContext.TryAcquireSnapshotLease(out invocationLease))
         {
             return;
+        }
+
+        // The selection was valid, so stop tracking the search now. Otherwise a page
+        // opened from this result (and every command on it) would stop working as
+        // soon as the main list refreshes. The lease above keeps it alive instead.
+        if (fallbackContext?.QueryToken.CanBeCanceled == true)
+        {
+            fallbackContext = fallbackContext with { QueryToken = CancellationToken.None };
         }
 
         var invocationContext = fallbackContext?.InvocationContext
@@ -278,9 +291,6 @@ public partial class ShellViewModel : ObservableObject,
                     fallbackContext);
                 if (pageViewModel is null)
                 {
-                    // A page that came from a fallback result can go stale between the
-                    // check above and this call, because the user kept typing. That is
-                    // normal, so leave without an error.
                     if (fallbackContext is not null)
                     {
                         return;
@@ -363,7 +373,7 @@ public partial class ShellViewModel : ObservableObject,
 
                 _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host, invocationContext, commandViewModel, invocationLease);
+                StartInvoke(message, invokable, host, invocationContext, commandViewModel, fallbackContext, invocationLease);
 
                 // StartInvoke now owns the reference and releases it when the command
                 // ends, which can be long after this method returns. Clear the local so
@@ -396,6 +406,7 @@ public partial class ShellViewModel : ObservableObject,
         AppExtensionHost? host,
         object? invocationSender,
         CommandViewModel command,
+        FallbackQueryContext? fallbackContext,
         IDisposable? invocationLease)
     {
         // Takes ownership of invocationLease. Every path through this method either
@@ -414,7 +425,7 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, command, invocationLease);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, command, fallbackContext, invocationLease);
                 });
             }
         }
@@ -426,6 +437,7 @@ public partial class ShellViewModel : ObservableObject,
         AppExtensionHost? host,
         object? invocationSender,
         CommandViewModel command,
+        FallbackQueryContext? fallbackContext,
         IDisposable? invocationLease)
     {
         // Telemetry: Track command execution time and success
@@ -462,7 +474,7 @@ public partial class ShellViewModel : ObservableObject,
                 message.OnBeforeShowConfirmation,
                 message.ResultHandler,
                 message.Context?.Page,
-                message.FallbackContext);
+                fallbackContext);
         }
         catch (Exception ex)
         {

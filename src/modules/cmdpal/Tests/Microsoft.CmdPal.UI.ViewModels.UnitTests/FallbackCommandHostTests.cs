@@ -391,6 +391,7 @@ public sealed partial class FallbackCommandHostTests
         Assert.AreEqual(0, fallback.UpdateCount);
         Assert.AreEqual(0, fallback.CreateCount);
         Assert.AreEqual("query", handler.LastArgs?.Query);
+        Assert.IsFalse(handler.StartedOnThreadPool);
         Assert.IsFalse(string.IsNullOrEmpty(handler.LastArgs?.QueryId));
         Assert.AreEqual(FallbackResultQueryManager.InitialRequestedItemCount, handler.LastArgs?.RequestedItemCount);
         Assert.HasCount(1, results);
@@ -607,12 +608,15 @@ public sealed partial class FallbackCommandHostTests
 
     private sealed partial class RecordingQueryHandler : IFallbackQueryHandler
     {
+        public bool StartedOnThreadPool { get; private set; }
+
         public IFallbackQueryArgs? LastArgs { get; private set; }
 
         public void UpdateQuery(string query) => Assert.Fail("V2 handlers must not receive legacy updates.");
 
         public IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> QueryAsync(IFallbackQueryArgs args)
         {
+            StartedOnThreadPool = Thread.CurrentThread.IsThreadPoolThread;
             LastArgs = args;
             return AsyncInfo.Run<IFallbackCommandResult, IFallbackCommandResult>((_, _) =>
                 Task.FromResult<IFallbackCommandResult>(new FallbackQueryResult(

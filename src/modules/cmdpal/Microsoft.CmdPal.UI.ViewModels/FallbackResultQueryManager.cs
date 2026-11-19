@@ -5,7 +5,6 @@
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices.WindowsRuntime;
 using ManagedCommon;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
@@ -21,6 +20,7 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
     private const int MaximumConcurrentQueries = 8;
 
     private readonly SemaphoreSlim _querySlots = new(MaximumConcurrentQueries);
+    private readonly DedicatedThreadPool _workers = new(minThreads: 2, maxThreads: MaximumConcurrentQueries, name: "FallbackResults");
     private readonly ConcurrentDictionary<string, byte> _loadingSources = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _sourceLocks = new(StringComparer.Ordinal);
     private readonly Action<TopLevelViewModel, IFallbackCommandResult, bool, uint, CancellationToken> _publishSnapshot;
@@ -100,17 +100,13 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
 
             var requestedItemCount = source.EffectiveMaximumVisibleItemCount;
             var maximumItemCount = (uint)acceptedItemCount + requestedItemCount;
-            var operation = await InvokeLoadMoreAsync(result, requestedItemCount, cancellationToken).ConfigureAwait(false);
-            var publisher = new SnapshotPublisher(
-                this,
-                source,
-                result.Query,
-                result.QueryId,
-                maximumItemCount,
-                cancellationToken);
-            operation.Progress = (_, snapshot) => publisher.PublishProgress(snapshot);
-            var nextResult = await operation.AsTask(cancellationToken).ConfigureAwait(false);
-            publisher.PublishFinal(nextResult);
+            await _workers.QueueAsync(
+                () =>
+                {
+                    var publisher = new SnapshotPublisher(this, source, result.Query, result.QueryId, maximumItemCount, cancellationToken);
+                    RunOperation(result.LoadMoreItemsAsync(requestedItemCount), publisher, cancellationToken);
+                },
+                cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -176,7 +172,6 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
                 queryId,
                 requestedItemCount,
                 global::Windows.System.UserProfile.GlobalizationPreferences.Languages.ToArray());
-            var operation = await InvokeQueryAsync(handler, args, cancellationToken).ConfigureAwait(false);
             var publisher = new SnapshotPublisher(
                 this,
                 source,
@@ -184,9 +179,9 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
                 queryId,
                 requestedItemCount,
                 cancellationToken);
-            operation.Progress = (_, snapshot) => publisher.PublishProgress(snapshot);
-            var result = await operation.AsTask(cancellationToken).ConfigureAwait(false);
-            publisher.PublishFinal(result);
+            await _workers.QueueAsync(
+                () => RunOperation(handler.Unsafe!.QueryAsync(args), publisher, cancellationToken),
+                cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -234,66 +229,16 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
         _publishSnapshot(source, snapshot, isFinal, maximumItemCount, cancellationToken);
     }
 
-    private static Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeQueryAsync(
-        ExtensionObject<IFallbackQueryHandler> handler,
-        IFallbackQueryArgs args,
-        CancellationToken cancellationToken)
-        => StartCancelableAsync(
-            () =>
-            {
-                if (!handler.HasValue)
-                {
-                    throw new InvalidOperationException("The fallback query handler is not available.");
-                }
-
-                return handler.Unsafe.QueryAsync(args);
-            },
-            cancellationToken);
-
-    private static Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> InvokeLoadMoreAsync(
-        IFallbackCommandResult result,
-        uint requestedItemCount,
-        CancellationToken cancellationToken)
-        => StartCancelableAsync(() => result.LoadMoreItemsAsync(requestedItemCount), cancellationToken);
-
-    /// <summary>
-    /// Starts a call into an extension and stops waiting for it when the query is cancelled.
-    /// </summary>
-    /// <remarks>
-    /// The call itself can block, so it runs on a pool thread. A cancelled query stops
-    /// waiting at once, but the call keeps running. The continuation cancels whatever the
-    /// call returns later, so the extension does not keep working for a query the user
-    /// already replaced.
-    /// </remarks>
-    private static async Task<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> StartCancelableAsync(
-        Func<IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult>> start,
+    // Keep the worker, source slot and (for load-more) snapshot lease until the
+    // extension returns, even if a newer query cancels this one in the meantime.
+    private static void RunOperation(
+        IAsyncOperationWithProgress<IFallbackCommandResult, IFallbackCommandResult> operation,
+        SnapshotPublisher publisher,
         CancellationToken cancellationToken)
     {
-        var callTask = Task.Run(start, CancellationToken.None);
-        try
-        {
-            return await callTask.WaitAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-            _ = callTask.ContinueWith(
-                static task =>
-                {
-                    if (task.Status == TaskStatus.RanToCompletion)
-                    {
-                        task.Result?.Cancel();
-                    }
-                    else
-                    {
-                        // Observe the fault so it does not surface as unhandled.
-                        _ = task.Exception;
-                    }
-                },
-                CancellationToken.None,
-                TaskContinuationOptions.ExecuteSynchronously,
-                TaskScheduler.Default);
-            throw;
-        }
+        operation.Progress = (_, snapshot) => publisher.PublishProgress(snapshot);
+        var result = operation.AsTask(cancellationToken).GetAwaiter().GetResult();
+        publisher.PublishFinal(result);
     }
 
     public void Dispose()
@@ -301,6 +246,7 @@ internal sealed partial class FallbackResultQueryManager : IDisposable
         // Stop new queries. The caller cancels the query token before it disposes us,
         // so work that is already running unwinds on its own.
         _disposed = true;
+        _workers.Dispose();
         _loadingSources.Clear();
 
         // Do not dispose the semaphores. A query that is still unwinding releases the
