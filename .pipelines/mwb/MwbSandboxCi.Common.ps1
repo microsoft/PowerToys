@@ -586,7 +586,10 @@ function ConvertTo-MwbProvisioningProgress {
     param([string] $Line)
 
     $phases = @('Validating staged payload', 'Checking staged process inventory',
-        'Checking Sandbox feature', 'Validating Sandbox preview', 'Checking firewall conflicts',
+        'Checking Sandbox feature', 'Validating Sandbox preview', 'Checking staged Sandbox preview path',
+        'Hashing Sandbox preview CLI', 'Checking pending image reboot', 'Pending image reboot confirmed',
+        'Resolving interactive test identity',
+        'Checking prior provisioning ownership', 'Checking firewall conflicts',
         'Fingerprinting payload', 'Inspecting public test trust', 'Hashing MWB executable',
         'Hashing MWB assembly', 'Hashing Sandbox runtime archive', 'Recording provisioning ownership',
         'Writing provisioning marker', 'Waiting for Sandbox network', 'Importing owned public test trust')
@@ -755,6 +758,85 @@ function Get-MwbSandboxInteractiveUserReport {
     $report
 }
 
+function Get-MwbRebootRegistryReport {
+    $checks = [ordered]@{}
+    foreach ($check in @(
+        @{ Name = 'CBS'; Path = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending' },
+        @{ Name = 'WindowsUpdate'; Path = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired' }
+    )) {
+        $state = [ordered]@{ Required = $null; QueryError = $null }
+        try { $state.Required = Test-Path -LiteralPath $check.Path -ErrorAction Stop }
+        catch { $state.QueryError = Get-MwbDiagnosticError $_ 'RebootRegistryQueryFailed' }
+        $checks[$check.Name] = $state
+    }
+    $checks
+}
+
+function Get-MwbImageServicingReport {
+    $report = [ordered]@{
+        SchemaVersion = 1
+        GeneratedUtc = [DateTime]::UtcNow.ToString('o')
+        LastBootUtc = $null
+        OSBuildRevision = $null
+        RebootChecks = Get-MwbRebootRegistryReport
+        RebootChecksAfterInventory = $null
+        InstalledHotFixes = @()
+        ServicingPackages = @()
+        QueryErrors = @()
+    }
+    $errors = [Collections.Generic.List[object]]::new()
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
+        if ($os.LastBootUpTime -isnot [DateTime]) { throw 'Unexpected boot timestamp.' }
+        $report.LastBootUtc = $os.LastBootUpTime.ToUniversalTime().ToString('o')
+    }
+    catch { $errors.Add((Get-MwbDiagnosticError $_ 'BootTimeQueryFailed')) }
+    try {
+        $version = Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -ErrorAction Stop
+        if ([string]$version.CurrentBuild -notmatch '^\d{4,6}$' -or
+            [string]$version.UBR -notmatch '^\d{1,9}$') { throw 'Unexpected OS revision.' }
+        $report.OSBuildRevision = '{0}.{1}' -f $version.CurrentBuild, $version.UBR
+    }
+    catch { $errors.Add((Get-MwbDiagnosticError $_ 'UpdateRevisionQueryFailed')) }
+    try {
+        $report.InstalledHotFixes = @(
+            Get-HotFix -ErrorAction Stop | ForEach-Object {
+                if ($_.HotFixID -cnotmatch '^KB\d{6,9}$') { throw 'Unexpected hotfix identity.' }
+                $_.HotFixID
+            } | Sort-Object -Unique
+        )
+    }
+    catch {
+        $report.InstalledHotFixes = @()
+        $errors.Add((Get-MwbDiagnosticError $_ 'HotFixInventoryFailed'))
+    }
+    try {
+        $packages = @(Get-WindowsPackage -Online -ErrorAction Stop | Where-Object {
+            [string]$_.PackageState -in @('InstallPending', 'UninstallPending') -or
+                $_.PackageName -match '^Package_for_(RollupFix|ServicingStack)'
+        })
+        $report.ServicingPackages = @(
+            foreach ($package in $packages) {
+                if ($package.PackageName -cnotmatch '^(?:Package_for_[A-Za-z0-9._-]+|Microsoft-Windows-[A-Za-z0-9._-]+)~31bf3856ad364e35~(?:amd64|arm64|x86|neutral)~[A-Za-z-]*~\d+(?:\.\d+){1,3}$' -or
+                    [string]$package.PackageState -cnotin @('Installed', 'Superseded', 'Staged', 'InstallPending', 'UninstallPending') -or
+                    $package.InstallTime -isnot [DateTime]) { throw 'Unexpected servicing package metadata.' }
+                [ordered]@{
+                    Name = $package.PackageName
+                    State = [string]$package.PackageState
+                    InstallUtc = $package.InstallTime.ToUniversalTime().ToString('o')
+                }
+            }
+        )
+    }
+    catch {
+        $report.ServicingPackages = @()
+        $errors.Add((Get-MwbDiagnosticError $_ 'ServicingPackageInventoryFailed'))
+    }
+    $report.RebootChecksAfterInventory = Get-MwbRebootRegistryReport
+    $report.QueryErrors = $errors.ToArray()
+    $report
+}
+
 function Get-MwbSandboxPrerequisiteReport {
     param([string] $Platform)
 
@@ -771,6 +853,7 @@ function Get-MwbSandboxPrerequisiteReport {
         OSBuildNumber = $null
         OSVersionString = $null
         OSQueryError = $null
+        ImageServicing = Get-MwbImageServicingReport
         SandboxFeatureState = $null
         SandboxFeatureQueryError = $null
         AllUsersPackages = $null
