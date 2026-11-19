@@ -16,6 +16,19 @@ const depsMarker = path.join(root, 'node_modules', '.pt-deps-hash');
 const depsInputs = ['package.json', 'package-lock.json', '.npmrc'];
 const bundleInputs = [...depsInputs, 'build.mjs', 'src'];
 
+// The checks below fail the build when a Monaco update needs a manual step.
+const updateDoc = 'doc/devdocs/common/monaco-editor.md#update-process';
+
+// Third-party libraries bundled inside monaco-editor. NOTICE.md lists them under each Monaco Editor entry.
+const noticedMonacoDependencies = ['dompurify', 'marked'];
+
+// The installer lists the bundle files by name (installer/PowerToysSetupVNext/generateAllFileComponents.ps1).
+const expectedOutputs = ['codicon.ttf', 'editor.worker.js', 'monaco.css', 'monaco.js'];
+
+function updateError(message) {
+    return new Error(`${message} See ${updateDoc}.`);
+}
+
 function listFiles(relPath) {
     const full = path.join(root, relPath);
     if (!fs.existsSync(full)) {
@@ -89,6 +102,35 @@ async function withLock(action) {
     }
 }
 
+// Installing through a feed can write its URLs and SHA-1 hashes into the lockfile.
+function checkLockfile() {
+    const lock = JSON.parse(readText(path.join(root, 'package-lock.json')));
+    for (const [name, entry] of Object.entries(lock.packages ?? {})) {
+        if (!name || entry.link) {
+            continue;
+        }
+
+        if (!entry.resolved?.startsWith('https://registry.npmjs.org/') || !entry.integrity?.startsWith('sha512-')) {
+            throw updateError(`package-lock.json entry "${name}" must resolve from https://registry.npmjs.org/ with a sha512 integrity hash.`);
+        }
+    }
+}
+
+function checkBundledLibraries() {
+    const monacoPackage = JSON.parse(readText(path.join(root, 'node_modules', 'monaco-editor', 'package.json')));
+    const bundled = Object.keys(monacoPackage.dependencies ?? {}).sort();
+    if (bundled.join() !== noticedMonacoDependencies.join()) {
+        throw updateError(`monaco-editor now bundles ${bundled.join(', ') || 'no libraries'}. Update NOTICE.md and noticedMonacoDependencies in build.mjs.`);
+    }
+}
+
+function checkOutputs() {
+    const outputs = fs.readdirSync(distDir).sort();
+    if (outputs.join() !== expectedOutputs.join()) {
+        throw updateError(`The bundle now has ${outputs.join(', ')}. Update the installer file list and expectedOutputs in build.mjs.`);
+    }
+}
+
 function restoreDependencies() {
     const depsHash = hashInputs(depsInputs);
     if (readText(depsMarker) === depsHash) {
@@ -118,14 +160,14 @@ function compareVersions(a, b) {
 
 // monaco-editor 0.57.0 ships an unmodified copy of DOMPurify 3.4.15, which has security advisories fixed in 3.4.17.
 // package.json pins the patched dompurify package, and this redirects Monaco's import of its own copy to it.
-// Remove both once monaco-editor bundles a fixed DOMPurify (0.57.1 bundles 3.4.17).
+// Remove both once monaco-editor bundles a fixed DOMPurify (0.57.1 bundles 3.4.17); the check below enforces that.
 function useDomPurifyPackage() {
     const vendoredPath = path.join(root, 'node_modules', 'monaco-editor', 'esm', 'vs', 'base', 'browser', 'dompurify', 'dompurify.js');
     const vendoredHeader = fs.readFileSync(vendoredPath, 'utf8').slice(0, 200);
     const vendored = /DOMPurify (\d+\.\d+\.\d+)/.exec(vendoredHeader)?.[1];
     const pinned = JSON.parse(fs.readFileSync(path.join(root, 'node_modules', 'dompurify', 'package.json'), 'utf8')).version;
-    if (!vendored || compareVersions(vendored, pinned) > 0) {
-        throw new Error(`monaco-editor now bundles DOMPurify ${vendored ?? '(unknown version)'}, newer than the pinned ${pinned}. Remove the dompurify dependency and override from package.json and useDomPurifyPackage from build.mjs.`);
+    if (!vendored || compareVersions(vendored, pinned) >= 0) {
+        throw updateError(`monaco-editor now bundles DOMPurify ${vendored ?? '(unknown version)'}, so the pinned ${pinned} is no longer needed. Remove the dompurify dependency and override from package.json and useDomPurifyPackage from build.mjs.`);
     }
 
     return {
@@ -138,6 +180,7 @@ function useDomPurifyPackage() {
 }
 
 async function bundle() {
+    checkBundledLibraries();
     const { build } = await import('esbuild');
     fs.rmSync(distDir, { recursive: true, force: true });
 
@@ -167,9 +210,12 @@ async function bundle() {
         entryPoints: { 'editor.worker': 'monaco-editor/editor/editor.worker' },
         format: 'iife',
     });
+
+    checkOutputs();
 }
 
 await withLock(async () => {
+    checkLockfile();
     restoreDependencies();
 
     const bundleHash = hashInputs(bundleInputs);

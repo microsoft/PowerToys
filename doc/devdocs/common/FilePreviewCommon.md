@@ -14,7 +14,7 @@ For a general overview of how Monaco is used in PowerToys, see the [Monaco Edito
 
 Monaco is built from the `monaco-editor` npm package pinned in [`src/Monaco/package.json`](/src/Monaco/package.json). See [How Monaco is built](monaco-editor.md#how-monaco-is-built).
 
-1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`.
+1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`. Then check the lockfile's `resolved` URLs and `integrity` hashes as described in the [Monaco update process](monaco-editor.md#update-process).
 2. Run `npm run build` and fix any errors in [`src/Monaco/src`](/src/Monaco/src). Check the [Monaco changelog](https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md) for renamed or removed APIs and `features/*` entry points.
 3. Update the language list as described in the [monaco_languages.json](#monaco_languagesjson) section.
 4. Build PowerToys and check the Preview Pane, Peek, and Registry Preview.

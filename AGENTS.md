@@ -37,6 +37,7 @@ These instruction files are automatically applied when working in their respecti
 
 - [Runner & Settings UI](.github/instructions/runner-settings-ui.instructions.md) – IPC contracts, schema migrations
 - [Common Libraries](.github/instructions/common-libraries.instructions.md) – ABI stability, shared code guidelines
+- [Monaco Editor](.github/instructions/monaco.instructions.md) – npm bundle rules and upgrade steps
 
 ## Build
 

@@ -52,10 +52,14 @@ The Monaco version is the `monaco-editor` entry in [`src/Monaco/package.json`](/
 
 ### Update Process
 
-1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`. This updates `package.json` and `package-lock.json`.
+1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`. This updates `package.json` and `package-lock.json`. Then check the changed lockfile entries:
+   - Every `resolved` URL should start with `https://registry.npmjs.org/`. Installing through another registry, such as an internal feed, writes that registry's URLs into the lockfile. Change them back so build agents fetch from npmjs.
+   - Every `integrity` value should start with `sha512-`. Some feeds only publish SHA-1 hashes. For each `sha1-` value, run `npm pack <name>@<version> --dry-run --json`, check that its `shasum` (hex) matches the old value (base64), and then use its `integrity`.
 2. Run `npm run gen:languages` to regenerate `monaco_languages.json`, and review its diff. CI fails if the file doesn't match `src/Monaco/src/languages.js`.
 3. Build, then smoke-test the Preview Pane, Peek, and Registry Preview. Check the [Monaco changelog](https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md) for breaking changes.
 4. Check the third-party code bundled inside `monaco-editor` (currently marked and DOMPurify, listed under each Monaco Editor entry in [`NOTICE.md`](/NOTICE.md)). If the `dependencies` in `node_modules/monaco-editor/package.json` changed, update `NOTICE.md`. If the new version bundles DOMPurify 3.4.17 or later, remove the temporary DOMPurify pin (the `dompurify` dependency and override in `package.json`, and `useDomPurifyPackage` in `build.mjs`).
+
+`build.mjs` fails with a pointer to this section when a step is missed: a lockfile entry that isn't from npmjs with a sha512 hash, a change in the libraries bundled inside `monaco-editor`, a DOMPurify pin that's no longer needed, or a change in the bundle's file names (which the installer lists by name).
 
 For more detail, see the [FilePreviewCommon documentation](FilePreviewCommon.md#update-monaco-editor).
 
