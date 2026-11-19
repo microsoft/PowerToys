@@ -34,6 +34,7 @@ Describe 'MWB owned Settings readiness' {
         $script:actions = [Collections.Generic.List[string]]::new()
         $script:geometrySamples = 0
         $script:failControl = ''
+        $script:failOpening = $false
         $script:wrongResult = $null
         $script:lostWindow = $false
         $script:published = $null
@@ -52,6 +53,10 @@ Describe 'MWB owned Settings readiness' {
         Mock Invoke-GuestUi {
             param($Arguments)
             $script:actions.Add("$($Arguments[0]):$($Arguments[1])")
+            if ($script:failOpening -and $Arguments[0] -eq 'invoke' -and
+                $Arguments[1] -eq 'MouseWithoutBordersShowConnectFieldsButton') {
+                throw [TimeoutException]::new('Field-opening command timed out')
+            }
             if ($Arguments[1] -eq $script:failControl) { throw [TimeoutException]::new('Owned control readiness failed') }
             if ($null -ne $script:wrongResult) { return $script:wrongResult }
             if ($Arguments[0] -eq 'wait-for') {
@@ -119,10 +124,32 @@ Describe 'MWB owned Settings readiness' {
         $result = Connect-Guest 'private-fixture-key' 'PEER'
         $result.Submitted | Should Be $true
         $result.Acknowledged | Should Be $true
-        ($script:actions -join ',') | Should Be 'wait-for:MouseWithoutBordersShowConnectFieldsButton,click:MouseWithoutBordersShowConnectFieldsButton,wait-for:ConnectSecurityKeyTextBox,wait-for:ConnectPCNameTextBox,set-value:ConnectSecurityKeyTextBox,set-value:ConnectPCNameTextBox,verify:mapping,read:pairing,invoke:MouseWithoutBordersConnectButton,await:pairing'
+        ($script:actions -join ',') | Should Be 'wait-for:MouseWithoutBordersShowConnectFieldsButton,invoke:MouseWithoutBordersShowConnectFieldsButton,wait-for:ConnectSecurityKeyTextBox,wait-for:ConnectPCNameTextBox,set-value:ConnectSecurityKeyTextBox,set-value:ConnectPCNameTextBox,verify:mapping,read:pairing,invoke:MouseWithoutBordersConnectButton,await:pairing'
         Assert-MockCalled Invoke-GuestUi -Times 1 -Exactly -Scope It -ParameterFilter {
             $Arguments[0] -eq 'invoke' -and $Arguments[1] -eq 'MouseWithoutBordersConnectButton'
         }
+    }
+
+    It 'opens the input row once through UIA without relying on pointer delivery' {
+        Connect-Guest 'private-fixture-key' 'PEER'
+        Assert-MockCalled Invoke-GuestUi -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'invoke' -and $Arguments[1] -eq 'MouseWithoutBordersShowConnectFieldsButton'
+        }
+        Assert-MockCalled Invoke-GuestUi -Times 0 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'click'
+        }
+    }
+
+    It 'does not replay a failed field-opening command or submit pairing afterward' {
+        $script:failOpening = $true
+        { Connect-Guest 'private-fixture-key' 'PEER' } | Should Throw 'Field-opening command timed out'
+        Assert-MockCalled Invoke-GuestUi -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'invoke' -and $Arguments[1] -eq 'MouseWithoutBordersShowConnectFieldsButton'
+        }
+        Assert-MockCalled Invoke-GuestUi -Times 0 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'set-value' -or $Arguments[1] -eq 'MouseWithoutBordersConnectButton'
+        }
+        Assert-MockCalled Wait-GuestConnectAcknowledgement -Times 0 -Exactly -Scope It
     }
 
     It 'does not perform a later action after a field readiness failure' {

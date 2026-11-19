@@ -129,6 +129,8 @@ key disclosure.
 Settings starts through Runner's supported `--open-settings=MouseWithoutBorders`
 deep link. Native maximized geometry is checked before targeted UIA waits for
 `MouseWithoutBordersShowConnectFieldsButton` and both enabled peer/key fields.
+The field-opening command uses coordinate-free UIA invocation, not a pointer
+click that can report success without expanding the row.
 The actual Connect command is submitted once, then must persist the matching
 key and peer. No Connect retry, post-pairing settings repair, signing/encryption
 bypass, overlay suppression or weaker input/clipboard assertion is permitted.

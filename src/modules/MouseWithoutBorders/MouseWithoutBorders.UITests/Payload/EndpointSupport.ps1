@@ -1270,8 +1270,8 @@ function Wait-GuestConnectAcknowledgement {
 function Connect-Guest {
     param([string]$Key, [string]$PeerName)
     $null = Wait-GuestMwbControl 'MouseWithoutBordersShowConnectFieldsButton'
-    # Avoid a synchronous InvokePattern call while expanding the visible input row.
-    $null = Invoke-GuestUi @('click', 'MouseWithoutBordersShowConnectFieldsButton')
+    # Activate the command through UIA; a successful pointer click does not prove the row opened.
+    $null = Invoke-GuestUi @('invoke', 'MouseWithoutBordersShowConnectFieldsButton')
     $null = Wait-GuestMwbControl 'ConnectSecurityKeyTextBox'
     $null = Wait-GuestMwbControl 'ConnectPCNameTextBox'
     $null = Invoke-GuestUi @('set-value', 'ConnectSecurityKeyTextBox', $Key)
