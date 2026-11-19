@@ -72,6 +72,23 @@ The module is loaded by the PowerToys runner from:
 - [Consts.cs](/src/modules/Hosts/HostsUILib/Consts.cs): Defines constants like max hosts IP length
 - [Helpers](/src/modules/Hosts/HostsUILib/Helpers): Utilities for dealing with hosts IP, filter features, and file loading
 
+### Hosting HostsUILib outside PowerToys
+
+`HostsMainPage` can be hosted by any WinUI 3 app. Register these services (as [App.xaml.cs](/src/modules/Hosts/Hosts/HostsXAML/App.xaml.cs) does) and resolve `HostsMainPage`:
+
+| Service | Required | Notes |
+|---------|----------|-------|
+| `IFileSystem`, `IBackupManager`, `IHostsService`, `IDuplicateService` | Yes | Library implementations; backups and validation always apply |
+| `IUserSettings` | Yes | Supplies editor settings, including `BackupPath` |
+| `IElevationHelper` | No | Defaults to the process token. Implement `CanRequestElevation`/`RequestElevation()` to show **Restart as administrator** when not elevated |
+| `ILogger` | No | No logging when omitted |
+| `OpenSettingsFunction` | No | Settings button is hidden when omitted |
+| `QuitFunction` | No | Startup warning has no **Quit** button when omitted |
+
+- **Group Policy**: the library reads `ConfigureEnabledUtilityHostsFileEditor` (falling back to `ConfigureGlobalUtilityEnabledState`) from `HKLM`, then `HKCU`, `SOFTWARE\Policies\PowerToys`. When disabled, the page shows a policy message and never reads or writes the hosts file. Hosts can't override it.
+- **Elevation**: writing the hosts file needs admin. When not elevated, saves fail with the existing error message.
+- **Fixed**: the hosts file path, the `_PowerToysBackup_` backup suffix and the `PowerToys.HostsUILib.pri` resources, so backups stay compatible with PowerToys.
+
 ## Call Flow
 
 1. **Enable app**: runner/main.cpp → settings.ui/settings.ui.library

@@ -108,15 +108,23 @@ namespace Hosts.UITests
             // Quit Hosts File Editor.
             int quitAttempts = 1;
             hostsSession.FindExact<Button>("Quit").Invoke(msPostAction: 0);
+            var sinceQuit = System.Diagnostics.Stopwatch.StartNew();
 
             // Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed.
             var quitResult = WaitHelper.WaitForStable(
                 IsHostsFileEditorClosed,
                 closed => closed,
-                15_000,
+                30_000,
                 requiredConsecutiveMatches: 3,
                 recover: _ =>
                 {
+                    // A UIA search against a window that is closing can block for many seconds,
+                    // so give the first Quit time to land before searching to retry it.
+                    if (sinceQuit.ElapsedMilliseconds < 5_000 || IsHostsFileEditorClosed())
+                    {
+                        return;
+                    }
+
                     // Quit is idempotent while the warning remains; never resend after the window closes.
                     var buttons = hostsSession.FindAll<Button>(By.Name("Quit"), 0)
                         .Where(button => string.Equals(button.Name, "Quit", StringComparison.Ordinal))

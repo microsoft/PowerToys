@@ -32,7 +32,7 @@ namespace HostsUILib.Views
 
         public ICommand UpdateAdditionalLinesCommand => new RelayCommand(UpdateAdditionalLines);
 
-        public ICommand ExitCommand => new RelayCommand(() => { Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread().TryEnqueue(() => { Environment.Exit(0); }); });
+        public ICommand ExitCommand => new RelayCommand(() => ViewModel.Quit());
 
         public HostsMainPage(MainViewModel viewModel)
         {
@@ -128,6 +128,11 @@ namespace HostsUILib.Views
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            if (ViewModel.IsDisabledByPolicy)
+            {
+                return;
+            }
+
             ViewModel.ReadHosts();
 
             var userSettings = ViewModel.UserSettings;
@@ -159,11 +164,19 @@ namespace HostsUILib.Views
                 };
                 dialog.PrimaryButtonText = resourceLoader.GetString("WarningDialog_AcceptBtn");
                 dialog.PrimaryButtonStyle = Application.Current.Resources["AccentButtonStyle"] as Style;
-                dialog.CloseButtonText = resourceLoader.GetString("WarningDialog_QuitBtn");
-                dialog.CloseButtonCommand = ExitCommand;
+                if (ViewModel.CanQuit)
+                {
+                    dialog.CloseButtonText = resourceLoader.GetString("WarningDialog_QuitBtn");
+                    dialog.CloseButtonCommand = ExitCommand;
+                }
 
                 await dialog.ShowAsync();
             }
+        }
+
+        public Visibility GetContentVisibility(bool isLoading)
+        {
+            return isLoading || ViewModel.IsDisabledByPolicy ? Visibility.Collapsed : Visibility.Visible;
         }
 
         private void FilterBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

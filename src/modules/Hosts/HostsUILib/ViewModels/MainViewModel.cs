@@ -30,7 +30,7 @@ namespace HostsUILib.ViewModels
         private readonly IHostsService _hostsService;
         private readonly IUserSettings _userSettings;
         private readonly IDuplicateService _duplicateService;
-        private readonly DispatcherQueue _dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+        private readonly DispatcherQueue _dispatcherQueue;
 
         private bool _readingHosts;
 
@@ -88,24 +88,73 @@ namespace HostsUILib.ViewModels
 
         public static MainViewModel Instance { get; set; }
 
-        private OpenSettingsFunction _openSettingsFunction;
+        private readonly OpenSettingsFunction _openSettingsFunction;
+        private readonly QuitFunction _quitFunction;
+        private readonly IElevationHelper _elevationHelper;
 
+        /// <summary>
+        /// Gets a value indicating whether Group Policy disables the Hosts File Editor.
+        /// When true, the hosts file is neither read nor written.
+        /// </summary>
+        public bool IsDisabledByPolicy { get; }
+
+        public bool IsElevated => _elevationHelper.IsElevated;
+
+        public bool CanOpenSettings => _openSettingsFunction != null;
+
+        public bool CanQuit => _quitFunction != null;
+
+        public bool ShowElevationPrompt => !IsDisabledByPolicy && !IsElevated && _elevationHelper.CanRequestElevation;
+
+        /// <param name="hostService">Reads and writes the hosts file.</param>
+        /// <param name="userSettings">Editor settings supplied by the host.</param>
+        /// <param name="duplicateService">Detects duplicate entries.</param>
+        /// <param name="logger">Optional. Logging is disabled when null.</param>
+        /// <param name="openSettingsFunction">Optional. The settings button is hidden when null.</param>
+        /// <param name="elevationHelper">Optional. Defaults to checking the current process token.</param>
+        /// <param name="quitFunction">Optional. The startup warning has no quit button when null.</param>
         public MainViewModel(
             IHostsService hostService,
             IUserSettings userSettings,
             IDuplicateService duplicateService,
-            ILogger logger,
-            OpenSettingsFunction openSettingsFunction)
+            ILogger logger = null,
+            OpenSettingsFunction openSettingsFunction = null,
+            IElevationHelper elevationHelper = null,
+            QuitFunction quitFunction = null)
+            : this(hostService, userSettings, duplicateService, logger, openSettingsFunction, elevationHelper, quitFunction, GroupPolicy.IsHostsFileEditorDisabled, DispatcherQueue.GetForCurrentThread())
         {
+        }
+
+        internal MainViewModel(
+            IHostsService hostService,
+            IUserSettings userSettings,
+            IDuplicateService duplicateService,
+            ILogger logger,
+            OpenSettingsFunction openSettingsFunction,
+            IElevationHelper elevationHelper,
+            QuitFunction quitFunction,
+            Func<bool> isDisabledByPolicy,
+            DispatcherQueue dispatcherQueue)
+        {
+            _dispatcherQueue = dispatcherQueue;
             _hostsService = hostService;
             _userSettings = userSettings;
             _duplicateService = duplicateService;
+            _elevationHelper = elevationHelper ?? new ElevationHelper();
+            _openSettingsFunction = openSettingsFunction;
+            _quitFunction = quitFunction;
+
+            LoggerInstance.Logger = logger;
+
+            IsDisabledByPolicy = isDisabledByPolicy();
+            if (IsDisabledByPolicy)
+            {
+                LoggerInstance.Logger.LogWarning("Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+                return;
+            }
 
             _hostsService.FileChanged += (s, e) => _dispatcherQueue.TryEnqueue(() => FileChanged = true);
             _userSettings.LoopbackDuplicatesChanged += (s, e) => ReadHosts();
-
-            LoggerInstance.Logger = logger;
-            _openSettingsFunction = openSettingsFunction;
         }
 
         public void Add(Entry entry)
@@ -175,7 +224,7 @@ namespace HostsUILib.ViewModels
         [RelayCommand]
         public void ReadHosts()
         {
-            if (_readingHosts)
+            if (_readingHosts || IsDisabledByPolicy)
             {
                 return;
             }
@@ -281,7 +330,18 @@ namespace HostsUILib.ViewModels
         [RelayCommand]
         public void OpenSettings()
         {
-            _openSettingsFunction();
+            _openSettingsFunction?.Invoke();
+        }
+
+        [RelayCommand]
+        public void RequestElevation()
+        {
+            _elevationHelper.RequestElevation();
+        }
+
+        public void Quit()
+        {
+            _quitFunction?.Invoke();
         }
 
         [RelayCommand]
@@ -325,6 +385,11 @@ namespace HostsUILib.ViewModels
 
         private async Task SaveAsync()
         {
+            if (IsDisabledByPolicy)
+            {
+                return;
+            }
+
             bool error = true;
             string errorMessage = string.Empty;
             bool isReadOnly = false;
