@@ -26,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
-    <ProjectReference Include="..\WorkspacesEditor\WorkspacesEditor.csproj" />
+    <ProjectReference Include="..\WorkspacesEditor.WinUI\WorkspacesEditor.WinUI.csproj" />
   </ItemGroup>
 
 </Project>

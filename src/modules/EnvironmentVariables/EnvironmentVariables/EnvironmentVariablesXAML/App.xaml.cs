@@ -12,7 +12,6 @@ using EnvironmentVariablesUILib.Telemetry;
 using EnvironmentVariablesUILib.ViewModels;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -24,14 +23,14 @@ namespace EnvironmentVariables
     /// </summary>
     public partial class App : Application
     {
-        public IHost Host { get; }
+        public IServiceProvider Services { get; }
 
         public ETWTrace EtwTrace { get; } = new ETWTrace();
 
         public static T GetService<T>()
             where T : class
         {
-            if ((App.Current as App)!.Host.Services.GetService(typeof(T)) is not T service)
+            if ((App.Current as App)!.Services.GetService(typeof(T)) is not T service)
             {
                 throw new ArgumentException($"{typeof(T)} needs to be registered in ConfigureServices within App.xaml.cs.");
             }
@@ -54,17 +53,15 @@ namespace EnvironmentVariables
 
             this.InitializeComponent();
 
-            Host = Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder().UseContentRoot(AppContext.BaseDirectory).ConfigureServices((context, services) =>
-            {
-                services.AddSingleton<IFileSystem, FileSystem>();
-                services.AddSingleton<IElevationHelper, ElevationHelper>();
-                services.AddSingleton<IEnvironmentVariablesService, EnvironmentVariablesService>();
-                services.AddSingleton<ILogger, LoggerWrapper>();
-                services.AddSingleton<ITelemetry, TelemetryWrapper>();
-
-                services.AddSingleton<MainViewModel>();
-                services.AddSingleton<EnvironmentVariablesMainPage>();
-            }).Build();
+            Services = new ServiceCollection()
+                .AddSingleton<IFileSystem, FileSystem>()
+                .AddSingleton<IElevationHelper, ElevationHelper>()
+                .AddSingleton<IEnvironmentVariablesService, EnvironmentVariablesService>()
+                .AddSingleton<ILogger, LoggerWrapper>()
+                .AddSingleton<ITelemetry, TelemetryWrapper>()
+                .AddSingleton<MainViewModel>()
+                .AddSingleton<EnvironmentVariablesMainPage>()
+                .BuildServiceProvider();
 
             UnhandledException += App_UnhandledException;
         }

@@ -132,14 +132,15 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         return false;
     }
 
-    internal override bool PreparePassiveFallback(string query, string queryId, CancellationToken queryToken)
+    internal override bool MatchesPassiveQuery(string query) => _matchKind != HostMatchKind.Regex || MatchesRegex(query);
+
+    internal override bool PreparePassiveFallback(string query, string queryId, bool matches, CancellationToken queryToken)
     {
         if (IsCleanedUp || !IsPassiveFallback || !IsEnabled || queryToken.IsCancellationRequested)
         {
             return false;
         }
 
-        var matches = _matchKind != HostMatchKind.Regex || MatchesRegex(query);
         var title = matches ? FormatText(_titleTemplate, ItemViewModel.Title, query) : string.Empty;
         var subtitle = matches ? FormatText(_subtitleTemplate, ItemViewModel.Subtitle, query) : string.Empty;
         var changed = !string.Equals(_title, title, StringComparison.Ordinal)

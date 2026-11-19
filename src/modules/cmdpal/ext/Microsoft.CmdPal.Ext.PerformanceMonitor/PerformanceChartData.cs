@@ -73,7 +73,7 @@ internal static class PerformanceChartData
         {
             SpeedUnit.BytesPerSecond => (1f, 1000f, BytesUnits),
             SpeedUnit.BinaryBytesPerSecond => (1f, 1024f, BinaryBytesUnits),
-            _ => (8f, 1024f, BitsUnits),
+            _ => (8f, 1000f, BitsUnits),
         };
 
         var value = maxBytesPerSecond * multiplier / step;

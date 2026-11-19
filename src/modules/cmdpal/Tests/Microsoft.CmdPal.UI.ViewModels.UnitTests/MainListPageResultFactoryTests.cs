@@ -233,7 +233,6 @@ public partial class MainListPageResultFactoryTests
         var fallbacks = new List<RoScored<InProcObject<IListItem>>>
         {
             S("FB1", 0),
-            S(string.Empty, 0),
             S("FB3", 0),
         };
 
@@ -250,6 +249,31 @@ public partial class MainListPageResultFactoryTests
         Assert.AreEqual("Fallbacks", result[0].Title);
         Assert.AreEqual("FB1", result[1].Title);
         Assert.AreEqual("FB3", result[2].Title);
+    }
+
+    [TestMethod]
+    public void Merge_KeepsEveryFallbackTheCallerSelected()
+    {
+        // The caller already chose these fallbacks; a title cleared since must not drop the row
+        // or leave an empty slot in the result.
+        var fallbacks = new List<RoScored<InProcObject<IListItem>>>
+        {
+            S("FB1", 0),
+            S(string.Empty, 0),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            null,
+            fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 10);
+
+        Assert.AreEqual(3, result.Length);
+        CollectionAssert.AllItemsAreNotNull(result);
+        Assert.AreSame(fallbacks[1].Item.Safe, result[2]);
     }
 
     [TestMethod]

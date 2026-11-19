@@ -41,11 +41,7 @@ internal static class MainListPageResultFactory
         // Apps are pre-sorted, so we just need to take the top N, limited by appResultLimit.
         int len3 = Math.Min(filteredApps?.Count ?? 0, appResultLimit);
 
-        var nonEmptyFallbackItems = fallbackItems?
-            .Where(scored => !string.IsNullOrWhiteSpace(scored.Item.Safe.Title))
-            .Select(scored => scored.Item.Safe)
-            .ToArray() ?? [];
-        int nonEmptyFallbackCount = nonEmptyFallbackItems.Length;
+        int fallbackItemsCount = fallbackItems?.Count ?? 0;
         int fallbackResultCount = fallbackResultItems?.Count ?? 0;
 
         // Allocate the exact size of the result array.
@@ -53,9 +49,9 @@ internal static class MainListPageResultFactory
         // and another for the "Results" section header when merged results exist.
         int mergedCount = len1 + len2 + len3;
         bool needsResultsHeader = mergedCount > 0;
-        int totalCount = mergedCount + fallbackResultCount + nonEmptyFallbackCount
+        int totalCount = mergedCount + fallbackResultCount + fallbackItemsCount
             + (needsResultsHeader ? 1 : 0)
-            + (nonEmptyFallbackCount > 0 ? 1 : 0);
+            + (fallbackItemsCount > 0 ? 1 : 0);
 
         var result = new IListItem[totalCount];
 
@@ -155,12 +151,12 @@ internal static class MainListPageResultFactory
 
         // Append filtered fallback items. Fallback items are added post-sort so they are
         // always at the end of the list and are sorted by user settings.
-        if (nonEmptyFallbackItems.Length > 0)
+        if (fallbackItems is not null && fallbackItems.Count > 0)
         {
             result[writePos++] = fallbacksSeparator;
-            for (int i = 0; i < nonEmptyFallbackItems.Length; i++)
+            for (int i = 0; i < fallbackItems.Count; i++)
             {
-                result[writePos++] = nonEmptyFallbackItems[i];
+                result[writePos++] = fallbackItems[i].Item.Safe;
             }
         }
 

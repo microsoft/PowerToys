@@ -403,7 +403,9 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
 
     internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery, string queryId, CancellationToken queryToken) => false;
 
-    internal virtual bool PreparePassiveFallback(string query, string queryId, CancellationToken queryToken) => false;
+    internal virtual bool MatchesPassiveQuery(string query) => false;
+
+    internal virtual bool PreparePassiveFallback(string query, string queryId, bool matches, CancellationToken queryToken) => false;
 
     protected void NotifyItemChanged(string propertyName)
     {

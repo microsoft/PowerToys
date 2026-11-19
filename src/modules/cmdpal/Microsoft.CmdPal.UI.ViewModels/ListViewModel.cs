@@ -1166,7 +1166,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        SetCommandBarContext(null);
+        SetCommandBarContext(ShowEmptyContent && EmptyContent.Model.Unsafe is not null ? EmptyContent : null);
         SetDetails(null);
         SetSearchSuggestion(string.Empty);
         TextToSuggest = string.Empty;

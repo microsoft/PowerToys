@@ -822,15 +822,45 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
 
             ContentData["allMem"] = MemUlongToString(currentData.AllMem);
             ContentData["usedMem"] = MemUlongToString(currentData.UsedMem);
+            ContentData["availableMem"] = MemUlongToString(currentData.MemAvailable);
             ContentData["memUsage"] = FloatToPercentString(currentData.MemUsage);
+            ContentData["memUsageOfTotal"] = string.Format(
+                CultureInfo.CurrentCulture,
+                Resources.GetResource("Memory_Widget_Template/UsageOfTotal"),
+                FloatToPercentString(currentData.MemUsage),
+                MemUlongToString(currentData.AllMem));
+            ContentData["memUsedOfTotal"] = FormatUsedOfTotal(currentData.UsedMem, currentData.AllMem);
+
+            // Memory hardware, as on Task Manager's memory page.
+            if (MemoryHardware.Modules is MemoryModules modules)
+            {
+                if (modules.SpeedMegaTransfers > 0)
+                {
+                    ContentData["memSpeed"] = string.Format(CultureInfo.CurrentCulture, "{0} MT/s", modules.SpeedMegaTransfers);
+                }
+
+                ContentData["memSlots"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Memory_Widget_Template/Slots_Used_Value"), modules.SlotsUsed, modules.SlotCount);
+                if (MemoryHardware.GetFormFactorName(modules.FormFactor) is string formFactor)
+                {
+                    ContentData["memFormFactor"] = formFactor;
+                }
+            }
+
+            if (MemoryHardware.InstalledBytes > currentData.AllMem)
+            {
+                ContentData["memReserved"] = MemUlongToString(MemoryHardware.InstalledBytes - currentData.AllMem);
+            }
+
             ContentData["committedMem"] = MemUlongToString(currentData.MemCommitted);
             ContentData["committedLimitMem"] = MemUlongToString(currentData.MemCommitLimit);
             ContentData["cachedMem"] = MemUlongToString(currentData.MemCached);
             ContentData["pagedPoolMem"] = MemUlongToString(currentData.MemPagedPool);
             ContentData["nonPagedPoolMem"] = MemUlongToString(currentData.MemNonPagedPool);
-            ContentData["memGraphUrl"] = currentData.CreateMemImageUrl();
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["memSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("Memory_Widget_Template/Chart_Y_Axis"),
+                PerformanceChartData.MemoryColor,
+                PerformanceChartData.Snapshot(currentData.MemChartValues)));
+            ContentData["memComposition"] = CreateComposition(currentData);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -842,6 +872,32 @@ internal sealed partial class SystemMemoryUsageWidgetPage : WidgetPage, IDisposa
             ContentData["errorMessage"] = e.Message;
             return;
         }
+    }
+
+    /// <summary>Builds a stacked bar of in use, modified, standby, and free memory, as in Task Manager.</summary>
+    private JsonArray CreateComposition(MemoryStats stats)
+    {
+        static JsonObject Part(string legend, ulong bytes, string color) => new()
+        {
+            ["legend"] = legend,
+            ["value"] = Math.Round(bytes / 1048576.0),
+            ["color"] = color,
+        };
+
+        string Legend(string key, ulong bytes) => string.Format(
+            CultureInfo.CurrentCulture,
+            Resources.GetResource(key),
+            MemUlongToString(bytes));
+
+        var parts = new JsonArray
+        {
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_InUse", stats.MemInUse), stats.MemInUse, PerformanceChartData.MemoryColor),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Modified", stats.MemModified), stats.MemModified, "categoricalMarigold"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Standby", stats.MemStandby), stats.MemStandby, "categoricalLightBlue"),
+            (JsonNode)Part(Legend("Memory_Widget_Template/Composition_Free", stats.MemFree), stats.MemFree, "neutral"),
+        };
+
+        return new JsonArray { (JsonNode)new JsonObject { ["data"] = parts } };
     }
 
     protected override string GetTemplatePath(WidgetPageState page)
@@ -942,9 +998,27 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
             ContentData["diskRead"] = SpeedToString(diskStats.Read);
             ContentData["diskWrite"] = SpeedToString(diskStats.Written);
             ContentData["diskName"] = diskName;
-            ContentData["diskGraphUrl"] = currentData.CreateDiskImageUrl(_diskIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["diskDisplayName"] = DiskVolumes.GetDisplayName(diskName);
+            ContentData["diskResponseTime"] = ResponseTimeToString(diskStats.ResponseTime);
+            if (DiskVolumes.TryGetDiskNumber(diskName, out var diskNumber)
+                && DiskVolumes.GetTypeText(DiskDevices.Get(diskNumber)) is string diskType)
+            {
+                ContentData["diskType"] = diskType;
+            }
+
+            var history = currentData.GetHistory(_diskIndex);
+            var read = history.Read.Snapshot();
+            var written = history.Write.Snapshot();
+            var (divisor, unit) = PerformanceChartData.GetRateScale(_settingsManager.DiskSpeedUnit, PerformanceChartData.Max(read, written));
+            ContentData["diskChartAxis"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("DiskUsage_Widget_Template/Chart_Y_Axis"), unit);
+            ContentData["diskSeries"] = PerformanceChartData.Create(
+                new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Read"), PerformanceChartData.InColor, PerformanceChartData.Scale(read, divisor)),
+                new PerformanceChartData.Series(Resources.GetResource("DiskUsage_Widget_Template/Write"), PerformanceChartData.OutColor, PerformanceChartData.Scale(written, divisor)));
+            ContentData["diskActiveSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("DiskUsage_Widget_Template/Disk_Usage"),
+                PerformanceChartData.DiskColor,
+                history.ActiveTime.Snapshot()));
+            ContentData["volumes"] = DiskVolumes.Create(diskName);
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -968,17 +1042,25 @@ internal sealed partial class SystemDiskUsageWidgetPage : WidgetPage, IDisposabl
         };
     }
 
+    /// <summary>Formats an average response time given in seconds, such as <c>0.4 ms</c>.</summary>
+    internal static string ResponseTimeToString(float seconds) =>
+        string.Format(CultureInfo.CurrentCulture, "{0:0.#} ms", Math.Max(0, seconds) * 1000);
+
     public string GetItemTitle(bool isBandPage)
     {
         if (ContentData.TryGetValue("diskName", out var name) && ContentData.TryGetValue("diskUsage", out var usage))
         {
-            return isBandPage ? usage.GetValue<string>() : string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Label"), name, usage);
+            return isBandPage ? usage.GetValue<string>() : GetListTitle(name.GetValue<string>(), usage.GetValue<string>());
         }
         else
         {
             return isBandPage ? Resources.GetResource("Disk_Usage_Unknown") : Resources.GetResource("Disk_Usage_Unknown_Label");
         }
     }
+
+    /// <summary>Names the disk in the list as the card does, such as <c>Disk 0 (C:): 3%</c>.</summary>
+    internal static string GetListTitle(string instanceName, string usage) =>
+        string.Format(CultureInfo.CurrentCulture, Resources.GetResource("Disk_Usage_Display_Label"), DiskVolumes.GetDisplayName(instanceName), usage);
 
     // read/write speed is always used for bands
     public string GetReadSpeed()
@@ -1085,10 +1167,17 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
 
     public override IconInfo Icon => Icons.NetworkIcon;
 
+    // Connection details change rarely and are slow to read, so they're refreshed at most every
+    // few seconds, and when the card switches adapters.
+    private const long ConnectionDetailsLifetimeMilliseconds = 15_000;
+
     private readonly DataManager _dataManager;
     private readonly SettingsManager _settingsManager;
     private int _networkIndex;
     private bool _defaultNetworkInitialized;
+    private NetworkConnectionDetails? _connectionDetails;
+    private string? _connectionDetailsAdapterId;
+    private long _connectionDetailsTime;
 
     public SystemNetworkUsageWidgetPage(SettingsManager settingsManager)
     {
@@ -1132,9 +1221,36 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             ContentData["netSent"] = SpeedToString(networkStats.Sent);
             ContentData["netReceived"] = SpeedToString(networkStats.Received);
             ContentData["networkName"] = netName;
-            ContentData["netGraphUrl"] = currentData.CreateNetImageUrl(_networkIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["netLinkSpeed"] = LinkSpeedToString(currentData.GetLinkSpeed(_networkIndex));
+
+            var connection = GetConnectionDetails(currentData.GetNetworkId(_networkIndex));
+            ContentData["netIcon"] = NetworkConnectionDetails.GetTypeIconName(connection?.Type);
+            if (connection is not null)
+            {
+                if (NetworkConnectionDetails.GetTypeResourceKey(connection.Type) is string typeKey)
+                {
+                    ContentData["netConnectionType"] = Resources.GetResource(typeKey);
+                }
+
+                if (connection.IPv4.Length > 0)
+                {
+                    ContentData["netIPv4"] = connection.IPv4;
+                }
+
+                if (connection.IPv6.Length > 0)
+                {
+                    ContentData["netIPv6"] = connection.IPv6;
+                }
+            }
+
+            var history = currentData.GetHistory(_networkIndex);
+            var sent = history.Sent.Snapshot();
+            var received = history.Received.Snapshot();
+            var (divisor, unit) = PerformanceChartData.GetRateScale(_settingsManager.NetworkSpeedUnit, PerformanceChartData.Max(sent, received));
+            ContentData["netChartAxis"] = string.Format(CultureInfo.CurrentCulture, Resources.GetResource("NetworkUsage_Widget_Template/Chart_Y_Axis"), unit);
+            ContentData["netSeries"] = PerformanceChartData.Create(
+                new PerformanceChartData.Series(Resources.GetResource("NetworkUsage_Widget_Template/Received"), PerformanceChartData.InColor, PerformanceChartData.Scale(received, divisor)),
+                new PerformanceChartData.Series(Resources.GetResource("NetworkUsage_Widget_Template/Sent"), PerformanceChartData.OutColor, PerformanceChartData.Scale(sent, divisor)));
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1146,6 +1262,43 @@ internal sealed partial class SystemNetworkUsageWidgetPage : WidgetPage, IDispos
             ContentData["errorMessage"] = e.Message;
             return;
         }
+    }
+
+    /// <summary>Formats a link speed given in bits per second, such as <c>1 Gbps</c>.</summary>
+    internal static string LinkSpeedToString(double bitsPerSecond) => bitsPerSecond switch
+    {
+        >= 1e9 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Gbps", bitsPerSecond / 1e9),
+        >= 1e6 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Mbps", bitsPerSecond / 1e6),
+        > 0 => string.Format(CultureInfo.CurrentCulture, "{0:0.#} Kbps", bitsPerSecond / 1e3),
+        _ => "-",
+    };
+
+    /// <summary>
+    /// Returns the connection details for an adapter id from <see cref="NetworkStats"/>. The
+    /// all-adapters entry describes the connection with the default gateway.
+    /// </summary>
+    private NetworkConnectionDetails? GetConnectionDetails(string adapterId)
+    {
+        var now = Environment.TickCount64;
+        if (string.Equals(adapterId, _connectionDetailsAdapterId, StringComparison.Ordinal)
+            && now - _connectionDetailsTime < ConnectionDetailsLifetimeMilliseconds)
+        {
+            return _connectionDetails;
+        }
+
+        _connectionDetailsAdapterId = adapterId;
+        _connectionDetailsTime = now;
+        _connectionDetails = adapterId == NetworkStats.AllPhysicalAdaptersId
+            ? NetworkConnectionDetails.Read(null)
+            : TryGetInterfaceId(adapterId) is Guid interfaceId ? NetworkConnectionDetails.Read(interfaceId) : null;
+        return _connectionDetails;
+    }
+
+    /// <summary>Reads the interface GUID from an adapter id such as <c>network-interface:{guid}</c>.</summary>
+    internal static Guid? TryGetInterfaceId(string adapterId)
+    {
+        var separator = adapterId.LastIndexOf(':');
+        return separator >= 0 && Guid.TryParse(adapterId.AsSpan(separator + 1), out var id) ? id : null;
     }
 
     protected override string GetTemplatePath(WidgetPageState page)
@@ -1328,10 +1481,30 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
 
             ContentData["gpuUsage"] = FloatToPercentString(stats.GetGPUUsage(_gpuActiveIndex, _gpuActiveEngType));
             ContentData["gpuName"] = _gpuDisplayInfo.Name;
+            ContentData["gpuShortName"] = _gpuDisplayInfo.ShortName;
             ContentData["gpuTemp"] = stats.GetGPUTemperature(_gpuActiveIndex);
-            ContentData["gpuGraphUrl"] = stats.CreateGPUImageUrl(_gpuActiveIndex);
-            ContentData["chartHeight"] = ChartHelper.ChartHeight + "px";
-            ContentData["chartWidth"] = ChartHelper.ChartWidth + "px";
+            ContentData["gpuSeries"] = PerformanceChartData.Create(new PerformanceChartData.Series(
+                Resources.GetResource("CPUUsage_Widget_Template/Chart_Legend"),
+                PerformanceChartData.GpuColor,
+                stats.GetGPUHistory(_gpuActiveIndex)));
+            ContentData["gpuEngines"] = CreateEngines(stats, _gpuActiveIndex);
+
+            var memory = stats.GetGPUMemory(_gpuActiveIndex);
+            var dedicated = FormatUsedOfTotal(memory.DedicatedUsed, memory.DedicatedTotal);
+            var shared = FormatUsedOfTotal(memory.SharedUsed, memory.SharedTotal);
+            ContentData["hasDedicatedMemory"] = memory.DedicatedTotal > 0;
+            ContentData["hasSharedMemory"] = memory.SharedTotal > 0;
+            ContentData["gpuDedicatedMemory"] = dedicated;
+            ContentData["gpuDedicatedPercent"] = GetPercent(memory.DedicatedUsed, memory.DedicatedTotal);
+            ContentData["gpuSharedMemory"] = shared;
+            ContentData["gpuSharedPercent"] = GetPercent(memory.SharedUsed, memory.SharedTotal);
+            if (memory.DedicatedTotal > 0 || memory.SharedTotal > 0)
+            {
+                ContentData["gpuMemoryLabel"] = Resources.GetResource(memory.DedicatedTotal > 0
+                    ? "GPUUsage_Widget_Template/Dedicated_Memory"
+                    : "GPUUsage_Widget_Template/Shared_Memory");
+                ContentData["gpuMemory"] = memory.DedicatedTotal > 0 ? dedicated : shared;
+            }
 
             var contentDuration = timer.ElapsedMilliseconds - dataDuration;
 
@@ -1359,6 +1532,30 @@ internal sealed partial class SystemGPUUsageWidgetPage : WidgetPage, IDisposable
             _ => throw new NotImplementedException(),
         };
     }
+
+    /// <summary>Lists each engine type, such as 3D and Copy, with its utilization and history, as in Task Manager.</summary>
+    private static JsonArray CreateEngines(GPUStats stats, int gpuIndex)
+    {
+        var array = new JsonArray();
+        foreach (var engine in stats.GetGPUEngines(gpuIndex))
+        {
+            array.Add((JsonNode)CreateEngine(
+                Resources.GetResource($"GPUUsage_Widget_Template/Engine_{GPUStats.EngineTypes[engine.Type]}"),
+                engine.Percent,
+                stats.GetGPUEngineHistory(gpuIndex, engine.Type)));
+        }
+
+        return array;
+    }
+
+    /// <summary>One engine tile: its name, its utilization, and a sparkline of its history.</summary>
+    internal static JsonObject CreateEngine(string name, float percent, float[] history) => new()
+    {
+        ["name"] = name,
+        ["text"] = FloatToPercentString(percent / 100f),
+        ["chartMax"] = PerformanceChartData.GetSparklineMax(PerformanceChartData.Max(history)),
+        ["series"] = PerformanceChartData.Create(new PerformanceChartData.Series(name, PerformanceChartData.GpuColor, history)),
+    };
 
     public string GetItemTitle(bool isBandPage)
     {
@@ -1615,9 +1812,9 @@ internal static class FormatIncomingData
         // Bytes to bits
         value *= 8;
 
-        // bits to Kbits
-        value /= 1024;
-        if (value < 1024)
+        // bits to Kbits (SI decimal, 1000-based, as network speeds are measured)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -1628,8 +1825,8 @@ internal static class FormatIncomingData
         }
 
         // Kbits to Mbits
-        value /= 1024;
-        if (value < 1024)
+        value /= 1000;
+        if (value < 1000)
         {
             if (value < 100)
             {
@@ -1640,7 +1837,7 @@ internal static class FormatIncomingData
         }
 
         // Mbits to Gbits
-        value /= 1024;
+        value /= 1000;
         if (value < 100)
         {
             return string.Format(CultureInfo.InvariantCulture, "{0:0.0} Gbps", value);
