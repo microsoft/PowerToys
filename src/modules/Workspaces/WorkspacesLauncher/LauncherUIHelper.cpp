@@ -8,6 +8,13 @@
 
 namespace
 {
+    interop_auth::CallerPolicy LauncherUIPeer()
+    {
+        auto policy = IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncherUI.exe");
+        policy.expectedDirectory = (std::filesystem::path(policy.expectedDirectory) / L"WinUI3Apps").wstring();
+        return policy;
+    }
+
     json::JsonObject Message(const wchar_t* type)
     {
         json::JsonObject message;
@@ -21,7 +28,7 @@ LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcC
     m_operationId(std::move(operationId)),
     m_confirmationOnly(confirmationOnly),
     m_ipcHelper(IPCHelperStrings::LauncherUIPipeName + m_operationId, IPCHelperStrings::UIPipeName + m_operationId, ipcCallback,
-                m_operationId.empty() ? interop_auth::CallerPolicy{} : IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncherUI.exe"))
+                m_operationId.empty() ? interop_auth::CallerPolicy{} : LauncherUIPeer())
 {
 }
 
@@ -48,7 +55,7 @@ bool LauncherUIHelper::LaunchUI(const std::function<bool()>& isCanceled)
 
     TCHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, buffer, MAX_PATH);
-    const auto path = std::filesystem::path(buffer).parent_path() / L"PowerToys.WorkspacesLauncherUI.exe";
+    const auto path = std::filesystem::path(buffer).parent_path() / L"WinUI3Apps" / L"PowerToys.WorkspacesLauncherUI.exe";
     const auto arguments = m_operationId.empty() ? L"" :
         std::wstring(m_confirmationOnly ? L"--confirmation-only " : L"--launch-ui ") + m_operationId + L" " + std::to_wstring(GetCurrentProcessId());
     auto result = AppLauncher::LaunchApp(path.wstring(), arguments, false);

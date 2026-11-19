@@ -508,6 +508,47 @@ public partial class CommandItemViewModelTests
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task CommandUpdate_KeepsTheRowIconWhenTheItemHasItsOwn(bool replaceCommand)
+    {
+        var ui = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
+        var pageContext = new TestPageContext(ui.Scheduler);
+        var command = new NoOpCommand { Name = "Run one" };
+        var item = new CommandItem(command) { Icon = new IconInfo("item-icon") };
+        var viewModel = new CommandItemViewModel(new(item), new(pageContext), DefaultContextMenuFactory.Instance);
+        viewModel.SlowInitializeProperties();
+
+        using var services = new ServiceCollection().AddSingleton(Mock.Of<ISettingsService>()).BuildServiceProvider();
+        var adapter = new TopLevelViewModel(viewModel, TopLevelType.Normal, CommandPaletteHost.Instance, CommandProviderContext.Empty, new(), services, DefaultContextMenuFactory.Instance);
+        var row = new CommandItemViewModel(new(adapter), new(pageContext), DefaultContextMenuFactory.Instance);
+        row.SlowInitializeProperties();
+        await DeliverPendingUpdatesAsync(ui);
+        var rowIcon = row.Icon;
+
+        ConcurrentQueue<string> forwarded = new();
+        adapter.PropChanged += (_, args) => forwarded.Enqueue(args.PropertyName);
+
+        // Fallbacks publish a new command for each query, and a command can change its own icon,
+        // while the item keeps its own icon.
+        if (replaceCommand)
+        {
+            item.Command = new NoOpCommand { Name = "Run two" };
+        }
+        else
+        {
+            command.Icon = new IconInfo("command-icon");
+        }
+
+        await DeliverPendingUpdatesAsync(ui);
+
+        // A new icon view model gives the row a new icon key, which restarts its icon load.
+        Assert.IsFalse(forwarded.Contains(nameof(CommandItemViewModel.Icon)), string.Join(", ", forwarded));
+        Assert.AreSame(rowIcon, row.Icon);
+        GC.KeepAlive(pageContext);
+    }
+
+    [TestMethod]
     public async Task SdkMenuUpdate_PublishesPresentationStateAndCleanupClearsIt()
     {
         var uiTasks = new TaskFactory(new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler);
@@ -1569,6 +1610,42 @@ public partial class CommandItemViewModelTests
             await uiTasks.StartNew(menu.Close);
             viewModel.SafeCleanup();
             GC.KeepAlive(pageContext);
+        }
+    }
+
+    // Waits until queued notifications reach the row. Applying them by hand misses a batch the timer
+    // is already applying, so wait for the timer instead, a batch per hop: from the command to the
+    // item, which the adapter forwards to the row.
+    private static async Task DeliverPendingUpdatesAsync(TaskFactory ui)
+    {
+        for (var hop = 0; hop < 3; hop++)
+        {
+            await BatchMarker.QueueAsync().WaitAsync(TimeSpan.FromSeconds(10));
+            await ui.StartNew(() => { });
+        }
+    }
+
+    // The batch timer applies one batch at a time, in queue order, so it applies this after
+    // everything queued before it, including a batch it's in the middle of.
+    private sealed class BatchMarker : IBatchUpdateTarget
+    {
+        private readonly TaskCompletionSource _applied = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public TaskScheduler UIScheduler => TaskScheduler.Default;
+
+        public static Task QueueAsync()
+        {
+            var marker = new BatchMarker();
+            BatchUpdateManager.Queue(marker);
+            return marker._applied.Task;
+        }
+
+        public void ApplyPendingUpdates() => _applied.TrySetResult();
+
+        public bool TryMarkBatchQueued() => true;
+
+        public void ClearBatchQueued()
+        {
         }
     }
 
