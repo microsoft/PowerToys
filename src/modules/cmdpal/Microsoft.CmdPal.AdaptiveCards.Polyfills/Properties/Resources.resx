@@ -149,4 +149,16 @@
     <value>Bar chart</value>
     <comment>Accessible name of a bar chart in a form when the chart has no title.</comment>
   </data>
+  <data name="AdaptiveChart_Gauge" xml:space="preserve">
+    <value>Gauge</value>
+    <comment>Accessible name of a gauge chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_DonutChart" xml:space="preserve">
+    <value>Donut chart</value>
+    <comment>Accessible name of a donut chart in a form when the chart has no title.</comment>
+  </data>
+  <data name="AdaptiveChart_PieChart" xml:space="preserve">
+    <value>Pie chart</value>
+    <comment>Accessible name of a pie chart in a form when the chart has no title.</comment>
+  </data>
 </root>
