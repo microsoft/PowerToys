@@ -443,6 +443,7 @@ dllmain
 Dmdo
 DMy
 DNLEN
+dompurify
 DONOTROUND
 DONTVALIDATEPATH
 dotnet

@@ -26,6 +26,7 @@ PowerToys doesn't check in Monaco's source. It builds a bundle from a pinned npm
   - [`languages.js`](/src/Monaco/src/languages.js): every language registration: monaco-editor's built-in languages, extra file extensions for existing languages, and the PowerToys languages in [`customLanguages`](/src/Monaco/src/customLanguages). JSON uses a PowerToys grammar because monaco-editor's JSON language service also loads every editor feature.
   - [`customTokenThemeRules.js`](/src/Monaco/src/customTokenThemeRules.js): token colors for the PowerToys languages.
 - The layer only uses public `monaco-editor` entry points. Never edit `node_modules` or copy Monaco source into the repo.
+- **Temporary DOMPurify pin:** monaco-editor 0.57.0 bundles DOMPurify 3.4.15, which has security advisories fixed in 3.4.17. `package.json` pins `dompurify` 3.4.17 (with an `overrides` entry so the lockfile has only that version), and `build.mjs` points Monaco's import of its own DOMPurify copy at that package. The build fails if a newer monaco-editor bundles a newer DOMPurify, as a reminder to remove the pin.
 - [`src/Monaco.props`](/src/Monaco.props) runs [`build.mjs`](/src/Monaco/build.mjs) while building `FilePreviewCommon` and `RegistryPreviewUILib`. It runs `npm ci` when the lockfile changes, bundles into `src/Monaco/dist` (git-ignored), and copies the result to `Assets\Monaco`. It's a no-op when nothing changed.
 - Building requires **Node.js 20 or later** on `PATH` (`winget install OpenJS.NodeJS.LTS`, or `tools\build\setup-dev-environment.ps1`). To use a different `node.exe`, set the `PowerToysNodeExe` MSBuild property.
 - Official builds resolve npm packages through the PowerToys Azure Artifacts feed ([`steps-setup-monaco-npm.yml`](/.pipelines/v2/templates/steps-setup-monaco-npm.yml)).
@@ -54,7 +55,7 @@ The Monaco version is the `monaco-editor` entry in [`src/Monaco/package.json`](/
 1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`. This updates `package.json` and `package-lock.json`.
 2. Run `npm run gen:languages` to regenerate `monaco_languages.json`, and review its diff. CI fails if the file doesn't match `src/Monaco/src/languages.js`.
 3. Build, then smoke-test the Preview Pane, Peek, and Registry Preview. Check the [Monaco changelog](https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md) for breaking changes.
-4. Check the third-party code bundled inside `monaco-editor` (currently marked and DOMPurify, listed under each Monaco Editor entry in [`NOTICE.md`](/NOTICE.md)). If the `dependencies` in `node_modules/monaco-editor/package.json` changed, update `NOTICE.md`.
+4. Check the third-party code bundled inside `monaco-editor` (currently marked and DOMPurify, listed under each Monaco Editor entry in [`NOTICE.md`](/NOTICE.md)). If the `dependencies` in `node_modules/monaco-editor/package.json` changed, update `NOTICE.md`. If the new version bundles DOMPurify 3.4.17 or later, remove the temporary DOMPurify pin (the `dompurify` dependency and override in `package.json`, and `useDomPurifyPackage` in `build.mjs`).
 
 For more detail, see the [FilePreviewCommon documentation](FilePreviewCommon.md#update-monaco-editor).
 

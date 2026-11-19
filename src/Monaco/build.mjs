@@ -100,6 +100,43 @@ function restoreDependencies() {
     fs.writeFileSync(depsMarker, depsHash);
 }
 
+function parseVersion(text) {
+    return text.split('.').map((part) => Number.parseInt(part, 10));
+}
+
+function compareVersions(a, b) {
+    const [x, y] = [parseVersion(a), parseVersion(b)];
+    for (let i = 0; i < Math.max(x.length, y.length); i++) {
+        const diff = (x[i] ?? 0) - (y[i] ?? 0);
+        if (diff !== 0) {
+            return diff;
+        }
+    }
+
+    return 0;
+}
+
+// monaco-editor 0.57.0 ships an unmodified copy of DOMPurify 3.4.15, which has security advisories fixed in 3.4.17.
+// package.json pins the patched dompurify package, and this redirects Monaco's import of its own copy to it.
+// Remove both once monaco-editor bundles a fixed DOMPurify (0.57.1 bundles 3.4.17).
+function useDomPurifyPackage() {
+    const vendoredPath = path.join(root, 'node_modules', 'monaco-editor', 'esm', 'vs', 'base', 'browser', 'dompurify', 'dompurify.js');
+    const vendoredHeader = fs.readFileSync(vendoredPath, 'utf8').slice(0, 200);
+    const vendored = /DOMPurify (\d+\.\d+\.\d+)/.exec(vendoredHeader)?.[1];
+    const pinned = JSON.parse(fs.readFileSync(path.join(root, 'node_modules', 'dompurify', 'package.json'), 'utf8')).version;
+    if (!vendored || compareVersions(vendored, pinned) > 0) {
+        throw new Error(`monaco-editor now bundles DOMPurify ${vendored ?? '(unknown version)'}, newer than the pinned ${pinned}. Remove the dompurify dependency and override from package.json and useDomPurifyPackage from build.mjs.`);
+    }
+
+    return {
+        name: 'use-dompurify-package',
+        setup(b) {
+            b.onResolve({ filter: /[\\/]dompurify[\\/]dompurify\.js$/ }, (args) =>
+                b.resolve('dompurify', { kind: args.kind, resolveDir: root }));
+        },
+    };
+}
+
 async function bundle() {
     const { build } = await import('esbuild');
     fs.rmSync(distDir, { recursive: true, force: true });
@@ -113,6 +150,7 @@ async function bundle() {
         entryNames: '[name]',
         assetNames: '[name]',
         logLevel: 'warning',
+        plugins: [useDomPurifyPackage()],
     };
 
     // The editor bundle is an ES module so host pages can import it from the WebView2 virtual host.

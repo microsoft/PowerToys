@@ -10,7 +10,11 @@
     "check:languages": "node tools/generate-languages.mjs --check"
   },
   "dependencies": {
+    "dompurify": "3.4.17",
     "monaco-editor": "0.57.0"
+  },
+  "overrides": {
+    "dompurify": "$dompurify"
   },
   "devDependencies": {
     "esbuild": "0.28.2"
