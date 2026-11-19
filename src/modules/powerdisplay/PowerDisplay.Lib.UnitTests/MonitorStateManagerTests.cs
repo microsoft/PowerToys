@@ -159,6 +159,18 @@ public sealed class MonitorStateManagerTests
     }
 
     [TestMethod]
+    public void RefreshRate_RoundTripsThroughState()
+    {
+        using (var manager = new MonitorStateManager(_statePath))
+        {
+            manager.UpdateMonitorParameter(MonitorA, "RefreshRate", 144);
+        }
+
+        using var reloaded = new MonitorStateManager(_statePath);
+        Assert.AreEqual(144, reloaded.GetMonitorParameters(MonitorA)?.RefreshRate);
+    }
+
+    [TestMethod]
     public void UpsertKnownGoodFeature_UnchangedValueDoesNotScheduleASave()
     {
         // Every discovery pass re-reads all three continuous codes, so re-observing an unchanged

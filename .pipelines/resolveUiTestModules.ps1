@@ -68,6 +68,7 @@ $uiTestInfrastructurePatterns = @(
     '^\.pipelines/removeTestSigningCertificates\.ps1$',
     '^\.pipelines/stopPowerToysProcesses\.ps1$',
     '^\.pipelines/configureLightSwitchLocation\.ps1$',
+    '^\.pipelines/UiTestArtifacts\.Common\.ps1$',
     '^\.pipelines/v2/templates/job-test-project\.yml$',
     '^\.pipelines/v2/templates/job-resolve-ui-tests\.yml$',
     '^\.pipelines/v2/templates/steps-download-artifacts-with-azure-cli\.yml$',
