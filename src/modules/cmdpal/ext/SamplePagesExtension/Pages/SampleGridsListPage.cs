@@ -29,6 +29,12 @@ internal sealed partial class SampleGridsListPage : ListPage
             Subtitle = "A sample gallery list page with images",
             Icon = IconHelpers.FromRelativePath("Assets/Images/Swirls.png"),
         },
+        new ListItem(new SampleGalleryListPage { GridProperties = new GalleryGridLayout { ImageFit = GalleryImageFit.Contain } })
+        {
+            Title = "Gallery list page (fit images)",
+            Subtitle = "Show whole images while preserving their aspect ratio",
+            Icon = IconHelpers.FromRelativePath("Assets/Images/Swirls.png"),
+        },
         new ListItem(new SampleGalleryListPage { GridProperties = new SmallGridLayout() })
         {
             Title = "Small grid list page",
