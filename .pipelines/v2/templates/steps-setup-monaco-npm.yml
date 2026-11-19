@@ -26,11 +26,11 @@ steps:
       $global:LASTEXITCODE = 0
     displayName: Check Node.js for the Monaco bundle
 
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: Install Node.js LTS for the Monaco bundle
     condition: and(succeeded(), eq(variables['MonacoNeedsNode'], 'True'))
     inputs:
-      versionSpec: '22.x'
+      version: '22.x'
 
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
