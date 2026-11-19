@@ -7,201 +7,317 @@
     xmlns:views="using:PowerScripts.Editor.Views"
     AutomationProperties.AutomationId="PowerScriptsActivityPage"
     AutomationProperties.LandmarkType="Main">
-    <Grid Margin="32,24,32,24" RowSpacing="16">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Grid ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock
-                x:Uid="PowerScripts_ActivityHeading"
-                AutomationProperties.HeadingLevel="Level1"
-                Style="{StaticResource TitleTextBlockStyle}" />
-            <ProgressRing
-                Grid.Column="1"
-                Width="16"
-                Height="16"
-                IsActive="{x:Bind ViewModel.IsActivityBusy, Mode=OneWay}"
-                Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsActivityBusy), Mode=OneWay}" />
-            <Button
-                Grid.Column="2"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsActivityRefresh"
-                Click="RefreshButton_Click"
-                IsEnabled="{x:Bind ViewModel.CanRefreshActivity, Mode=OneWay}"
-                Style="{StaticResource SubtleButtonStyle}">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon FontSize="14" Glyph="&#xE72C;" />
-                    <TextBlock x:Uid="PowerScripts_ActivityRefreshText" />
-                </StackPanel>
-            </Button>
-            <Button
-                Grid.Column="3"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsActivityClear"
-                Click="ClearButton_Click"
-                IsEnabled="{x:Bind ViewModel.CanRefreshActivity, Mode=OneWay}"
-                Style="{StaticResource SubtleButtonStyle}">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <FontIcon FontSize="14" Glyph="&#xE74D;" />
-                    <TextBlock x:Uid="PowerScripts_ActivityClearText" />
-                </StackPanel>
-            </Button>
-        </Grid>
-        <tkcontrols:Segmented
-            x:Name="ActivityFilter"
-            x:Uid="PowerScripts_ActivityFilter"
-            Grid.Row="1"
-            AutomationProperties.AutomationId="PowerScriptsActivityFilter"
-            SelectedIndex="0"
-            SelectionChanged="ActivityFilter_SelectionChanged">
-            <tkcontrols:SegmentedItem x:Uid="PowerScripts_ActivityFilterAll" />
-            <tkcontrols:SegmentedItem x:Uid="PowerScripts_ActivityFilterFailed" />
-        </tkcontrols:Segmented>
-        <InfoBar
-            x:Uid="PowerScripts_ActivityError"
-            Grid.Row="2"
-            AutomationProperties.AutomationId="PowerScriptsActivityError"
-            IsClosable="False"
-            IsOpen="{x:Bind ViewModel.HasActivityError, Mode=OneWay}"
-            Message="{x:Bind ViewModel.ActivityError, Mode=OneWay}"
-            Severity="Error" />
-        <Grid
-            Grid.Row="3"
-            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-            BorderThickness="1"
-            CornerRadius="{ThemeResource OverlayCornerRadius}">
-            <ListView
-                x:Uid="PowerScripts_ActivityList"
-                Padding="0,4"
-                AutomationProperties.AutomationId="PowerScriptsActivityList"
-                ItemsSource="{x:Bind VisibleActivity}"
-                SelectionMode="None">
-                <ListView.ItemTemplate>
-                    <DataTemplate x:DataType="viewModels:PowerScriptActivityItem">
-                        <Grid
-                            MinHeight="56"
-                            Padding="0,8"
-                            ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
-                            <Grid Width="20" VerticalAlignment="Center">
-                                <ProgressRing
-                                    Width="16"
-                                    Height="16"
-                                    IsActive="{x:Bind views:PowerScriptsActivityPage.IsStatus(Status, 'running'), Mode=OneWay}"
-                                    Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'running'), Mode=OneWay}" />
-                                <FontIcon
-                                    FontSize="16"
-                                    Foreground="{ThemeResource SystemFillColorSuccessBrush}"
-                                    Glyph="&#xE73E;"
-                                    Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'succeeded'), Mode=OneWay}" />
-                                <FontIcon
-                                    FontSize="16"
-                                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                    Glyph="&#xE783;"
-                                    Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'failed'), Mode=OneWay}" />
-                                <FontIcon
-                                    FontSize="16"
-                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                    Glyph="&#xE711;"
-                                    Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'interrupted'), Mode=OneWay}" />
-                                <FontIcon
-                                    FontSize="16"
-                                    Foreground="{ThemeResource SystemFillColorCautionBrush}"
-                                    Glyph="&#xE9CE;"
-                                    Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'unknown'), Mode=OneWay}" />
-                            </Grid>
-                            <StackPanel
-                                Grid.Column="1"
-                                VerticalAlignment="Center"
-                                Spacing="2">
+    <ScrollViewer>
+        <Grid>
+            <StackPanel MaxWidth="1144" Padding="32,28,32,32">
+                <Grid Margin="0,0,0,20" ColumnSpacing="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock
+                        x:Uid="PowerScripts_ActivityHeading"
+                        AutomationProperties.HeadingLevel="Level1"
+                        Style="{StaticResource TitleTextBlockStyle}" />
+                    <Button
+                        Grid.Column="1"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="PowerScriptsActivityRefresh"
+                        Click="RefreshButton_Click"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE72C;" />
+                            <TextBlock x:Uid="PowerScripts_ActivityRefreshText" />
+                        </StackPanel>
+                    </Button>
+                    <Button
+                        x:Name="ClearButton"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="PowerScriptsActivityClear"
+                        Click="ClearButton_Click"
+                        IsEnabled="False"
+                        Style="{StaticResource SubtleButtonStyle}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                            <TextBlock x:Uid="PowerScripts_ActivityClearText" />
+                        </StackPanel>
+                    </Button>
+                </Grid>
+                <Grid Margin="0,0,0,12" ColumnSpacing="8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <tkcontrols:Segmented
+                        x:Name="ActivityFilter"
+                        x:Uid="PowerScripts_ActivityFilter"
+                        AutomationProperties.AutomationId="PowerScriptsActivityFilter"
+                        SelectedIndex="0"
+                        SelectionChanged="Filter_SelectionChanged">
+                        <tkcontrols:SegmentedItem x:Uid="PowerScripts_ActivityFilterAll" />
+                        <tkcontrols:SegmentedItem x:Uid="PowerScripts_ActivityFilterFailed" />
+                    </tkcontrols:Segmented>
+                    <ComboBox
+                        x:Name="SourceFilter"
+                        x:Uid="PowerScripts_ActivitySource"
+                        Grid.Column="2"
+                        MinWidth="180"
+                        VerticalAlignment="Center"
+                        AutomationProperties.AutomationId="PowerScriptsActivitySource"
+                        SelectionChanged="Filter_SelectionChanged" />
+                </Grid>
+                <InfoBar
+                    x:Uid="PowerScripts_ActivityError"
+                    Margin="0,0,0,12"
+                    AutomationProperties.AutomationId="PowerScriptsActivityError"
+                    IsClosable="False"
+                    IsOpen="{x:Bind ViewModel.HasActivityError, Mode=OneWay}"
+                    Severity="Error">
+                    <InfoBar.ActionButton>
+                        <Button x:Uid="PowerScripts_ActivityTryAgain" Click="RefreshButton_Click" />
+                    </InfoBar.ActionButton>
+                </InfoBar>
+                <ItemsControl
+                    x:Uid="PowerScripts_ActivityList"
+                    AutomationProperties.AutomationId="PowerScriptsActivityList"
+                    IsTabStop="False"
+                    ItemsSource="{x:Bind Groups}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Spacing="24" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="viewModels:PowerScriptActivityGroup">
+                            <StackPanel>
                                 <TextBlock
-                                    Text="{x:Bind ScriptName}"
-                                    TextTrimming="CharacterEllipsis"
-                                    ToolTipService.ToolTip="{x:Bind ScriptName}" />
-                                <TextBlock
-                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                    Text="{x:Bind Details}"
-                                    TextTrimming="CharacterEllipsis"
-                                    TextWrapping="NoWrap" />
+                                    Margin="4,0,0,8"
+                                    AutomationProperties.HeadingLevel="Level2"
+                                    Style="{StaticResource BodyStrongTextBlockStyle}"
+                                    Text="{x:Bind Header, Mode=OneWay}" />
+                                <Border
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="{ThemeResource OverlayCornerRadius}">
+                                    <ListView
+                                        Margin="0,0,0,-1"
+                                        AutomationProperties.Name="{x:Bind Header, Mode=OneWay}"
+                                        IsItemClickEnabled="True"
+                                        ItemClick="ActivityRow_ItemClick"
+                                        ItemsSource="{x:Bind Items}"
+                                        ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                        ScrollViewer.VerticalScrollMode="Disabled"
+                                        SelectionMode="None">
+                                        <ListView.ItemContainerStyle>
+                                            <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="ListViewItem">
+                                                <Setter Property="Padding" Value="0" />
+                                                <Setter Property="Margin" Value="0" />
+                                                <Setter Property="MinHeight" Value="52" />
+                                                <Setter Property="CornerRadius" Value="0" />
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            </Style>
+                                        </ListView.ItemContainerStyle>
+                                        <ListView.ItemTemplate>
+                                            <DataTemplate x:DataType="viewModels:PowerScriptActivityItem">
+                                                <Grid Background="Transparent">
+                                                    <Grid
+                                                        MinHeight="52"
+                                                        Padding="16,8"
+                                                        ColumnSpacing="12">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="28" />
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                            <ProgressRing
+                                                                Width="16"
+                                                                Height="16"
+                                                                IsActive="{x:Bind IsRunning, Mode=OneWay}"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'running'), Mode=OneWay}" />
+                                                            <FontIcon
+                                                                FontSize="16"
+                                                                Foreground="{ThemeResource SystemFillColorSuccessBrush}"
+                                                                Glyph="&#xE73E;"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'succeeded'), Mode=OneWay}" />
+                                                            <FontIcon
+                                                                FontSize="16"
+                                                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                                                Glyph="&#xE783;"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'failed'), Mode=OneWay}" />
+                                                            <FontIcon
+                                                                FontSize="16"
+                                                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                                Glyph="&#xE711;"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'interrupted'), Mode=OneWay}" />
+                                                            <FontIcon
+                                                                FontSize="16"
+                                                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                                Glyph="&#xE9CE;"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusVisibility(Status, 'unknown'), Mode=OneWay}" />
+                                                        </Grid>
+                                                        <StackPanel
+                                                            Grid.Column="1"
+                                                            VerticalAlignment="Center"
+                                                            Spacing="2">
+                                                            <TextBlock
+                                                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                                                Text="{x:Bind ScriptName}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                TextWrapping="NoWrap" />
+                                                            <Grid ColumnSpacing="6">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto" />
+                                                                    <ColumnDefinition Width="*" />
+                                                                </Grid.ColumnDefinitions>
+                                                                <Image
+                                                                    Width="16"
+                                                                    Height="16"
+                                                                    AutomationProperties.AccessibilityView="Raw"
+                                                                    Source="{x:Bind SourceIconPath}" />
+                                                                <TextBlock
+                                                                    Grid.Column="1"
+                                                                    VerticalAlignment="Center"
+                                                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                    Style="{StaticResource CaptionTextBlockStyle}"
+                                                                    Text="{x:Bind Meta, Mode=OneWay}"
+                                                                    TextTrimming="CharacterEllipsis"
+                                                                    TextWrapping="NoWrap" />
+                                                            </Grid>
+                                                        </StackPanel>
+                                                        <StackPanel
+                                                            Grid.Column="2"
+                                                            MaxWidth="280"
+                                                            VerticalAlignment="Center"
+                                                            Spacing="2"
+                                                            ToolTipService.ToolTip="{x:Bind StatusText, Mode=OneWay}">
+                                                            <TextBlock
+                                                                HorizontalAlignment="Right"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind StatusText, Mode=OneWay}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                TextWrapping="NoWrap"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusTextVisibility(Status, 'critical'), Mode=OneWay}" />
+                                                            <TextBlock
+                                                                HorizontalAlignment="Right"
+                                                                FontWeight="SemiBold"
+                                                                Foreground="{ThemeResource SystemFillColorCautionBrush}"
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind StatusText, Mode=OneWay}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                TextWrapping="NoWrap"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusTextVisibility(Status, 'caution'), Mode=OneWay}" />
+                                                            <TextBlock
+                                                                HorizontalAlignment="Right"
+                                                                FontWeight="SemiBold"
+                                                                Style="{StaticResource CaptionTextBlockStyle}"
+                                                                Text="{x:Bind StatusText, Mode=OneWay}"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                TextWrapping="NoWrap"
+                                                                Visibility="{x:Bind views:PowerScriptsActivityPage.StatusTextVisibility(Status, 'normal'), Mode=OneWay}" />
+                                                            <TextBlock
+                                                                HorizontalAlignment="Right"
+                                                                FontFamily="Cascadia Code, Consolas"
+                                                                FontSize="12"
+                                                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                                Text="{x:Bind ExitText, Mode=OneWay}"
+                                                                Visibility="{x:Bind HasExitCode, Mode=OneWay}" />
+                                                        </StackPanel>
+                                                    </Grid>
+                                                    <Rectangle
+                                                        Height="1"
+                                                        VerticalAlignment="Bottom"
+                                                        Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+                                                </Grid>
+                                            </DataTemplate>
+                                        </ListView.ItemTemplate>
+                                    </ListView>
+                                </Border>
                             </StackPanel>
-                            <TextBlock
-                                Grid.Column="2"
-                                MaxWidth="320"
-                                VerticalAlignment="Center"
-                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                Text="{x:Bind Outcome, Mode=OneWay}"
-                                TextAlignment="Right"
-                                TextWrapping="Wrap" />
-                        </Grid>
-                    </DataTemplate>
-                </ListView.ItemTemplate>
-            </ListView>
-            <StackPanel
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsActivityEmpty"
-                Spacing="8"
-                Visibility="{x:Bind views:MyScriptsPage.BoolToVisibility(ViewModel.IsActivityEmpty), Mode=OneWay}">
-                <FontIcon
-                    FontSize="24"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Glyph="&#xE81C;" />
-                <TextBlock x:Uid="PowerScripts_ActivityEmptyTitle" TextAlignment="Center" />
-                <TextBlock
-                    x:Uid="PowerScripts_ActivityEmptyDescription"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    TextAlignment="Center"
-                    TextWrapping="Wrap" />
-            </StackPanel>
-            <StackPanel
-                x:Name="NoFailedRuns"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsActivityNoMatches"
-                Spacing="8"
-                Visibility="Collapsed">
-                <FontIcon
-                    FontSize="24"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    Glyph="&#xE721;" />
-                <TextBlock x:Uid="PowerScripts_NoMatchesTitle" TextAlignment="Center" />
-                <Button
-                    x:Uid="PowerScripts_ActivityShowAll"
-                    Margin="0,8,0,0"
-                    HorizontalAlignment="Center"
-                    Click="ShowAll_Click" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Grid
+                    x:Name="EmptyState"
+                    AutomationProperties.AutomationId="PowerScriptsActivityEmpty"
+                    Visibility="Collapsed">
+                    <Rectangle
+                        RadiusX="8"
+                        RadiusY="8"
+                        Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                        StrokeDashArray="4,3"
+                        StrokeThickness="1" />
+                    <StackPanel
+                        Padding="24,64"
+                        HorizontalAlignment="Center"
+                        Spacing="8">
+                        <FontIcon
+                            Margin="0,0,0,8"
+                            FontSize="40"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE81C;" />
+                        <TextBlock
+                            x:Uid="PowerScripts_ActivityEmptyTitle"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            TextAlignment="Center" />
+                        <TextBlock
+                            x:Uid="PowerScripts_ActivityEmptyDescription"
+                            MaxWidth="360"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            TextAlignment="Center"
+                            TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+                <Grid
+                    x:Name="NoMatches"
+                    AutomationProperties.AutomationId="PowerScriptsActivityNoMatches"
+                    Visibility="Collapsed">
+                    <Rectangle
+                        RadiusX="8"
+                        RadiusY="8"
+                        Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                        StrokeDashArray="4,3"
+                        StrokeThickness="1" />
+                    <StackPanel
+                        Padding="24,64"
+                        HorizontalAlignment="Center"
+                        Spacing="8">
+                        <FontIcon
+                            Margin="0,0,0,8"
+                            FontSize="40"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE721;" />
+                        <TextBlock
+                            x:Uid="PowerScripts_NoMatchesTitle"
+                            Style="{StaticResource SubtitleTextBlockStyle}"
+                            TextAlignment="Center" />
+                        <Button
+                            x:Uid="PowerScripts_ActivityShowAll"
+                            Margin="0,12,0,0"
+                            HorizontalAlignment="Center"
+                            Click="ShowAll_Click" />
+                    </StackPanel>
+                </Grid>
+                <StackPanel
+                    Margin="0,24,0,0"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <FontIcon
+                        FontSize="12"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Glyph="&#xE72E;" />
+                    <TextBlock
+                        x:Uid="PowerScripts_ActivityPrivacy"
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                        Style="{StaticResource CaptionTextBlockStyle}" />
+                </StackPanel>
             </StackPanel>
         </Grid>
-        <StackPanel
-            Grid.Row="4"
-            Orientation="Horizontal"
-            Spacing="8">
-            <FontIcon
-                FontSize="12"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Glyph="&#xE72E;" />
-            <TextBlock
-                x:Uid="PowerScripts_ActivityPrivacy"
-                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                Style="{StaticResource CaptionTextBlockStyle}" />
-        </StackPanel>
-    </Grid>
+    </ScrollViewer>
 </Page>

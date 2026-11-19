@@ -19,13 +19,9 @@ public partial class PowerScriptsViewModel
 
     public bool IsActivityBusy { get; private set; }
 
-    public bool CanRefreshActivity => !IsActivityBusy;
-
     public string ActivityError { get; private set; } = string.Empty;
 
     public bool HasActivityError => !string.IsNullOrEmpty(ActivityError);
-
-    public bool IsActivityEmpty => ActivityItems.Count == 0 && !IsActivityBusy && !HasActivityError;
 
     public async Task RefreshActivityAsync(bool clearCompleted = false)
     {
@@ -107,9 +103,7 @@ public partial class PowerScriptsViewModel
     private void NotifyActivityState()
     {
         OnPropertyChanged(nameof(IsActivityBusy));
-        OnPropertyChanged(nameof(CanRefreshActivity));
         OnPropertyChanged(nameof(ActivityError));
         OnPropertyChanged(nameof(HasActivityError));
-        OnPropertyChanged(nameof(IsActivityEmpty));
     }
 }

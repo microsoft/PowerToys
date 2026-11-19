@@ -875,9 +875,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="PowerScripts_ActivityCommandLine" xml:space="preserve">
     <value>Command line</value>
   </data>
-  <data name="PowerScripts_ActivityDetails" xml:space="preserve">
-    <value>{0} | {1} | {2}</value>
-  </data>
   <data name="PowerScripts_ActivityRunning" xml:space="preserve">
     <value>Running</value>
   </data>
@@ -892,12 +889,6 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_ActivityUnknown" xml:space="preserve">
     <value>Status unavailable</value>
-  </data>
-  <data name="PowerScripts_ActivityExitCode" xml:space="preserve">
-    <value>{0} (exit code {1})</value>
-  </data>
-  <data name="PowerScripts_ActivityDuration" xml:space="preserve">
-    <value>{0} | {1:N1} s</value>
   </data>
   <data name="PowerScripts_Consumers.Header" xml:space="preserve">
     <value>Use PowerScripts in</value>
@@ -1719,5 +1710,32 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   </data>
   <data name="PowerScripts_NewScript_NameRequired" xml:space="preserve">
     <value>Add a name.</value>
+  </data>
+  <data name="PowerScripts_ActivitySourceAny" xml:space="preserve">
+    <value>Any source</value>
+  </data>
+  <data name="PowerScripts_ActivitySource.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="PowerScripts_ActivityTryAgain.Content" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="PowerScripts_ActivityNow" xml:space="preserve">
+    <value>Now</value>
+  </data>
+  <data name="PowerScripts_ActivityToday" xml:space="preserve">
+    <value>Today</value>
+  </data>
+  <data name="PowerScripts_ActivityYesterday" xml:space="preserve">
+    <value>Yesterday</value>
+  </data>
+  <data name="PowerScripts_ActivityDayFormat" xml:space="preserve">
+    <value>{0:dddd}, {0:M}</value>
+  </data>
+  <data name="PowerScripts_ActivityExit" xml:space="preserve">
+    <value>Exit {0}</value>
+  </data>
+  <data name="PowerScripts_ActivityDurationValue" xml:space="preserve">
+    <value>{0:N1} s</value>
   </data>
 </root>
