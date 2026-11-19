@@ -72,7 +72,7 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
     /// <returns>True when the page was pushed and initialized.</returns>
     public async Task<bool> NavigateAsync(PerformCommandMessage message, CancellationToken cancellationToken = default)
     {
-        if (_isDisposed || message.DockRoute != Route || message.Command.Model.Unsafe is not IPage page)
+        if (_isDisposed || message.DockRoute != Route || !message.Command.IsPage)
         {
             return false;
         }
@@ -84,12 +84,32 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
         await _navigationGate.WaitAsync(token);
         Task<bool>? initializationTask = null;
+        PageViewModel? preparedPage = null;
         try
         {
-            await RunOnUiThreadAsync(() => initializationTask = TryPushPage(page, message, token), token);
+            var (canPush, currentPage) = await RunOnUiThreadAsync(
+                () => (CanPushPage(message), CurrentPage), token);
+            if (!canPush)
+            {
+                return false;
+            }
+
+            preparedPage = await _pageNavigation.PreparePageAsync(message, currentPage, currentPage is not null, token);
+            if (preparedPage is null)
+            {
+                return false;
+            }
+
+            initializationTask = await RunOnUiThreadAsync(
+                () => CanPushPage(message) ? PushPage(preparedPage, token) : null, token);
         }
         finally
         {
+            if (initializationTask is null)
+            {
+                CleanupPage(preparedPage);
+            }
+
             _navigationGate.Release();
         }
 
@@ -187,12 +207,12 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
 
     /// <summary>
     /// Handles a command result produced by <paramref name="sourcePage"/>. Safe to call
-    /// from any thread; navigation is applied later on the UI scheduler.
+    /// from any thread; navigation is applied later on the UI scheduler. The caller must
+    /// read the result kind on a worker inside its extension exception boundary.
     /// </summary>
     /// <returns>False when the shell must still handle the result.</returns>
-    public bool HandleCommandResult(PageViewModel sourcePage, ICommandResult result)
+    public bool HandleCommandResult(PageViewModel sourcePage, CommandResultKind kind)
     {
-        var kind = result.Kind;
         if (IsShellResult(kind))
         {
             return false;
@@ -238,22 +258,11 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
         }
     }
 
-    private Task<bool>? TryPushPage(IPage page, PerformCommandMessage message, CancellationToken cancellationToken)
+    private bool CanPushPage(PerformCommandMessage message) =>
+        !_isDisposed && (CurrentPage is null || OwnsSourcePage(message.Context?.Page));
+
+    private Task<bool> PushPage(PageViewModel pageViewModel, CancellationToken cancellationToken)
     {
-        if (_isDisposed ||
-            (CurrentPage is not null && !OwnsSourcePage(message.Context?.Page)))
-        {
-            return null;
-        }
-
-        var host = _pageNavigation.ResolveHost(message, CurrentPage);
-        var providerContext = _pageNavigation.ResolveProviderContext(message, CurrentPage);
-        var pageViewModel = _pageNavigation.TryPreparePage(page, _pages.Count > 0, host, providerContext, message.ListPageOptions);
-        if (pageViewModel is null)
-        {
-            return null;
-        }
-
         pageViewModel.DockRoute = Route;
         _pages.Add(pageViewModel);
         CurrentPage = pageViewModel;
@@ -308,6 +317,9 @@ public sealed partial class DockPageNavigationViewModel : ObservableObject, IDis
             TaskCreationOptions.None,
             _scheduler);
     }
+
+    private Task<T> RunOnUiThreadAsync<T>(Func<T> action, CancellationToken cancellationToken) =>
+        Task.Factory.StartNew(action, cancellationToken, TaskCreationOptions.None, _scheduler);
 
     /// <summary>
     /// Discards <paramref name="page"/>. <see cref="PageViewModel.CleanupAsync"/> stops local

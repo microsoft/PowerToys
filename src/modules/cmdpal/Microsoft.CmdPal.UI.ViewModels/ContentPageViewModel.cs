@@ -83,7 +83,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         catch (Exception ex)
         {
             CleanupContent(newContent);
-            ShowException(ex, _model?.Unsafe?.Name);
+            ShowException(ex, Name);
             throw;
         }
 

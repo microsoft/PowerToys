@@ -5,12 +5,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Windows.System;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
@@ -42,6 +44,30 @@ public partial class ContentPageViewModelTests
 
     private static ContentPageViewModel CreateViewModel(TestContentPage page) =>
         new(page, new ImmediateTaskScheduler(), new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+    [TestMethod]
+    public async Task InitializeAsync_ContentRpcFailureUsesCachedMetadataInErrorHandlers()
+    {
+        var disconnected = false;
+        var exception = Marshal.GetExceptionForHR(unchecked((int)0x800706BA))!;
+        var model = new Mock<IContentPage>();
+        model.SetupGet(page => page.Name).Returns(() => disconnected ? throw exception : "Cached page");
+        model.Setup(page => page.GetContent()).Callback(() => disconnected = true).Throws(exception);
+        var page = new ContentPageViewModel(model.Object, new ImmediateTaskScheduler(), new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+        try
+        {
+            Assert.IsFalse(await page.InitializeAsync());
+
+            Assert.IsTrue(disconnected);
+            Assert.IsFalse(string.IsNullOrEmpty(page.ErrorMessage));
+            model.VerifyGet(model => model.Name, Times.Once);
+        }
+        finally
+        {
+            await page.CleanupAsync();
+        }
+    }
 
     [TestMethod]
     [DataRow(false, true)]
