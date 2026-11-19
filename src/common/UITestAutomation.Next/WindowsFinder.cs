@@ -165,6 +165,16 @@ public static class WindowsFinder
         return null;
     }
 
+    /// <summary>Wait for the WinUI popup in the given process that actually contains the requested control.</summary>
+    public static Session? WaitForPopupContaining(int processId, By control, int timeoutMS)
+    {
+        return WaitForWindowByApp(
+            processId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+            w => w.ClassName == "Microsoft.UI.Content.PopupWindowSiteBridge" &&
+                new Session(PowerToysModule.Runner, w.Hwnd, w.Title, w.ProcessId, w.ProcessName).WaitForElement(control, timeoutMS: 250),
+            timeoutMS);
+    }
+
     /// <summary>Convenience wrapper: wait for a window with the given title substring.</summary>
     public static Session? WaitForWindowByTitle(string titleContains, int timeoutMS = 10_000)
         => WaitForWindow(w => w.Title.Contains(titleContains, StringComparison.OrdinalIgnoreCase), timeoutMS: timeoutMS);

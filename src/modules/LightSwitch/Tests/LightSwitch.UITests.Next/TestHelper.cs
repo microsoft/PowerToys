@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
 
 namespace Microsoft.LightSwitch.UITests;
 
@@ -191,14 +192,29 @@ internal sealed class TestHelper
     {
         Step($"Opening {pickerId}");
         scheduleUpdate = new LogCursor();
-        FindDescendant<Button>(pickerId, "Button").Invoke(msPostAction: 0);
-        var minute = ui.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);
-        Step($"Moving the minute selection in {pickerId}");
         RequireForeground();
-        minute.Focus();
+        FindDescendant<Button>(pickerId, "Button").Invoke(msPostAction: 0);
+        var flyout = WindowsFinder.WaitForPopupContaining(
+            window.ProcessId,
+            By.AccessibilityId("MinuteLoopingSelector"),
+            timeoutMS: 10_000);
+        Assert.IsNotNull(flyout, $"The {pickerId} time picker did not expose its popup window.");
+        var minute = flyout.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);
+        Step($"Moving the minute selection in {pickerId}");
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(new IntPtr(flyout.WindowHandle), 5_000, 2),
+            $"The {pickerId} time picker could not gain foreground. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        minute.Click(msPostAction: 0);
         KeyboardHelper.SendKeys(Key.Up);
-        ui.Find<Button>(By.AccessibilityId("AcceptButton"), 10_000).Invoke(msPostAction: 0);
-        Assert.IsTrue(minute.WaitForGone(10_000), "The time picker flyout did not close after accepting.");
+        flyout.Find<Button>(By.AccessibilityId("AcceptButton"), 10_000).Invoke(msPostAction: 0);
+        var closed = WaitHelper.WaitForStable(
+            () => WindowControl.EnumerateProcessWindows([window.ProcessId])
+                .Any(candidate => candidate.Hwnd.ToInt64() == flyout.WindowHandle && candidate.IsVisible),
+            visible => !visible,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(closed.Succeeded, "The time picker flyout did not close after accepting.");
     }
 
     public int WaitForChangedTime(string name, int previous)
@@ -269,6 +285,9 @@ internal sealed class TestHelper
     public void OpenLocation()
     {
         Step("Opening the location dialog");
+
+        // Windows requires foreground ownership when requesting location consent.
+        RequireForeground();
         ui.Find<Button>(By.AccessibilityId("SetLocationButton_LightSwitch")).Invoke(msPostAction: 0);
         var ready = WaitHelper.WaitForStable(
             () =>
@@ -309,6 +328,7 @@ internal sealed class TestHelper
     public void DetectLocation()
     {
         Step("Requesting the real Windows geolocation provider");
+        RequireForeground();
         var sync = ui.Find<Button>(By.AccessibilityId("SyncLocationButton_LightSwitch"));
         Assert.AreEqual("true", sync.GetProperty("IsEnabled").ToLowerInvariant(), $"Geolocation prerequisite unavailable: {ReadLocationError()}. Enable Windows location services and provide a location source; manual coordinates are not a substitute for this test.");
         sync.Invoke(msPostAction: 0);
@@ -399,6 +419,21 @@ internal sealed class TestHelper
         context.AddResultFile(prefix + "-settings.json");
         File.WriteAllText(prefix + "-state.txt", $"Theme: {TestState.ReadTheme()}\nService PIDs: {string.Join(", ", ObserveService())}\nForeground: {WindowControl.GetForegroundWindowInfo()}");
         context.AddResultFile(prefix + "-state.txt");
+
+        const string ConsentPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location";
+        const string PolicyPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors";
+        var locationState = new
+        {
+            MachineConsent = Registry.GetValue($@"HKEY_LOCAL_MACHINE\{ConsentPath}", "Value", null),
+            UserConsent = Registry.GetValue($@"HKEY_CURRENT_USER\{ConsentPath}", "Value", null),
+            DesktopConsent = Registry.GetValue($@"HKEY_CURRENT_USER\{ConsentPath}\NonPackaged", "Value", null),
+            ServiceEnabled = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration", "Status", null),
+            ServiceStart = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lfsvc", "Start", null),
+            PolicyDisableLocation = Registry.GetValue(PolicyPath, "DisableLocation", null),
+            PolicyDisableProvider = Registry.GetValue(PolicyPath, "DisableWindowsLocationProvider", null),
+        };
+        File.WriteAllText(prefix + "-location.json", JsonSerializer.Serialize(locationState));
+        context.AddResultFile(prefix + "-location.json");
     }
 
     private void SetCheck(string id, bool expected)
@@ -417,10 +452,10 @@ internal sealed class TestHelper
 
     private void RequireForeground()
     {
-        Step("Establishing foreground ownership for physical keyboard input");
+        Step("Establishing Settings foreground ownership");
         Assert.IsTrue(
             WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), 10_000, requiredConsecutiveMatches: 3),
-            $"Settings must own foreground before SendInput. Observed {WindowControl.GetForegroundWindowInfo()}.");
+            $"Settings must own foreground for this interaction. Observed {WindowControl.GetForegroundWindowInfo()}.");
     }
 
     private T FindDescendant<T>(string parentId, string type)

@@ -22,6 +22,9 @@ public static class WindowControl
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool PostMessageW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam);
 
+    [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    private static extern IntPtr SendMessageTimeoutW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, uint flags, uint timeout, out IntPtr result);
+
     [DllImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -88,9 +91,12 @@ public static class WindowControl
 #pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const uint WM_CLOSE = 0x0010;
     private const uint WM_CONTEXTMENU = 0x007B;
+    private const uint WM_NCHITTEST = 0x0084;
 #pragma warning restore SA1310
     private const uint GaParent = 1;
     private const uint GaRoot = 2;
+    private const uint AbortIfHung = 0x2;
+    private const int HitCaption = 2;
 #pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant name
     private const int SW_RESTORE = 9;
 #pragma warning restore SA1310
@@ -515,6 +521,101 @@ public static class WindowControl
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Click one exposed native caption point without touching caption buttons or another window.
+    /// The caller must still verify foreground and its own control-readiness conditions.
+    /// </summary>
+    public static bool TryClickExposedCaption(IntPtr window)
+    {
+        return TryClickExposedCaption(
+            WindowHelper.GetWindowBounds(window),
+            (x, y) =>
+            {
+                if (x is < short.MinValue or > short.MaxValue ||
+                    y is < short.MinValue or > short.MaxValue)
+                {
+                    return false;
+                }
+
+                var atPoint = WindowFromPoint(new POINT { X = x, Y = y });
+                var point = new IntPtr(unchecked(((ushort)y << 16) | (ushort)x));
+                return IsExposedCaption(
+                    window,
+                    atPoint,
+                    child => GetAncestor(child, GaRoot),
+                    child => SendMessageTimeoutW(child, WM_NCHITTEST, IntPtr.Zero, point, AbortIfHung, 250, out var hit) != IntPtr.Zero
+                        ? hit.ToInt64()
+                        : 0);
+            },
+            (x, y) =>
+            {
+                MouseHelper.MoveTo(x, y);
+                return WaitHelper.WaitForStable(
+                    MouseHelper.GetMousePosition,
+                    position => position == (x, y),
+                    timeoutMS: 1_000,
+                    requiredConsecutiveMatches: 2).Succeeded;
+            },
+            MouseHelper.LeftClick);
+    }
+
+    internal static bool IsExposedCaption(
+        IntPtr window,
+        IntPtr atPoint,
+        Func<IntPtr, IntPtr> getRoot,
+        Func<IntPtr, long> hitTest)
+    {
+        ArgumentNullException.ThrowIfNull(getRoot);
+        ArgumentNullException.ThrowIfNull(hitTest);
+
+        // Win11 Explorer's caption is a child HWND; its CabinetWClass root reports HTCLIENT.
+        return window != IntPtr.Zero && atPoint != IntPtr.Zero && getRoot(atPoint) == window && hitTest(atPoint) == HitCaption;
+    }
+
+    internal static bool TryClickExposedCaption(
+        (int Left, int Top, int Right, int Bottom) bounds,
+        Func<int, int, bool> isExposedCaption,
+        Func<int, int, bool> movePointer,
+        Action click)
+    {
+        ArgumentNullException.ThrowIfNull(isExposedCaption);
+        ArgumentNullException.ThrowIfNull(movePointer);
+        ArgumentNullException.ThrowIfNull(click);
+        if (bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top)
+        {
+            return false;
+        }
+
+        foreach (var offset in new[] { 12, 24, 36 })
+        {
+            var y = bounds.Top + offset;
+            if (y >= bounds.Bottom)
+            {
+                continue;
+            }
+
+            foreach (var quarter in new[] { 3, 2, 1 })
+            {
+                var x = bounds.Left + ((bounds.Right - bounds.Left) * quarter / 4);
+                if (!isExposedCaption(x, y))
+                {
+                    continue;
+                }
+
+                // Pointer movement can expose hover UI or race a moving window. Recheck before input.
+                if (!movePointer(x, y) || !isExposedCaption(x, y))
+                {
+                    return false;
+                }
+
+                click();
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>Open the context menu owned by the control that currently has focus in a foreground window.</summary>
