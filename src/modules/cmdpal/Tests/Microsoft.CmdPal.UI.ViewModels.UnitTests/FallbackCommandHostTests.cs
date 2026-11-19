@@ -94,7 +94,9 @@ public sealed partial class FallbackCommandHostTests
         await using var services = CreateServices();
         var source = await LoadFallbackAsync(fallback, services);
 
-        Assert.AreEqual(matches, source.PreparePassiveFallback(query, "query-id", CancellationToken.None));
+        var actualMatch = source.MatchesPassiveQuery(query);
+        Assert.AreEqual(matches, actualMatch);
+        source.PreparePassiveFallback(query, "query-id", actualMatch, CancellationToken.None);
         Assert.AreEqual(matches ? $"Open {query}" : string.Empty, source.Title);
         Assert.AreEqual(matches ? $"Query: {query}" : string.Empty, source.Subtitle);
         Assert.AreEqual(0, fallback.UpdateCount);
@@ -170,7 +172,7 @@ public sealed partial class FallbackCommandHostTests
             Assert.AreSame(source.CommandViewModel, firstMessage.Command);
             cancellation.Cancel();
 
-            Assert.IsTrue(source.PreparePassiveFallback("next", "next-id", CancellationToken.None));
+            Assert.IsTrue(source.PreparePassiveFallback("next", "next-id", matches: true, CancellationToken.None));
             var nextMessage = new Messages.PerformCommandMessage(rendered);
             Assert.AreNotSame(firstMessage.Command, nextMessage.Command);
             Assert.IsNull(ShellViewModel.ResolveRequestedCommand(firstMessage.Command));
@@ -320,6 +322,40 @@ public sealed partial class FallbackCommandHostTests
     }
 
     [TestMethod]
+    public async Task PassiveFallback_ReevaluatesRegexWhenSearchExtendsPreviousResults()
+    {
+        var fallback = new RecordingFallback { MatchKind = HostMatchKind.Regex, MatchValue = "ab", TitleTemplate = "Run {query}" };
+        var command = new CommandItem(new NoOpCommand { Id = "ordinary", Name = "abc" }) { Title = "abc" };
+        await using var services = CreateServices();
+        var wrapper = new CommandProviderWrapper(new TestProvider(fallback, command), TaskScheduler.Default);
+        await wrapper.LoadTopLevelCommands(services);
+        var source = wrapper.FallbackItems.Single();
+        var ordinary = wrapper.TopLevelItems.Single();
+        var settings = services.GetRequiredService<ISettingsService>();
+        using var manager = new TopLevelCommandManager(services, []);
+        manager.TopLevelCommands.Add(ordinary);
+        manager.TopLevelCommands.Add(source);
+        using var page = new MainListPage(
+            manager,
+            new AliasManager(manager, settings),
+            new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions()),
+            settings,
+            Mock.Of<IAppStateService>(s => s.State == new AppStateModel()),
+            new(new ListPage()));
+
+        page.SearchText = "a";
+        Assert.IsTrue(page.GetItems().Contains(ordinary));
+        Assert.IsFalse(page.GetItems().Contains(source));
+
+        page.SearchText = "ab";
+        Assert.IsTrue(page.GetItems().Contains(source));
+        Assert.AreEqual("Run ab", source.Title);
+
+        page.SearchText = "abc";
+        Assert.IsFalse(page.GetItems().Contains(source));
+    }
+
+    [TestMethod]
     public async Task ResultFallback_DoesNotUseLegacyQueryUpdates()
     {
         var fallback = new RecordingFallback { QueryHandler = new RecordingQueryHandler() };
@@ -359,7 +395,7 @@ public sealed partial class FallbackCommandHostTests
             Assert.IsFalse(source.FallbackQueryHandler.HasValue);
             Assert.AreEqual(1, fallback.UpdateCount);
             Assert.AreSame(fallback.Command, source.CommandViewModel.Model.Unsafe);
-            Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", CancellationToken.None));
+            Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", matches: true, CancellationToken.None));
         }
         finally
         {
@@ -399,7 +435,7 @@ public sealed partial class FallbackCommandHostTests
             Assert.IsTrue(source.HasFallbackQueryHandler);
             Assert.IsTrue(handler.HasValue);
             Assert.AreSame(handler, source.FallbackQueryHandler);
-            Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", CancellationToken.None));
+            Assert.IsFalse(source.PreparePassiveFallback("query", "query-id", matches: true, CancellationToken.None));
             source.InitializeProperties();
             Assert.AreEqual(1, fallback.QueryHandlerReadCount);
             Assert.AreEqual(0, fallback.CreateCount);
@@ -429,7 +465,7 @@ public sealed partial class FallbackCommandHostTests
 
     private static void PrepareQuery(TopLevelViewModel source, CancellationToken token)
     {
-        Assert.IsTrue(source.PreparePassiveFallback("query", "query-id", token));
+        Assert.IsTrue(source.PreparePassiveFallback("query", "query-id", matches: true, token));
     }
 
     private static ServiceProvider CreateServices()
@@ -452,11 +488,11 @@ public sealed partial class FallbackCommandHostTests
         return wrapper.FallbackItems[0];
     }
 
-    private sealed partial class TestProvider(IFallbackCommandItem fallback) : CommandProvider
+    private sealed partial class TestProvider(IFallbackCommandItem fallback, params ICommandItem[] commands) : CommandProvider
     {
         public override string Id => "fallback-host-tests";
 
-        public override ICommandItem[] TopLevelCommands() => [];
+        public override ICommandItem[] TopLevelCommands() => commands;
 
         public override IFallbackCommandItem[] FallbackCommands() => [fallback];
     }

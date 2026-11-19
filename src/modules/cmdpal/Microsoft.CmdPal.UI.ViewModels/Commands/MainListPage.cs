@@ -680,6 +680,7 @@ public sealed partial class MainListPage : DynamicListPage,
         IReadOnlyList<InProcObject<IListItem>> appsSource;
         IReadOnlyList<InProcObject<IListItem>> fallbackSource;
         InProcObject<IListItem>[] globalFallbackSources;
+        var passiveFallbacks = new List<TopLevelViewModel>();
         bool includeAppsSnapshot;
         bool tookFullCatalog = false;
 
@@ -705,18 +706,12 @@ public sealed partial class MainListPage : DynamicListPage,
 
                 if (s.IsFallbackV2)
                 {
-                    if (s.IsPassiveFallback)
+                    if (!s.IsPassiveFallback || !s.IsEnabled)
                     {
-                        if (!s.PreparePassiveFallback(newSearch, queryId, token))
-                        {
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        // Result sources need the asynchronous result host, not the legacy handler.
                         continue;
                     }
+
+                    passiveFallbacks.Add(s);
                 }
                 else
                 {
@@ -765,16 +760,12 @@ public sealed partial class MainListPage : DynamicListPage,
 
             var prevFilteredItems = reset ? null : _filteredItems;
             var prevApps = reset ? null : _filteredApps;
-            var prevFallbacks = reset ? null : _fallbackItems;
 
             IEnumerable<InProcObject<IListItem>> newFilteredItems = prevFilteredItems is not null
                 ? prevFilteredItems.Select(s => s.Item)
                 : Enumerable.Empty<InProcObject<IListItem>>();
             IEnumerable<InProcObject<IListItem>> newApps = prevApps is not null
                 ? prevApps.Select(s => s.Item)
-                : Enumerable.Empty<InProcObject<IListItem>>();
-            IEnumerable<InProcObject<IListItem>> newFallbacks = prevFallbacks is not null
-                ? prevFallbacks.Select(s => s.Item)
                 : Enumerable.Empty<InProcObject<IListItem>>();
 
             if (token.IsCancellationRequested)
@@ -788,11 +779,6 @@ public sealed partial class MainListPage : DynamicListPage,
             {
                 tookFullCatalog = true;
                 newFilteredItems = commands.Where(s => !s.IsFallback).Select(item => new InProcObject<IListItem>(item));
-
-                // Fallbacks are always included in the list, even if they
-                // don't match the search text. But we don't want to
-                // consider them when filtering the list.
-                newFallbacks = commonFallbacks.Select(item => new InProcObject<IListItem>(item));
 
                 if (token.IsCancellationRequested)
                 {
@@ -827,7 +813,9 @@ public sealed partial class MainListPage : DynamicListPage,
             // touch the live TopLevelCommands collection or the app provider.
             itemsSource = MaterializeSource(newFilteredItems);
             appsSource = MaterializeSource(newApps);
-            fallbackSource = MaterializeSource(newFallbacks);
+
+            // A longer query can start matching a fallback that didn't match its prefix.
+            fallbackSource = commonFallbacks.Select(item => new InProcObject<IListItem>(item)).ToArray();
             globalFallbackSources = [.. specialFallbacks.Select(item => new InProcObject<IListItem>(item))];
         }
 
@@ -873,6 +861,18 @@ public sealed partial class MainListPage : DynamicListPage,
 
         var scoredFallbackItems = InternalListHelpers.FilterListWithScores(fallbackSource, searchQuery, _fallbackScoringFunction);
 
+        // calculate passive regex fallback matches here, outside of the lock.
+        var passiveMatches = new bool[passiveFallbacks.Count];
+        for (var i = 0; i < passiveFallbacks.Count; i++)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return;
+            }
+
+            passiveMatches[i] = passiveFallbacks[i].MatchesPassiveQuery(newSearch);
+        }
+
         if (token.IsCancellationRequested)
         {
             return;
@@ -894,7 +894,7 @@ public sealed partial class MainListPage : DynamicListPage,
 #endif
 
         // ===== PUBLISH PHASE (under lock) =====
-        // The critical section is the field swaps only. Telemetry debounce and refresh throttling
+        // Publish passive titles and invocations with the result snapshot. Telemetry debounce and refresh throttling
         // happen after the lock so _searchTelemetryLock never nests under the commands lock.
         var deterministicResultCount = 0;
         lock (commands)
@@ -909,6 +909,11 @@ public sealed partial class MainListPage : DynamicListPage,
             if (tookFullCatalog)
             {
                 _filteredItemsIncludesApps = includeAppsSnapshot;
+            }
+
+            for (var i = 0; i < passiveFallbacks.Count; i++)
+            {
+                passiveFallbacks[i].PreparePassiveFallback(newSearch, queryId, passiveMatches[i], token);
             }
 
             _filteredItems = scoredFilteredItems;
