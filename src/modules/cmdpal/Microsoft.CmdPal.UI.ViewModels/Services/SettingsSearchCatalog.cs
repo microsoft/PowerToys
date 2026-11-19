@@ -22,6 +22,7 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         [SettingsLinkIds.General.AutoGoHome] = ("Settings_GeneralPage_AutoGoHome_SettingsCard.Header", null, Glyphs.Home, "GoHome", SettingsLinkIds.General.Activation),
         [SettingsLinkIds.General.KeepPreviousQuery] = ("Settings_GeneralPage_KeepPreviousQuery_SettingsCard.Header", null, Glyphs.History, "PreviousQuery", SettingsLinkIds.General.Activation),
         [SettingsLinkIds.General.HighlightSearch] = ("Settings_GeneralPage_HighlightSearch_SettingsCard.Header", null, Glyphs.Highlight, "HighlightSearch", SettingsLinkIds.General.Activation),
+        [SettingsLinkIds.General.MultilineSearchInput] = ("Settings_GeneralPage_MultilineSearchInput_SettingsCard.Header", "Settings_GeneralPage_MultilineSearchInput_SettingsCard.Description", Glyphs.Layout, "MultilineSearchInput", SettingsLinkIds.General.Activation),
         [SettingsLinkIds.General.RecentItems] = ("Settings_GeneralPage_RecentItemsSettingsHeader.Text", null, Glyphs.History, "History", null),
         [SettingsLinkIds.Appearance.HomeRecentCommands] = ("Settings_GeneralPage_HomeRecentCommands_SettingsCard.Header", null, Glyphs.History, "History", SettingsLinkIds.General.RecentItems),
         [SettingsLinkIds.Appearance.RecentCommandsDisplayLimit] = ("Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Header", "Settings_GeneralPage_RecentCommandsDisplayLimit_SettingsCard.Description", Glyphs.History, "History", SettingsLinkIds.General.RecentItems),

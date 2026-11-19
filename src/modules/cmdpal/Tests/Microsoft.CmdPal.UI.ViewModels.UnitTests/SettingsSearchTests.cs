@@ -62,6 +62,10 @@ public partial class SettingsSearchTests
     [TestMethod]
     [DataRow("preview", SettingsLinkIds.Appearance.ShowAppDetails)]
     [DataRow("preview pane", SettingsLinkIds.Appearance.ShowAppDetails)]
+    [DataRow("multi-line search input", SettingsLinkIds.General.MultilineSearchInput)]
+    [DataRow("multiline", SettingsLinkIds.General.MultilineSearchInput)]
+    [DataRow("wrap", SettingsLinkIds.General.MultilineSearchInput)]
+    [DataRow("horizontal scrolling", SettingsLinkIds.General.MultilineSearchInput)]
     [DataRow("wallpaper", SettingsLinkIds.Appearance.Background)]
     [DataRow("dock theme", SettingsLinkIds.Dock.Theme)]
     [DataRow("dock dark", SettingsLinkIds.Dock.Theme)]
@@ -95,6 +99,7 @@ public partial class SettingsSearchTests
 
     [TestMethod]
     [DataRow(SettingsLinkIds.General.RecentItems, "General")]
+    [DataRow(SettingsLinkIds.General.MultilineSearchInput, "General › Activation")]
     [DataRow(SettingsLinkIds.Appearance.HomeRecentCommands, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.RecentCommandsDisplayLimit, "General › Recent items")]
     [DataRow(SettingsLinkIds.Appearance.ClearRecentCommands, "General › Recent items")]

@@ -18,6 +18,7 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
         CreateTarget(SettingsLinkIds.General.AutoGoHome, SettingsPageTags.General, "auto-go-home"),
         CreateTarget(SettingsLinkIds.General.KeepPreviousQuery, SettingsPageTags.General, "keep-previous-query"),
         CreateTarget(SettingsLinkIds.General.HighlightSearch, SettingsPageTags.General, "highlight-search"),
+        CreateTarget(SettingsLinkIds.General.MultilineSearchInput, SettingsPageTags.General, "multiline-search-input"),
         CreateTarget(SettingsLinkIds.General.RecentItems, SettingsPageTags.General, "recent-items-section"),
         CreateTarget(SettingsLinkIds.General.AppBehavior, SettingsPageTags.General, "behavior-section"),
         CreateTarget(SettingsLinkIds.General.SystemTrayIcon, SettingsPageTags.General, "system-tray-icon"),

@@ -100,9 +100,11 @@
                 PlaceholderText="{x:Bind CurrentPageViewModel.PlaceholderText, Converter={StaticResource PlaceholderTextConverter}, Mode=OneWay}"
                 PreviewKeyDown="FilterBox_PreviewKeyDown"
                 PreviewKeyUp="FilterBox_PreviewKeyUp"
+                ScrollViewer.HorizontalScrollMode="Disabled"
                 Style="{StaticResource SearchTextBoxStyle}"
                 TextChanged="FilterBox_TextChanged"
-                TextChanging="FilterBox_TextChanging">
+                TextChanging="FilterBox_TextChanging"
+                TextWrapping="Wrap">
                 <TextBox.ContextFlyout>
                     <TextCommandBarFlyout Opening="FilterBoxContextFlyout_Opening" />
                 </TextBox.ContextFlyout>

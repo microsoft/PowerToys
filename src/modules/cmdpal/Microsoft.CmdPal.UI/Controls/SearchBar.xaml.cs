@@ -140,6 +140,16 @@ public sealed partial class SearchBar : UserControl, INotifyPropertyChanged, ICu
 
     public ObservableCollection<ParameterRunViewModel> Parameters { get; } = new();
 
+    public bool MultilineSearchInput
+    {
+        get => FilterBox.TextWrapping == TextWrapping.Wrap;
+        set
+        {
+            FilterBox.TextWrapping = value ? TextWrapping.Wrap : TextWrapping.NoWrap;
+            ScrollViewer.SetHorizontalScrollMode(FilterBox, value ? ScrollMode.Disabled : ScrollMode.Auto);
+        }
+    }
+
     public SearchBar()
     {
         this.InitializeComponent();

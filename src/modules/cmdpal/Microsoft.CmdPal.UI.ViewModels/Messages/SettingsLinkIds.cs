@@ -15,6 +15,7 @@ public static class SettingsLinkIds
         public const string AutoGoHome = "auto-go-home";
         public const string KeepPreviousQuery = "keep-previous-query";
         public const string HighlightSearch = "highlight-search";
+        public const string MultilineSearchInput = "multiline-search-input";
         public const string RecentItems = "recent-items";
         public const string AppBehavior = "app-behavior";
         public const string SystemTrayIcon = "system-tray-icon";

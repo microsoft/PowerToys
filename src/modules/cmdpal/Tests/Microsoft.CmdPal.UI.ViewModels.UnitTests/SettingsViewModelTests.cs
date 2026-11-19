@@ -26,6 +26,50 @@ public class SettingsViewModelTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
+    public void MultilineSearchInputDefaultsOnAndPersistsPreference(bool enabled)
+    {
+        Assert.IsTrue(new SettingsModel().MultilineSearchInput);
+        var oldSettings = JsonSerializer.Deserialize("{}", JsonSerializationContext.Default.SettingsModel);
+        Assert.IsNotNull(oldSettings);
+        Assert.IsTrue(oldSettings.MultilineSearchInput);
+        var service = CreateSettingsService();
+        var scheduler = new QueuedTaskScheduler();
+        using var viewModel = CreateViewModel(service.Object, scheduler);
+        Assert.IsTrue(viewModel.MultilineSearchInput);
+
+        viewModel.MultilineSearchInput = enabled;
+        scheduler.ExecuteAllAvailable();
+
+        Assert.AreEqual(enabled, service.Object.Settings.MultilineSearchInput);
+        Assert.AreEqual(enabled, viewModel.MultilineSearchInput);
+        var json = JsonSerializer.Serialize(service.Object.Settings, JsonSerializationContext.Default.SettingsModel);
+        var restored = JsonSerializer.Deserialize(json, JsonSerializationContext.Default.SettingsModel);
+        Assert.IsNotNull(restored);
+        Assert.AreEqual(enabled, restored.MultilineSearchInput);
+    }
+
+    [TestMethod]
+    public void ExternalMultilineSearchInputChangesRefreshBindingsWithoutSavingAgain()
+    {
+        var service = CreateSettingsService();
+        var scheduler = new QueuedTaskScheduler();
+        using var viewModel = CreateViewModel(service.Object, scheduler);
+        var properties = new List<string?>();
+        viewModel.PropertyChanged += (_, args) => properties.Add(args.PropertyName);
+
+        service.Object.UpdateSettings(settings => settings with { MultilineSearchInput = false });
+        scheduler.ExecuteAllAvailable();
+
+        Assert.IsFalse(viewModel.MultilineSearchInput);
+        CollectionAssert.Contains(properties, nameof(SettingsViewModel.MultilineSearchInput));
+        service.Verify(
+            settings => settings.UpdateSettings(It.IsAny<Func<SettingsModel, SettingsModel>>(), It.IsAny<bool>()),
+            Times.Once);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
     public void WindowsKeyModeForcesHookCheckboxWithoutChangingSavedPreference(bool savedPreference)
     {
         var featureEnabled = SettingsModel.IsWindowsKeyHotkeyFeatureEnabled;
