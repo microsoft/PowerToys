@@ -148,6 +148,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 var accessStatus = await Geolocator.RequestAccessAsync();
                 if (accessStatus != GeolocationAccessStatus.Allowed)
                 {
+                    Logger.LogWarning($"Location detection access request returned {accessStatus}.");
                     ShowLocationError(ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable"));
                     return;
                 }
@@ -355,6 +356,7 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             var accessStatus = await Geolocator.RequestAccessAsync();
             if (accessStatus != GeolocationAccessStatus.Allowed)
             {
+                Logger.LogWarning($"Location dialog access precheck returned {accessStatus}.");
                 this.SyncButton.IsEnabled = false;
                 this.LocationErrorText.Text = ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_LocationError_Unavailable");
                 this.LocationErrorText.Visibility = Visibility.Visible;

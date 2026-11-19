@@ -38,7 +38,6 @@ namespace RegistryPreviewUILib
         public MonacoEditorControl()
         {
             InitializeComponent();
-            Environment.SetEnvironmentVariable("WEBVIEW2_USER_DATA_FOLDER", MonacoHelper.TempFolderPath, EnvironmentVariableTarget.Process);
 
             _textChangedThrottle = new Timer(250);
             _textChangedThrottle.Elapsed += OnTextChangedThrottleElapsed;
@@ -80,7 +79,8 @@ namespace RegistryPreviewUILib
 
         private async Task InitializeBrowserAsync()
         {
-            await Browser.EnsureCoreWebView2Async();
+            var environment = await CoreWebView2Environment.CreateWithOptionsAsync(null, MonacoHelper.TempFolderPath, null);
+            await Browser.EnsureCoreWebView2Async(environment);
             if (Browser.CoreWebView2 == null)
             {
                 throw new InvalidOperationException("The WebView2 runtime could not be initialized.");

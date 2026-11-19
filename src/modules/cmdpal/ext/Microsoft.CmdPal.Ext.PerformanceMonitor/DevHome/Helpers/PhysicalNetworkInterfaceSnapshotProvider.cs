@@ -8,6 +8,7 @@ using System.ComponentModel;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.NetworkManagement.IpHelper;
+using Windows.Win32.NetworkManagement.Ndis;
 
 namespace CoreWidgetProvider.Helpers;
 
@@ -54,7 +55,7 @@ internal sealed class PhysicalNetworkInterfaceSnapshotProvider : IPhysicalNetwor
                     name,
                     row.InOctets,
                     row.OutOctets,
-                    GetKnownLinkSpeed(row.ReceiveLinkSpeed, row.TransmitLinkSpeed)));
+                    GetKnownLinkSpeed(row.OperStatus, row.ReceiveLinkSpeed, row.TransmitLinkSpeed)));
             }
 
             snapshots.Sort(static (left, right) =>
@@ -71,8 +72,17 @@ internal sealed class PhysicalNetworkInterfaceSnapshotProvider : IPhysicalNetwor
         }
     }
 
-    internal static ulong GetKnownLinkSpeed(ulong receiveLinkSpeed, ulong transmitLinkSpeed)
+    /// <summary>
+    /// Returns the link speed in bits per second, or 0 when it's unknown or the interface isn't up. An adapter
+    /// that's disconnected or no longer present can still report a speed, such as an unplugged dock's Ethernet.
+    /// </summary>
+    internal static ulong GetKnownLinkSpeed(IF_OPER_STATUS operStatus, ulong receiveLinkSpeed, ulong transmitLinkSpeed)
     {
+        if (operStatus != IF_OPER_STATUS.IfOperStatusUp)
+        {
+            return 0;
+        }
+
         var knownReceiveLinkSpeed = receiveLinkSpeed == ulong.MaxValue ? 0 : receiveLinkSpeed;
         var knownTransmitLinkSpeed = transmitLinkSpeed == ulong.MaxValue ? 0 : transmitLinkSpeed;
         return Math.Max(knownReceiveLinkSpeed, knownTransmitLinkSpeed);
