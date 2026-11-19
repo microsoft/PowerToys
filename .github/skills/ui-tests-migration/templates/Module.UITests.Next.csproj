@@ -39,7 +39,9 @@
   <!--
     Stage the built test app under <Platform>\<Configuration>\tests\ so the UI-tests build pipeline
     (CopyFiles glob **/<plat>/<config>/tests/**) picks it up, matching the other *.UITests projects.
-    Without this it builds to bin\ and is never staged into the artifact.
+    Match the project file stem, AssemblyName and tests subfolder exactly (including case).
+    Declare each staged MSIX in FileWrites with Include="$(TargetDir)FixtureName.msix".
+    See "Repository UI-test artifact contract" in .pipelines/tests/uiTestArtifacts.Tests.ps1.
   -->
   <PropertyGroup>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\__MODULE__.UITests.Next\</OutputPath>
@@ -50,8 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reference the NEW harness only. NEVER reference ..\common\UITestAutomation\UITestAutomation.csproj.
-         Adjust the ..\ depth so it resolves from this project's folder to src\common. -->
+    <!-- Adjust the ..\ depth so it resolves from this project's folder to src\common. -->
     <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
   </ItemGroup>
 </Project>

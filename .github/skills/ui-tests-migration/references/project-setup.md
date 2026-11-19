@@ -84,7 +84,10 @@ Critical, non-negotiable bits (CI audits or the build will fail without them):
   physical mouse coordinates match winappcli's UIA bounds on every monitor.
 4. **`<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\<Name>\</OutputPath>`** — stages the
    build output where the UI-tests pipeline globs (`**/<plat>/<config>/tests/**`). Without it the app
-   builds to `bin\` and is never picked up by the test job.
+   builds to `bin\` and is never picked up by the test job. `<Name>` must exactly match the `.csproj`
+   file stem and `AssemblyName` (including case). For each staged MSIX fixture, declare
+   `<FileWrites Include="$(TargetDir)FixtureName.msix" />` so CI verifies that it reached the worker.
+   See the **Repository UI-test artifact contract** in `.pipelines/tests/uiTestArtifacts.Tests.ps1`.
 5. **`RunVSTest=false`** — UI tests must not run during MSBuild.
 6. **ProjectReference to `UITestAutomation.Next.csproj` only** — never the legacy
    `UITestAutomation.csproj`. Fix the `..\` depth to match the folder nesting:

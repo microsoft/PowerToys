@@ -618,22 +618,63 @@ internal sealed class TwoEndpointFixture : IDisposable
     private void VerifyTransport()
     {
         var stable = 0;
-        RunFiles.Wait(
-            () =>
+        var history = new JsonArray();
+        JsonObject? lastObservation = null;
+        (bool HostPeer, bool BothPeers, bool HostRouting, bool BothReady)? previous = null;
+        int dropped = 0;
+        try
+        {
+            RunFiles.Wait(
+                () =>
+                {
+                    var hostTransport = host!.Request("Transport");
+                    var guestTransport = guest!.Request("Transport");
+                    RunFiles.Write(Path.Combine(runRoot, "host-transport.json"), hostTransport);
+                    RunFiles.Write(Path.Combine(runRoot, "guest-transport.json"), guestTransport);
+                    Assert.AreEqual((int)Key.F1, hostTransport["SwitchKey"]!.GetValue<int>(), "The isolated baseline must use F1-F4 machine switching.");
+
+                    // Preserve the existing short-circuit order; these are cumulative readiness gates.
+                    bool hostPeer = HasPeer(hostTransport, guestAddress);
+                    bool bothPeers = hostPeer && HasPeer(guestTransport, provision["HostAddress"]!.GetValue<string>());
+                    bool hostRouting = bothPeers && HasRoutingLayout(hostTransport);
+                    bool established = hostRouting && HasRoutingLayout(guestTransport);
+                    stable = established ? stable + 1 : 0;
+                    var readiness = (hostPeer, bothPeers, hostRouting, established);
+                    lastObservation = new JsonObject
+                    {
+                        ["ObservedUtc"] = DateTime.UtcNow,
+                        ["HostPeerGatePassed"] = hostPeer,
+                        ["BothPeerGatesPassed"] = bothPeers,
+                        ["HostRoutingGatePassed"] = hostRouting,
+                        ["BothRoutingGatesPassed"] = established,
+                        ["ConsecutiveMatches"] = stable,
+                    };
+                    if (previous != readiness)
+                    {
+                        if (history.Count == 64)
+                        {
+                            history.RemoveAt(0);
+                            dropped++;
+                        }
+
+                        history.Add(lastObservation.DeepClone());
+                        previous = readiness;
+                    }
+
+                    return stable >= 2;
+                },
+                TimeSpan.FromSeconds(90),
+                "Both owned MWB PIDs must have peer transport and the expected host/guest routing slots.");
+        }
+        finally
+        {
+            RunFiles.Write(Path.Combine(runRoot, "transport-readiness-history.json"), new JsonObject
             {
-                var hostTransport = host!.Request("Transport");
-                var guestTransport = guest!.Request("Transport");
-                RunFiles.Write(Path.Combine(runRoot, "host-transport.json"), hostTransport);
-                RunFiles.Write(Path.Combine(runRoot, "guest-transport.json"), guestTransport);
-                Assert.AreEqual((int)Key.F1, hostTransport["SwitchKey"]!.GetValue<int>(), "The isolated baseline must use F1-F4 machine switching.");
-                bool established = HasPeer(hostTransport, guestAddress) &&
-                    HasPeer(guestTransport, provision["HostAddress"]!.GetValue<string>()) &&
-                    HasRoutingLayout(hostTransport) && HasRoutingLayout(guestTransport);
-                stable = established ? stable + 1 : 0;
-                return stable >= 2;
-            },
-            TimeSpan.FromSeconds(90),
-            "Both owned MWB PIDs must have peer transport and the expected host/guest routing slots.");
+                ["Transitions"] = history,
+                ["DroppedTransitions"] = dropped,
+                ["LastObservation"] = lastObservation,
+            });
+        }
 
         // ItemsControl itself has no UIA peer; its bound device labels do.
         RunFiles.Wait(

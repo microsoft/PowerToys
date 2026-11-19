@@ -129,8 +129,8 @@ public partial class PowerAccent : IDisposable
     {
         _initialShiftState = WindowsFunctions.IsShiftState();
         _characters = GetCharacters(letterKey);
-        _characterDescriptions = GetCharacterDescriptions(_characters);
         _showUnicodeDescription = _settingService.ShowUnicodeDescription;
+        _characterDescriptions = GetCharacterDescriptions(_characters, _showUnicodeDescription);
     }
 
     private string[] GetCharacters(LetterKey letterKey)
@@ -155,7 +155,7 @@ public partial class PowerAccent : IDisposable
         return characters;
     }
 
-    private string GetCharacterDescription(string character)
+    private static string GetCharacterDescription(string character)
     {
         // TODO: Zero-width joiners (U+200D) and variation selectors (U+FE0F, etc.) currently show
         // up as their own entries in the description (e.g. for complex emoji sequences). In the
@@ -195,8 +195,9 @@ public partial class PowerAccent : IDisposable
         return string.Format(CultureInfo.InvariantCulture, "{0}: {1}", displayTextAndCodes, names);
     }
 
-    private string[] GetCharacterDescriptions(string[] characters) =>
-        Array.ConvertAll(characters, GetCharacterDescription);
+    // Avoid cold-loading ICU on the keyboard-hook thread for metadata the UI will not show.
+    internal static string[] GetCharacterDescriptions(string[] characters, bool showDescriptions) =>
+        showDescriptions ? Array.ConvertAll(characters, GetCharacterDescription) : Array.Empty<string>();
 
     private void SendInputAndHideToolbar(InputType inputType)
     {

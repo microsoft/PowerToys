@@ -1,10 +1,15 @@
 ---
 name: ui-tests-migration
-description: "Create, migrate, and stabilize PowerToys UI tests with Microsoft.PowerToys.UITest.Next and winappcli, through local VM success, commit/push, and CI validation. Use for ports, new UITest projects, flaky CI tests, persistent Hyper-V validation, Settings IPC authentication/test signing, Explorer/Shell selection, preview handlers, thumbnail providers, hotkey activation, stateful process lifecycle, composed WinUI/WebView visual baselines, or foreground failures. Covers APIs, scaffolding, test design, diagnostics, and the required handoff to ui-tests-pipeline-ci. Keywords: UI test, UITests, UITestAutomation.Next, winappcli, WinAppDriver, Selenium, Settings IPC, not-microsoft-signed, Authenticode, local VM, Hyper-V, checkpoint, migrate, flaky, CI stability, Explorer, Shell extension, WebView2."
+description: "Create and stabilize PowerToys UI suites using the existing Microsoft.PowerToys.UITest.Next framework and winappcli. Use for new UITest projects, flaky CI, Settings IPC and signing, Explorer/Shell selection, preview and thumbnail handlers, hotkeys, foreground ownership, and WinUI/WebView visual assertions. Covers test design, Hyper-V validation and the required CI handoff. WinAppDriver/Selenium migration guidance is historical and applies only to older branches that still contain the legacy framework."
 license: Complete terms in LICENSE.txt
 ---
 
 # PowerToys UI-Tests Migration (legacy → `.Next`)
+
+> **Legacy retirement:** `main` no longer contains `src/common/UITestAutomation` or its test
+> projects. Use the existing `.Next` suites and Scenario B for current development. Scenario A
+> and the legacy comparisons in this skill are historical guidance for older branches; do not
+> restore the retired framework or tests. Existing `.Next` project names remain unchanged.
 
 Convert a PowerToys module's UI tests from the legacy **WinAppDriver / Selenium / Appium** harness
 (`Microsoft.PowerToys.UITest`, in `src/common/UITestAutomation/`) to the new **winappcli** harness
@@ -54,12 +59,8 @@ queueing, synchronous waiting, and the three-run stabilization limit.
 > - **New (`.Next`)**: [ColorPickerEndToEndTests.cs](../../../src/modules/colorPicker/ColorPicker.UITests/ColorPickerEndToEndTests.cs)
 >   — full end-to-end scenario (navigate Settings → toggle module → read shortcut → fire hotkey →
 >   read overlay → click-capture → inspect editor), driven entirely through `winappcli`.
-> - **Legacy**: [TestSpacing.cs](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests/TestSpacing.cs)
->   + [TestHelper.cs](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests/TestHelper.cs)
->   — a `UITestBase` subclass plus a static helper that navigates, toggles, reads the shortcut, fires
->   the hotkey, and validates the clipboard.
-> - **Worked Scenario-A port (validated 5/5, where the legacy suite scored 0/5 locally)**: the
->   ScreenRuler suite ported from the legacy project above lives in
+> - **Worked Scenario-A port (validated 5/5)**: the
+>   ScreenRuler suite ported from the retired legacy project lives in
 >   [ScreenRuler.UITests.Next/TestHelper.cs](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next/TestHelper.cs)
 >   + 5 test classes. It is the canonical port reference — cross-window toolbar discovery via
 >   `Session.FromProcess`, a DPI-aware `app.manifest`, cursor centering, and patient hotkey
@@ -154,7 +155,7 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
         and any Explorer-restart or first-run needs. Skipping this produces opaque failures — e.g. a
         context-menu entry never appears because a Debug build compiles registration out, or an
         unsigned `.msix` fails to register (`0x800B0100`).
-- [ ] 2. Read the two reference examples (ColorPicker .Next + ScreenRuler legacy) end-to-end
+- [ ] 2. Read the two reference examples (ColorPicker + ScreenRuler `.Next`) end-to-end
 - [ ] 3. Inventory the source:
         • Scenario A → list every [TestMethod] + shared helper in the legacy project
         • Scenario B → read the module's sign-off .md; list each manual checklist item
