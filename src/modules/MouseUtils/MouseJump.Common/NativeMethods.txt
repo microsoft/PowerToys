@@ -28,7 +28,7 @@ WM_WINDOWPOSCHANGED
 WM_WINDOWPOSCHANGING
 WM_COMMAND
 
-CreateWindowExW
+CreateWindowEx
 DefWindowProc
 GetWindowLong
 RegisterClassEx
@@ -59,11 +59,9 @@ GetDesktopWindow
 GetWindowDC
 ReleaseDC
 
-Shell_NotifyIconW
+Shell_NotifyIcon
 
 GetAwarenessFromDpiAwarenessContext
 GetThreadDpiAwarenessContext
 
 HWND_MESSAGE
-
-GetModuleHandleW

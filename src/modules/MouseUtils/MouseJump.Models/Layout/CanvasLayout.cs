@@ -9,6 +9,11 @@ using MouseJump.Models.Styles;
 
 namespace MouseJump.Models.Layout;
 
+/// <summary>
+/// The layout of the canvas that <see cref="PreviewLayout"/> displays - the background fill and
+/// the device/screen grid. Deliberately excludes the outer border - that's the hosting
+/// window's responsibility, not the preview's (see <see cref="PreviewLayout"/> remarks).
+/// </summary>
 public sealed class CanvasLayout
 {
     public sealed class Builder
@@ -21,7 +26,7 @@ public sealed class CanvasLayout
 
         /// <summary>
         /// Gets or sets the layout bounds for the canvas.
-        /// Coordinates are relative to the origin on the containing Form.
+        /// Coordinates are relative to the origin on the containing Preview.
         /// </summary>
         public BoxBounds? CanvasBounds
         {
@@ -38,7 +43,12 @@ public sealed class CanvasLayout
         public List<DeviceLayout.Builder>? DeviceLayouts
         {
             get;
-            init;
+#pragma warning disable CA2227 // Collection properties should be read only
+            // allow writing to collection property in CanvasLayout.Builder
+            // (it's a builder designed for convenience, and converted into
+            // an immutable CanvasLayout instance once initialised)
+            set;
+#pragma warning restore CA2227
         }
 
         public CanvasLayout Build()
@@ -65,7 +75,7 @@ public sealed class CanvasLayout
 
     /// <summary>
     /// Gets the layout bounds for the canvas.
-    /// Coordinates are relative to the origin on the containing Form.
+    /// Coordinates are relative to the origin on the containing Preview.
     /// </summary>
     public BoxBounds CanvasBounds
     {
