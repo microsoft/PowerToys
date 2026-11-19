@@ -119,10 +119,15 @@ PowerToys uses ETW (Event Tracing for Windows) for telemetry in both C++ and C# 
 | File  | Purpose |
 | ------------- |:-------------:|
 | [PowerToysTelemetry.cs](../../src/common/ManagedTelemetry/Telemetry/PowerToysTelemetry.cs)    | Singleton `Log` instance with `WriteEvent<T>()` method     |
-| [EventBase.cs](../../src/common/ManagedTelemetry/Telemetry/Events/EventBase.cs)      | Base class for all events (provides `EventName`, `Version`)     |
+| [EventBase.cs](../../src/common/ManagedTelemetry/Telemetry/Events/EventBase.cs)      | Base class for all events (provides `EventName`, `Version`, and shared privacy metadata)     |
 | [IEvent.cs](../../src/common/ManagedTelemetry/Telemetry/Events/IEvent.cs)     | Interface requiring `PartA_PrivTags` property     |
 | [TelemetryBase.cs](../../src/common/Telemetry/TelemetryBase.cs)     | 	Inherits from `EventSource`, defines ETW constants     |
 | [DataDiagnosticsSettings.cs](../../src/common/ManagedTelemetry/Telemetry/DataDiagnosticsSettings.cs)     | Registry-based enable/disable check 
+
+`EventBase` supplies `PartA_PrivacyProduct` and `PartA_PrivacyDataCategory` as read-only `ushort` properties.
+WinExt requires the approved product identity and client diagnostic data category `1`.
+Derived events inherit these fields and must not redeclare them. Each event still supplies its own `PartA_PrivTags` classification.
+These fields do not change the diagnostic-data opt-in check or the release-build telemetry configuration.
 
 #### Pattern for C# Modules
 

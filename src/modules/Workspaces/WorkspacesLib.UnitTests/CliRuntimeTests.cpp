@@ -46,6 +46,19 @@ namespace WorkspacesLibUnitTests
                             !(scenario == L"session-timeout" && file.path().filename() == L"PowerToys.WorkspacesWindowArranger.exe"))
                             std::filesystem::create_hard_link(file.path(), stagedDirectory / file.path().filename());
                     }
+                    const auto uiDirectory = root / L"WinUI3Apps";
+                    Assert::IsTrue(std::filesystem::is_directory(uiDirectory));
+                    for (const auto& file : std::filesystem::recursive_directory_iterator(uiDirectory))
+                    {
+                        const auto destination = stagedDirectory / L"WinUI3Apps" / std::filesystem::relative(file.path(), uiDirectory);
+                        if (file.is_directory())
+                            std::filesystem::create_directories(destination);
+                        else if (file.is_regular_file())
+                        {
+                            std::filesystem::create_directories(destination.parent_path());
+                            std::filesystem::create_hard_link(file.path(), destination);
+                        }
+                    }
                     if (scenario == L"session-timeout")
                         Assert::IsTrue(CopyFileW(executable.c_str(), (stagedDirectory / L"PowerToys.WorkspacesWindowArranger.exe").c_str(), TRUE) != FALSE);
                     const bool gui = scenario == L"session-gui" || scenario == L"session-draft";

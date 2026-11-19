@@ -24,8 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
-    <Content Include="..\UITest-AdvancedPaste\TestFiles\*">
-      <Link>TestFiles\%(Filename)%(Extension)</Link>
+    <Content Include="TestFiles\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

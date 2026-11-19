@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Drawing;
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -65,7 +66,7 @@ public sealed class GrabAndMoveTests : UITestBase
     }
 
     [ClassCleanup]
-    public static void RestoreSettings()
+    public static void RestoreSettings(TestContext context)
     {
         try
         {
@@ -80,14 +81,44 @@ public sealed class GrabAndMoveTests : UITestBase
             finally
             {
                 originalSettings = null;
+                bool restorePointer = hidInput is not null;
                 try
                 {
-                    hidInput?.Dispose();
+                    if (restorePointer)
+                    {
+                        ReleaseFixtureInput();
+                        RecordPointerCleanup(context, "Before HID pointer restoration");
+                        MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
+                        var restored = WaitHelper.WaitForStable(
+                            MouseHelper.GetMousePosition,
+                            position => position == (originalPointer.X, originalPointer.Y),
+                            timeoutMS: 5_000,
+                            requiredConsecutiveMatches: 3);
+                        RecordPointerCleanup(context, "After HID pointer restoration");
+                        Assert.IsTrue(
+                            restored.Succeeded,
+                            $"The HID backend did not restore the pointer to {originalPointer}; observed={restored.LastObservation}; foreground={WindowControl.GetForegroundWindowInfo()}.");
+                    }
                 }
                 finally
                 {
-                    hidInput = null;
-                    MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
+                    try
+                    {
+                        hidInput?.Dispose();
+                    }
+                    finally
+                    {
+                        hidInput = null;
+                    }
+                }
+
+                if (restorePointer)
+                {
+                    RecordPointerCleanup(context, "After HID disposal");
+                    Assert.AreEqual(
+                        (originalPointer.X, originalPointer.Y),
+                        MouseHelper.GetMousePosition(),
+                        "Disposing the HID scope must preserve the restored pointer position.");
                 }
             }
         }
@@ -158,6 +189,21 @@ public sealed class GrabAndMoveTests : UITestBase
     }
 
     [TestMethod]
+    public void ModifierSelectionWorksWhileFixtureOwnsForeground()
+    {
+        var processId = ModuleProcessId();
+        for (var iteration = 0; iteration < 2; iteration++)
+        {
+            FocusFixture();
+            Assert.AreEqual(fixture!.Handle, WindowControl.GetForegroundWindowHandle(), "The fixture must own foreground before UIA selection.");
+            var cursor = MouseHelper.GetMousePosition();
+            SelectModifier(iteration % 2 == 0);
+            Assert.AreEqual(cursor, MouseHelper.GetMousePosition(), "Coordinate-free modifier selection moved the cursor.");
+            Assert.AreEqual(processId, ModuleProcessId(), "Changing the modifier restarted the module.");
+        }
+    }
+
+    [TestMethod]
     public void ChangingModifierToWinUpdatesMoveAndResizeWithoutRestart()
     {
         DragAndAssert(Key.Alt, resize: false);
@@ -165,20 +211,7 @@ public sealed class GrabAndMoveTests : UITestBase
         var processId = ModuleProcessId();
 
         Step("Changing the activation modifier from Alt to Windows key through Settings");
-        var settings = new IntPtr(Session.WindowHandle);
-        fixture!.TransferForegroundTo(settings);
-        var foreground = WaitHelper.WaitForStable(
-            WindowControl.GetForegroundWindowHandle,
-            hwnd => hwnd == settings,
-            5_000,
-            requiredConsecutiveMatches: 3,
-            recover: _ => fixture.TransferForegroundTo(settings));
-        Assert.IsTrue(foreground.Succeeded, ForegroundDiagnostic());
-        var modifier = Find<ComboBox>(By.Name("Activation modifier key"));
-        modifier.Focus();
-        KeyboardHelper.SendKeys(Key.End);
-        KeyboardHelper.SendKeys(Key.Enter);
-        WaitForSetting("modifierKey", 1);
+        SelectModifier(useWindowsKey: true);
 
         DragAndAssert(Key.LWin, resize: false);
         DragAndAssert(Key.LWin, resize: true);
@@ -237,15 +270,36 @@ public sealed class GrabAndMoveTests : UITestBase
         await CaptureFailureArtifactsBeforeCleanupAsync();
         try
         {
-            MouseHelper.LeftUp();
-            MouseHelper.RightUp();
-            KeyboardHelper.ReleaseKey(Key.Alt);
-            KeyboardHelper.ReleaseKey(Key.LWin);
+            ReleaseFixtureInput();
         }
         finally
         {
             fixture?.Dispose();
             fixture = null;
+        }
+    }
+
+    private static void ReleaseFixtureInput()
+    {
+        MouseHelper.LeftUp();
+        MouseHelper.RightUp();
+        KeyboardHelper.ReleaseKey(Key.Alt);
+        KeyboardHelper.ReleaseKey(Key.LWin);
+    }
+
+    private static void RecordPointerCleanup(TestContext context, string phase)
+    {
+        using var process = Process.GetCurrentProcess();
+        var pointer = MouseHelper.GetMousePosition();
+        var state = $"{DateTime.UtcNow:O} {phase}: expected={originalPointer}; actual={pointer}; HID active={hidInput is not null}; " +
+            $"session={process.SessionId}; elevated={ElevationHelper.IsCurrentProcessElevated()}; foreground={WindowControl.GetForegroundWindowInfo()}";
+        context.WriteLine(state);
+        var path = Path.Combine(context.TestResultsDirectory ?? Path.GetTempPath(), "GrabAndMove-pointer-cleanup.txt");
+        bool attach = !File.Exists(path);
+        File.AppendAllText(path, state + Environment.NewLine);
+        if (attach)
+        {
+            context.AddResultFile(path);
         }
     }
 
@@ -352,6 +406,43 @@ public sealed class GrabAndMoveTests : UITestBase
     {
         var foreground = WindowControl.GetForegroundWindowInfo();
         return $"Foreground HWND={foreground.Hwnd}, process='{foreground.ProcessName}', title='{foreground.Title}'.";
+    }
+
+    private void SelectModifier(bool useWindowsKey)
+    {
+        var text = useWindowsKey ? "Windows key" : "Alt";
+        var modifier = Find<ComboBox>(By.Name("Activation modifier key"));
+        Step($"Selecting '{text}' through UIA while foreground is {WindowControl.GetForegroundWindowInfo()}");
+        modifier.Invoke(msPostAction: 0);
+
+        // WinUI exposes the dropdown in a process-owned popup, not the Settings HWND's tree.
+        var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess(
+            Session.ProcessId.ToString(CultureInfo.InvariantCulture),
+            attributeAs: PowerToysModule.PowerToysSettings);
+        var option = WaitHelper.WaitForStable(
+            () => settings.FindAll<Element>(By.Name(text), 0)
+                .Where(element => element.Name == text && element.ControlType == "ListItem")
+                .DistinctBy(element => element.Selector).ToArray(),
+            items => items is { Length: 1 },
+            30_000,
+            requiredConsecutiveMatches: 2,
+            shouldRetryException: ShellMenu.IsTransientElementException);
+        if (!option.Succeeded)
+        {
+            Assert.Fail($"Settings did not expose exactly one modifier option named '{text}': {settings.Inspect(depth: 12)}");
+        }
+
+        option.LastObservation![0].Invoke(msPostAction: 0);
+
+        // Each fresh sample needs two CLI round trips, including on constrained CPUs.
+        var selected = WaitHelper.WaitForStable(
+            () => Session.Find<ComboBox>(By.Name("Activation modifier key"), 500).SelectedText,
+            value => string.Equals(value, text, StringComparison.Ordinal),
+            30_000,
+            requiredConsecutiveMatches: 3,
+            shouldRetryException: ShellMenu.IsTransientElementException);
+        Assert.IsTrue(selected.Succeeded, $"The modifier UI did not select '{text}'; last selection='{selected.LastObservation}', stable samples={selected.ConsecutiveMatches}/3, error={selected.LastException}.");
+        WaitForSetting("modifierKey", useWindowsKey ? 1 : 0);
     }
 
     private ToggleSwitch EnableToggle() => Find<ToggleSwitch>(By.Name("Grab And Move"));

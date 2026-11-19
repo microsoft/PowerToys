@@ -47,7 +47,8 @@ jobs:
         $hasUiTests = if ($modules.Count -gt 0) { 'true' } else { 'false' }
         $hasMwbUiTests = if ($modules -contains 'MouseWithoutBorders.UITests') { 'true' } else { 'false' }
         $hasUmdfHidUiTests = if ($modules -contains 'GrabAndMove.UITests') { 'true' } else { 'false' }
-        $hasNonUmdfHidUiTests = if (@($modules | Where-Object { $_ -ne 'GrabAndMove.UITests' }).Count) { 'true' } else { 'false' }
+        $hasUmdfDisplayUiTests = if ($modules -contains 'PowerDisplay.UITests') { 'true' } else { 'false' }
+        $hasNonUmdfHidUiTests = if (@($modules | Where-Object { $_ -notin @('GrabAndMove.UITests', 'PowerDisplay.UITests') }).Count) { 'true' } else { 'false' }
 
         Write-Host "Touched modules: $($result.TouchedModules -join ', ')"
         Write-Host "UI test infrastructure changed: $($result.InfrastructureChanged)"
@@ -55,6 +56,7 @@ jobs:
         Write-Host "##vso[task.setvariable variable=hasUiTests;isOutput=true]$hasUiTests"
         Write-Host "##vso[task.setvariable variable=hasMwbUiTests;isOutput=true]$hasMwbUiTests"
         Write-Host "##vso[task.setvariable variable=hasUmdfHidUiTests;isOutput=true]$hasUmdfHidUiTests"
+        Write-Host "##vso[task.setvariable variable=hasUmdfDisplayUiTests;isOutput=true]$hasUmdfDisplayUiTests"
         Write-Host "##vso[task.setvariable variable=hasNonUmdfHidUiTests;isOutput=true]$hasNonUmdfHidUiTests"
         Write-Host "##vso[task.setvariable variable=uiTestModules;isOutput=true]$modulesValue"
       name: resolve

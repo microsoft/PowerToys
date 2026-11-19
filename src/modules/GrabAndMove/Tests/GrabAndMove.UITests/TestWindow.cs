@@ -125,16 +125,14 @@ internal sealed class TestWindow : IDisposable
         }
     }
 
-    internal void TransferForegroundTo(IntPtr target)
+    private void RaiseFixture()
     {
         var form = fixtureForm ?? throw new InvalidOperationException("The fixture form is not initialized.");
 
         // The fixture UI thread owns the preceding real input, unlike the test worker thread.
-        form.InvokeAsync(new Action(() => WindowControl.TryBringToForeground(target)))
+        form.InvokeAsync(new Action(() => WindowControl.TryBringToForeground(Handle)))
             .WaitAsync(TimeSpan.FromSeconds(5)).GetAwaiter().GetResult();
     }
-
-    private void RaiseFixture() => TransferForegroundTo(Handle);
 
     private void RunWindow()
     {

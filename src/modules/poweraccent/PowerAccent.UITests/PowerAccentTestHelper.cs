@@ -73,7 +73,7 @@ internal static class PowerAccentTestHelper
         WaitForOverlayState(testBase, revealed: false, timeoutMs: OverlayStartupTimeoutMs);
         var logOffsets = CaptureQuickAccentLogOffsets();
         WriteSettings(settings);
-        WaitForSettingsReload(testBase, settings.SelectedLanguage, logOffsets);
+        WaitForSettingsReload(testBase, settings, logOffsets);
     }
 
     internal static void AssertInputEnvironment()
@@ -129,19 +129,30 @@ internal static class PowerAccentTestHelper
 
     private static void WaitForSettingsReload(
         UITestBase testBase,
-        string selectedLanguage,
+        Settings settings,
         IReadOnlyDictionary<string, long> logOffsets)
     {
-        var languages = selectedLanguage
+        var languages = settings.SelectedLanguage
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(language => language.Trim().ToUpperInvariant());
         var acknowledgement = $"Languages selected: {string.Join(", ", languages)}";
+        var lastWrite = Stopwatch.StartNew();
 
         var result = WaitHelper.WaitForStable(
             () => FindSettingsReloadAcknowledgement(logOffsets, acknowledgement),
             matchedLog => matchedLog is not null,
             SettingsReloadTimeoutMs,
             pollIntervalMS: 100,
+            recover: _ =>
+            {
+                // The cloaked HWND can precede SettingsService's file-watcher subscription.
+                if (lastWrite.ElapsedMilliseconds >= 1_000)
+                {
+                    Step(testBase, "Rewriting the same Quick Accent settings while awaiting the runtime acknowledgement.");
+                    WriteSettings(settings);
+                    lastWrite.Restart();
+                }
+            },
             shouldRetryException: ex => ex is IOException or UnauthorizedAccessException);
         var failure = $"Quick Accent did not acknowledge its settings reload within {SettingsReloadTimeoutMs} ms. " +
                       $"Expected a new '{acknowledgement}' log entry under '{QuickAccentLogRoot}'. " +

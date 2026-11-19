@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -10,6 +11,7 @@ using Windows.AI.Actions;
 
 namespace Microsoft.CmdPal.Ext.Indexer.Data;
 
+[SupportedOSPlatform("windows10.0.26100.0")]
 public static class ActionRuntimeManager
 {
     private static readonly Lazy<Task<ActionRuntime>> _lazyRuntime = new(InitializeAsync);
