@@ -203,7 +203,10 @@ public class CommandPaletteTestBase : UITestBase
         Step($"Opening the '{title}' extension");
         InvokeResultWithEnter(title);
         Step($"Waiting for the '{title}' destination page's Back control");
-        Assert.IsNotNull(CommandPaletteSession.Find<Button>("Back", timeoutMS: 10_000));
+
+        // The apps list can dominate a process-wide text search even after navigation has finished.
+        // Observe the shell's Back button on the bound main window without sending Enter again.
+        WinappCli.InvokeAssertSuccess("ui", "wait-for", "BackButton", "--type", "Button", Session.TargetFlag, Session.TargetValue, "--property", "IsOffscreen", "--value", "False", "-t", "10000");
     }
 
     protected void InvokeResultWithEnter(string title)
