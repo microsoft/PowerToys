@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
@@ -14,13 +15,14 @@ namespace WorkspacesEditor.UnitTests
         [TestMethod]
         public void Create_MatchesApplicationIdentityAfterPositionChanges()
         {
+            Guid appId = new("a8599738-4046-4c13-a105-1e742866af13");
             Project previous = new()
             {
-                Applications = [CreateApplication("same", string.Empty, false)],
+                Applications = [CreateApplication(appId.ToString("D"), string.Empty, false)],
             };
             Project updated = new()
             {
-                Applications = [CreateApplication("SAME", "--new-window", true)],
+                Applications = [CreateApplication(appId.ToString("B").ToUpperInvariant(), "--new-window", true)],
                 IsPositionChangedManually = true,
             };
             updated.Applications[0].Position = new Application.WindowPosition { X = 300, Y = 200, Width = 800, Height = 600 };
@@ -39,15 +41,26 @@ namespace WorkspacesEditor.UnitTests
         [TestMethod]
         public void Create_CountsExclusionsAndNewApplicationsOnce()
         {
+            Guid removedId = new("35bba21f-5f3d-416a-bee3-e13e74854813");
+            Guid changedId = new("9098a457-c3b6-49a5-9f4d-61a4750b7ad2");
             Project previous = new()
             {
-                Applications = [CreateApplication("removed", string.Empty, false), CreateApplication("changed", "--old", true)],
+                Applications =
+                [
+                    CreateApplication(removedId.ToString("D"), string.Empty, false),
+                    CreateApplication(changedId.ToString("B"), "--old", true),
+                ],
             };
-            Application excluded = CreateApplication("removed", "--not-saved", true);
+            Application excluded = CreateApplication(removedId.ToString("B").ToUpperInvariant(), "--not-saved", true);
             excluded.IsIncluded = false;
             Project updated = new()
             {
-                Applications = [excluded, CreateApplication("changed", string.Empty, false), CreateApplication("added", string.Empty, false)],
+                Applications =
+                [
+                    excluded,
+                    CreateApplication(changedId.ToString("D").ToUpperInvariant(), string.Empty, false),
+                    CreateApplication("{cf334931-bdf1-48b4-82bd-e544ff5a47f4}", string.Empty, false),
+                ],
             };
             updated.Monitors.Add(new MonitorSetup("second", string.Empty, 2, 96, default, default));
 

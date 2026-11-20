@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Models;
@@ -11,14 +12,17 @@ namespace WorkspacesEditor.UnitTests
     [TestClass]
     public class ProjectRecaptureTests
     {
+        private const string SavedProjectId = "{278ac530-f8ed-4bab-9bee-302c67f37650}";
+        private const string SnapshotProjectId = "{3b450a72-db59-4a46-8048-b1cd61201267}";
+        private static readonly Guid FirstAppId = new("a8599738-4046-4c13-a105-1e742866af13");
+
         [TestMethod]
         [TestCategory("Model.Project")]
         public void UpdateAfterLaunchAndEdit_PreservesSettingsAndCapturedLayout()
         {
-            const string appId = "{A8599738-4046-4C13-A105-1E742866AF13}";
-            var projectBefore = CreateProject("original", "My workspace", 100, 200, new ApplicationWrapper
+            var projectBefore = CreateProject(SavedProjectId, "My workspace", 100, 200, new ApplicationWrapper
             {
-                Id = appId,
+                Id = FirstAppId.ToString("D"),
                 Application = "Browser",
                 ApplicationPath = @"C:\Browser.exe",
                 CommandLineArguments = "--profile-directory=Work",
@@ -29,9 +33,9 @@ namespace WorkspacesEditor.UnitTests
             projectBefore.MoveExistingWindows = true;
             projectBefore.IsShortcutNeeded = true;
 
-            var captured = CreateProject("snapshot", string.Empty, 300, 0, new ApplicationWrapper
+            var captured = CreateProject(SnapshotProjectId, string.Empty, 300, 0, new ApplicationWrapper
             {
-                Id = appId.ToLowerInvariant(),
+                Id = FirstAppId.ToString("B").ToUpperInvariant(),
                 Application = "Browser",
                 ApplicationPath = @"C:\Browser.exe",
                 CommandLineArguments = string.Empty,
@@ -49,6 +53,7 @@ namespace WorkspacesEditor.UnitTests
             Assert.IsTrue(captured.IsShortcutNeeded);
             Assert.IsTrue(captured.IsRevertEnabled);
             Assert.IsTrue(captured.CanBeSaved);
+            Assert.AreEqual(FirstAppId, Guid.Parse(captured.Applications[0].Id));
             Assert.AreEqual("--profile-directory=Work", captured.Applications[0].CommandLineArguments);
             Assert.IsFalse(captured.Applications[0].IsElevated);
             Assert.AreEqual(new Application.WindowPosition { X = 1920, Y = 30, Width = 1000, Height = 700 }, captured.Applications[0].Position);
@@ -62,32 +67,37 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("Model.Project")]
         public void UpdateAfterLaunchAndEdit_MatchesIdsAndKeepsNewCapturedApplications()
         {
+            Guid secondAppId = new("4a1f8170-4b6a-4b49-ba37-f55380bea461");
+            Guid newAppId = new("9b833110-44a2-46c9-872d-d6668c9cc4d3");
             var projectBefore = CreateProject(
-                "original",
+                SavedProjectId,
                 "My workspace",
                 100,
                 200,
-                CreateApp("first", "--first", true),
-                CreateApp("second", "--second", false),
-                CreateApp("removed", "--removed", true));
+                CreateApp(FirstAppId.ToString("D"), "--first", true),
+                CreateApp(secondAppId.ToString("B"), "--second", false),
+                CreateApp("{1bf80372-956e-405a-86b4-3818f59bc726}", "--removed", true));
             var captured = CreateProject(
-                "snapshot",
+                SnapshotProjectId,
                 string.Empty,
                 300,
                 0,
-                CreateApp("SECOND", string.Empty, true),
-                CreateApp("FIRST", string.Empty, false),
-                CreateApp("new", "--captured", true));
+                CreateApp(secondAppId.ToString("D").ToUpperInvariant(), string.Empty, true),
+                CreateApp(FirstAppId.ToString("B").ToUpperInvariant(), string.Empty, false),
+                CreateApp(newAppId.ToString("B"), "--captured", true));
             Application newApplication = captured.Applications[2];
 
             captured.UpdateAfterLaunchAndEdit(projectBefore);
 
             Assert.AreEqual(3, captured.Applications.Count);
+            Assert.AreEqual(secondAppId, Guid.Parse(captured.Applications[0].Id));
             Assert.AreEqual("--second", captured.Applications[0].CommandLineArguments);
             Assert.IsFalse(captured.Applications[0].IsElevated);
+            Assert.AreEqual(FirstAppId, Guid.Parse(captured.Applications[1].Id));
             Assert.AreEqual("--first", captured.Applications[1].CommandLineArguments);
             Assert.IsTrue(captured.Applications[1].IsElevated);
             Assert.AreSame(newApplication, captured.Applications[2]);
+            Assert.AreEqual(newAppId, Guid.Parse(newApplication.Id));
             Assert.AreEqual("--captured", newApplication.CommandLineArguments);
             Assert.IsTrue(newApplication.IsElevated);
             Assert.AreEqual("--removed", projectBefore.Applications[2].CommandLineArguments);

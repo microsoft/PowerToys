@@ -12,18 +12,27 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
-        public void CaptureIncludesPackagedUnpackagedAndMinimizedWindows()
+        [DataRow(false, DisplayName = "Capture unpackaged and minimized windows")]
+        [DataRow(true, DisplayName = "Capture packaged, unpackaged and minimized windows together")]
+        public void CaptureIncludesPackagedUnpackagedAndMinimizedWindows(bool includePackaged)
         {
-            State.Fixture.PreparePackage(TestContext);
+            if (includePackaged)
+            {
+                State.Fixture.PreparePackage(TestContext);
+            }
+
             var firstTitle = State.Prefix + "-normal";
             var minimizedTitle = State.Prefix + "-minimized";
             var first = State.Fixture.OpenUnpackaged(firstTitle, TestContext);
             var firstBounds = NormalizedOuterBounds(new IntPtr(first.WindowHandle));
             var minimized = State.Fixture.OpenUnpackaged(minimizedTitle, TestContext);
-            WindowHelper.MinimizeWindow(new IntPtr(minimized.WindowHandle));
+            var minimizedHandle = new IntPtr(minimized.WindowHandle);
+            MoveToSecondaryDisplayIfAvailable(minimizedHandle);
+            var expectedMonitor = WorkspacesDisplay.GetCaptureMonitor(minimizedHandle);
+            WindowHelper.MinimizeWindow(minimizedHandle);
             Assert.IsTrue(
                 WaitHelper.WaitForStable(
-                    () => NativeMethods.IsIconic(new IntPtr(minimized.WindowHandle)),
+                    () => NativeMethods.IsIconic(minimizedHandle),
                     value => value,
                     10_000,
                     requiredConsecutiveMatches: 2).Succeeded,
@@ -31,12 +40,15 @@ namespace Microsoft.Workspaces.UITests
 
             OpenEditor();
             var capture = StartCapture();
-            State.Fixture.OpenPackaged(TestContext);
+            if (includePackaged)
+            {
+                State.Fixture.OpenPackaged(TestContext);
+            }
+
             var captured = Capture(capture);
             var apps = captured["applications"]!.AsArray();
             var normalApp = AppByTitle(apps, firstTitle);
             var minimizedApp = AppByTitle(apps, minimizedTitle);
-            var packagedApp = AppByTitle(apps, TestAppFixture.DefaultTitle);
 
             Assert.AreEqual(State.Fixture.ExecutablePath, WorkspaceTestState.Text(normalApp, "application-path"), true, CultureInfo.InvariantCulture);
             Assert.AreEqual(string.Empty, WorkspaceTestState.Text(normalApp, "package-full-name"), "The unpackaged app must not acquire package identity.");
@@ -46,18 +58,29 @@ namespace Microsoft.Workspaces.UITests
             AssertPosition(normalApp["position"]!, firstBounds.X, firstBounds.Y, firstBounds.Width, firstBounds.Height);
             Assert.IsTrue(minimizedApp["minimized"]!.GetValue<bool>(), "The minimized fixture lost its captured state.");
             Assert.IsFalse(minimizedApp["is-elevated"]!.GetValue<bool>());
-            Assert.AreEqual(State.Fixture.PackageFullName, WorkspaceTestState.Text(packagedApp, "package-full-name"), "The app opened after Create Workspace was not captured with its package identity.");
-            Assert.AreEqual(State.Fixture.AppUserModelId, WorkspaceTestState.Text(packagedApp, "app-user-model-id"));
+            if (includePackaged)
+            {
+                var packagedApp = AppByTitle(apps, TestAppFixture.DefaultTitle);
+                Assert.AreEqual(State.Fixture.PackageFullName, WorkspaceTestState.Text(packagedApp, "package-full-name"), "The app opened after Create Workspace was not captured with its package identity.");
+                Assert.AreEqual(State.Fixture.AppUserModelId, WorkspaceTestState.Text(packagedApp, "app-user-model-id"));
+            }
 
-            var monitorNumber = minimizedApp["monitor"]!.GetValue<int>();
-            var monitor = captured["monitor-configuration"]!.AsArray().Single(node => node!["monitor-number"]!.GetValue<int>() == monitorNumber)!;
-            var minimizedBounds = monitor["monitor-rect-dpi-unaware"]!;
-            AssertPosition(
-                minimizedApp["position"]!,
-                minimizedBounds["left"]!.GetValue<int>(),
-                minimizedBounds["top"]!.GetValue<int>(),
-                minimizedBounds["width"]!.GetValue<int>(),
-                minimizedBounds["height"]!.GetValue<int>());
+            Assert.AreEqual(expectedMonitor.Number, minimizedApp["monitor"]!.GetValue<int>(), "Capture assigned the minimized window to a different display.");
+            var monitor = captured["monitor-configuration"]!.AsArray().Single(node => node!["monitor-number"]!.GetValue<int>() == expectedMonitor.Number)!;
+            Assert.AreEqual(expectedMonitor.Id, WorkspaceTestState.Text(monitor, "id"));
+            Assert.AreEqual(expectedMonitor.InstanceId, WorkspaceTestState.Text(monitor, "instance-id"));
+            var bounds = expectedMonitor.Bounds;
+            var recorded = monitor["monitor-rect-dpi-unaware"]!;
+            var recordedBounds = (
+                recorded["left"]!.GetValue<int>(),
+                recorded["top"]!.GetValue<int>(),
+                recorded["width"]!.GetValue<int>(),
+                recorded["height"]!.GetValue<int>());
+            Assert.AreEqual(
+                (bounds.Left, bounds.Top, bounds.Width, bounds.Height),
+                recordedBounds,
+                "The saved monitor configuration has the wrong logical bounds.");
+            AssertPosition(minimizedApp["position"]!, bounds.Left, bounds.Top, bounds.Width, bounds.Height, tolerance: 0);
 
             var name = State.Prefix + "-captured";
             State.TrackShortcut(name);
@@ -67,7 +90,8 @@ namespace Microsoft.Workspaces.UITests
             var saved = WorkspaceTestState.ReadProjects().Single()!.AsObject();
             Assert.AreEqual(name, WorkspaceTestState.Text(saved, "name"));
             var savedApps = saved["applications"]!.AsArray();
-            foreach (var title in new[] { firstTitle, minimizedTitle, TestAppFixture.DefaultTitle })
+            string[] expectedTitles = includePackaged ? [firstTitle, minimizedTitle, TestAppFixture.DefaultTitle] : [firstTitle, minimizedTitle];
+            foreach (var title in expectedTitles)
             {
                 var app = AppByTitle(savedApps, title);
                 Assert.IsTrue(Guid.TryParse(WorkspaceTestState.Text(app, "id"), out _), $"Saved application '{title}' needs a stable ID.");
@@ -111,6 +135,33 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "The discarded temporary snapshot was not removed.");
         }
 
+        private static void MoveToSecondaryDisplayIfAvailable(IntPtr window)
+        {
+            using var coordinates = new PhysicalCoordinateScope();
+            var secondary = MonitorInfo.GetAll().FirstOrDefault(monitor => !monitor.IsPrimary);
+            if (secondary is null)
+            {
+                return;
+            }
+
+            var placed = WaitHelper.WaitForStable(
+                () => MonitorInfo.GetFromWindow(window).DeviceName,
+                device => string.Equals(device, secondary.DeviceName, StringComparison.OrdinalIgnoreCase),
+                10_000,
+                requiredConsecutiveMatches: 2,
+                recover: _ =>
+                {
+                    var (left, top, right, bottom) = WindowHelper.GetWindowBounds(window);
+                    var width = Math.Min(right - left, secondary.WorkWidth);
+                    var height = Math.Min(bottom - top, secondary.WorkHeight);
+                    WindowHelper.SetMainWindowSize(window, width, height);
+                    var x = secondary.WorkLeft + ((secondary.WorkWidth - width) / 2);
+                    var y = secondary.WorkTop + ((secondary.WorkHeight - height) / 2);
+                    WindowHelper.MoveWindow(window, x, y);
+                });
+            Assert.IsTrue(placed.Succeeded, $"Could not move the minimized-window fixture to {secondary.DeviceName} before capture.");
+        }
+
         private static JsonObject AppByTitle(JsonArray apps, string title)
         {
             var matches = apps.Where(app => app is not null && WorkspaceTestState.Text(app, "title") == title).ToArray();
@@ -118,12 +169,12 @@ namespace Microsoft.Workspaces.UITests
             return matches[0]!.AsObject();
         }
 
-        private static void AssertPosition(JsonNode position, int x, int y, int width, int height)
+        private static void AssertPosition(JsonNode position, int x, int y, int width, int height, int tolerance = 2)
         {
-            Assert.AreEqual(x, position["X"]!.GetValue<int>(), 2, $"Unexpected X coordinate: {position}");
-            Assert.AreEqual(y, position["Y"]!.GetValue<int>(), 2, $"Unexpected Y coordinate: {position}");
-            Assert.AreEqual(width, position["width"]!.GetValue<int>(), 2, $"Unexpected width: {position}");
-            Assert.AreEqual(height, position["height"]!.GetValue<int>(), 2, $"Unexpected height: {position}");
+            Assert.AreEqual(x, position["X"]!.GetValue<int>(), tolerance, $"Unexpected X coordinate: {position}");
+            Assert.AreEqual(y, position["Y"]!.GetValue<int>(), tolerance, $"Unexpected Y coordinate: {position}");
+            Assert.AreEqual(width, position["width"]!.GetValue<int>(), tolerance, $"Unexpected width: {position}");
+            Assert.AreEqual(height, position["height"]!.GetValue<int>(), tolerance, $"Unexpected height: {position}");
         }
     }
 }

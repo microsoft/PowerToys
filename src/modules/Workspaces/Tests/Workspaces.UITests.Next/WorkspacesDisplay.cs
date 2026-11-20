@@ -93,6 +93,15 @@ namespace Microsoft.Workspaces.UITests
                 primary.IsPrimary);
         }
 
+        internal static (int Number, string Id, string InstanceId, MonitorInfo.Monitor Bounds) GetCaptureMonitor(IntPtr window)
+        {
+            // Workspaces stores GetMonitorInfo's DPI-unaware monitor rectangle for a minimized window.
+            // Scaling a secondary monitor's physical origin can give a different result.
+            var monitor = PhysicalCoordinateScope.ReadDpiUnaware(() => MonitorInfo.GetFromWindow(window));
+            var (number, id, instanceId) = ResolveNumberAndId(monitor.DeviceName, EnumerateDevices(monitor.DeviceName));
+            return (number, id, instanceId, monitor);
+        }
+
         // Do not silently ignore an unresolvable display when choosing a genuinely absent monitor number.
         internal static IReadOnlyList<int> ConnectedMonitorNumbers()
         {

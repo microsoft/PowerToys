@@ -132,19 +132,27 @@ namespace Microsoft.Workspaces.UITests
         public void LaunchAndEditCaptureAddsWindowsToTheExistingWorkspace()
         {
             var originalTitle = State.Prefix + "-original";
+            var draftTitle = State.Prefix + "-unsaved";
+            var draftArguments = $"--title \"{draftTitle}\"";
             var addedTitle = State.Prefix + "-added";
             var app = State.Application("Workspaces.TestApp", originalTitle);
             var project = State.Project("launch-edit", app);
             State.WriteProjects(project);
+            var stored = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
             var name = WorkspaceTestState.Text(project, "name");
             OpenEditor();
             EditWorkspace(name);
-            Step("Launching the saved workspace from Launch and Edit.");
-            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Launching a saved workspace must not require a temporary draft.");
+            var arguments = ExpandApplication("Workspaces.TestApp").Find<TextBox>(By.AccessibilityId("CommandLineTextBox"));
+            arguments.SetText(draftArguments);
+            Assert.IsTrue(arguments.WaitForValue(draftArguments), "The editing page did not accept the draft arguments.");
+            Step("Launching the workspace with its unsaved command-line arguments.");
+            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "A capture file already existed before Launch and Edit.");
             Editor.Find<Button>(By.AccessibilityId("LaunchEditButton")).Invoke(msPostAction: 0);
-            var original = State.Fixture.WaitForWindow(originalTitle);
-            AssertPositioned(original, app);
+            var launched = State.Fixture.WaitForWindow(draftTitle);
+            AssertPositioned(launched, app);
             var capture = WaitForCaptureWindow();
+            Assert.IsNull(State.Fixture.FindWindow(originalTitle), "Launch and Edit also launched the saved command line.");
+            CollectionAssert.AreEqual(stored, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Launch and Edit modified the stored workspace before Save.");
             State.Fixture.OpenUnpackaged(addedTitle, TestContext);
             Capture(capture, addedTitle);
             Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("RevertButton")).IsEnabled, "Launch and Edit did not expose its revert action.");
@@ -154,10 +162,12 @@ namespace Microsoft.Workspaces.UITests
                 value => value["applications"]!.AsArray().Any(application => WorkspaceTestState.Text(application!, "title") == addedTitle));
             Assert.AreEqual(1, WorkspaceTestState.ReadProjects().Count, "Launch and Edit created a second workspace instead of updating the existing one.");
             Assert.AreEqual(name, WorkspaceTestState.Text(saved, "name"));
+            var savedApp = AppByTitle(saved["applications"]!.AsArray(), draftTitle);
             Assert.AreEqual(
                 Guid.Parse(WorkspaceTestState.Text(app, "id")),
-                Guid.Parse(WorkspaceTestState.Text(AppByTitle(saved["applications"]!.AsArray(), originalTitle), "id")),
+                Guid.Parse(WorkspaceTestState.Text(savedApp, "id")),
                 "Recapture did not retain the identity of the originally launched application.");
+            Assert.AreEqual(draftArguments, WorkspaceTestState.Text(savedApp, "command-line-arguments"), "Save did not retain the draft launch arguments after recapture.");
             AppByTitle(saved["applications"]!.AsArray(), addedTitle);
         }
 

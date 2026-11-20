@@ -16,12 +16,23 @@ namespace Microsoft.Workspaces.UITests
         private bool disposed;
 
         internal PhysicalCoordinateScope()
+            : this(new IntPtr(-4)) // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
         {
-            previousContext = SetThreadDpiAwarenessContext(new IntPtr(-4)); // PER_MONITOR_AWARE_V2
+        }
+
+        private PhysicalCoordinateScope(IntPtr context)
+        {
+            previousContext = SetThreadDpiAwarenessContext(context);
             if (previousContext == IntPtr.Zero)
             {
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not enter the physical-coordinate DPI scope.");
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not change the test thread's DPI context.");
             }
+        }
+
+        internal static T ReadDpiUnaware<T>(Func<T> read)
+        {
+            using var scope = new PhysicalCoordinateScope(new IntPtr(-1)); // DPI_AWARENESS_CONTEXT_UNAWARE
+            return read();
         }
 
         public void Dispose()
