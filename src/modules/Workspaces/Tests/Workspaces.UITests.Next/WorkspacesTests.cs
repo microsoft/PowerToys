@@ -34,6 +34,7 @@ namespace Microsoft.Workspaces.UITests
         ];
 
         private static WorkspaceTestState? state;
+        private static WorkspaceShortcutJournalGuard? existingShortcutJournals;
         private Session? editor;
         private Session? settingsUi;
 
@@ -70,6 +71,7 @@ namespace Microsoft.Workspaces.UITests
 
         protected override void PrepareTestState()
         {
+            existingShortcutJournals ??= WorkspaceShortcutJournalGuard.Acquire(Path.Combine(WorkspaceTestState.DirectoryPath, "WorkspacesIcons"));
             StopModuleProcesses();
             state ??= new WorkspaceTestState();
             State.PrepareSettings();
@@ -116,7 +118,13 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-        public static void RestoreWorkspaceState()
+        public static void CleanUpWorkspaceSuite()
+        {
+            using var journals = Interlocked.Exchange(ref existingShortcutJournals, null);
+            RestoreWorkspaceState();
+        }
+
+        private static void RestoreWorkspaceState()
         {
             if (state is null)
             {
@@ -480,7 +488,9 @@ namespace Microsoft.Workspaces.UITests
                     "The editor did not finish applying the recaptured workspace.");
             }
 
-            return result.LastObservation!;
+            var snapshot = result.LastObservation!;
+            State.TrackProjectShortcutFiles(WorkspaceTestState.Text(snapshot, "id"));
+            return snapshot;
         }
 
         private static bool WaitForProcess(string name, bool expected, int timeoutMS = 20_000)

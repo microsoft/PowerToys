@@ -128,7 +128,7 @@ namespace Microsoft.Workspaces.UITests
         {
             var name = $"{Prefix}-{suffix}";
             var id = Guid.NewGuid().ToString("B");
-            Preserve(Path.Combine(DirectoryPath, "WorkspacesIcons", id + ".ico"));
+            TrackProjectShortcutFiles(id);
             TrackShortcut(name);
             var display = Target;
             return new JsonObject
@@ -178,6 +178,15 @@ namespace Microsoft.Workspaces.UITests
         }
 
         internal void TrackShortcut(string name) => Preserve(ShortcutPath(name));
+
+        internal void TrackProjectShortcutFiles(string id)
+        {
+            // The icon uses the stored ID spelling. The ownership record uses the braced GUID.
+            var workspaceId = Guid.Parse(id);
+            var directory = Path.Combine(DirectoryPath, "WorkspacesIcons");
+            Preserve(Path.Combine(directory, id + ".ico"));
+            Preserve(Path.Combine(directory, $"{workspaceId:B}.links.json"));
+        }
 
         internal static string ShortcutPath(string name) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), name + ".lnk");
 
