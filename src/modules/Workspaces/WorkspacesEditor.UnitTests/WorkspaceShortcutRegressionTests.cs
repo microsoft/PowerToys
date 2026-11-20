@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32.SafeHandles;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
@@ -87,6 +88,67 @@ namespace WorkspacesEditor.UnitTests
 
             CollectionAssert.AreEqual(link, File.ReadAllBytes(path));
             CollectionAssert.AreEqual(icon, File.ReadAllBytes(fixture.IconPath(project)));
+        }
+
+        [TestMethod]
+        public void Remove_RetriesAfterTransientReaderReleasesShortcut()
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("Read during deletion");
+            fixture.WriteShortcut(project);
+            string path = fixture.LinkPath(project.Name);
+            Guid workspaceId = Guid.Parse(project.Id);
+
+            ReleaseReaderOnFirstRetry(path, FileShare.Read, budget => WorkspaceShortcutFile.Remove(path, workspaceId, null, budget));
+
+            Assert.IsFalse(File.Exists(path));
+        }
+
+        [TestMethod]
+        public void Inspect_RetriesAfterExclusiveReaderReleasesShortcut()
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("Read during inspection");
+            fixture.WriteShortcut(project);
+            string path = fixture.LinkPath(project.Name);
+            Guid workspaceId = Guid.Parse(project.Id);
+            (bool Owned, string IconPath) result = default;
+
+            ReleaseReaderOnFirstRetry(path, FileShare.None, budget => result = WorkspaceShortcutFile.Inspect(path, workspaceId, budget));
+
+            Assert.IsTrue(result.Owned);
+            Assert.AreEqual(fixture.IconPath(project), result.IconPath);
+        }
+
+        [TestMethod]
+        public void Remove_UnlinksNameWhileDeleteSharingObserverCanStillRead()
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("Observed workspace");
+            fixture.WriteShortcut(project);
+            string path = fixture.LinkPath(project.Name);
+            byte[] originalBytes = File.ReadAllBytes(path);
+            using (var observer = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
+            {
+                const uint SupportsPosixUnlinkRename = 0x400;
+                Assert.IsTrue(GetVolumeInformationByHandleW(observer.SafeFileHandle, IntPtr.Zero, 0, out _, out _, out uint flags, IntPtr.Zero, 0));
+
+                fixture.Remove(project);
+
+                if ((flags & SupportsPosixUnlinkRename) != 0)
+                {
+                    Assert.IsFalse(
+                        Directory.EnumerateFiles(fixture.DesktopFolder).Contains(path, StringComparer.OrdinalIgnoreCase),
+                        "A compatible observer must not retain the directory entry on a volume supporting POSIX unlink.");
+                }
+
+                byte[] observedBytes = new byte[originalBytes.Length];
+                observer.ReadExactly(observedBytes);
+                CollectionAssert.AreEqual(originalBytes, observedBytes);
+            }
+
+            Assert.IsFalse(File.Exists(path));
+            Assert.IsFalse(File.Exists(fixture.IconPath(project)));
         }
 
         [TestMethod]
@@ -384,6 +446,24 @@ namespace WorkspacesEditor.UnitTests
         }
 
         [TestMethod]
+        public void Rename_ChangingOnlyCaseRetriesAfterTransientReaderReleasesShortcut()
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("Read during rename");
+            fixture.WriteShortcut(project);
+            string originalPath = fixture.LinkPath(project.Name);
+            project.Name = "READ DURING RENAME";
+            string newPath = fixture.LinkPath(project.Name);
+            Guid workspaceId = Guid.Parse(project.Id);
+            string iconPath = fixture.IconPath(project);
+
+            ReleaseReaderOnFirstRetry(originalPath, FileShare.Read, budget => WorkspaceShortcutFile.Update(newPath, fixture.LauncherPath, workspaceId, iconPath, () => { }, budget));
+
+            Assert.AreEqual(project.Name + ".lnk", Path.GetFileName(Directory.EnumerateFiles(fixture.DesktopFolder, "*.lnk").Single()));
+            fixture.AssertShortcut(project);
+        }
+
+        [TestMethod]
         public void Rename_IconCommitFailureRestoresOriginalLinkBytesAndCasing()
         {
             using var fixture = new ShortcutFixture();
@@ -614,6 +694,33 @@ namespace WorkspacesEditor.UnitTests
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern uint GetShortPathName(string longPath, StringBuilder shortPath, uint bufferLength);
+
+        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetVolumeInformationByHandleW(
+            SafeFileHandle file,
+            IntPtr volumeName,
+            uint volumeNameCapacity,
+            out uint serialNumber,
+            out uint maximumComponentLength,
+            out uint fileSystemFlags,
+            IntPtr fileSystemName,
+            uint fileSystemNameCapacity);
+
+        private static void ReleaseReaderOnFirstRetry(string path, FileShare share, Action<WorkspaceShortcutFile.SharingRetryBudget> operation)
+        {
+            using var reader = new FileStream(path, FileMode.Open, FileAccess.Read, share);
+            int waits = 0;
+            var budget = new WorkspaceShortcutFile.SharingRetryBudget(_ =>
+            {
+                waits++;
+                reader.Dispose();
+            });
+
+            operation(budget);
+            Assert.AreEqual(1, waits, "The first sharing violation should be cleared on retry.");
+        }
 
         private sealed class ViewModelSession : IDisposable
         {

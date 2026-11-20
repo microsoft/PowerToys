@@ -13,6 +13,7 @@ using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Utils;
+using SharingRetryBudget = WorkspacesEditor.Services.WorkspaceShortcutFile.SharingRetryBudget;
 
 namespace WorkspacesEditor.Services
 {
@@ -48,12 +49,13 @@ namespace WorkspacesEditor.Services
                     return false;
                 }
 
-                if (IsValidName(project.Name) && Inspect(project.Name, workspaceId).State == ShortcutState.Owned)
+                var retryBudget = new SharingRetryBudget();
+                if (IsValidName(project.Name) && Inspect(project.Name, workspaceId, retryBudget).State == ShortcutState.Owned)
                 {
                     return true;
                 }
 
-                return ReadNames(workspaceId).Any(name => name != project.Name && Inspect(name, workspaceId).State == ShortcutState.Owned);
+                return ReadNames(workspaceId).Any(name => name != project.Name && Inspect(name, workspaceId, retryBudget).State == ShortcutState.Owned);
             }
             catch (Exception ex)
             {
@@ -71,9 +73,10 @@ namespace WorkspacesEditor.Services
                     return;
                 }
 
+                var retryBudget = new SharingRetryBudget();
                 var names = ReadNames(workspaceId);
                 if (previousName != project.Name && IsValidName(previousName) && !names.Contains(previousName) &&
-                    Inspect(previousName, workspaceId).State is ShortcutState.Owned or ShortcutState.Unreadable)
+                    Inspect(previousName, workspaceId, retryBudget).State is ShortcutState.Owned or ShortcutState.Unreadable)
                 {
                     // Older installations have no record. Keep the old name before attempting the rename.
                     names.Add(previousName);
@@ -82,7 +85,7 @@ namespace WorkspacesEditor.Services
 
                 if (!project.IsShortcutNeeded)
                 {
-                    Remove(project, workspaceId, names, previousName);
+                    Remove(project, workspaceId, names, retryBudget, previousName);
                     return;
                 }
 
@@ -92,7 +95,7 @@ namespace WorkspacesEditor.Services
                     return;
                 }
 
-                ShortcutState state = Inspect(project.Name, workspaceId).State;
+                ShortcutState state = Inspect(project.Name, workspaceId, retryBudget).State;
                 if (state is ShortcutState.Foreign or ShortcutState.Unreadable)
                 {
                     Logger.LogWarning("The workspace shortcut name is already in use.");
@@ -100,8 +103,8 @@ namespace WorkspacesEditor.Services
                 }
 
                 string iconPath = GetIconPath(project);
-                string keptName = Publish(project, workspaceId, state, iconPath);
-                var (remaining, _) = CleanLinks(names, workspaceId, iconPath, keptName);
+                string keptName = Publish(project, workspaceId, state, iconPath, retryBudget);
+                var (remaining, _) = CleanLinks(names, workspaceId, iconPath, keptName, retryBudget);
                 remaining.Add(Path.GetFileNameWithoutExtension(keptName));
                 if (!names.SetEquals(remaining))
                 {
@@ -120,7 +123,7 @@ namespace WorkspacesEditor.Services
             {
                 if (Guid.TryParse(project?.Id, out Guid workspaceId))
                 {
-                    Remove(project, workspaceId, ReadNames(workspaceId));
+                    Remove(project, workspaceId, ReadNames(workspaceId), new SharingRetryBudget());
                 }
             }
             catch (Exception ex)
@@ -129,7 +132,7 @@ namespace WorkspacesEditor.Services
             }
         }
 
-        private string Publish(Project project, Guid workspaceId, ShortcutState state, string iconPath)
+        private string Publish(Project project, Guid workspaceId, ShortcutState state, string iconPath, SharingRetryBudget retryBudget)
         {
             string shortcutPath = GetDesktopPath(project.Name);
             string launcherPath = GetAbsolutePath(_launcherPath);
@@ -149,7 +152,7 @@ namespace WorkspacesEditor.Services
                     return Path.GetFileName(shortcutPath);
                 }
 
-                return WorkspaceShortcutFile.Update(shortcutPath, launcherPath, workspaceId, iconPath, CommitIcon);
+                return WorkspaceShortcutFile.Update(shortcutPath, launcherPath, workspaceId, iconPath, CommitIcon, retryBudget);
             }
             finally
             {
@@ -157,7 +160,7 @@ namespace WorkspacesEditor.Services
             }
         }
 
-        private void Remove(Project project, Guid workspaceId, HashSet<string> names, string previousName = null)
+        private void Remove(Project project, Guid workspaceId, HashSet<string> names, SharingRetryBudget retryBudget, string previousName = null)
         {
             var candidates = new HashSet<string>(names, StringComparer.Ordinal);
             if (IsValidName(project.Name))
@@ -176,7 +179,7 @@ namespace WorkspacesEditor.Services
             }
 
             string iconPath = GetIconPath(project);
-            var (remaining, canDeleteIcon) = CleanLinks(candidates, workspaceId, iconPath, null);
+            var (remaining, canDeleteIcon) = CleanLinks(candidates, workspaceId, iconPath, null, retryBudget);
             if (canDeleteIcon && File.Exists(iconPath))
             {
                 File.Delete(iconPath);
@@ -188,7 +191,7 @@ namespace WorkspacesEditor.Services
             }
         }
 
-        private (HashSet<string> Remaining, bool CanDeleteIcon) CleanLinks(IEnumerable<string> names, Guid workspaceId, string iconPath, string keepName)
+        private (HashSet<string> Remaining, bool CanDeleteIcon) CleanLinks(IEnumerable<string> names, Guid workspaceId, string iconPath, string keepName, SharingRetryBudget retryBudget)
         {
             var remaining = new HashSet<string>(StringComparer.Ordinal);
             bool removedOwned = false;
@@ -201,13 +204,13 @@ namespace WorkspacesEditor.Services
                     continue;
                 }
 
-                var (state, linkIcon) = Inspect(name, workspaceId);
+                var (state, linkIcon) = Inspect(name, workspaceId, retryBudget);
                 switch (state)
                 {
                     case ShortcutState.Owned:
                         try
                         {
-                            WorkspaceShortcutFile.Remove(GetDesktopPath(name), workspaceId, keepName);
+                            WorkspaceShortcutFile.Remove(GetDesktopPath(name), workspaceId, keepName, retryBudget);
                             removedOwned = true;
                         }
                         catch (Exception ex)
@@ -232,7 +235,7 @@ namespace WorkspacesEditor.Services
             return (remaining, remaining.Count == 0 && !iconInUse && (removedOwned || !foundForeign));
         }
 
-        private (ShortcutState State, string IconPath) Inspect(string name, Guid workspaceId)
+        private (ShortcutState State, string IconPath) Inspect(string name, Guid workspaceId, SharingRetryBudget retryBudget)
         {
             try
             {
@@ -248,7 +251,7 @@ namespace WorkspacesEditor.Services
                     return (ShortcutState.Unreadable, null);
                 }
 
-                var (owned, iconPath) = WorkspaceShortcutFile.Inspect(path, workspaceId);
+                var (owned, iconPath) = WorkspaceShortcutFile.Inspect(path, workspaceId, retryBudget);
                 return (owned ? ShortcutState.Owned : ShortcutState.Foreign, iconPath);
             }
             catch (FileNotFoundException)
