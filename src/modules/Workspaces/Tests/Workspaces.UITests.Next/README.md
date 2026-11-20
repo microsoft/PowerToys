@@ -8,8 +8,8 @@ using `Microsoft.PowerToys.UITest.Next` and the repository-pinned winappcli.
 The suite uses the real Settings/Runner scope with only Workspaces enabled.
 Runner and Settings are reused within the class; every case closes the previous
 editor/launcher/fixture processes and starts with independent workspace data.
-Settings, workspace storage, temporary snapshots, editor window placement, desktop shortcuts, and generated
-shortcut icons are journaled and restored after the owning processes stop.
+The suite reserves the Workspaces profile before starting Runner and restores its files
+after the owning processes stop. Desktop shortcuts and generated icons are tracked individually.
 Failure screenshots, recordings, product logs, editor UIA trees, and workspace
 JSON are collected before cleanup removes the diagnostic windows.
 
@@ -121,10 +121,11 @@ Requirements for a host run:
   and the shared `WinUI3Apps` dependencies.
 - **Do not touch the mouse or keyboard** while a case runs — the tests move the
   real cursor and rely on foreground ownership.
-- Settings, workspace storage, temporary snapshots, desktop shortcuts, and
-  generated icons are journaled before each run and restored afterwards, so a run
-  does not lose your existing Workspaces data. Cleanup stops only the fixture and
-  Workspaces module processes it owns, never unrelated apps.
+- The original module settings, saved workspaces, temporary capture, and editor placement
+  are kept in `%LOCALAPPDATA%\Microsoft\PowerToys\Workspaces.UITestRecovery\original.zip`
+  until restoration succeeds. After an interrupted run, the next run saves the current
+  versions in a dated `interrupted-*.zip` beside the original before restoring it.
+  Normal cleanup also restores the tracked desktop shortcuts and generated icons.
 
 The **unpackaged** placement/launch/cancel cases can use matching local Debug
 product builds without signing the fixture. The two **packaged** cases report

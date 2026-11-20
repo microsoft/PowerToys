@@ -18,12 +18,10 @@ namespace Microsoft.Workspaces.UITests
         private int applicationIndex;
         private WorkspacesDisplay.TargetDisplay? target;
 
-        internal WorkspaceTestState()
+        internal WorkspaceTestState(WorkspaceProfileSnapshot profile)
         {
-            Preserve(SettingsPath);
-            Preserve(WorkspacesPath);
-            Preserve(TemporaryPath);
-            Preserve(WindowPlacementPath);
+            profile.Isolate();
+            snapshots.Add(profile);
         }
 
         internal static string DirectoryPath => Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "Workspaces");
