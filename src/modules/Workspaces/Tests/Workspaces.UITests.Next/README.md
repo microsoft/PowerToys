@@ -34,30 +34,34 @@ preview before/after editing and require removal/add-back to restore the origina
 image. They do not use OS-specific golden screenshots or assert geometry on
 off-screen application rows.
 
-Workspace cards expose their stable GUID as `AutomationId` and their current
-name as `Name`. After confirming the overview is visible, the tests read Button
-peers with a GUID and the test workspace prefix. The ItemsRepeater has no peer;
-a search suggestion or header with the same text cannot be mistaken for a card. Sorting
-uses the WinUI button and radio flyout; editing uses the title-bar Back button or
-Escape, and deletion uses the editor's confirmation dialog. Application inclusion
+The tests read every SettingsCard button with a workspace GUID from the editor's
+overview, including cards with default names. They accept an empty list once the
+overview displays its empty-state message. Sorting uses the WinUI button and radio
+flyout. Editing uses the title-bar Back button or Escape, and deletion uses the
+editor's confirmation dialog. Application inclusion
 uses the separate Remove/Add back action, which remains enabled when application
 details are disabled. Preview and launcher state assertions use their explicit
 automation identifiers.
 
-Migration regressions additionally cover an existing workspace named `Workspace`
-followed by a fresh capture, Revert after recapture returning directly to the list,
-renaming immediately updating name order while retaining the card GUID, cleaning
-up the old desktop shortcut on rename, respecting an externally deleted shortcut
-when saving again, and cancelling deletion without losing unsaved edits.
+After a fresh capture, both the existing workspace named `Workspace` and the new
+card must be present. The Revert test replaces a launched fixture window with a
+new one, checks its row in the editing page, then verifies that Revert restores
+the saved row and removes the newly captured row before Back or Escape returns
+to the list. Other migration cases cover name sorting and card identity after a
+rename, cleanup of old shortcuts, externally deleted shortcuts, and cancellation
+of deletion with unsaved edits.
 Closing the minimized editor during capture also requires its snapshot controls
 and overlays to exit without saving a workspace.
 Shortcut reactivation verifies the existing editor's native foreground and window
 state without the test restoring it, including restoration from minimized state
 while retaining its previous maximized size.
-Window placement coverage also closes and reopens the editor without test-induced
-maximizing, then verifies its actual saved bounds and maximized state. Native
-coordinate operations use synchronous per-monitor DPI scopes so VSTest's host
-coordinates agree with UIA's physical pixels on scaled displays.
+Separate restart tests verify the editor's saved normal bounds and maximized
+state. The normal-bounds case reports Inconclusive when the primary work area
+cannot fit the editor's 750 × 680 effective-pixel minimum. The maximized case
+runs at every supported desktop size. Both cases reopen the editor without
+changing its state. Native coordinate operations use synchronous per-monitor DPI
+scopes so VSTest's host coordinates agree with UIA's physical pixels on scaled
+displays.
 
 ## Fixtures and prerequisites
 

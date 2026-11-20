@@ -19,52 +19,53 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             AssertWorkspaceNames(names);
             Search("aTlAs");
-            AssertSearchSuggestions(names[0]);
             AssertWorkspaceNames(names);
-            ChooseSearchSuggestion(names[0]);
+            var nameMatches = WaitForSearchSuggestions(names[0]);
+            ChooseSearchSuggestion(nameMatches[0]);
             CancelEditing();
 
             Search("editor fixture");
-            AssertSearchSuggestions(names[1], names[2]);
             AssertWorkspaceNames(names);
-            ChooseSearchSuggestion(names[2]);
+            var appMatches = WaitForSearchSuggestions(names[1], names[2]);
+            Assert.IsTrue(appMatches[0].Y < appMatches[1].Y, "The two matching suggestions should occupy distinct rows.");
+            ChooseSearchSuggestion(appMatches[1]);
             CancelEditing();
 
             Search("no matching workspace or application");
-            AssertSearchSuggestions();
+            WaitForSearchSuggestions();
             SearchInput().Focus();
             KeyboardHelper.SendKeys(Key.Enter);
             AssertWorkspaceListReady();
             AssertWorkspaceNames(names);
             Search(string.Empty);
-            AssertSearchSuggestions();
+            WaitForSearchSuggestions();
             AssertWorkspaceNames(names);
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Searching or opening a suggestion changed saved workspaces.");
         }
 
-        private void AssertSearchSuggestions(params string[] expected)
+        private TextBlock[] WaitForSearchSuggestions(params string[] expected)
         {
             var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
+            var expectedNames = expected.Order(StringComparer.Ordinal).ToArray();
             var ready = WaitHelper.WaitForStable(
                 () => process.FindAll<TextBlock>(By.AccessibilityId("WorkspaceSearchSuggestionName"), 0)
-                    .Where(text => text.Displayed).Select(text => text.Name).Order(StringComparer.Ordinal).ToArray(),
-                names => names is not null && names.SequenceEqual(expected.Order(StringComparer.Ordinal)),
+                    .Where(text => text.Displayed).OrderBy(text => text.Y).ToArray(),
+                suggestions => suggestions is not null && suggestions.All(text => text.Width > 0 && text.Height > 0) &&
+                    suggestions.Select(text => text.Name).Order(StringComparer.Ordinal).SequenceEqual(expectedNames),
                 15_000,
                 requiredConsecutiveMatches: 2);
-            Assert.IsTrue(ready.Succeeded, $"Expected suggestions [{string.Join(", ", expected)}], observed [{string.Join(", ", ready.LastObservation ?? [])}].");
+            var observed = ready.LastObservation ?? [];
+            Assert.IsTrue(ready.Succeeded, $"Expected suggestions [{string.Join(", ", expected)}], observed [{string.Join(", ", observed.Select(text => text.Name))}].");
+            return observed;
         }
 
-        private void ChooseSearchSuggestion(string name)
+        private void ChooseSearchSuggestion(TextBlock suggestion)
         {
             using var physicalCoordinates = new PhysicalCoordinateScope();
-            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
-            var suggestions = process.FindAll<TextBlock>(By.AccessibilityId("WorkspaceSearchSuggestionName"), 10_000)
-                .Where(text => text.Name == name && text.Displayed && text.Width > 0 && text.Height > 0).ToArray();
-            Assert.HasCount(1, suggestions, $"The '{name}' search suggestion was not uniquely addressable.");
-            suggestions[0].Click(msPostAction: 0);
+            suggestion.Click(msPostAction: 0);
             Assert.IsTrue(
-                Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(name, timeoutMS: 10_000),
-                "Choosing a search suggestion did not open the corresponding workspace.");
+                Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(suggestion.Name, timeoutMS: 10_000),
+                $"Choosing the '{suggestion.Name}' suggestion did not open that workspace.");
         }
 
         [TestMethod]
@@ -225,6 +226,7 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
             var row = ExpandApplication("Primary fixture");
+            AssertCustomCoordinatesAvailable(row, expected: true);
             using var before = PreviewSnapshot.Capture(TestContext, Editor, "custom-position");
             SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), selected, EditorProcess);
             AssertCustomCoordinatesAvailable(row, expected: false);
@@ -274,7 +276,7 @@ namespace Microsoft.Workspaces.UITests
         private void SelectWorkspaceSort(int index)
         {
             Step($"Selecting workspace sort order {index}.");
-            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortButton"), 15_000).Invoke(msPostAction: 0);
+            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortComboBox"), 15_000).Invoke(msPostAction: 0);
             var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
             process.Find<Element>(By.AccessibilityId(SortItemId(index)), 10_000).Invoke(msPostAction: 0);
             AssertWorkspaceSortSelected(index);
@@ -282,7 +284,7 @@ namespace Microsoft.Workspaces.UITests
 
         private void AssertWorkspaceSortSelected(int index, string? expectedName = null)
         {
-            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortButton"), 15_000).Invoke(msPostAction: 0);
+            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortComboBox"), 15_000).Invoke(msPostAction: 0);
             var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
             var selected = process.Find<Element>(By.AccessibilityId(SortItemId(index)), 10_000);
             Assert.IsTrue(selected.WaitForProperty("ToggleState", "On", 5_000), "The sort menu did not retain its selected option.");
@@ -305,14 +307,19 @@ namespace Microsoft.Workspaces.UITests
         private void AssertCustomCoordinatesAvailable(Element row, bool expected)
         {
             var ready = WaitHelper.WaitForStable(
-                () => FindDescendants<TextBox>(row, "Edit", "LeftTextBox")
-                    .Any(textBox => textBox.Displayed && textBox.IsEnabled),
-                available => available == expected,
+                () => FindDescendants<TextBox>(row, "Edit", "LeftTextBox"),
+                // WinUI removes a collapsed SettingsCard's children from UIA. A text box scrolled
+                // out of view stays in the tree and can still accept keyboard input.
+                fields => expected
+                    ? fields is [var input] &&
+                        string.Equals(input.GetProperty("IsKeyboardFocusable"), bool.TrueString, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(input.GetProperty("IsReadOnly"), bool.FalseString, StringComparison.OrdinalIgnoreCase)
+                    : fields is { Length: 0 },
                 10_000,
                 requiredConsecutiveMatches: 2);
             string message = expected
                 ? "Custom window coordinates did not become editable."
-                : "Custom coordinates stayed editable for a minimized/maximized app.";
+                : "Custom coordinates remained in the automation tree for a minimized/maximized app.";
             Assert.IsTrue(ready.Succeeded, message);
         }
 

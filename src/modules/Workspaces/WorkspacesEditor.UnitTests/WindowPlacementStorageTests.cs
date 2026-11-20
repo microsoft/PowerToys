@@ -81,18 +81,21 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("Window.Persistence")]
         public void Serialize_WritesOnlyPlacementStrings()
         {
+            const string placementKey = "WindowPersistance_WorkspacesEditor";
             using var document = JsonDocument.Parse("\"AQIDBA==\"");
             var storage = new Dictionary<string, object>
             {
-                ["WindowPersistance_WorkspacesEditor"] = "AQIDBA==",
+                [placementKey] = "AQIDBA==",
                 ["number"] = 12,
                 ["jsonElement"] = document.RootElement,
             };
 
-            var reloaded = WindowPlacementStorage.Deserialize(WindowPlacementStorage.Serialize(storage));
-
-            Assert.AreEqual(1, reloaded.Count);
-            Assert.AreEqual("AQIDBA==", reloaded["WindowPersistance_WorkspacesEditor"]);
+            using var serialized = JsonDocument.Parse(WindowPlacementStorage.Serialize(storage));
+            var root = serialized.RootElement;
+            Assert.AreEqual(1, root.GetPropertyCount());
+            var placement = root.GetProperty(placementKey);
+            Assert.AreEqual(JsonValueKind.String, placement.ValueKind);
+            Assert.AreEqual("AQIDBA==", placement.GetString());
         }
     }
 }

@@ -19,15 +19,20 @@ Describe 'Workspaces installer integration' {
     }
 
     It 'uses the executable basename for process cleanup and event-log queries' {
-        foreach ($relativePath in @(
-            'installer\PowerToysSetupCustomActionsVNext\CustomAction.cpp',
-            'tools\BugReportTool\BugReportTool\ProcessesList.cpp'
+        foreach ($list in @(
+            @{ Path = 'installer\PowerToysSetupCustomActionsVNext\CustomAction.cpp'; Name = 'processesToTerminate' }
+            @{ Path = 'tools\BugReportTool\BugReportTool\ProcessesList.cpp'; Name = 'processes' }
         )) {
-            $source = Get-Content -LiteralPath (Join-Path $script:workspacesRepoRoot $relativePath) -Raw
-            $entries = @([regex]::Matches($source, 'L"([^"\r\n]*WorkspacesEditor\.exe)"'))
+            $source = Get-Content -LiteralPath (Join-Path $script:workspacesRepoRoot $list.Path) -Raw
+            # Preserve quoted strings, including URLs, while removing line and block comments.
+            $source = $source -creplace '("(?:\\.|[^"\\\r\n])*")|//[^\r\n]*|(?s:/\*.*?\*/)', '$1 '
+            $pattern = '\b' + [regex]::Escape($list.Name) + '\s*(?:\[\s*\])?\s*=\s*\{(?<entries>[^{}]*)\}\s*;'
+            $initializer = [regex]::Match($source, $pattern)
+            & $script:assertWorkspacesEqual -Actual $initializer.Success -Expected $true -Context "$($list.Path) $($list.Name) initializer"
+            $entries = [regex]::Matches($initializer.Groups['entries'].Value, '(?:^|,)\s*L"([^"\r\n]*WorkspacesEditor\.exe)"\s*(?=,|$)')
 
-            & $script:assertWorkspacesEqual -Actual $entries.Count -Expected 1 -Context "$relativePath process entry count"
-            & $script:assertWorkspacesEqual -Actual $entries[0].Groups[1].Value -Expected 'PowerToys.WorkspacesEditor.exe' -Context "$relativePath process basename"
+            & $script:assertWorkspacesEqual -Actual $entries.Count -Expected 1 -Context "$($list.Path) process entry count"
+            & $script:assertWorkspacesEqual -Actual $entries[0].Groups[1].Value -Expected 'PowerToys.WorkspacesEditor.exe' -Context "$($list.Path) process basename"
         }
     }
 
@@ -42,13 +47,14 @@ Describe 'Workspaces installer integration' {
         $launcherFiles = @($files | Where-Object { $_.Source -like '*PowerToys.WorkspacesLauncherUI.resources.dll' })
         & $script:assertWorkspacesEqual -Actual $launcherFiles.Count -Expected 1 -Context 'Launcher UI satellite installation entries'
         & $script:assertWorkspacesEqual -Actual $launcherFiles[0].Source -Expected '$(var.BinDir)\WinUI3Apps\$(var.Language)\PowerToys.WorkspacesLauncherUI.resources.dll' -Context 'Launcher UI satellite source'
+        & $script:assertWorkspacesEqual -Actual ($launcherFiles[0].ParentNode.GetAttribute('Directory')) -Expected 'Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder' -Context 'Launcher UI satellite installation directory'
     }
 
     It 'harvests the WinUI output for both installed asset locations without an old root output' {
         $fixtureRoot = Join-Path $TestDrive 'workspace'
         $fixtureInstallerRoot = Join-Path $fixtureRoot 'installer\PowerToysSetupVNext'
         $fixtureBuildPlatform = 'x64'
-        $assetsOutput = Join-Path $fixtureRoot 'x64\Release\WinUI3Apps\Assets\Workspaces'
+        $assetsOutput = Join-Path $fixtureRoot "$fixtureBuildPlatform\Release\WinUI3Apps\Assets\Workspaces"
         New-Item -ItemType Directory -Path $fixtureInstallerRoot, $assetsOutput -Force | Out-Null
         Copy-Item -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Workspaces.wxs') -Destination $fixtureInstallerRoot
         foreach ($iconName in @('DefaultIcon.ico', 'Workspaces.ico')) {
@@ -60,24 +66,38 @@ Describe 'Workspaces installer integration' {
         $parseErrors = $null
         $generator = [System.Management.Automation.Language.Parser]::ParseFile($generatorPath, [ref]$tokens, [ref]$parseErrors)
         & $script:assertWorkspacesEqual -Actual $parseErrors.Count -Expected 0 -Context 'Asset generator syntax errors'
-        $helpers = @($generator.FindAll({
-            param($node)
-            $node -is [System.Management.Automation.Language.FunctionDefinitionAst] -and
-                $node.Name -in @('Generate-FileList', 'Generate-FileComponents')
-        }, $true))
-        & $script:assertWorkspacesEqual -Actual $helpers.Count -Expected 2 -Context 'Extracted harvesting helper count'
+        $statements = $generator.EndBlock.Statements
+        $harvestCalls = @($statements | Where-Object {
+            $_ -is [Management.Automation.Language.PipelineAst] -and
+                $_.PipelineElements[0] -is [Management.Automation.Language.CommandAst] -and
+                $_.PipelineElements[0].GetCommandName() -in @('Generate-FileList', 'Generate-FileComponents')
+        })
+        $workspaceCalls = @($harvestCalls | Where-Object { $_.PipelineElements[0].CommandElements.Extent.Text -match '[\\/]Workspaces\.wxs[''"]?$' })
+        & $script:assertWorkspacesEqual -Actual ($workspaceCalls.Count -gt 0) -Expected $true -Context 'Workspaces.wxs harvesting calls'
 
-        # Run only the file-harvesting helpers and Workspaces block against the fixture.
-        # The remaining generator and its build output are never executed or changed.
-        $generatorText = Get-Content -LiteralPath $generatorPath -Raw
-        $start = $generatorText.IndexOf('#Workspaces')
-        $end = $generatorText.IndexOf('#DSC Resources', $start)
-        & $script:assertWorkspacesEqual -Actual ($start -ge 0 -and $end -gt $start) -Expected $true -Context 'Workspaces harvesting block boundaries'
-        $workspacesBlock = $generatorText.Substring($start, $end - $start).
-            Replace('$PSScriptRoot', '$fixtureInstallerRoot').
-            Replace('$platform', '$fixtureBuildPlatform')
-        $fixtureHarvest = [scriptblock]::Create(($helpers.Extent.Text -join "`n") + "`n" + $workspacesBlock)
-        & $fixtureHarvest
+        # Keep the generator's parameter block, initialization, and helper definitions together.
+        # Run its Workspaces calls in their original order with their own input path assignments.
+        $inputVariables = foreach ($call in $workspaceCalls) {
+            $call.FindAll({ param($node) $node -is [Management.Automation.Language.VariableExpressionAst] }, $true).VariablePath.UserPath
+        }
+        $fixtureScript = @(
+            $generator.Extent.Text.Substring(0, $harvestCalls[0].Extent.StartOffset)
+            foreach ($statement in $statements) {
+                if ($statement -in $workspaceCalls -or
+                    ($statement -is [Management.Automation.Language.AssignmentStatementAst] -and
+                     $statement.Left -is [Management.Automation.Language.VariableExpressionAst] -and
+                     $statement.Left.VariablePath.UserPath -in $inputVariables)) {
+                    $statement.Extent.Text
+                }
+            }
+        )
+        $mediaHelper = Join-Path $script:workspacesInstallerRoot 'InstallerMedia.ps1'
+        if (Test-Path -LiteralPath $mediaHelper) {
+            Copy-Item -LiteralPath $mediaHelper -Destination $fixtureInstallerRoot
+        }
+        $fixtureGenerator = Join-Path $fixtureInstallerRoot 'generateAllFileComponents.ps1'
+        Set-Content -LiteralPath $fixtureGenerator -Value $fixtureScript -Encoding UTF8
+        & $fixtureGenerator -platform $fixtureBuildPlatform
 
         [xml]$workspaces = Get-Content -LiteralPath (Join-Path $fixtureInstallerRoot 'Workspaces.wxs') -Raw
         $namespace = New-Object System.Xml.XmlNamespaceManager($workspaces.NameTable)

@@ -21,16 +21,15 @@ namespace WorkspacesEditor.UnitTests
     [DoNotParallelize]
     public class EditorViewModelRegressionTests
     {
-        private static readonly string[] ExpectedRenameCalls = ["Exists:Old", "Remove:Old", "Apply:New"];
         private static readonly string[] ExpectedNameOrder = ["Middle", "Zulu"];
 
         [TestMethod]
-        public void SaveProject_RenameRemovesOldShortcutBeforeApplyingNewName()
+        public void SaveProject_DelegatesRenameWithPreviousWorkspaceName()
         {
             using TestContext context = new();
             Project original = TestHelpers.CreateProject("Old", 0, 0, "Notepad");
             original.IsShortcutNeeded = true;
-            context.Shortcuts.ExistingNames.Add("Old");
+            context.Shortcuts.HasShortcut = true;
             context.ViewModel.Workspaces.Add(original);
 
             context.ViewModel.EditProject(original);
@@ -38,9 +37,9 @@ namespace WorkspacesEditor.UnitTests
             edited.Name = "New";
             context.ViewModel.SaveProject(edited);
 
-            CollectionAssert.AreEqual(ExpectedRenameCalls, context.Shortcuts.Calls);
-            Assert.IsFalse(context.Shortcuts.ExistingNames.Contains("Old"));
-            Assert.IsTrue(context.Shortcuts.ExistingNames.Contains("New"));
+            Assert.HasCount(1, context.Shortcuts.ApplyCalls);
+            Assert.AreEqual((original.Id, "New", "Old", true), context.Shortcuts.ApplyCalls[0]);
+            Assert.AreEqual(0, context.Shortcuts.RemoveCalls);
             Assert.AreEqual("New", original.Name);
             Assert.AreEqual(1, context.SerializedWorkspaces.Count);
         }
@@ -61,7 +60,7 @@ namespace WorkspacesEditor.UnitTests
 
             Assert.IsTrue(original.MoveExistingWindows);
             Assert.IsFalse(original.IsShortcutNeeded);
-            Assert.AreEqual(0, context.Shortcuts.ExistingNames.Count);
+            Assert.IsFalse(context.Shortcuts.ApplyCalls.Any(call => call.IsShortcutNeeded));
         }
 
         [TestMethod]
@@ -78,7 +77,6 @@ namespace WorkspacesEditor.UnitTests
             edited.Name = "Zulu";
 
             context.ViewModel.SaveProject(edited);
-            context.ViewModel.SwitchToMainView();
 
             CollectionAssert.AreEqual(ExpectedNameOrder, context.ViewModel.WorkspacesView.Select(project => project.Name).ToArray());
         }
@@ -158,34 +156,18 @@ namespace WorkspacesEditor.UnitTests
 
         private sealed class FakeShortcutService : IWorkspaceShortcutService
         {
-            internal HashSet<string> ExistingNames { get; } = new(StringComparer.OrdinalIgnoreCase);
+            internal bool HasShortcut { get; set; }
 
-            internal List<string> Calls { get; } = [];
+            internal List<(string ProjectId, string Name, string PreviousName, bool IsShortcutNeeded)> ApplyCalls { get; } = [];
 
-            public bool Exists(Project project)
-            {
-                Calls.Add("Exists:" + project.Name);
-                return ExistingNames.Contains(project.Name);
-            }
+            internal int RemoveCalls { get; private set; }
 
-            public void Apply(Project project)
-            {
-                Calls.Add("Apply:" + project.Name);
-                if (project.IsShortcutNeeded)
-                {
-                    ExistingNames.Add(project.Name);
-                }
-                else
-                {
-                    ExistingNames.Remove(project.Name);
-                }
-            }
+            public bool Exists(Project project) => HasShortcut;
 
-            public void Remove(Project project)
-            {
-                Calls.Add("Remove:" + project.Name);
-                ExistingNames.Remove(project.Name);
-            }
+            public void Apply(Project project, string previousName = null) =>
+                ApplyCalls.Add((project.Id, project.Name, previousName, project.IsShortcutNeeded));
+
+            public void Remove(Project project) => RemoveCalls++;
         }
     }
 }

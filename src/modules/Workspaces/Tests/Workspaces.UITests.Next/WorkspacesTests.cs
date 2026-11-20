@@ -203,7 +203,7 @@ namespace Microsoft.Workspaces.UITests
                 WindowHelper.MaximizeWindow(new IntPtr(editor.WindowHandle));
             }
 
-            Assert.IsTrue(editor.Has(By.AccessibilityId("NewProjectButton"), 20_000), "The editor did not present its workspace list.");
+            AssertWorkspaceListReady();
         }
 
         private void CloseEditor()
@@ -306,58 +306,77 @@ namespace Microsoft.Workspaces.UITests
         private T[] FindDescendants<T>(Element parent, string controlType, string? automationId = null)
             where T : Element, new()
         {
-            // Element.Find forwards to a window-wide lookup in this harness. Inspect the selected
-            // subtree explicitly before resolving its child slugs, so repeated IDs stay scoped.
-            var tree = WinappCli.InvokeJson(
-                "ui",
-                "inspect",
-                parent.Selector,
-                "-w",
-                Editor.WindowHandle.ToString(System.Globalization.CultureInfo.InvariantCulture),
-                "--json",
-                "-d",
-                "20");
-            var selectors = new List<By>();
-            void Walk(JsonElement element)
+            T[]? ReadChildren()
             {
-                var selector = element.TryGetProperty("selector", out var selectorProperty) ? selectorProperty.GetString() : null;
-                if (selector is not null && selector != parent.Selector &&
-                    element.TryGetProperty("type", out var typeProperty) && typeProperty.GetString() == controlType &&
-                    (automationId is null || (element.TryGetProperty("automationId", out var idProperty) && idProperty.GetString() == automationId)))
+                // winappcli can return the whole window when the requested parent was recycled.
+                var tree = WinappCli.InvokeJson("ui", "inspect", parent.Selector, "-w", Editor.WindowHandleArg, "--json", "-d", "20");
+                var roots = EditorRoots(tree).ToArray();
+                if (roots.Length != 1 || UiString(roots[0], "selector") != parent.Selector)
                 {
-                    // Inspect returns an AutomationId for unique controls and a semantic slug for
-                    // repeated controls. Resolve IDs through search so a partial parent ID cannot
-                    // cause inspect to return that parent instead of the requested control.
-                    selectors.Add(element.TryGetProperty("automationId", out var automationIdProperty) && selector == automationIdProperty.GetString()
-                        ? By.AccessibilityId(selector)
-                        : By.Slug(selector));
+                    return null;
                 }
 
-                if (element.TryGetProperty("children", out var children) && children.ValueKind == JsonValueKind.Array)
+                var matches = new List<T>();
+                foreach (var element in Subtree(roots[0]).Skip(1))
                 {
-                    foreach (var child in children.EnumerateArray())
+                    if (UiString(element, "type") != controlType || (automationId is not null && UiString(element, "automationId") != automationId))
                     {
-                        Walk(child);
+                        continue;
                     }
+
+                    // Unique AutomationIds use search, repeated controls use their exact runtime slug.
+                    if (UiString(element, "selector") is not { Length: > 0 } selector)
+                    {
+                        return null;
+                    }
+
+                    var by = selector == UiString(element, "automationId") ? By.AccessibilityId(selector) : By.Slug(selector);
+                    var resolved = Editor.FindAll<T>(by, 0).Where(hit => hit.Selector == selector).ToArray();
+                    if (resolved.Length != 1)
+                    {
+                        return null;
+                    }
+
+                    matches.Add(resolved[0]);
                 }
+
+                return [.. matches];
             }
 
-            if (tree.TryGetProperty("windows", out var windows) && windows.ValueKind == JsonValueKind.Array)
-            {
-                foreach (var window in windows.EnumerateArray())
-                {
-                    if (window.TryGetProperty("elements", out var elements) && elements.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var element in elements.EnumerateArray())
-                        {
-                            Walk(element);
-                        }
-                    }
-                }
-            }
-
-            return selectors.Select(selector => Editor.Find<T>(selector, 0)).ToArray();
+            var ready = WaitHelper.WaitForStable(ReadChildren, matches => matches is not null, 5_000, shouldRetryException: IsStaleElement);
+            Assert.IsTrue(ready.Succeeded, $"Could not resolve descendants of '{parent.Selector}' in the editor.");
+            return ready.LastObservation!;
         }
+
+        private IEnumerable<JsonElement> EditorRoots(JsonElement tree) =>
+            tree.GetProperty("windows").EnumerateArray()
+                .Where(window => window.GetProperty("hwnd").GetInt64() == Editor.WindowHandle)
+                .SelectMany(window => window.GetProperty("elements").EnumerateArray());
+
+        private static IEnumerable<JsonElement> Subtree(JsonElement element)
+        {
+            yield return element;
+            if (element.TryGetProperty("children", out var children))
+            {
+                foreach (var descendant in children.EnumerateArray().SelectMany(Subtree))
+                {
+                    yield return descendant;
+                }
+            }
+        }
+
+        private static string? UiString(JsonElement element, string property) =>
+            element.TryGetProperty(property, out var value) ? value.GetString() : null;
+
+        private static int UiCoordinate(JsonElement element, string property) =>
+            element.TryGetProperty(property, out var value) ? (int)Math.Round(value.GetDouble()) : 0;
+
+        private static bool IsVisible(JsonElement element) =>
+            (!element.TryGetProperty("isOffscreen", out var offscreen) || !offscreen.GetBoolean()) &&
+            UiCoordinate(element, "width") > 0 && UiCoordinate(element, "height") > 0;
+
+        private static bool IsStaleElement(Exception error) =>
+            error is AssertFailedException && error.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase);
 
         // Reproduce the product's snapshot geometry contract (workspaces-common WindowUtils::GetWindowRect):
         // take the raw Win32 GetWindowRect (outer window, including invisible resize borders) and convert
@@ -382,66 +401,59 @@ namespace Microsoft.Workspaces.UITests
             return (x, y, (int)Math.Round(originX + width) - x, (int)Math.Round(originY + height) - y);
         }
 
-        private WorkspaceCard[] WorkspaceCards()
+        private WorkspaceCard[]? WorkspaceCards()
         {
-            Assert.IsTrue(
-                Editor.FindAll<Button>(By.AccessibilityId("NewProjectButton"), 0).Any(button => button.Displayed),
-                "Workspace cards can only be read from the visible overview page.");
-
-            // ItemsRepeater does not expose an automation peer. Read the actual SettingsCard buttons
-            // by their GUID and test name instead; TextBlocks and search suggestions cannot match.
-            var found = new List<WorkspaceCard>();
-
-            void Walk(JsonElement element)
+            // Read the overview and its cards in the same frame so navigation cannot turn a
+            // temporarily missing list into an observation of an empty workspace.
+            JsonElement[] elements;
+            try
             {
-                var id = element.TryGetProperty("automationId", out var idProperty) ? idProperty.GetString() : null;
-                if (element.TryGetProperty("type", out var typeProperty) && typeProperty.GetString() == "Button" &&
-                    Guid.TryParse(id, out _) &&
-                    element.TryGetProperty("name", out var nameProperty) &&
-                    nameProperty.GetString() is { } name && name.StartsWith(State.Prefix, StringComparison.Ordinal))
+                elements = EditorRoots(Editor.Inspect(depth: 20)).SelectMany(Subtree).ToArray();
+            }
+            catch (AssertFailedException error) when (IsStaleElement(error))
+            {
+                return null;
+            }
+
+            if (!elements.Any(element => UiString(element, "type") == "Button" && UiString(element, "automationId") == "NewProjectButton" && IsVisible(element)) ||
+                elements.Any(element => UiString(element, "automationId") == "EditNameTextBox"))
+            {
+                return null;
+            }
+
+            // The ItemsRepeater has no peer. Its SettingsCard buttons expose stable GUIDs even
+            // for default names, stale cards, or workspaces the test did not expect to find.
+            var cards = new List<WorkspaceCard>();
+            foreach (var element in elements)
+            {
+                string? id = UiString(element, "automationId");
+                if (UiString(element, "type") == "Button" && UiString(element, "className") == "SettingsCard" && Guid.TryParse(id, out _))
                 {
-                    found.Add(new WorkspaceCard(
+                    cards.Add(new WorkspaceCard(
                         id!,
-                        name,
-                        element.TryGetProperty("x", out var xp) ? xp.GetInt32() : 0,
-                        element.TryGetProperty("y", out var yp) ? yp.GetInt32() : 0,
-                        element.TryGetProperty("width", out var wp) ? wp.GetInt32() : 0,
-                        element.TryGetProperty("height", out var hp) ? hp.GetInt32() : 0));
-                }
-
-                if (element.TryGetProperty("children", out var children) && children.ValueKind == JsonValueKind.Array)
-                {
-                    foreach (var child in children.EnumerateArray())
-                    {
-                        Walk(child);
-                    }
+                        UiString(element, "name") ?? string.Empty,
+                        UiCoordinate(element, "x"),
+                        UiCoordinate(element, "y"),
+                        UiCoordinate(element, "width"),
+                        UiCoordinate(element, "height")));
                 }
             }
 
-            var tree = Editor.Inspect(depth: 10);
-            if (tree.TryGetProperty("windows", out var windows) && windows.ValueKind == JsonValueKind.Array)
+            if (cards.Count == 0 && !elements.Any(element => UiString(element, "type") == "Text" &&
+                UiString(element, "name") == "There are no saved Workspaces." && IsVisible(element)))
             {
-                foreach (var window in windows.EnumerateArray())
-                {
-                    if (window.TryGetProperty("elements", out var elements) && elements.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var element in elements.EnumerateArray())
-                        {
-                            Walk(element);
-                        }
-                    }
-                }
+                return null;
             }
 
-            return [.. found.OrderBy(card => card.Y)];
+            return [.. cards.OrderBy(card => card.Y)];
         }
 
-        private string[] WorkspaceNames() => WorkspaceCards().Select(card => card.Name).ToArray();
+        private string[]? WorkspaceNames() => WorkspaceCards()?.Select(card => card.Name).ToArray();
 
         private WorkspaceCard WaitForCard(string name)
         {
             var result = WaitHelper.WaitForStable(
-                () => WorkspaceCards().Where(card => card.Name == name).ToArray(),
+                () => WorkspaceCards()?.Where(card => card.Name == name).ToArray(),
                 cards => cards is { Length: 1 } && cards[0].Width > 0 && cards[0].Height > 0,
                 timeoutMS: 15_000,
                 requiredConsecutiveMatches: 2,
@@ -460,9 +472,8 @@ namespace Microsoft.Workspaces.UITests
                 timeoutMS: 15_000,
                 requiredConsecutiveMatches: 2,
                 pollIntervalMS: 150);
-            Assert.IsTrue(
-                ready.Succeeded,
-                $"Expected workspaces [{string.Join(", ", expected)}], observed [{string.Join(", ", ready.LastObservation ?? [])}].");
+            string observed = ready.LastObservation is { } names ? $"[{string.Join(", ", names)}]" : "overview not ready";
+            Assert.IsTrue(ready.Succeeded, $"Expected workspaces [{string.Join(", ", expected)}], observed {observed}.");
         }
 
         private Element ExpandApplication(string name)
@@ -478,7 +489,11 @@ namespace Microsoft.Workspaces.UITests
                 expander.Invoke(msPostAction: 0);
             }
 
-            Assert.IsTrue(row.Find<TextBox>(By.AccessibilityId("CommandLineTextBox"), 15_000).IsEnabled, "Application details did not expand.");
+            var ready = WaitHelper.WaitForStable(
+                () => FindDescendants<TextBox>(row, "Edit", "CommandLineTextBox").Any(input => input.IsEnabled),
+                expanded => expanded,
+                15_000);
+            Assert.IsTrue(ready.Succeeded, "Application details did not expand.");
             return row;
         }
 
@@ -494,13 +509,11 @@ namespace Microsoft.Workspaces.UITests
         private void AssertWorkspaceListReady()
         {
             var ready = WaitHelper.WaitForStable(
-                () => Editor.FindAll<Button>(By.AccessibilityId("NewProjectButton"), 0)
-                    .Any(button => button.Displayed),
-                visible => visible,
+                WorkspaceCards,
+                cards => cards is not null,
                 15_000,
                 requiredConsecutiveMatches: 2);
             Assert.IsTrue(ready.Succeeded, "The editor did not return to the visible workspace list.");
-            Assert.IsFalse(Editor.Has(By.AccessibilityId("EditNameTextBox"), 500), "An old editing page remained active after returning to the list.");
         }
 
         private Session StartCapture()

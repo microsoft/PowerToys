@@ -69,7 +69,7 @@ namespace WorkspacesEditor.UnitTests
         {
             public bool Exists(Project project) => false;
 
-            public void Apply(Project project)
+            public void Apply(Project project, string previousName = null)
             {
             }
 

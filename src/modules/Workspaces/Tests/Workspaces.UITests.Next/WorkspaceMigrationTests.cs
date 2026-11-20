@@ -31,7 +31,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.AreEqual(2, saved.Count, "Creating a workspace replaced the existing one.");
             Assert.AreEqual("Workspace", WorkspaceTestState.Text(WorkspaceTestState.ReadProject(WorkspaceTestState.Text(existing, "id")), "name"));
             Assert.HasCount(1, saved.Where(project => WorkspaceTestState.Text(project!, "name") == newName).ToArray());
-            AssertWorkspaceNames(newName);
+            AssertWorkspaceNames("Workspace", newName);
         }
 
         [TestMethod]
@@ -39,18 +39,29 @@ namespace Microsoft.Workspaces.UITests
         [DataRow(true)]
         public void RevertAfterRecaptureReturnsDirectlyToWorkspaceList(bool useBackButton)
         {
-            var original = SeedOneWorkspace();
+            var originalTitle = State.Prefix + "-original";
+            var originalAppName = State.Prefix + "-saved-app";
+            var original = State.Project("workspace", State.Application(originalAppName, originalTitle));
+            State.WriteProjects(original);
             var name = WorkspaceTestState.Text(original, "name");
             var stored = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
-            var originalTitle = WorkspaceTestState.Text(original["applications"]!.AsArray()[0]!, "title");
+            var originalRow = By.AccessibilityId(originalAppName);
             var addedTitle = State.Prefix + "-recaptured";
             OpenEditor();
             EditWorkspace(name);
             Editor.Find<Button>(By.AccessibilityId("LaunchEditButton"), 15_000).Invoke(msPostAction: 0);
-            State.Fixture.WaitForWindow(originalTitle);
+            var originalWindow = State.Fixture.WaitForWindow(originalTitle);
             var capture = WaitForCaptureWindow();
+
+            // Both fixtures run the same executable. Keep only the new one in the recapture
+            // so its UIA application name identifies the window we added.
+            Assert.IsTrue(WindowControl.TryCloseWindow(originalWindow.WindowHandle), "The original fixture window did not close.");
             State.Fixture.OpenUnpackaged(addedTitle, TestContext);
-            Capture(capture, addedTitle);
+            var recaptured = Capture(capture, addedTitle);
+            var addedApp = AppByTitle(recaptured["applications"]!.AsArray(), addedTitle);
+            var addedRow = By.AccessibilityId(WorkspaceTestState.Text(addedApp, "application"));
+            Assert.IsTrue(Editor.Has(addedRow, 15_000), "The editing page did not show the newly captured fixture.");
+            Assert.IsFalse(Editor.Has(originalRow, 500), "The editing page still showed the original fixture before Revert.");
             Assert.AreEqual(name, Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Value, "Recapture lost the saved workspace name.");
 
             Step("Reverting a recaptured workspace before leaving the editing page.");
@@ -58,13 +69,15 @@ namespace Microsoft.Workspaces.UITests
             revert.Invoke(msPostAction: 0);
             Assert.IsTrue(revert.WaitForProperty("IsEnabled", "False", 15_000), "Revert did not restore the original editing state.");
             Assert.IsTrue(Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox")).WaitForValue(name, timeoutMS: 15_000));
+            Assert.IsTrue(Editor.Has(originalRow, 15_000), "Revert did not restore the saved fixture on the editing page.");
+            Assert.IsFalse(Editor.Has(addedRow, 500), "Revert left the newly captured fixture on the editing page.");
             CancelEditing(useBackButton);
             AssertWorkspaceNames(name);
             CollectionAssert.AreEqual(stored, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Recapture/Revert saved unsaved changes.");
             Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Leaving the reverted workspace retained its temporary draft.");
 
             EditWorkspace(name);
-            Assert.IsTrue(Editor.Has(By.AccessibilityId("Primary fixture"), 10_000), "Reopening the workspace did not restore its original application.");
+            Assert.IsTrue(Editor.Has(originalRow, 10_000), "Reopening the workspace did not restore its original application.");
             Assert.IsFalse(Editor.Find<Button>(By.AccessibilityId("RevertButton")).IsEnabled, "A previous editor's recapture state survived re-navigation.");
             CancelEditing();
         }
@@ -167,38 +180,41 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        public void EditorWindowPlacementPersistsAcrossRestart()
+        public void EditorNormalWindowPlacementPersistsAcrossRestart()
         {
-            SeedOneWorkspace();
-            using var physicalCoordinates = new PhysicalCoordinateScope();
-            OpenEditor(maximize: false);
-            var handle = new IntPtr(Editor.WindowHandle);
             var target = State.Target;
-            WindowHelper.RestoreWindow(handle);
-            WindowHelper.MoveWindow(handle, target.WorkLeft + 16, target.WorkTop + 16);
-            var dpiReady = WaitHelper.WaitForStable(
-                () => NativeMethods.GetDpiForWindow(handle),
-                dpi => dpi == target.Dpi,
-                10_000,
-                requiredConsecutiveMatches: 2);
-            Assert.IsTrue(dpiReady.Succeeded, "The editor did not move to the target display's DPI.");
-
-            var scale = dpiReady.LastObservation / 96.0;
+            var scale = target.Dpi / 96.0;
 
             // Match the editor's 750 x 680 effective-pixel minimum while positioning in physical pixels.
             var minimumWidth = (int)Math.Ceiling(750 * scale);
             var minimumHeight = (int)Math.Ceiling(680 * scale);
             var workWidth = target.WorkRight - target.WorkLeft;
             var workHeight = target.WorkBottom - target.WorkTop;
-            Assert.IsTrue(
-                workWidth > minimumWidth + 8 && workHeight > minimumHeight + 8,
-                "The primary work area must fit the editor's minimum normal size with room to move it.");
-            var margin = Math.Min((int)Math.Ceiling(16 * scale), Math.Min((workWidth - minimumWidth) / 4, (workHeight - minimumHeight) / 4));
-            var width = Math.Clamp((int)Math.Ceiling(960 * scale), minimumWidth, workWidth - (2 * margin));
-            var height = Math.Clamp((int)Math.Ceiling(720 * scale), minimumHeight, workHeight - (2 * margin));
-            var expected = (Left: target.WorkLeft + margin, Top: target.WorkTop + margin, Right: target.WorkLeft + margin + width, Bottom: target.WorkTop + margin + height);
+            if (workWidth < minimumWidth || workHeight < minimumHeight)
+            {
+                Assert.Inconclusive($"The primary work area is {workWidth} x {workHeight} pixels at {target.Dpi} DPI. Normal placement requires at least {minimumWidth} x {minimumHeight} pixels.");
+            }
+
+            var maxMargin = (int)Math.Ceiling(16 * scale);
+            var left = target.WorkLeft + Math.Min(maxMargin, (workWidth - minimumWidth) / 4);
+            var top = target.WorkTop + Math.Min(maxMargin, (workHeight - minimumHeight) / 4);
+            var width = Math.Min((int)Math.Ceiling(960 * scale), target.WorkRight - left);
+            var height = Math.Min((int)Math.Ceiling(720 * scale), target.WorkBottom - top);
+            var expected = (Left: left, Top: top, Right: left + width, Bottom: top + height);
 
             Step("Changing the editor's normal position and size before closing it.");
+            File.Delete(WorkspaceTestState.WindowPlacementPath);
+            using var physicalCoordinates = new PhysicalCoordinateScope();
+            OpenEditor(maximize: false);
+            var handle = new IntPtr(Editor.WindowHandle);
+            WindowHelper.RestoreWindow(handle);
+            WindowHelper.MoveWindow(handle, left, top);
+            var dpiReady = WaitHelper.WaitForStable(
+                () => NativeMethods.GetDpiForWindow(handle),
+                dpi => dpi == target.Dpi,
+                10_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(dpiReady.Succeeded, "The editor did not move to the target display's DPI.");
             WindowHelper.SetMainWindowSize(handle, width, height);
             WindowHelper.MoveWindow(handle, expected.Left, expected.Top);
             AssertNormalEditorBounds(handle, expected);
@@ -209,9 +225,15 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor(maximize: false);
             handle = new IntPtr(Editor.WindowHandle);
             AssertNormalEditorBounds(handle, expected);
+        }
 
-            Step("Maximizing the editor before another close and reopen.");
-            WindowHelper.MaximizeWindow(handle);
+        [TestMethod]
+        public void EditorMaximizedStatePersistsAcrossRestart()
+        {
+            File.Delete(WorkspaceTestState.WindowPlacementPath);
+            Step("Maximizing the editor before closing it.");
+            OpenEditor(maximize: true);
+            var handle = new IntPtr(Editor.WindowHandle);
             Assert.IsTrue(
                 WaitHelper.WaitForStable(
                     () => WindowHelper.IsWindowMaximized(handle),
