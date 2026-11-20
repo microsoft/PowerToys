@@ -10,7 +10,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
-using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Helpers;
 using WorkspacesLauncherUI.Models;
@@ -43,10 +42,6 @@ namespace WorkspacesLauncherUI.ViewModels
                 closeOwner,
                 IconHelper.TryGetApplicationIcon)
         {
-            if (!confirmationOnly)
-            {
-                _ = new PwaHelper();
-            }
         }
 
         internal MainViewModel(

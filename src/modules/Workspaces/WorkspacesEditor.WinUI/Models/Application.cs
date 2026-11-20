@@ -107,8 +107,6 @@ namespace WorkspacesEditor.Models
 
         public string AppTitle { get; set; }
 
-        public string PackageFullName { get; set; }
-
         public string CommandLineArguments { get; set; }
 
         [ObservableProperty]

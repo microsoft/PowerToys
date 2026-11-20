@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,78 +17,66 @@ namespace WorkspacesCsharpLibrary
         private const string EdgeBase = "Microsoft\\Edge\\User Data\\Default\\Web Applications";
         private const string ResourcesDir = "Manifest Resources";
         private const string IconsDir = "Icons";
-        private const string PwaDirIdentifier = "_CRX_";
-
-        private static List<PwaApp> pwaApps = new List<PwaApp>();
+        private static readonly Lazy<PwaHelper> Default = new(() => new PwaHelper());
+        private static readonly char[] InvalidFileNameChars = Path.GetInvalidFileNameChars();
+        private readonly ConcurrentDictionary<string, string> _icons = new(StringComparer.OrdinalIgnoreCase);
+        private readonly string _localAppData;
 
         public PwaHelper()
+            : this(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData))
         {
-            InitPwaData(EdgeBase);
-            InitPwaData(ChromeBase);
         }
 
-        private void InitPwaData(string p_baseDir)
+        internal PwaHelper(string localAppData)
         {
-            var baseFolderName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), p_baseDir);
-            if (Directory.Exists(baseFolderName))
-            {
-                foreach (string subDir in Directory.GetDirectories(baseFolderName))
-                {
-                    string dirName = Path.GetFileName(subDir);
-                    if (!dirName.StartsWith(PwaDirIdentifier, StringComparison.InvariantCultureIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    string appId = dirName.Substring(PwaDirIdentifier.Length, dirName.Length - PwaDirIdentifier.Length).Trim('_');
-
-                    foreach (string iconFile in Directory.GetFiles(subDir, "*.ico"))
-                    {
-                        string filenameWithoutExtension = Path.GetFileNameWithoutExtension(iconFile);
-
-                        pwaApps.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = appId });
-                        break;
-                    }
-                }
-
-                string resourcesDir = Path.Combine(baseFolderName, ResourcesDir);
-                if (Directory.Exists(resourcesDir))
-                {
-                    foreach (string subDir in Directory.GetDirectories(resourcesDir))
-                    {
-                        string dirName = Path.GetFileName(subDir);
-                        if (pwaApps.Any(app => app.AppId == dirName))
-                        {
-                            continue;
-                        }
-
-                        string iconsDir = Path.Combine(subDir, IconsDir);
-                        if (Directory.Exists(iconsDir))
-                        {
-                            foreach (string iconFile in Directory.GetFiles(iconsDir, "*.png"))
-                            {
-                                string filenameWithoutExtension = Path.GetFileNameWithoutExtension(iconFile);
-
-                                pwaApps.Add(new PwaApp() { Name = filenameWithoutExtension, IconFilename = iconFile, AppId = dirName });
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            _localAppData = localAppData;
         }
 
-        public static string GetPwaIconFilename(string pwaAppId)
+        public static string GetPwaIconFilename(string pwaAppId) =>
+            string.IsNullOrEmpty(pwaAppId) ? string.Empty : Default.Value.FindIcon(pwaAppId);
+
+        internal string FindIcon(string appId)
         {
-            if (string.IsNullOrEmpty(pwaAppId))
+            if (string.IsNullOrEmpty(appId) || appId.IndexOfAny(InvalidFileNameChars) >= 0 || appId.EndsWith('.') || appId.EndsWith(' '))
             {
                 return string.Empty;
             }
 
-            return pwaApps.FirstOrDefault(app => app.AppId == pwaAppId)?.IconFilename ?? string.Empty;
+            if (_icons.TryGetValue(appId, out string cached) && File.Exists(cached))
+            {
+                return cached;
+            }
+
+            var icon = FindBrowserIcon(EdgeBase, appId) ?? FindBrowserIcon(ChromeBase, appId);
+            if (icon != null)
+            {
+                _icons[appId] = icon;
+            }
+
+            return icon ?? string.Empty;
         }
 
-        internal static bool HasLaunchTarget(string browserPath, string appUserModelId, string version)
+        private string FindBrowserIcon(string browserFolder, string appId)
+        {
+            string root = Path.Combine(_localAppData, browserFolder);
+            return FirstImage(Path.Combine(root, "_crx_" + appId), "*.ico") ??
+                   FirstImage(Path.Combine(root, "_crx__" + appId), "*.ico") ??
+                   FirstImage(Path.Combine(root, ResourcesDir, appId, IconsDir), "*.png");
+        }
+
+        private static string FirstImage(string folder, string pattern)
+        {
+            try
+            {
+                return Directory.Exists(folder) ? Directory.EnumerateFiles(folder, pattern).FirstOrDefault() : null;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                return null;
+            }
+        }
+
+        internal static bool HasLaunchTarget(string browserPath, string appUserModelId, string version, Func<string, bool> resolveShellItem = null)
         {
             // AppLauncher substitutes a sibling proxy for these two browser executables.
             string executable = Path.GetFileName(browserPath);
@@ -105,7 +93,12 @@ namespace WorkspacesCsharpLibrary
                 return false;
             }
 
-            int result = SHParseDisplayName(@"shell:AppsFolder\" + appUserModelId, IntPtr.Zero, out IntPtr itemIdList, 0, IntPtr.Zero);
+            return (resolveShellItem ?? CanResolveShellItem)(@"shell:AppsFolder\" + appUserModelId);
+        }
+
+        private static bool CanResolveShellItem(string shellPath)
+        {
+            int result = SHParseDisplayName(shellPath, IntPtr.Zero, out IntPtr itemIdList, 0, IntPtr.Zero);
             bool registered = result >= 0 && itemIdList != IntPtr.Zero;
             Marshal.FreeCoTaskMem(itemIdList);
             return registered;
