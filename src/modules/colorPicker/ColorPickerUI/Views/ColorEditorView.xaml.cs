@@ -9,11 +9,14 @@ using System.Linq;
 using ColorPicker.Helpers;
 using ColorPicker.ViewModelContracts;
 using ColorPicker.ViewModels;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.System;
 using Windows.UI;
+using Windows.UI.Core;
 
 namespace ColorPicker.Views
 {
@@ -22,6 +25,9 @@ namespace ColorPicker.Views
     /// </summary>
     public sealed partial class ColorEditorView : UserControl
     {
+        private bool _pickPending;
+        private UIElement _keyUpRoot;
+
         public ColorEditorView()
         {
             InitializeComponent();
@@ -75,16 +81,42 @@ namespace ColorPicker.Views
             }
         }
 
+        private static bool IsKeyDown(VirtualKey key) => InputKeyboardSource.GetKeyStateForCurrentThread(key).HasFlag(CoreVirtualKeyStates.Down);
+
+        private bool CanStartPicking()
+            => ShouldStartPicking(FocusManager.GetFocusedElement(XamlRoot) is TextBox, EditorState.BlockEscapeKeyClosingColorPickerEditor);
+
         private void PickAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
         {
-            bool isTextInputFocused = FocusManager.GetFocusedElement(XamlRoot) is TextBox;
-            if (!ShouldStartPicking(isTextInputFocused, EditorState.BlockEscapeKeyClosingColorPickerEditor))
+            _pickPending = false;
+            if (!CanStartPicking())
             {
                 // Leave Handled false so a focused TextBox still receives the typed character.
                 return;
             }
 
+            // Start picking on key-up: the editor hides when picking starts, so a still-held I
+            // would auto-repeat into the app behind it.
             args.Handled = true;
+            _pickPending = true;
+        }
+
+        private void ColorEditorView_KeyUp(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key != VirtualKey.I || !_pickPending)
+            {
+                return;
+            }
+
+            _pickPending = false;
+
+            // A lost key-up (I held during Alt+Tab) leaves the flag stale; don't let Shift/Ctrl/Alt+I consume it.
+            if (!CanStartPicking() || IsKeyDown(VirtualKey.Control) || IsKeyDown(VirtualKey.Shift) || IsKeyDown(VirtualKey.Menu))
+            {
+                return;
+            }
+
+            e.Handled = true;
             if (DataContext is IColorEditorViewModel viewModel && viewModel.OpenColorPickerCommand.CanExecute(null))
             {
                 viewModel.OpenColorPickerCommand.Execute(null);
@@ -94,6 +126,15 @@ namespace ColorPicker.Views
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             EnableHistoryColorsScrollIntoView();
+
+            // The I key-up can come from outside this view (nothing is focused right after the editor opens),
+            // so listen at the window root; handledEventsToo so a focused ListView can't swallow it.
+            UIElement root = XamlRoot?.Content ?? this;
+            if (root != _keyUpRoot)
+            {
+                root.AddHandler(KeyUpEvent, new KeyEventHandler(ColorEditorView_KeyUp), true);
+                _keyUpRoot = root;
+            }
         }
 
         /// <summary>
