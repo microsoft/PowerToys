@@ -106,6 +106,24 @@ namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Donut chart.
+        /// </summary>
+        internal static string AdaptiveChart_DonutChart {
+            get {
+                return ResourceManager.GetString("AdaptiveChart_DonutChart", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Gauge.
+        /// </summary>
+        internal static string AdaptiveChart_Gauge {
+            get {
+                return ResourceManager.GetString("AdaptiveChart_Gauge", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Line chart.
         /// </summary>
         internal static string AdaptiveChart_LineChart {
@@ -114,6 +132,15 @@ namespace Microsoft.CmdPal.AdaptiveCards.Polyfills.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Pie chart.
+        /// </summary>
+        internal static string AdaptiveChart_PieChart {
+            get {
+                return ResourceManager.GetString("AdaptiveChart_PieChart", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Series {0}.
         /// </summary>

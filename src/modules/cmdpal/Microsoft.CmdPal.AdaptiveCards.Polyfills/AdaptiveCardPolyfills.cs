@@ -17,6 +17,9 @@ public static class AdaptiveCardPolyfills
     private static readonly AdaptiveVisualElementType[] Types =
     [
         new("Chart.Line", (json, warnings) => LineChartModel.Parse(json, warnings), model => new LineChartControl((LineChartModel)model)),
+        new("Chart.Gauge", (json, warnings) => GaugeChartModel.Parse(json, warnings), model => new GaugeChartControl((GaugeChartModel)model)),
+        new("Chart.Donut", (json, warnings) => DonutChartModel.Parse(json, isPie: false, warnings), model => new DonutChartControl((DonutChartModel)model)),
+        new("Chart.Pie", (json, warnings) => DonutChartModel.Parse(json, isPie: true, warnings), model => new DonutChartControl((DonutChartModel)model)),
         new("Chart.HorizontalBar.Stacked", (json, warnings) => StackedBarChartModel.Parse(json, warnings), model => new StackedBarChartControl((StackedBarChartModel)model)),
         new("Chart.VerticalBar", (json, warnings) => BarChartModel.Parse(json, BarOrientation.Vertical, warnings), model => new BarChartControl((BarChartModel)model)),
         new("Chart.HorizontalBar", (json, warnings) => BarChartModel.Parse(json, BarOrientation.Horizontal, warnings), model => new BarChartControl((BarChartModel)model)),
