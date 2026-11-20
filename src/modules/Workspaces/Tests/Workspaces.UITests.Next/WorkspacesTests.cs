@@ -57,7 +57,7 @@ namespace Microsoft.Workspaces.UITests
         // window-scoped session pinned to the original HWND then fails every lookup with "Window HWND ...
         // not found". Route Settings UIA reads through a process-scoped session (-a) so navigation and
         // toggles survive the swap — winappcli re-resolves the live window on every call.
-        private Session SettingsUi => settingsUi ??= Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
+        private Session SettingsUi => settingsUi ??= OpenWorkspacesSettings();
 
         [ClassInitialize]
         public static void ValidateDesktop(TestContext context)
@@ -86,7 +86,6 @@ namespace Microsoft.Workspaces.UITests
             State.Fixture.CloseAll();
             State.Reset();
             settingsUi = null;
-            NavigateToSettings();
         }
 
         [TestCleanup]
@@ -137,21 +136,23 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        private void NavigateToSettings()
+        private Session OpenWorkspacesSettings()
         {
             Step("Navigating to Workspaces Settings.");
 
             // Wait out any startup window replacement before driving the UI, so navigation runs against the
             // window Settings actually settles on rather than the transient handle it was launched with.
             _ = SettingsWindow();
+            var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
 
-            if (!SettingsUi.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
+            if (!settings.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
             {
-                SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
+                settings.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
             }
 
-            SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(SettingsUi.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+            settings.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
+            Assert.IsTrue(settings.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+            return settings;
         }
 
         // Freshly resolve the current PowerToys.Settings main window for the few physical operations that

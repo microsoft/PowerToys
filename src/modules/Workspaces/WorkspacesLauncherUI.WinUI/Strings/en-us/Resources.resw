@@ -48,4 +48,12 @@
   <data name="LauncherWindowTitle" xml:space="preserve">
     <value>Your workspace is launching. Waiting on ...</value>
   </data>
+  <data name="LaunchStatusList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Application launch status list</value>
+    <comment>Screen reader name for the scrollable list of application launch statuses in the Workspaces launcher.</comment>
+  </data>
+  <data name="ApplicationsList.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Applications</value>
+    <comment>Screen reader name for the applications being launched in a workspace.</comment>
+  </data>
 </root>
