@@ -189,6 +189,7 @@ void Launcher::Launch() // Launching thread
 
         if (result == AppLauncher::LaunchResult::Launched)
         {
+            m_launchedAnyApplication = true;
             m_launchingStatus.Update(app, LaunchingState::Launched);
         }
         else if (result == AppLauncher::LaunchResult::Canceled)

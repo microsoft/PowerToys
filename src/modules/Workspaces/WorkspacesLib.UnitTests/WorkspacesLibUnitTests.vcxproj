@@ -46,6 +46,7 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="WorkspacesDataTests.cpp" />
+    <ClCompile Include="WindowPropertyTests.cpp" />
     <ClCompile Include="CliContractTests.cpp" />
     <ClCompile Include="CliJsonOutputTests.cpp" />
     <ClCompile Include="WorkspaceStoreTests.cpp" />

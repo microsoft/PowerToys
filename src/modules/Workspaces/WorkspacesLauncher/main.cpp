@@ -100,11 +100,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Logger::warn("Workspace launch history could not be saved.");
         if (command.invokePoint == InvokePoint::LaunchAndEdit)
         {
-            const bool launched = std::ranges::any_of(result.applications, [](const auto& entry) {
-                const auto state = entry.second.state;
-                return state == LaunchingState::Launched || state == LaunchingState::LaunchedAndMoved;
-            });
-            return launched ? 0 : 1;
+            return result.CanRecapture() ? 0 : 1;
         }
         return 0;
     }
