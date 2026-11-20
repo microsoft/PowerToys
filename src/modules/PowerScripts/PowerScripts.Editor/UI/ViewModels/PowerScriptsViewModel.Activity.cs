@@ -19,13 +19,9 @@ public partial class PowerScriptsViewModel
 
     public bool IsActivityBusy { get; private set; }
 
-    public bool CanRefreshActivity => !IsActivityBusy;
-
     public string ActivityError { get; private set; } = string.Empty;
 
     public bool HasActivityError => !string.IsNullOrEmpty(ActivityError);
-
-    public bool IsActivityEmpty => ActivityItems.Count == 0 && !IsActivityBusy && !HasActivityError;
 
     public async Task RefreshActivityAsync(bool clearCompleted = false)
     {
@@ -78,6 +74,7 @@ public partial class PowerScriptsViewModel
             }
 
             ActivityError = string.Empty;
+            ApplyLastRuns();
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or
             InvalidOperationException or JsonException or TimeoutException or Win32Exception)
@@ -92,12 +89,21 @@ public partial class PowerScriptsViewModel
         }
     }
 
+    private void ApplyLastRuns()
+    {
+        var lastRuns = ActivityItems
+            .GroupBy(item => item.ScriptId, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.Max(item => item.StartedUtc), StringComparer.OrdinalIgnoreCase);
+        foreach (var script in Scripts)
+        {
+            script.SetLastRun(script.Id is not null && lastRuns.TryGetValue(script.Id, out var started) ? started : null);
+        }
+    }
+
     private void NotifyActivityState()
     {
         OnPropertyChanged(nameof(IsActivityBusy));
-        OnPropertyChanged(nameof(CanRefreshActivity));
         OnPropertyChanged(nameof(ActivityError));
         OnPropertyChanged(nameof(HasActivityError));
-        OnPropertyChanged(nameof(IsActivityEmpty));
     }
 }

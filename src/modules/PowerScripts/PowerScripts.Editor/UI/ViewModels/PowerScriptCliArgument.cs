@@ -35,6 +35,22 @@ public sealed class PowerScriptCliArgument : Observable
 
     public bool IsFixed => SourceIndex == 0;
 
+    public bool IsInput => SourceIndex == 1;
+
+    public bool IsAsk => SourceIndex == 2;
+
+    /// <summary>Gets the tile hue for the option's value type.</summary>
+    public string TypeKind => Value.IsBoolean ? "green" : Value.IsInteger ? "orange" : Value.IsFile ? "purple" : Value.IsChoice ? "teal" : "blue";
+
+    /// <summary>Gets the tile glyph for the option's value type.</summary>
+    public string TypeGlyph => Value.IsBoolean ? "\uE73A" : Value.IsInteger ? "\uE8EF" : Value.IsFile ? "\uE8A5" : Value.IsChoice ? "\uE8FD" : "\uE8D2";
+
+    /// <summary>Gets the glyph for the note shown when the value comes from the input.</summary>
+    public string InputGlyph => Value.IsFile ? "\uE8A5" : "\uE8D2";
+
+    /// <summary>Gets the note shown when the value comes from the input.</summary>
+    public string InputNote => PowerScriptsViewModel.GetResourceString(Value.IsFile ? "PowerScripts_NewScript_OptionUsesFile" : "PowerScripts_NewScript_OptionUsesText");
+
     public string SelectedChoice
     {
         get => Value.IsChoice ? Value.TextValue : null;
@@ -55,7 +71,8 @@ public sealed class PowerScriptCliArgument : Observable
             if (Set(ref _sourceIndex, value))
             {
                 OnPropertyChanged(nameof(IsFixed));
-                OnPropertyChanged(nameof(SourceHelp));
+                OnPropertyChanged(nameof(IsInput));
+                OnPropertyChanged(nameof(IsAsk));
             }
         }
     }
@@ -65,13 +82,6 @@ public sealed class PowerScriptCliArgument : Observable
         get => _canUseInput;
         set => Set(ref _canUseInput, value);
     }
-
-    public string SourceHelp => PowerScriptsViewModel.GetResourceString(SourceIndex switch
-    {
-        0 => "PowerScripts_CliArgumentFixedHelp",
-        1 => Value.IsFile ? "PowerScripts_CliArgumentFilesHelp" : "PowerScripts_CliArgumentTextHelp",
-        _ => "PowerScripts_CliArgumentParameterHelp",
-    });
 
     public string ControlId(string suffix) => "PowerScriptsCliArgument_" + Name + "_" + suffix;
 
