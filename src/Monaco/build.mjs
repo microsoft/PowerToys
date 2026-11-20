@@ -39,9 +39,10 @@ function listFiles(relPath) {
         return [relPath];
     }
 
-    return fs.readdirSync(full, { recursive: true, withFileTypes: true })
-        .filter((entry) => entry.isFile())
-        .map((entry) => path.relative(root, path.join(entry.parentPath, entry.name)));
+    // Walk directories by hand: readdirSync's recursive option needs Node 20.1 and Dirent.parentPath needs 20.12,
+    // but package.json accepts any Node 20.
+    return fs.readdirSync(full, { withFileTypes: true })
+        .flatMap((entry) => listFiles(path.join(relPath, entry.name)));
 }
 
 function hashInputs(inputs) {
