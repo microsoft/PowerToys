@@ -77,10 +77,28 @@ namespace Microsoft.Workspaces.UITests
 
             // UITestBase has already journaled the global settings before this pre-launch hook.
             var globalPath = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "settings.json");
-            var global = ReadObject(globalPath);
-            global["enable_quick_access"] = true;
-            global["run_elevated"] = false;
-            File.WriteAllText(globalPath, global.ToJsonString());
+            const int sharingViolation = unchecked((int)0x80070020);
+            const int maxAttempts = 20;
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    var global = ReadObject(globalPath);
+                    if (!JsonNode.DeepEquals(global["enable_quick_access"], true) || !JsonNode.DeepEquals(global["run_elevated"], false))
+                    {
+                        global["enable_quick_access"] = true;
+                        global["run_elevated"] = false;
+                        File.WriteAllText(globalPath, global.ToJsonString());
+                    }
+
+                    return;
+                }
+                catch (IOException error) when (error.HResult == sharingViolation && attempt < maxAttempts)
+                {
+                    // A settings reader can briefly deny writes. Read the current JSON again after it releases the file.
+                    Thread.Sleep(100);
+                }
+            }
         }
 
         internal void Reset()

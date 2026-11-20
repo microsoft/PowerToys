@@ -137,17 +137,58 @@ namespace Microsoft.Workspaces.UITests
         {
             Step("Navigating to Workspaces Settings.");
 
-            // Wait out any startup window replacement before driving the UI, so navigation runs against the
-            // window Settings actually settles on rather than the transient handle it was launched with.
-            _ = SettingsWindow();
+            const string pageControl = "WorkspacesLaunchEditorButtonControl";
+            const string workspaceItem = "WorkspacesNavItem";
+            const string groupItem = "WindowingAndLayoutsNavItem";
+            string? selectedWindow = null;
+            var ready = WaitHelper.WaitForStable(
+                () =>
+                {
+                    string window = SettingsWindow().ToInt64().ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    if (FindControl(window, pageControl, "Button") is not null)
+                    {
+                        return true;
+                    }
 
-            if (!SettingsUi.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
+                    if (window != selectedWindow)
+                    {
+                        if (FindControl(window, workspaceItem, "ListItem") is not null)
+                        {
+                            // Select by AutomationId within this HWND. The item's runtime slug can
+                            // change between search and activation while the navigation pane settles.
+                            WinappCli.InvokeAssertSuccess("ui", "invoke", workspaceItem, "-w", window, "--action", "select", "--json");
+                            selectedWindow = window;
+                        }
+                        else if (FindControl(window, groupItem, "ListItem") is { } group && UiString(group, "expandState") == "collapsed")
+                        {
+                            WinappCli.InvokeAssertSuccess("ui", "invoke", groupItem, "-w", window, "--action", "expand", "--json");
+                        }
+                    }
+
+                    return false;
+                },
+                arrived => arrived,
+                timeoutMS: 30_000,
+                pollIntervalMS: 250,
+                shouldRetryException: error => ShellMenu.IsTransientElementException(error) ||
+                    (error is AssertFailedException && error.Message.Contains("internal_error", StringComparison.OrdinalIgnoreCase) &&
+                     error.Message.Contains("Window HWND ", StringComparison.OrdinalIgnoreCase) &&
+                     error.Message.Contains("not found or not accessible", StringComparison.OrdinalIgnoreCase)));
+            Assert.IsTrue(ready.Succeeded, $"The Workspaces Settings page did not become ready. {ready.LastException?.Message}");
+
+            static JsonElement? FindControl(string window, string automationId, string controlType)
             {
-                SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
-            }
+                var hits = WinappCli.InvokeJson("ui", "search", automationId, "-w", window, "--type", controlType, "--json");
+                if (!hits.TryGetProperty("matches", out var matches))
+                {
+                    return null;
+                }
 
-            SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(SettingsUi.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+                return matches.EnumerateArray()
+                    .Where(hit => UiString(hit, "automationId") == automationId)
+                    .Select(hit => (JsonElement?)hit)
+                    .SingleOrDefault();
+            }
         }
 
         // Freshly resolve the current PowerToys.Settings main window for the few physical operations that

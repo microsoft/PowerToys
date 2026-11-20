@@ -52,10 +52,13 @@ namespace Microsoft.Workspaces.UITests
 
         private TextBlock[] WaitForSearchSuggestions(params string[] expected)
         {
-            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
+            var searchBox = Editor.Find<Element>(By.AccessibilityId("SearchTextBox"), 15_000);
             var expectedNames = expected.Order(StringComparer.Ordinal).ToArray();
+
+            // WinUI exposes the same popup under both PopupHost and its AutoSuggestBox.
+            // Inspect one subtree so each list item contributes its own name, including duplicates.
             var ready = WaitHelper.WaitForStable(
-                () => process.FindAll<TextBlock>(By.AccessibilityId("WorkspaceSearchSuggestionName"), 0)
+                () => FindDescendants<TextBlock>(searchBox, "Text", "WorkspaceSearchSuggestionName")
                     .Where(text => text.Displayed).OrderBy(text => text.Y).ToArray(),
                 suggestions => suggestions is not null && suggestions.All(text => text.Width > 0 && text.Height > 0) &&
                     suggestions.Select(text => text.Name).Order(StringComparer.Ordinal).SequenceEqual(expectedNames),
