@@ -355,7 +355,10 @@ jobs:
            "vcpkg"
         path: $(LOCALAPPDATA)\vcpkg\archives
 
-
+  - template: .\steps-setup-monaco-npm.yml
+    parameters:
+      official: ${{ parameters.official }}
+      enablePackageCaching: ${{ parameters.enablePackageCaching }}
 
   - ${{ parameters.beforeBuildSteps }}
 
@@ -384,6 +387,13 @@ jobs:
     ${{ if eq(parameters.enableMsBuildCaching, true) }}:
       env:
         SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+  # monaco_languages.json drives preview-handler registration; it must match the languages the bundle registers.
+  - pwsh: |-
+      node src/Monaco/tools/generate-languages.mjs --check
+      exit $LASTEXITCODE
+    displayName: Verify monaco_languages.json matches the Monaco language registrations
+    condition: and(succeeded(), eq(variables['BuildPlatform'], 'x64'))
 
   - task: VSBuild@1
     displayName: Generate DSC artifacts for ARM64

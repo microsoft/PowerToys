@@ -295,6 +295,10 @@ Describe 'Installer Smart Cabbing media' {
         [xml]$msiProject = Get-Content -LiteralPath "$installer\PowerToysSetupVNext\PowerToysInstallerVNext.wixproj"
         $nativeEvent = $nativeProject.SelectSingleNode('//*[local-name()="PreBuildEvent"]/*[local-name()="Command"]').InnerText
         $msiEvents = @($msiProject.Project.PropertyGroup | Where-Object { $_.PreBuildEvent } | ForEach-Object PreBuildEvent)
+        if ($msiEvents.Count -eq 0) {
+            # The MSI project has no pre-build step of its own; still exercise the native event.
+            $msiEvents = @('')
+        }
         $pipeline = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\steps-build-installer-vnext.yml') -Raw
         $supportStep = [regex]::Match($pipeline, '(?ms)^  - task: VSBuild@1\r?\n    displayName: Build Shared Support DLLs.*?(?=^  - |\z)').Value
         $pipelineFlag = [regex]::Match($supportStep, '(?m)^\s+IsPipeline:\s*[''"]?(\w+)').Groups[1].Value
@@ -317,7 +321,6 @@ Describe 'Installer Smart Cabbing media' {
                 $commands = $commands -replace '(?m)^.*call cmd /C "copy .*$', 'rem template backup'
                 $commands = $commands -replace '(?m)^.*call .*publish\.cmd.*$', "call `"$fixture\publish.cmd`""
                 $commands = $commands -replace '(?m)^.*call .*generateAllFileComponents\.ps1.*$', "call `"$fixture\harvest.cmd`""
-                $commands = $commands -replace '(?m)^.*call .*generateMonacoWxs\.ps1.*$', 'rem Monaco authoring'
                 $commands = $commands.Replace('$(CIBuild)', $case.CIBuild).Replace('$(Platform)', 'x64')
                 $commands = $commands.Replace('$(ProjectDir)', "$fixture\").Replace('$(SolutionDir)', "$fixture\")
                 Set-Content -LiteralPath "$fixture\events.cmd" -Value "@echo off`r`nset IsPipeline=$($case.IsPipeline)`r`n$commands"

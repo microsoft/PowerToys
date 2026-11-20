@@ -37,6 +37,7 @@ These instruction files are automatically applied when working in their respecti
 
 - [Runner & Settings UI](.github/instructions/runner-settings-ui.instructions.md) – IPC contracts, schema migrations
 - [Common Libraries](.github/instructions/common-libraries.instructions.md) – ABI stability, shared code guidelines
+- [Monaco Editor](.github/instructions/monaco.instructions.md) – npm bundle rules and upgrade steps
 
 ## Build
 
@@ -44,6 +45,7 @@ These instruction files are automatically applied when working in their respecti
 
 - Visual Studio 2022 17.4+ or Visual Studio 2026
 - Windows 10 1803+ (April 2018 Update or newer)
+- Node.js 20+ (LTS) on `PATH`, used by `src/Monaco.props` to build the Monaco editor bundle
 - Initialize submodules once: `git submodule update --init --recursive`
 
 ### Build commands

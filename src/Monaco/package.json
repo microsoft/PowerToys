@@ -1,0 +1,25 @@
+{
+  "name": "powertoys-monaco",
+  "private": true,
+  "description": "Builds the PowerToys Monaco editor bundle from a pinned monaco-editor npm package.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "gen:languages": "node tools/generate-languages.mjs",
+    "check:languages": "node tools/generate-languages.mjs --check"
+  },
+  "dependencies": {
+    "dompurify": "3.4.17",
+    "monaco-editor": "0.57.0"
+  },
+  "overrides": {
+    "dompurify": "$dompurify"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
