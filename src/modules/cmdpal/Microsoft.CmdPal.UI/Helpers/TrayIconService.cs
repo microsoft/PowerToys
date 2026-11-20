@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
@@ -30,19 +31,26 @@ internal sealed partial class TrayIconService : IDisposable
 
     private readonly ISettingsService _settingsService;
     private readonly uint WM_TASKBAR_RESTART;
+    private readonly string _whiteIconPath;
+    private readonly string _darkIconPath;
 
     private Window? _window;
     private HWND _hwnd;
     private WNDPROC? _originalWndProc;
     private WNDPROC? _trayWndProc;
     private NOTIFYICONDATAW? _trayIconData;
-    private DestroyIconSafeHandle? _largeIcon;
     private DestroyMenuSafeHandle? _popupMenu;
+    private nint _trayIconHandle;
+    private bool _themeAdaptiveEnabled;
+    private ThemeListener? _themeListener;
+    private bool _trayIconAdded;
     private TrayPaletteWindow? _trayPalette;
 
     public TrayIconService(ISettingsService settingsService)
     {
         _settingsService = settingsService;
+        _whiteIconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "iconWhite.ico");
+        _darkIconPath = Path.Combine(AppContext.BaseDirectory, "Assets", "iconDark.ico");
 
         // TaskbarCreated is the message that's broadcast when explorer.exe
         // restarts. We need to know when that happens to be able to bring our
@@ -54,27 +62,11 @@ internal sealed partial class TrayIconService : IDisposable
     {
         if (showSystemTrayIcon ?? _settingsService.Settings.ShowSystemTrayIcon)
         {
-            if (_window is null)
-            {
-                _window = new Window();
-                _hwnd = new HWND(WindowNative.GetWindowHandle(_window));
-
-                // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
-                // member (and instead like, use a local), then the pointer we marshal
-                // into the WindowLongPtr will be useless after we leave this function,
-                // and our **WindProc will explode**.
-                _trayWndProc = WindowProc;
-                var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
-                _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
-            }
+            EnsureTrayWindow();
+            SetThemeAdaptiveTrayIcon(_settingsService.Settings.ShowThemeAdaptiveTrayIcon);
 
             if (_trayIconData is null)
             {
-                // We need to stash this handle, so it doesn't clean itself up. If
-                // explorer restarts, we'll come back through here, and we don't
-                // really need to re-load the icon in that case. We can just use
-                // the handle from the first time.
-                _largeIcon = GetAppIconHandle();
                 _trayIconData = new NOTIFYICONDATAW()
                 {
                     cbSize = (uint)Marshal.SizeOf<NOTIFYICONDATAW>(),
@@ -82,15 +74,22 @@ internal sealed partial class TrayIconService : IDisposable
                     uID = MY_NOTIFY_ID,
                     uFlags = NOTIFY_ICON_DATA_FLAGS.NIF_MESSAGE | NOTIFY_ICON_DATA_FLAGS.NIF_ICON | NOTIFY_ICON_DATA_FLAGS.NIF_TIP,
                     uCallbackMessage = WM_TRAY_ICON,
-                    hIcon = (HICON)_largeIcon.DangerousGetHandle(),
+                    hIcon = (HICON)_trayIconHandle,
                     szTip = RS_.GetString("AppStoreName"),
                 };
+            }
+            else
+            {
+                UpdateTrayIconHandle();
             }
 
             var d = (NOTIFYICONDATAW)_trayIconData;
 
-            // Add the notification icon
-            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_ADD, in d);
+            // Add or update the notification icon
+            PInvoke.Shell_NotifyIcon(
+                _trayIconAdded ? NOTIFY_ICON_MESSAGE.NIM_MODIFY : NOTIFY_ICON_MESSAGE.NIM_ADD,
+                in d);
+            _trayIconAdded = true;
 
             if (_popupMenu is null)
             {
@@ -113,8 +112,11 @@ internal sealed partial class TrayIconService : IDisposable
         if (_trayIconData is not null)
         {
             var d = (NOTIFYICONDATAW)_trayIconData;
-            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d);
-            _trayIconData = null;
+            if (PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_DELETE, in d))
+            {
+                _trayIconData = null;
+                _trayIconAdded = false;
+            }
         }
 
         if (_popupMenu is not null)
@@ -123,11 +125,9 @@ internal sealed partial class TrayIconService : IDisposable
             _popupMenu = null;
         }
 
-        if (_largeIcon is not null)
-        {
-            _largeIcon.Close();
-            _largeIcon = null;
-        }
+        DisposeThemeListener();
+        ThemeAdaptiveTrayIconHelper.DestroyIconHandle(_trayIconHandle);
+        _trayIconHandle = 0;
 
         if (_window is not null)
         {
@@ -137,6 +137,7 @@ internal sealed partial class TrayIconService : IDisposable
         }
     }
 
+    private void EnsureTrayWindow()
     public void Dispose()
     {
         Destroy();
@@ -145,17 +146,101 @@ internal sealed partial class TrayIconService : IDisposable
 
     private DestroyIconSafeHandle GetAppIconHandle()
     {
-        var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
-
-        Span<HICON> large = new([default]); // 1 size array to accept icon
-        var extractedIconCount = PInvoke.ExtractIconEx(exePath, 0, large);
-        if ((extractedIconCount < 1) || (large[0] == HICON.Null))
+        if (_window is not null)
         {
-            return new DestroyIconSafeHandle(HICON.Null);
+            return;
         }
 
-        return new DestroyIconSafeHandle(large[0]);
+        _window = new Window();
+        _hwnd = new HWND(WindowNative.GetWindowHandle(_window));
+
+        // LOAD BEARING: If you don't stick the pointer to HotKeyPrc into a
+        // member (and instead like, use a local), then the pointer we marshal
+        // into the WindowLongPtr will be useless after we leave this function,
+        // and our **WindProc will explode**.
+        _trayWndProc = WindowProc;
+        var hotKeyPrcPointer = Marshal.GetFunctionPointerForDelegate(_trayWndProc);
+        _originalWndProc = Marshal.GetDelegateForFunctionPointer<WNDPROC>(PInvoke.SetWindowLongPtr(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_WNDPROC, hotKeyPrcPointer));
     }
+
+    private void SetThemeAdaptiveTrayIcon(bool themeAdaptive)
+    {
+        _themeAdaptiveEnabled = themeAdaptive;
+        ReloadTrayIconHandle();
+
+        if (themeAdaptive)
+        {
+            if (_themeListener == null)
+            {
+                _themeListener = new ThemeListener();
+                _themeListener.SystemThemeChanged += OnSystemThemeChanged;
+            }
+        }
+        else
+        {
+            DisposeThemeListener();
+        }
+    }
+
+    private void ReloadTrayIconHandle()
+    {
+        ThemeAdaptiveTrayIconHelper.DestroyIconHandle(_trayIconHandle);
+        _trayIconHandle = ThemeAdaptiveTrayIconHelper.LoadIconHandle(
+            _themeAdaptiveEnabled,
+            _whiteIconPath,
+            _darkIconPath,
+            ExtractAppIconHandle);
+    }
+
+    private void OnSystemThemeChanged(ThemeListener sender)
+    {
+        if (!_themeAdaptiveEnabled)
+        {
+            return;
+        }
+
+        ReloadTrayIconHandle();
+        UpdateTrayIconHandle();
+    }
+
+    private void DisposeThemeListener()
+    {
+        if (_themeListener == null)
+        {
+            return;
+        }
+
+        _themeListener.SystemThemeChanged -= OnSystemThemeChanged;
+        _themeListener.Dispose();
+        _themeListener = null;
+    }
+
+    private void UpdateTrayIconHandle()
+    {
+        if (_trayIconData is null || _trayIconHandle == 0)
+        {
+            return;
+        }
+
+        var d = (NOTIFYICONDATAW)_trayIconData;
+        d.hIcon = (HICON)_trayIconHandle;
+        _trayIconData = d;
+
+        if (_trayIconAdded)
+        {
+            PInvoke.Shell_NotifyIcon(NOTIFY_ICON_MESSAGE.NIM_MODIFY, in d);
+        }
+    }
+
+    private static nint ExtractAppIconHandle()
+    {
+        var exePath = Path.Combine(AppContext.BaseDirectory, "Microsoft.CmdPal.UI.exe");
+        _ = ExtractIconExNative(exePath, 0, out var largeIcon, out _, 1);
+        return largeIcon;
+    }
+
+    [LibraryImport("shell32.dll", EntryPoint = "ExtractIconExW", StringMarshalling = StringMarshalling.Utf16)]
+    private static partial uint ExtractIconExNative(string lpszFile, int nIconIndex, out nint phiconLarge, out nint phiconSmall, uint nIcons);
 
     private LRESULT WindowProc(
         HWND hwnd,

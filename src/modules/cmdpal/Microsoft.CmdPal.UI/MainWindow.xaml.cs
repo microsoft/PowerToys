@@ -628,6 +628,7 @@ public sealed partial class MainWindow : WindowEx,
             return x.UseLowLevelGlobalHotkey == y.UseLowLevelGlobalHotkey
                 && x.UseWindowsKey == y.UseWindowsKey
                 && x.ShowSystemTrayIcon == y.ShowSystemTrayIcon
+                && x.ShowThemeAdaptiveTrayIcon == y.ShowThemeAdaptiveTrayIcon
                 && x.IgnoreShortcutWhenFullscreen == y.IgnoreShortcutWhenFullscreen
                 && x.IgnoreShortcutWhenBusy == y.IgnoreShortcutWhenBusy
                 && x.AllowBreakthroughShortcut == y.AllowBreakthroughShortcut
@@ -671,6 +672,7 @@ public sealed partial class MainWindow : WindowEx,
             hash.Add(obj.UseLowLevelGlobalHotkey);
             hash.Add(obj.UseWindowsKey);
             hash.Add(obj.ShowSystemTrayIcon);
+            hash.Add(obj.ShowThemeAdaptiveTrayIcon);
             hash.Add(obj.IgnoreShortcutWhenFullscreen);
             hash.Add(obj.IgnoreShortcutWhenBusy);
             hash.Add(obj.AllowBreakthroughShortcut);
