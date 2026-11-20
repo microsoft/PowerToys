@@ -8,12 +8,14 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Foundation;
 using Windows.Foundation.Metadata;
+using Windows.Graphics.Imaging;
 using Windows.UI.Palettes;
 
 namespace Microsoft.CmdPal.Ext.WindowsPalettes.UnitTests;
@@ -21,6 +23,70 @@ namespace Microsoft.CmdPal.Ext.WindowsPalettes.UnitTests;
 [TestClass]
 public sealed partial class WindowsPalettesProviderTests
 {
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task BitmapPaddingIsTrimmedForProviderIconsOnly(bool providerIcon)
+    {
+        var pixels = new byte[12 * 10 * 4];
+        for (var y = 1; y < 6; y++)
+        {
+            for (var x = 7; x < 10; x++)
+            {
+                var offset = ((y * 12) + x) * 4;
+                pixels[offset] = 50;
+                pixels[offset + 3] = 255;
+            }
+        }
+
+        using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(pixels.AsBuffer(), BitmapPixelFormat.Bgra8, 12, 10, BitmapAlphaMode.Premultiplied);
+        var icon = PaletteIconData.FromBitmap(bitmap);
+        var result = providerIcon
+            ? WupSourceDescriptor.Create(new TestDefinition("source") { Icon = icon }).Icon
+            : WupIconAdapter.Create(icon);
+        Assert.IsNotNull(result.Light.Data);
+        using var stream = await result.Light.Data.OpenReadAsync();
+        var decoder = await BitmapDecoder.CreateAsync(stream);
+        Assert.AreEqual(providerIcon ? 3u : 12u, decoder.PixelWidth);
+        Assert.AreEqual(providerIcon ? 5u : 10u, decoder.PixelHeight);
+        using var decoded = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
+        var actual = new byte[decoded.PixelWidth * decoded.PixelHeight * 4];
+        decoded.CopyToBuffer(actual.AsBuffer());
+
+        if (providerIcon)
+        {
+            for (var index = 0; index < actual.Length; index += 4)
+            {
+                Assert.AreEqual((byte)50, actual[index]);
+                Assert.AreEqual((byte)255, actual[index + 3]);
+            }
+        }
+        else
+        {
+            CollectionAssert.AreEqual(pixels, actual);
+        }
+    }
+
+    [TestMethod]
+    [DataRow((byte)0)]
+    [DataRow((byte)1)]
+    public async Task TransparentOrUnpaddedBitmapRetainsItsDimensions(byte alpha)
+    {
+        var pixels = new byte[4 * 3 * 4];
+        for (var index = 3; index < pixels.Length; index += 4)
+        {
+            pixels[index] = alpha;
+        }
+
+        using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(pixels.AsBuffer(), BitmapPixelFormat.Bgra8, 4, 3, BitmapAlphaMode.Premultiplied);
+        var result = WupIconAdapter.Create(PaletteIconData.FromBitmap(bitmap), trimTransparentPadding: true);
+        Assert.IsNotNull(result.Light.Data);
+        using var stream = await result.Light.Data.OpenReadAsync();
+        var decoder = await BitmapDecoder.CreateAsync(stream);
+        Assert.AreEqual(4u, decoder.PixelWidth);
+        Assert.AreEqual(3u, decoder.PixelHeight);
+    }
+
     [TestMethod]
     [TestCategory("WindowsPalettesIntegration")]
     public void NativeCatalogDefinitionsPopulateThePalettesPage()
@@ -42,7 +108,8 @@ public sealed partial class WindowsPalettesProviderTests
         var sources = page.GetSourcesSnapshot();
         Assert.HasCount(definitions.Length, sources);
         Assert.IsTrue(page.GetItems().All(item =>
-            item.Command is WupSourcePage source && source.Definition.Kinds.IsOfKind("QueryResult.*")));
+            item is ISeparatorContextItem ||
+            (item.Command is WupSourcePage source && source.Definition.Kinds.IsOfKind("QueryResult.*"))));
         for (var index = 0; index < definitions.Length; index++)
         {
             Assert.AreEqual(definitions[index].ExtensionId, sources[index].Definition.ExtensionId);
@@ -303,12 +370,16 @@ public sealed partial class WindowsPalettesProviderTests
 
         var items = page.GetItems();
 
-        Assert.HasCount(2, items);
-        Assert.AreEqual("first", items[0].Title);
+        Assert.HasCount(3, items);
+        Assert.IsInstanceOfType<ISeparatorContextItem>(items[0]);
         Assert.AreEqual("Installed palettes", items[0].Section);
-        Assert.IsInstanceOfType<WupSourcePage>(items[0].Command);
-        Assert.AreEqual("second", items[1].Title);
-        Assert.AreEqual("Installed palettes", items[1].Section);
+        Assert.IsNull(items[0].Command);
+        Assert.AreEqual("first", items[1].Title);
+        Assert.IsInstanceOfType<WupSourcePage>(items[1].Command);
+        Assert.AreEqual(string.Empty, items[1].Section);
+        Assert.AreEqual("second", items[2].Title);
+        Assert.IsInstanceOfType<WupSourcePage>(items[2].Command);
+        Assert.AreEqual(string.Empty, items[2].Section);
     }
 
     [TestMethod]
@@ -340,8 +411,8 @@ public sealed partial class WindowsPalettesProviderTests
         page.UpdateSources(new IPaletteExtensionDefinition[] { definition });
 
         Assert.HasCount(1, page.GetSourcesSnapshot(), "Zero-state sources must remain available for aggregate results.");
-        Assert.HasCount(expectedLink ? 1 : 0, page.GetItems());
-        Assert.AreEqual(expectedLink ? 1 : 0, itemCount);
+        Assert.HasCount(expectedLink ? 2 : 0, page.GetItems());
+        Assert.AreEqual(expectedLink ? 2 : 0, itemCount);
     }
 
     [TestMethod]
@@ -354,7 +425,7 @@ public sealed partial class WindowsPalettesProviderTests
             new TestDefinition("source") { Kinds = new PaletteKinds(["ZeroState.*", "QueryResult.*"]) },
         });
 
-        Assert.HasCount(1, page.GetItems());
+        Assert.HasCount(2, page.GetItems());
     }
 
     [TestMethod]
@@ -382,10 +453,11 @@ public sealed partial class WindowsPalettesProviderTests
             source.ExecuteSearchAsync("query"));
 
         Assert.IsTrue(source.IsAccessDenied);
-        Assert.AreEqual(1, itemCount);
+        Assert.AreEqual(2, itemCount);
         var items = page.GetItems();
-        Assert.HasCount(1, items);
-        Assert.AreEqual("available", items[0].Title);
+        Assert.HasCount(2, items);
+        Assert.AreEqual("Installed palettes", items[0].Section);
+        Assert.AreEqual("available", items[1].Title);
 
         var refreshed = new TestDefinition("denied");
         page.UpdateSources(new IPaletteExtensionDefinition[] { refreshed, available });
@@ -393,7 +465,7 @@ public sealed partial class WindowsPalettesProviderTests
         RehydrateMissingItem(source, denied);
 
         Assert.AreSame(source, page.GetSourcesSnapshot()[0]);
-        Assert.HasCount(1, page.GetItems());
+        Assert.HasCount(2, page.GetItems());
         Assert.AreEqual(1, denied.CreationCount);
         Assert.AreEqual(0, refreshed.CreationCount);
     }
@@ -432,6 +504,73 @@ public sealed partial class WindowsPalettesProviderTests
     }
 
     [TestMethod]
+    [DataRow("availability")]
+    [DataRow("zero-state")]
+    [DataRow("query")]
+    [DataRow("rehydration")]
+    public async Task NullActivationIsReportedWithoutDereferencingOrPublishingTheExtension(string path)
+    {
+        var definition = new TestDefinition("null-source")
+        {
+            ReturnNullExtension = true,
+            Kinds = new PaletteKinds(["ZeroState.*", "QueryResult.*"]),
+        };
+        using var source = new WupSourcePage(definition);
+        using var writer = new StringWriter();
+        using var listener = new TextWriterTraceListener(writer);
+        Trace.Listeners.Add(listener);
+        try
+        {
+            if (path == "rehydration")
+            {
+                RehydrateMissingItem(source, definition);
+            }
+            else
+            {
+                await source.ExecuteSearchAsync(
+                    path == "query" ? "query" : string.Empty,
+                    checkAvailability: path == "availability");
+            }
+
+            listener.Flush();
+            var diagnostics = writer.ToString();
+            StringAssert.Contains(diagnostics, "activation returned no extension");
+            Assert.IsFalse(diagnostics.Contains("NullReferenceException", StringComparison.Ordinal));
+            Assert.IsFalse(diagnostics.Contains("ItemsChanged subscription failed", StringComparison.Ordinal));
+            Assert.IsFalse(diagnostics.Contains($"Activated source '{source.Id}'", StringComparison.Ordinal));
+            Assert.AreEqual(1, definition.CreationCount);
+            Assert.HasCount(0, source.GetItems());
+            Assert.IsFalse(source.IsLoading);
+            Assert.IsFalse(source.IsAccessDenied);
+            Assert.AreEqual(0, definition.Source.SubscriptionCount);
+        }
+        finally
+        {
+            Trace.Listeners.Remove(listener);
+        }
+    }
+
+    [TestMethod]
+    public async Task NullActivationCanRecoverWithoutAffectingOtherSources()
+    {
+        using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), new TestSettings());
+        var unavailable = new TestDefinition("unavailable") { ReturnNullExtension = true };
+        var available = new TestDefinition("available");
+        page.UpdateSources(new IPaletteExtensionDefinition[] { unavailable, available });
+        var sources = page.GetSourcesSnapshot();
+
+        await Task.WhenAll(sources.Select(source => source.ExecuteSearchAsync(string.Empty, checkAvailability: true)));
+
+        Assert.AreEqual(1, available.Source.SubscriptionCount);
+        Assert.IsTrue(sources.All(source => !source.IsLoading));
+        var refreshed = new TestDefinition("unavailable");
+        page.UpdateSources(new IPaletteExtensionDefinition[] { refreshed, available });
+        await sources[0].ExecuteSearchAsync(string.Empty, checkAvailability: true);
+        Assert.AreSame(sources[0], page.GetSourcesSnapshot()[0]);
+        Assert.AreEqual(1, refreshed.Source.SubscriptionCount);
+    }
+
+    [TestMethod]
     public async Task OtherActivationFailuresDoNotHideTheSourceOrPreventRetry()
     {
         var settings = new TestSettings { ShowInstalledPalettes = true };
@@ -447,7 +586,7 @@ public sealed partial class WindowsPalettesProviderTests
         page.UpdateSources(new IPaletteExtensionDefinition[] { refreshed });
         await source.ExecuteSearchAsync(string.Empty, checkAvailability: true);
 
-        Assert.HasCount(1, page.GetItems());
+        Assert.HasCount(2, page.GetItems());
         Assert.AreEqual(1, refreshed.CreationCount);
         Assert.IsFalse(source.IsAccessDenied);
     }
@@ -465,7 +604,7 @@ public sealed partial class WindowsPalettesProviderTests
         await source.ExecuteSearchAsync("query");
 
         Assert.IsFalse(source.IsAccessDenied);
-        Assert.HasCount(1, page.GetItems());
+        Assert.HasCount(2, page.GetItems());
     }
 
     [TestMethod]
@@ -488,7 +627,7 @@ public sealed partial class WindowsPalettesProviderTests
         settings.ShowInstalledPalettes = true;
         settings.RaiseSettingsChanged();
 
-        Assert.HasCount(1, page.GetItems());
+        Assert.HasCount(2, page.GetItems());
     }
 
     [TestMethod]
@@ -534,13 +673,15 @@ public sealed partial class WindowsPalettesProviderTests
 
         public string DisplayName { get; init; } = extensionId;
 
-        public PaletteIconData Icon => null!;
+        public PaletteIconData Icon { get; init; }
 
         public TestSource Source { get; } = new();
 
         public int CreationCount { get; private set; }
 
         public Exception ActivationException { get; init; }
+
+        public bool ReturnNullExtension { get; init; }
 
         public PaletteExtensionHost Host { get; private set; } = null!;
 
@@ -567,7 +708,7 @@ public sealed partial class WindowsPalettesProviderTests
             }
 
             Host = host;
-            return Source;
+            return ReturnNullExtension ? null! : Source;
         }
     }
 

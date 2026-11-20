@@ -74,6 +74,8 @@ The Start menu specification includes sources such as Windows Settings.
 The **Show installed palettes** setting is enabled by default.
 With an empty search, the **Installed palettes** section links to sources that declare `QueryResult.*` support.
 Each link opens a searchable page for that source.
+The toolkit `Section` supplies a non-interactive header before the links.
+The section has no header when it contains no links.
 Zero-state-only sources do not appear in this section.
 With search text, the page shows merged results instead of these links.
 With the setting disabled, an empty search shows only the merged zero-state items.
@@ -86,6 +88,10 @@ The bridge skips further searches and activation attempts for that source.
 Catalog refreshes retain the denial for an existing source.
 A restart or removal and rediscovery of the source permits another activation attempt.
 Empty results, query failures, and other activation errors do not hide a source.
+
+If `CreateExtension()` returns null, the bridge logs the activation failure without subscribing to events or reporting successful activation.
+That source returns no items for the current request and can retry activation on a later request.
+Other sources continue independently.
 
 **Gap:** The bridge does not use `ContainedKinds` or `AcceptedKindSpecs` to select sources for normal searches.
 It does not use `PaletteCatalog.Parse` to resolve entities.
@@ -304,6 +310,10 @@ The [icon adapter][icons] uses the first available representation in this order:
 | `ImageStreamReference` | `IconData` with the stream reference. |
 | `SoftwareBitmap` | Encode PNG and expose a stream reference. |
 | No usable representation | Empty `IconInfo`. |
+
+For provider bitmaps, the bridge removes fully transparent outer rows and columns before PNG encoding.
+This removes tile padding without reducing the artwork resolution.
+Result icons retain their original bounds.
 
 **Gaps:**
 

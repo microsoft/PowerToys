@@ -35,6 +35,6 @@ internal sealed record WupSourceDescriptor(string Id, string DisplayName, IconIn
             icon = null;
         }
 
-        return new(id, string.IsNullOrWhiteSpace(displayName) ? extensionId : displayName, WupIconAdapter.Create(icon));
+        return new(id, string.IsNullOrWhiteSpace(displayName) ? extensionId : displayName, WupIconAdapter.Create(icon, trimTransparentPadding: true));
     }
 }

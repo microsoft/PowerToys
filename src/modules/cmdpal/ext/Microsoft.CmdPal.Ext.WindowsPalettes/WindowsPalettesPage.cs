@@ -269,7 +269,7 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
     {
         var (sources, searchText) = GetStateSnapshot();
         return ShouldShowInstalledPalettes(searchText)
-            ? sources.Count(IsQueryable)
+            ? CreateInstalledPaletteItems(sources).Length
             : WupResultMerger.Merge(sources).Length;
     }
 
@@ -347,13 +347,14 @@ internal sealed partial class WindowsPalettesPage : DynamicListPage, IDisposable
         string.IsNullOrEmpty(searchText) && _settings.ShowInstalledPalettes;
 
     private static IListItem[] CreateInstalledPaletteItems(IReadOnlyList<WupSourcePage> sources) =>
-        sources.Where(IsQueryable).Select(
-            source => new ListItem(source)
-            {
-                Title = source.Title,
-                Icon = source.Icon,
-                Section = Resources.InstalledPalettesSection,
-            }).ToArray();
+        new Section(
+            Resources.InstalledPalettesSection,
+            sources.Where(IsQueryable).Select(
+                source => new ListItem(source)
+                {
+                    Title = source.Title,
+                    Icon = source.Icon,
+                }).ToArray()).Items;
 
     private static bool IsQueryable(WupSourcePage source) =>
         !source.IsAccessDenied && source.Definition.Kinds.IsOfKind("QueryResult.*");

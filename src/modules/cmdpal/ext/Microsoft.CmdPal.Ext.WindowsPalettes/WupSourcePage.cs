@@ -206,9 +206,10 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
 
         try
         {
-            if (checkAvailability)
+            if (checkAvailability && await GetExtensionAsync(cancellationToken).ConfigureAwait(false) is null)
             {
-                await GetExtensionAsync(cancellationToken).ConfigureAwait(false);
+                PublishFinal([], null, null, generation, cancellationToken);
+                return;
             }
 
             var definition = Definition;
@@ -221,6 +222,12 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
                 }
 
                 var extension = await GetExtensionAsync(cancellationToken).ConfigureAwait(false);
+                if (extension is null)
+                {
+                    PublishFinal([], null, null, generation, cancellationToken);
+                    return;
+                }
+
                 var items = await Task.Run(extension.GetItems, cancellationToken).ConfigureAwait(false) ?? [];
                 WupDiagnostics.Write($"Source '{Id}' returned {items.Length} zero-state items.");
                 PublishFinal(items, extension, null, generation, cancellationToken);
@@ -235,6 +242,12 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
             }
 
             var source = await GetExtensionAsync(cancellationToken).ConfigureAwait(false);
+            if (source is null)
+            {
+                PublishFinal([], null, null, generation, cancellationToken);
+                return;
+            }
+
             var query = fixedQuery ?? CreateQuery(searchText!);
             var operation = source.ExecuteQueryAsync(query);
             // CsWinRT projects empty WinRT arrays as null (microsoft/CsWinRT#2088), so treat null Items as empty.
@@ -259,7 +272,7 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
         }
     }
 
-    private async Task<IPaletteItemSourceExtension> GetExtensionAsync(CancellationToken cancellationToken)
+    private async Task<IPaletteItemSourceExtension?> GetExtensionAsync(CancellationToken cancellationToken)
     {
         var extension = Volatile.Read(ref _extension);
         if (extension is not null)
@@ -299,6 +312,12 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
             finally
             {
                 Marshal.Release(hostPointer);
+            }
+
+            if (extension is null)
+            {
+                WupDiagnostics.Write($"Source '{Id}' activation returned no extension.");
+                return null;
             }
 
             try
@@ -445,6 +464,11 @@ internal sealed partial class WupSourcePage : DynamicListPage, IDisposable
             }
 
             var source = activation.Result;
+            if (source is null)
+            {
+                return null;
+            }
+
             var item = Task.Run(() => source.GetItem(itemId)).WaitAsync(RehydrationTimeout).GetAwaiter().GetResult();
             if (item is null)
             {
