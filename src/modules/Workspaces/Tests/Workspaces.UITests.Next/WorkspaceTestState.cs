@@ -23,7 +23,6 @@ namespace Microsoft.Workspaces.UITests
             Preserve(SettingsPath);
             Preserve(WorkspacesPath);
             Preserve(TemporaryPath);
-            Preserve(WindowPlacementPath);
         }
 
         internal static string DirectoryPath => Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "Workspaces");
@@ -72,6 +71,7 @@ namespace Microsoft.Workspaces.UITests
                   }
                 }
                 """;
+            Preserve(WindowPlacementPath);
             Directory.CreateDirectory(DirectoryPath);
             File.WriteAllText(SettingsPath, Settings);
 

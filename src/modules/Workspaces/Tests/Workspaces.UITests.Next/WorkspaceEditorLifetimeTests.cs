@@ -20,7 +20,12 @@ public sealed partial class WorkspacesTests
             var firstWindow = new IntPtr(Editor.WindowHandle);
             WindowHelper.MinimizeWindow(firstWindow);
             Assert.IsTrue(NativeMethods.IsIconic(firstWindow), "The editor did not minimize before reactivation.");
-            RequestEditorFromSettings();
+            SettingsUi.EnsureForeground();
+            Assert.IsTrue(WindowControl.WaitForForeground(SettingsWindow(), 10_000), "Settings did not receive focus before reactivation.");
+            var launchCard = SettingsUi.Find<Button>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
+            launchCard.Focus();
+            Assert.IsTrue(launchCard.WaitForProperty("HasKeyboardFocus", "True"), "The Settings launch card did not receive keyboard focus.");
+            KeyboardHelper.SendKeys(Key.Enter);
             Assert.IsTrue(
                 WaitHelper.WaitForStable(
                     WindowControl.GetForegroundWindowHandle,

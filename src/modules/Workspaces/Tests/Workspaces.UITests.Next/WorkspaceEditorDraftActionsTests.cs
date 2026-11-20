@@ -14,8 +14,7 @@ public sealed partial class WorkspacesTests
     {
         var project = SeedOneWorkspace();
         var name = WorkspaceTestState.Text(project, "name");
-        OpenEditor();
-        Editor.Find<Button>(By.Name(name), 15_000).Invoke(msPostAction: 0);
+        OpenDraftFromCard(name);
 
         var field = Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000);
         var launch = Editor.Find<Button>(By.AccessibilityId("LaunchEditButton"));
@@ -34,8 +33,7 @@ public sealed partial class WorkspacesTests
         var project = State.Project("repair-layout", app);
         State.WriteProjects(project);
         var stored = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
-        OpenEditor();
-        Editor.Find<Button>(By.Name(WorkspaceTestState.Text(project, "name")), 15_000).Invoke(msPostAction: 0);
+        OpenDraftFromCard(WorkspaceTestState.Text(project, "name"));
 
         var repair = Editor.Find<Button>(By.AccessibilityId("RecaptureCurrentLayoutButton"), 15_000);
         Assert.IsFalse(Editor.Find<Button>(By.AccessibilityId("LaunchEditButton")).IsEnabled);
@@ -44,5 +42,16 @@ public sealed partial class WorkspacesTests
         repair.Invoke(msPostAction: 0);
         _ = WaitForCaptureWindow();
         CollectionAssert.AreEqual(stored, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Starting a repair must preserve the saved layout.");
+    }
+
+    private void OpenDraftFromCard(string name)
+    {
+        OpenEditor();
+        Editor.EnsureForeground();
+        var card = Editor.Find<Button>(By.Name(name), 15_000);
+        card.Focus();
+        Assert.IsTrue(card.WaitForProperty("HasKeyboardFocus", "True"), "The workspace card did not receive keyboard focus.");
+        KeyboardHelper.SendKeys(Key.Enter);
+        Assert.IsTrue(Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000), "The selected workspace did not open for editing.");
     }
 }
