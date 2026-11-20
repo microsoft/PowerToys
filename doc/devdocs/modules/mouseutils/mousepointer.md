@@ -70,13 +70,7 @@ The activation process works as follows:
        m_hiddenCursor = false;
        if (m_crosshairs_auto_hide)
        {
-           CURSORINFO cursorInfo{};
-           cursorInfo.cbSize = sizeof(cursorInfo);
-           if (GetCursorInfo(&cursorInfo))
-           {
-               m_hiddenCursor = !(cursorInfo.flags & CURSOR_SHOWING);
-           }
-
+           UpdateCursorVisibility();
            SetAutoHideTimer();
        }
 
@@ -102,7 +96,18 @@ The activation process works as follows:
 While active, the utility:
 1. Uses a low-level mouse hook (`WH_MOUSE_LL`) to track cursor movement
 2. Updates crosshair positions in real-time as the mouse moves
-3. Supports auto-hiding functionality when the cursor is inactive for a specified period
+3. When auto-hide is enabled, checks cursor visibility once per second. In addition to
+   `CURSOR_SHOWING`, `CursorVisibility.h` checks monochrome AND/XOR masks so that fully transparent
+   system cursors installed by Auto Hide Cursor also hide the crosshairs. Ordinary color cursors
+   remain visible; a failed image query leaves the current crosshairs state unchanged and logs one
+   warning until querying succeeds again.
+
+Auto Hide Cursor's worker also samples `GetCursorPos` on its existing 100 ms timer. This restores
+the pointer and resets the idle deadline when low-level mouse-hook callbacks are unavailable,
+including over elevated applications while PowerToys runs at medium integrity. The same two-pixel
+movement threshold applies to both hook and timer observations. If the cursor position cannot be
+read (for example, on a secure desktop), the worker restores the cursor rather than leaving the
+global system cursor images transparent.
 
 ## Debugging
 
