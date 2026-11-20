@@ -18,31 +18,13 @@ namespace FancyZonesEditorCommon.Utils
         private static TWrapper ReadData<TData, TWrapper>(
             Func<TData> createInstance,
             Func<TData, string> fileSelector,
-            Func<TData, string, TWrapper> readFunc,
-            Func<TWrapper> createDefault = null)
+            Func<TData, string, TWrapper> readFunc)
         {
             var instance = createInstance();
             string filePath = fileSelector(instance);
 
             if (!File.Exists(filePath))
             {
-                if (createDefault != null)
-                {
-                    // Only missing files are optional; access and other I/O errors must still surface.
-                    try
-                    {
-                        _ = File.GetAttributes(filePath);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        return createDefault();
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        return createDefault();
-                    }
-                }
-
                 throw new FileNotFoundException($"File not found: {Path.GetFileName(filePath)}", filePath);
             }
 
@@ -86,13 +68,12 @@ namespace FancyZonesEditorCommon.Utils
             return ReadCustomLayouts(FancyZonesPaths.CustomLayouts);
         }
 
-        internal static CustomLayouts.CustomLayoutListWrapper ReadCustomLayouts(string filePath)
+        internal static CustomLayouts.CustomLayoutListWrapper ReadCustomLayouts(string filePath, IOUtils ioUtils = null)
         {
-            return ReadData(
-                () => new CustomLayouts(),
-                _ => filePath,
-                (instance, file) => instance.Read(file),
-                () => new CustomLayouts.CustomLayoutListWrapper { CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>() });
+            return new CustomLayouts().ReadOrDefault(
+                filePath,
+                () => new CustomLayouts.CustomLayoutListWrapper { CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>() },
+                ioUtils);
         }
 
         public static void WriteCustomLayouts(CustomLayouts.CustomLayoutListWrapper data)
@@ -110,13 +91,9 @@ namespace FancyZonesEditorCommon.Utils
             return ReadLayoutTemplates(FancyZonesPaths.LayoutTemplates);
         }
 
-        internal static LayoutTemplates.TemplateLayoutsListWrapper ReadLayoutTemplates(string filePath)
+        internal static LayoutTemplates.TemplateLayoutsListWrapper ReadLayoutTemplates(string filePath, IOUtils ioUtils = null)
         {
-            return ReadData(
-                () => new LayoutTemplates(),
-                _ => filePath,
-                (instance, file) => instance.Read(file),
-                CreateDefaultLayoutTemplates);
+            return new LayoutTemplates().ReadOrDefault(filePath, CreateDefaultLayoutTemplates, ioUtils);
         }
 
         private static LayoutTemplates.TemplateLayoutsListWrapper CreateDefaultLayoutTemplates()

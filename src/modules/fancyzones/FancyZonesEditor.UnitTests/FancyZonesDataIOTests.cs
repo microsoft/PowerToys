@@ -3,8 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO;
+using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Text.Json;
+using FancyZonesEditor;
 using FancyZonesEditor.Models;
+using FancyZonesEditor.Utils;
 using FancyZonesEditorCommon.Data;
 using FancyZonesEditorCommon.Utils;
 
@@ -82,21 +86,13 @@ public class FancyZonesDataIOTests
     {
         string missingDirectory = Path.Combine(_directory, "missing");
         var templates = FancyZonesDataIO.ReadLayoutTemplates(Path.Combine(missingDirectory, "layout-templates.json")).LayoutTemplates;
-        LayoutModel[] editorTemplates =
-        [
-            new CanvasLayoutModel("blank", LayoutType.Blank) { TemplateZoneCount = 0, SensitivityRadius = 0 },
-            new CanvasLayoutModel("focus", LayoutType.Focus),
-            new GridLayoutModel("columns", LayoutType.Columns),
-            new GridLayoutModel("rows", LayoutType.Rows),
-            new GridLayoutModel("grid", LayoutType.Grid),
-            new GridLayoutModel("priority-grid", LayoutType.PriorityGrid),
-        ];
+        var editorTemplates = MainWindowSettingsModel.CreateDefaultTemplateModels();
 
         Assert.AreEqual(editorTemplates.Length, templates.Count);
         for (int i = 0; i < editorTemplates.Length; i++)
         {
             var model = editorTemplates[i];
-            Assert.AreEqual(model.Name, templates[i].Type);
+            Assert.AreEqual(FancyZonesEditorIO.LayoutTypeToJsonTag(model.Type), templates[i].Type);
             Assert.AreEqual(model.TemplateZoneCount, templates[i].ZoneCount);
             Assert.AreEqual(model.SensitivityRadius, templates[i].SensitivityRadius);
             Assert.AreEqual(model is GridLayoutModel grid && grid.ShowSpacing, templates[i].ShowSpacing);
@@ -133,7 +129,134 @@ public class FancyZonesDataIOTests
     [TestMethod]
     public void DirectoryAtLayoutFilePathStillReportsError()
     {
-        Assert.ThrowsExactly<FileNotFoundException>(() => FancyZonesDataIO.ReadLayoutTemplates(_directory));
-        Assert.ThrowsExactly<FileNotFoundException>(() => FancyZonesDataIO.ReadCustomLayouts(_directory));
+        Assert.ThrowsExactly<UnauthorizedAccessException>(() => FancyZonesDataIO.ReadLayoutTemplates(_directory));
+        Assert.ThrowsExactly<UnauthorizedAccessException>(() => FancyZonesDataIO.ReadCustomLayouts(_directory));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void FileInParentPathStillReportsError(bool nested)
+    {
+        string parentFile = Path.Combine(_directory, "not-a-directory");
+        File.WriteAllText(parentFile, "existing file");
+        string path = nested ? Path.Combine(parentFile, "child", "layouts.json") : Path.Combine(parentFile, "layouts.json");
+
+        Assert.ThrowsExactly<DirectoryNotFoundException>(() => FancyZonesDataIO.ReadLayoutTemplates(path));
+        Assert.ThrowsExactly<DirectoryNotFoundException>(() => FancyZonesDataIO.ReadCustomLayouts(path));
+        Assert.AreEqual("existing file", File.ReadAllText(parentFile));
+    }
+
+    [TestMethod]
+    [DataRow(false, 0)]
+    [DataRow(true, 0)]
+    [DataRow(false, 2)]
+    [DataRow(true, 2)]
+    public void OptionalReadersOpenNewFilesAndRetrySharingViolations(bool customLayouts, int sharingViolations)
+    {
+        const string contents = """
+            {"layout-templates":[{"type":"grid","zone-count":7}],"custom-layouts":[{"name":"Created at open"}]}
+            """;
+        string path = Path.Combine(_directory, "created-at-open.json");
+        var fileSystem = new OpeningFileSystem(path, contents, sharingViolations);
+        var ioUtils = new IOUtils(fileSystem);
+
+        if (customLayouts)
+        {
+            var layouts = FancyZonesDataIO.ReadCustomLayouts(path, ioUtils).CustomLayouts;
+            Assert.HasCount(1, layouts);
+            Assert.AreEqual("Created at open", layouts[0].Name);
+        }
+        else
+        {
+            var layouts = FancyZonesDataIO.ReadLayoutTemplates(path, ioUtils).LayoutTemplates;
+            Assert.HasCount(1, layouts);
+            Assert.AreEqual(7, layouts[0].ZoneCount);
+        }
+
+        Assert.AreEqual(0, fileSystem.ExistenceChecksBeforeOpen);
+        Assert.AreEqual(sharingViolations + 1, fileSystem.OpenAttempts);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void OptionalReadersReportSharingViolationsAfterRetryLimit(bool customLayouts)
+    {
+        string path = Path.Combine(_directory, "locked.json");
+        var fileSystem = new OpeningFileSystem(path, "{}", sharingViolations: 10);
+        var ioUtils = new IOUtils(fileSystem);
+
+        Assert.ThrowsExactly<IOException>(() =>
+        {
+            if (customLayouts)
+            {
+                FancyZonesDataIO.ReadCustomLayouts(path, ioUtils);
+            }
+            else
+            {
+                FancyZonesDataIO.ReadLayoutTemplates(path, ioUtils);
+            }
+        });
+        Assert.AreEqual(10, fileSystem.OpenAttempts);
+    }
+
+    private sealed class OpeningFileSystem : MockFileSystem
+    {
+        private readonly OpeningFile? _file;
+
+        public OpeningFileSystem(string path, string contents, int sharingViolations)
+        {
+            _file = new OpeningFile(this, path, contents, sharingViolations);
+        }
+
+        public override IFile File => _file ?? base.File;
+
+        public int OpenAttempts => _file!.OpenAttempts;
+
+        public int ExistenceChecksBeforeOpen => _file!.ExistenceChecksBeforeOpen;
+    }
+
+    private sealed class OpeningFile : MockFile
+    {
+        private readonly MockFileSystem _fileSystem;
+        private readonly string _path;
+        private readonly string _contents;
+        private readonly int _sharingViolations;
+
+        public OpeningFile(MockFileSystem fileSystem, string path, string contents, int sharingViolations)
+            : base(fileSystem)
+        {
+            _fileSystem = fileSystem;
+            _path = path;
+            _contents = contents;
+            _sharingViolations = sharingViolations;
+        }
+
+        public int OpenAttempts { get; private set; }
+
+        public int ExistenceChecksBeforeOpen { get; private set; }
+
+        public override bool Exists(string? path)
+        {
+            if (OpenAttempts == 0)
+            {
+                ExistenceChecksBeforeOpen++;
+            }
+
+            return base.Exists(path);
+        }
+
+        public override FileSystemStream Open(string path, FileMode mode)
+        {
+            OpenAttempts++;
+            _fileSystem.AddFile(_path, new MockFileData(_contents));
+            if (OpenAttempts <= _sharingViolations)
+            {
+                throw new IOException("The file is temporarily locked.");
+            }
+
+            return base.Open(path, mode);
+        }
     }
 }
