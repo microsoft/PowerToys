@@ -16,7 +16,7 @@ without running PowerToys. `ModuleLifecycleTests` is the PowerToys integration c
 Command Palette toggle in PowerToys Settings and verifies process startup/shutdown and activation
 shortcuts. The complete suite includes both kinds of tests.
 
-Command workflows use owned Win32 GUI windows and a local script that writes a test-owned file;
+Command workflows use owned Win32 GUI windows and a direct `cmd.exe /d /c echo` command that writes a test-owned file;
 they do not rely on Windows Terminal's console-host startup or tab behavior. Window attachment
 also checks that a hidden Command Palette instance can be re-shown without replacing its process.
 
@@ -88,7 +88,7 @@ also checks that a hidden Command Palette instance can be re-shown without repla
 
 ### Checklist coverage
 
-The `.Next` project lives beside the unchanged legacy project. It ports its basic-provider,
+The `.Next` project replaces the legacy suite. It covers its basic-provider,
 Indexer, Dock, Settings-search, and sample-extension keyboard cases. The expanded workflows use
 test-owned files, shortcuts, windows, and bookmarks; live configuration tests preserve the same
 Command Palette process and restore changed settings.

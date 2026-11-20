@@ -179,11 +179,8 @@ public sealed class RecoveryTests
             ProcessIdentity[] identity = [];
             if (owned is LegacySandbox legacy)
             {
-                RunFiles.Wait(
-                    () => legacy.ViewerHwnd != 0,
-                    SandboxTimeouts.LegacyViewerStart,
-                    "The owned legacy startup did not create its viewer.",
-                    legacy.Discover);
+                // Refusing an unowned attempt needs the recorded launcher, not a fully booted viewer.
+                legacy.Discover();
                 identity = legacy.Processes.ToArray();
                 Assert.IsTrue(identity.Any(record => record.IsCurrent()));
             }

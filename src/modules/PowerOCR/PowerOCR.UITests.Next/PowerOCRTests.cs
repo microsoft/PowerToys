@@ -16,6 +16,7 @@ namespace PowerOCR.UITests;
 public class PowerOCRTests : UITestBase
 {
     private const string ProcessName = "PowerToys.PowerOCR";
+    private const string NativeSelectionClassPrefix = "PowerOCR.NativeSelection.";
     private const string CaptureText = "PowerToys Text Extractor";
     private const string LanguageMenuItemPrefix = "OCRLanguageMenuItem_";
     private const string DefaultSettings = """
@@ -230,7 +231,7 @@ public class PowerOCRTests : UITestBase
         var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(ProcessName);
         var combo = overlay.Find<ComboBox>(By.AccessibilityId("OCROverlayLanguagesComboBox"));
         Step("Reading the toolbar OCR languages");
-        combo.Click(msPostAction: 0);
+        combo.Invoke(msPostAction: 0);
         var languages = ReadLanguageItems(process);
         int selectedIndex = ReadSelectedLanguageIndex(languages);
         Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify changing languages.");
@@ -255,7 +256,7 @@ public class PowerOCRTests : UITestBase
         }
 
         KeyboardHelper.SendKeys(Key.Enter);
-        combo.Click(msPostAction: 0);
+        combo.Invoke(msPostAction: 0);
         languages = ReadLanguageItems(process, targetName);
         Assert.AreEqual(targetName, languages[ReadSelectedLanguageIndex(languages)].Name, "The toolbar should reflect the context-menu language change.");
     }
@@ -264,25 +265,42 @@ public class PowerOCRTests : UITestBase
     [TestCategory("PowerOCR Toolbar")]
     public void ToolbarModesTest()
     {
-        var overlay = Activate();
-        foreach (string id in new[] { "SingleLineToggleButton", "TableToggleButton" })
+        const int coldStartCount = 3;
+        const int activationCount = 2;
+        for (int coldStart = 0; coldStart < coldStartCount; coldStart++)
         {
-            Step($"Toggling toolbar mode {id}");
-            var button = overlay.Find<Element>(By.AccessibilityId(id));
-            string initial = button.GetProperty("ToggleState");
-            Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
-            if (initial == "On")
+            if (coldStart > 0)
             {
-                ClickWithoutRaising(button);
-                AssertToggleState(button, "Off", $"{id} should reset to off.");
+                Step("Restarting the owned OCR process and Runner to exercise first-frame initialization");
+                Assert.IsTrue(WindowControl.TryKillProcessTreeByNameAndWait(ProcessName), "The previous OCR process should exit before another cold start.");
+                RestartScope();
+                NavigateToTextExtractor();
             }
 
-            ClickWithoutRaising(button);
-            AssertToggleState(button, "On", $"{id} should turn on.");
-        }
+            for (int activation = 0; activation < activationCount; activation++)
+            {
+                Step($"Testing toolbar cold start {coldStart + 1}/{coldStartCount}, activation {activation + 1}/{activationCount}");
+                var overlay = Activate();
+                foreach (string id in new[] { "SingleLineToggleButton", "TableToggleButton" })
+                {
+                    Step($"Toggling toolbar mode {id}");
+                    var button = overlay.Find<Element>(By.AccessibilityId(id));
+                    string initial = button.GetProperty("ToggleState");
+                    Assert.IsTrue(initial is "On" or "Off", $"{id} should expose a two-state toggle, not '{initial}'.");
+                    if (initial == "On")
+                    {
+                        ClickToolbarButton(overlay, id);
+                        AssertToggleState(button, "Off", $"{id} should reset to off.");
+                    }
 
-        KeyboardHelper.SendKeys(Key.Esc);
-        AssertOverlayClosed();
+                    ClickToolbarButton(overlay, id);
+                    AssertToggleState(button, "On", $"{id} should turn on.");
+                }
+
+                KeyboardHelper.SendKeys(Key.Esc);
+                AssertOverlayClosed();
+            }
+        }
     }
 
     [TestMethod]
@@ -448,7 +466,7 @@ public class PowerOCRTests : UITestBase
             var overlay = Activate();
             var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(ProcessName);
             var combo = overlay.Find<ComboBox>(By.AccessibilityId("OCROverlayLanguagesComboBox"));
-            combo.Click(msPostAction: 0);
+            combo.Invoke(msPostAction: 0);
             var languages = ReadLanguageItems(process);
             int selectedIndex = ReadSelectedLanguageIndex(languages);
             Assert.IsTrue(languages.Count >= 2, "Install at least two OCR languages to verify the language shortcut.");
@@ -469,7 +487,7 @@ public class PowerOCRTests : UITestBase
 
             Step($"Selecting '{target.Name}' using its number shortcut immediately after the blank capture");
             KeyboardHelper.SendKeys((Key)((byte)Key.Num1 + target.Index));
-            combo.Click(msPostAction: 0);
+            combo.Invoke(msPostAction: 0);
             languages = ReadLanguageItems(process, target.Name);
             Assert.AreEqual(
                 target.Name,
@@ -480,6 +498,39 @@ public class PowerOCRTests : UITestBase
 
     private static bool IsOverlay(WindowsFinder.WindowInfo window) =>
         window.Title == "Text Extractor" && window.Width >= 400 && window.Height >= 400;
+
+    private static void ClickToolbarButton(Session overlay, string automationId)
+    {
+        // The native selection HWND can own foreground while the WinUI toolbar is covered.
+        // Raise only for toolbar input; selection and post-capture shortcut tests must not refocus it.
+        var handle = new IntPtr(overlay.WindowHandle);
+        var ready = WaitHelper.WaitForStable(
+            () => overlay.FindAll<Element>(By.AccessibilityId(automationId), 0).SingleOrDefault(),
+            button => button is not null && button.Width > 0 && button.Height > 0 &&
+                WindowControl.GetForegroundWindowHandle() == handle &&
+                WindowControl.IsPointOwnedByWindow(handle, button.X + (button.Width / 2), button.Y + (button.Height / 2)),
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            recover: _ => WindowControl.TryBringToForeground(handle));
+        if (!ready.Succeeded)
+        {
+            var button = ready.LastObservation;
+            var owners = button is null
+                ? Array.Empty<WindowControl.ProcessWindow>()
+                : WindowControl.EnumerateAllWindows()
+                    .Where(window => WindowControl.IsPointOwnedByWindow(window.Hwnd, button.X + (button.Width / 2), button.Y + (button.Height / 2)))
+                    .ToArray();
+            var windows = WindowControl.EnumerateProcessWindows([overlay.ProcessId])
+                .Select(window => $"{window}, Cloaked={WindowHelper.IsWindowCloaked(window.Hwnd)}");
+            Assert.Fail(
+                $"The toolbar should own physical input for {automationId}. " +
+                $"Control bounds: {button?.X},{button?.Y},{button?.Width},{button?.Height}; " +
+                $"point owners: {string.Join("; ", owners)}; OCR windows: {string.Join("; ", windows)}; " +
+                $"foreground: {WindowControl.GetForegroundWindowInfo()}");
+        }
+
+        ClickWithoutRaising(ready.LastObservation!);
+    }
 
     private static void ClickWithoutRaising(Element element)
     {
@@ -511,19 +562,22 @@ public class PowerOCRTests : UITestBase
                 (expectedSelectedName is null || items.Single(item => item.Selected).Name == expectedSelectedName),
             timeoutMS: 10_000,
             requiredConsecutiveMatches: 2);
-        Assert.IsTrue(
-            result.Succeeded,
-            $"The language dropdown should expose a stable selection '{expectedSelectedName ?? "(any)"}'. Last items: {string.Join(", ", result.LastObservation ?? [])}");
+        string failureMessage = $"The language dropdown should expose a stable selection '{expectedSelectedName ?? "(any)"}'. " +
+            $"Last items: {string.Join(", ", result.LastObservation ?? [])}. Windows: {string.Join(", ", WindowsFinder.ListByApp(session.ProcessName))}";
+        Assert.IsTrue(result.Succeeded, failureMessage);
         return result.LastObservation!;
     }
 
-    private static List<LanguageItem> ReadLanguageSnapshot(Session session)
+    private static List<LanguageItem>? ReadLanguageSnapshot(Session session)
     {
         var popup = WindowsFinder.WaitForWindowByApp(
             session.ProcessName,
             window => window.Title == "PopupHost" || window.ClassName.Contains("Popup", StringComparison.OrdinalIgnoreCase),
-            timeoutMS: 5_000);
-        Assert.IsNotNull(popup, $"The language dropdown should expose a popup HWND. Windows: {string.Join(", ", WindowsFinder.ListByApp(session.ProcessName))}");
+            timeoutMS: 500);
+        if (popup is null)
+        {
+            return null;
+        }
 
         // Virtualized ComboBoxItem RuntimeIds can change between CLI invocations.
         // Keep names from the open dropdown, then resolve selection by name and class in one call.
@@ -632,6 +686,14 @@ public class PowerOCRTests : UITestBase
                     (captureBounds.Left, captureBounds.Top, captureBounds.Right, captureBounds.Bottom),
             timeoutMS: 10_000);
         Assert.IsNotNull(overlay, "The overlay should finish positioning on the fixture's capture monitor.");
+        var nativeSelection = WindowsFinder.WaitForWindowByApp(
+            ProcessName,
+            window => window.ProcessId == overlay.ProcessId &&
+                window.ClassName.StartsWith(NativeSelectionClassPrefix, StringComparison.Ordinal) &&
+                WindowHelper.GetWindowBounds(new IntPtr(window.Hwnd)) ==
+                    (captureBounds.Left, captureBounds.Top, captureBounds.Right, captureBounds.Bottom),
+            timeoutMS: 10_000);
+        Assert.IsNotNull(nativeSelection, "The native selection surface should appear after the WinUI frame is ready.");
 
         // The native selection surface and the WinUI toolbar are independent topmost HWNDs.
         // Raising the toolbar's full-screen host would cover the native cross-cursor surface.
@@ -648,7 +710,8 @@ public class PowerOCRTests : UITestBase
     private void AssertOverlayClosed()
     {
         var result = WaitHelper.WaitForStable(
-            () => WindowsFinder.ListByApp(ProcessName).Count(IsOverlay),
+            () => WindowsFinder.ListByApp(ProcessName).Count(window =>
+                IsOverlay(window) || window.ClassName.StartsWith(NativeSelectionClassPrefix, StringComparison.Ordinal)),
             count => count == 0,
             timeoutMS: 10_000,
             requiredConsecutiveMatches: 2);

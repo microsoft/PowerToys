@@ -1711,7 +1711,6 @@ SOFTWARE.
 - AdaptiveCards.ObjectModel.WinUI3
 - AdaptiveCards.Rendering.WinUI3
 - AdaptiveCards.Templating
-- Appium.WebDriver
 - CommunityToolkit.Common
 - CommunityToolkit.Labs.WinUI.Controls.MarkdownTextBlock
 - CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView

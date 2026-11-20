@@ -123,7 +123,9 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
 
         lock (_lock)
         {
-            if (_inflightFetches.TryGetValue(inflightKey, out var existingTask))
+            // Removal below is asynchronous, so a completed fetch may still be tracked. Only join
+            // running fetches; otherwise a later (e.g. forced) request gets the stale result.
+            if (_inflightFetches.TryGetValue(inflightKey, out var existingTask) && !existingTask.IsCompleted)
             {
                 return existingTask;
             }
@@ -132,11 +134,14 @@ internal sealed partial class HttpResourceCacheHandler : DelegatingHandler
             _inflightFetches[inflightKey] = fetchTask;
 
             _ = fetchTask.ContinueWith(
-                _ =>
+                completedTask =>
                 {
                     lock (_lock)
                     {
-                        _inflightFetches.Remove(inflightKey);
+                        if (_inflightFetches.TryGetValue(inflightKey, out var currentTask) && ReferenceEquals(currentTask, completedTask))
+                        {
+                            _inflightFetches.Remove(inflightKey);
+                        }
                     }
                 },
                 CancellationToken.None,

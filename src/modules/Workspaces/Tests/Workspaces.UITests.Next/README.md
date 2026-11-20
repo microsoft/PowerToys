@@ -2,9 +2,6 @@
 
 End-to-end coverage for [#40682](https://github.com/microsoft/PowerToys/issues/40682),
 using `Microsoft.PowerToys.UITest.Next` and the repository-pinned winappcli.
-The legacy `WorkspacesEditorUITest` project has separate design coverage. Its
-pre-existing scenarios that depend on third-party applications remain outside
-this suite's deterministic fixture coverage.
 
 ## Test design
 
