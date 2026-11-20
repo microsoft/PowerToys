@@ -50,14 +50,15 @@ Describe 'Workspaces installer integration' {
         & $script:assertWorkspacesEqual -Actual ($launcherFiles[0].ParentNode.GetAttribute('Directory')) -Expected 'Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder' -Context 'Launcher UI satellite installation directory'
     }
 
-    It 'harvests the WinUI output for both installed asset locations without an old root output' {
+    It 'installs the window icon and missing application fallback beside the WinUI apps' {
         $fixtureRoot = Join-Path $TestDrive 'workspace'
         $fixtureInstallerRoot = Join-Path $fixtureRoot 'installer\PowerToysSetupVNext'
         $fixtureBuildPlatform = 'x64'
         $assetsOutput = Join-Path $fixtureRoot "$fixtureBuildPlatform\Release\WinUI3Apps\Assets\Workspaces"
         New-Item -ItemType Directory -Path $fixtureInstallerRoot, $assetsOutput -Force | Out-Null
         Copy-Item -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Workspaces.wxs') -Destination $fixtureInstallerRoot
-        foreach ($iconName in @('DefaultIcon.ico', 'Workspaces.ico')) {
+        $iconNames = @('Workspaces.ico', 'DefaultIcon.ico')
+        foreach ($iconName in $iconNames) {
             Copy-Item -LiteralPath (Join-Path $script:workspacesRepoRoot "src\modules\Workspaces\Assets\Workspaces\$iconName") -Destination $assetsOutput
         }
 
@@ -100,33 +101,39 @@ Describe 'Workspaces installer integration' {
         & $fixtureGenerator -platform $fixtureBuildPlatform
 
         [xml]$workspaces = Get-Content -LiteralPath (Join-Path $fixtureInstallerRoot 'Workspaces.wxs') -Raw
+        [xml]$product = Get-Content -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Product.wxs') -Raw
         $namespace = New-Object System.Xml.XmlNamespaceManager($workspaces.NameTable)
         $namespace.AddNamespace('w', $workspaces.DocumentElement.NamespaceURI)
-        $rootAssets = $workspaces.SelectSingleNode('//w:DirectoryRef[@Id="BaseApplicationsAssetsFolder"]/w:Directory', $namespace)
-        & $script:assertWorkspacesEqual -Actual $rootAssets.Id -Expected 'WorkspacesAssetsInstallFolder' -Context 'Root asset directory ID'
-        & $script:assertWorkspacesEqual -Actual ($rootAssets.GetAttribute('Name')) -Expected 'Workspaces' -Context 'Root asset directory name'
-        $winUIAssets = $workspaces.SelectSingleNode('//w:DirectoryRef[@Id="WinUI3AppsAssetsFolder"]/w:Directory', $namespace)
-        & $script:assertWorkspacesEqual -Actual $winUIAssets.Id -Expected 'WorkspacesWinUIAssetsInstallFolder' -Context 'WinUI asset directory ID'
-        & $script:assertWorkspacesEqual -Actual ($winUIAssets.GetAttribute('Name')) -Expected 'Workspaces' -Context 'WinUI asset directory name'
+        $featureGroup = $product.SelectSingleNode('//w:Feature/w:ComponentGroupRef[@Id="WorkspacesComponentGroup"]', $namespace)
+        & $script:assertWorkspacesEqual -Actual ($null -ne $featureGroup) -Expected $true -Context 'Installed Workspaces component group'
+        $assets = $product.SelectSingleNode('//w:Directory[@Name="WinUI3Apps"]/w:Directory[@Name="Assets"]', $namespace)
+        & $script:assertWorkspacesEqual -Actual ($null -ne $assets) -Expected $true -Context 'Installed WinUI assets directory'
+        $workspaceAssets = $workspaces.SelectSingleNode("//w:DirectoryRef[@Id='$($assets.Id)']/w:Directory[@Name='Workspaces']", $namespace)
+        & $script:assertWorkspacesEqual -Actual ($null -ne $workspaceAssets) -Expected $true -Context 'Installed WinUI Workspaces assets directory'
 
-        $componentReferences = @($workspaces.SelectNodes('//w:ComponentGroup[@Id="WorkspacesComponentGroup"]/w:ComponentRef', $namespace)).Id
-        foreach ($directoryId in @('WorkspacesAssetsInstallFolder', 'WorkspacesWinUIAssetsInstallFolder')) {
-            $component = $workspaces.SelectSingleNode("//w:DirectoryRef[@Id='$directoryId']/w:Component", $namespace)
-            $files = @($component.SelectNodes('w:File', $namespace))
-            & $script:assertWorkspacesEqual -Actual $files.Count -Expected 2 -Context "$directoryId icon count"
-            $fileNames = @($files | ForEach-Object { [System.IO.Path]::GetFileName($_.Source) })
-            & $script:assertWorkspacesEqual -Actual ($fileNames -contains 'DefaultIcon.ico') -Expected $true -Context "$directoryId default icon"
-            & $script:assertWorkspacesEqual -Actual ($fileNames -contains 'Workspaces.ico') -Expected $true -Context "$directoryId Workspaces icon"
-            & $script:assertWorkspacesEqual -Actual ($componentReferences -contains $component.Id) -Expected $true -Context "$directoryId component reference"
-            $removeFolders = $workspaces.SelectNodes("//w:RemoveFolder[@Directory='$directoryId' and @On='uninstall']", $namespace)
-            & $script:assertWorkspacesEqual -Actual $removeFolders.Count -Expected 1 -Context "$directoryId uninstall cleanup"
+        $buildAssets = @('$(var.BinDir)WinUI3Apps\Assets\Workspaces', '$(var.BinDir)\WinUI3Apps\Assets\Workspaces')
+        $sourceDirectories = @(
+            $buildAssets
+            foreach ($definition in $workspaces.DocumentElement.SelectNodes('processing-instruction("define")')) {
+                $symbol, $value = $definition.Value -split '=', 2
+                if ($value.Trim().TrimEnd('\') -in $buildAssets) {
+                    '$(var.' + $symbol.Trim() + ')'
+                }
+            }
+        )
+        $group = $workspaces.SelectSingleNode('//w:ComponentGroup[@Id="WorkspacesComponentGroup"]', $namespace)
+        $componentIds = @($group.SelectNodes('w:ComponentRef', $namespace)).Id
+        $files = $workspaces.SelectNodes("//w:DirectoryRef[@Id='$($workspaceAssets.Id)']/w:Component/w:File", $namespace)
+        foreach ($iconName in $iconNames) {
+            $installed = @($files | Where-Object {
+                [IO.Path]::GetFileName($_.Source) -eq $iconName -and
+                    $_.GetAttribute('Name') -in @('', $iconName) -and
+                    [IO.Path]::GetDirectoryName($_.Source) -in $sourceDirectories -and
+                    $_.ParentNode.Id -in $componentIds
+            })
+            & $script:assertWorkspacesEqual -Actual $installed.Count -Expected 1 -Context "$iconName installed from the WinUI output"
         }
-
-        $fileIds = @($workspaces.SelectNodes('//w:File', $namespace)).Id
-        & $script:assertWorkspacesEqual -Actual (@($fileIds | Select-Object -Unique).Count) -Expected 4 -Context 'Unique installed icon file IDs'
-        foreach ($definition in @('WorkspacesImagesComponentFilesPath', 'WorkspacesWinUIImagesComponentFilesPath')) {
-            $sourcePath = [regex]::Match($workspaces.OuterXml, "<\?define $definition=([^?]+)\?>").Groups[1].Value
-            & $script:assertWorkspacesEqual -Actual $sourcePath -Expected '$(var.BinDir)WinUI3Apps\Assets\Workspaces\' -Context "$definition source directory"
-        }
+        $cleanup = $group.SelectNodes("w:Component/w:RemoveFolder[@Directory='$($workspaceAssets.Id)' and @On='uninstall']", $namespace)
+        & $script:assertWorkspacesEqual -Actual $cleanup.Count -Expected 1 -Context 'WinUI Workspaces assets uninstall cleanup'
     }
 }

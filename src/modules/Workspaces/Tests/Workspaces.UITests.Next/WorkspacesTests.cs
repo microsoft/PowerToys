@@ -649,7 +649,7 @@ namespace Microsoft.Workspaces.UITests
             }
 
             var snapshot = result.LastObservation!;
-            State.TrackProjectIcon(WorkspaceTestState.Text(snapshot, "id"));
+            State.TrackProjectShortcutFiles(WorkspaceTestState.Text(snapshot, "id"));
             return snapshot;
         }
 
