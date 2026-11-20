@@ -23,37 +23,74 @@
           "columns": [
             {
               "type": "Column",
+              "width": "auto",
               "items": [
                 {
-                  "text": "%Battery_Widget_Template/Charge%",
-                  "type": "TextBlock",
-                  "size": "small",
-                  "isSubtle": true
-                },
-                {
-                  "text": "${batteryCharge}",
-                  "type": "TextBlock",
-                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"extraLarge\")}",
-                  "weight": "bolder"
+                  "type": "Chart.Gauge",
+                  "value": "${batteryPercent}",
+                  "min": 0,
+                  "max": 100,
+                  "segments": [
+                    {
+                      "size": 20,
+                      "color": "attention"
+                    },
+                    {
+                      "size": 30,
+                      "color": "warning"
+                    },
+                    {
+                      "size": 50,
+                      "color": "good"
+                    }
+                  ],
+                  "subLabel": "%Battery_Widget_Template/Charge%",
+                  "showMinMax": false,
+                  "showLegend": false,
+                  "fallback": {
+                    "type": "TextBlock",
+                    "size": "extraLarge",
+                    "weight": "bolder",
+                    "text": "${batteryCharge}"
+                  }
                 }
               ]
             },
             {
               "type": "Column",
+              "width": "stretch",
+              "spacing": "large",
+              "verticalContentAlignment": "center",
               "items": [
                 {
-                  "text": "%Battery_Widget_Template/Status%",
-                  "type": "TextBlock",
-                  "size": "small",
-                  "isSubtle": true,
-                  "horizontalAlignment": "right"
+                  "type": "Badge",
+                  "text": "${batteryStatus}",
+                  "icon": "${batteryIcon}",
+                  "style": "${batteryStatusStyle}",
+                  "appearance": "tint",
+                  "shape": "rounded",
+                  "size": "large",
+                  "fallback": {
+                    "type": "TextBlock",
+                    "weight": "bolder",
+                    "text": "${batteryStatus}"
+                  }
                 },
                 {
-                  "text": "${batteryStatus}",
                   "type": "TextBlock",
-                  "size": "${if($host.widgetSize == \"small\", \"medium\", \"large\")}",
-                  "weight": "bolder",
-                  "horizontalAlignment": "right"
+                  "$when": "${batteryTimeRemaining != ''}",
+                  "isSubtle": true,
+                  "size": "small",
+                  "spacing": "medium",
+                  "text": "%Battery_Widget_Template/TimeRemaining%"
+                },
+                {
+                  "type": "TextBlock",
+                  "$when": "${batteryTimeRemaining != ''}",
+                  "size": "large",
+                  "spacing": "none",
+                  "wrap": true,
+                  "text": "${batteryTimeRemaining}"
                 }
               ]
             }
@@ -61,22 +98,86 @@
         },
         {
           "type": "ColumnSet",
-          "$when": "${$host.widgetSize != \"small\"}",
+          "spacing": "medium",
           "columns": [
             {
               "type": "Column",
+              "width": "stretch",
+              "$when": "${batteryRate != null}",
               "items": [
                 {
-                  "text": "%Battery_Widget_Template/TimeRemaining%",
-                  "type": "TextBlock",
-                  "size": "small",
-                  "isSubtle": true
-                },
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "${batteryRateLabel}"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${batteryRate}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "$when": "${batteryHealth != null}",
+              "items": [
                 {
-                  "text": "${batteryTimeRemaining}",
-                  "type": "TextBlock",
-                  "size": "medium",
-                  "wrap": true
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%Battery_Widget_Template/Health%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${batteryHealth}"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "Column",
+              "width": "stretch",
+              "$when": "${batteryFullCapacity != null}",
+              "items": [
+                {
+                  "type": "Container",
+                  "style": "emphasis",
+                  "roundedCorners": true,
+                  "showBorder": true,
+                  "items": [
+                    {
+                      "type": "TextBlock",
+                      "isSubtle": true,
+                      "size": "small",
+                      "text": "%Battery_Widget_Template/Full_Charge_Capacity%"
+                    },
+                    {
+                      "type": "TextBlock",
+                      "size": "large",
+                      "spacing": "none",
+                      "text": "${batteryFullCapacity}"
+                    }
+                  ]
                 }
               ]
             }

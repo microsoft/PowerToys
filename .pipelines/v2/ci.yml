@@ -61,4 +61,5 @@ extends:
       enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
     runTests: ${{ parameters.runTests }}
     runAffectedUiTests: ${{ parameters.runAffectedUiTests }}
+    runCppCodeAnalysis: true
     useVSPreview: ${{ parameters.useVSPreview }}

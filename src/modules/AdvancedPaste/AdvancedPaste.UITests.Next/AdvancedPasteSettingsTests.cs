@@ -54,6 +54,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             "image-to-text",
             "paste-as-file.paste-as-txt-file",
             "paste-as-file.paste-as-png-file",
+            "paste-as-file.paste-as-jpg-file",
             "paste-as-file.paste-as-html-file",
             "transcode.transcode-to-mp3",
             "transcode.transcode-to-mp4",
@@ -290,6 +291,31 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    public void PasteDestinationRegainsForegroundAfterSettingsActivation()
+    {
+        NavigateToSettings();
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            if (attempt % 2 == 1)
+            {
+                WindowHelper.MinimizeWindow(Target.Handle);
+                Assert.AreEqual(System.Windows.Forms.FormWindowState.Minimized, Target.State.WindowState);
+            }
+
+            RequireForeground(SettingsWindow());
+            Step($"Reacquiring the paste destination after Settings activation, attempt {attempt + 1}");
+            Target.Focus();
+            var state = Target.State;
+            Assert.AreEqual(Target.Handle, state.Foreground);
+            Assert.IsTrue(state.EditorFocused, "Foreground recovery must preserve the real editor as the paste destination.");
+        }
+
+        SetClipboardText(ShortcutFixtureText);
+        SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsPlainText);
+        Target.AssertText(ShortcutFixtureText);
+    }
+
+    [TestMethod]
     public Task AIInputVisibilityIsIndependentOfProviderAvailability()
     {
         NavigateToSettings();
@@ -400,6 +426,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     [DataRow("ImageToText", "image-to-text", "image", ProductStrings.ImageToText)]
     [DataRow("PasteAsTxtFile", "paste-as-file.paste-as-txt-file", "text", ProductStrings.PasteAsTxtFile)]
     [DataRow("PasteAsPngFile", "paste-as-file.paste-as-png-file", "image", ProductStrings.PasteAsPngFile)]
+    [DataRow("PasteAsJpgFile", "paste-as-file.paste-as-jpg-file", "image", ProductStrings.PasteAsJpgFile)]
     [DataRow("PasteAsHtmlFile", "paste-as-file.paste-as-html-file", "html", ProductStrings.PasteAsHtmlFile)]
     [DataRow("TranscodeToMp3", "transcode.transcode-to-mp3", "video", ProductStrings.TranscodeToMp3)]
     [DataRow("TranscodeToMp4", "transcode.transcode-to-mp4", "video", ProductStrings.TranscodeToMp4)]
@@ -433,7 +460,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         NavigateToSettings();
         var original = AdditionalAction(ReadProperties(), propertyPath)["isShown"]!.GetValue<bool>();
         string[] actions = card == "PasteAsFile"
-            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsHtmlFile]
+            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsJpgFile, ProductStrings.PasteAsHtmlFile]
             : [ProductStrings.TranscodeToMp3, ProductStrings.TranscodeToMp4];
         var originalChildren = AdditionalAction(ReadProperties(), propertyPath).DeepClone();
 
@@ -759,10 +786,10 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         string.Join("\n", text.ReplaceLineEndings("\n").Split('\n').Select(line => string.IsNullOrWhiteSpace(line) ? string.Empty : line)).TrimEnd();
 
     private static void RequireForeground(Session window) =>
-        TestWindow.SelectFromTaskbar(new IntPtr(window.WindowHandle), window.ProcessName);
+        TestWindow.EnsureForeground(new IntPtr(window.WindowHandle), window.ProcessName);
 
     private static bool HasText(Session window, string text) =>
-        window.FindAll<TextBlock>(By.Name(text), 0).Any(element => element.Name == text);
+        window.FindAll<TextBlock>(By.AccessibilityId("ClipboardPreviewText"), 0).Any(element => element.Name == text);
 
     private static bool HasAction(Session window, string name) =>
         window.FindAll<Element>(By.Name(name), 0).Any(element =>

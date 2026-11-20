@@ -35,6 +35,9 @@ parameters:
   - name: jobSuffix
     type: string
     default: ''
+  - name: uiTestShardCount
+    type: number
+    default: 1
 
 jobs:
   # A fixture-only request needs no ordinary ARM64 job when the isolated route is enabled.
@@ -56,6 +59,7 @@ jobs:
           condition: ${{ parameters.condition }}
         installMode: ${{ parameters.installMode }}
         jobSuffix: ${{ parameters.jobSuffix }}
+        uiTestShardCount: ${{ parameters.uiTestShardCount }}
 
   - ${{ each fixture in split('Hid,Display', ',') }}:
     - ${{ if and(ne(parameters.umdfHidArm64Image, ''), or(parameters.autoSelectUiTests, eq(length(parameters.uiTestModules), 0), and(eq(fixture, 'Hid'), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests')), and(eq(fixture, 'Display'), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests')))) }}:

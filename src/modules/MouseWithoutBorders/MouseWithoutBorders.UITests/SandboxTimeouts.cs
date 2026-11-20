@@ -16,7 +16,6 @@ internal static class SandboxTimeouts
     internal static readonly TimeSpan LegacyRun = TimeSpan.FromMinutes(65);
     internal static readonly TimeSpan ModernRun = TimeSpan.FromMinutes(90);
     internal static readonly TimeSpan ModernStart = TimeSpan.FromMinutes(15);
-    internal static readonly TimeSpan LegacyViewerStart = TimeSpan.FromMinutes(3);
     internal static readonly TimeSpan RecoveryRun = TimeSpan.FromSeconds(EndpointStartRequestSeconds) + TimeSpan.FromMinutes(3);
 
     internal static DateTime BootstrapDeadline(DateTime now, DateTime hardDeadline, bool modern)

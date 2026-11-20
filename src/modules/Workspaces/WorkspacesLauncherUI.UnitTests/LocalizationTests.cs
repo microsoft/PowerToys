@@ -94,7 +94,7 @@ namespace WorkspacesLauncherUI.UnitTests
         public void SatelliteUsesExactMarkerAndOmittedKeysFallBackToEnglish(string cultureName, string expectedTitle)
         {
             using var culture = new CultureScope(cultureName);
-            var satellite = typeof(Resources).Assembly.GetSatelliteAssembly(CultureInfo.CurrentUICulture);
+            var satellite = typeof(LocalizationTests).Assembly.GetSatelliteAssembly(CultureInfo.CurrentUICulture);
             CollectionAssert.Contains(satellite.GetManifestResourceNames(), $"WorkspacesLauncherUI.Properties.Resources.{cultureName}.resources");
             var request = new SignatureWarningRequest { Reason = "unsigned" };
             var neutral = ReadNeutralResources();

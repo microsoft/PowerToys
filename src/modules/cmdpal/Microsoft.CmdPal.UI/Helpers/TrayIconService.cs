@@ -8,8 +8,10 @@ using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.UI.Messages;
+using Microsoft.CmdPal.UI.Tray;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.UI.Xaml;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -22,8 +24,7 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Stylistically, window messages are WM_*")]
 [SuppressMessage("StyleCop.CSharp.NamingRules", "SA1306:Field names should begin with lower-case letter", Justification = "Stylistically, window messages are WM_*")]
-[SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "TrayIconService uses explicit Destroy() lifecycle matching other PowerToys tray helpers")]
-internal sealed partial class TrayIconService
+internal sealed partial class TrayIconService : IDisposable
 {
     private const uint MY_NOTIFY_ID = 1000;
     private const uint WM_TRAY_ICON = PInvoke.WM_USER + 1;
@@ -43,6 +44,7 @@ internal sealed partial class TrayIconService
     private bool _themeAdaptiveEnabled;
     private ThemeListener? _themeListener;
     private bool _trayIconAdded;
+    private TrayPaletteWindow? _trayPalette;
 
     public TrayIconService(ISettingsService settingsService)
     {
@@ -104,6 +106,9 @@ internal sealed partial class TrayIconService
 
     public void Destroy()
     {
+        _trayPalette?.Close();
+        _trayPalette = null;
+
         if (_trayIconData is not null)
         {
             var d = (NOTIFYICONDATAW)_trayIconData;
@@ -133,6 +138,13 @@ internal sealed partial class TrayIconService
     }
 
     private void EnsureTrayWindow()
+    public void Dispose()
+    {
+        Destroy();
+        GC.SuppressFinalize(this);
+    }
+
+    private DestroyIconSafeHandle GetAppIconHandle()
     {
         if (_window is not null)
         {
@@ -290,8 +302,36 @@ internal sealed partial class TrayIconService
 
                             break;
                         case PInvoke.WM_LBUTTONUP:
+                            if (_settingsService.Settings.TrayIconClickAction == TrayIconClickAction.OpenCommandPalette)
+                            {
+                                WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(string.Empty, HWND.Null));
+                            }
+                            else
+                            {
+                                var icon = new NOTIFYICONIDENTIFIER
+                                {
+                                    cbSize = (uint)Marshal.SizeOf<NOTIFYICONIDENTIFIER>(),
+                                    hWnd = _hwnd,
+                                    uID = MY_NOTIFY_ID,
+                                };
+                                if (PInvoke.Shell_NotifyIconGetRect(in icon, out var rect).Failed)
+                                {
+                                    PInvoke.GetCursorPos(out var cursor);
+                                    rect = new RECT { left = cursor.X, right = cursor.X, top = cursor.Y, bottom = cursor.Y };
+                                }
+
+                                if (_trayPalette is null)
+                                {
+                                    _trayPalette = new TrayPaletteWindow();
+                                    _trayPalette.Closed += TrayPalette_Closed;
+                                }
+
+                                _trayPalette.Toggle(rect);
+                            }
+
+                            break;
                         case PInvoke.WM_LBUTTONDBLCLK:
-                            WeakReferenceMessenger.Default.Send<HotkeySummonMessage>(new(string.Empty, HWND.Null));
+                            // The first button-up already performed the configured action.
                             break;
                     }
                 }
@@ -300,5 +340,17 @@ internal sealed partial class TrayIconService
         }
 
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, uMsg, wParam, lParam);
+    }
+
+    private void TrayPalette_Closed(object sender, WindowEventArgs args)
+    {
+        if (sender is TrayPaletteWindow palette)
+        {
+            palette.Closed -= TrayPalette_Closed;
+            if (ReferenceEquals(_trayPalette, palette))
+            {
+                _trayPalette = null;
+            }
+        }
     }
 }
