@@ -495,10 +495,7 @@ Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath 
 Generate-FileComponents -fileListName "SettingsV2AssetsCmdPalFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
-# Both applications now publish their icons under WinUI3Apps; install a copy at the root for the shared fallback too.
 $workspacesAssetsOutputPath = Join-Path $PSScriptRoot "..\..\$platform\Release\WinUI3Apps\Assets\Workspaces"
-Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath $workspacesAssetsOutputPath
-Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
 Generate-FileList -fileDepsJson "" -fileListName WorkspacesWinUIImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath $workspacesAssetsOutputPath
 Generate-FileComponents -fileListName "WorkspacesWinUIImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
 

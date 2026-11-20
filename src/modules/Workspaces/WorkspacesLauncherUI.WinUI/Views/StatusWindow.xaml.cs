@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 using System.Runtime.InteropServices;
 
 using ManagedCommon;
@@ -42,7 +43,7 @@ namespace WorkspacesLauncherUI
             }
 
             appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
-            appWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
+            appWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "Workspaces.ico"));
 
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {

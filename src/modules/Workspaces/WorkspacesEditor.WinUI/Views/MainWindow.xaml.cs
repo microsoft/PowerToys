@@ -40,6 +40,11 @@ namespace WorkspacesEditor
         private bool _isDisposed;
 
         public MainWindow()
+            : this(null)
+        {
+        }
+
+        internal MainWindow(WaitHandle moduleActivationEvent)
         {
             this.InitializeComponent();
 
@@ -51,7 +56,7 @@ namespace WorkspacesEditor
             PersistenceId = "WorkspacesEditor";
             this.CenterOnScreen();
 
-            AppWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
+            AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "Workspaces.ico"));
 
             // Set title from resource or fallback
             try
@@ -71,12 +76,13 @@ namespace WorkspacesEditor
             this.Closed += OnClosed;
 
             // Listen for hotkey toggle event
-            StartHotkeyEventLoop(hwnd);
+            StartHotkeyEventLoop(hwnd, moduleActivationEvent);
 
             // Wire ViewModel navigation via messenger
             // Use StrongReferenceMessenger for MainWindow since Window is not rooted
             // in the visual tree and WeakReferenceMessenger may GC the registration.
             var vm = App.MainViewModel;
+            SaveErrorBar.DataContext = vm;
             StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
             {
                 if (ContentFrame.Content is Views.WorkspacesEditorPage editorPage)
@@ -182,20 +188,28 @@ namespace WorkspacesEditor
         private void AppTitleBar_BackRequested(Microsoft.UI.Xaml.Controls.TitleBar sender, object args)
         {
             // Discard any in-progress edits (same behavior as the editor's Cancel), then return to the overview.
-            WorkspacesCsharpLibrary.Data.TempProjectData.DeleteTempFile();
             App.MainViewModel.SwitchToMainView();
         }
 
-        private void StartHotkeyEventLoop(IntPtr hwnd)
+        private void StartHotkeyEventLoop(IntPtr hwnd, WaitHandle moduleActivationEvent)
         {
             var token = _cancellationToken.Token;
             var cancellationHandle = token.WaitHandle;
             _hotkeyEventThread = new Thread(() =>
             {
                 using var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, PowerToys.Interop.Constants.WorkspacesHotkeyEvent());
-                var waitHandles = new WaitHandle[] { cancellationHandle, eventHandle };
-                while (WaitHandle.WaitAny(waitHandles) == 1 && !token.IsCancellationRequested)
+                WaitHandle[] waitHandles = moduleActivationEvent == null
+                    ? [cancellationHandle, eventHandle]
+                    : [cancellationHandle, eventHandle, moduleActivationEvent];
+                while (!token.IsCancellationRequested)
                 {
+                    int signaled = WaitHandle.WaitAny(waitHandles);
+                    if (signaled == 0)
+                    {
+                        return;
+                    }
+
+                    bool toggle = signaled == 1;
                     App.DispatcherQueue.TryEnqueue(() =>
                     {
                         if (_isDisposed)
@@ -203,18 +217,19 @@ namespace WorkspacesEditor
                             return;
                         }
 
-                        if (ApplicationIsInFocus())
+                        if (toggle && ApplicationIsInFocus())
                         {
                             StrongReferenceMessenger.Default.Send(new CloseApplicationMessage());
                         }
                         else
                         {
-                            if (IsIconic(hwnd))
+                            var target = _snapshotWindow == null ? hwnd : WindowNative.GetWindowHandle(_snapshotWindow);
+                            if (IsIconic(target))
                             {
-                                ShowWindow(hwnd, 9); // SW_RESTORE
+                                ShowWindow(target, 9); // SW_RESTORE
                             }
 
-                            WindowHelpers.BringToForeground(hwnd);
+                            WindowHelpers.BringToForeground(target);
                         }
                     });
                 }

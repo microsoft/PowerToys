@@ -48,7 +48,6 @@ namespace WorkspacesEditor.Models
             MonitorNumber = other.MonitorNumber;
             Version = other.Version;
 
-            Parent = other.Parent;
             IsNotFound = other.IsNotFound;
             IsHighlighted = other.IsHighlighted;
             RepeatIndex = other.RepeatIndex;
@@ -58,6 +57,7 @@ namespace WorkspacesEditor.Models
             Aumid = other.Aumid;
             IsExpanded = other.IsExpanded;
             IsIncluded = other.IsIncluded;
+            Parent = other.Parent;
         }
 
         public Project Parent { get; set; }
@@ -101,13 +101,13 @@ namespace WorkspacesEditor.Models
 
         public string Id { get; set; }
 
+        internal string IdWithoutBraces => Guid.TryParseExact(Id, "B", out var guid) ? guid.ToString("D") : Id;
+
         public string AppName { get; set; }
 
         public string AppTitle { get; set; }
 
         public string PackageFullName { get; set; }
-
-        public string AppUserModelId { get; set; }
 
         public string CommandLineArguments { get; set; }
 
@@ -187,8 +187,13 @@ namespace WorkspacesEditor.Models
             get => _position;
             set
             {
+                bool sizeChanged = value.Width != _position.Width || value.Height != _position.Height;
                 _position = value;
                 _scaledPosition = null;
+                if (sizeChanged && IsIncluded)
+                {
+                    Parent?.NotifyCanBeSavedChanged();
+                }
             }
         }
 
@@ -259,6 +264,8 @@ namespace WorkspacesEditor.Models
             {
                 IsExpanded = false;
             }
+
+            Parent?.NotifyCanBeSavedChanged();
         }
 
         private BitmapImage _iconImage;
@@ -359,8 +366,6 @@ namespace WorkspacesEditor.Models
                 Parent.InitializePreview();
             }
         }
-
-        public string Version { get; set; }
 
         public new void Dispose()
         {

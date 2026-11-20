@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -107,7 +106,9 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool CanBeSaved => !string.IsNullOrEmpty(Name) && Applications.Count > 0;
+        public bool CanBeSaved => !string.IsNullOrEmpty(Name) &&
+            Applications?.Exists(app => app.IsIncluded) == true &&
+            Applications.TrueForAll(app => !app.IsIncluded || (app.Position.Width > 0 && app.Position.Height > 0));
 
         [ObservableProperty]
         public partial bool IsRevertEnabled { get; set; }
@@ -165,9 +166,11 @@ namespace WorkspacesEditor.Models
         public void NotifyApplicationsChanged()
         {
             OnPropertyChanged(nameof(AppsCountString));
-            OnPropertyChanged(nameof(CanBeSaved));
+            NotifyCanBeSavedChanged();
             OnPropertyChanged(nameof(ApplicationsListed));
         }
+
+        internal void NotifyCanBeSavedChanged() => OnPropertyChanged(nameof(CanBeSaved));
 
         /// <summary>
         /// Call to refresh the relative time display for LastLaunched.
@@ -200,25 +203,30 @@ namespace WorkspacesEditor.Models
         }
 
         public Project(Project selectedProject)
+            : this(selectedProject, selectedProject)
         {
-            Id = selectedProject.Id;
-            Name = selectedProject.Name;
-            PreviewIcons = selectedProject.PreviewIcons;
-            PreviewImage = selectedProject.PreviewImage;
-            IsShortcutNeeded = selectedProject.IsShortcutNeeded;
-            MoveExistingWindows = selectedProject.MoveExistingWindows;
+        }
 
-            Monitors = [];
-            foreach (MonitorSetup item in selectedProject.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.X).ThenBy(x => x.MonitorDpiAwareBounds.Y))
-            {
-                Monitors.Add(item);
-            }
+        internal Project(Project draft, Project previous)
+        {
+            Id = previous.Id;
+            CreationTime = previous.CreationTime;
+            LastLaunchedTime = previous.LastLaunchedTime;
+            Name = draft.Name;
+            EditorWindowTitle = draft.EditorWindowTitle;
+            PreviewIcons = draft.PreviewIcons;
+            PreviewImage = draft.PreviewImage;
+            PreviewImageWidth = draft.PreviewImageWidth;
+            IsShortcutNeeded = draft.IsShortcutNeeded;
+            MoveExistingWindows = draft.MoveExistingWindows;
+            IsPositionChangedManually = draft.IsPositionChangedManually;
+
+            Monitors = draft.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.X).ThenBy(x => x.MonitorDpiAwareBounds.Y).ToList();
 
             Applications = [];
-            foreach (Application item in selectedProject.Applications)
+            foreach (Application item in draft.Applications)
             {
-                Application newApp = new(item);
-                newApp.Parent = this;
+                Application newApp = new(item) { Parent = this };
                 newApp.InitializationFinished();
                 Applications.Add(newApp);
             }
@@ -247,7 +255,6 @@ namespace WorkspacesEditor.Models
                     Version = string.IsNullOrEmpty(app.Version) ? string.Empty : app.Version,
                     PackageFullName = app.PackageFullName,
                     AppUserModelId = app.AppUserModelId,
-                    Parent = this,
                     CommandLineArguments = app.CommandLineArguments,
                     IsElevated = app.IsElevated,
                     CanLaunchElevated = app.CanLaunchElevated,
@@ -262,6 +269,7 @@ namespace WorkspacesEditor.Models
                         Y = app.Position.Y,
                     },
                     MonitorNumber = app.Monitor,
+                    Parent = this,
                 };
                 newApp.InitializationFinished();
                 Applications.Add(newApp);
@@ -331,20 +339,39 @@ namespace WorkspacesEditor.Models
             IsShortcutNeeded = projectBefore.IsShortcutNeeded;
             MoveExistingWindows = projectBefore.MoveExistingWindows;
 
-            var applicationsBefore = projectBefore.Applications.ToLookup(app => app.Id, StringComparer.OrdinalIgnoreCase);
-            foreach (Application app in Applications)
+            var capturedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (app, previous) in MatchApplicationsById(projectBefore.Applications, Applications))
             {
-                if (string.IsNullOrEmpty(app.Id))
+                // Multiple open windows can carry the same stamp after launching a workspace twice.
+                while (string.IsNullOrEmpty(app.Id) || !capturedIds.Add(app.IdWithoutBraces))
                 {
-                    continue;
+                    app.Id = Guid.NewGuid().ToString("B");
                 }
 
-                Application applicationBefore = applicationsBefore[app.Id].FirstOrDefault();
-                if (applicationBefore != null)
+                if (previous != null)
                 {
-                    app.CommandLineArguments = applicationBefore.CommandLineArguments;
-                    app.IsElevated = applicationBefore.IsElevated;
+                    app.CommandLineArguments = previous.CommandLineArguments;
+                    app.IsElevated = previous.IsElevated;
                 }
+            }
+        }
+
+        internal static IEnumerable<(Application Updated, Application Previous)> MatchApplicationsById(
+            IEnumerable<Application> previousApplications,
+            IEnumerable<Application> updatedApplications)
+        {
+            var byId = previousApplications.Where(app => !string.IsNullOrEmpty(app.Id))
+                .GroupBy(app => app.IdWithoutBraces, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(group => group.Key, group => new Queue<Application>(group), StringComparer.OrdinalIgnoreCase);
+            foreach (Application app in updatedApplications)
+            {
+                Application previous = null;
+                if (!string.IsNullOrEmpty(app.Id) && byId.TryGetValue(app.IdWithoutBraces, out var matches))
+                {
+                    matches.TryDequeue(out previous);
+                }
+
+                yield return (app, previous);
             }
         }
 

@@ -4,8 +4,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace WorkspacesCsharpLibrary
 {
@@ -78,13 +80,38 @@ namespace WorkspacesCsharpLibrary
 
         public static string GetPwaIconFilename(string pwaAppId)
         {
-            var candidates = pwaApps.Where(x => x.AppId == pwaAppId).ToList();
-            if (candidates.Count > 0)
+            if (string.IsNullOrEmpty(pwaAppId))
             {
-                return candidates.First().IconFilename;
+                return string.Empty;
             }
 
-            return string.Empty;
+            return pwaApps.FirstOrDefault(app => app.AppId == pwaAppId)?.IconFilename ?? string.Empty;
         }
+
+        internal static bool HasLaunchTarget(string browserPath, string appUserModelId, string version)
+        {
+            // AppLauncher substitutes a sibling proxy for these two browser executables.
+            string executable = Path.GetFileName(browserPath);
+            string fallbackPath = executable is "msedge.exe" or "chrome.exe" ? Path.ChangeExtension(browserPath, null) + "_proxy.exe" : browserPath;
+            if (File.Exists(fallbackPath))
+            {
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(appUserModelId) ||
+                !int.TryParse(version, NumberStyles.Integer, CultureInfo.InvariantCulture, out int snapshotVersion) ||
+                snapshotVersion < 1)
+            {
+                return false;
+            }
+
+            int result = SHParseDisplayName(@"shell:AppsFolder\" + appUserModelId, IntPtr.Zero, out IntPtr itemIdList, 0, IntPtr.Zero);
+            bool registered = result >= 0 && itemIdList != IntPtr.Zero;
+            Marshal.FreeCoTaskMem(itemIdList);
+            return registered;
+        }
+
+        [DllImport("shell32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        private static extern int SHParseDisplayName(string name, IntPtr bindContext, out IntPtr itemIdList, uint attributesIn, IntPtr attributesOut);
     }
 }

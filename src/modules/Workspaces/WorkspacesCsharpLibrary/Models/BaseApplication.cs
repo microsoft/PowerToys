@@ -4,7 +4,9 @@
 
 using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,6 +19,10 @@ namespace WorkspacesCsharpLibrary.Models
         public string PwaAppId { get; set; }
 
         public string AppPath { get; set; }
+
+        public string AppUserModelId { get; set; }
+
+        public string Version { get; set; }
 
         public string PackagedId { get; set; }
 
@@ -32,54 +38,67 @@ namespace WorkspacesCsharpLibrary.Models
 
         private Icon _icon;
 
-        public Icon Icon
+        public Icon Icon => _icon ??= LoadIcon(PwaHelper.GetPwaIconFilename(PwaAppId));
+
+        internal Icon LoadIcon(string pwaIconPath)
         {
-            get
+            bool executableExists = File.Exists(AppPath);
+            IsNotFound = !executableExists;
+            try
             {
-                if (_icon == null)
+                string imagePath = null;
+                if (!string.IsNullOrEmpty(AppPath) && IsPackagedApp)
                 {
-                    try
+                    Uri logo = GetAppLogoByPackageFamilyName();
+                    if (logo != null)
                     {
-                        if (IsPackagedApp)
-                        {
-                            Uri uri = GetAppLogoByPackageFamilyName();
-                            var bitmap = new Bitmap(uri.LocalPath);
-                            var iconHandle = bitmap.GetHicon();
-                            _icon = Icon.FromHandle(iconHandle);
-                        }
-                        else if (IsEdge || IsChrome)
-                        {
-                            string iconFilename = PwaHelper.GetPwaIconFilename(PwaAppId);
-                            if (!string.IsNullOrEmpty(iconFilename))
-                            {
-                                Bitmap bitmap;
-                                if (iconFilename.EndsWith("ico", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    bitmap = new Bitmap(iconFilename);
-                                }
-                                else
-                                {
-                                    bitmap = (Bitmap)Image.FromFile(iconFilename);
-                                }
-
-                                var iconHandle = bitmap.GetHicon();
-                                _icon = Icon.FromHandle(iconHandle);
-                            }
-                        }
-
-                        if (_icon == null)
-                        {
-                            _icon = Icon.ExtractAssociatedIcon(AppPath);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        IsNotFound = true;
-                        _icon = new Icon(@"Assets\Workspaces\DefaultIcon.ico");
+                        // The installed package can outlive the versioned executable path in a snapshot.
+                        IsNotFound = false;
+                        imagePath = logo.LocalPath;
                     }
                 }
+                else if (!string.IsNullOrEmpty(PwaAppId))
+                {
+                    IsNotFound = !PwaHelper.HasLaunchTarget(AppPath, AppUserModelId, Version);
+                    imagePath = pwaIconPath;
+                }
 
-                return _icon;
+                if (File.Exists(imagePath))
+                {
+                    return LoadImageIcon(imagePath);
+                }
+
+                if (executableExists && Icon.ExtractAssociatedIcon(AppPath) is Icon icon)
+                {
+                    return icon;
+                }
+            }
+            catch (Exception)
+            {
+                // An unreadable icon does not determine whether its application is installed.
+            }
+
+            return new Icon(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "DefaultIcon.ico"));
+        }
+
+        private static Icon LoadImageIcon(string path)
+        {
+            if (string.Equals(Path.GetExtension(path), ".ico", StringComparison.OrdinalIgnoreCase))
+            {
+                return new Icon(path);
+            }
+
+            using var bitmap = new Bitmap(path);
+            var handle = bitmap.GetHicon();
+            try
+            {
+                // FromHandle borrows the HICON. Give the cached Icon its own copy.
+                using var borrowedIcon = Icon.FromHandle(handle);
+                return (Icon)borrowedIcon.Clone();
+            }
+            finally
+            {
+                _ = DestroyIcon(handle);
             }
         }
 
@@ -140,7 +159,13 @@ namespace WorkspacesCsharpLibrary.Models
 
         public void Dispose()
         {
+            _icon?.Dispose();
+            _icon = null;
             GC.SuppressFinalize(this);
         }
+
+        [DllImport("user32.dll", ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DestroyIcon(IntPtr icon);
     }
 }

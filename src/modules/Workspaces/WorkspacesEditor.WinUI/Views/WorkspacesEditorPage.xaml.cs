@@ -10,7 +10,6 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 
 using Windows.System;
-using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.ViewModels;
 
@@ -33,7 +32,6 @@ namespace WorkspacesEditor.Views
             {
                 if (e.Key == Windows.System.VirtualKey.Escape)
                 {
-                    TempProjectData.DeleteTempFile();
                     _mainViewModel?.SwitchToMainView();
                     e.Handled = true;
                 }

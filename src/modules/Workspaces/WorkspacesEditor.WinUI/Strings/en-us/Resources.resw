@@ -192,6 +192,9 @@
   <data name="WorkspacePreviewImage.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Workspace layout preview</value>
   </data>
+  <data name="WorkspaceSaveError.Message" xml:space="preserve">
+    <value>Couldn’t save your workspace changes. Try again.</value>
+  </data>
   <data name="Workspaces" xml:space="preserve">
     <value>Workspaces</value>
   </data>

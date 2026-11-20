@@ -6,29 +6,30 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
-using WorkspacesEditor.Telemetry;
+using WorkspacesEditor.Services;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 
 namespace WorkspacesEditor.UnitTests
 {
-    [TestClass]
+    [STATestClass]
     [TestCategory("Regression.Shortcuts")]
     [DoNotParallelize]
     public class WorkspaceShortcutRegressionTests
     {
         [TestMethod]
-        public void Rename_PreservesShortcutOwnedBySameNameWorkspace() => RunSta(() =>
+        public void Rename_PreservesShortcutOwnedBySameNameWorkspace()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -38,22 +39,26 @@ namespace WorkspacesEditor.UnitTests
             byte[] peerLink = File.ReadAllBytes(fixture.LinkPath(peer.Name));
             session.ViewModel.Workspaces.Add(original);
             session.ViewModel.Workspaces.Add(peer);
-            Project draft = new(original) { Name = "Renamed workspace", IsShortcutNeeded = false };
+            Project draft = session.Edit(original);
+            draft.Name = "Renamed workspace";
+            draft.IsShortcutNeeded = false;
 
-            session.Save(original, draft);
+            session.Save(draft);
 
             Assert.AreEqual(1, session.SerializationCount);
             CollectionAssert.AreEqual(peerLink, File.ReadAllBytes(fixture.LinkPath(peer.Name)));
             Assert.IsTrue(fixture.Exists(peer), "Renaming one workspace must retain the other workspace's shortcut.");
             Assert.IsTrue(File.Exists(fixture.IconPath(peer)));
-        });
+        }
 
         [TestMethod]
-        public void Remove_PreservesForeignShortcutAndIcon() => RunSta(() =>
+        public void Remove_PreservesForeignShortcutAndIcon()
         {
             using var fixture = new ShortcutFixture();
             Project project = fixture.Project("Foreign shortcut");
-            fixture.WriteShortcut(project, targetPath: Path.Combine(fixture.Root, "AnotherLauncher.exe"));
+            string foreignTarget = Path.Combine(fixture.Root, "AnotherLauncher.exe");
+            File.WriteAllBytes(foreignTarget, Array.Empty<byte>());
+            fixture.WriteShortcut(project, targetPath: foreignTarget);
             byte[] link = File.ReadAllBytes(fixture.LinkPath(project.Name));
             byte[] icon = File.ReadAllBytes(fixture.IconPath(project));
             Assert.IsFalse(fixture.Exists(project), "Matching arguments alone do not establish ownership.");
@@ -62,10 +67,10 @@ namespace WorkspacesEditor.UnitTests
 
             CollectionAssert.AreEqual(link, File.ReadAllBytes(fixture.LinkPath(project.Name)));
             CollectionAssert.AreEqual(icon, File.ReadAllBytes(fixture.IconPath(project)));
-        });
+        }
 
         [TestMethod]
-        public void Remove_PreservesUnreadableShortcutAndIcon() => RunSta(() =>
+        public void Remove_PreservesUnreadableShortcutAndIcon()
         {
             using var fixture = new ShortcutFixture();
             Project project = fixture.Project("Unreadable shortcut");
@@ -82,10 +87,10 @@ namespace WorkspacesEditor.UnitTests
 
             CollectionAssert.AreEqual(link, File.ReadAllBytes(path));
             CollectionAssert.AreEqual(icon, File.ReadAllBytes(fixture.IconPath(project)));
-        });
+        }
 
         [TestMethod]
-        public void ShortcutOwnership_UsesArgumentsInsteadOfStaleDescription() => RunSta(() =>
+        public void ShortcutOwnership_UsesArgumentsInsteadOfStaleDescription()
         {
             using var fixture = new ShortcutFixture();
             Project original = fixture.Project("Shared name");
@@ -94,20 +99,20 @@ namespace WorkspacesEditor.UnitTests
             Assert.IsTrue(fixture.Exists(peer), "The arguments identify the peer despite the original workspace's description.");
 
             fixture.AssertUnownedShortcutPreserved(original);
-        });
+        }
 
         [TestMethod]
-        public void ShortcutOwnership_RejectsAmbiguousWorkspaceArguments() => RunSta(() =>
+        public void ShortcutOwnership_RejectsAmbiguousWorkspaceArguments()
         {
             using var fixture = new ShortcutFixture();
             Project project = fixture.Project("Ambiguous shortcut");
             fixture.WriteShortcut(project, arguments: project.Id + " 1 " + Guid.NewGuid().ToString("B"));
 
             fixture.AssertUnownedShortcutPreserved(project);
-        });
+        }
 
         [TestMethod]
-        public void ShortcutOwnership_PreservesMalformedLink() => RunSta(() =>
+        public void ShortcutOwnership_PreservesMalformedLink()
         {
             using var fixture = new ShortcutFixture();
             Project project = fixture.Project("Malformed shortcut");
@@ -115,39 +120,102 @@ namespace WorkspacesEditor.UnitTests
             File.WriteAllBytes(fixture.LinkPath(project.Name), new byte[] { 1, 2, 3, 4 });
 
             fixture.AssertUnownedShortcutPreserved(project);
-        });
+        }
 
         [TestMethod]
-        public void ShortcutOwnership_AcceptsCanonicalGuidCaseAndPreviousInstallation() => RunSta(() =>
+        public void ShortcutOwnership_PreservesOversizedLinkAndIcon()
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("Oversized shortcut");
+            fixture.WriteShortcut(project);
+            Assert.IsTrue(fixture.Exists(project));
+
+            // Even a valid Shell Link header does not establish ownership beyond the size limit.
+            using (var file = File.OpenWrite(fixture.LinkPath(project.Name)))
+            {
+                file.SetLength((4 * 1024 * 1024) + 1);
+            }
+
+            fixture.AssertUnownedShortcutPreserved(project);
+        }
+
+        [TestMethod]
+        public void ShortcutOwnership_AcceptsCanonicalGuidCaseAndPreviousInstallation()
         {
             using var fixture = new ShortcutFixture();
             Guid id = Guid.NewGuid();
             Project project = fixture.Project("Moved installation", id.ToString("D"));
             string previousLauncher = Path.Combine(fixture.Root, "Previous installation", "PowerToys.WorkspacesLauncher.exe");
+            Directory.CreateDirectory(Path.GetDirectoryName(previousLauncher));
+            File.WriteAllBytes(previousLauncher, Array.Empty<byte>());
             fixture.WriteShortcut(project, previousLauncher, id.ToString("B").ToUpperInvariant() + " 1");
+            File.Delete(previousLauncher);
             Assert.IsTrue(fixture.Exists(project), "GUID value and launcher identity survive casing and installation-directory changes.");
 
             fixture.Apply(project);
 
             fixture.AssertShortcut(project);
-        });
+        }
 
         [TestMethod]
         [DataRow("D")]
         [DataRow("N")]
         [DataRow("P")]
         [DataRow("X")]
-        public void ShortcutOwnership_PreservesNoncanonicalGuidArguments(string format) => RunSta(() =>
+        public void ShortcutOwnership_PreservesNoncanonicalGuidArguments(string format)
         {
             using var fixture = new ShortcutFixture();
             Project project = fixture.Project("Noncanonical shortcut");
             fixture.WriteShortcut(project, arguments: Guid.Parse(project.Id).ToString(format) + " 1");
 
             fixture.AssertUnownedShortcutPreserved(project);
-        });
+        }
 
         [TestMethod]
-        public void Remove_MissingShortcutDoesNotCreateIconDirectory() => RunSta(() =>
+        public void UnicodeShortcut_PreservesForeignLinkAndStoresExactUnicodePaths()
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("工作区 🖥");
+            Project peer = fixture.Project("作業領域 🌙");
+            fixture.WriteShortcut(peer);
+            byte[] peerLink = File.ReadAllBytes(fixture.LinkPath(peer.Name));
+
+            fixture.Apply(project);
+
+            fixture.AssertShortcut(project);
+            CollectionAssert.AreEqual(peerLink, File.ReadAllBytes(fixture.LinkPath(peer.Name)));
+            Assert.AreEqual(2, Directory.EnumerateFiles(fixture.DesktopFolder, "*.lnk").Count());
+
+            fixture.Remove(project);
+            Assert.IsFalse(File.Exists(fixture.LinkPath(project.Name)));
+            CollectionAssert.AreEqual(peerLink, File.ReadAllBytes(fixture.LinkPath(peer.Name)));
+        }
+
+        [TestMethod]
+        public void ShortcutNameWithDirectorySeparatorPreservesSubfolderContents()
+        {
+            using var fixture = new ShortcutFixture();
+            string subfolder = Path.Combine(fixture.DesktopFolder, "Category");
+            Directory.CreateDirectory(subfolder);
+            Project project = fixture.Project(Path.Combine("Category", "Workspace"));
+
+            fixture.Apply(project);
+
+            Assert.IsFalse(fixture.Exists(project));
+            Assert.IsFalse(Directory.EnumerateFileSystemEntries(subfolder).Any());
+            Assert.IsFalse(File.Exists(fixture.IconPath(project)));
+
+            fixture.WriteShortcut(project);
+            byte[] link = File.ReadAllBytes(fixture.LinkPath(project.Name));
+            byte[] icon = File.ReadAllBytes(fixture.IconPath(project));
+            fixture.Remove(project);
+
+            CollectionAssert.AreEqual(link, File.ReadAllBytes(fixture.LinkPath(project.Name)));
+            CollectionAssert.AreEqual(icon, File.ReadAllBytes(fixture.IconPath(project)));
+        }
+
+        [TestMethod]
+        public void Remove_MissingShortcutDoesNotCreateIconDirectory()
         {
             using var fixture = new ShortcutFixture();
             Project project = fixture.Project("Missing shortcut");
@@ -157,10 +225,10 @@ namespace WorkspacesEditor.UnitTests
 
             Assert.IsFalse(fixture.Exists(project));
             Assert.IsFalse(Directory.Exists(fixture.IconFolder));
-        });
+        }
 
         [TestMethod]
-        public void Rename_ReplacesOwnedShortcutAndRetainsWorkspaceIcon() => RunSta(() =>
+        public void Rename_ReplacesOwnedShortcutAndRetainsWorkspaceIcon()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -169,19 +237,20 @@ namespace WorkspacesEditor.UnitTests
             string oldPath = fixture.LinkPath(original.Name);
             string iconPath = fixture.IconPath(original);
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { Name = "Renamed workspace" };
+            Project draft = session.Edit(original);
+            draft.Name = "Renamed workspace";
 
-            session.Save(original, draft);
+            session.Save(draft);
 
             Assert.AreEqual(1, session.SerializationCount);
             CollectionAssert.Contains(session.SerializedNames, draft.Name);
             Assert.IsFalse(File.Exists(oldPath));
             fixture.AssertShortcut(draft);
             Assert.AreEqual(iconPath, fixture.IconPath(draft));
-        });
+        }
 
         [TestMethod]
-        public void Rename_ReadOnlyOldLinkDoesNotPreventPersistenceOrNewShortcut() => RunSta(() =>
+        public void Rename_ReadOnlyOldLinkDoesNotPreventPersistenceOrNewShortcut()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -190,20 +259,27 @@ namespace WorkspacesEditor.UnitTests
             string oldPath = fixture.LinkPath(original.Name);
             File.SetAttributes(oldPath, File.GetAttributes(oldPath) | FileAttributes.ReadOnly);
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { Name = "Renamed workspace" };
+            Project draft = session.Edit(original);
+            draft.Name = "Renamed workspace";
             Assert.IsTrue(draft.IsShortcutNeeded);
 
-            session.Save(original, draft);
+            session.Save(draft);
 
             Assert.AreEqual(1, session.SerializationCount);
             CollectionAssert.Contains(session.SerializedNames, draft.Name);
             Assert.IsTrue(File.Exists(oldPath), "The read-only original link should remain after cleanup fails.");
             fixture.AssertShortcut(draft);
             Assert.IsTrue(File.Exists(fixture.IconPath(draft)), "Both links still refer to the same workspace icon.");
-        });
+
+            File.SetAttributes(oldPath, File.GetAttributes(oldPath) & ~FileAttributes.ReadOnly);
+            fixture.OpenService().Remove(original);
+            Assert.IsFalse(File.Exists(oldPath));
+            Assert.IsFalse(File.Exists(fixture.LinkPath(draft.Name)));
+            Assert.IsFalse(File.Exists(fixture.IconPath(original)));
+        }
 
         [TestMethod]
-        public void Rename_DestinationOwnedByAnotherWorkspacePreservesBothLinksAndIcons() => RunSta(() =>
+        public void Rename_DestinationOwnedByAnotherWorkspacePreservesBothLinksAndIcons()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -217,19 +293,27 @@ namespace WorkspacesEditor.UnitTests
             byte[] icon = File.ReadAllBytes(fixture.IconPath(original));
             session.ViewModel.Workspaces.Add(original);
             session.ViewModel.Workspaces.Add(peer);
-            Project draft = new(original) { Name = peer.Name };
+            Project draft = session.Edit(original);
+            draft.Name = peer.Name;
 
-            session.Save(original, draft);
+            session.Save(draft);
 
             Assert.AreEqual(1, session.SerializationCount);
             CollectionAssert.AreEqual(oldLink, File.ReadAllBytes(oldPath));
             CollectionAssert.AreEqual(peerLink, File.ReadAllBytes(fixture.LinkPath(peer.Name)));
             CollectionAssert.AreEqual(icon, File.ReadAllBytes(fixture.IconPath(original)));
             Assert.IsTrue(fixture.Exists(peer));
-        });
+
+            var reopened = fixture.OpenService();
+            Assert.IsTrue(reopened.Exists(original), "The old owned shortcut must remain discoverable after a restart.");
+            reopened.Remove(original);
+            Assert.IsFalse(File.Exists(oldPath));
+            CollectionAssert.AreEqual(peerLink, File.ReadAllBytes(fixture.LinkPath(peer.Name)));
+            Assert.IsTrue(fixture.Exists(peer));
+        }
 
         [TestMethod]
-        public void Rename_DestinationDirectoryPreservesOldLinkAndIcon() => RunSta(() =>
+        public void Rename_DestinationDirectoryPreservesOldLinkAndIcon()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -238,19 +322,20 @@ namespace WorkspacesEditor.UnitTests
             string oldPath = fixture.LinkPath(original.Name);
             byte[] oldLink = File.ReadAllBytes(oldPath);
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { Name = "Blocked destination" };
+            Project draft = session.Edit(original);
+            draft.Name = "Blocked destination";
             Directory.CreateDirectory(fixture.LinkPath(draft.Name));
 
-            session.Save(original, draft);
+            session.Save(draft);
 
             Assert.AreEqual(1, session.SerializationCount);
             CollectionAssert.AreEqual(oldLink, File.ReadAllBytes(oldPath));
             Assert.IsTrue(File.Exists(fixture.IconPath(original)));
             Assert.IsTrue(Directory.Exists(fixture.LinkPath(draft.Name)));
-        });
+        }
 
         [TestMethod]
-        public void Rename_NewLinkSaveFailureAfterPreflightPreservesOldLinkAndIcon() => RunSta(() =>
+        public void Rename_NewLinkSaveFailureAfterPreflightPreservesOldLinkAndIcon()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -258,41 +343,111 @@ namespace WorkspacesEditor.UnitTests
             fixture.WriteShortcut(original);
             string oldPath = fixture.LinkPath(original.Name);
             byte[] oldLink = File.ReadAllBytes(oldPath);
+            Project destination = fixture.Project("Renamed workspace", original.Id);
+            fixture.WriteShortcut(destination);
+            string newPath = fixture.LinkPath(destination.Name);
+            byte[] destinationLink = File.ReadAllBytes(newPath);
+            byte[] oldIcon = File.ReadAllBytes(fixture.IconPath(original));
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { Name = Path.Combine("Missing folder", "New name") };
-            string newPath = fixture.LinkPath(draft.Name);
-            Assert.IsFalse(Directory.Exists(Path.GetDirectoryName(newPath)), "The destination must pass the missing-file probe but fail when its link is saved.");
+            Project draft = session.Edit(original);
+            draft.Name = destination.Name;
 
-            session.Save(original, draft);
+            // Readers can establish ownership, but publishing a replacement is denied.
+            using (var locked = new FileStream(newPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                session.Save(draft);
+            }
 
             Assert.AreEqual(1, session.SerializationCount);
             CollectionAssert.Contains(session.SerializedNames, draft.Name);
             CollectionAssert.AreEqual(oldLink, File.ReadAllBytes(oldPath));
-            Assert.IsTrue(File.Exists(fixture.IconPath(original)));
-            Assert.IsFalse(File.Exists(newPath));
-            Assert.IsFalse(Directory.Exists(Path.GetDirectoryName(newPath)));
-        });
+            CollectionAssert.AreEqual(destinationLink, File.ReadAllBytes(newPath));
+            CollectionAssert.AreEqual(oldIcon, File.ReadAllBytes(fixture.IconPath(original)));
+        }
 
         [TestMethod]
-        public void Rename_ChangingOnlyCaseKeepsShortcutAndIcon() => RunSta(() =>
+        public void Rename_ChangingOnlyCaseKeepsShortcutAndIcon()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
             Project original = fixture.Project("Case workspace");
             fixture.WriteShortcut(original);
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { Name = "CASE WORKSPACE" };
+            Project draft = session.Edit(original);
+            draft.Name = "CASE WORKSPACE";
 
-            session.Save(original, draft);
+            session.Save(draft);
 
             Assert.AreEqual(1, session.SerializationCount);
             fixture.AssertShortcut(draft);
-        });
+            Assert.AreEqual(draft.Name + ".lnk", Path.GetFileName(Directory.EnumerateFiles(fixture.DesktopFolder, "*.lnk").Single()));
+        }
+
+        [TestMethod]
+        public void Rename_IconCommitFailureRestoresOriginalLinkBytesAndCasing()
+        {
+            using var fixture = new ShortcutFixture();
+            using var session = new ViewModelSession(fixture);
+            Project original = fixture.Project("Mixed case workspace");
+            string previousLauncher = Path.Combine(fixture.Root, "Older installation", "PowerToys.WorkspacesLauncher.exe");
+            Directory.CreateDirectory(Path.GetDirectoryName(previousLauncher));
+            File.WriteAllBytes(previousLauncher, Array.Empty<byte>());
+            fixture.WriteShortcut(original, targetPath: previousLauncher, hotkey: 0x064B); // Ctrl+Alt+K
+            string oldPath = fixture.LinkPath(original.Name);
+            string iconPath = fixture.IconPath(original);
+            byte[] oldLink = File.ReadAllBytes(oldPath);
+            byte[] oldIcon = File.ReadAllBytes(iconPath);
+            session.ViewModel.Workspaces.Add(original);
+            Project draft = session.Edit(original);
+            Assert.IsTrue(draft.IsShortcutNeeded);
+            draft.Name = "MIXED CASE WORKSPACE";
+
+            using (var lockedIcon = new FileStream(iconPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                session.Save(draft);
+            }
+
+            Assert.AreEqual(draft.Name, session.SerializedNames.Single());
+            Assert.AreEqual(Path.GetFileName(oldPath), Path.GetFileName(Directory.EnumerateFiles(fixture.DesktopFolder, "*.lnk").Single()));
+            CollectionAssert.AreEqual(oldLink, File.ReadAllBytes(oldPath));
+            CollectionAssert.AreEqual(oldIcon, File.ReadAllBytes(iconPath));
+
+            fixture.OpenService().Apply(original);
+            fixture.AssertShortcut(original);
+            Assert.AreEqual(draft.Name + ".lnk", Path.GetFileName(Directory.EnumerateFiles(fixture.DesktopFolder, "*.lnk").Single()));
+        }
+
+        [TestMethod]
+        public void Rename_ToShortAliasKeepsSingleWorkingLink()
+        {
+            using var fixture = new ShortcutFixture();
+            using var session = new ViewModelSession(fixture);
+            Project original = fixture.Project("Long workspace name with spaces");
+            fixture.WriteShortcut(original);
+            string originalPath = fixture.LinkPath(original.Name);
+            var buffer = new StringBuilder(32768);
+            uint length = GetShortPathName(originalPath, buffer, (uint)buffer.Capacity);
+            Assert.IsTrue(length > 0 && length < buffer.Capacity);
+            string alias = Path.GetFileNameWithoutExtension(buffer.ToString());
+            if (string.Equals(original.Name, alias, StringComparison.OrdinalIgnoreCase))
+            {
+                Assert.Inconclusive("The fixture volume does not provide an 8.3 alias.");
+            }
+
+            session.ViewModel.Workspaces.Add(original);
+            Project draft = session.Edit(original);
+            draft.Name = alias;
+            session.Save(draft);
+
+            Assert.AreEqual(1, session.SerializationCount);
+            fixture.AssertShortcut(draft);
+            Assert.AreEqual(1, Directory.EnumerateFiles(fixture.DesktopFolder, "*.lnk").Count());
+        }
 
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void Rename_WithShortcutDisabledRemovesOnlyOwnedFiles(bool ownsShortcut) => RunSta(() =>
+        public void Rename_WithShortcutDisabledRemovesOnlyOwnedFiles(bool ownsShortcut)
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -303,9 +458,11 @@ namespace WorkspacesEditor.UnitTests
             string oldPath = fixture.LinkPath(original.Name);
             byte[] oldLink = File.ReadAllBytes(oldPath);
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { Name = "Renamed workspace", IsShortcutNeeded = false };
+            Project draft = session.Edit(original);
+            draft.Name = "Renamed workspace";
+            draft.IsShortcutNeeded = false;
 
-            session.Save(original, draft);
+            session.Save(draft);
 
             Assert.AreEqual(1, session.SerializationCount);
             Assert.IsFalse(original.IsShortcutNeeded);
@@ -317,12 +474,12 @@ namespace WorkspacesEditor.UnitTests
                 CollectionAssert.AreEqual(oldLink, File.ReadAllBytes(oldPath));
                 Assert.IsTrue(fixture.Exists(owner));
             }
-        });
+        }
 
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void DeleteProject_RemovesOnlyOwnedShortcutAndIcon(bool ownsShortcut) => RunSta(() =>
+        public void DeleteProject_RemovesOnlyOwnedShortcutAndIcon(bool ownsShortcut)
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -345,12 +502,12 @@ namespace WorkspacesEditor.UnitTests
                 CollectionAssert.AreEqual(link, File.ReadAllBytes(path));
                 Assert.IsTrue(fixture.Exists(owner));
             }
-        });
+        }
 
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void Revert_PreservesUnsavedShortcutChoiceThroughSave(bool shortcutNeeded) => RunSta(() =>
+        public async Task Revert_PreservesUnsavedShortcutChoiceThroughSave(bool shortcutNeeded)
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -362,16 +519,21 @@ namespace WorkspacesEditor.UnitTests
             }
 
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { IsShortcutNeeded = shortcutNeeded };
-            Project beforeLaunch = new(draft);
-            Assert.AreEqual(shortcutNeeded, beforeLaunch.IsShortcutNeeded);
-            session.SetProjectBeforeLaunch(beforeLaunch);
+            Project draft = session.Edit(original);
+            draft.IsShortcutNeeded = shortcutNeeded;
+            session.CapturedShortcutChoice = !shortcutNeeded;
+            await session.ViewModel.LaunchAndEditAsync(draft);
+            await session.ViewModel.SnapWorkspaceAsync();
+            Project recaptured = session.NavigatedProject;
+            Assert.IsTrue(recaptured.IsRevertEnabled);
 
-            session.Revert();
+            session.ViewModel.RevertLaunch();
 
-            Assert.AreSame(beforeLaunch, session.NavigatedProject);
-            Assert.AreEqual(shortcutNeeded, beforeLaunch.IsShortcutNeeded);
-            session.Save(original, beforeLaunch);
+            Project restored = session.NavigatedProject;
+            Assert.AreNotSame(recaptured, restored);
+            Assert.AreEqual(draft.Applications[0].Id, restored.Applications[0].Id);
+            Assert.AreEqual(shortcutNeeded, restored.IsShortcutNeeded);
+            session.Save(restored);
             Assert.AreEqual(1, session.SerializationCount);
             Assert.AreEqual(shortcutNeeded, session.SerializedShortcutChoices.Single());
             Assert.AreEqual(shortcutNeeded, original.IsShortcutNeeded);
@@ -380,12 +542,12 @@ namespace WorkspacesEditor.UnitTests
             {
                 fixture.AssertShortcut(original);
             }
-        });
+        }
 
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void Recapture_PreservesUnsavedShortcutChoiceThroughSave(bool shortcutNeeded) => RunSta(() =>
+        public async Task Recapture_PreservesUnsavedShortcutChoiceThroughSave(bool shortcutNeeded)
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -397,20 +559,21 @@ namespace WorkspacesEditor.UnitTests
             }
 
             session.ViewModel.Workspaces.Add(original);
-            Project draft = new(original) { IsShortcutNeeded = shortcutNeeded };
-            Project beforeLaunch = new(draft);
-            Assert.AreEqual(shortcutNeeded, beforeLaunch.IsShortcutNeeded);
-            Project recaptured = fixture.Project("Captured workspace");
-            recaptured.IsShortcutNeeded = !shortcutNeeded;
+            Project draft = session.Edit(original);
+            draft.IsShortcutNeeded = shortcutNeeded;
+            session.CapturedShortcutChoice = !shortcutNeeded;
 
-            session.ProcessCapturedProject(beforeLaunch, recaptured);
+            await session.ViewModel.LaunchAndEditAsync(draft);
+            await session.ViewModel.SnapWorkspaceAsync();
 
-            Assert.AreSame(recaptured, session.NavigatedProject);
-            Assert.AreEqual(beforeLaunch.Id, recaptured.Id);
-            Assert.AreEqual(beforeLaunch.Name, recaptured.Name);
+            Project recaptured = session.NavigatedProject;
+            Assert.AreNotSame(draft, recaptured);
+            Assert.AreNotEqual(draft.Applications[0].Id, recaptured.Applications[0].Id);
+            Assert.AreEqual(draft.Id, recaptured.Id);
+            Assert.AreEqual(draft.Name, recaptured.Name);
             Assert.IsTrue(recaptured.IsRevertEnabled);
             Assert.AreEqual(shortcutNeeded, recaptured.IsShortcutNeeded);
-            session.Save(original, recaptured);
+            session.Save(recaptured);
             Assert.AreEqual(1, session.SerializationCount);
             Assert.AreEqual(shortcutNeeded, session.SerializedShortcutChoices.Single());
             Assert.AreEqual(shortcutNeeded, original.IsShortcutNeeded);
@@ -419,10 +582,10 @@ namespace WorkspacesEditor.UnitTests
             {
                 fixture.AssertShortcut(original);
             }
-        });
+        }
 
         [TestMethod]
-        public void EditProject_InitializesShortcutChoiceFromDiskForExistingAndNewWorkspaces() => RunSta(() =>
+        public void EditProject_InitializesShortcutChoiceFromDiskForExistingAndNewWorkspaces()
         {
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
@@ -446,67 +609,48 @@ namespace WorkspacesEditor.UnitTests
             Assert.IsFalse(session.NavigatedProject.IsShortcutNeeded);
             Assert.AreNotEqual("Captured workspace", session.NavigatedProject.Name);
             Assert.AreEqual(0, session.SerializationCount, "Opening editing must not save workspace data.");
-        });
-
-        private static void RunSta(Action action)
-        {
-            Exception error = null;
-            var thread = new Thread(() =>
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception ex)
-                {
-                    error = ex;
-                }
-            });
-            thread.SetApartmentState(ApartmentState.STA);
-            thread.Start();
-            thread.Join();
-            if (error != null)
-            {
-                ExceptionDispatchInfo.Capture(error).Throw();
-            }
         }
 
-        private static object Invoke(object instance, string method, params object[] arguments)
-        {
-            try
-            {
-                return instance.GetType().GetMethod(method, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Invoke(instance, arguments);
-            }
-            catch (TargetInvocationException ex) when (ex.InnerException != null)
-            {
-                ExceptionDispatchInfo.Capture(ex.InnerException).Throw();
-                throw;
-            }
-        }
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        private static extern uint GetShortPathName(string longPath, StringBuilder shortPath, uint bufferLength);
 
         private sealed class ViewModelSession : IDisposable
         {
             internal ViewModelSession(ShortcutFixture fixture)
             {
-                ConstructorInfo constructor = typeof(MainViewModel).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic).Single(candidate => candidate.GetParameters().Length == 6);
-                ViewModel = (MainViewModel)constructor.Invoke(new object[]
+                string captureFile = Path.Combine(fixture.Root, "capture.json");
+                var editorIO = new WorkspacesEditorIO(captureFile, (startInfo, timeout) =>
                 {
-                    new WorkspacesEditorIO(),
+                    if (Path.GetFileName(startInfo.FileName) == "PowerToys.WorkspacesSnapshotTool.exe")
+                    {
+                        string captureId = startInfo.Arguments.Split(' ')[0];
+                        var capture = fixture.CreateProjectData("Captured workspace", captureId);
+                        capture.IsShortcutNeeded = CapturedShortcutChoice;
+                        File.WriteAllText(captureFile + "." + captureId, new ProjectData().Serialize(capture));
+                    }
+
+                    return Task.FromResult(true);
+                });
+
+                ViewModel = new MainViewModel(
+                    editorIO,
                     new WorkspacesSettings(),
-                    new Action<WorkspacesSettings>(_ => { }),
+                    _ => { },
                     fixture.Service,
-                    new Action<List<Project>>(projects =>
+                    projects =>
                     {
                         SerializationCount++;
                         SerializedNames = projects.Select(project => project.Name).ToArray();
                         SerializedShortcutChoices = projects.Select(project => project.IsShortcutNeeded).ToArray();
-                    }),
-                    new Action<EditEvent>(_ => { }),
-                });
+                    },
+                    _ => { });
                 StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (recipient, message) => ((ViewModelSession)recipient).NavigatedProject = message.Project);
             }
 
             internal MainViewModel ViewModel { get; }
+
+            internal bool CapturedShortcutChoice { get; set; }
 
             internal int SerializationCount { get; private set; }
 
@@ -516,23 +660,18 @@ namespace WorkspacesEditor.UnitTests
 
             internal Project NavigatedProject { get; private set; }
 
-            internal void Save(Project original, Project draft)
+            internal Project Edit(Project original)
             {
-                Assert.IsTrue(draft.CanBeSaved);
-                typeof(MainViewModel).GetField("_editedProject", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ViewModel, original);
-                ViewModel.SaveProject(draft);
+                ViewModel.EditProject(original);
+                Assert.IsNotNull(NavigatedProject);
+                Assert.AreNotSame(original, NavigatedProject);
+                return NavigatedProject;
             }
 
-            internal void SetProjectBeforeLaunch(Project project) =>
-                typeof(MainViewModel).GetField("_projectBeforeLaunch", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ViewModel, project);
-
-            internal void Revert() => Invoke(ViewModel, "RevertLaunch");
-
-            internal void ProcessCapturedProject(Project beforeLaunch, Project captured)
+            internal void Save(Project draft)
             {
-                SetProjectBeforeLaunch(beforeLaunch);
-                typeof(MainViewModel).GetField("_isExistingProjectLaunched", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(ViewModel, true);
-                Invoke(ViewModel, "ProcessCapturedProject", captured);
+                Assert.IsTrue(draft.CanBeSaved);
+                ViewModel.SaveOrAddProject(draft);
             }
 
             public void Dispose()
@@ -554,13 +693,12 @@ namespace WorkspacesEditor.UnitTests
                 Directory.CreateDirectory(Root);
                 DesktopFolder = Path.Combine(Root, "Desktop");
                 Directory.CreateDirectory(DesktopFolder);
-                IconFolder = Path.Combine(Root, "Icons with spaces, commas");
-                LauncherPath = Path.Combine(Root, "PowerToys.WorkspacesLauncher.exe");
+                IconFolder = Path.Combine(Root, "Icons with spaces, commas 图标 🎨");
+                string launcherFolder = Path.Combine(Root, "Launcher 启动 🚀");
+                Directory.CreateDirectory(launcherFolder);
+                LauncherPath = Path.Combine(launcherFolder, "PowerToys.WorkspacesLauncher.exe");
                 File.WriteAllBytes(LauncherPath, Array.Empty<byte>());
-                Type serviceType = typeof(MainViewModel).Assembly.GetType("WorkspacesEditor.Services.WorkspaceShortcutService", throwOnError: true);
-                ConstructorInfo constructor = serviceType.GetConstructor(BindingFlags.Instance | BindingFlags.NonPublic, null, new[] { typeof(string), typeof(string), typeof(string) }, null);
-                Assert.IsNotNull(constructor, "The service must support isolated shortcut directories.");
-                Service = constructor.Invoke(new object[] { DesktopFolder, IconFolder, LauncherPath });
+                Service = OpenService();
             }
 
             internal string Root { get; }
@@ -571,17 +709,21 @@ namespace WorkspacesEditor.UnitTests
 
             internal string LauncherPath { get; }
 
-            internal object Service { get; }
+            internal WorkspaceShortcutService Service { get; }
+
+            internal WorkspaceShortcutService OpenService() => new(DesktopFolder, IconFolder, LauncherPath);
 
             internal string LinkPath(string name) => Path.Combine(DesktopFolder, name + ".lnk");
 
             internal string IconPath(Project project) => Path.Combine(IconFolder, project.Id + ".ico");
 
-            internal bool Exists(Project project) => (bool)Invoke(Service, "Exists", project);
+            internal bool Exists(Project project) => Service.Exists(project);
 
-            internal void Remove(Project project) => Invoke(Service, "Remove", project);
+            internal void Remove(Project project) => Service.Remove(project);
 
-            internal Project Project(string name, string id = null) => new(new ProjectWrapper
+            internal Project Project(string name, string id = null) => new(CreateProjectData(name, id));
+
+            internal ProjectWrapper CreateProjectData(string name, string id = null) => new()
             {
                 Id = id ?? Guid.NewGuid().ToString("B"),
                 Name = name,
@@ -599,10 +741,11 @@ namespace WorkspacesEditor.UnitTests
                         PwaAppId = string.Empty,
                         CommandLineArguments = string.Empty,
                         Version = string.Empty,
+                        Position = new ApplicationWrapper.WindowPositionWrapper { Width = 640, Height = 480 },
                     },
                 },
                 MonitorConfiguration = new List<MonitorConfigurationWrapper>(),
-            });
+            };
 
             internal void WriteIcon(Project project)
             {
@@ -610,21 +753,22 @@ namespace WorkspacesEditor.UnitTests
                 File.WriteAllBytes(IconPath(project), new byte[] { 1, 2, 3, 4 });
             }
 
-            internal void WriteShortcut(Project project, string targetPath = null, string arguments = null)
+            internal void WriteShortcut(Project project, string targetPath = null, string arguments = null, short hotkey = 0)
             {
                 WriteIcon(project);
-                WithShortcut(LinkPath(project.Name), shortcut =>
+                WithShortcut(LinkPath(project.Name), write: true, shortcut =>
                 {
-                    shortcut.TargetPath = targetPath ?? LauncherPath;
-                    shortcut.Arguments = arguments ?? project.Id + " 1";
-                    shortcut.Description = "Project Launcher " + project.Id;
-                    shortcut.IconLocation = IconPath(project) + ",0";
-                    shortcut.Save();
+                    shortcut.SetPath(targetPath ?? LauncherPath);
+                    shortcut.SetWorkingDirectory(Path.GetDirectoryName(targetPath ?? LauncherPath));
+                    shortcut.SetArguments(arguments ?? project.Id + " 1");
+                    shortcut.SetDescription("Project Launcher " + project.Id);
+                    shortcut.SetHotkey(hotkey);
+                    shortcut.SetIconLocation(IconPath(project), 0);
                 });
                 Assert.IsTrue(File.Exists(LinkPath(project.Name)), "The real shortcut fixture was not created.");
             }
 
-            internal void Apply(Project project) => Invoke(Service, "Apply", project, null);
+            internal void Apply(Project project) => Service.Apply(project);
 
             internal void AssertUnownedShortcutPreserved(Project project)
             {
@@ -646,13 +790,22 @@ namespace WorkspacesEditor.UnitTests
                 Assert.IsTrue(File.Exists(LinkPath(project.Name)), "The shortcut was not created.");
                 Assert.IsTrue(File.Exists(IconPath(project)), "The workspace icon was not retained.");
                 Assert.IsTrue(Exists(project), "The shortcut does not belong to this workspace.");
-                WithShortcut(LinkPath(project.Name), shortcut =>
+                WithShortcut(LinkPath(project.Name), write: false, shortcut =>
                 {
-                    Assert.IsTrue(string.Equals(LauncherPath, (string)shortcut.TargetPath, StringComparison.OrdinalIgnoreCase));
-                    Assert.AreEqual(Guid.Parse(project.Id).ToString("B") + " 1", (string)shortcut.Arguments);
-                    string icon = shortcut.IconLocation;
-                    string iconPath = (icon.EndsWith(",0", StringComparison.Ordinal) ? icon.Substring(0, icon.Length - 2) : icon).Trim().Trim('"');
-                    Assert.IsTrue(string.Equals(IconPath(project), iconPath, StringComparison.OrdinalIgnoreCase));
+                    const int RawPath = 4;
+                    var value = new StringBuilder(32768);
+                    shortcut.GetPath(value, value.Capacity, IntPtr.Zero, RawPath);
+                    Assert.IsTrue(string.Equals(LauncherPath, value.ToString(), StringComparison.OrdinalIgnoreCase), $"Unexpected shortcut target '{value}'.");
+                    value.Clear();
+                    shortcut.GetWorkingDirectory(value, value.Capacity);
+                    Assert.IsTrue(string.Equals(Path.GetDirectoryName(LauncherPath), value.ToString(), StringComparison.OrdinalIgnoreCase), $"Unexpected working directory '{value}'.");
+                    value.Clear();
+                    shortcut.GetArguments(value, value.Capacity);
+                    Assert.AreEqual(Guid.Parse(project.Id).ToString("B") + " 1", value.ToString());
+                    value.Clear();
+                    shortcut.GetIconLocation(value, value.Capacity, out int index);
+                    Assert.IsTrue(string.Equals(IconPath(project), value.ToString(), StringComparison.OrdinalIgnoreCase), $"Unexpected icon path '{value}'.");
+                    Assert.AreEqual(0, index);
                 });
             }
 
@@ -663,23 +816,27 @@ namespace WorkspacesEditor.UnitTests
                 GC.SuppressFinalize(this);
             }
 
-            private static void WithShortcut(string path, Action<dynamic> action)
+            // Read the persisted Unicode fields without running the editor's shortcut service.
+            private static void WithShortcut(string path, bool write, Action<WorkspaceShellLink.IShellLinkW> action)
             {
-                object shell = Activator.CreateInstance(Type.GetTypeFromProgID("WScript.Shell", throwOnError: true));
-                object shortcut = null;
+                var shortcut = (WorkspaceShellLink.IShellLinkW)new WorkspaceShellLink.ShellLink();
                 try
                 {
-                    shortcut = ((dynamic)shell).CreateShortcut(path);
+                    var file = (IPersistFile)shortcut;
+                    if (!write)
+                    {
+                        file.Load(path, 0);
+                    }
+
                     action(shortcut);
+                    if (write)
+                    {
+                        file.Save(path, true);
+                    }
                 }
                 finally
                 {
-                    if (shortcut != null)
-                    {
-                        Marshal.FinalReleaseComObject(shortcut);
-                    }
-
-                    Marshal.FinalReleaseComObject(shell);
+                    Marshal.FinalReleaseComObject(shortcut);
                 }
             }
 

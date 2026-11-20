@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +18,6 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using WorkspacesCsharpLibrary;
 using WorkspacesCsharpLibrary.Data;
-using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
@@ -36,13 +34,19 @@ namespace WorkspacesEditor.ViewModels
         private readonly Action<List<Project>> _serializeWorkspaces;
         private readonly IWorkspaceShortcutService _shortcuts;
         private readonly Action<EditEvent> _writeEditTelemetry;
-        private Project _editedProject;
+        private Project _draft;
+        private Project _launchingDraft;
+        private Project _snapshotBase;
+        private bool _isNewProject;
+        private bool _snapshotRequested;
+        private bool _reloadAfterEdit;
+        private int _editGeneration;
+        private bool _ownsPublishedSnapshot;
         private Project _projectBeforeLaunch;
         private string _projectNameBeingEdited;
         private Microsoft.UI.Xaml.DispatcherTimer _lastUpdatedTimer;
         private WorkspacesSettings _settings;
         private bool _isDisposed;
-        private bool _isExistingProjectLaunched;
 
         public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
 
@@ -232,6 +236,7 @@ namespace WorkspacesEditor.ViewModels
 
         public void Initialize()
         {
+            _workspacesEditorIO.CleanupOrphanedRequests();
             foreach (Project project in Workspaces)
             {
                 project.InitializePreview();
@@ -246,30 +251,52 @@ namespace WorkspacesEditor.ViewModels
             RefreshWorkspacesView();
         }
 
-        public void SaveProject(Project projectToSave)
+        [ObservableProperty]
+        public partial bool SaveFailed { get; set; }
+
+        public void SaveProject(Project projectToSave) => TrySaveProject(projectToSave);
+
+        private bool TrySaveProject(Project projectToSave)
         {
-            if (_isDisposed || _editedProject == null || projectToSave == null)
+            if (_isDisposed || projectToSave == null || !ReferenceEquals(_draft, projectToSave) || !projectToSave.CanBeSaved)
             {
-                return;
+                return false;
             }
 
-            EditEvent editEvent = EditEventFactory.Create(_editedProject, projectToSave);
-            string previousName = _editedProject.Name;
+            var projects = Workspaces.ToList();
+            int index = projects.FindIndex(project => SameId(project.Id, projectToSave.Id));
+            if (index < 0)
+            {
+                return false;
+            }
 
-            _editedProject.Name = projectToSave.Name;
-            _editedProject.IsShortcutNeeded = projectToSave.IsShortcutNeeded;
-            _editedProject.MoveExistingWindows = projectToSave.MoveExistingWindows;
-            _editedProject.PreviewIcons = projectToSave.PreviewIcons;
-            _editedProject.PreviewImage = projectToSave.PreviewImage;
-            _editedProject.Applications = projectToSave.Applications.Where(x => x.IsIncluded).ToList();
+            Project original = projects[index];
+            string previousName = original.Name;
+            EditEvent editEvent = EditEventFactory.Create(original, projectToSave);
+            Project saved = PrepareForSave(projectToSave, original);
+            projects[index] = saved;
+            if (!TryPersist(projects))
+            {
+                return false;
+            }
 
-            _editedProject.NotifyApplicationsChanged();
-            _editedProject.InitializePreview();
-            _serializeWorkspaces(Workspaces.ToList());
-            _shortcuts.Apply(_editedProject, previousName);
+            original.Name = saved.Name;
+            original.IsShortcutNeeded = saved.IsShortcutNeeded;
+            original.MoveExistingWindows = saved.MoveExistingWindows;
+            original.Monitors.Clear();
+            original.Monitors.AddRange(saved.Monitors);
+            original.Applications = saved.Applications;
+            foreach (var app in original.Applications)
+            {
+                app.Parent = original;
+            }
+
+            original.NotifyApplicationsChanged();
+            original.InitializePreview();
+            _shortcuts.Apply(original, previousName);
             RefreshWorkspacesView();
-
             _writeEditTelemetry(editEvent);
+            return true;
         }
 
         public void EditProject(Project selectedProject, bool isNewlyCreated = false)
@@ -279,91 +306,138 @@ namespace WorkspacesEditor.ViewModels
                 return;
             }
 
-            _editedProject = selectedProject;
+            EndEditSession();
+            OpenEditor(selectedProject, isNewlyCreated);
+        }
 
-            if (!isNewlyCreated)
-            {
-                selectedProject = new Project(selectedProject);
-            }
-
+        private void OpenEditor(Project selectedProject, bool isNewlyCreated)
+        {
+            _isNewProject = isNewlyCreated;
+            var draft = isNewlyCreated ? selectedProject : new Project(selectedProject);
             if (isNewlyCreated)
             {
                 string defaultNamePrefix = GetString("DefaultWorkspaceNamePrefix");
-                selectedProject.Name = WorkspaceNameGenerator.Create(defaultNamePrefix, Workspaces.Select(project => project.Name));
+                draft.Name = WorkspaceNameGenerator.Create(defaultNamePrefix, Workspaces.Select(project => project.Name));
             }
 
-            CheckShortcutPresence(selectedProject);
-            selectedProject.EditorWindowTitle = isNewlyCreated ? GetString("CreateWorkspace") : GetString("EditWorkspace");
-            selectedProject.InitializePreview();
-
+            CheckShortcutPresence(draft);
+            draft.EditorWindowTitle = isNewlyCreated ? GetString("CreateWorkspace") : GetString("EditWorkspace");
             _lastUpdatedTimer?.Stop();
-
-            // Navigate to editor page, passing the project as parameter
-            StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(selectedProject));
+            ShowDraft(draft);
         }
 
-        public void AddNewProject(Project project)
+        private void ShowDraft(Project project)
         {
-            project.Applications.RemoveAll(app => !app.IsIncluded);
-            project.InitializePreview();
-            Workspaces.Add(project);
-            _serializeWorkspaces(Workspaces.ToList());
-            TempProjectData.DeleteTempFile();
+            _draft = project;
+            _draft.InitializePreview();
+            StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(_draft));
+        }
+
+        private static bool SameId(string left, string right) => string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
+
+        private static Project PrepareForSave(Project draft, Project original)
+        {
+            var saved = new Project(draft, original);
+            saved.Applications.RemoveAll(app => !app.IsIncluded);
+            saved.CloseExpanders();
+            return saved;
+        }
+
+        private bool TryPersist(List<Project> projects)
+        {
+            try
+            {
+                _serializeWorkspaces(projects);
+                SaveFailed = false;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to save workspaces", ex);
+                SaveFailed = true;
+                return false;
+            }
+        }
+
+        public void AddNewProject(Project project) => TryAddNewProject(project);
+
+        private bool TryAddNewProject(Project project)
+        {
+            if (_isDisposed || project == null || !project.CanBeSaved || Workspaces.Any(existing => SameId(existing.Id, project.Id)))
+            {
+                return false;
+            }
+
+            var saved = PrepareForSave(project, project);
+            if (!TryPersist([.. Workspaces, saved]))
+            {
+                return false;
+            }
+
+            saved.InitializePreview();
+            Workspaces.Add(saved);
             RefreshWorkspacesView();
-            _shortcuts.Apply(project);
+            _shortcuts.Apply(saved);
 
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.CreateEvent
             {
                 Successful = true,
-                NumScreens = project.Monitors.Count,
-                AppCount = project.Applications.Count,
-                CliCount = project.Applications.FindAll(app => !string.IsNullOrEmpty(app.CommandLineArguments)).Count,
-                AdminCount = project.Applications.FindAll(app => app.IsElevated).Count,
-                ShortcutCreated = project.IsShortcutNeeded,
+                NumScreens = saved.Monitors.Count,
+                AppCount = saved.Applications.Count,
+                CliCount = saved.Applications.Count(app => !string.IsNullOrEmpty(app.CommandLineArguments)),
+                AdminCount = saved.Applications.Count(app => app.IsElevated),
+                ShortcutCreated = saved.IsShortcutNeeded,
             });
+            return true;
         }
 
-        public void DeleteProject(Project selectedProject)
+        public void DeleteProject(Project selectedProject) => TryDeleteProject(selectedProject);
+
+        private bool TryDeleteProject(Project selectedProject)
         {
+            if (_isDisposed || selectedProject == null)
+            {
+                return false;
+            }
+
+            var projects = Workspaces.ToList();
+            if (!projects.Remove(selectedProject) || !TryPersist(projects))
+            {
+                return false;
+            }
+
             Workspaces.Remove(selectedProject);
-            _serializeWorkspaces(Workspaces.ToList());
             _shortcuts.Remove(selectedProject);
             RefreshWorkspacesView();
-
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.DeleteEvent { Successful = true });
+            return true;
         }
 
         public void SaveOrAddProject(Project projectToSave)
         {
-            if (projectToSave == null)
+            if (_draft == null || !ReferenceEquals(_draft, projectToSave))
             {
                 return;
             }
 
-            projectToSave.CloseExpanders();
-
-            if (Workspaces.Any(x => x.Id == projectToSave.Id))
+            if (_isNewProject ? TryAddNewProject(projectToSave) : TrySaveProject(projectToSave))
             {
-                SaveProject(projectToSave);
+                SwitchToMainView();
             }
-            else
-            {
-                AddNewProject(projectToSave);
-            }
-
-            SwitchToMainView();
         }
 
         public void DeleteProjectById(string projectId)
         {
-            var existing = Workspaces.FirstOrDefault(x => x.Id == projectId);
-            if (existing != null)
+            if (_draft == null || !SameId(_draft.Id, projectId))
             {
-                DeleteProject(existing);
+                return;
             }
 
-            TempProjectData.DeleteTempFile();
-            SwitchToMainView();
+            var existing = Workspaces.FirstOrDefault(project => SameId(project.Id, projectId));
+            if ((_isNewProject && existing == null) || (existing != null && TryDeleteProject(existing)))
+            {
+                SwitchToMainView();
+            }
         }
 
         public void SwitchToMainView()
@@ -373,128 +447,172 @@ namespace WorkspacesEditor.ViewModels
                 return;
             }
 
+            EndEditSession();
+            if (_reloadAfterEdit)
+            {
+                ReloadOverview();
+            }
+
             StrongReferenceMessenger.Default.Send(new GoBackMessage());
-            RefreshWorkspacesView();
             _lastUpdatedTimer?.Start();
-            _editedProject = null;
+        }
+
+        private void EndEditSession()
+        {
+            ++_editGeneration;
+            _draft = null;
+            _launchingDraft = null;
+            _snapshotBase = null;
+            _projectBeforeLaunch = null;
+            _snapshotRequested = false;
+            _isNewProject = false;
+            IsLoading = false;
+            SaveFailed = false;
+            DiscardPublishedSnapshot();
+        }
+
+        private void DiscardPublishedSnapshot()
+        {
+            if (_ownsPublishedSnapshot)
+            {
+                WorkspacesEditorIO.DeleteTemporaryFile(_workspacesEditorIO.TempProjectPath);
+                _ownsPublishedSnapshot = false;
+            }
         }
 
         [RelayCommand]
-        public async Task LaunchProjectAsync(Project project)
+        public Task LaunchProjectAsync(Project project) => LaunchFromOverviewAsync(project, false);
+
+        public Task LaunchProjectAndExitAsync(Project project) => LaunchFromOverviewAsync(project, true);
+
+        private async Task LaunchFromOverviewAsync(Project project, bool exitAfterLaunch)
         {
+            int generation = _editGeneration;
             if (_isDisposed || project == null)
             {
                 return;
             }
 
-            await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
-            if (_isDisposed)
+            if (!await _workspacesEditorIO.LaunchAsync(project.Id, InvokePoint.EditorButton) || _isDisposed)
             {
                 return;
             }
 
-            if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
+            if (_draft != null || _snapshotRequested || IsLoading)
             {
-                foreach (Project p in Workspaces)
-                {
-                    p.InitializePreview();
-                }
+                // Reloading replaces the canonical models. Keep the active editor's
+                // object references until the user finishes with that draft.
+                _reloadAfterEdit = true;
+                return;
+            }
 
-                RefreshWorkspacesView();
+            ReloadOverview();
+            if (exitAfterLaunch && IsCurrent(generation))
+            {
+                Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");
+                StrongReferenceMessenger.Default.Send(new CloseApplicationMessage());
             }
         }
 
-        public async Task LaunchProjectAndExitAsync(Project project)
+        private void ReloadOverview()
         {
-            if (_isDisposed || project == null)
+            _reloadAfterEdit = false;
+            if (_workspacesEditorIO.ParseWorkspaces(this).Result)
             {
-                return;
-            }
-
-            await Task.Run(() => RunLauncher(project.Id, InvokePoint.EditorButton));
-            if (_isDisposed)
-            {
-                return;
-            }
-
-            if (_workspacesEditorIO.ParseWorkspaces(this).Result == true)
-            {
-                foreach (Project p in Workspaces)
+                foreach (Project workspace in Workspaces)
                 {
-                    p.InitializePreview();
+                    workspace.InitializePreview();
                 }
 
                 RefreshWorkspacesView();
             }
-
-            Logger.LogInfo($"Launched the Workspace {project.Name}. Exiting.");
-            StrongReferenceMessenger.Default.Send(new CloseApplicationMessage());
         }
 
         public void EnterSnapshotMode(bool isExistingProjectLaunched)
         {
-            if (_isDisposed)
+            if (_isDisposed || _snapshotRequested || (isExistingProjectLaunched && _snapshotBase == null))
             {
                 return;
             }
 
-            _isExistingProjectLaunched = isExistingProjectLaunched;
+            if (!isExistingProjectLaunched)
+            {
+                EndEditSession();
+            }
 
-            // Minimize the main window
+            _snapshotRequested = true;
             StrongReferenceMessenger.Default.Send(new MinimizeWindowMessage());
-
-            // Request the View layer to show the snapshot window
             StrongReferenceMessenger.Default.Send(new ShowSnapshotWindowMessage());
         }
 
         internal void CancelSnapshot()
         {
-            if (!_isDisposed)
+            if (_isDisposed || !_snapshotRequested)
             {
-                StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
+                return;
             }
+
+            _snapshotRequested = false;
+            _snapshotBase = null;
+            ++_editGeneration;
+            DiscardPublishedSnapshot();
+
+            StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
         }
+
+        private bool IsCurrent(int generation) => !_isDisposed && generation == _editGeneration;
 
         [RelayCommand]
         internal async Task SnapWorkspaceAsync()
         {
-            if (_isDisposed)
+            if (_isDisposed || !_snapshotRequested)
             {
                 return;
             }
 
-            // Restore window immediately so user sees feedback
+            _snapshotRequested = false;
+            int generation = _editGeneration;
+            Project beforeLaunch = _snapshotBase == null ? null : new Project(_snapshotBase);
+            _snapshotBase = null;
+            var requestId = Guid.NewGuid();
             StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
             IsLoading = true;
-
-            await Task.Run(() => RunSnapshotTool(_isExistingProjectLaunched));
-
-            if (_isDisposed)
+            try
             {
-                return;
-            }
-
-            IsLoading = false;
-
-            ProcessCapturedProject(_workspacesEditorIO.ParseTempProject());
-        }
-
-        private void ProcessCapturedProject(Project project)
-        {
-            if (project != null)
-            {
-                if (_isExistingProjectLaunched)
+                if (!await _workspacesEditorIO.CaptureAsync(requestId, beforeLaunch != null) || !IsCurrent(generation))
                 {
-                    project.UpdateAfterLaunchAndEdit(_projectBeforeLaunch);
-                    project.EditorWindowTitle = GetString("EditWorkspace");
-                    project.InitializePreview();
+                    return;
+                }
 
-                    // Navigate to editor page with the updated project
-                    StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(project));
+                Project captured = _workspacesEditorIO.AcceptCapture(requestId);
+                if (captured == null)
+                {
+                    return;
+                }
+
+                _ownsPublishedSnapshot = true;
+                if (beforeLaunch == null)
+                {
+                    OpenEditor(captured, true);
                 }
                 else
                 {
-                    EditProject(project, true);
+                    _projectBeforeLaunch = beforeLaunch;
+                    captured.UpdateAfterLaunchAndEdit(beforeLaunch);
+                    captured.EditorWindowTitle = beforeLaunch.EditorWindowTitle;
+                    ShowDraft(captured);
+                }
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Logger.LogError("Failed to publish the workspace capture", ex);
+            }
+            finally
+            {
+                WorkspacesEditorIO.DeleteTemporaryFile(_workspacesEditorIO.RequestPath(requestId));
+                if (IsCurrent(generation))
+                {
+                    IsLoading = false;
                 }
             }
         }
@@ -502,27 +620,55 @@ namespace WorkspacesEditor.ViewModels
         [RelayCommand]
         internal async Task LaunchAndEditAsync(Project project)
         {
-            if (_isDisposed || project == null)
+            if (_isDisposed || project == null || !ReferenceEquals(project, _draft) || !project.CanBeSaved ||
+                ReferenceEquals(project, _launchingDraft) || _snapshotRequested || IsLoading)
             {
                 return;
             }
 
-            await Task.Run(() => RunLauncher(project.Id, InvokePoint.LaunchAndEdit));
-            if (_isDisposed)
+            int generation = ++_editGeneration;
+            _launchingDraft = project;
+            var requestId = Guid.NewGuid();
+            string draftPath = _workspacesEditorIO.RequestPath(requestId);
+            try
             {
-                return;
-            }
+                try
+                {
+                    _workspacesEditorIO.WriteDraft(project, draftPath);
+                    SaveFailed = false;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to write the workspace draft for launch", ex);
+                    SaveFailed = true;
+                    return;
+                }
 
-            _projectBeforeLaunch = new Project(project);
-            EnterSnapshotMode(true);
+                if (await _workspacesEditorIO.LaunchAsync(project.Id, InvokePoint.LaunchAndEdit, requestId) && IsCurrent(generation))
+                {
+                    _snapshotBase = project;
+                    EnterSnapshotMode(true);
+                }
+            }
+            finally
+            {
+                WorkspacesEditorIO.DeleteTemporaryFile(draftPath);
+                if (ReferenceEquals(_launchingDraft, project))
+                {
+                    _launchingDraft = null;
+                }
+            }
         }
 
         internal void RevertLaunch()
         {
             if (!_isDisposed && _projectBeforeLaunch != null)
             {
-                _projectBeforeLaunch.InitializePreview();
-                StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(_projectBeforeLaunch));
+                ++_editGeneration;
+                IsLoading = false;
+                var beforeLaunch = _projectBeforeLaunch;
+                _projectBeforeLaunch = null;
+                ShowDraft(beforeLaunch);
             }
         }
 
@@ -557,67 +703,6 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
-        private void RunLauncher(string projectId, InvokePoint invokePoint)
-        {
-            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
-            var parentDir = Path.GetDirectoryName(exeDir);
-            var launcherPath = Path.Combine(parentDir, "PowerToys.WorkspacesLauncher.exe");
-
-            if (!File.Exists(launcherPath))
-            {
-                launcherPath = Path.Combine(exeDir, "PowerToys.WorkspacesLauncher.exe");
-            }
-
-            using Process process = new();
-            process.StartInfo = ModuleProcess.CreateStartInfo(launcherPath, $"{projectId} {(int)invokePoint}");
-            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(launcherPath);
-
-            try
-            {
-                process.Start();
-
-                // A launch can legitimately wait for the user's trust/elevation decision.
-                process.WaitForExit();
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to launch workspace: {ex.Message}");
-            }
-        }
-
-        private void RunSnapshotTool(bool isExistingProjectLaunched)
-        {
-            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
-
-            // Snapshot tool is in the parent directory
-            var parentDir = Path.GetDirectoryName(exeDir);
-            var snapshotUtilsPath = Path.Combine(parentDir, "PowerToys.WorkspacesSnapshotTool.exe");
-
-            if (!File.Exists(snapshotUtilsPath))
-            {
-                // Fallback: try same directory
-                snapshotUtilsPath = Path.Combine(exeDir, "PowerToys.WorkspacesSnapshotTool.exe");
-            }
-
-            Process process = new Process();
-            process.StartInfo = ModuleProcess.CreateStartInfo(snapshotUtilsPath, isExistingProjectLaunched ? $"{(int)InvokePoint.LaunchAndEdit}" : string.Empty);
-            process.StartInfo.WorkingDirectory = Path.GetDirectoryName(snapshotUtilsPath);
-
-            try
-            {
-                process.Start();
-                if (!process.WaitForExit(120_000))
-                {
-                    Logger.LogWarning("Snapshot tool did not exit within 120 seconds.");
-                    process.Kill();
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"Failed to run snapshot tool: {ex.Message}");
-            }
-        }
-
         private static string GetString(string key)
         {
             return ResourceLoaderInstance.ResourceLoader?.GetString(key) ?? key;
@@ -632,6 +717,7 @@ namespace WorkspacesEditor.ViewModels
         {
             if (!_isDisposed)
             {
+                EndEditSession();
                 _lastUpdatedTimer?.Stop();
                 StrongReferenceMessenger.Default.UnregisterAll(this);
                 _isDisposed = true;

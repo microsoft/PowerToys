@@ -37,7 +37,7 @@ namespace WorkspacesEditor
             }
 
             // End the local recording session when the UI message loop exits, including Runner shutdown.
-            using var etwTrace = new ETWTrace();
+            using var etwTrace = TryStartLocalRecording();
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
                 var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
@@ -48,6 +48,11 @@ namespace WorkspacesEditor
                 if (args.Length > 0 && int.TryParse(args[0], out int powerToysRunnerPid))
                 {
                     Logger.LogInfo($"WorkspacesEditor started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
+                    if (args.Length > 1 && Guid.TryParseExact(args[1], "B", out _))
+                    {
+                        app.ListenForModuleRequests(args[1], dispatcherQueue);
+                    }
+
                     if (!RunnerHelper.TryWaitForProcessExit(powerToysRunnerPid, () =>
                     {
                         Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor.");
@@ -58,6 +63,19 @@ namespace WorkspacesEditor
                     }
                 }
             });
+        }
+
+        private static ETWTrace TryStartLocalRecording()
+        {
+            try
+            {
+                return new ETWTrace();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to start local Workspaces Editor telemetry recording.", ex);
+                return null;
+            }
         }
     }
 }

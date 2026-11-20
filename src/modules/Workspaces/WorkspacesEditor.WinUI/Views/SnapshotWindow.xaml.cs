@@ -3,13 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
 
 using CommunityToolkit.Mvvm.Messaging;
 
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
-using WinRT.Interop;
 using WinUIEx;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
@@ -27,7 +27,7 @@ namespace WorkspacesEditor.Views
 
             this.Title = ResourceLoaderInstance.ResourceLoader?.GetString("SnapshotWindowTitle") ?? "Snapshot Creator";
 
-            AppWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
+            AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "Workspaces.ico"));
 
             // Custom title bar
             ExtendsContentIntoTitleBar = true;
@@ -43,13 +43,11 @@ namespace WorkspacesEditor.Views
             // Set focus to the Capture button when window loads
             this.Activated += (s, e) =>
             {
-                if (_captured || _closingForShutdown)
+                if (_captured || _closingForShutdown || e.WindowActivationState == WindowActivationState.Deactivated)
                 {
                     return;
                 }
 
-                var snapshotHwnd = WindowNative.GetWindowHandle(this);
-                SetForegroundWindow(snapshotHwnd);
                 SnapshotButton.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             };
 
@@ -88,9 +86,5 @@ namespace WorkspacesEditor.Views
                 StrongReferenceMessenger.Default.Send(new SnapshotCancelledMessage());
             }
         }
-
-        [System.Runtime.InteropServices.DllImport("user32.dll")]
-        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }
