@@ -1521,6 +1521,40 @@ public sealed partial class ListViewModelNavigationTests
     }
 
     [DataTestMethod]
+    [DataRow(false, false, false)]
+    [DataRow(true, false, true)]
+    [DataRow(false, true, true)]
+    public async Task ContentAvailabilityReflectsItemsAndEmptyState(
+        bool hasItems,
+        bool hasEmptyContent,
+        bool expectedHasContent)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        IListItem[] items = hasItems ? [CreateItem("Item")] : [];
+        var page = new StaticPage(items);
+        if (hasEmptyContent)
+        {
+            page.EmptyContent = new CommandItem(title: "No items");
+        }
+
+        var viewModel = CreateViewModel(page, scheduler);
+
+        try
+        {
+            Assert.IsTrue(viewModel.HasContent, "A page that has not finished initializing has a loading body to show.");
+            Assert.IsTrue(await viewModel.InitializeAsync());
+            scheduler.Drain();
+            Assert.AreEqual(expectedHasContent, viewModel.HasContent);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [DataTestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task EmptyPageRetainsItsActionWhenSelectionIsClearedOrRestored(bool resume)
