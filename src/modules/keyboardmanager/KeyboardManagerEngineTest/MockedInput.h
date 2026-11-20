@@ -1,5 +1,6 @@
 #pragma once
 #include <keyboardmanager/common/InputInterface.h>
+#include <deque>
 #include <vector>
 #include <functional>
 
@@ -28,6 +29,19 @@ namespace KeyboardManagerInput
 
         std::wstring currentProcess;
 
+        // When true, input sent with SendVirtualInput while the hook procedure is running is queued and
+        // delivered after the outermost hook call returns, as Windows does for SendInput from a
+        // low-level hook callback (assumed). By default it is delivered synchronously (re-entering the hook).
+        bool deferInjectedInput = false;
+        int hookDepth = 0;
+        std::deque<INPUT> deferredInputs;
+
+        // Deliver one input to the hook and update the key state. `injected` sets LLKHF_INJECTED.
+        void DeliverInput(const INPUT& input, bool injected);
+
+        // Deliver queued injected input (deferred mode, outside the hook only).
+        void DeliverDeferredInput();
+
     public:
         MockedInput()
         {
@@ -37,8 +51,16 @@ namespace KeyboardManagerInput
         // Set the keyboard hook procedure to be tested
         void SetHookProc(std::function<intptr_t(LowlevelKeyboardEvent*)> hookProcedure);
 
-        // Function to simulate keyboard input
+        // Function to simulate keyboard input. The hook sees it as injected (LLKHF_INJECTED), as it sees
+        // SendInput. scanCode, LLKHF_EXTENDED and LLKHF_UP are filled from wScan and dwFlags.
         bool SendVirtualInput(const std::vector<INPUT>& inputs);
+
+        // Function to simulate input from a real keyboard: like SendVirtualInput, but without
+        // LLKHF_INJECTED and never deferred.
+        bool SendPhysicalInput(const std::vector<INPUT>& inputs);
+
+        // Deliver input injected from inside the hook after the hook returns (see deferInjectedInput).
+        void SetDeferInjectedInput(bool defer);
 
         // Function to simulate keyboard hook behavior
         intptr_t MockedKeyboardHook(LowlevelKeyboardEvent* data);

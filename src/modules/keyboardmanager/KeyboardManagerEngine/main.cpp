@@ -77,8 +77,9 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
     if (kbm.HasRegisteredRemappings())
         kbm.StartLowlevelKeyboardHook();
 
+    // Applies a staged profile change when no hook is installed, then installs/removes the hooks.
     auto StartHookFunc = [&kbm]() {
-        kbm.StartLowlevelKeyboardHook();
+        kbm.ReconcileHooks();
     };
 
     run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc } });

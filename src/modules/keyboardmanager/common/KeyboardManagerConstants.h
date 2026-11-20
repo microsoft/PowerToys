@@ -95,6 +95,12 @@ namespace KeyboardManagerConstants
     inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101; // Shortcut remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SUPPRESS_FLAG = 0x111; // Key events which must be suppressed
 
+    // A key-down KBM re-sends so that its own handlers process it again (shortcut handling, "send current
+    // key pressed without shortcut flag"). Bit 0 (KEYBOARDMANAGER_INJECTED_FLAG) is deliberately clear, so
+    // the handlers treat it exactly like the dwExtraInfo 0 it replaces (not as KBM output); the marker only
+    // lets the profile-swap gate tell it apart from another program's input (it is not a new key press).
+    inline const ULONG_PTR KEYBOARDMANAGER_REPROCESS_FLAG = 0x4B424D00;
+
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;
 
