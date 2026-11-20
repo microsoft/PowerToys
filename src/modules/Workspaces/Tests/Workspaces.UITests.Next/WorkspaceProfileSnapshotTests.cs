@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.IO.Compression;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -12,6 +13,10 @@ namespace Microsoft.Workspaces.UITests
     {
         private DirectoryInfo temporaryDirectory = null!;
         private string profile = null!;
+
+        private string RecoveryDirectory => profile + ".UITestRecovery";
+
+        private string OriginalDirectory => Path.Combine(RecoveryDirectory, "original");
 
         [TestInitialize]
         public void SetUp()
@@ -53,7 +58,7 @@ namespace Microsoft.Workspaces.UITests
                 // Simulate the editor's last write after the test claims the lease.
                 File.WriteAllBytes(workspace, originals["workspaces.json"]!);
                 snapshot.Isolate();
-                Assert.IsTrue(File.Exists(Path.Combine(profile + ".UITestRecovery", "original.zip")));
+                Assert.IsTrue(Directory.Exists(OriginalDirectory));
                 Assert.AreEqual("before", File.ReadAllText(unrelated));
                 foreach (var name in originals.Keys)
                 {
@@ -81,7 +86,7 @@ namespace Microsoft.Workspaces.UITests
             }
 
             Assert.AreEqual("during", File.ReadAllText(unrelated));
-            Assert.IsFalse(File.Exists(Path.Combine(profile + ".UITestRecovery", "original.zip")));
+            Assert.IsFalse(Directory.Exists(OriginalDirectory));
         }
 
         [TestMethod]
@@ -117,8 +122,7 @@ namespace Microsoft.Workspaces.UITests
             CollectionAssert.AreEqual(original, File.ReadAllBytes(request));
             Assert.AreEqual(originalWriteTime, File.GetLastWriteTimeUtc(request));
             Assert.AreEqual("new request", File.ReadAllText(laterRequest));
-            using var interrupted = ZipFile.OpenRead(Directory.GetFiles(profile + ".UITestRecovery", "interrupted-*.zip").Single());
-            Assert.AreEqual("later version of saved request", ReadEntry(interrupted, Path.GetFileName(request)));
+            Assert.AreEqual("later version of saved request", File.ReadAllText(InterruptedFile(Path.GetFileName(request))));
             foreach (var name in unrelated)
             {
                 Assert.AreEqual(name, File.ReadAllText(Path.Combine(profile, name)));
@@ -126,14 +130,24 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        public void NextRunRestoresInterruptedOriginalsAndKeepsIntermediateDataRecoverable()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void NextRunRestoresInterruptedOriginalsAndKeepsIntermediateDataRecoverable(bool versionOneBackup)
         {
-            var recovery = profile + ".UITestRecovery";
             var workspace = Path.Combine(profile, "workspaces.json");
             var draft = Path.Combine(profile, "temp-workspaces.json");
+            var oldArchive = Path.Combine(RecoveryDirectory, "original.zip");
             File.WriteAllText(workspace, "original workspace");
-            using (var previous = new WorkspaceProfileSnapshot(profile))
+            if (versionOneBackup)
             {
+                Directory.CreateDirectory(RecoveryDirectory);
+                using var archive = ZipFile.Open(oldArchive, ZipArchiveMode.Create);
+                archive.CreateEntry("PowerToys.Workspaces.UITests.Next.v1");
+                archive.CreateEntryFromFile(workspace, "workspaces.json");
+            }
+            else
+            {
+                using var previous = new WorkspaceProfileSnapshot(profile);
                 previous.Isolate();
                 previous.LeaveForRecovery();
             }
@@ -149,7 +163,7 @@ namespace Microsoft.Workspaces.UITests
             }
 
             Assert.AreEqual("interrupted workspace", File.ReadAllText(workspace));
-            Assert.IsTrue(File.Exists(Path.Combine(recovery, "original.zip")));
+            Assert.IsTrue(versionOneBackup ? File.Exists(oldArchive) : Directory.Exists(OriginalDirectory));
             using (var snapshot = new WorkspaceProfileSnapshot(profile))
             {
                 snapshot.Isolate();
@@ -160,12 +174,42 @@ namespace Microsoft.Workspaces.UITests
 
             Assert.AreEqual("original workspace", File.ReadAllText(workspace));
             Assert.IsFalse(File.Exists(draft));
-            Assert.IsFalse(File.Exists(Path.Combine(recovery, "original.zip")));
-            var archives = Directory.GetFiles(recovery, "interrupted-*.zip");
-            Assert.HasCount(1, archives);
-            using var interrupted = ZipFile.OpenRead(archives[0]);
-            Assert.AreEqual("interrupted workspace", ReadEntry(interrupted, "workspaces.json"));
-            Assert.AreEqual("interrupted draft", ReadEntry(interrupted, "temp-workspaces.json"));
+            Assert.IsFalse(Directory.Exists(OriginalDirectory));
+            Assert.IsFalse(File.Exists(oldArchive));
+            Assert.AreEqual("interrupted workspace", File.ReadAllText(InterruptedFile("workspaces.json")));
+            Assert.AreEqual("interrupted draft", File.ReadAllText(InterruptedFile("temp-workspaces.json")));
+        }
+
+        [TestMethod]
+        [DataRow("workspaces.json")]
+        [DataRow("temp-workspaces.json.{32f60caf-0800-40b3-906e-399c9963b0bb}")]
+        public void VersionOneBackupKeepsMatchingOriginalFileMetadata(string name)
+        {
+            var path = Path.Combine(profile, name);
+            File.WriteAllText(path, "original");
+            File.SetAttributes(path, File.GetAttributes(path) | FileAttributes.Hidden);
+            File.SetLastWriteTimeUtc(path, new DateTime(2024, 1, 2, 3, 4, 5, DateTimeKind.Utc).AddTicks(1_234_567));
+            var modified = File.GetLastWriteTimeUtc(path);
+            Directory.CreateDirectory(RecoveryDirectory);
+            using (var archive = ZipFile.Open(Path.Combine(RecoveryDirectory, "original.zip"), ZipArchiveMode.Create))
+            {
+                archive.CreateEntry("PowerToys.Workspaces.UITests.Next.v1");
+                var entry = archive.CreateEntryFromFile(path, name);
+                if (name != "workspaces.json")
+                {
+                    entry.Comment = modified.ToString("O", CultureInfo.InvariantCulture);
+                }
+            }
+
+            using (var next = new WorkspaceProfileSnapshot(profile))
+            {
+                next.Isolate();
+                Assert.IsFalse(File.Exists(path));
+            }
+
+            Assert.AreEqual("original", File.ReadAllText(path));
+            Assert.IsTrue(File.GetAttributes(path).HasFlag(FileAttributes.Hidden));
+            Assert.AreEqual(modified, File.GetLastWriteTimeUtc(path));
         }
 
         [TestMethod]
@@ -188,27 +232,99 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        public void FailedCaptureKeepsOriginalsInPlaceAndCanBeRetried()
+        public void ProductWorkspaceLockProtectsIsolationAndRestoreButAllowsTestWrites()
+        {
+            var workspace = Path.Combine(profile, "workspaces.json");
+            var lockPath = workspace + ".lock";
+            File.WriteAllText(workspace, "original");
+            using (var snapshot = new WorkspaceProfileSnapshot(profile))
+            {
+                using (File.Open(lockPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+                {
+                    Assert.Throws<IOException>(() => snapshot.Isolate());
+                    Assert.AreEqual("original", File.ReadAllText(workspace));
+                }
+
+                snapshot.Isolate();
+                using (File.Open(lockPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                {
+                    File.WriteAllText(workspace, "product write");
+                    Assert.Throws<IOException>(() => snapshot.Dispose());
+                    Assert.AreEqual("product write", File.ReadAllText(workspace));
+                    Assert.AreEqual("original", File.ReadAllText(Path.Combine(OriginalDirectory, "workspaces.json")));
+                }
+            }
+
+            using (var next = new WorkspaceProfileSnapshot(profile))
+            {
+                next.Isolate();
+            }
+
+            Assert.AreEqual("original", File.ReadAllText(workspace));
+        }
+
+        [TestMethod]
+        [DataRow("workspaces.json")]
+        [DataRow("editor-window.json")]
+        public void FailedIsolationOnlyRollsBackMovedFilesAndPreservesLaterEdits(string blockedName)
         {
             var workspace = Path.Combine(profile, "workspaces.json");
             var placement = Path.Combine(profile, "editor-window.json");
+            var settings = Path.Combine(profile, "settings.json");
+            var blocked = Path.Combine(profile, blockedName);
             File.WriteAllText(workspace, "original workspace");
             File.WriteAllText(placement, "original placement");
+            File.WriteAllText(settings, "unchanged settings");
             using (var snapshot = new WorkspaceProfileSnapshot(profile))
             {
-                using (File.Open(placement, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                // Block the first move or a later move, while permitting ordinary reads.
+                // The subsequent settings file was never moved and must not be replaced on rollback.
+                using (File.Open(settings, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (File.Open(blocked, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     Assert.Throws<IOException>(() => snapshot.Isolate());
+                    Assert.AreEqual("original workspace", File.ReadAllText(workspace));
+                    Assert.AreEqual("original placement", File.ReadAllText(placement));
+                    Assert.AreEqual("unchanged settings", File.ReadAllText(settings));
+                    Assert.IsFalse(Directory.Exists(OriginalDirectory));
+                    Assert.IsFalse(Directory.Exists(Path.Combine(RecoveryDirectory, "capturing")));
                 }
-
-                Assert.AreEqual("original workspace", File.ReadAllText(workspace));
-                Assert.AreEqual("original placement", File.ReadAllText(placement));
-                Assert.IsFalse(File.Exists(Path.Combine(profile + ".UITestRecovery", "original.zip")));
-                snapshot.Isolate();
-                Assert.IsFalse(File.Exists(placement));
             }
 
-            Assert.AreEqual("original placement", File.ReadAllText(placement));
+            File.WriteAllText(blocked, "user edit after failure");
+            using (var retry = new WorkspaceProfileSnapshot(profile))
+            {
+                retry.Isolate();
+                Assert.IsFalse(File.Exists(workspace));
+            }
+
+            Assert.AreEqual("user edit after failure", File.ReadAllText(blocked));
+            Assert.AreEqual("unchanged settings", File.ReadAllText(settings));
+        }
+
+        [TestMethod]
+        public void InterruptedCaptureRestoresMovedFilesAndKeepsNewFilesAtTheirOriginalPaths()
+        {
+            var workspace = Path.Combine(profile, "workspaces.json");
+            var placement = Path.Combine(profile, "editor-window.json");
+            File.WriteAllText(workspace, "original");
+            using (var prior = new WorkspaceProfileSnapshot(profile))
+            {
+                prior.Isolate();
+                prior.LeaveForRecovery();
+            }
+
+            // Recreate the state immediately before the final directory rename. Placement
+            // was absent when capture started, so there is no moved placement file to undo.
+            Directory.Move(OriginalDirectory, Path.Combine(RecoveryDirectory, "capturing"));
+            File.WriteAllText(placement, "created after the interruption");
+            using (var next = new WorkspaceProfileSnapshot(profile))
+            {
+                next.Isolate();
+            }
+
+            Assert.AreEqual("original", File.ReadAllText(workspace));
+            Assert.AreEqual("created after the interruption", File.ReadAllText(placement));
         }
 
         [TestMethod]
@@ -226,16 +342,49 @@ namespace Microsoft.Workspaces.UITests
             });
 
             Assert.AreEqual("keep", File.ReadAllText(unrelated));
-            using var original = ZipFile.OpenRead(Path.Combine(profile + ".UITestRecovery", "original.zip"));
-            Assert.AreEqual("original", ReadEntry(original, "workspaces.json"));
+            Assert.AreEqual("original", File.ReadAllText(Path.Combine(OriginalDirectory, "workspaces.json")));
         }
 
-        private static string ReadEntry(ZipArchive archive, string name)
+        [TestMethod]
+        public void DisposeRestoresOriginalNtfsMetadataWhenReplacementContentIsIdentical()
         {
-            var entry = archive.GetEntry(name);
-            Assert.IsNotNull(entry);
-            using var reader = new StreamReader(entry.Open());
-            return reader.ReadToEnd();
+            if (!string.Equals(new DriveInfo(Path.GetPathRoot(profile)!).DriveFormat, "NTFS", StringComparison.OrdinalIgnoreCase))
+            {
+                Assert.Inconclusive("This test requires an NTFS temporary directory.");
+            }
+
+            var file = new FileInfo(Path.Combine(profile, "workspaces.json"));
+            var streamPath = file.FullName + ":powertoys-test";
+            byte[] content = [0x00, 0x7b, 0x7d, 0xff];
+            File.WriteAllBytes(file.FullName, content);
+            File.WriteAllText(streamPath, "original stream");
+            var access = System.Security.AccessControl.AccessControlSections.Access;
+            var permissions = file.GetAccessControl(access);
+
+            // Protect the DACL but copy its inherited permissions so access remains the same.
+            permissions.SetAccessRuleProtection(isProtected: true, preserveInheritance: true);
+            file.SetAccessControl(permissions);
+            var originalDacl = file.GetAccessControl(access).GetSecurityDescriptorSddlForm(access);
+            File.SetAttributes(file.FullName, File.GetAttributes(file.FullName) | FileAttributes.Hidden);
+            var originalTime = new DateTime(2024, 1, 2, 3, 4, 5, DateTimeKind.Utc).AddTicks(1_234_567);
+            File.SetLastWriteTimeUtc(file.FullName, originalTime);
+
+            using (var snapshot = new WorkspaceProfileSnapshot(profile))
+            {
+                snapshot.Isolate();
+                Assert.IsFalse(File.Exists(file.FullName));
+                File.WriteAllBytes(file.FullName, content);
+                Assert.AreNotEqual(originalDacl, file.GetAccessControl(access).GetSecurityDescriptorSddlForm(access));
+            }
+
+            CollectionAssert.AreEqual(content, File.ReadAllBytes(file.FullName));
+            Assert.IsTrue(File.GetAttributes(file.FullName).HasFlag(FileAttributes.Hidden));
+            Assert.AreEqual(originalDacl, file.GetAccessControl(access).GetSecurityDescriptorSddlForm(access));
+            Assert.AreEqual("original stream", File.ReadAllText(streamPath));
+            Assert.AreEqual(originalTime, File.GetLastWriteTimeUtc(file.FullName));
         }
+
+        private string InterruptedFile(string name) =>
+            Path.Combine(Directory.GetDirectories(RecoveryDirectory, "interrupted-*").Single(), name);
     }
 }

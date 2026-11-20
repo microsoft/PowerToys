@@ -121,13 +121,14 @@ Requirements for a host run:
   and the shared `WinUI3Apps` dependencies.
 - **Do not touch the mouse or keyboard** while a case runs — the tests move the
   real cursor and rely on foreground ownership.
-- The original module settings, saved workspaces, temporary capture, GUID-named capture
-  and launch requests, and editor placement
-  are kept in `%LOCALAPPDATA%\Microsoft\PowerToys\Workspaces.UITestRecovery\original.zip`
-  until restoration succeeds. After an interrupted run, the next run saves the current
-  versions in a dated `interrupted-*.zip` beside the original before restoring it.
-  A request that reuses a saved ID during the run is also archived before restoration.
-  Restored request files retain their original UTC modification time for the editor's one-hour expiry.
+- The suite moves the original module settings, workspace list, editor placement, temporary
+  capture, and GUID-named requests into `%LOCALAPPDATA%\Microsoft\PowerToys\Workspaces.UITestRecovery\original`.
+  Moving the files preserves their original NTFS permissions, alternate data streams, attributes,
+  and modification times. Isolation and restoration hold the product's `workspaces.json.lock`.
+  The editor and launcher can acquire that lock during the tests.
+- After an interruption, the next run restores files already moved and keeps newer versions
+  that would be replaced in a dated `interrupted-*` directory. This also covers a request
+  that reuses a saved GUID. Pending `original.zip` backups from earlier versions are recovered.
   Normal cleanup also restores the tracked desktop shortcuts and generated icons.
 
 The **unpackaged** placement/launch/cancel cases can use matching local Debug
