@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -101,13 +103,17 @@ namespace Microsoft.Workspaces.UITests
                 _ => throw new ArgumentOutOfRangeException(nameof(index)),
             };
             OpenEditor();
+            if (StoredSortIndex() == index)
+            {
+                SelectWorkspaceSort((index + 1) % 3);
+            }
+
             SelectWorkspaceSort(index);
             AssertWorkspaceOrder(expected);
-            Assert.AreEqual(index, WorkspaceTestState.ReadObject(WorkspaceTestState.SettingsPath)["properties"]!["sortby"]!.GetValue<int>());
             CloseEditor();
             OpenEditor();
-            AssertWorkspaceSortSelected(index, order);
             AssertWorkspaceOrder(expected);
+            AssertWorkspaceSortSelected(index, order);
         }
 
         [TestMethod]
@@ -300,24 +306,75 @@ namespace Microsoft.Workspaces.UITests
         private void SelectWorkspaceSort(int index)
         {
             Step($"Selecting workspace sort order {index}.");
-            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortComboBox"), 15_000).Invoke(msPostAction: 0);
-            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
-            process.Find<Element>(By.AccessibilityId(SortItemId(index)), 10_000).Invoke(msPostAction: 0);
-            AssertWorkspaceSortSelected(index);
+            string itemId = SortItemId(index);
+            var saved = WaitHelper.WaitForStable(
+                StoredSortIndex,
+                actual => actual == index,
+                15_000,
+                recover: _ =>
+                {
+                    var (window, item) = OpenWorkspaceSortItem(itemId);
+                    if (UiString(item, "toggleState") == "off")
+                    {
+                        // Invoking a radio item dismisses the flyout. Verify the resulting
+                        // setting instead of querying the old menu peer after activation.
+                        WinappCli.InvokeAssertSuccess("ui", "invoke", itemId, "-w", window, "--action", "toggle", "--json");
+                    }
+                },
+                shouldRetryException: error => error is IOException or JsonException ||
+                    (error is AssertFailedException && (IsStaleElement(error) ||
+                    error.Message.Contains("element_not_found", StringComparison.OrdinalIgnoreCase) ||
+                    error.Message.Contains("not found or not accessible", StringComparison.OrdinalIgnoreCase))));
+            Assert.IsTrue(saved.Succeeded, $"Selecting '{itemId}' did not persist sort index {index}. Observed {saved.LastObservation}. {saved.LastException?.Message}");
         }
 
-        private void AssertWorkspaceSortSelected(int index, string? expectedName = null)
+        private static int StoredSortIndex() => WorkspaceTestState.ReadObject(WorkspaceTestState.SettingsPath)["properties"]!["sortby"]!.GetValue<int>();
+
+        private void AssertWorkspaceSortSelected(int index, string expectedName)
         {
-            Editor.Find<Button>(By.AccessibilityId("WorkspaceSortComboBox"), 15_000).Invoke(msPostAction: 0);
-            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
-            var selected = process.Find<Element>(By.AccessibilityId(SortItemId(index)), 10_000);
-            Assert.IsTrue(selected.WaitForProperty("ToggleState", "On", 5_000), "The sort menu did not retain its selected option.");
-            if (expectedName is not null)
+            var (_, item) = OpenWorkspaceSortItem(SortItemId(index));
+            Assert.AreEqual(expectedName, UiString(item, "name"));
+            Assert.AreEqual("on", UiString(item, "toggleState"), "The sort menu did not retain its selected option after restart.");
+        }
+
+        private (string Window, JsonElement Item) OpenWorkspaceSortItem(string itemId)
+        {
+            string process = Editor.ProcessId.ToString(CultureInfo.InvariantCulture);
+            (string Window, JsonElement Item)? FindOpenItem()
             {
-                Assert.AreEqual(expectedName, selected.Name);
+                // A MenuFlyout may be hosted by its own HWND. Inspect the editor process
+                // and use the owning window of the visible item for subsequent actions.
+                var tree = WinappCli.InvokeJson("ui", "inspect", "-a", process, "--json", "-d", "12");
+                foreach (var (handle, root) in WindowRoots(tree))
+                {
+                    foreach (var item in Subtree(root))
+                    {
+                        if (UiString(item, "type") == "MenuItem" && UiString(item, "automationId") == itemId && IsVisible(item))
+                        {
+                            return (handle.ToString(CultureInfo.InvariantCulture), item);
+                        }
+                    }
+                }
+
+                return null;
             }
 
-            KeyboardHelper.SendKeys(Key.Esc);
+            var ready = WaitHelper.WaitForStable(
+                () =>
+                {
+                    var item = FindOpenItem();
+                    if (item is null && WindowControl.WaitForForeground(new IntPtr(Editor.WindowHandle), 2_000))
+                    {
+                        WinappCli.InvokeAssertSuccess("ui", "invoke", "WorkspaceSortComboBox", "-w", Editor.WindowHandleArg, "--action", "invoke");
+                        item = WaitHelper.WaitForStable(FindOpenItem, hit => hit.HasValue, 2_000).LastObservation;
+                    }
+
+                    return item;
+                },
+                hit => hit.HasValue,
+                10_000);
+            Assert.IsTrue(ready.Succeeded, $"The editor did not show sort option '{itemId}'. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            return ready.LastObservation!.Value;
         }
 
         private static string SortItemId(int index) => index switch

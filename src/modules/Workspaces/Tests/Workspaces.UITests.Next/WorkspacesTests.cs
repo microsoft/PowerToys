@@ -296,27 +296,20 @@ namespace Microsoft.Workspaces.UITests
             }
             else
             {
-                Step($"Invoking the workspace card '{name}'.");
-                OpenCardForEditing(name);
+                Step($"Opening the workspace card '{name}' with the mouse.");
+                OpenCardForEditing(card);
             }
 
             Assert.IsTrue(Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000), "The editing page did not open.");
             Assert.AreEqual(name, Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Value);
         }
 
-        // Open a workspace's editing page with a real mouse click on the card's name region. The whole
-        // card opens the editor, and its left name area never overlaps the Launch button on the right.
-        // Reacquire its stable workspace ID after a save, sort, or filter changes the list.
-        // A single physical click can still be silently dropped while the editor is settling foreground /
-        // z-order right after it opens (observed in CI), so retry a bounded number of times: re-acquire the
-        // card by name (its bounds survive re-projection), click, and stop the moment the editing page's
-        // ready signal (EditNameTextBox) appears. Only click while the workspace list is still active, so a
-        // retry can never land a click on the editing page itself — this stays idempotent, never a longer
-        // arbitrary sleep.
-        private void OpenCardForEditing(string name)
+        private void OpenCardForEditing(WorkspaceCard target)
         {
             using var physicalCoordinates = new PhysicalCoordinateScope();
+            var handle = new IntPtr(Editor.WindowHandle);
             const int maxAttempts = 4;
+            int clicks = 0;
             for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
                 if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 500))
@@ -336,22 +329,60 @@ namespace Microsoft.Workspaces.UITests
                     continue;
                 }
 
-                var card = WaitForCard(name);
                 Editor.EnsureForeground();
-                Assert.IsTrue(
-                    WindowControl.WaitForForeground(new IntPtr(Editor.WindowHandle), 10_000),
-                    $"The editor did not acquire foreground to open a workspace card: {WindowControl.GetForegroundWindowInfo()}.");
-                var x = card.X + Math.Clamp(card.Width / 8, 24, 120);
+                if (!WindowControl.WaitForForeground(handle, 2_500))
+                {
+                    Step($"Card {target.Id}, attempt {attempt}: editor HWND {handle} did not acquire foreground (HWND {WindowControl.GetForegroundWindowHandle()}).");
+                    continue;
+                }
+
+                // Bringing the editor forward can restore it. Read the card's bounds from the active overview afterward.
+                var cards = WorkspaceCards()?.Where(candidate => candidate.Id == target.Id).ToArray();
+                if (cards is not [var card] || card.Name != target.Name || !card.Visible)
+                {
+                    Step($"Card {target.Id}, attempt {attempt}: the overview did not expose a unique visible card.");
+                    continue;
+                }
+
+                // Click the left side of the card, away from its nested Launch button.
+                var x = card.X + Math.Min(card.Width - 1, Math.Clamp(card.Width / 8, 24, 120));
                 var y = card.Y + (card.Height / 2);
-                Step($"Clicking the workspace card '{name}' (attempt {attempt}).");
+                if (!WindowControl.IsPointOwnedByWindow(handle, x, y))
+                {
+                    Step($"Card {target.Id}, attempt {attempt}: ({x}, {y}) was covered before moving the pointer. Foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
+                    continue;
+                }
+
+                Step($"Card {target.Id}, attempt {attempt}: targeting ({x}, {y}) on editor HWND {handle}.");
                 MouseHelper.MoveTo(x, y);
                 Thread.Sleep(50);
+                var afterMove = WorkspaceCards()?.Where(candidate => candidate.Id == target.Id).ToArray();
+                if (afterMove is not [var current] || current != card)
+                {
+                    Step($"Skipped mouse-down. The overview, card identity, or card bounds changed after moving to ({x}, {y}).");
+                    continue;
+                }
+
+                var cursor = MouseHelper.GetMousePosition();
+                var foreground = WindowControl.GetForegroundWindowHandle();
+                bool owned = WindowControl.IsPointOwnedByWindow(handle, cursor.X, cursor.Y);
+                if (cursor != (x, y) || foreground != handle || !owned)
+                {
+                    Step($"Skipped mouse-down. Cursor {cursor}, foreground HWND {foreground}, editor owns cursor point: {owned}.");
+                    continue;
+                }
+
                 MouseHelper.LeftClick();
+                clicks++;
                 if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 3_000))
                 {
                     return;
                 }
             }
+
+            Assert.IsTrue(
+                clicks > 0 && Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000),
+                $"Card {target.Id} did not open. Sent {clicks} mouse clicks in {maxAttempts} attempts. Editor HWND {handle}, foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
         }
 
         private void Search(string term)
@@ -416,7 +447,10 @@ namespace Microsoft.Workspaces.UITests
             return ready.LastObservation!;
         }
 
-        private IEnumerable<JsonElement> EditorRoots(JsonElement tree)
+        private IEnumerable<JsonElement> EditorRoots(JsonElement tree) =>
+            WindowRoots(tree).Where(root => root.Handle == Editor.WindowHandle).Select(root => root.Element);
+
+        private static IEnumerable<(long Handle, JsonElement Element)> WindowRoots(JsonElement tree)
         {
             // A stale target can return a JSON error envelope while the overview is being rebuilt.
             if (!tree.TryGetProperty("windows", out var windows))
@@ -426,11 +460,12 @@ namespace Microsoft.Workspaces.UITests
 
             foreach (var window in windows.EnumerateArray())
             {
-                if (window.GetProperty("hwnd").GetInt64() == Editor.WindowHandle && window.TryGetProperty("elements", out var elements))
+                if (window.TryGetProperty("elements", out var elements))
                 {
+                    var handle = window.GetProperty("hwnd").GetInt64();
                     foreach (var element in elements.EnumerateArray())
                     {
-                        yield return element;
+                        yield return (handle, element);
                     }
                 }
             }
@@ -517,7 +552,8 @@ namespace Microsoft.Workspaces.UITests
                         UiCoordinate(element, "x"),
                         UiCoordinate(element, "y"),
                         UiCoordinate(element, "width"),
-                        UiCoordinate(element, "height")));
+                        UiCoordinate(element, "height"),
+                        IsVisible(element)));
                 }
             }
 
@@ -544,7 +580,7 @@ namespace Microsoft.Workspaces.UITests
             return result.LastObservation![0];
         }
 
-        private readonly record struct WorkspaceCard(string Id, string Name, int X, int Y, int Width, int Height);
+        private readonly record struct WorkspaceCard(string Id, string Name, int X, int Y, int Width, int Height, bool Visible);
 
         private void AssertWorkspaceNames(params string[] expected)
         {
