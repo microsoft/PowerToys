@@ -269,11 +269,6 @@ namespace WorkspacesEditor.Models
             {
                 IsExpanded = false;
             }
-
-            if (_isInitialized)
-            {
-                Parent?.NotifyCanBeSavedChanged();
-            }
         }
 
         private BitmapImage _iconImage;

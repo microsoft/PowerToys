@@ -107,7 +107,7 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool CanBeSaved => !string.IsNullOrEmpty(Name) && Applications.Exists(app => app.IsIncluded);
+        public bool CanBeSaved => !string.IsNullOrEmpty(Name) && Applications.Count > 0;
 
         [ObservableProperty]
         public partial bool IsRevertEnabled { get; set; }
@@ -165,11 +165,9 @@ namespace WorkspacesEditor.Models
         public void NotifyApplicationsChanged()
         {
             OnPropertyChanged(nameof(AppsCountString));
-            NotifyCanBeSavedChanged();
+            OnPropertyChanged(nameof(CanBeSaved));
             OnPropertyChanged(nameof(ApplicationsListed));
         }
-
-        internal void NotifyCanBeSavedChanged() => OnPropertyChanged(nameof(CanBeSaved));
 
         /// <summary>
         /// Call to refresh the relative time display for LastLaunched.
