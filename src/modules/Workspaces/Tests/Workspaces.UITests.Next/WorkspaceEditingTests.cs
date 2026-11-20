@@ -80,13 +80,32 @@ namespace Microsoft.Workspaces.UITests
 
         private void ChooseSearchSuggestion(string name)
         {
-            // The suggestion label belongs to a ListViewItem. Invoking that item raises the
-            // AutoSuggestBox's ItemClick and submits the actual chosen workspace.
-            ActivatePopupItem(
-                name,
-                "invoke",
-                item => Subtree(item).Any(child => UiString(child, "automationId") == "WorkspaceSearchSuggestionName" &&
-                    UiString(child, "name") == name));
+            string process = Editor.ProcessId.ToString(CultureInfo.InvariantCulture);
+            (long Handle, string Selector)? FindSuggestion()
+            {
+                var tree = WinappCli.InvokeJson("ui", "inspect", "-a", process, "--json", "-d", "20");
+                var visibleWindows = WindowControl.EnumerateProcessWindows([Editor.ProcessId])
+                    .Where(window => window.IsVisible).Select(window => window.Hwnd.ToInt64()).ToHashSet();
+                var items = WindowRoots(tree)
+                    .Where(window => visibleWindows.Contains(window.Handle))
+                    .SelectMany(window => Subtree(window.Element)
+                        .Where(item => UiString(item, "type") == "ListItem" && IsVisible(item) &&
+                            Subtree(item).Any(child => UiString(child, "automationId") == "WorkspaceSearchSuggestionName" && UiString(child, "name") == name))
+                        .Select(item => (window.Handle, Selector: UiString(item, "selector"))))
+                    .Where(item => !string.IsNullOrEmpty(item.Selector))
+                    .Distinct()
+                    .ToArray();
+
+                // A popup can also be exposed as part of the editor. Prefer its owning HWND.
+                var popupItems = items.Where(item => item.Handle != Editor.WindowHandle).ToArray();
+                var candidates = popupItems.Length > 0 ? popupItems : items;
+                return candidates is [var match] ? (match.Handle, match.Selector!) : null;
+            }
+
+            var ready = WaitHelper.WaitForStable(FindSuggestion, match => match.HasValue, 15_000, shouldRetryException: ShellMenu.IsTransientElementException);
+            Assert.IsTrue(ready.Succeeded, $"Could not identify the '{name}' suggestion. {ready.LastException?.Message}");
+            var (handle, selector) = ready.LastObservation!.Value;
+            WinappCli.InvokeAssertSuccess("ui", "invoke", selector, "-w", handle.ToString(CultureInfo.InvariantCulture), "--action", "invoke", "--json");
             Assert.IsTrue(
                 Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(name, timeoutMS: 10_000),
                 $"Choosing the '{name}' suggestion did not open that workspace.");
@@ -307,7 +326,7 @@ namespace Microsoft.Workspaces.UITests
             var row = ExpandApplication("Primary fixture");
             AssertCustomCoordinatesAvailable(row, expected: true);
             using var before = PreviewSnapshot.Capture(TestContext, Editor, "custom-position");
-            SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), selected);
+            SelectWindowPosition(row, selected);
             AssertCustomCoordinatesAvailable(row, expected: false);
             PreviewSnapshot.AssertChanged(TestContext, Editor, before);
             SaveWorkspace();
@@ -318,7 +337,7 @@ namespace Microsoft.Workspaces.UITests
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
             row = ExpandApplication("Primary fixture");
             Assert.AreEqual(selected, row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")).SelectedText);
-            SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), "Custom");
+            SelectWindowPosition(row, "Custom");
             AssertCustomCoordinatesAvailable(row, expected: true);
             PreviewSnapshot.AssertRestored(TestContext, Editor, before);
         }
@@ -471,53 +490,65 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(ready.Succeeded, message);
         }
 
-        private void SelectCombo(ComboBox combo, string item)
+        private void SelectWindowPosition(Element row, string item)
         {
+            const string comboId = "WindowPositionComboBox";
+            ComboBox FindPositionControl()
+            {
+                var controls = FindDescendants<ComboBox>(row, "ComboBox", comboId).DistinctBy(control => control.Selector).ToArray();
+                Assert.HasCount(1, controls, "The application row should expose one window-position control.");
+                return controls[0];
+            }
+
             Step($"Selecting '{item}'.");
+            var combo = FindPositionControl();
             if (combo.SelectedText == item)
             {
                 return;
             }
 
-            WinappCli.InvokeAssertSuccess("ui", "invoke", combo.Selector, "-w", Editor.WindowHandleArg, "--action", "expand", "--json");
-            ActivatePopupItem(item, "select", option => UiString(option, "name") == item);
-            Assert.IsTrue(combo.WaitForValue(item, timeoutMS: 10_000), $"The selection did not change to '{item}'.");
-            WinappCli.InvokeAssertSuccess("ui", "invoke", combo.Selector, "-w", Editor.WindowHandleArg, "--action", "collapse", "--json");
-        }
-
-        private void ActivatePopupItem(string name, string action, Func<JsonElement, bool> matches)
-        {
-            string process = Editor.ProcessId.ToString(CultureInfo.InvariantCulture);
-            (long Handle, string Selector)? FindItem()
+            string itemId = item switch
             {
-                var tree = WinappCli.InvokeJson("ui", "inspect", "-a", process, "--json", "-d", "20");
-                var editorWindows = WindowControl.EnumerateProcessWindows([Editor.ProcessId])
-                    .Where(window => window.IsVisible).Select(window => window.Hwnd.ToInt64()).ToHashSet();
-                var items = WindowRoots(tree)
-                    .Where(window => editorWindows.Contains(window.Handle))
-                    .SelectMany(window => Subtree(window.Element)
-                        .Where(element => UiString(element, "type") == "ListItem" && IsVisible(element) && matches(element))
-                        .Select(element => (window.Handle, Selector: UiString(element, "selector"))))
-                    .Where(item => !string.IsNullOrEmpty(item.Selector))
-                    .Distinct()
-                    .ToArray();
+                "Custom" => "WindowPositionCustomItem",
+                "Maximized" => "WindowPositionMaximizedItem",
+                "Minimized" => "WindowPositionMinimizedItem",
+                _ => throw new ArgumentOutOfRangeException(nameof(item), item, "Unknown window position."),
+            };
+            WinappCli.InvokeAssertSuccess("ui", "invoke", combo.Selector, "-w", Editor.WindowHandleArg, "--action", "expand", "--json");
 
-                // WinUI can expose the same row under its host HWND and the editor. Prefer
-                // the popup's own peer, and reject ambiguous rows within the chosen scope.
-                var popupItems = items.Where(item => item.Handle != Editor.WindowHandle).ToArray();
-                var candidates = popupItems.Length > 0 ? popupItems : items;
-                if (candidates is not [var target])
+            // WinUI exposes the same ComboBoxItem through the control and the PopupHost. Explicit
+            // --action select rejects even those identical aliases. Check the underlying identity
+            // before invoking the stable AutomationId in this HWND; the CLI then resolves it afresh.
+            bool HasMatchingOption()
+            {
+                var nodes = EditorRoots(Editor.Inspect(depth: 20)).SelectMany(Subtree).ToArray();
+                var options = nodes.Where(node => UiString(node, "automationId") == itemId).ToArray();
+                if (options.Length == 0 || !options.All(option => UiString(option, "type") == "ListItem" &&
+                    UiString(option, "className") == "ComboBoxItem" && UiString(option, "name") == item && IsVisible(option)))
                 {
-                    return null;
+                    return false;
                 }
 
-                return (target.Handle, target.Selector!);
+                var selector = UiString(options[0], "selector");
+                return !string.IsNullOrEmpty(selector) && options.All(option => UiString(option, "selector") == selector) &&
+                    nodes.Where(node => UiString(node, "automationId") == comboId && UiString(node, "expandState") == "expanded")
+                        .SelectMany(Subtree).Any(option => UiString(option, "selector") == selector);
             }
 
-            var ready = WaitHelper.WaitForStable(FindItem, target => target.HasValue, 15_000, shouldRetryException: ShellMenu.IsTransientElementException);
-            Assert.IsTrue(ready.Succeeded, $"Could not identify the '{name}' item in the editor popup. {ready.LastException?.Message}");
-            var (handle, selector) = ready.LastObservation!.Value;
-            WinappCli.InvokeAssertSuccess("ui", "invoke", selector, "-w", handle.ToString(CultureInfo.InvariantCulture), "--action", action, "--json");
+            var ready = WaitHelper.WaitForStable(
+                HasMatchingOption,
+                visible => visible,
+                10_000,
+                shouldRetryException: ShellMenu.IsTransientElementException);
+            Assert.IsTrue(ready.Succeeded, $"The expanded window-position ComboBox did not expose '{item}' as '{itemId}'.");
+            WinappCli.InvokeAssertSuccess("ui", "invoke", itemId, "-w", Editor.WindowHandleArg, "--json");
+            combo = FindPositionControl();
+            if (string.Equals(combo.GetProperty("ExpandCollapseState"), "Expanded", StringComparison.OrdinalIgnoreCase))
+            {
+                WinappCli.InvokeAssertSuccess("ui", "invoke", combo.Selector, "-w", Editor.WindowHandleArg, "--action", "collapse", "--json");
+            }
+
+            Assert.IsTrue(combo.WaitForValue(item, timeoutMS: 10_000), $"The selection did not change to '{item}'.");
         }
 
         private void SetCheck(CheckBox checkBox, bool value)
