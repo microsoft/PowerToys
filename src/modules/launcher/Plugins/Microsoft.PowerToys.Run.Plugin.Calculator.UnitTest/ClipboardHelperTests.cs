@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -30,6 +31,23 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             {
                 RunOnStaThread(() => ClipboardHelper.SetText(text));
                 Assert.AreEqual(text, System.Windows.Clipboard.GetText());
+            });
+        }
+
+        [DataTestMethod]
+        [DataRow("2^96", "en-US")]
+        [DataRow("-(2^1000)", "de-DE")]
+        [DataRow("1/3", "en-US")]
+        public void ResultActionCopiesDisplayedNumber(string input, string cultureName)
+        {
+            WithPrivateClipboard(() =>
+            {
+                var culture = CultureInfo.GetCultureInfo(cultureName);
+                var calculation = new CalculateEngine().Interpret(input, culture, out _);
+                var result = ResultHelper.CreateResult(calculation, "icon", CultureInfo.InvariantCulture, culture);
+
+                Assert.IsTrue(result.Action(null));
+                Assert.AreEqual(result.Title, System.Windows.Clipboard.GetText());
             });
         }
 

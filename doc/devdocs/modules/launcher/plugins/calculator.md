@@ -38,6 +38,7 @@ var result = CalculateEngine.Interpret(query.Search, CultureInfo.CurrentUICultur
 ### [`CalculateResult`](../../../../../src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/CalculateResult.cs)
 - The class which encapsulates the result of the computation.
 - It comprises of the `Result` and `RoundedResult` properties.
+- Ordinary results use decimal conversion and rounding to 10 decimal places. Finite double results outside the decimal range use `LargeResult` instead, preserving the engine's range for display, copying, and input replacement. These large results may use scientific notation and retain double precision, not arbitrary integer precision. Existing rounding of small results is unchanged.
 
 ### [`ErrorHandler`](/src/modules/launcher/Plugins/Microsoft.PowerToys.Run.Plugin.Calculator/ErrorHandler.cs)
 - The class which encapsulates the code to log errors and format the user message.
