@@ -31,8 +31,7 @@ namespace WorkspacesLauncherUI.ViewModels
         private readonly HashSet<Guid> _seenRequests = new HashSet<Guid>();
         private ActiveWarning _warning;
         private IDisposable _cancellationTimer;
-        private bool _stopped;
-        private bool _isCancellationPending;
+        private SessionState _state = SessionState.Active;
 
         public MainViewModel()
             : this(false, () => false, () => { })
@@ -76,15 +75,15 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public ObservableCollection<AppLaunching> AppsListed { get; } = new ObservableCollection<AppLaunching>();
 
-        public bool IsCancellationPending => _isCancellationPending;
+        public bool IsCancellationPending => _state == SessionState.CancellationPending;
 
-        public bool IsInteractionEnabled => !_stopped;
+        public bool IsInteractionEnabled => _state == SessionState.Active;
 
         private void ReceiveMessage(string message) => _enqueue(() => HandleMessage(message), true);
 
         private void HandleMessage(string message)
         {
-            if (_stopped && !_isCancellationPending)
+            if (_state == SessionState.Stopped)
             {
                 return;
             }
@@ -102,11 +101,16 @@ namespace WorkspacesLauncherUI.ViewModels
                     messageType.ValueKind == JsonValueKind.String &&
                     messageType.GetString() == "cancel-accepted")
                 {
-                    CompleteCancellation();
+                    if (IsCancellationPending)
+                    {
+                        Logger.LogInfo($"Workspaces launcher acknowledged cancellation for UI process {Environment.ProcessId}.");
+                        CompleteCancellation();
+                    }
+
                     return;
                 }
 
-                if (_stopped)
+                if (IsCancellationPending)
                 {
                     return;
                 }
@@ -239,7 +243,7 @@ namespace WorkspacesLauncherUI.ViewModels
             }
         }
 
-        private bool CanShowWarning(ActiveWarning warning) => !_stopped && ReferenceEquals(_warning, warning) && _canDisplayWarning();
+        private bool CanShowWarning(ActiveWarning warning) => IsInteractionEnabled && ReferenceEquals(_warning, warning) && _canDisplayWarning();
 
         private void CompleteWarning(ActiveWarning warning, bool? run)
         {
@@ -264,7 +268,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
             if (run.HasValue)
             {
-                SendResponse(warning.Request.RequestId, allowRun && !_stopped && _canDisplayWarning());
+                SendResponse(warning.Request.RequestId, allowRun && IsInteractionEnabled && _canDisplayWarning());
             }
         }
 
@@ -281,9 +285,9 @@ namespace WorkspacesLauncherUI.ViewModels
             catch (Exception exception)
             {
                 Logger.LogError("Unable to queue a Workspaces launcher UI message", exception);
-                if (!_stopped)
+                if (IsInteractionEnabled)
                 {
-                    Stop(false);
+                    Stop();
                     _closeOwner();
                 }
 
@@ -321,24 +325,24 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public void Dispose()
         {
-            Stop(false);
-            ClearCancellation();
+            Stop();
             GC.SuppressFinalize(this);
         }
 
         [RelayCommand]
         internal void CancelLaunch()
         {
-            if (_stopped)
+            if (!IsInteractionEnabled)
             {
                 return;
             }
 
             // Keep IPC alive until the launcher has received cancellation or the wait expires.
-            _isCancellationPending = true;
-            Stop(true);
+            _state = SessionState.CancellationPending;
             OnPropertyChanged(nameof(IsCancellationPending));
-            if (!_isCancellationPending)
+            OnPropertyChanged(nameof(IsInteractionEnabled));
+            CompleteWarning(_warning, null);
+            if (!IsCancellationPending)
             {
                 return;
             }
@@ -350,26 +354,9 @@ namespace WorkspacesLauncherUI.ViewModels
             }
         }
 
-        private void Stop(bool cancel)
-        {
-            if (_stopped)
-            {
-                return;
-            }
-
-            _stopped = true;
-            OnPropertyChanged(nameof(IsInteractionEnabled));
-            if (!cancel)
-            {
-                DetachMessageCallback();
-            }
-
-            CompleteWarning(_warning, cancel ? null : false);
-        }
-
         private void OnCancellationTimeout()
         {
-            if (_isCancellationPending)
+            if (IsCancellationPending)
             {
                 Logger.LogWarning("Timed out waiting for the Workspaces launcher to acknowledge cancellation.");
                 CompleteCancellation();
@@ -378,34 +365,40 @@ namespace WorkspacesLauncherUI.ViewModels
 
         private void CompleteCancellation()
         {
-            if (!_isCancellationPending)
+            if (!IsCancellationPending)
             {
                 return;
             }
 
-            ClearCancellation();
+            Stop();
             _closeOwner();
         }
 
-        private void ClearCancellation()
+        private void Stop()
         {
-            var wasPending = _isCancellationPending;
-            _isCancellationPending = false;
+            if (_state == SessionState.Stopped)
+            {
+                return;
+            }
+
+            var wasPending = IsCancellationPending;
+            _state = SessionState.Stopped;
             _cancellationTimer?.Dispose();
             _cancellationTimer = null;
-            DetachMessageCallback();
-            if (wasPending)
-            {
-                OnPropertyChanged(nameof(IsCancellationPending));
-            }
-        }
-
-        private void DetachMessageCallback()
-        {
             if (App.IPCMessageReceivedCallback == ReceiveMessage)
             {
                 App.IPCMessageReceivedCallback = null;
             }
+
+            OnPropertyChanged(wasPending ? nameof(IsCancellationPending) : nameof(IsInteractionEnabled));
+            CompleteWarning(_warning, wasPending ? null : false);
+        }
+
+        private enum SessionState
+        {
+            Active,
+            CancellationPending,
+            Stopped,
         }
 
         private sealed class ActiveWarning

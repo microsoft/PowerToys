@@ -350,6 +350,38 @@ namespace WorkspacesLauncherUI.UnitTests
         }
 
         [TestMethod]
+        public void DisposingAsInteractionIsDisabledClearsPendingCancellationWithoutSending()
+        {
+            using var session = new WarningSession();
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            var window = session.Windows.Single();
+            var pendingStates = new List<bool>();
+            session.ViewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(MainViewModel.IsCancellationPending))
+                {
+                    pendingStates.Add(session.ViewModel.IsCancellationPending);
+                }
+                else if (args.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
+                {
+                    Assert.IsTrue(session.ViewModel.IsCancellationPending);
+                    session.ViewModel.Dispose();
+                }
+            };
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            Assert.AreEqual(2, pendingStates.Count);
+            Assert.IsTrue(pendingStates[0]);
+            Assert.IsFalse(pendingStates[1]);
+            Assert.IsFalse(window.IsVisible);
+            Assert.IsNull(session.CancellationTimer);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            Assert.AreEqual(0, session.Messages.Count);
+        }
+
+        [TestMethod]
         public void ReentrantCancelCommandRequestsCancellationAndOwnerCloseOnlyOnce()
         {
             using var session = new WarningSession();

@@ -53,6 +53,7 @@ private:
 
     bool ShouldStop() const;
 
+    void Stop();
     void Launch();
     void handleWindowArrangerMessage(const std::wstring& msg);
     void handleUIMessage(const std::wstring& msg);

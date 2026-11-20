@@ -10,6 +10,7 @@ using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
+using WorkspacesLauncherUI.Helpers;
 using WorkspacesLauncherUI.ViewModels;
 using WorkspacesLauncherUI.Views;
 
@@ -82,9 +83,8 @@ namespace WorkspacesLauncherUI
             var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Nearest);
             if (displayArea != null)
             {
-                int centerX = displayArea.WorkArea.X + ((displayArea.WorkArea.Width - appWindow.Size.Width) / 2);
-                int centerY = displayArea.WorkArea.Y + ((displayArea.WorkArea.Height - appWindow.Size.Height) / 2);
-                appWindow.Move(new Windows.Graphics.PointInt32(centerX, centerY));
+                var bounds = WindowPlacement.GetCenteredBounds(displayArea.WorkArea, appWindow.Size);
+                appWindow.Move(new Windows.Graphics.PointInt32(bounds.X, bounds.Y));
             }
         }
 

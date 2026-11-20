@@ -234,7 +234,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancelLaunchStopsPendingAppsAndPreservesOpenedWindows()
         {
             var gateName = $@"Local\{State.Prefix}-cancel-gate";
@@ -245,25 +244,46 @@ namespace Microsoft.Workspaces.UITests
             using var tailStarted = new EventWaitHandle(false, EventResetMode.ManualReset, tailName);
             var firstTitle = State.Prefix + "-opened";
             var first = State.Application("Opened fixture", firstTitle);
+            first["maximized"] = true;
             var applications = new List<JsonObject> { first };
             applications.AddRange(PendingApplications(16, gateName, startedName, tailName));
             var project = State.Project("cancel-launch", applications.ToArray());
             State.WriteProjects(project);
-            OpenEditor();
-            LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
+
+            // Use the same launcher entry point as a workspace shortcut.
+            var productRoot = Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!;
+            var start = new ProcessStartInfo(Path.Combine(productRoot, "PowerToys.WorkspacesLauncher.exe"))
+            {
+                UseShellExecute = false,
+                WorkingDirectory = productRoot,
+            };
+            start.ArgumentList.Add(WorkspaceTestState.Text(project, "id"));
+            start.ArgumentList.Add("1"); // InvokePoint.Shortcut
+            using var launcher = Process.Start(start);
+            Assert.IsNotNull(launcher);
             var opened = State.Fixture.WaitForWindow(firstTitle);
             AssertPositioned(opened, first);
+            var openedBounds = WindowHelper.GetWindowBounds(new IntPtr(opened.WindowHandle));
             Assert.IsTrue(started.WaitOne(20_000), "The blocking fixture never reached its startup gate.");
             Assert.IsFalse(tailStarted.WaitOne(0), "The final fixture started before the cancellation precondition was established.");
             Step("Cancelling the launch with one window open and more applications pending.");
             var progress = LauncherWindow();
+            using var ui = Process.GetProcessById(progress.ProcessId);
+            var uiDirectory = Path.Combine(productRoot, "WinUI3Apps");
+            Assert.AreEqual(Path.Combine(uiDirectory, "PowerToys.WorkspacesLauncherUI.exe"), NativeMethods.ProcessImagePath(ui), true, "The progress window must belong to the product under test.");
+            var logVersion = FileVersionInfo.GetVersionInfo(Path.Combine(uiDirectory, "PowerToys.ManagedCommon.dll")).FileVersion!;
+            var logDirectory = Path.Combine(WorkspaceTestState.DirectoryPath, "WorkspacesLauncherUI", logVersion);
+            var logOffsets = Directory.EnumerateFiles(logDirectory, "*.log").ToDictionary(path => path, path => new FileInfo(path).Length);
+
             progress.Find<Button>(By.AccessibilityId("CancelButton"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(WaitForProcess(LauncherUiProcess, false), "Cancel launch did not close the progress UI.");
-            Assert.IsTrue(WaitForProcess(LauncherProcess, false, 45_000), "Cancel launch did not stop the launch engine.");
+            Assert.IsTrue(ui.WaitForExit(20_000), "Cancel launch did not close the progress UI.");
+            Assert.IsTrue(launcher.WaitForExit(45_000), "Cancel launch did not stop the launch engine.");
+            Assert.IsTrue(WasCancellationAcknowledged(logDirectory, logOffsets, ui.Id), "The progress UI exited without receiving the launcher's cancellation acknowledgement.");
             Assert.IsFalse(tailStarted.WaitOne(0), "Cancel launch still started an application that was pending.");
             var remaining = State.Fixture.FindWindow(firstTitle);
             Assert.IsNotNull(remaining, "Cancel launch closed an already-open application.");
             Assert.AreEqual(opened.WindowHandle, remaining.Hwnd, "Cancel launch replaced an already-open application.");
+            Assert.AreEqual(openedBounds, WindowHelper.GetWindowBounds(new IntPtr(remaining.Hwnd)), "Cancel launch moved or resized an already-open application.");
         }
 
         [TestMethod]
@@ -295,6 +315,30 @@ namespace Microsoft.Workspaces.UITests
 
             WaitForLaunchCompletion(project);
             Assert.AreEqual(applications.Length, State.Fixture.ProcessIds().Count, "Dismiss did not allow every configured app to launch.");
+        }
+
+        private static bool WasCancellationAcknowledged(string logDirectory, IReadOnlyDictionary<string, long> logOffsets, int uiPid)
+        {
+            var acknowledgement = $"Workspaces launcher acknowledged cancellation for UI process {uiPid}.";
+            foreach (var path in Directory.EnumerateFiles(logDirectory, "*.log"))
+            {
+                // A daily log can contain earlier sessions. Only inspect bytes written after finding this UI.
+                var offset = logOffsets.GetValueOrDefault(path);
+                if (new FileInfo(path).Length <= offset)
+                {
+                    continue;
+                }
+
+                using var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                stream.Position = offset;
+                using var reader = new StreamReader(stream);
+                if (reader.ReadToEnd().Contains(acknowledgement, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private void LaunchWorkspace(string name)
