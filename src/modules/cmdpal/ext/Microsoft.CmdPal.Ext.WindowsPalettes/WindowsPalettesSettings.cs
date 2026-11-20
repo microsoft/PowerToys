@@ -16,7 +16,7 @@ internal sealed class WindowsPalettesSettings : JsonSettingsManager, IWindowsPal
         Namespaced(nameof(ShowInstalledPalettes)),
         Resources.ShowInstalledPalettesSetting,
         Resources.ShowInstalledPalettesSettingDescription,
-        true);
+        false);
 
     public event EventHandler? SettingsChanged;
 
