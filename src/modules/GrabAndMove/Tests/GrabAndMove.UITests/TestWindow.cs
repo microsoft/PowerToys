@@ -14,6 +14,10 @@ internal sealed class TestWindow : IDisposable
     private System.Windows.Forms.Form? fixtureForm;
     private Point lastClientClick;
     private int clientClickCount;
+    private int closingCount;
+    private int keyDownCount;
+    private int lastKeyCode;
+    private int lastKeyAlt;
     private int stopRequested;
     private bool disposed;
 
@@ -39,6 +43,26 @@ internal sealed class TestWindow : IDisposable
     }
 
     internal IntPtr Handle { get; }
+
+    internal bool IsClosed
+    {
+        get
+        {
+            if (Volatile.Read(ref closingCount) == 0)
+            {
+                return false;
+            }
+
+            var (left, top, right, bottom) = WindowHelper.GetWindowBounds(Handle);
+            return right <= left || bottom <= top;
+        }
+    }
+
+    internal int KeyDownCount => Volatile.Read(ref keyDownCount);
+
+    internal System.Windows.Forms.Keys LastKeyCode => (System.Windows.Forms.Keys)Volatile.Read(ref lastKeyCode);
+
+    internal bool LastKeyHadAlt => Volatile.Read(ref lastKeyAlt) != 0;
 
     internal Rectangle Bounds
     {
@@ -152,6 +176,14 @@ internal sealed class TestWindow : IDisposable
                     Math.Min(400, workArea.Height / 3)),
             };
             fixtureForm = form;
+            form.KeyPreview = true;
+            form.FormClosing += (_, _) => Interlocked.Increment(ref closingCount);
+            form.KeyDown += (_, args) =>
+            {
+                Volatile.Write(ref lastKeyCode, (int)args.KeyCode);
+                Volatile.Write(ref lastKeyAlt, args.Alt ? 1 : 0);
+                Interlocked.Increment(ref keyDownCount);
+            };
             form.MouseDown += (_, args) =>
             {
                 if (args.Button == System.Windows.Forms.MouseButtons.Left)
