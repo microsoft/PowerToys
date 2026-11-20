@@ -41,6 +41,7 @@ namespace ManagedCommon
         GrabAndMove,
         ZoomIt,
         MouseButtonLock,
+        SoundManager,
         GeneralSettings,
     }
 }

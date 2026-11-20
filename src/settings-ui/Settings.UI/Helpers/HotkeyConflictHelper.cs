@@ -16,11 +16,11 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
         private static readonly Dictionary<string, HotkeyConflictCheckCallback> PendingHotkeyConflictChecks = new Dictionary<string, HotkeyConflictCheckCallback>();
         private static readonly object LockObject = new object();
 
-        public static void CheckHotkeyConflict(HotkeySettings hotkeySettings, Func<string, int> ipcMSGCallBackFunc, HotkeyConflictCheckCallback callback)
+        public static string CheckHotkeyConflict(HotkeySettings hotkeySettings, Func<string, int> ipcMSGCallBackFunc, HotkeyConflictCheckCallback callback)
         {
             if (hotkeySettings == null || ipcMSGCallBackFunc == null)
             {
-                return;
+                return string.Empty;
             }
 
             string requestId = GenerateRequestId();
@@ -46,15 +46,26 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
             };
 
             ipcMSGCallBackFunc(requestObject.ToString());
+
+            return requestId;
         }
 
-        public static void HandleHotkeyConflictResponse(HotkeyConflictResponse response)
+        // Forgets a check whose answer never came, so that it does not stay in the list.
+        public static void CancelHotkeyConflictCheck(string requestId)
         {
-            if (response.AllConflicts.Count == 0)
+            if (string.IsNullOrEmpty(requestId))
             {
                 return;
             }
 
+            lock (LockObject)
+            {
+                PendingHotkeyConflictChecks.Remove(requestId);
+            }
+        }
+
+        public static void HandleHotkeyConflictResponse(HotkeyConflictResponse response)
+        {
             HotkeyConflictCheckCallback callback = null;
 
             lock (LockObject)
@@ -65,6 +76,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 }
             }
 
+            // The answer is given whether there is a conflict or not, so that the caller can wait for it.
             callback?.Invoke(response.HasConflict, response);
         }
 

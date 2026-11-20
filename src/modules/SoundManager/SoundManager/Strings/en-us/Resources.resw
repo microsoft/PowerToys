@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="TxtOutput.Text" xml:space="preserve"><value>Output</value></data>
+  <data name="TxtMicrophone.Text" xml:space="preserve"><value>Microphone</value></data>
+  <data name="TxtApplications.Text" xml:space="preserve"><value>Applications</value></data>
+  <data name="TxtEmptyState.Text" xml:space="preserve"><value>No application is playing audio right now.</value></data>
+  <data name="TxtRecording.Text" xml:space="preserve"><value>Recording</value></data>
+  <data name="TxtBalance.Text" xml:space="preserve"><value>Balance</value></data>
+  <data name="TxtBalanceLeft.Text" xml:space="preserve"><value>L</value></data>
+  <data name="TxtBalanceRight.Text" xml:space="preserve"><value>R</value></data>
+  <data name="TxtMono.Text" xml:space="preserve"><value>Mono</value></data>
+  <data name="TxtMonoBadge.Text" xml:space="preserve"><value>Mono</value></data>
+  <data name="BtnOutputDeviceTooltip.Text" xml:space="preserve"><value>Make this the speaker Windows plays through</value></data>
+  <data name="BtnInputDeviceTooltip.Text" xml:space="preserve"><value>Make this the microphone Windows records from</value></data>
+  <data name="BtnMoreControlsTooltip.Text" xml:space="preserve"><value>More controls</value></data>
+  <data name="BtnMuteTooltip.Text" xml:space="preserve"><value>Mute</value></data>
+  <data name="BtnResetDeviceTooltip.Text" xml:space="preserve"><value>Reset this device</value></data>
+  <data name="BtnResetAppTooltip.Text" xml:space="preserve"><value>Reset app settings</value></data>
+  <data name="AppTitle" xml:space="preserve"><value>Sound Manager</value></data>
+  <data name="ModuleMissingMessage" xml:space="preserve"><value>Waiting for the Sound Manager module...</value></data>
+  <data name="ModuleClosedMessage" xml:space="preserve"><value>The Sound Manager module was closed. Waiting for it to come back...</value></data>
+  <data name="SystemDefaultDevice" xml:space="preserve"><value>System default</value></data>
+  <data name="ChangeNotApplied" xml:space="preserve"><value>Windows did not take that change.</value></data>
+  <data name="TestSoundFailed" xml:space="preserve"><value>The test sound could not be played.</value></data>
+  <data name="PlayingTestSound" xml:space="preserve"><value>Playing a test sound through {0}.</value></data>
+  <data name="VolumeFormat" xml:space="preserve"><value>{0}%</value></data>
+  <data name="BtnListenTooltipPlay" xml:space="preserve"><value>Play this microphone through the speakers</value></data>
+  <data name="BtnListenTooltipStop" xml:space="preserve"><value>Stop playing this microphone through the speakers</value></data>
+  <data name="BtnTestTooltipPlay" xml:space="preserve"><value>Play a test sound through this device</value></data>
+  <data name="BtnTestTooltipPlaying" xml:space="preserve"><value>The test sound is playing</value></data>
+  <data name="BtnCallsTooltipSet" xml:space="preserve"><value>Use this device for calls and chats</value></data>
+  <data name="BtnCallsTooltipActive" xml:space="preserve"><value>This is the device Windows uses for calls and chats</value></data>
+</root>

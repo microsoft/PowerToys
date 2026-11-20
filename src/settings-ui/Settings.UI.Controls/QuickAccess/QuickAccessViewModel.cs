@@ -101,6 +101,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
             AddFlyoutMenuItem(ModuleType.PowerLauncher);
             AddFlyoutMenuItem(ModuleType.PowerOCR);
             AddFlyoutMenuItem(ModuleType.RegistryPreview);
+            AddFlyoutMenuItem(ModuleType.SoundManager);
             AddFlyoutMenuItem(ModuleType.MeasureTool);
             AddFlyoutMenuItem(ModuleType.ShortcutGuide);
             AddFlyoutMenuItem(ModuleType.Workspaces);
@@ -209,6 +210,7 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                 ModuleType.ShortcutGuide => SettingsRepository<ShortcutGuideSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.OpenShortcutGuide.ToString(),
                 ModuleType.MouseWithoutBorders => SettingsRepository<MouseWithoutBordersSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ReconnectShortcut.ToString(),
                 ModuleType.MousePointerCrosshairs => SettingsRepository<MousePointerCrosshairsSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
+                ModuleType.SoundManager => SettingsRepository<SoundManagerSettings>.GetInstance(SettingsUtils.Default).SettingsConfig.Properties.ActivationShortcut.ToString(),
                 _ => string.Empty,
             };
         }
