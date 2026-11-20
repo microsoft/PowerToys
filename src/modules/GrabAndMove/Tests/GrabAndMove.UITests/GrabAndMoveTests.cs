@@ -66,7 +66,7 @@ public sealed class GrabAndMoveTests : UITestBase
     }
 
     [ClassCleanup]
-    public static void RestoreSettings()
+    public static void RestoreSettings(TestContext context)
     {
         try
         {
@@ -81,14 +81,44 @@ public sealed class GrabAndMoveTests : UITestBase
             finally
             {
                 originalSettings = null;
+                bool restorePointer = hidInput is not null;
                 try
                 {
-                    hidInput?.Dispose();
+                    if (restorePointer)
+                    {
+                        ReleaseFixtureInput();
+                        RecordPointerCleanup(context, "Before HID pointer restoration");
+                        MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
+                        var restored = WaitHelper.WaitForStable(
+                            MouseHelper.GetMousePosition,
+                            position => position == (originalPointer.X, originalPointer.Y),
+                            timeoutMS: 5_000,
+                            requiredConsecutiveMatches: 3);
+                        RecordPointerCleanup(context, "After HID pointer restoration");
+                        Assert.IsTrue(
+                            restored.Succeeded,
+                            $"The HID backend did not restore the pointer to {originalPointer}; observed={restored.LastObservation}; foreground={WindowControl.GetForegroundWindowInfo()}.");
+                    }
                 }
                 finally
                 {
-                    hidInput = null;
-                    MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
+                    try
+                    {
+                        hidInput?.Dispose();
+                    }
+                    finally
+                    {
+                        hidInput = null;
+                    }
+                }
+
+                if (restorePointer)
+                {
+                    RecordPointerCleanup(context, "After HID disposal");
+                    Assert.AreEqual(
+                        (originalPointer.X, originalPointer.Y),
+                        MouseHelper.GetMousePosition(),
+                        "Disposing the HID scope must preserve the restored pointer position.");
                 }
             }
         }
@@ -240,15 +270,36 @@ public sealed class GrabAndMoveTests : UITestBase
         await CaptureFailureArtifactsBeforeCleanupAsync();
         try
         {
-            MouseHelper.LeftUp();
-            MouseHelper.RightUp();
-            KeyboardHelper.ReleaseKey(Key.Alt);
-            KeyboardHelper.ReleaseKey(Key.LWin);
+            ReleaseFixtureInput();
         }
         finally
         {
             fixture?.Dispose();
             fixture = null;
+        }
+    }
+
+    private static void ReleaseFixtureInput()
+    {
+        MouseHelper.LeftUp();
+        MouseHelper.RightUp();
+        KeyboardHelper.ReleaseKey(Key.Alt);
+        KeyboardHelper.ReleaseKey(Key.LWin);
+    }
+
+    private static void RecordPointerCleanup(TestContext context, string phase)
+    {
+        using var process = Process.GetCurrentProcess();
+        var pointer = MouseHelper.GetMousePosition();
+        var state = $"{DateTime.UtcNow:O} {phase}: expected={originalPointer}; actual={pointer}; HID active={hidInput is not null}; " +
+            $"session={process.SessionId}; elevated={ElevationHelper.IsCurrentProcessElevated()}; foreground={WindowControl.GetForegroundWindowInfo()}";
+        context.WriteLine(state);
+        var path = Path.Combine(context.TestResultsDirectory ?? Path.GetTempPath(), "GrabAndMove-pointer-cleanup.txt");
+        bool attach = !File.Exists(path);
+        File.AppendAllText(path, state + Environment.NewLine);
+        if (attach)
+        {
+            context.AddResultFile(path);
         }
     }
 

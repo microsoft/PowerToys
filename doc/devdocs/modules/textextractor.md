@@ -13,7 +13,7 @@ Text Extractor is a PowerToys utility that enables users to extract and copy tex
 
 ## UI tests
 
-The winappcli migration lives in [PowerOCR.UITests.Next](../../../src/modules/PowerOCR/PowerOCR.UITests.Next), alongside the unchanged legacy suite. It ports all 10 existing tests, including the toolbar, failed-capture keyboard, and cross-cursor regressions; it does not add multi-monitor coverage.
+The winappcli suite lives in [PowerOCR.UITests.Next](../../../src/modules/PowerOCR/PowerOCR.UITests.Next) and replaces the legacy suite. It covers all 10 existing tests, including the toolbar, failed-capture keyboard, and cross-cursor regressions; it does not add multi-monitor coverage.
 
 Build with `tools\build\build.cmd -Path src\modules\PowerOCR\PowerOCR.UITests.Next -Platform x64 -Configuration Debug` (use `ARM64` for the ARM64 build). Run the resulting `PowerOCR.UITests.Next.exe` on an interactive standard-user desktop with `--report-trx --results-directory <directory>`. See the [UI test guide](../development/ui-tests.md) for framework setup.
 

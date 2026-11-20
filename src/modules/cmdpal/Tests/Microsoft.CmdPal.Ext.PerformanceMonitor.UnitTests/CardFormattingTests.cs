@@ -4,6 +4,7 @@
 
 using System;
 using System.Globalization;
+using System.Text.Json.Nodes;
 using CoreWidgetProvider.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Win32.Storage.FileSystem;
@@ -147,6 +148,43 @@ public class CardFormattingTests
     }
 
     [TestMethod]
+    public void ChargeColorReflectsTheChargeLevel()
+    {
+        Assert.AreEqual("good", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: false, 0.8f));
+        Assert.AreEqual("warning", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: false, 0.4f));
+        Assert.AreEqual("attention", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: false, 0.1f));
+        Assert.AreEqual("good", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: true, 0.1f));
+        Assert.AreEqual("accent", SystemBatteryUsageWidgetPage.GetChargeColor(isCharging: false, -1f));
+    }
+
+    [TestMethod]
+    public void ChargeIconReflectsTheChargeLevel()
+    {
+        Assert.AreEqual("Battery10", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, 1f));
+        Assert.AreEqual("Battery7", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, 0.66f));
+        Assert.AreEqual("Battery0", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, 0.02f));
+        Assert.AreEqual("BatteryCharge", SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: true, 0.4f));
+        Assert.AreEqual(string.Empty, SystemBatteryUsageWidgetPage.GetChargeIconName(isCharging: false, -1f));
+    }
+
+    [TestMethod]
+    public void RateIsShownOnlyWhileChargingOrOnBattery()
+    {
+        Assert.AreEqual(15000, SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: true, isOnAcPower: true, 15000));
+        Assert.AreEqual(-8000, SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: false, -8000));
+
+        // Plugged in and full: the battery is idle, and small readings come and go.
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: true, -1100));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: true, 1100));
+
+        // A reading that disagrees with the charging state isn't shown.
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: true, isOnAcPower: true, -500));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: false, 500));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: true, isOnAcPower: true, null));
+        Assert.IsNull(SystemBatteryUsageWidgetPage.GetDisplayedRate(isCharging: false, isOnAcPower: false, 0));
+    }
+
+    [TestMethod]
     public void MemoryUseShowsTheSizeUnit()
     {
         const ulong BytesPerGigabyte = 1024UL * 1024 * 1024;
@@ -161,5 +199,20 @@ public class CardFormattingTests
         Assert.AreEqual(25d, WidgetPage.GetPercent(1, 4));
         Assert.AreEqual(100d, WidgetPage.GetPercent(9, 4));
         Assert.AreEqual(0d, WidgetPage.GetPercent(9, 0));
+    }
+
+    [TestMethod]
+    public void SparklineTopRoundsUpWithAFloor()
+    {
+        static JsonObject Data(params float[] values) => new()
+        {
+            ["series"] = PerformanceChartData.Create(new PerformanceChartData.Series("CPU", PerformanceChartData.CpuColor, values)),
+        };
+
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(Data(0.4f, 2f), "series"));
+        Assert.AreEqual(40d, SystemOverviewWidgetPage.GetSparklineMax(Data(12f, 33.5f), "series"));
+        Assert.AreEqual(100d, SystemOverviewWidgetPage.GetSparklineMax(Data(100f), "series"));
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(null, "series"));
+        Assert.AreEqual(10d, SystemOverviewWidgetPage.GetSparklineMax(new JsonObject(), "series"));
     }
 }
