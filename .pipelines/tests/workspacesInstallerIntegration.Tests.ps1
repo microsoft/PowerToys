@@ -1,6 +1,9 @@
 # Copyright (c) Microsoft Corporation
 # The Microsoft Corporation licenses this file to you under the MIT license.
 
+# CI supplies the platform/configuration output after building the WinUI applications.
+param([string]$BuildOutput)
+
 Describe 'Workspaces installer integration' {
     BeforeEach {
         $script:workspacesRepoRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
@@ -38,75 +41,75 @@ Describe 'Workspaces installer integration' {
 
     It 'omits Editor satellites while retaining the Launcher UI resx satellites' {
         [xml]$resources = Get-Content -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Resources.wxs') -Raw
+        [xml]$product = Get-Content -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Product.wxs') -Raw
         $namespace = New-Object System.Xml.XmlNamespaceManager($resources.NameTable)
         $namespace.AddNamespace('w', $resources.DocumentElement.NamespaceURI)
         $files = @($resources.SelectNodes('//w:File', $namespace))
 
-        $editorFiles = @($files | Where-Object { $_.Source -like '*PowerToys.WorkspacesEditor.resources.dll' })
+        $editorName = 'PowerToys.WorkspacesEditor.resources.dll'
+        $launcherName = 'PowerToys.WorkspacesLauncherUI.resources.dll'
+        $editorFiles = @($files | Where-Object {
+            [IO.Path]::GetFileName($_.Source) -eq $editorName -or $_.GetAttribute('Name') -eq $editorName
+        })
         & $script:assertWorkspacesEqual -Actual $editorFiles.Count -Expected 0 -Context 'Editor satellite installation entries'
-        $launcherFiles = @($files | Where-Object { $_.Source -like '*PowerToys.WorkspacesLauncherUI.resources.dll' })
+        $launcherFiles = @($files | Where-Object { [IO.Path]::GetFileName($_.Source) -eq $launcherName })
         & $script:assertWorkspacesEqual -Actual $launcherFiles.Count -Expected 1 -Context 'Launcher UI satellite installation entries'
-        & $script:assertWorkspacesEqual -Actual $launcherFiles[0].Source -Expected '$(var.BinDir)\WinUI3Apps\$(var.Language)\PowerToys.WorkspacesLauncherUI.resources.dll' -Context 'Launcher UI satellite source'
-        & $script:assertWorkspacesEqual -Actual ($launcherFiles[0].ParentNode.GetAttribute('Directory')) -Expected 'Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder' -Context 'Launcher UI satellite installation directory'
+        $launcherFile = $launcherFiles[0]
+        & $script:assertWorkspacesEqual -Actual $launcherFile.Source -Expected '$(var.BinDir)\WinUI3Apps\$(var.Language)\PowerToys.WorkspacesLauncherUI.resources.dll' -Context 'Launcher UI satellite source'
+        & $script:assertWorkspacesEqual -Actual ($launcherFile.GetAttribute('Name') -in @('', $launcherName)) -Expected $true -Context 'Installed Launcher UI satellite filename'
+        & $script:assertWorkspacesEqual -Actual ($launcherFile.ParentNode.GetAttribute('Directory')) -Expected 'Resource$(var.IdSafeLanguage)WinUI3AppsInstallFolder' -Context 'Launcher UI satellite installation directory'
+        $resourceGroup = $launcherFile.SelectSingleNode('ancestor::w:ComponentGroup', $namespace)
+        $coreGroups = @($product.SelectNodes('//w:Feature[@Id="CoreFeature"]/w:ComponentGroupRef', $namespace)).Id
+        & $script:assertWorkspacesEqual -Actual ($coreGroups -contains $resourceGroup.Id) -Expected $true -Context 'Launcher UI satellite is part of CoreFeature'
     }
 
-    It 'installs the window icon and missing application fallback beside the WinUI apps' {
-        $fixtureRoot = Join-Path $TestDrive 'workspace'
+    if ($BuildOutput) {
+        It 'copies the window and fallback icons into the built WinUI applications directory' {
+            $source = Join-Path $script:workspacesRepoRoot 'src\modules\Workspaces\Assets\Workspaces'
+            $output = Join-Path $BuildOutput 'WinUI3Apps\Assets\Workspaces'
+            foreach ($iconName in @('Workspaces.ico', 'DefaultIcon.ico')) {
+                $expected = Get-FileHash -LiteralPath (Join-Path $source $iconName) -ErrorAction Stop
+                $built = Get-FileHash -LiteralPath (Join-Path $output $iconName) -ErrorAction Stop
+                & $script:assertWorkspacesEqual -Actual $built.Hash -Expected $expected.Hash -Context "$iconName in $output"
+            }
+        }
+    }
+
+    It 'harvests the window and fallback icons beside the WinUI apps on <Platform>' -TestCases @(
+        @{ Platform = 'x64' }
+        @{ Platform = 'ARM64' }
+    ) {
+        param($Platform)
+        $fixtureRoot = Join-Path $TestDrive $Platform
         $fixtureInstallerRoot = Join-Path $fixtureRoot 'installer\PowerToysSetupVNext'
-        $fixtureBuildPlatform = 'x64'
-        $assetsOutput = Join-Path $fixtureRoot "$fixtureBuildPlatform\Release\WinUI3Apps\Assets\Workspaces"
+        $assetsOutput = Join-Path $fixtureRoot "$Platform\Release\WinUI3Apps\Assets\Workspaces"
         New-Item -ItemType Directory -Path $fixtureInstallerRoot, $assetsOutput -Force | Out-Null
-        Copy-Item -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Workspaces.wxs') -Destination $fixtureInstallerRoot
+        Copy-Item -Path (Join-Path $script:workspacesInstallerRoot '*.wxs') -Destination $fixtureInstallerRoot
+        foreach ($scriptName in @('generateAllFileComponents.ps1', 'InstallerMedia.ps1')) {
+            Copy-Item -LiteralPath (Join-Path $script:workspacesInstallerRoot $scriptName) -Destination $fixtureInstallerRoot
+        }
         $iconNames = @('Workspaces.ico', 'DefaultIcon.ico')
         foreach ($iconName in $iconNames) {
-            Copy-Item -LiteralPath (Join-Path $script:workspacesRepoRoot "src\modules\Workspaces\Assets\Workspaces\$iconName") -Destination $assetsOutput
+            [IO.File]::WriteAllText((Join-Path $assetsOutput $iconName), "$Platform $iconName")
         }
 
-        $generatorPath = Join-Path $script:workspacesInstallerRoot 'generateAllFileComponents.ps1'
-        $tokens = $null
-        $parseErrors = $null
-        $generator = [System.Management.Automation.Language.Parser]::ParseFile($generatorPath, [ref]$tokens, [ref]$parseErrors)
-        & $script:assertWorkspacesEqual -Actual $parseErrors.Count -Expected 0 -Context 'Asset generator syntax errors'
-        $statements = $generator.EndBlock.Statements
-        $harvestCalls = @($statements | Where-Object {
-            $_ -is [Management.Automation.Language.PipelineAst] -and
-                $_.PipelineElements[0] -is [Management.Automation.Language.CommandAst] -and
-                $_.PipelineElements[0].GetCommandName() -in @('Generate-FileList', 'Generate-FileComponents')
-        })
-        $workspaceCalls = @($harvestCalls | Where-Object { $_.PipelineElements[0].CommandElements.Extent.Text -match '[\\/]Workspaces\.wxs[''"]?$' })
-        & $script:assertWorkspacesEqual -Actual ($workspaceCalls.Count -gt 0) -Expected $true -Context 'Workspaces.wxs harvesting calls'
-
-        # Keep the generator's parameter block, initialization, and helper definitions together.
-        # Run its Workspaces calls in their original order with their own input path assignments.
-        $inputVariables = foreach ($call in $workspaceCalls) {
-            $call.FindAll({ param($node) $node -is [Management.Automation.Language.VariableExpressionAst] }, $true).VariablePath.UserPath
+        # The unmodified production generator also harvests other modules. Give their dependency
+        # queries an empty output directory and leave Workspaces discovery and WiX generation live.
+        $script:workspacesEmptyOutput = New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'empty')
+        Mock Get-ChildItem { [pscustomobject]@{ Directory = $script:workspacesEmptyOutput } } -ParameterFilter { $Path -like '*.deps.json' }
+        Mock Get-Content { '{"targets":{"empty":{}}}' } -ParameterFilter { $Path -like '*.deps.json' }
+        Mock Get-ChildItem { } -ParameterFilter {
+            $File -and $Name -and $Path -and $Path -notlike '*\Assets\Workspaces*' -and !(Test-Path -LiteralPath $Path)
         }
-        $fixtureScript = @(
-            $generator.Extent.Text.Substring(0, $harvestCalls[0].Extent.StartOffset)
-            foreach ($statement in $statements) {
-                if ($statement -in $workspaceCalls -or
-                    ($statement -is [Management.Automation.Language.AssignmentStatementAst] -and
-                     $statement.Left -is [Management.Automation.Language.VariableExpressionAst] -and
-                     $statement.Left.VariablePath.UserPath -in $inputVariables)) {
-                    $statement.Extent.Text
-                }
-            }
-        )
-        $mediaHelper = Join-Path $script:workspacesInstallerRoot 'InstallerMedia.ps1'
-        if (Test-Path -LiteralPath $mediaHelper) {
-            Copy-Item -LiteralPath $mediaHelper -Destination $fixtureInstallerRoot
-        }
-        $fixtureGenerator = Join-Path $fixtureInstallerRoot 'generateAllFileComponents.ps1'
-        Set-Content -LiteralPath $fixtureGenerator -Value $fixtureScript -Encoding UTF8
-        & $fixtureGenerator -platform $fixtureBuildPlatform
+        & (Join-Path $fixtureInstallerRoot 'generateAllFileComponents.ps1') -platform $Platform
 
         [xml]$workspaces = Get-Content -LiteralPath (Join-Path $fixtureInstallerRoot 'Workspaces.wxs') -Raw
         [xml]$product = Get-Content -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Product.wxs') -Raw
         $namespace = New-Object System.Xml.XmlNamespaceManager($workspaces.NameTable)
         $namespace.AddNamespace('w', $workspaces.DocumentElement.NamespaceURI)
-        $featureGroup = $product.SelectSingleNode('//w:Feature/w:ComponentGroupRef[@Id="WorkspacesComponentGroup"]', $namespace)
+        $featureGroup = $product.SelectSingleNode('//w:Feature[@Id="CoreFeature"]/w:ComponentGroupRef[@Id="WorkspacesComponentGroup"]', $namespace)
         & $script:assertWorkspacesEqual -Actual ($null -ne $featureGroup) -Expected $true -Context 'Installed Workspaces component group'
-        $assets = $product.SelectSingleNode('//w:Directory[@Name="WinUI3Apps"]/w:Directory[@Name="Assets"]', $namespace)
+        $assets = $product.SelectSingleNode('//w:Directory[@Id="INSTALLFOLDER"]/w:Directory[@Name="WinUI3Apps"]/w:Directory[@Name="Assets"]', $namespace)
         & $script:assertWorkspacesEqual -Actual ($null -ne $assets) -Expected $true -Context 'Installed WinUI assets directory'
         $workspaceAssets = $workspaces.SelectSingleNode("//w:DirectoryRef[@Id='$($assets.Id)']/w:Directory[@Name='Workspaces']", $namespace)
         & $script:assertWorkspacesEqual -Actual ($null -ne $workspaceAssets) -Expected $true -Context 'Installed WinUI Workspaces assets directory'
