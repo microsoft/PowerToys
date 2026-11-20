@@ -160,6 +160,12 @@
   <data name="Input_RemoveMetadata.Text" xml:space="preserve">
     <value>Remove metadata that doesn't affect rendering</value>
   </data>
+  <data name="Input_OutputFormat.Header" xml:space="preserve">
+    <value>Output format</value>
+  </data>
+  <data name="Input_OutputFormat_KeepOriginal.Content" xml:space="preserve">
+    <value>Keep original format</value>
+  </data>
   <data name="Image_Sizes" xml:space="preserve">
     <value>Image sizes</value>
   </data>

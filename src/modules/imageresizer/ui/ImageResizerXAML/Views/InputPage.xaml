@@ -273,6 +273,19 @@
                 Grid.Row="1"
                 Margin="16,8,16,16"
                 Orientation="Vertical">
+                <ComboBox
+                    x:Uid="Input_OutputFormat"
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Stretch"
+                    SelectedIndex="{x:Bind ViewModel.Settings.OutputFormat, Mode=TwoWay, Converter={StaticResource EnumToIntConverter}}">
+                    <ComboBoxItem x:Uid="Input_OutputFormat_KeepOriginal" />
+                    <ComboBoxItem Content="PNG" />
+                    <ComboBoxItem Content="JPEG" />
+                    <ComboBoxItem Content="BMP" />
+                    <ComboBoxItem Content="TIFF" />
+                    <ComboBoxItem Content="GIF" />
+                </ComboBox>
+
                 <CheckBox IsChecked="{x:Bind ViewModel.Settings.ShrinkOnly, Mode=TwoWay}">
                     <TextBlock x:Uid="Input_ShrinkOnly" TextWrapping="Wrap" />
                 </CheckBox>
