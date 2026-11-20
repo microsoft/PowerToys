@@ -28,6 +28,7 @@
                 x:Name="PickColorButton"
                 x:Uid="Pick_color"
                 VerticalAlignment="Center"
+                AutomationProperties.AcceleratorKey="I"
                 Command="{Binding OpenColorPickerCommand}">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <FontIcon FontSize="14" Glyph="&#xef3c;" />
