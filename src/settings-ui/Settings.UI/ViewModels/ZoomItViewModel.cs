@@ -33,6 +33,10 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private readonly ZoomItSettings _zoomItSettings;
 
+        private readonly Action<string> _saveSettings;
+
+        private readonly string _demoTypeFileEmptyDescription;
+
         private Func<string, int> SendConfigMSG { get; }
 
         private Func<string, string, string, int, string> PickFileDialog { get; }
@@ -40,6 +44,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private Func<LOGFONT, LOGFONT> PickFontDialog { get; }
 
         public ButtonClickCommand SelectDemoTypeFileCommand { get; set; }
+
+        public ButtonClickCommand ClearDemoTypeFileCommand { get; }
 
         public ButtonClickCommand SelectBreakSoundFileCommand { get; set; }
 
@@ -133,6 +139,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         };
 
         public ZoomItViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, Func<string, int> ipcMSGCallBackFunc, Func<string, string, string, int, string> pickFileDialog, Func<LOGFONT, LOGFONT> pickFontDialog)
+            : this(
+                  JsonSerializer.Deserialize<ZoomItSettings>(global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson(), _serializerOptions),
+                  global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson,
+                  ipcMSGCallBackFunc,
+                  ResourceLoaderInstance.ResourceLoader.GetString("ZoomIt_DemoType_File_EmptyDescription"))
         {
             ArgumentNullException.ThrowIfNull(settingsUtils);
 
@@ -143,13 +154,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
 
-            var zoomItSettings = global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.LoadSettingsJson();
-            _zoomItSettings = JsonSerializer.Deserialize<ZoomItSettings>(zoomItSettings, _serializerOptions);
-
             InitializeEnabledValue();
-
-            // set the callback functions value to handle outgoing IPC message for the enabled value.
-            SendConfigMSG = ipcMSGCallBackFunc;
 
             // set the callback for when we need the user to pick a file.
             PickFileDialog = pickFileDialog;
@@ -167,6 +172,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
             LoadMicrophoneList();
             LoadWebcamList();
+        }
+
+        internal ZoomItViewModel(ZoomItSettings zoomItSettings, Action<string> saveSettings, Func<string, int> ipcMSGCallBackFunc, string demoTypeFileEmptyDescription)
+        {
+            ArgumentNullException.ThrowIfNull(zoomItSettings);
+            ArgumentNullException.ThrowIfNull(saveSettings);
+            ArgumentNullException.ThrowIfNull(ipcMSGCallBackFunc);
+
+            _zoomItSettings = zoomItSettings;
+            _saveSettings = saveSettings;
+            SendConfigMSG = ipcMSGCallBackFunc;
+            _demoTypeFileEmptyDescription = demoTypeFileEmptyDescription;
+            ClearDemoTypeFileCommand = new ButtonClickCommand(() => DemoTypeFile = string.Empty);
         }
 
         private void InitializeEnabledValue()
@@ -823,10 +841,16 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _zoomItSettings.Properties.DemoTypeFile.Value = value;
                     OnPropertyChanged(nameof(DemoTypeFile));
+                    OnPropertyChanged(nameof(HasDemoTypeFile));
+                    OnPropertyChanged(nameof(DemoTypeFileDescription));
                     NotifySettingsChanged();
                 }
             }
         }
+
+        public bool HasDemoTypeFile => !string.IsNullOrEmpty(DemoTypeFile);
+
+        public string DemoTypeFileDescription => HasDemoTypeFile ? DemoTypeFile : _demoTypeFileEmptyDescription;
 
         public bool DemoTypeUserDrivenMode
         {
@@ -1357,8 +1381,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         private void NotifySettingsChanged()
         {
-            global::PowerToys.ZoomItSettingsInterop.ZoomItSettings.SaveSettingsJson(
-                JsonSerializer.Serialize(_zoomItSettings));
+            _saveSettings(JsonSerializer.Serialize(_zoomItSettings));
             SendCustomAction("refresh_settings");
         }
 

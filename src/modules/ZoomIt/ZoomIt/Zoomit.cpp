@@ -3438,7 +3438,7 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
                         else
                         {
                             SetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE, pathStr.get() );
-                            _tcscpy( g_DemoTypeFile, pathStr.get() );
+                            EnableWindow( GetDlgItem( hDlg, IDC_DEMOTYPE_CLEAR ), TRUE );
                         }
                     }
                 }
@@ -3448,6 +3448,11 @@ INT_PTR CALLBACK OptionsTabProc( HWND hDlg, UINT message,
             pEvents->Release();
             break;
         }
+        case IDC_DEMOTYPE_CLEAR:
+            SetDlgItemText( hDlg, IDC_DEMOTYPE_FILE, L"" );
+            SetFocus( GetDlgItem( hDlg, IDC_DEMOTYPE_BROWSE ) );
+            EnableWindow( GetDlgItem( hDlg, IDC_DEMOTYPE_CLEAR ), FALSE );
+            break;
         case IDC_TRIM_FILE:
         {
             // Open a video file for trimming
@@ -5342,14 +5347,12 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
             EnableWindow(GetDlgItem(g_OptionsTabs[RECORD_PAGE].hPage, IDC_WEBCAM_SETTINGS), !isGifSelected && g_WebcamOverlay);
         }
 
-        if( GetFileAttributes( g_DemoTypeFile ) == -1 )
-        {
-            memset( g_DemoTypeFile, 0, sizeof( g_DemoTypeFile ) );
-        }
-        else
+        if( GetFileAttributes( g_DemoTypeFile ) != INVALID_FILE_ATTRIBUTES )
         {
             SetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE, g_DemoTypeFile );
         }
+        EnableWindow( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_CLEAR ),
+            GetWindowTextLength( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE ) ) != 0 );
         SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_SETRANGE, false, MAKELONG( MAX_TYPING_SPEED, MIN_TYPING_SPEED ) );
         SendMessage( GetDlgItem( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_SPEED_SLIDER ), TBM_SETPOS, true, g_DemoTypeSpeedSlider );
         CheckDlgButton( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_USER_DRIVEN, g_DemoTypeUserDriven ? BST_CHECKED: BST_UNCHECKED );
@@ -5864,6 +5867,8 @@ INT_PTR CALLBACK OptionsProc( HWND hDlg, UINT message,
                 g_SnipDictateToggleMod = newSnipDictateToggleMod;
                 g_MirrorToggleKey = newMirrorToggleKey;
                 g_MirrorToggleMod = newMirrorToggleMod;
+                GetDlgItemText( g_OptionsTabs[DEMOTYPE_PAGE].hPage, IDC_DEMOTYPE_FILE,
+                    g_DemoTypeFile, _countof( g_DemoTypeFile ) );
                 reg.WriteRegSettings( RegSettings );
                 EnableDisableTrayIcon( GetParent( hDlg ), g_ShowTrayIcon );
 

@@ -146,6 +146,7 @@
 #define IDC_MIRROR_HOTKEY               1138
 #define IDC_MIRROR_TRACK_WINDOW         1137
 #define IDC_SNIP_DICTATE_ENABLED        1139
+#define IDC_DEMOTYPE_CLEAR              1140
 #define IDC_SAVE                        40002
 #define IDC_COPY                        40004
 #define IDC_RECORD                      40006
@@ -162,7 +163,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        123
 #define _APS_NEXT_COMMAND_VALUE         40016
-#define _APS_NEXT_CONTROL_VALUE         1140
+#define _APS_NEXT_CONTROL_VALUE         1141
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
