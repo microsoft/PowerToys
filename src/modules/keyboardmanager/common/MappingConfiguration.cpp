@@ -4,6 +4,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
+#include <common/interop/shared_constants.h>
 
 #include "KeyboardManagerConstants.h"
 #include "Shortcut.h"
@@ -59,6 +60,12 @@ void MappingConfiguration::ClearSingleKeyRemaps()
 void MappingConfiguration::ClearSingleKeyAloneRemaps()
 {
     aloneSingleKeyReMap.clear();
+}
+
+// Function to clear the single-key-to-sequence remapping table.
+void MappingConfiguration::ClearSingleKeyToSequenceRemaps()
+{
+    singleKeyToSequenceReMap.clear();
 }
 
 // Function to clear the Keys remapping table.
@@ -127,6 +134,71 @@ bool MappingConfiguration::AddSingleKeyAloneRemap(const DWORD& originalKey, cons
     return true;
 }
 
+bool MappingConfiguration::AddSingleKeyToSequenceRemap(const DWORD& originalKey, const std::vector<DWORD>& sequence)
+{
+    if (sequence.empty())
+    {
+        return false;
+    }
+
+    // Reject a duplicate source key within the sequence table.
+    if (singleKeyToSequenceReMap.find(originalKey) != singleKeyToSequenceReMap.end())
+    {
+        return false;
+    }
+
+    singleKeyToSequenceReMap[originalKey] = sequence;
+    return true;
+}
+
+std::wstring MappingConfiguration::KeySequenceToString(const std::vector<DWORD>& sequence)
+{
+    std::wstring result;
+    for (const DWORD key : sequence)
+    {
+        if (!result.empty())
+        {
+            result += L';';
+        }
+        result += std::to_wstring(key);
+    }
+
+    return result;
+}
+
+std::vector<DWORD> MappingConfiguration::ParseKeySequence(const std::wstring& value)
+{
+    std::vector<DWORD> sequence;
+    size_t start = 0;
+    while (start <= value.size())
+    {
+        const size_t end = value.find(L';', start);
+        const std::wstring element = value.substr(start, end == std::wstring::npos ? std::wstring::npos : end - start);
+        if (!element.empty())
+        {
+            // Decimal VK codes only: reject trailing characters (e.g. "0x1A" or "27abc") and values
+            // outside the key range, instead of silently sending a different key.
+            size_t parsed = 0;
+            const unsigned long key = std::iswdigit(element[0]) ? std::stoul(element, &parsed) : 0;
+            if (parsed != element.size() || key == 0 || (key > 0xFF && key != CommonSharedConstants::VK_DISABLED && key != CommonSharedConstants::VK_WIN_BOTH))
+            {
+                throw std::invalid_argument("invalid key code in key sequence");
+            }
+
+            sequence.push_back(static_cast<DWORD>(key));
+        }
+
+        if (end == std::wstring::npos)
+        {
+            break;
+        }
+
+        start = end + 1;
+    }
+
+    return sequence;
+}
+
 bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text)
 {
     if (auto it = singleKeyToTextReMap.find(originalKey); it != end(singleKeyToTextReMap))
@@ -179,6 +251,7 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
         auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
         ClearSingleKeyRemaps();
         ClearSingleKeyAloneRemaps();
+        ClearSingleKeyToSequenceRemaps();
 
         if (remapKeysData)
         {
@@ -227,6 +300,56 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
     catch (...)
     {
         Logger::error(L"Improper JSON format for single key remaps. Skip to next remap type");
+        result = false;
+    }
+
+    // Key-sequence remaps live in their own optional array (absent in older settings files), read
+    // separately so a problem in inProcess doesn't hide them. They are hand-written for now (no editor
+    // UI), so a bad entry is logged and skipped without failing the whole load: a failed load would
+    // stop the editor from opening the profile and make the engine retry loading.
+    try
+    {
+        auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+        if (remapKeysData && remapKeysData.HasKey(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName))
+        {
+            auto sequenceRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+            for (const auto& it : sequenceRemapKeys)
+            {
+                std::wstring originalKey;
+                try
+                {
+                    originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName).c_str();
+                    auto sequence = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+
+                    // Decimal only: digits from the first character (stoul would accept " 27", "+27" and
+                    // "-27"), no trailing characters (e.g. "0x1B" would otherwise become 0).
+                    if (originalKey.empty() || !std::iswdigit(originalKey[0]))
+                    {
+                        throw std::invalid_argument("invalid source key");
+                    }
+
+                    size_t parsed = 0;
+                    const DWORD sourceKey = static_cast<DWORD>(std::stoul(originalKey, &parsed));
+                    if (parsed != originalKey.size() || sourceKey == 0)
+                    {
+                        throw std::invalid_argument("invalid source key");
+                    }
+
+                    if (!AddSingleKeyToSequenceRemap(sourceKey, ParseKeySequence(sequence.c_str())))
+                    {
+                        Logger::warn(L"Ignored the key sequence remap for key {}: the sequence is empty or the key already has one.", originalKey);
+                    }
+                }
+                catch (...)
+                {
+                    Logger::warn(L"Ignored the key sequence remap for key {}: not a valid entry.", originalKey);
+                }
+            }
+        }
+    }
+    catch (...)
+    {
+        Logger::error(L"Improper JSON format for key sequence remaps. Skip to next remap type");
         result = false;
     }
 
@@ -581,6 +704,16 @@ bool MappingConfiguration::SaveSettingsToFile()
 
         inProcessRemapKeysArray.Append(keys);
     }
+    // Serialize key-sequence remaps into their own array (see InProcessSequenceRemapKeysSettingName).
+    // Without this, saving from the editor would silently drop them.
+    json::JsonArray inProcessSequenceRemapKeysArray;
+    for (const auto& [originalKey, sequence] : singleKeyToSequenceReMap)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(originalKey))));
+        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(KeySequenceToString(sequence)));
+        inProcessSequenceRemapKeysArray.Append(keys);
+    }
 
     for (const auto& [code, text] : singleKeyToTextReMap)
     {
@@ -727,6 +860,12 @@ bool MappingConfiguration::SaveSettingsToFile()
     remapShortcutsToText.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsToTextArray);
 
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
+    // Only write the key-sequence array when there is something in it, so files without sequences
+    // stay exactly as before.
+    if (inProcessSequenceRemapKeysArray.Size() > 0)
+    {
+        remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequenceRemapKeysArray);
+    }
     remapKeysToText.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysToTextArray);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysToTextSettingName, remapKeysToText);

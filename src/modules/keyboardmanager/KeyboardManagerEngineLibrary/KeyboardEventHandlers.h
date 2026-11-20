@@ -42,6 +42,12 @@ namespace KeyboardEventHandlers
     // through. Must run before HandleSingleKeyRemapEvent in the hook dispatch chain.
     intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
+    // Function to handle a single-key-to-sequence remap (#5679): pressing the source key sends an
+    // ordered list of key taps (down+up each), in order, once per press. The source key's own key-down
+    // (including auto-repeats) and key-up are suppressed; the whole sequence is injected on the first
+    // key-down.
+    intptr_t HandleSingleKeyToSequenceRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
     // Promote every currently-pending ("tap candidate") "Alone" key into a started combination by
     // injecting its original key-down as a real key/modifier, so in-combination behavior works (e.g.
     // Right Ctrl acting as Ctrl for Ctrl+H, Ctrl+Click or Ctrl+Wheel). Shared by the keyboard

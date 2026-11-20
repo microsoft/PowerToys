@@ -15,6 +15,7 @@ namespace TestHelpers
         input.SetForegroundProcess(L"");
         state.ClearSingleKeyRemaps();
         state.ClearSingleKeyAloneRemaps();
+        state.ClearSingleKeyToSequenceRemaps();
         state.ClearOSLevelShortcuts();
         state.ClearAppSpecificShortcuts();
         state.ClearSingleKeyToTextRemaps();

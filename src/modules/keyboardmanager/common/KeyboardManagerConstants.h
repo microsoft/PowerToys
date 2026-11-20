@@ -21,6 +21,12 @@ namespace KeyboardManagerConstants
 
     // Name of the property use to store single keyremaps array in case of in process approach.
     inline const std::wstring InProcessRemapKeysSettingName = L"inProcess";
+    // Name of the property (inside remapKeys, next to inProcess) that stores key-sequence remaps: a
+    // source key -> an ORDERED list of key taps sent one after another (down+up each), stored as
+    // ';'-separated VK codes, e.g. Esc -> "27;26" = tap Esc, then tap IME-Off. A separate array, not a
+    // "condition" on inProcess entries, so an older PowerToys ignores it instead of reading the list
+    // as a simultaneous shortcut.
+    inline const std::wstring InProcessSequenceRemapKeysSettingName = L"inProcessSequence";
 
     // Name of the property use to store shortcut remaps.
     inline const std::wstring RemapShortcutsSettingName = L"remapShortcuts";
