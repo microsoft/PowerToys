@@ -11,10 +11,8 @@ namespace FancyZones.UITests.Utils;
 /// <c>%LocalAppData%\Microsoft\PowerToys\FancyZones</c>.
 /// </summary>
 /// <remarks>
-/// Replaces the legacy <c>FancyZonesEditorFiles</c>. The legacy type lived in
-/// <c>FancyZonesEditor.UITests</c>, which references the WinAppDriver harness; this one depends only
-/// on <c>FancyZonesEditorCommon</c>. <c>app-zone-history.json</c> is read as raw JSON (see
-/// <see cref="ZoneHistory"/>) rather than through the legacy project's <c>AppZoneHistory</c> wrapper.
+/// Depends on <c>FancyZonesEditorCommon</c> for layout/settings types.
+/// <c>app-zone-history.json</c> is read as raw JSON (see <see cref="ZoneHistory"/>).
 /// </remarks>
 public sealed class FancyZonesFiles
 {

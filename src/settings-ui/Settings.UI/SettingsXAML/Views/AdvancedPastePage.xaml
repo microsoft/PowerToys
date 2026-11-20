@@ -160,6 +160,20 @@
                                 </DataTemplate>
                             </tkcontrols:SettingsExpander.ItemTemplate>
                         </tkcontrols:SettingsExpander>
+                        <InfoBar
+                            Margin="0,8,0,0"
+                            IsClosable="False"
+                            IsOpen="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            IsTabStop="{x:Bind ViewModel.IsAIEnabled, Mode=OneWay}"
+                            Severity="Informational">
+                            <TextBlock TextWrapping="Wrap">
+                                <Run x:Uid="AdvancedPaste_AIComplianceNotice" />
+                                <Run Text=" " />
+                                <Hyperlink Click="AIComplianceLearnMore_Click">
+                                    <Run x:Uid="AdvancedPaste_AIComplianceLearnMore" />
+                                </Hyperlink>
+                            </TextBlock>
+                        </InfoBar>
                     </controls:SettingsGroup>
 
                     <!--  Activation and behavior  -->
@@ -537,6 +551,18 @@
                 <controls:PageLink x:Uid="LearnMore_AdvancedPaste" Link="https://aka.ms/PowerToysOverview_AdvancedPaste" />
             </controls:SettingsPageControl.PrimaryLinks>
         </controls:SettingsPageControl>
+        <ContentDialog
+            x:Name="AIComplianceDialog"
+            x:Uid="AdvancedPaste_AIComplianceDialog"
+            DefaultButton="Close">
+            <ScrollViewer MaxHeight="480" VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="16">
+                    <TextBlock x:Name="AIComplianceModelNotice" TextWrapping="Wrap" />
+                    <TextBlock x:Uid="AdvancedPaste_AIComplianceModelResponsibilities" TextWrapping="Wrap" />
+                    <TextBlock x:Uid="AdvancedPaste_AIComplianceRegionalResponsibilities" TextWrapping="Wrap" />
+                </StackPanel>
+            </ScrollViewer>
+        </ContentDialog>
         <ContentDialog
             x:Name="CustomActionDialog"
             x:Uid="CustomActionDialog"
