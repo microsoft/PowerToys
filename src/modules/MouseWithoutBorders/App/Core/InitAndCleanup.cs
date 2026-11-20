@@ -227,12 +227,13 @@ internal static class InitAndCleanup
 
         foreach (VK vk in keys)
         {
+            kd.wVk = (int)vk;
+            bool bypassKeyboardManager = InputSimulation.ConsumeRemoteKeyboardBypassPolicy(kd.wVk);
             if ((NativeMethods.GetAsyncKeyState((IntPtr)vk) & 0x8000) != 0)
             {
                 Logger.LogDebug(vk.ToString() + " is down, release it...");
                 Common.Hook?.ResetLastSwitchKeys(); // Sticky key can turn ALL PC mode on (CtrlCtrlCtrl)
-                kd.wVk = (int)vk;
-                InputSimulation.SendKey(kd);
+                InputSimulation.SendKey(kd, bypassKeyboardManager);
                 Common.Hook?.ResetLastSwitchKeys();
             }
         }
