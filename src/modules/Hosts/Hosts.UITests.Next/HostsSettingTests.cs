@@ -99,7 +99,6 @@ namespace Hosts.UITests
         public void TestWarningDialog()
         {
             var hostsSession = LaunchFromSetting(showWarning: true);
-            var settingsSession = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
 
             // Validating Warning-Dialog will be shown if 'Show a warning at startup' toggle is on.
             Assert.IsTrue(
@@ -128,8 +127,7 @@ namespace Hosts.UITests
             TestContext.WriteLine("Startup Quit closed the editor.");
 
             // Re-launch Hosts File Editor from Settings.
-            settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
-            hostsSession = AttachHostsEditor();
+            hostsSession = LaunchHostsEditor();
 
             // Should show warning dialog.
             Assert.IsTrue(
@@ -519,14 +517,18 @@ namespace Hosts.UITests
             settingsSession.FindExact<ToggleSwitch>("Open as administrator").Toggle(openAsAdmin);
             settingsSession.FindExact<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 
-            // Launch Hosts File Editor.
-            settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
-
-            return AttachHostsEditor();
+            return LaunchHostsEditor();
         }
 
-        private static Session AttachHostsEditor()
+        private Session LaunchHostsEditor()
         {
+            // The SettingsCard requires a real click. After Hosts exits, Settings may not regain foreground.
+            var settings = Session.Attach(PowerToysModule.PowerToysSettings);
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(settings.WindowHandle), timeoutMS: 5_000, requiredConsecutiveMatches: 3),
+                $"Settings should own foreground before opening Hosts. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Clicking Open Hosts File Editor in Settings and waiting for the editor window.");
+            settings.FindExact<Button>("Open Hosts File Editor").Click(msPostAction: 0);
             var hostsSession = Session.Attach(PowerToysModule.Hosts);
             WindowHelper.MaximizeWindow(new IntPtr(hostsSession.WindowHandle));
             Thread.Sleep(200);
