@@ -85,6 +85,47 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        public void IsolateRestoresExistingBracedGuidRequestsWithTheirOriginalWriteTime()
+        {
+            const string prefix = "temp-workspaces.json.";
+            var id = Guid.NewGuid();
+            var request = Path.Combine(profile, $"{prefix}{id:B}");
+            var laterRequest = Path.Combine(profile, $"{prefix}{Guid.NewGuid():B}");
+            string[] unrelated = [$"{prefix}{{invalid}}", $"{prefix}{id:D}", $"{prefix}{id:B}.backup"];
+            byte[] original = [0xff, 0x00, 0x0d, 0x0a];
+            File.WriteAllBytes(request, original);
+            File.SetLastWriteTimeUtc(request, new DateTime(2024, 1, 2, 3, 4, 5, DateTimeKind.Utc).AddTicks(1_234_567));
+            var originalWriteTime = File.GetLastWriteTimeUtc(request);
+            foreach (var name in unrelated)
+            {
+                File.WriteAllText(Path.Combine(profile, name), name);
+            }
+
+            using (var snapshot = new WorkspaceProfileSnapshot(profile))
+            {
+                snapshot.Isolate();
+                Assert.IsFalse(File.Exists(request));
+                foreach (var name in unrelated)
+                {
+                    Assert.AreEqual(name, File.ReadAllText(Path.Combine(profile, name)));
+                }
+
+                File.WriteAllText(laterRequest, "new request");
+                File.WriteAllText(request, "later version of saved request");
+            }
+
+            CollectionAssert.AreEqual(original, File.ReadAllBytes(request));
+            Assert.AreEqual(originalWriteTime, File.GetLastWriteTimeUtc(request));
+            Assert.AreEqual("new request", File.ReadAllText(laterRequest));
+            using var interrupted = ZipFile.OpenRead(Directory.GetFiles(profile + ".UITestRecovery", "interrupted-*.zip").Single());
+            Assert.AreEqual("later version of saved request", ReadEntry(interrupted, Path.GetFileName(request)));
+            foreach (var name in unrelated)
+            {
+                Assert.AreEqual(name, File.ReadAllText(Path.Combine(profile, name)));
+            }
+        }
+
+        [TestMethod]
         public void NextRunRestoresInterruptedOriginalsAndKeepsIntermediateDataRecoverable()
         {
             var recovery = profile + ".UITestRecovery";

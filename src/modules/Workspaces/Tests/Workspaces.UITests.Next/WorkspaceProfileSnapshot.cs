@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Globalization;
 using System.IO.Compression;
 
 namespace Microsoft.Workspaces.UITests
@@ -9,6 +10,7 @@ namespace Microsoft.Workspaces.UITests
     internal sealed class WorkspaceProfileSnapshot : IDisposable
     {
         private const string FormatMarker = "PowerToys.Workspaces.UITests.Next.v1";
+        private const string RequestPrefix = "temp-workspaces.json.";
         private static readonly string[] FileNames = ["workspaces.json", "editor-window.json", "settings.json", "temp-workspaces.json"];
         private readonly string workspaceDirectory;
         private readonly string recoveryDirectory;
@@ -41,14 +43,14 @@ namespace Microsoft.Workspaces.UITests
             {
                 // A terminated host left its original on disk. Keep any later edits separately,
                 // including changes the user made before starting this new run.
-                Capture(Path.Combine(recoveryDirectory, $"interrupted-{DateTime.UtcNow:yyyyMMddTHHmmssZ}-{Guid.NewGuid():N}.zip"));
+                CaptureInterruptedProfile();
                 Restore();
             }
 
-            Capture(original);
+            var names = Capture(original);
             try
             {
-                foreach (var name in FileNames)
+                foreach (var name in names)
                 {
                     var path = Path.Combine(workspaceDirectory, name);
                     RequireRegularFileOrMissing(path);
@@ -79,7 +81,7 @@ namespace Microsoft.Workspaces.UITests
             {
                 if (isolated)
                 {
-                    Restore();
+                    Restore(preserveReplacedRequests: true);
                 }
             }
             finally
@@ -89,43 +91,82 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        private void Capture(string destination)
+        private void CaptureInterruptedProfile() => Capture(Path.Combine(recoveryDirectory, $"interrupted-{DateTime.UtcNow:yyyyMMddTHHmmssZ}-{Guid.NewGuid():N}.zip"));
+
+        private List<string> Capture(string destination)
         {
+            var directory = new DirectoryInfo(workspaceDirectory);
+            var requests = directory.EnumerateFiles(RequestPrefix + "{*}", SearchOption.TopDirectoryOnly)
+                .Where(file => IsRequestName(file.Name) && !file.Attributes.HasFlag(FileAttributes.ReparsePoint));
+            List<string> captured = [];
             WriteAtomically(destination, stream =>
             {
                 using var archive = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true);
                 archive.CreateEntry(FormatMarker);
-                foreach (var name in FileNames)
+                foreach (var name in FileNames.Concat(requests.Select(file => file.Name)))
                 {
                     var path = Path.Combine(workspaceDirectory, name);
                     if (RequireRegularFileOrMissing(path))
                     {
-                        archive.CreateEntryFromFile(path, name);
+                        var entry = archive.CreateEntryFromFile(path, name);
+                        if (IsRequestName(name))
+                        {
+                            // ZIP timestamps have two-second precision. Editor expires requests by their UTC write time.
+                            entry.Comment = File.GetLastWriteTimeUtc(path).ToString("O", CultureInfo.InvariantCulture);
+                        }
+
+                        captured.Add(name);
                     }
                 }
             });
+            return captured;
         }
 
-        private void Restore()
+        private static bool IsRequestName(string name) =>
+            name.Length == RequestPrefix.Length + 38 &&
+            name.StartsWith(RequestPrefix, StringComparison.OrdinalIgnoreCase) &&
+            Guid.TryParseExact(name.AsSpan(RequestPrefix.Length), "B", out _);
+
+        private void Restore(bool preserveReplacedRequests = false)
         {
             Directory.CreateDirectory(workspaceDirectory);
             using (var archive = ZipFile.OpenRead(original))
             {
                 var entries = archive.Entries.ToDictionary(entry => entry.FullName, StringComparer.Ordinal);
                 if (!entries.Remove(FormatMarker, out var marker) || marker.Length != 0 ||
-                    entries.Keys.Except(FileNames, StringComparer.Ordinal).Any())
+                    entries.Keys.Except(FileNames, StringComparer.Ordinal).Any(name => !IsRequestName(name)))
                 {
                     throw new InvalidDataException($"Unrecognized Workspaces UI test backup at '{original}'.");
                 }
 
-                foreach (var name in FileNames)
+                var requests = entries.Keys.Where(IsRequestName).ToArray();
+                if (preserveReplacedRequests && requests.Any(name => RequireRegularFileOrMissing(Path.Combine(workspaceDirectory, name))))
+                {
+                    // Someone recreated a saved request ID during the run. Keep both versions.
+                    CaptureInterruptedProfile();
+                }
+
+                // Leave any newly created request IDs in place.
+                foreach (var name in FileNames.Concat(requests))
                 {
                     var path = Path.Combine(workspaceDirectory, name);
                     RequireRegularFileOrMissing(path);
                     if (entries.TryGetValue(name, out var entry))
                     {
+                        bool isRequest = IsRequestName(name);
+                        DateTime modified = default;
+                        if (isRequest &&
+                            (!DateTime.TryParseExact(entry.Comment, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out modified) || modified.Kind != DateTimeKind.Utc))
+                        {
+                            throw new InvalidDataException($"Missing UTC write time for '{name}' in '{original}'.");
+                        }
+
                         using var source = entry.Open();
                         WriteAtomically(path, source.CopyTo, overwrite: true);
+                        if (isRequest)
+                        {
+                            File.SetLastWriteTimeUtc(path, modified);
+                        }
                     }
                     else
                     {

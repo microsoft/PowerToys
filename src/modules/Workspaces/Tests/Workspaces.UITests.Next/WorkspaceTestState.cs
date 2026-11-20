@@ -201,9 +201,9 @@ namespace Microsoft.Workspaces.UITests
 
         internal void TrackProjectShortcutFiles(string id)
         {
+            // The icon uses the stored ID spelling. The ownership record uses the braced GUID.
             var workspaceId = Guid.Parse(id);
             var directory = Path.Combine(DirectoryPath, "WorkspacesIcons");
-            // The icon uses the stored ID spelling. The ownership record uses the braced GUID.
             Preserve(Path.Combine(directory, id + ".ico"));
             Preserve(Path.Combine(directory, $"{workspaceId:B}.links.json"));
         }
