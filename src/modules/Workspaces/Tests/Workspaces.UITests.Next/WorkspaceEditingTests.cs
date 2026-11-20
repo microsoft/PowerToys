@@ -44,7 +44,7 @@ namespace Microsoft.Workspaces.UITests
             AssertWorkspaceNames(names);
             var appMatches = WaitForSearchSuggestions(names[1], names[2]);
             Assert.IsTrue(appMatches[0].Y < appMatches[1].Y, "The two matching suggestions should occupy distinct rows.");
-            ChooseSearchSuggestion(appMatches[1]);
+            ChooseSearchSuggestion(appMatches[1].Name);
             CancelEditing();
 
             Search("no matching workspace or application");
@@ -61,7 +61,7 @@ namespace Microsoft.Workspaces.UITests
 
         private TextBlock[] WaitForSearchSuggestions(params string[] expected)
         {
-            var searchBox = Editor.Find<Element>(By.AccessibilityId("SearchTextBox"), 15_000);
+            var searchBox = Editor.Find<Element>(By.AccessibilityId("SearchBox"), 15_000);
             var expectedNames = expected.Order(StringComparer.Ordinal).ToArray();
 
             // WinUI exposes the same popup under both PopupHost and its AutoSuggestBox.
@@ -78,13 +78,18 @@ namespace Microsoft.Workspaces.UITests
             return observed;
         }
 
-        private void ChooseSearchSuggestion(TextBlock suggestion)
+        private void ChooseSearchSuggestion(string name)
         {
-            using var physicalCoordinates = new PhysicalCoordinateScope();
-            suggestion.Click(msPostAction: 0);
+            // The suggestion label belongs to a ListViewItem. Invoking that item raises the
+            // AutoSuggestBox's ItemClick and submits the actual chosen workspace.
+            ActivatePopupItem(
+                name,
+                "invoke",
+                item => Subtree(item).Any(child => UiString(child, "automationId") == "WorkspaceSearchSuggestionName" &&
+                    UiString(child, "name") == name));
             Assert.IsTrue(
-                Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(suggestion.Name, timeoutMS: 10_000),
-                $"Choosing the '{suggestion.Name}' suggestion did not open that workspace.");
+                Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(name, timeoutMS: 10_000),
+                $"Choosing the '{name}' suggestion did not open that workspace.");
         }
 
         [TestMethod]
@@ -128,6 +133,50 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("SaveButton")).IsEnabled);
             Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("PART_BackButton")).IsEnabled);
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Opening the editing page changed stored data.");
+        }
+
+        [TestMethod]
+        public void MouseOpensWorkspaceInitiallyOutsideTheListViewport()
+        {
+            var projects = Enumerable.Range(1, 16).Select(index =>
+            {
+                string rank = index.ToString("D2", CultureInfo.InvariantCulture);
+                return State.Project($"viewport-{rank}", State.Application($"Viewport fixture {rank}", $"{State.Prefix}-{rank}"));
+            }).ToArray();
+            State.WriteProjects([.. projects.Reverse()]);
+            string firstId = WorkspaceTestState.Text(projects[0], "id");
+            string targetId = WorkspaceTestState.Text(projects[^1], "id");
+            string targetName = WorkspaceTestState.Text(projects[^1], "name");
+            string targetApplication = WorkspaceTestState.Text(projects[^1]["applications"]!.AsArray().Single()!, "application");
+            OpenEditor();
+            using (new PhysicalCoordinateScope())
+            {
+                var handle = new IntPtr(Editor.WindowHandle);
+                var monitor = MonitorInfo.GetFromWindow(handle);
+                var dpi = NativeMethods.GetDpiForWindow(handle);
+                Assert.IsTrue(dpi > 0, "The editor window should report its display DPI.");
+                double scale = dpi / 96.0;
+                int height = (int)Math.Ceiling(720 * scale);
+                if (monitor.WorkHeight > height)
+                {
+                    WindowHelper.RestoreWindow(handle);
+                    WindowHelper.MoveWindow(handle, monitor.WorkLeft, monitor.WorkTop);
+                    WindowHelper.SetMainWindowSize(handle, Math.Min(monitor.WorkWidth, (int)Math.Ceiling(900 * scale)), height);
+                }
+            }
+
+            SelectWorkspaceSort(2);
+            var initial = WaitHelper.WaitForStable(
+                () => WorkspaceCards(out var viewport) is { } cards && viewport is not null &&
+                    cards.Any(card => card.Id == firstId && card.VisibleEditArea.Width > 0 && card.VisibleEditArea.Height > 0) &&
+                    !cards.Any(card => card.Id == targetId && card.VisibleEditArea.Width > 0 && card.VisibleEditArea.Height > 0),
+                targetOutside => targetOutside,
+                15_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(initial.Succeeded, $"The list should show its first workspace and require scrolling to reach '{targetName}'.");
+
+            EditWorkspace(targetName, useKeyboard: false);
+            Assert.IsTrue(Editor.Has(By.AccessibilityId(targetApplication), 10_000), "The mouse should open the last workspace and its application.");
         }
 
         [TestMethod]
@@ -258,7 +307,7 @@ namespace Microsoft.Workspaces.UITests
             var row = ExpandApplication("Primary fixture");
             AssertCustomCoordinatesAvailable(row, expected: true);
             using var before = PreviewSnapshot.Capture(TestContext, Editor, "custom-position");
-            SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), selected, EditorProcess);
+            SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), selected);
             AssertCustomCoordinatesAvailable(row, expected: false);
             PreviewSnapshot.AssertChanged(TestContext, Editor, before);
             SaveWorkspace();
@@ -269,7 +318,7 @@ namespace Microsoft.Workspaces.UITests
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
             row = ExpandApplication("Primary fixture");
             Assert.AreEqual(selected, row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")).SelectedText);
-            SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), "Custom", EditorProcess);
+            SelectCombo(row.Find<ComboBox>(By.AccessibilityId("WindowPositionComboBox")), "Custom");
             AssertCustomCoordinatesAvailable(row, expected: true);
             PreviewSnapshot.AssertRestored(TestContext, Editor, before);
         }
@@ -305,27 +354,49 @@ namespace Microsoft.Workspaces.UITests
 
         private void SelectWorkspaceSort(int index)
         {
+            if (StoredSortIndex() == index)
+            {
+                return;
+            }
+
             Step($"Selecting workspace sort order {index}.");
             string itemId = SortItemId(index);
+            WinappCli.Result ToggleItem()
+            {
+                var (window, item) = OpenWorkspaceSortItem(itemId);
+                Assert.AreEqual("off", UiString(item, "toggleState"), $"'{itemId}' should be unchecked before changing the sort order.");
+                return WinappCli.Invoke("ui", "invoke", itemId, "-w", window, "--action", "toggle", "--json");
+            }
+
+            var activation = ToggleItem();
+            if (!activation.Success && ItemWasNotFound(activation, itemId))
+            {
+                // winappcli reports element_not_found before dispatching the requested action.
+                // The flyout may have closed between inspection and invocation.
+                activation = ToggleItem();
+            }
+
+            Assert.IsTrue(activation.Success, activation.DescribeFailure());
             var saved = WaitHelper.WaitForStable(
                 StoredSortIndex,
                 actual => actual == index,
                 15_000,
-                recover: _ =>
-                {
-                    var (window, item) = OpenWorkspaceSortItem(itemId);
-                    if (UiString(item, "toggleState") == "off")
-                    {
-                        // Invoking a radio item dismisses the flyout. Verify the resulting
-                        // setting instead of querying the old menu peer after activation.
-                        WinappCli.InvokeAssertSuccess("ui", "invoke", itemId, "-w", window, "--action", "toggle", "--json");
-                    }
-                },
-                shouldRetryException: error => error is IOException or JsonException ||
-                    (error is AssertFailedException && (IsStaleElement(error) ||
-                    error.Message.Contains("element_not_found", StringComparison.OrdinalIgnoreCase) ||
-                    error.Message.Contains("not found or not accessible", StringComparison.OrdinalIgnoreCase))));
+                shouldRetryException: error => error is IOException or JsonException);
             Assert.IsTrue(saved.Succeeded, $"Selecting '{itemId}' did not persist sort index {index}. Observed {saved.LastObservation}. {saved.LastException?.Message}");
+
+            static bool ItemWasNotFound(WinappCli.Result failure, string expectedId)
+            {
+                try
+                {
+                    return JsonNode.Parse(failure.StdErr) is JsonObject response &&
+                        response["error"] is JsonObject error &&
+                        (string?)error["code"] == "element_not_found" && (string?)error["selector"] == expectedId;
+                }
+                catch (JsonException)
+                {
+                    return false;
+                }
+            }
         }
 
         private static int StoredSortIndex() => WorkspaceTestState.ReadObject(WorkspaceTestState.SettingsPath)["properties"]!["sortby"]!.GetValue<int>();
@@ -359,20 +430,16 @@ namespace Microsoft.Workspaces.UITests
                 return null;
             }
 
-            var ready = WaitHelper.WaitForStable(
-                () =>
-                {
-                    var item = FindOpenItem();
-                    if (item is null && WindowControl.WaitForForeground(new IntPtr(Editor.WindowHandle), 2_000))
-                    {
-                        WinappCli.InvokeAssertSuccess("ui", "invoke", "WorkspaceSortComboBox", "-w", Editor.WindowHandleArg, "--action", "invoke");
-                        item = WaitHelper.WaitForStable(FindOpenItem, hit => hit.HasValue, 2_000).LastObservation;
-                    }
+            if (FindOpenItem() is { } openItem)
+            {
+                return openItem;
+            }
 
-                    return item;
-                },
-                hit => hit.HasValue,
-                10_000);
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(Editor.WindowHandle), 10_000, requiredConsecutiveMatches: 2),
+                $"The editor did not acquire foreground to open the sort menu. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            WinappCli.InvokeAssertSuccess("ui", "invoke", "WorkspaceSortComboBox", "-w", Editor.WindowHandleArg, "--action", "invoke");
+            var ready = WaitHelper.WaitForStable(FindOpenItem, hit => hit.HasValue, 10_000, shouldRetryException: IsStaleElement);
             Assert.IsTrue(ready.Succeeded, $"The editor did not show sort option '{itemId}'. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
             return ready.LastObservation!.Value;
         }
@@ -404,28 +471,53 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(ready.Succeeded, message);
         }
 
-        private void SelectCombo(ComboBox combo, string item, string processName)
+        private void SelectCombo(ComboBox combo, string item)
         {
-            using var physicalCoordinates = new PhysicalCoordinateScope();
             Step($"Selecting '{item}'.");
             if (combo.SelectedText == item)
             {
                 return;
             }
 
-            Editor.EnsureForeground();
-            combo.Invoke(msPostAction: 0);
-            var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(processName);
-
-            // The dropdown's popup is process-scoped; scope identical item peers by their on-screen
-            // bounds while keeping two genuinely different matching items an error.
-            var options = process.FindAll<Element>(By.Name(item), 15_000)
-                .Where(option => option.Name.Equals(item, StringComparison.OrdinalIgnoreCase) && option.ControlType == "ListItem")
-                .GroupBy(option => (option.X, option.Y, option.Width, option.Height))
-                .ToArray();
-            Assert.HasCount(1, options, $"The '{item}' selection item was not uniquely addressable.");
-            options[0].First().Click(msPostAction: 0);
+            WinappCli.InvokeAssertSuccess("ui", "invoke", combo.Selector, "-w", Editor.WindowHandleArg, "--action", "expand", "--json");
+            ActivatePopupItem(item, "select", option => UiString(option, "name") == item);
             Assert.IsTrue(combo.WaitForValue(item, timeoutMS: 10_000), $"The selection did not change to '{item}'.");
+            WinappCli.InvokeAssertSuccess("ui", "invoke", combo.Selector, "-w", Editor.WindowHandleArg, "--action", "collapse", "--json");
+        }
+
+        private void ActivatePopupItem(string name, string action, Func<JsonElement, bool> matches)
+        {
+            string process = Editor.ProcessId.ToString(CultureInfo.InvariantCulture);
+            (long Handle, string Selector)? FindItem()
+            {
+                var tree = WinappCli.InvokeJson("ui", "inspect", "-a", process, "--json", "-d", "20");
+                var editorWindows = WindowControl.EnumerateProcessWindows([Editor.ProcessId])
+                    .Where(window => window.IsVisible).Select(window => window.Hwnd.ToInt64()).ToHashSet();
+                var items = WindowRoots(tree)
+                    .Where(window => editorWindows.Contains(window.Handle))
+                    .SelectMany(window => Subtree(window.Element)
+                        .Where(element => UiString(element, "type") == "ListItem" && IsVisible(element) && matches(element))
+                        .Select(element => (window.Handle, Selector: UiString(element, "selector"))))
+                    .Where(item => !string.IsNullOrEmpty(item.Selector))
+                    .Distinct()
+                    .ToArray();
+
+                // WinUI can expose the same row under its host HWND and the editor. Prefer
+                // the popup's own peer, and reject ambiguous rows within the chosen scope.
+                var popupItems = items.Where(item => item.Handle != Editor.WindowHandle).ToArray();
+                var candidates = popupItems.Length > 0 ? popupItems : items;
+                if (candidates is not [var target])
+                {
+                    return null;
+                }
+
+                return (target.Handle, target.Selector!);
+            }
+
+            var ready = WaitHelper.WaitForStable(FindItem, target => target.HasValue, 15_000, shouldRetryException: ShellMenu.IsTransientElementException);
+            Assert.IsTrue(ready.Succeeded, $"Could not identify the '{name}' item in the editor popup. {ready.LastException?.Message}");
+            var (handle, selector) = ready.LastObservation!.Value;
+            WinappCli.InvokeAssertSuccess("ui", "invoke", selector, "-w", handle.ToString(CultureInfo.InvariantCulture), "--action", action, "--json");
         }
 
         private void SetCheck(CheckBox checkBox, bool value)

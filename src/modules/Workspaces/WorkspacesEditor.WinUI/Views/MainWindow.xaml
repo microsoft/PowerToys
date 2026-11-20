@@ -32,7 +32,6 @@
                 <AutoSuggestBox
                     x:Name="SearchBox"
                     x:Uid="SearchBox"
-                    AutomationProperties.AutomationId="SearchTextBox"
                     MaxWidth="360"
                     VerticalAlignment="Center"
                     QueryIcon="Find"

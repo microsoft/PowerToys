@@ -21,27 +21,30 @@ case opens the Runner-owned flyout through its show event, then invokes its
 Workspaces tile; it does not substitute direct editor activation for the tile.
 
 Saved-file assertions complement UI assertions rather than replacing them.
-Capture reads the native snapshot and compares fixture identity, package identity,
-window geometry, and minimized state. Launch cases observe actual fixture windows,
+Capture compares the native snapshot with each fixture's identity and geometry. Before
+minimizing a window, the test records its monitor from the HWND, using a secondary display
+when available. The unpackaged case runs independently of package signing. Launch cases observe actual fixture windows,
 their Workspaces placement stamp, geometry/state, received arguments, and process
-identity. Search checks exact suggestion inclusion and exclusion, opens the chosen
-workspace, and verifies that typing leaves the overview unchanged; sorting checks order and a
-real editor close/reopen. Preview tests compare composed pixels from the visible
+identity. Search checks the suggestion list and activates its chosen item in the popup's
+own window. Sorting sends one successful change, then verifies the saved order and
+the selection after reopening the editor. Preview tests compare composed pixels from the visible
 preview before/after editing and require removal/add-back to restore the original
 image. They do not use OS-specific golden screenshots or assert geometry on
 off-screen application rows.
 
 The tests read every SettingsCard button with a workspace GUID from the editor's
 overview, including cards with default names. They accept an empty list once the
-overview displays its empty-state message. Sorting uses the WinUI button and radio
-flyout. Editing uses the title-bar Back button or Escape, and deletion uses the
+overview displays its empty-state message. The mouse case scrolls a target card into
+the viewport, checks that the editor owns the point, and verifies that a click was sent.
+Editing uses the title-bar Back button or Escape, and deletion uses the
 editor's confirmation dialog. Application inclusion
 uses the separate Remove/Add back action, which remains enabled when application
 details are disabled. Preview and launcher state assertions use their explicit
 automation identifiers.
 
 After a fresh capture, both the existing workspace named `Workspace` and the new
-card must be present. The Revert test replaces a launched fixture window with a
+card must be present. Launch and Edit must open the fixture using its unsaved command-line
+arguments while keeping the saved workspace intact. The Revert test replaces a launched fixture window with a
 new one, checks its row in the editing page, then verifies that Revert restores
 the saved row and removes the newly captured row before Back or Escape returns
 to the list. Other migration cases cover name sorting and card identity after a

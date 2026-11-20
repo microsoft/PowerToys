@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -314,7 +315,7 @@ namespace Microsoft.Workspaces.UITests
             {
                 if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 500))
                 {
-                    return;
+                    break;
                 }
 
                 if (!Editor.Has(By.AccessibilityId("NewProjectButton"), 500))
@@ -323,7 +324,7 @@ namespace Microsoft.Workspaces.UITests
                     // registered and the page is transitioning. Wait for the ready signal, do not re-click.
                     if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 3_000))
                     {
-                        return;
+                        break;
                     }
 
                     continue;
@@ -338,15 +339,31 @@ namespace Microsoft.Workspaces.UITests
 
                 // Bringing the editor forward can restore it. Read the card's bounds from the active overview afterward.
                 var cards = WorkspaceCards()?.Where(candidate => candidate.Id == target.Id).ToArray();
-                if (cards is not [var card] || card.Name != target.Name || !card.Visible)
+                if (cards is not [var card] || card.Name != target.Name)
                 {
-                    Step($"Card {target.Id}, attempt {attempt}: the overview did not expose a unique visible card.");
+                    Step($"Card {target.Id}, attempt {attempt}: the overview did not expose the requested card.");
                     continue;
                 }
 
-                // Click the left side of the card, away from its nested Launch button.
-                var x = card.X + Math.Min(card.Width - 1, Math.Clamp(card.Width / 8, 24, 120));
-                var y = card.Y + (card.Height / 2);
+                var area = card.VisibleEditArea;
+                if (area.Width <= 0 || area.Height <= 0)
+                {
+                    // This card was realized outside the scroll viewport. The pinned CLI also
+                    // supports a scrollable ancestor when the card lacks ScrollItemPattern.
+                    try
+                    {
+                        WinappCli.InvokeAssertSuccess("ui", "scroll-into-view", card.Id, "-w", Editor.WindowHandleArg, "--json");
+                    }
+                    catch (AssertFailedException error) when (ShellMenu.IsTransientElementException(error))
+                    {
+                        Step($"Card {card.Id} was recycled during scrolling. Reacquiring it on the overview.");
+                    }
+
+                    continue;
+                }
+
+                var x = Math.Clamp(card.Bounds.X + Math.Clamp(card.Bounds.Width / 8, 24, 120), area.Left, area.Right - 1);
+                var y = area.Top + (area.Height / 2);
                 if (!WindowControl.IsPointOwnedByWindow(handle, x, y))
                 {
                     Step($"Card {target.Id}, attempt {attempt}: ({x}, {y}) was covered before moving the pointer. Foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
@@ -376,12 +393,13 @@ namespace Microsoft.Workspaces.UITests
                 clicks++;
                 if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 3_000))
                 {
-                    return;
+                    break;
                 }
             }
 
+            Assert.IsTrue(clicks > 0, $"No mouse click was sent to card {target.Id} in {maxAttempts} attempts. Editor HWND {handle}, foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
             Assert.IsTrue(
-                clicks > 0 && Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000),
+                Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000),
                 $"Card {target.Id} did not open. Sent {clicks} mouse clicks in {maxAttempts} attempts. Editor HWND {handle}, foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
         }
 
@@ -396,7 +414,7 @@ namespace Microsoft.Workspaces.UITests
 
         private TextBox SearchInput()
         {
-            var search = Editor.Find<Element>(By.AccessibilityId("SearchTextBox"), 15_000);
+            var search = Editor.Find<Element>(By.AccessibilityId("SearchBox"), 15_000);
             var inputs = FindDescendants<TextBox>(search, "Edit");
             Assert.HasCount(1, inputs, "The AutoSuggestBox should contain one editable search input.");
             return inputs[0];
@@ -519,8 +537,12 @@ namespace Microsoft.Workspaces.UITests
             return (x, y, (int)Math.Round(originX + width) - x, (int)Math.Round(originY + height) - y);
         }
 
-        private WorkspaceCard[]? WorkspaceCards()
+        private WorkspaceCard[]? WorkspaceCards() => WorkspaceCards(out _);
+
+        private WorkspaceCard[]? WorkspaceCards(out string? scrollSelector)
         {
+            scrollSelector = null;
+
             // Read the overview and its cards in the same frame so navigation cannot turn a
             // temporarily missing list into an observation of an empty workspace.
             JsonElement[] elements;
@@ -539,22 +561,27 @@ namespace Microsoft.Workspaces.UITests
                 return null;
             }
 
-            // SettingsCard buttons expose stable GUIDs even for default names and unexpected workspaces.
-            var cards = new List<WorkspaceCard>();
-            foreach (var element in elements)
+            var viewport = elements.FirstOrDefault(element => UiString(element, "className") == "ScrollViewer" &&
+                Subtree(element).Any(IsWorkspaceCard));
+            Rectangle viewportBounds = Rectangle.Empty;
+            if (viewport.ValueKind == JsonValueKind.Object && IsVisible(viewport))
             {
-                string? id = UiString(element, "automationId");
-                if (UiString(element, "type") == "Button" && UiString(element, "className") == "SettingsCard" && Guid.TryParse(id, out _))
+                viewportBounds = UiBounds(viewport);
+                if (UiString(viewport, "scrollDir")?.Contains('v') == true)
                 {
-                    cards.Add(new WorkspaceCard(
-                        id!,
-                        UiString(element, "name") ?? string.Empty,
-                        UiCoordinate(element, "x"),
-                        UiCoordinate(element, "y"),
-                        UiCoordinate(element, "width"),
-                        UiCoordinate(element, "height"),
-                        IsVisible(element)));
+                    scrollSelector = UiString(viewport, "selector");
                 }
+            }
+
+            var cards = new List<WorkspaceCard>();
+            foreach (var element in elements.Where(IsWorkspaceCard))
+            {
+                var bounds = UiBounds(element);
+
+                // Only the visible left half is eligible for editing. The right side contains Launch.
+                var editArea = new Rectangle(bounds.Left, bounds.Top, (bounds.Width + 1) / 2, bounds.Height);
+                var visibleEditArea = IsVisible(element) ? Rectangle.Intersect(editArea, viewportBounds) : Rectangle.Empty;
+                cards.Add(new WorkspaceCard(UiString(element, "automationId")!, UiString(element, "name") ?? string.Empty, bounds, visibleEditArea));
             }
 
             if (cards.Count == 0 && !elements.Any(element => UiString(element, "type") == "Text" &&
@@ -563,24 +590,52 @@ namespace Microsoft.Workspaces.UITests
                 return null;
             }
 
-            return [.. cards.OrderBy(card => card.Y)];
+            return [.. cards.OrderBy(card => card.Bounds.Y)];
         }
+
+        private static bool IsWorkspaceCard(JsonElement element) =>
+            UiString(element, "type") == "Button" && UiString(element, "className") == "SettingsCard" &&
+            Guid.TryParse(UiString(element, "automationId"), out _);
+
+        private static Rectangle UiBounds(JsonElement element) =>
+            new(UiCoordinate(element, "x"), UiCoordinate(element, "y"), UiCoordinate(element, "width"), UiCoordinate(element, "height"));
 
         private string[]? WorkspaceNames() => WorkspaceCards()?.Select(card => card.Name).ToArray();
 
         private WorkspaceCard WaitForCard(string name)
         {
+            string? viewport = null;
+            bool fromTop = true;
             var result = WaitHelper.WaitForStable(
-                () => WorkspaceCards()?.Where(card => card.Name == name).ToArray(),
-                cards => cards is { Length: 1 } && cards[0].Width > 0 && cards[0].Height > 0,
+                () => WorkspaceCards(out viewport)?.Where(card => card.Name == name).ToArray(),
+                cards => cards is [var card] && card.Bounds.Width > 0 && card.Bounds.Height > 0,
                 timeoutMS: 15_000,
                 requiredConsecutiveMatches: 2,
-                pollIntervalMS: 200);
+                pollIntervalMS: 200,
+                recover: cards =>
+                {
+                    if (cards is null || cards.Length > 1 || viewport is null)
+                    {
+                        return;
+                    }
+
+                    // An unrealized item has no selector. Scroll the overview until its card is realized.
+                    if (fromTop)
+                    {
+                        WinappCli.InvokeAssertSuccess("ui", "scroll", viewport, "-w", Editor.WindowHandleArg, "--to", "top", "--json");
+                        fromTop = false;
+                    }
+                    else
+                    {
+                        WinappCli.InvokeAssertSuccess("ui", "scroll", viewport, "-w", Editor.WindowHandleArg, "--direction", "down", "--json");
+                    }
+                },
+                shouldRetryException: ShellMenu.IsTransientElementException);
             Assert.IsTrue(result.Succeeded, $"The workspace card '{name}' did not become uniquely addressable.");
             return result.LastObservation![0];
         }
 
-        private readonly record struct WorkspaceCard(string Id, string Name, int X, int Y, int Width, int Height, bool Visible);
+        private readonly record struct WorkspaceCard(string Id, string Name, Rectangle Bounds, Rectangle VisibleEditArea);
 
         private void AssertWorkspaceNames(params string[] expected)
         {
