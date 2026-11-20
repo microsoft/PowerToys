@@ -331,6 +331,7 @@ cswin
 CTEXT
 CTLCOLORSTATIC
 CURRENTDIR
+cursorbrake
 CURSORINFO
 cursorpos
 CURSORSHOWING
@@ -793,6 +794,7 @@ HWNDLAST
 HWNDNEXT
 HWNDPARENT
 HWNDPREV
+HWP
 hyjiacan
 IAI
 icf
@@ -2007,6 +2009,7 @@ UBR
 ubrk
 ucrt
 ucrtd
+udi
 uefi
 uesc
 UIA

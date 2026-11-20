@@ -578,6 +578,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool cursorBrake; // defaulting to off
+
+        [JsonPropertyName("CursorBrake")]
+        public bool CursorBrake
+        {
+            get => cursorBrake;
+            set
+            {
+                if (cursorBrake != value)
+                {
+                    LogTelemetryEvent(value);
+                    cursorBrake = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private bool lightSwitch;
 
         [JsonPropertyName("LightSwitch")]

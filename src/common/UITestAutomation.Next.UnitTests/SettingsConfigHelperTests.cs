@@ -20,6 +20,7 @@ public class SettingsConfigHelperTests
         "CmdPal",
         "ColorPicker",
         "CropAndLock",
+        "CursorBrake",
         "CursorWrap",
         "EnvironmentVariables",
         "FancyZones",
