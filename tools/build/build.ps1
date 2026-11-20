@@ -101,5 +101,8 @@ if ($built) {
     exit 0
 } else {
     Write-Host "[BUILD] No local projects found in $cwd"
+    if ($cwd -match [regex]::Escape((Join-Path (Get-ProjectRepoRoot "$PSScriptRoot\") 'src\modules'))) {
+        Write-Host "[BUILD] Hint: module projects usually live in subfolders of src\modules. To build and run a module, use tools\build\run-module.ps1 -Module <name>"
+    }
     exit 0
 }
