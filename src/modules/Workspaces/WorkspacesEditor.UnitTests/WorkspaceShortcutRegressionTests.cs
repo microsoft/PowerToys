@@ -19,6 +19,7 @@ using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Services;
+using WorkspacesEditor.Telemetry;
 using WorkspacesEditor.Utils;
 using WorkspacesEditor.ViewModels;
 
@@ -27,7 +28,7 @@ namespace WorkspacesEditor.UnitTests
     [STATestClass]
     [TestCategory("Regression.Shortcuts")]
     [DoNotParallelize]
-    public class WorkspaceShortcutRegressionTests
+    public partial class WorkspaceShortcutRegressionTests
     {
         [TestMethod]
         public void Rename_PreservesShortcutOwnedBySameNameWorkspace()
@@ -295,7 +296,7 @@ namespace WorkspacesEditor.UnitTests
             using var fixture = new ShortcutFixture();
             using var session = new ViewModelSession(fixture);
             Project original = fixture.Project("Original workspace");
-            fixture.WriteShortcut(original);
+            fixture.WriteShortcut(original, hotkey: 0x064B, showCommand: 3); // Ctrl+Alt+K, maximized
             string oldPath = fixture.LinkPath(original.Name);
             string iconPath = fixture.IconPath(original);
             session.ViewModel.Workspaces.Add(original);
@@ -308,6 +309,7 @@ namespace WorkspacesEditor.UnitTests
             CollectionAssert.Contains(session.SerializedNames, draft.Name);
             Assert.IsFalse(File.Exists(oldPath));
             fixture.AssertShortcut(draft);
+            fixture.AssertLaunchOptions(draft, 0x064B, 3);
             Assert.AreEqual(iconPath, fixture.IconPath(draft));
         }
 
@@ -747,17 +749,27 @@ namespace WorkspacesEditor.UnitTests
                     fixture.Service,
                     projects =>
                     {
+                        if (FailSerialization)
+                        {
+                            throw new IOException("The fixture's workspace storage is unavailable.");
+                        }
+
                         SerializationCount++;
                         SerializedNames = projects.Select(project => project.Name).ToArray();
                         SerializedShortcutChoices = projects.Select(project => project.IsShortcutNeeded).ToArray();
                     },
-                    _ => { });
+                    _ => { },
+                    created => LastCreateEvent = created);
                 StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (recipient, message) => ((ViewModelSession)recipient).NavigatedProject = message.Project);
             }
 
             internal MainViewModel ViewModel { get; }
 
             internal bool CapturedShortcutChoice { get; set; }
+
+            internal bool FailSerialization { get; set; }
+
+            internal CreateEvent LastCreateEvent { get; private set; }
 
             internal int SerializationCount { get; private set; }
 
@@ -849,9 +861,21 @@ namespace WorkspacesEditor.UnitTests
                         CommandLineArguments = string.Empty,
                         Version = string.Empty,
                         Position = new ApplicationWrapper.WindowPositionWrapper { Width = 640, Height = 480 },
+                        Monitor = 1,
                     },
                 },
-                MonitorConfiguration = new List<MonitorConfigurationWrapper>(),
+                MonitorConfiguration = new List<MonitorConfigurationWrapper>
+                {
+                    new()
+                    {
+                        Id = "Fixture display",
+                        InstanceId = "Fixture display",
+                        MonitorNumber = 1,
+                        Dpi = 96,
+                        MonitorRectDpiAware = new MonitorConfigurationWrapper.MonitorRectWrapper { Width = 1920, Height = 1080 },
+                        MonitorRectDpiUnaware = new MonitorConfigurationWrapper.MonitorRectWrapper { Width = 1920, Height = 1080 },
+                    },
+                },
             };
 
             internal void WriteIcon(Project project)
@@ -860,7 +884,7 @@ namespace WorkspacesEditor.UnitTests
                 File.WriteAllBytes(IconPath(project), new byte[] { 1, 2, 3, 4 });
             }
 
-            internal void WriteShortcut(Project project, string targetPath = null, string arguments = null, short hotkey = 0)
+            internal void WriteShortcut(Project project, string targetPath = null, string arguments = null, short hotkey = 0, int showCommand = 1, string iconPath = null)
             {
                 WriteIcon(project);
                 WithShortcut(LinkPath(project.Name), write: true, shortcut =>
@@ -870,12 +894,24 @@ namespace WorkspacesEditor.UnitTests
                     shortcut.SetArguments(arguments ?? project.Id + " 1");
                     shortcut.SetDescription("Project Launcher " + project.Id);
                     shortcut.SetHotkey(hotkey);
-                    shortcut.SetIconLocation(IconPath(project), 0);
+                    shortcut.SetShowCmd(showCommand);
+                    shortcut.SetIconLocation(iconPath ?? IconPath(project), 0);
                 });
                 Assert.IsTrue(File.Exists(LinkPath(project.Name)), "The real shortcut fixture was not created.");
             }
 
             internal void Apply(Project project) => Service.Apply(project);
+
+            internal void AssertLaunchOptions(Project project, short expectedHotkey, int expectedShowCommand)
+            {
+                WithShortcut(LinkPath(project.Name), write: false, shortcut =>
+                {
+                    shortcut.GetHotkey(out short hotkey);
+                    shortcut.GetShowCmd(out int showCommand);
+                    Assert.AreEqual(expectedHotkey, hotkey);
+                    Assert.AreEqual(expectedShowCommand, showCommand);
+                });
+            }
 
             internal void AssertUnownedShortcutPreserved(Project project)
             {

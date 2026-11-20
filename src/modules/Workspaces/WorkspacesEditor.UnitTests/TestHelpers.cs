@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.PowerToys.Settings.UI.Library;
 using WorkspacesCsharpLibrary.Data;
@@ -59,7 +58,7 @@ namespace WorkspacesEditor.UnitTests
                 IsShortcutNeeded = false,
                 MoveExistingWindows = false,
                 Applications = appWrappers,
-                MonitorConfiguration = new List<MonitorConfigurationWrapper>(),
+                MonitorConfiguration = [new MonitorConfigurationWrapper { MonitorNumber = 0, Dpi = 96 }],
             };
 
             return new Project(projectWrapper);

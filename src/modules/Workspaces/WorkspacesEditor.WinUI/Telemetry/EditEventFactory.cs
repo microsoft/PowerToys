@@ -25,7 +25,7 @@ namespace WorkspacesEditor.Telemetry
                 PixelAdjustmentsUsed = updatedProject.IsPositionChangedManually,
             };
 
-            foreach (var (app, previous) in Project.MatchApplicationsById(previousApps, updatedApps))
+            foreach (var (app, previous) in ApplicationWindowMatcher.Match(previousApps, updatedApps))
             {
                 if (previous == null)
                 {

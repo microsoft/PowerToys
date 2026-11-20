@@ -4,9 +4,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +19,7 @@ using ManagedCommon;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Models;
+using WorkspacesEditor.Services;
 using WorkspacesEditor.ViewModels;
 
 namespace WorkspacesEditor.Utils
@@ -21,6 +27,8 @@ namespace WorkspacesEditor.Utils
     public class WorkspacesEditorIO
     {
         private readonly Func<ProcessStartInfo, TimeSpan?, Task<bool>> _runProcess;
+        private readonly ConditionalWeakTable<Project, JsonObject> _storedRows = new();
+        private (long Length, byte[] Hash)? _publishedCapture;
 
         public WorkspacesEditorIO()
             : this(TempProjectData.File, RunProcessAsync)
@@ -34,6 +42,8 @@ namespace WorkspacesEditor.Utils
         }
 
         internal string TempProjectPath { get; }
+
+        private string WorkspacePath => Path.Combine(Path.GetDirectoryName(TempProjectPath), "workspaces.json");
 
         internal Task<bool> LaunchAsync(string projectId, InvokePoint invokePoint, Guid? draftRequest = null)
         {
@@ -102,25 +112,15 @@ namespace WorkspacesEditor.Utils
         {
             try
             {
-                WorkspacesData parser = new();
-                if (!File.Exists(parser.File))
+                var document = IOUtils.ReadWorkspaceFile(WorkspacePath);
+                if (document == null)
                 {
-                    Logger.LogWarning($"Workspaces storage file not found: {parser.File}");
+                    mainViewModel.Workspaces.Clear();
                     return new ParsingResult(true);
                 }
 
-                WorkspacesData.WorkspacesListWrapper workspaces = parser.Read(parser.File);
-                if (workspaces.Workspaces == null)
-                {
-                    return new ParsingResult(true);
-                }
-
-                if (!SetWorkspaces(mainViewModel, workspaces))
-                {
-                    Logger.LogWarning("Workspaces storage file content could not be set.");
-                    return new ParsingResult(false, "Error parsing Workspaces data.");
-                }
-
+                var rows = document["workspaces"]?.AsArray() ?? throw new InvalidDataException("Missing workspace list.");
+                SetWorkspaces(mainViewModel, rows);
                 return new ParsingResult(true);
             }
             catch (Exception e)
@@ -175,8 +175,45 @@ namespace WorkspacesEditor.Utils
                 return null;
             }
 
-            File.Move(path, TempProjectPath, overwrite: true);
+            // Older observers use this shared filename. The editor already has the verified
+            // per-request result even if another reader temporarily prevents replacement.
+            try
+            {
+                using var source = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                var fingerprint = (source.Length, SHA256.HashData(source));
+                File.Move(path, TempProjectPath, overwrite: true);
+                _publishedCapture = fingerprint;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                Logger.LogError("Failed to publish the shared workspace snapshot", ex);
+            }
+
             return project;
+        }
+
+        internal void DiscardPublishedCapture()
+        {
+            if (_publishedCapture is not { } fingerprint)
+            {
+                return;
+            }
+
+            try
+            {
+                // Another writer may use the same project ID for its own edited draft.
+                WorkspaceShortcutFile.DeleteIf(TempProjectPath, stream =>
+                    stream.Length == fingerprint.Length && SHA256.HashData(stream).AsSpan().SequenceEqual(fingerprint.Hash));
+                _publishedCapture = null;
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                _publishedCapture = null;
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or Win32Exception)
+            {
+                Logger.LogError("Failed to remove the published workspace snapshot", ex);
+            }
         }
 
         private static Project ReadProject(string path)
@@ -210,7 +247,69 @@ namespace WorkspacesEditor.Utils
 
             WorkspacesData serializer = new();
             var data = new WorkspacesData.WorkspacesListWrapper { Workspaces = workspaces.Select(ToWrapper).ToList() };
-            new IOUtils().WriteFile(serializer.File, serializer.Serialize(data));
+            new IOUtils().WriteFile(WorkspacePath, serializer.Serialize(data));
+        }
+
+        internal IReadOnlyCollection<string> GetStoredWorkspaceIds()
+        {
+            try
+            {
+                var document = IOUtils.ReadWorkspaceFile(WorkspacePath);
+                if (document == null)
+                {
+                    return Array.Empty<string>();
+                }
+
+                if (document["workspaces"] is not JsonArray rows)
+                {
+                    return null;
+                }
+
+                var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                foreach (var row in rows)
+                {
+                    if (row is not JsonObject workspace || workspace["id"] is not JsonValue value || !value.TryGetValue<string>(out var id) ||
+                        !(Guid.TryParseExact(id, "B", out var guid) || Guid.TryParseExact(id, "D", out guid)) || !ids.Add(guid.ToString("B")))
+                    {
+                        return null;
+                    }
+                }
+
+                return ids;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Could not verify the stored workspace IDs.", ex);
+                return null;
+            }
+        }
+
+        internal void PersistChange(Project original, Project replacement)
+        {
+            var parser = new ProjectData();
+            JsonObject ProjectJson(Project project) => JsonNode.Parse(parser.Serialize(ToWrapper(project))).AsObject();
+            var originalView = original == null ? null : ProjectJson(original);
+            var expected = original != null && _storedRows.TryGetValue(original, out var stored) ? stored : originalView;
+            var edited = replacement == null ? null : ProjectJson(replacement);
+            var saved = IOUtils.WriteWorkspaceChange(WorkspacePath, expected, originalView, edited);
+            if (replacement == null)
+            {
+                _storedRows.Remove(original);
+                return;
+            }
+
+            // The launcher may have assigned IDs or refreshed installation metadata while this
+            // draft was open. Carry the committed values into the canonical editor model too.
+            var apps = saved["applications"].AsArray();
+            for (int i = 0; i < replacement.Applications.Count; i++)
+            {
+                var app = replacement.Applications[i];
+                app.Id = apps[i]["id"]?.GetValue<string>() ?? app.Id;
+                app.AppPath = apps[i]["application-path"]?.GetValue<string>();
+                app.PackageFullName = apps[i]["package-full-name"]?.GetValue<string>();
+            }
+
+            _storedRows.AddOrUpdate(original ?? replacement, saved.DeepClone().AsObject());
         }
 
         internal void WriteDraft(Project project, string path)
@@ -314,23 +413,23 @@ namespace WorkspacesEditor.Utils
             return wrapper;
         }
 
-        private static bool SetWorkspaces(MainViewModel mainViewModel, WorkspacesData.WorkspacesListWrapper workspaces)
+        private void SetWorkspaces(MainViewModel mainViewModel, JsonArray rows)
         {
+            var parser = new ProjectData();
             mainViewModel.Workspaces.Clear();
-            foreach (ProjectWrapper project in workspaces.Workspaces)
+            foreach (var row in rows)
             {
                 try
                 {
-                    Project newProject = new(project);
+                    Project newProject = Project.FromStorage(parser.Deserialize(row.ToJsonString()));
+                    _storedRows.Add(newProject, row.AsObject());
                     mainViewModel.Workspaces.Add(newProject);
                 }
                 catch (Exception e)
                 {
-                    Logger.LogError($"Exception while adding workspace {project.Name}: {e.Message}");
+                    Logger.LogError("Exception while adding a saved workspace.", e);
                 }
             }
-
-            return true;
         }
     }
 }

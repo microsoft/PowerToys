@@ -82,7 +82,7 @@ namespace WorkspacesEditor
             // Use StrongReferenceMessenger for MainWindow since Window is not rooted
             // in the visual tree and WeakReferenceMessenger may GC the registration.
             var vm = App.MainViewModel;
-            SaveErrorBar.DataContext = vm;
+            WorkspaceNotifications.DataContext = vm;
             StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) =>
             {
                 if (ContentFrame.Content is Views.WorkspacesEditorPage editorPage)
@@ -149,6 +149,11 @@ namespace WorkspacesEditor
             ContentFrame.Navigate(typeof(Views.MainPage), vm);
 
             Microsoft.PowerToys.Telemetry.PowerToysTelemetry.Log.WriteEvent(new Telemetry.WorkspacesEditorStartFinishEvent() { TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() });
+        }
+
+        private void ShortcutNotice_CloseButtonClick(InfoBar sender, object args)
+        {
+            App.MainViewModel.DismissShortcutNotice();
         }
 
         private void SearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)

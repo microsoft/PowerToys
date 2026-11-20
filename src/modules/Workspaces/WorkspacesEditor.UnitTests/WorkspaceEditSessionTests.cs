@@ -156,6 +156,211 @@ public class WorkspaceEditSessionTests
     }
 
     [TestMethod]
+    public async Task EditsDuringCaptureSurviveAcceptanceAndRevert()
+    {
+        using var session = new Session();
+        session.OpenExisting("Original");
+        var source = session.Draft;
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        session.Run = start =>
+        {
+            if (Path.GetFileName(start.FileName) == "PowerToys.WorkspacesLauncher.exe")
+            {
+                return Task.FromResult(true);
+            }
+
+            session.WriteCapture(start, appId: source.Applications[0].Id);
+            return completion.Task;
+        };
+        await session.ViewModel.LaunchAndEditAsync(source);
+        Task pending = session.ViewModel.SnapWorkspaceAsync();
+        Assert.IsFalse(session.ViewModel.CanLaunchAndEdit);
+        source.Name = "During capture";
+        source.MoveExistingWindows = true;
+        source.IsShortcutNeeded = true;
+        source.Applications[0].CommandLineTextChanged("--latest");
+        source.Applications[0].IsElevated = true;
+        source.Applications[0].UpdatePositionX("177");
+        completion.SetResult(true);
+        await pending;
+
+        Project captured = session.Draft;
+        Assert.IsTrue(captured.IsRevertEnabled);
+        Assert.AreEqual("During capture", captured.Name);
+        Assert.IsTrue(captured.MoveExistingWindows);
+        Assert.IsTrue(captured.IsShortcutNeeded);
+        Assert.AreEqual("--latest", captured.Applications[0].CommandLineArguments);
+        Assert.IsTrue(captured.Applications[0].IsElevated);
+        Assert.AreEqual(177, captured.Applications[0].Position.X);
+        Assert.AreEqual(2, captured.Applications[0].MonitorNumber);
+        session.ViewModel.RevertLaunch();
+        Assert.AreEqual("During capture", session.Draft.Name);
+        Assert.AreEqual("--latest", session.Draft.Applications[0].CommandLineArguments);
+        Assert.AreEqual(177, session.Draft.Applications[0].Position.X);
+        Assert.AreEqual(source.Applications[0].MonitorNumber, session.Draft.Applications[0].MonitorNumber);
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    public async Task VerifiedCaptureIsAdoptedWithoutDeletingAnotherWritersMirror(bool lockExistingMirror, bool reuseCapturedId)
+    {
+        using var session = new Session();
+        string unrelatedId = Guid.NewGuid().ToString("B");
+        string unrelated = new ProjectData().Serialize(new ProjectWrapper { Id = unrelatedId, Applications = [], MonitorConfiguration = [] });
+        File.WriteAllText(session.TempPath, unrelated);
+        session.Run = start =>
+        {
+            session.WriteCapture(start);
+            return Task.FromResult(true);
+        };
+        session.ViewModel.EnterSnapshotMode(false);
+        using (var locked = lockExistingMirror ? File.Open(session.TempPath, FileMode.Open, FileAccess.Read, FileShare.Read) : null)
+        {
+            await session.ViewModel.SnapWorkspaceAsync();
+            Assert.AreEqual("Captured app", session.Draft.Applications.Single().AppName);
+        }
+
+        if (lockExistingMirror)
+        {
+            Assert.AreEqual(unrelatedId, new ProjectData().Read(session.TempPath).Id);
+        }
+        else
+        {
+            Assert.AreEqual(session.Draft.Id, new ProjectData().Read(session.TempPath).Id);
+            if (reuseCapturedId)
+            {
+                var otherDraft = new ProjectData().Read(session.TempPath);
+                otherDraft.Name = "Edited by another observer";
+                unrelated = new ProjectData().Serialize(otherDraft);
+            }
+
+            File.WriteAllText(session.TempPath, unrelated);
+        }
+
+        session.ViewModel.SwitchToMainView();
+        Assert.AreEqual(unrelated, File.ReadAllText(session.TempPath));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task CancelledOrFailedNewCaptureRefreshesDeferredOverview(bool cancel)
+    {
+        using var session = new Session();
+        var original = session.OpenExisting("Before launch");
+        session.ViewModel.SwitchToMainView();
+        var stored = new WorkspacesData.WorkspacesListWrapper
+        {
+            Workspaces = [new ProjectWrapper { Id = original.Id, Name = "Updated on disk", Applications = [], MonitorConfiguration = [] }],
+        };
+        File.WriteAllText(Path.Combine(session.Folder.FullName, "workspaces.json"), new WorkspacesData().Serialize(stored));
+        var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        session.Run = start => Path.GetFileName(start.FileName) == "PowerToys.WorkspacesLauncher.exe" ? completion.Task : Task.FromResult(false);
+        var launch = session.ViewModel.LaunchProjectAsync(original);
+        session.ViewModel.EnterSnapshotMode(false);
+        completion.SetResult(true);
+        await launch;
+        Assert.AreEqual("Before launch", session.ViewModel.Workspaces.Single().Name);
+        if (cancel)
+        {
+            session.ViewModel.CancelSnapshot();
+        }
+        else
+        {
+            await session.ViewModel.SnapWorkspaceAsync();
+        }
+
+        Assert.AreEqual("Updated on disk", session.ViewModel.Workspaces.Single().Name);
+    }
+
+    [TestMethod]
+    public async Task InvalidSavedMonitorCanBeRepairedWithoutReplayingTheWorkspace()
+    {
+        using var session = new Session();
+        Project original = session.OpenExisting("Old layout");
+        original.Applications[0].MonitorNumber = 99;
+        session.ViewModel.EditProject(original);
+        var legacy = session.Draft;
+        bool ranSnapshot = false;
+        session.Run = start =>
+        {
+            Assert.AreEqual("PowerToys.WorkspacesSnapshotTool.exe", Path.GetFileName(start.FileName));
+            session.WriteCapture(start, appId: legacy.Applications[0].Id);
+            ranSnapshot = true;
+            return Task.FromResult(true);
+        };
+        Assert.IsFalse(session.ViewModel.CanLaunchAndEdit);
+        Assert.IsTrue(session.ViewModel.CanRecaptureCurrentLayout);
+        await session.ViewModel.LaunchAndEditAsync(legacy);
+        Assert.AreEqual(0, session.SnapshotRequests);
+        session.ViewModel.RecaptureCurrentLayout(legacy);
+        Assert.IsFalse(session.ViewModel.CanRecaptureCurrentLayout);
+        Assert.AreEqual(1, session.SnapshotRequests);
+        await session.ViewModel.SnapWorkspaceAsync();
+        Assert.IsTrue(ranSnapshot);
+        Assert.IsTrue(session.ViewModel.CanLaunchAndEdit);
+        Assert.IsFalse(session.ViewModel.CanRecaptureCurrentLayout);
+        session.ViewModel.SaveOrAddProject(session.Draft);
+        Assert.AreEqual(2, original.Applications.Single().MonitorNumber);
+        Assert.AreEqual(2, original.Monitors.Single().MonitorNumber);
+    }
+
+    [TestMethod]
+    public async Task FirstOverviewLaunchCommitsRequiredLegacyIdRepairs()
+    {
+        using var session = new Session(physicalStorage: true);
+        var old = TestHelpers.CreateProject("Old", 1, 0, "One", "Two");
+        old.Applications[1].Id = old.Applications[0].Id;
+        session.Storage.SerializeWorkspaces([old]);
+        Assert.IsTrue(session.Storage.ParseWorkspaces(session.ViewModel).Result);
+        var repaired = session.ViewModel.Workspaces.Single();
+        Assert.IsTrue(repaired.NeedsApplicationIdRepair);
+        Assert.AreNotEqual(repaired.Applications[0].Id, repaired.Applications[1].Id);
+        int launches = 0;
+        session.Run = start =>
+        {
+            launches++;
+            Assert.AreEqual("PowerToys.WorkspacesLauncher.exe", Path.GetFileName(start.FileName));
+            Assert.IsFalse(start.Arguments.Contains("--editor-draft", StringComparison.Ordinal));
+            var stored = new WorkspacesData().Read(Path.Combine(session.Folder.FullName, "workspaces.json")).Workspaces.Single();
+            CollectionAssert.AreEqual(repaired.Applications.Select(app => app.Id).ToArray(), stored.Applications.Select(app => app.Id).ToArray());
+            return Task.FromResult(false);
+        };
+        await session.ViewModel.LaunchProjectAsync(repaired);
+        Assert.AreEqual(1, launches);
+        Assert.IsFalse(repaired.NeedsApplicationIdRepair);
+        Assert.IsFalse(session.ViewModel.SaveFailed);
+    }
+
+    [TestMethod]
+    public async Task LaunchAvailabilityNotifiesOnDraftAndOperationChanges()
+    {
+        using var session = new Session();
+        session.OpenExisting("Ready");
+        var changes = new List<bool>();
+        session.ViewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.CanLaunchAndEdit))
+            {
+                changes.Add(session.ViewModel.CanLaunchAndEdit);
+            }
+        };
+        session.Draft.Name = string.Empty;
+        Assert.IsFalse(changes.Last());
+        session.Draft.Name = "Ready";
+        Assert.IsTrue(changes.Last());
+        var waiting = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        session.Run = _ => waiting.Task;
+        var launch = session.ViewModel.LaunchAndEditAsync(session.Draft);
+        Assert.IsFalse(changes.Last());
+        waiting.SetResult(false);
+        await launch;
+        Assert.IsTrue(changes.Last());
+    }
+
+    [TestMethod]
     public async Task RepeatedLaunchClickStartsOneLauncherAndKeepsLaterEdits()
     {
         using var session = new Session();
@@ -169,7 +374,7 @@ public class WorkspaceEditSessionTests
                 return completion.Task;
             }
 
-            session.WriteCapture(start);
+            session.WriteCapture(start, appId: session.Draft.Applications[0].Id);
             return Task.FromResult(true);
         };
         session.OpenExisting("First");
@@ -177,11 +382,13 @@ public class WorkspaceEditSessionTests
         var initial = session.ViewModel.LaunchAndEditAsync(draft);
         await session.ViewModel.LaunchAndEditAsync(draft);
         draft.Name = "Edited while launching";
+        draft.Applications[0].IsIncluded = false;
         completion.SetResult(true);
         await initial;
         await session.ViewModel.SnapWorkspaceAsync();
         Assert.AreEqual(1, launches);
         Assert.AreEqual("Edited while launching", session.Draft.Name);
+        Assert.IsFalse(session.Draft.Applications[0].IsIncluded, "A removed row must stay excluded even if its window was already launched.");
     }
 
     [TestMethod]
@@ -343,24 +550,18 @@ public class WorkspaceEditSessionTests
 
     private sealed class Session : IWorkspaceShortcutService, IDisposable
     {
-        internal Session()
+        internal Session(bool physicalStorage = false)
         {
             TempPath = Path.Combine(Folder.FullName, "temp-workspaces.json");
+            Storage = new WorkspacesEditorIO(TempPath, (start, _) => Run(start));
             ViewModel = new MainViewModel(
-                new WorkspacesEditorIO(TempPath, (start, _) => Run(start)),
+                Storage,
                 new WorkspacesSettings(),
                 _ => { },
                 this,
-                projects =>
-                {
-                    if (FailWrite)
-                    {
-                        throw new IOException("Simulated storage failure.");
-                    }
-
-                    Writes.Add(projects);
-                },
-                _ => EditEvents++);
+                physicalStorage ? null : RecordWrite,
+                _ => EditEvents++,
+                _ => { });
             StrongReferenceMessenger.Default.Register<NavigateToEditorMessage>(this, (r, m) => ((Session)r).Draft = m.Project);
             StrongReferenceMessenger.Default.Register<GoBackMessage>(this, (r, _) => ((Session)r).BackNavigations++);
             StrongReferenceMessenger.Default.Register<ShowSnapshotWindowMessage>(this, (r, _) => ((Session)r).SnapshotRequests++);
@@ -369,6 +570,8 @@ public class WorkspaceEditSessionTests
         internal DirectoryInfo Folder { get; } = Directory.CreateTempSubdirectory("PowerToys-EditSession-");
 
         internal string TempPath { get; }
+
+        internal WorkspacesEditorIO Storage { get; }
 
         internal MainViewModel ViewModel { get; }
 
@@ -457,6 +660,16 @@ public class WorkspaceEditSessionTests
             ViewModel.Dispose();
             Folder.Delete(recursive: true);
             GC.SuppressFinalize(this);
+        }
+
+        private void RecordWrite(List<Project> projects)
+        {
+            if (FailWrite)
+            {
+                throw new IOException("Simulated storage failure.");
+            }
+
+            Writes.Add(projects);
         }
     }
 }

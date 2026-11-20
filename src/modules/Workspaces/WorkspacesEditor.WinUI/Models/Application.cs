@@ -217,7 +217,22 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public int MonitorNumber { get; set; }
+        private int _monitorNumber;
+
+        public int MonitorNumber
+        {
+            get => _monitorNumber;
+            set
+            {
+                if (_monitorNumber != value)
+                {
+                    _monitorNumber = value;
+                    _monitorSetup = null;
+                    _scaledPosition = null;
+                    Parent?.NotifyApplicationsChanged();
+                }
+            }
+        }
 
         private MonitorSetup _monitorSetup;
 
@@ -263,7 +278,7 @@ namespace WorkspacesEditor.Models
                 IsExpanded = false;
             }
 
-            Parent?.NotifyCanBeSavedChanged();
+            Parent?.NotifyMonitorReferencesChanged();
         }
 
         private BitmapImage _iconImage;
@@ -290,6 +305,41 @@ namespace WorkspacesEditor.Models
             CommandLineArguments = newCommandLineValue;
             OnPropertyChanged(nameof(AppMainParams));
             OnPropertyChanged(nameof(IsAppMainParamVisible));
+        }
+
+        internal void ApplyDraftSettings(Application beforeCapture, Application current)
+        {
+            CommandLineArguments = current.CommandLineArguments;
+            IsElevated = current.IsElevated;
+            if (ReferenceEquals(beforeCapture, current))
+            {
+                return;
+            }
+
+            if (beforeCapture.IsIncluded != current.IsIncluded)
+            {
+                IsIncluded = current.IsIncluded;
+            }
+
+            if (beforeCapture.PositionComboboxIndex != current.PositionComboboxIndex)
+            {
+                Maximized = current.Maximized;
+                Minimized = current.Minimized;
+            }
+
+            // The snapshot owns the new layout except for fields edited while it was running.
+            var before = beforeCapture.Position;
+            var edited = current.Position;
+            if (before != edited)
+            {
+                Position = new WindowPosition
+                {
+                    X = before.X == edited.X ? Position.X : edited.X,
+                    Y = before.Y == edited.Y ? Position.Y : edited.Y,
+                    Width = before.Width == edited.Width ? Position.Width : edited.Width,
+                    Height = before.Height == edited.Height ? Position.Height : edited.Height,
+                };
+            }
         }
 
         internal void UpdatePositionX(string text)

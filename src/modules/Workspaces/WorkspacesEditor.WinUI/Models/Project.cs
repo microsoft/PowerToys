@@ -25,6 +25,8 @@ namespace WorkspacesEditor.Models
 
         public string Id { get; private set; }
 
+        internal bool NeedsApplicationIdRepair { get; set; }
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CanBeSaved))]
         public partial string Name { get; set; }
@@ -108,7 +110,11 @@ namespace WorkspacesEditor.Models
 
         public bool CanBeSaved => !string.IsNullOrEmpty(Name) &&
             Applications?.Exists(app => app.IsIncluded) == true &&
-            Applications.TrueForAll(app => !app.IsIncluded || (app.Position.Width > 0 && app.Position.Height > 0));
+            Applications.TrueForAll(app => !app.IsIncluded || (app.Position.Width > 0 && app.Position.Height > 0)) &&
+            !HasUnresolvedMonitors;
+
+        public bool HasUnresolvedMonitors =>
+            Applications?.Exists(app => app.IsIncluded && !Monitors.Exists(monitor => monitor.MonitorNumber == app.MonitorNumber)) == true;
 
         [ObservableProperty]
         public partial bool IsRevertEnabled { get; set; }
@@ -124,15 +130,13 @@ namespace WorkspacesEditor.Models
             get
             {
                 List<object> applicationsListed = [];
-                ILookup<MonitorSetup, Application> apps = Applications.Where(x => !x.Minimized).ToLookup(x => x.MonitorSetup);
-                foreach (IGrouping<MonitorSetup, Application> appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.X).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Y))
+                var apps = Applications.Where(app => !app.Minimized).GroupBy(app => app.MonitorNumber)
+                    .Select(group => (Apps: group, Monitor: group.First().MonitorSetup));
+                foreach (var (group, monitor) in apps.OrderBy(item => item.Monitor.MonitorDpiUnawareBounds.X).ThenBy(item => item.Monitor.MonitorDpiUnawareBounds.Y))
                 {
-                    MonitorHeaderRow headerRow = new() { MonitorName = GetString("Screen") + " " + appItem.Key.MonitorNumber, SelectString = GetString("SelectAllAppsOnMonitor") + " " + appItem.Key.MonitorInfo };
+                    MonitorHeaderRow headerRow = new() { MonitorName = GetString("Screen") + " " + monitor.MonitorNumber, SelectString = GetString("SelectAllAppsOnMonitor") + " " + monitor.MonitorInfo };
                     applicationsListed.Add(headerRow);
-                    foreach (Application app in appItem)
-                    {
-                        applicationsListed.Add(app);
-                    }
+                    applicationsListed.AddRange(group);
                 }
 
                 IEnumerable<Application> minimizedApps = Applications.Where(x => x.Minimized);
@@ -166,11 +170,17 @@ namespace WorkspacesEditor.Models
         public void NotifyApplicationsChanged()
         {
             OnPropertyChanged(nameof(AppsCountString));
-            NotifyCanBeSavedChanged();
+            NotifyMonitorReferencesChanged();
             OnPropertyChanged(nameof(ApplicationsListed));
         }
 
         internal void NotifyCanBeSavedChanged() => OnPropertyChanged(nameof(CanBeSaved));
+
+        internal void NotifyMonitorReferencesChanged()
+        {
+            NotifyCanBeSavedChanged();
+            OnPropertyChanged(nameof(HasUnresolvedMonitors));
+        }
 
         /// <summary>
         /// Call to refresh the relative time display for LastLaunched.
@@ -205,6 +215,7 @@ namespace WorkspacesEditor.Models
         public Project(Project selectedProject)
             : this(selectedProject, selectedProject)
         {
+            IsPositionChangedManually = selectedProject.IsPositionChangedManually;
         }
 
         internal Project(Project draft, Project previous)
@@ -219,8 +230,6 @@ namespace WorkspacesEditor.Models
             PreviewImageWidth = draft.PreviewImageWidth;
             IsShortcutNeeded = draft.IsShortcutNeeded;
             MoveExistingWindows = draft.MoveExistingWindows;
-            IsPositionChangedManually = draft.IsPositionChangedManually;
-
             Monitors = draft.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.X).ThenBy(x => x.MonitorDpiAwareBounds.Y).ToList();
 
             Applications = [];
@@ -283,12 +292,41 @@ namespace WorkspacesEditor.Models
             }
         }
 
+        internal static Project FromStorage(ProjectWrapper wrapper)
+        {
+            var project = new Project(wrapper);
+            var usedIds = new HashSet<Guid>();
+            for (int i = 0; i < project.Applications.Count; i++)
+            {
+                var app = project.Applications[i];
+                if (!Guid.TryParse(app.Id, out var guid) || !usedIds.Add(guid))
+                {
+                    do
+                    {
+                        guid = Guid.NewGuid();
+                    }
+                    while (!usedIds.Add(guid));
+                    app.Id = guid.ToString("B");
+                }
+                else if (!Guid.TryParseExact(app.Id, "B", out _) && !Guid.TryParseExact(app.Id, "D", out _))
+                {
+                    app.Id = guid.ToString("B");
+                }
+
+                project.NeedsApplicationIdRepair |= app.Id != wrapper.Applications[i].Id;
+            }
+
+            return project;
+        }
+
         public void InitializePreview()
         {
             try
             {
-                if (Applications == null || Applications.Count == 0 || Monitors == null || Monitors.Count == 0)
+                if (Applications == null || Applications.Count == 0 || Monitors == null || Monitors.Count == 0 || HasUnresolvedMonitors)
                 {
+                    PreviewImage = null;
+                    PreviewImageWidth = 0;
                     return;
                 }
 
@@ -297,6 +335,10 @@ namespace WorkspacesEditor.Models
                 double top = Monitors.Min(m => m.MonitorDpiAwareBounds.Y);
                 double right = Monitors.Max(m => m.MonitorDpiAwareBounds.X + m.MonitorDpiAwareBounds.Width);
                 double bottom = Monitors.Max(m => m.MonitorDpiAwareBounds.Y + m.MonitorDpiAwareBounds.Height);
+                if (right <= left || bottom <= top)
+                {
+                    return;
+                }
 
                 var bounds = new System.Drawing.Rectangle((int)left, (int)top, (int)(right - left), (int)(bottom - top));
 
@@ -314,13 +356,8 @@ namespace WorkspacesEditor.Models
 
         public MonitorSetup GetMonitorForApp(Application app)
         {
-            if (Monitors == null || Monitors.Count == 0)
-            {
-                return new MonitorSetup("Unknown", string.Empty, app.MonitorNumber, 96, default, default);
-            }
-
             return Monitors.FirstOrDefault(m => m.MonitorNumber == app.MonitorNumber)
-                ?? Monitors[0];
+                ?? new MonitorSetup(string.Empty, string.Empty, app.MonitorNumber, 96, default, default);
         }
 
         public void CloseExpanders()
@@ -331,18 +368,23 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public void UpdateAfterLaunchAndEdit(Project projectBefore)
-        {
-            Id = projectBefore.Id;
-            Name = projectBefore.Name;
-            IsRevertEnabled = true;
-            IsShortcutNeeded = projectBefore.IsShortcutNeeded;
-            MoveExistingWindows = projectBefore.MoveExistingWindows;
+        public void UpdateAfterLaunchAndEdit(Project projectBefore) => UpdateAfterLaunchAndEdit(projectBefore, projectBefore);
 
+        internal void UpdateAfterLaunchAndEdit(Project beforeCapture, Project currentDraft)
+        {
+            Id = currentDraft.Id;
+            Name = currentDraft.Name;
+            IsRevertEnabled = true;
+            IsShortcutNeeded = currentDraft.IsShortcutNeeded;
+            MoveExistingWindows = currentDraft.MoveExistingWindows;
+            IsPositionChangedManually = currentDraft.IsPositionChangedManually;
+
+            var liveRows = ReferenceEquals(beforeCapture, currentDraft) ? null :
+                ApplicationWindowMatcher.Match(beforeCapture.Applications, currentDraft.Applications)
+                    .Where(pair => pair.Previous != null).ToDictionary(pair => pair.Previous, pair => pair.Updated);
             var capturedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var (app, previous) in MatchApplicationsById(projectBefore.Applications, Applications))
+            foreach (var (app, previous) in ApplicationWindowMatcher.Match(beforeCapture.Applications, Applications))
             {
-                // Multiple open windows can carry the same stamp after launching a workspace twice.
                 while (string.IsNullOrEmpty(app.Id) || !capturedIds.Add(app.IdWithoutBraces))
                 {
                     app.Id = Guid.NewGuid().ToString("B");
@@ -350,28 +392,9 @@ namespace WorkspacesEditor.Models
 
                 if (previous != null)
                 {
-                    app.CommandLineArguments = previous.CommandLineArguments;
-                    app.IsElevated = previous.IsElevated;
+                    var current = liveRows?.GetValueOrDefault(previous) ?? previous;
+                    app.ApplyDraftSettings(previous, current);
                 }
-            }
-        }
-
-        internal static IEnumerable<(Application Updated, Application Previous)> MatchApplicationsById(
-            IEnumerable<Application> previousApplications,
-            IEnumerable<Application> updatedApplications)
-        {
-            var byId = previousApplications.Where(app => !string.IsNullOrEmpty(app.Id))
-                .GroupBy(app => app.IdWithoutBraces, StringComparer.OrdinalIgnoreCase)
-                .ToDictionary(group => group.Key, group => new Queue<Application>(group), StringComparer.OrdinalIgnoreCase);
-            foreach (Application app in updatedApplications)
-            {
-                Application previous = null;
-                if (!string.IsNullOrEmpty(app.Id) && byId.TryGetValue(app.IdWithoutBraces, out var matches))
-                {
-                    matches.TryDequeue(out previous);
-                }
-
-                yield return (app, previous);
             }
         }
 

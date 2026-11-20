@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
 
@@ -79,6 +81,144 @@ namespace WorkspacesEditor.UnitTests
         }
 
         [TestMethod]
+        public void Recapture_PrefersTheWindowWithTheSameTitleEvenWhenItMovedBehindANewWindow()
+        {
+            Project previous = TestHelpers.CreateProject("Work", 0, 0, "Editor");
+            Application original = previous.Applications[0];
+            original.AppTitle = "Original document";
+            original.CommandLineArguments = "--original";
+            original.IsElevated = true;
+
+            Project captured = TestHelpers.CreateProject("Capture", 0, 0, "Editor", "Editor");
+            Application extra = captured.Applications[0];
+            extra.Id = original.Id;
+            extra.AppTitle = "New document";
+            extra.CommandLineArguments = "--captured";
+            Application retained = captured.Applications[1];
+            retained.Id = original.Id;
+            retained.AppTitle = original.AppTitle;
+            retained.Position = new Application.WindowPosition { X = 100, Y = 200, Width = 900, Height = 600 };
+
+            var edit = EditEventFactory.Create(previous, captured);
+            Assert.AreEqual(1, edit.AppsAdded);
+            Assert.AreEqual(1, edit.CliRemoved);
+            captured.UpdateAfterLaunchAndEdit(previous);
+
+            Assert.AreEqual(original.Id, retained.Id);
+            Assert.AreEqual("--original", retained.CommandLineArguments);
+            Assert.IsTrue(retained.IsElevated);
+            Assert.AreNotEqual(original.Id, extra.Id);
+            Assert.AreEqual("--captured", extra.CommandLineArguments);
+            Assert.IsFalse(extra.IsElevated);
+        }
+
+        [TestMethod]
+        public void Recapture_DoesNotGuessWhichDifferentlyTitledWindowShouldRunAsAdmin()
+        {
+            Project previous = TestHelpers.CreateProject("Work", 0, 0, "Editor");
+            var original = previous.Applications[0];
+            original.AppTitle = "Original document";
+            original.IsElevated = true;
+            original.CommandLineArguments = "--original";
+            Project captured = TestHelpers.CreateProject("Capture", 0, 0, "Editor", "Editor");
+            for (int i = 0; i < captured.Applications.Count; i++)
+            {
+                var app = captured.Applications[i];
+                app.Id = original.Id;
+                app.AppTitle = i == 0 ? "Notes" : "Report";
+                app.Position = new Application.WindowPosition { X = i + 100, Width = 1000, Height = 500 };
+            }
+
+            captured.UpdateAfterLaunchAndEdit(previous);
+
+            Assert.IsTrue(captured.Applications.TrueForAll(app => !app.IsElevated && string.IsNullOrEmpty(app.CommandLineArguments)));
+            Assert.AreNotEqual(captured.Applications[0].Id, captured.Applications[1].Id);
+        }
+
+        [TestMethod]
+        public void Telemetry_PairsBothDocumentsWhenTheirEnumerationOrderReverses()
+        {
+            Project previous = TestHelpers.CreateProject("Work", 0, 0, "Editor", "Editor");
+            string stamp = previous.Applications[0].Id;
+            previous.Applications[0].AppTitle = "Elevated document";
+            previous.Applications[0].IsElevated = true;
+            previous.Applications[0].CommandLineArguments = "--elevated";
+            previous.Applications[1].Id = stamp;
+            previous.Applications[1].AppTitle = "Ordinary document";
+            Project captured = new(previous);
+            captured.Applications.Reverse();
+
+            var edit = EditEventFactory.Create(previous, captured);
+
+            Assert.AreEqual(0, edit.AppsAdded);
+            Assert.AreEqual(0, edit.AppsRemoved);
+            Assert.AreEqual(0, edit.CliAdded);
+            Assert.AreEqual(0, edit.CliRemoved);
+            Assert.AreEqual(0, edit.AdminAdded);
+            Assert.AreEqual(0, edit.AdminRemoved);
+        }
+
+        [TestMethod]
+        public void StoredRowsRepairDuplicateIdsWhileCaptureRetainsOriginalStamps()
+        {
+            Guid stamp = Guid.NewGuid();
+            ProjectWrapper wrapper = new()
+            {
+                Id = Guid.NewGuid().ToString("B"),
+                Applications =
+                [
+                    new() { Id = stamp.ToString("B"), CommandLineArguments = "--first" },
+                    new() { Id = stamp.ToString("D"), CommandLineArguments = "--second" },
+                    new() { Id = "malformed" },
+                ],
+                MonitorConfiguration = [],
+            };
+
+            Project stored = Project.FromStorage(wrapper);
+            Project rawCapture = new(wrapper);
+
+            Assert.IsTrue(stored.NeedsApplicationIdRepair);
+            Assert.IsFalse(rawCapture.NeedsApplicationIdRepair);
+            Assert.AreEqual(stamp.ToString("B"), stored.Applications[0].Id);
+            Assert.AreEqual(3, stored.Applications.Select(app => Guid.ParseExact(app.Id, "B")).Distinct().Count());
+            Assert.AreEqual("--second", stored.Applications[1].CommandLineArguments);
+            Assert.AreEqual(stamp, Guid.Parse(rawCapture.Applications[0].Id));
+            Assert.AreEqual(stamp, Guid.Parse(rawCapture.Applications[1].Id));
+
+            wrapper.Applications.RemoveRange(1, 2);
+            Assert.IsFalse(Project.FromStorage(wrapper).NeedsApplicationIdRepair);
+        }
+
+        [TestMethod]
+        public void Recapture_PreservesOnlyLayoutFieldsEditedWhileTheToolWasRunning()
+        {
+            Project beforeCapture = TestHelpers.CreateProject("Before", 0, 0, "Editor");
+            Project current = new(beforeCapture) { Name = "Renamed", MoveExistingWindows = true, IsShortcutNeeded = true };
+            var edited = current.Applications[0];
+            edited.UpdatePositionY("75");
+            edited.IsIncluded = false;
+            edited.CommandLineArguments = "--late";
+            edited.IsElevated = true;
+            edited.Minimized = true;
+            Project captured = TestHelpers.CreateProject("Capture", 0, 0, "Editor");
+            var window = captured.Applications[0];
+            window.Id = edited.Id;
+            window.Position = new Application.WindowPosition { X = 25, Y = 55, Width = 900, Height = 700 };
+
+            captured.UpdateAfterLaunchAndEdit(beforeCapture, current);
+
+            Assert.AreEqual("Renamed", captured.Name);
+            Assert.IsTrue(captured.IsShortcutNeeded);
+            Assert.IsTrue(captured.MoveExistingWindows);
+            Assert.IsTrue(captured.IsPositionChangedManually);
+            Assert.AreEqual("--late", window.CommandLineArguments);
+            Assert.IsTrue(window.IsElevated);
+            Assert.IsFalse(window.IsIncluded);
+            Assert.IsTrue(window.Minimized);
+            Assert.AreEqual(new Application.WindowPosition { X = 25, Y = 75, Width = 900, Height = 700 }, window.Position);
+        }
+
+        [TestMethod]
         public void RevertCopy_RetainsTitleHistoryAndManualAdjustments()
         {
             Project draft = TestHelpers.CreateProject("Draft", 123, 456, "Browser");
@@ -103,6 +243,7 @@ namespace WorkspacesEditor.UnitTests
         {
             Project previous = TestHelpers.CreateProject("Before", 123, 456, "Browser");
             Project captured = TestHelpers.CreateProject("Updated", 789, 0, "Editor");
+            captured.IsPositionChangedManually = true;
             captured.Monitors.Add(new MonitorSetup("Second display", string.Empty, 2, 96, default, default));
             captured.Applications[0].MonitorNumber = 2;
 
@@ -114,7 +255,32 @@ namespace WorkspacesEditor.UnitTests
             Assert.AreEqual(captured.Name, candidate.Name);
             Assert.AreEqual("Editor", candidate.Applications[0].AppName);
             Assert.AreEqual(2, candidate.Applications[0].MonitorSetup.MonitorNumber);
-            Assert.AreEqual(0, previous.Monitors.Count);
+            Assert.IsFalse(new Project(candidate).IsPositionChangedManually);
+            Assert.IsFalse(EditEventFactory.Create(candidate, new Project(candidate)).PixelAdjustmentsUsed);
+            Assert.IsFalse(previous.Monitors.Exists(monitor => monitor.MonitorNumber == 2));
+        }
+
+        [TestMethod]
+        public void MissingMonitorBlocksSavingUntilTheUnresolvedRowIsExcludedOrRecaptured()
+        {
+            Project draft = TestHelpers.CreateProject("Work", 0, 0, "Editor", "Browser");
+            var moved = draft.Applications[1];
+            Assert.IsFalse(draft.HasUnresolvedMonitors);
+            Assert.IsTrue(draft.CanBeSaved);
+
+            moved.MonitorNumber = 3;
+            Assert.IsTrue(draft.HasUnresolvedMonitors);
+            Assert.IsFalse(draft.CanBeSaved);
+            Assert.AreEqual(3, moved.MonitorSetup.MonitorNumber);
+            Assert.AreEqual(0d, moved.MonitorSetup.MonitorDpiAwareBounds.Width);
+
+            var notifications = new List<string>();
+            draft.PropertyChanged += (_, e) => notifications.Add(e.PropertyName);
+            moved.IsIncluded = false;
+            Assert.IsFalse(draft.HasUnresolvedMonitors);
+            Assert.IsTrue(draft.CanBeSaved);
+            CollectionAssert.Contains(notifications, nameof(Project.HasUnresolvedMonitors));
+            CollectionAssert.Contains(notifications, nameof(Project.CanBeSaved));
         }
 
         [TestMethod]

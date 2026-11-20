@@ -21,8 +21,21 @@ namespace WorkspacesEditor.Services
 
         internal static (bool Owned, string IconPath) Inspect(string path, Guid workspaceId, SharingRetryBudget retryBudget)
         {
+            return Inspect(path, workspaceId, retryBudget, out _);
+        }
+
+        internal static (bool Owned, string IconPath) Inspect(string path, Guid workspaceId, SharingRetryBudget retryBudget, out byte[] ownedContents)
+        {
+            ownedContents = null;
             using FileStream stream = OpenFile(path, FileAccess.Read, forChange: false, retryBudget);
-            return WorkspaceShellLink.Inspect(ReadContents(stream), workspaceId);
+            byte[] contents = ReadContents(stream);
+            var result = WorkspaceShellLink.Inspect(contents, workspaceId);
+            if (result.Owned)
+            {
+                ownedContents = contents;
+            }
+
+            return result;
         }
 
         internal static void Create(string path, byte[] contents, Action commitIcon)
@@ -99,6 +112,16 @@ namespace WorkspacesEditor.Services
 
             // Delete the file we inspected while the handle still excludes writers and replacement.
             Delete(stream.SafeFileHandle);
+        }
+
+        // Check and unlink the same directory entry while this handle excludes writers and replacement.
+        internal static void DeleteIf(string path, Func<FileStream, bool> ownsFile)
+        {
+            using FileStream stream = OpenFile(path, FileAccess.Read, forChange: true, retryBudget: null);
+            if (ownsFile(stream))
+            {
+                Delete(stream.SafeFileHandle);
+            }
         }
 
         private static void Delete(SafeFileHandle handle)
@@ -214,14 +237,135 @@ namespace WorkspacesEditor.Services
             stream.Flush();
         }
 
-        private static string GetNameOnDisk(SafeFileHandle handle)
+        // Inspect only the managed icon directory. A foreign shortcut can name an arbitrary
+        // network location, and its icon must never be resolved merely to clean up our files.
+        internal static bool MayReferenceIcon(string linkIcon, string iconPath)
+        {
+            if (string.IsNullOrWhiteSpace(linkIcon))
+            {
+                return false;
+            }
+
+            string candidate = linkIcon.Trim().Trim('"');
+            if (string.Equals(candidate, iconPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            candidate = Environment.ExpandEnvironmentVariables(candidate).Replace('/', '\\');
+            if (!Path.IsPathFullyQualified(candidate) ||
+                !string.Equals(Path.GetPathRoot(candidate), Path.GetPathRoot(iconPath), StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(Path.GetExtension(candidate), ".ico", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            try
+            {
+                // GetFullPathName normalizes dot segments without expanding a foreign short path.
+                string path = ReadWindowsPath(buffer => GetFullPathNameW(candidate, (uint)buffer.Capacity, buffer, 0));
+                if (string.Equals(path, iconPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                string directory = Path.GetDirectoryName(iconPath);
+                string candidateDirectory = Path.GetDirectoryName(path);
+                if (!string.Equals(directory, candidateDirectory, StringComparison.OrdinalIgnoreCase) &&
+                    !IsShortDirectorySpelling(directory, candidateDirectory))
+                {
+                    return false;
+                }
+
+                string leaf = Path.GetFileName(path);
+                if (!WorkspaceShortcutJournal.IsValidName(Path.GetFileNameWithoutExtension(leaf)))
+                {
+                    return false;
+                }
+
+                // Use the trusted directory even when the link used a short name for an ancestor.
+                using var managed = OpenIconMetadata(iconPath);
+                using var referenced = OpenIconMetadata(Path.Combine(directory, leaf));
+                if (!TryReadFileId(managed, out var first) || !TryReadFileId(referenced, out var second))
+                {
+                    return true;
+                }
+
+                return first.Volume == second.Volume && first.Low == second.Low && first.High == second.High;
+            }
+            catch (Win32Exception ex)
+            {
+                // A missing file cannot reference the ICO. Preserve it when identity was inaccessible.
+                return ex.NativeErrorCode is not (2 or 3);
+            }
+        }
+
+        private static bool IsShortDirectorySpelling(string directory, string candidate)
+        {
+            string[] longParts = directory.Split('\\');
+            string[] candidateParts = candidate.Split('\\');
+            if (candidateParts.Length != longParts.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < longParts.Length; i++)
+            {
+                // A differing component longer than an 8.3 name is not a DOS alias.
+                if (candidateParts[i].Length > 12 && !string.Equals(candidateParts[i], longParts[i], StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
+
+            string[] shortParts = ReadWindowsPath(buffer => GetShortPathNameW(directory, buffer, (uint)buffer.Capacity)).Split('\\');
+            for (int i = 0; i < longParts.Length; i++)
+            {
+                if (!string.Equals(candidateParts[i], longParts[i], StringComparison.OrdinalIgnoreCase) &&
+                    (shortParts.Length != longParts.Length || !string.Equals(candidateParts[i], shortParts[i], StringComparison.OrdinalIgnoreCase)))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static SafeFileHandle OpenIconMetadata(string path)
+        {
+            const uint ReadAttributes = 0x80;
+            var handle = CreateFileW(path, ReadAttributes, FileShare.ReadWrite | FileShare.Delete, 0, FileMode.Open, OpenReparsePoint, 0);
+            if (!handle.IsInvalid)
+            {
+                return handle;
+            }
+
+            int error = Marshal.GetLastWin32Error();
+            handle.Dispose();
+            throw new Win32Exception(error);
+        }
+
+        private static bool TryReadFileId(SafeFileHandle handle, out FileIdentity id)
+        {
+            id = default;
+            const uint NameSurrogate = 0x20000000;
+            return GetFileInformationByHandleEx(handle, FileInfoClass.AttributeTag, out AttributeTagInfo info, (uint)Marshal.SizeOf<AttributeTagInfo>()) &&
+                ((info.Attributes & FileAttributes.ReparsePoint) == 0 || (info.ReparseTag & NameSurrogate) == 0) &&
+                GetFileInformationByHandleEx(handle, FileInfoClass.FileId, out id, (uint)Marshal.SizeOf<FileIdentity>()) &&
+                (id.Low != 0 || id.High != 0);
+        }
+
+        private static string GetNameOnDisk(SafeFileHandle handle) =>
+            Path.GetFileName(ReadWindowsPath(buffer => GetFinalPathNameByHandleW(handle, buffer, (uint)buffer.Capacity, 0)));
+
+        private static string ReadWindowsPath(Func<StringBuilder, uint> read)
         {
             var name = new StringBuilder(260);
-            uint length = GetFinalPathNameByHandleW(handle, name, (uint)name.Capacity, 0);
+            uint length = read(name);
             if (length >= name.Capacity)
             {
                 name.EnsureCapacity(checked((int)length + 1));
-                length = GetFinalPathNameByHandleW(handle, name, (uint)name.Capacity, 0);
+                length = read(name);
             }
 
             if (length == 0 || length >= name.Capacity)
@@ -229,7 +373,7 @@ namespace WorkspacesEditor.Services
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             }
 
-            return Path.GetFileName(name.ToString());
+            return name.ToString();
         }
 
         private static void Rename(SafeFileHandle handle, string path)
@@ -252,6 +396,7 @@ namespace WorkspacesEditor.Services
             Rename = 3,
             Disposition = 4,
             AttributeTag = 9,
+            FileId = 18,
             DispositionEx = 21,
         }
 
@@ -297,6 +442,14 @@ namespace WorkspacesEditor.Services
             public uint ReparseTag;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        private struct FileIdentity
+        {
+            public ulong Volume;
+            public ulong Low;
+            public ulong High;
+        }
+
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern SafeFileHandle CreateFileW(string path, uint access, FileShare share, nint security, FileMode disposition, uint flags, nint template);
@@ -305,10 +458,23 @@ namespace WorkspacesEditor.Services
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         private static extern uint GetFinalPathNameByHandleW(SafeFileHandle handle, StringBuilder name, uint size, uint flags);
 
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        private static extern uint GetFullPathNameW(string path, uint size, StringBuilder name, nint filePart);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        private static extern uint GetShortPathNameW(string path, StringBuilder name, uint size);
+
         [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetFileInformationByHandleEx(SafeFileHandle handle, FileInfoClass infoClass, out AttributeTagInfo info, uint size);
+
+        [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
+        [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool GetFileInformationByHandleEx(SafeFileHandle handle, FileInfoClass infoClass, out FileIdentity id, uint size);
 
         [DllImport("kernel32.dll", ExactSpelling = true, SetLastError = true)]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]

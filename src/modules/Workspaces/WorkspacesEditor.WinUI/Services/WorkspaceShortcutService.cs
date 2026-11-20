@@ -4,10 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
-using System.Text.RegularExpressions;
 using ManagedCommon;
 using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Helpers;
@@ -17,10 +16,9 @@ using SharingRetryBudget = WorkspacesEditor.Services.WorkspaceShortcutFile.Shari
 
 namespace WorkspacesEditor.Services
 {
-    internal sealed partial class WorkspaceShortcutService : IWorkspaceShortcutService
+    internal sealed class WorkspaceShortcutService : IWorkspaceShortcutService
     {
         private const string LauncherFileName = "PowerToys.WorkspacesLauncher.exe";
-        private static readonly char[] InvalidNameChars = Path.GetInvalidFileNameChars();
         private readonly string _desktopFolder;
         private readonly string _iconFolder;
         private readonly string _launcherPath;
@@ -40,7 +38,9 @@ namespace WorkspacesEditor.Services
             _launcherPath = launcherPath;
         }
 
-        public bool Exists(Project project)
+        public bool Exists(Project project) => GetPresence(project) == true;
+
+        public bool? GetPresence(Project project)
         {
             try
             {
@@ -49,90 +49,254 @@ namespace WorkspacesEditor.Services
                     return false;
                 }
 
-                var retryBudget = new SharingRetryBudget();
-                if (IsValidName(project.Name) && Inspect(project.Name, workspaceId, retryBudget).State == ShortcutState.Owned)
+                var retry = new SharingRetryBudget();
+                var current = Inspect(project.Name, workspaceId, retry);
+                if (current.State == ShortcutState.Owned)
                 {
                     return true;
                 }
 
-                return ReadNames(workspaceId).Any(name => name != project.Name && Inspect(name, workspaceId, retryBudget).State == ShortcutState.Owned);
+                bool unreadable = current.State == ShortcutState.Unreadable;
+                foreach (string name in ReadJournal(project.Id, workspaceId).Names)
+                {
+                    if (name == project.Name)
+                    {
+                        continue;
+                    }
+
+                    var entry = Inspect(name, workspaceId, retry);
+                    if (entry.State == ShortcutState.Owned)
+                    {
+                        return true;
+                    }
+
+                    unreadable |= entry.State == ShortcutState.Unreadable;
+                }
+
+                return unreadable ? null : false;
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed to check the workspace shortcut", ex);
+                return null;
+            }
+        }
+
+        public bool TryPrepareChange(Project original, bool deleting)
+        {
+            try
+            {
+                if (Guid.TryParse(original?.Id, out Guid workspaceId))
+                {
+                    RememberOriginal(ReadJournal(original.Id, workspaceId), workspaceId, original.Name, deleting, new SharingRetryBudget());
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to record the workspace shortcut before changing the workspace", ex);
                 return false;
             }
         }
 
-        public void Apply(Project project, string previousName = null)
+        public void Apply(Project project, string previousName = null) => ApplyWithResult(project, previousName);
+
+        public WorkspaceShortcutResult ApplyWithResult(Project project, string previousName = null)
+        {
+            bool created = false;
+            try
+            {
+                if (!Guid.TryParse(project?.Id, out Guid workspaceId))
+                {
+                    return new(WorkspaceShortcutStatus.Failed);
+                }
+
+                var retry = new SharingRetryBudget();
+                var journal = ReadJournal(project.Id, workspaceId);
+                if (previousName != null && previousName != project.Name)
+                {
+                    RememberOriginal(journal, workspaceId, previousName, deleting: false, retry);
+                }
+
+                if (!project.IsShortcutNeeded)
+                {
+                    var candidates = journal.Names;
+                    AddName(candidates, previousName);
+                    AddName(candidates, project.Name);
+                    return RemoveLinks(journal, workspaceId, candidates, deleting: false, retry, project.Name, previousName);
+                }
+
+                if (!WorkspaceShortcutJournal.IsValidName(project.Name))
+                {
+                    return new(WorkspaceShortcutStatus.Failed);
+                }
+
+                var destination = Inspect(project.Name, workspaceId, retry);
+                if (destination.State == ShortcutState.Foreign)
+                {
+                    return new(WorkspaceShortcutStatus.NameConflict);
+                }
+
+                if (destination.State == ShortcutState.Unreadable)
+                {
+                    return new(WorkspaceShortcutStatus.Failed);
+                }
+
+                var names = journal.Names;
+                byte[] template = null;
+                if (destination.State == ShortcutState.Missing)
+                {
+                    template = FindTemplate(names, previousName, project.Name, workspaceId, retry);
+                }
+
+                // Both possible desktop names must be recoverable before publishing or retiring either link.
+                names.Add(project.Name);
+                journal.Save(names, pendingRemoval: false);
+                string iconPath = GetIconPath(journal);
+                string keptName;
+                try
+                {
+                    keptName = Publish(project, workspaceId, destination.State, template, iconPath, retry);
+                }
+                catch (Win32Exception ex) when (destination.State == ShortcutState.Missing && ex.NativeErrorCode is 80 or 183 &&
+                    Inspect(project.Name, workspaceId, retry).State == ShortcutState.Foreign)
+                {
+                    return new(WorkspaceShortcutStatus.NameConflict);
+                }
+
+                created = destination.State == ShortcutState.Missing;
+                var (remaining, failed) = CleanLinks(names, workspaceId, iconPath, keptName, retry);
+                remaining.Add(Path.GetFileNameWithoutExtension(keptName));
+                journal.Save(remaining, pendingRemoval: false);
+                return new(failed ? WorkspaceShortcutStatus.Failed : WorkspaceShortcutStatus.Success, created);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to update the workspace shortcut", ex);
+                return new(WorkspaceShortcutStatus.Failed, created);
+            }
+        }
+
+        public void Remove(Project project) => RemoveWithResult(project);
+
+        public WorkspaceShortcutResult RemoveWithResult(Project project)
         {
             try
             {
                 if (!Guid.TryParse(project?.Id, out Guid workspaceId))
                 {
-                    return;
+                    return new(WorkspaceShortcutStatus.Success);
                 }
 
-                var retryBudget = new SharingRetryBudget();
-                var names = ReadNames(workspaceId);
-                if (previousName != project.Name && IsValidName(previousName) && !names.Contains(previousName) &&
-                    Inspect(previousName, workspaceId, retryBudget).State is ShortcutState.Owned or ShortcutState.Unreadable)
-                {
-                    // Older installations have no record. Keep the old name before attempting the rename.
-                    names.Add(previousName);
-                    WriteNames(workspaceId, names);
-                }
-
-                if (!project.IsShortcutNeeded)
-                {
-                    Remove(project, workspaceId, names, retryBudget, previousName);
-                    return;
-                }
-
-                if (!IsValidName(project.Name))
-                {
-                    Logger.LogWarning("The workspace name cannot be used as a desktop shortcut filename.");
-                    return;
-                }
-
-                ShortcutState state = Inspect(project.Name, workspaceId, retryBudget).State;
-                if (state is ShortcutState.Foreign or ShortcutState.Unreadable)
-                {
-                    Logger.LogWarning("The workspace shortcut name is already in use.");
-                    return;
-                }
-
-                string iconPath = GetIconPath(project);
-                string keptName = Publish(project, workspaceId, state, iconPath, retryBudget);
-                var (remaining, _) = CleanLinks(names, workspaceId, iconPath, keptName, retryBudget);
-                remaining.Add(Path.GetFileNameWithoutExtension(keptName));
-                if (!names.SetEquals(remaining))
-                {
-                    WriteNames(workspaceId, remaining);
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError("Failed to update the workspace shortcut", ex);
-            }
-        }
-
-        public void Remove(Project project)
-        {
-            try
-            {
-                if (Guid.TryParse(project?.Id, out Guid workspaceId))
-                {
-                    Remove(project, workspaceId, ReadNames(workspaceId), new SharingRetryBudget());
-                }
+                var retry = new SharingRetryBudget();
+                var journal = ReadJournal(project.Id, workspaceId);
+                RememberOriginal(journal, workspaceId, project.Name, deleting: true, retry);
+                var names = journal.Names;
+                AddName(names, project.Name);
+                return RemoveLinks(journal, workspaceId, names, deleting: true, retry, project.Name);
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed to remove the workspace shortcut", ex);
+                return new(WorkspaceShortcutStatus.Failed);
             }
         }
 
-        private string Publish(Project project, Guid workspaceId, ShortcutState state, string iconPath, SharingRetryBudget retryBudget)
+        public bool RetryPendingRemovals(IEnumerable<string> activeWorkspaceIds)
+        {
+            ArgumentNullException.ThrowIfNull(activeWorkspaceIds);
+            bool retryNeeded = false;
+            try
+            {
+                var active = new HashSet<Guid>();
+                foreach (string value in activeWorkspaceIds)
+                {
+                    if (Guid.TryParse(value, out Guid id))
+                    {
+                        active.Add(id);
+                    }
+                }
+
+                var retry = new SharingRetryBudget();
+                foreach (Guid id in WorkspaceShortcutJournal.EnumerateIds(GetAbsolutePath(_iconFolder)))
+                {
+                    if (active.Contains(id))
+                    {
+                        // Deleting the workspace may have failed after its shortcut was journaled.
+                        continue;
+                    }
+
+                    try
+                    {
+                        var journal = ReadJournal(id.ToString("B"), id);
+                        if (journal.PendingRemoval)
+                        {
+                            retryNeeded |= RemoveLinks(journal, id, journal.Names, deleting: true, retry).Status == WorkspaceShortcutStatus.Failed;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to retry a workspace shortcut removal", ex);
+                        retryNeeded |= ex is IOException or UnauthorizedAccessException;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to read pending workspace shortcut removals", ex);
+                retryNeeded = true;
+            }
+
+            return retryNeeded;
+        }
+
+        private void RememberOriginal(WorkspaceShortcutJournal journal, Guid workspaceId, string name, bool deleting, SharingRetryBudget retry)
+        {
+            var names = journal.Names;
+            if (WorkspaceShortcutJournal.IsValidName(name) && !names.Contains(name))
+            {
+                var entry = Inspect(name, workspaceId, retry);
+                string iconPath = GetIconPath(journal);
+                if (entry.State is ShortcutState.Owned or ShortcutState.Unreadable ||
+                    WorkspaceShortcutFile.MayReferenceIcon(entry.IconPath, iconPath) || (deleting && HasIcon(iconPath)))
+                {
+                    names.Add(name);
+                }
+            }
+
+            // Do not create recovery data just to remove a workspace which never had a shortcut.
+            journal.Save(names, pendingRemoval: deleting && (names.Count != 0 || journal.PendingRemoval));
+        }
+
+        private byte[] FindTemplate(HashSet<string> registered, string previousName, string requestedName, Guid workspaceId, SharingRetryBudget retry)
+        {
+            bool unreadable = false;
+            foreach (string name in registered.Prepend(previousName).Distinct(StringComparer.Ordinal))
+            {
+                if (name == null || name == requestedName)
+                {
+                    continue;
+                }
+
+                var entry = Inspect(name, workspaceId, retry);
+                if (entry.State == ShortcutState.Owned)
+                {
+                    return entry.Contents;
+                }
+
+                unreadable |= entry.State == ShortcutState.Unreadable;
+            }
+
+            if (unreadable)
+            {
+                throw new IOException("The previous workspace shortcut could not be read for the rename.");
+            }
+
+            return null;
+        }
+
+        private string Publish(Project project, Guid workspaceId, ShortcutState state, byte[] template, string iconPath, SharingRetryBudget retry)
         {
             string shortcutPath = GetDesktopPath(project.Name);
             string launcherPath = GetAbsolutePath(_launcherPath);
@@ -148,11 +312,11 @@ namespace WorkspacesEditor.Services
 
                 if (state == ShortcutState.Missing)
                 {
-                    WorkspaceShortcutFile.Create(shortcutPath, WorkspaceShellLink.Create(launcherPath, workspaceId, iconPath), CommitIcon);
+                    WorkspaceShortcutFile.Create(shortcutPath, WorkspaceShellLink.Create(launcherPath, workspaceId, iconPath, template), CommitIcon);
                     return Path.GetFileName(shortcutPath);
                 }
 
-                return WorkspaceShortcutFile.Update(shortcutPath, launcherPath, workspaceId, iconPath, CommitIcon, retryBudget);
+                return WorkspaceShortcutFile.Update(shortcutPath, launcherPath, workspaceId, iconPath, CommitIcon, retry);
             }
             finally
             {
@@ -160,43 +324,30 @@ namespace WorkspacesEditor.Services
             }
         }
 
-        private void Remove(Project project, Guid workspaceId, HashSet<string> names, SharingRetryBudget retryBudget, string previousName = null)
+        private WorkspaceShortcutResult RemoveLinks(WorkspaceShortcutJournal journal, Guid workspaceId, HashSet<string> names, bool deleting, SharingRetryBudget retry, string currentName = null, string previousName = null)
         {
-            var candidates = new HashSet<string>(names, StringComparer.Ordinal);
-            if (IsValidName(project.Name))
+            if (names.Count == 0 && !journal.PendingRemoval)
             {
-                candidates.Add(project.Name);
+                return new(WorkspaceShortcutStatus.Success);
             }
 
-            if (IsValidName(previousName))
-            {
-                candidates.Add(previousName);
-            }
-
-            if (candidates.Count == 0)
-            {
-                return;
-            }
-
-            string iconPath = GetIconPath(project);
-            var (remaining, canDeleteIcon) = CleanLinks(candidates, workspaceId, iconPath, null, retryBudget);
-            if (canDeleteIcon && File.Exists(iconPath))
+            string iconPath = GetIconPath(journal);
+            var (remaining, failed) = CleanLinks(names, workspaceId, iconPath, null, retry, currentName, previousName);
+            if (remaining.Count == 0 && HasIcon(iconPath))
             {
                 File.Delete(iconPath);
             }
 
-            if (!names.SetEquals(remaining))
-            {
-                WriteNames(workspaceId, remaining);
-            }
+            journal.Save(remaining, pendingRemoval: deleting && remaining.Count != 0);
+            return new(failed ? WorkspaceShortcutStatus.Failed : WorkspaceShortcutStatus.Success);
         }
 
-        private (HashSet<string> Remaining, bool CanDeleteIcon) CleanLinks(IEnumerable<string> names, Guid workspaceId, string iconPath, string keepName, SharingRetryBudget retryBudget)
+        private (HashSet<string> Remaining, bool Failed) CleanLinks(IEnumerable<string> names, Guid workspaceId, string iconPath, string keepName, SharingRetryBudget retry, string currentName = null, string previousName = null)
         {
             var remaining = new HashSet<string>(StringComparer.Ordinal);
+            var foreign = new List<string>();
             bool removedOwned = false;
-            bool foundForeign = false;
-            bool iconInUse = false;
+            bool failed = false;
             foreach (string name in names)
             {
                 if (name + ".lnk" == keepName)
@@ -204,124 +355,115 @@ namespace WorkspacesEditor.Services
                     continue;
                 }
 
-                var (state, linkIcon) = Inspect(name, workspaceId, retryBudget);
-                switch (state)
+                var entry = Inspect(name, workspaceId, retry);
+                switch (entry.State)
                 {
                     case ShortcutState.Owned:
                         try
                         {
-                            WorkspaceShortcutFile.Remove(GetDesktopPath(name), workspaceId, keepName, retryBudget);
+                            WorkspaceShortcutFile.Remove(GetDesktopPath(name), workspaceId, keepName, retry);
                             removedOwned = true;
                         }
                         catch (Exception ex)
                         {
                             Logger.LogError("Failed to retire the workspace shortcut", ex);
                             remaining.Add(name);
+                            failed = true;
                         }
 
                         break;
 
                     case ShortcutState.Foreign:
-                        foundForeign = true;
-                        iconInUse |= string.Equals(linkIcon?.Trim('"'), iconPath, StringComparison.OrdinalIgnoreCase);
+                        if (name == currentName || name == previousName)
+                        {
+                            foreign.Add(name);
+                        }
+
+                        if (WorkspaceShortcutFile.MayReferenceIcon(entry.IconPath, iconPath))
+                        {
+                            // A user retargeted the old link but kept its workspace icon.
+                            remaining.Add(name);
+                        }
+
                         break;
 
                     case ShortcutState.Unreadable:
                         remaining.Add(name);
+                        failed = true;
                         break;
                 }
             }
 
-            return (remaining, remaining.Count == 0 && !iconInUse && (removedOwned || !foundForeign));
+            if (keepName == null && !removedOwned && remaining.Count == 0 && foreign.Count > 0 && HasIcon(iconPath))
+            {
+                // A foreign replacement at the only known name does not authorize removal of the icon.
+                remaining.UnionWith(foreign);
+            }
+
+            return (remaining, failed);
         }
 
-        private (ShortcutState State, string IconPath) Inspect(string name, Guid workspaceId, SharingRetryBudget retryBudget)
+        private (ShortcutState State, string IconPath, byte[] Contents) Inspect(string name, Guid workspaceId, SharingRetryBudget retry)
         {
+            if (!WorkspaceShortcutJournal.IsValidName(name))
+            {
+                return (ShortcutState.Missing, null, null);
+            }
+
             try
             {
                 string path = GetDesktopPath(name);
                 FileAttributes attributes = File.GetAttributes(path);
                 if ((attributes & FileAttributes.Directory) != 0)
                 {
-                    return (ShortcutState.Foreign, null);
+                    return (ShortcutState.Foreign, null, null);
                 }
 
                 if ((attributes & FileAttributes.ReparsePoint) != 0 && new FileInfo(path).LinkTarget != null)
                 {
-                    return (ShortcutState.Unreadable, null);
+                    return (ShortcutState.Unreadable, null, null);
                 }
 
-                var (owned, iconPath) = WorkspaceShortcutFile.Inspect(path, workspaceId, retryBudget);
-                return (owned ? ShortcutState.Owned : ShortcutState.Foreign, iconPath);
+                var (owned, iconPath) = WorkspaceShortcutFile.Inspect(path, workspaceId, retry, out byte[] contents);
+                return (owned ? ShortcutState.Owned : ShortcutState.Foreign, iconPath, contents);
             }
             catch (FileNotFoundException)
             {
-                return (ShortcutState.Missing, null);
+                return (ShortcutState.Missing, null, null);
             }
             catch (Exception ex)
             {
                 Logger.LogError("Failed to read the workspace shortcut", ex);
-                return (ShortcutState.Unreadable, null);
+                return (ShortcutState.Unreadable, null, null);
             }
         }
+
+        private WorkspaceShortcutJournal ReadJournal(string projectId, Guid workspaceId) =>
+            WorkspaceShortcutJournal.Read(GetAbsolutePath(_iconFolder), workspaceId, projectId);
 
         private string GetDesktopPath(string name) => Path.Combine(GetAbsolutePath(_desktopFolder), name + ".lnk");
 
-        private string GetIconPath(Project project) => Path.Combine(GetAbsolutePath(_iconFolder), project.Id + ".ico");
+        private string GetIconPath(WorkspaceShortcutJournal journal) => Path.Combine(GetAbsolutePath(_iconFolder), journal.ProjectId + ".ico");
 
-        private string GetNamesPath(Guid workspaceId) => Path.Combine(GetAbsolutePath(_iconFolder), $"{workspaceId:B}.links.json");
-
-        private HashSet<string> ReadNames(Guid workspaceId)
+        private static bool HasIcon(string iconPath)
         {
             try
             {
-                string[] names = JsonSerializer.Deserialize<string[]>(File.ReadAllText(GetNamesPath(workspaceId)));
-                return new HashSet<string>((names ?? Array.Empty<string>()).Where(IsValidName), StringComparer.Ordinal);
+                return (File.GetAttributes(iconPath) & FileAttributes.Directory) == 0;
             }
             catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
             {
-                return new HashSet<string>(StringComparer.Ordinal);
-            }
-            catch (JsonException ex)
-            {
-                Logger.LogError("Failed to read the workspace shortcut names", ex);
-                return new HashSet<string>(StringComparer.Ordinal);
+                return false;
             }
         }
 
-        private void WriteNames(Guid workspaceId, HashSet<string> names)
+        private static void AddName(HashSet<string> names, string name)
         {
-            string path = GetNamesPath(workspaceId);
-            if (names.Count == 0)
+            if (WorkspaceShortcutJournal.IsValidName(name))
             {
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-
-                return;
-            }
-
-            string directory = Path.GetDirectoryName(path);
-            Directory.CreateDirectory(directory);
-            string temporary = Path.Combine(directory, Path.GetRandomFileName());
-            try
-            {
-                File.WriteAllText(temporary, JsonSerializer.Serialize(names));
-                File.Move(temporary, path, overwrite: true);
-            }
-            finally
-            {
-                File.Delete(temporary);
+                names.Add(name);
             }
         }
-
-        private static bool IsValidName(string name) =>
-            !string.IsNullOrWhiteSpace(name) && name is not "." and not ".." &&
-            name.IndexOfAny(InvalidNameChars) < 0 && !ReservedDeviceName().IsMatch(name);
-
-        [GeneratedRegex(@"^(CON|PRN|AUX|NUL|CONIN\$|CONOUT\$|(?:COM|LPT)[1-9¹²³]) *(?:[.]|$)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
-        private static partial Regex ReservedDeviceName();
 
         private static string GetAbsolutePath(string path)
         {

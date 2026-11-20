@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,7 +17,6 @@ using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
-using WorkspacesCsharpLibrary;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
@@ -31,9 +31,11 @@ namespace WorkspacesEditor.ViewModels
     {
         private readonly WorkspacesEditorIO _workspacesEditorIO;
         private readonly Action<WorkspacesSettings> _saveSettings;
-        private readonly Action<List<Project>> _serializeWorkspaces;
+        private readonly Action<Project, Project> _persistChange;
+        private readonly Func<IEnumerable<string>> _storedWorkspaceIds;
         private readonly IWorkspaceShortcutService _shortcuts;
         private readonly Action<EditEvent> _writeEditTelemetry;
+        private readonly Action<CreateEvent> _writeCreateTelemetry;
         private Project _draft;
         private Project _launchingDraft;
         private Project _snapshotBase;
@@ -41,7 +43,10 @@ namespace WorkspacesEditor.ViewModels
         private bool _snapshotRequested;
         private bool _reloadAfterEdit;
         private int _editGeneration;
-        private bool _ownsPublishedSnapshot;
+        private bool _shortcutPresenceUnknown;
+        private bool _initialShortcutChoice;
+        private bool _showingPendingCleanup;
+        private long? _nextShortcutCleanup;
         private Project _projectBeforeLaunch;
         private string _projectNameBeingEdited;
         private Microsoft.UI.Xaml.DispatcherTimer _lastUpdatedTimer;
@@ -177,7 +182,15 @@ namespace WorkspacesEditor.ViewModels
         }
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanLaunchAndEdit))]
+        [NotifyPropertyChangedFor(nameof(CanRecaptureCurrentLayout))]
         public partial bool IsLoading { get; set; }
+
+        private bool CanStartEditAction => !_isDisposed && _draft != null && _launchingDraft == null && !_snapshotRequested && !IsLoading;
+
+        public bool CanLaunchAndEdit => CanStartEditAction && _draft.CanBeSaved;
+
+        public bool CanRecaptureCurrentLayout => CanStartEditAction && _draft.HasUnresolvedMonitors;
 
         public MainViewModel(WorkspacesEditorIO workspacesEditorIO)
             : this(
@@ -185,18 +198,10 @@ namespace WorkspacesEditor.ViewModels
                 Utils.Settings.ReadSettings(),
                 settings => settings.Save(SettingsUtils.Default),
                 new WorkspaceShortcutService(),
-                workspaces => workspacesEditorIO.SerializeWorkspaces(workspaces),
+                null,
+                telemetryEvent => PowerToysTelemetry.Log.WriteEvent(telemetryEvent),
                 telemetryEvent => PowerToysTelemetry.Log.WriteEvent(telemetryEvent))
         {
-            // Populate the shared resolver before either previews or the editor load PWA icons.
-            try
-            {
-                _ = new PwaHelper();
-            }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-            {
-                Logger.LogError("Failed to initialize PWA icons", ex);
-            }
         }
 
         internal MainViewModel(
@@ -206,20 +211,38 @@ namespace WorkspacesEditor.ViewModels
             IWorkspaceShortcutService shortcuts,
             Action<List<Project>> serializeWorkspaces,
             Action<EditEvent> writeEditTelemetry)
+            : this(workspacesEditorIO, settings, saveSettings, shortcuts, serializeWorkspaces, writeEditTelemetry, telemetryEvent => PowerToysTelemetry.Log.WriteEvent(telemetryEvent))
+        {
+        }
+
+        internal MainViewModel(
+            WorkspacesEditorIO workspacesEditorIO,
+            WorkspacesSettings settings,
+            Action<WorkspacesSettings> saveSettings,
+            IWorkspaceShortcutService shortcuts,
+            Action<List<Project>> serializeWorkspaces,
+            Action<EditEvent> writeEditTelemetry,
+            Action<CreateEvent> writeCreateTelemetry)
         {
             ArgumentNullException.ThrowIfNull(workspacesEditorIO);
             ArgumentNullException.ThrowIfNull(settings);
             ArgumentNullException.ThrowIfNull(saveSettings);
             ArgumentNullException.ThrowIfNull(shortcuts);
-            ArgumentNullException.ThrowIfNull(serializeWorkspaces);
             ArgumentNullException.ThrowIfNull(writeEditTelemetry);
+            ArgumentNullException.ThrowIfNull(writeCreateTelemetry);
 
             _workspacesEditorIO = workspacesEditorIO;
             _settings = settings;
             _saveSettings = saveSettings;
             _shortcuts = shortcuts;
-            _serializeWorkspaces = serializeWorkspaces;
+            _persistChange = serializeWorkspaces == null
+                ? workspacesEditorIO.PersistChange
+                : (original, replacement) => serializeWorkspaces(WorkspacesAfterChange(original, replacement));
+            _storedWorkspaceIds = serializeWorkspaces == null
+                ? workspacesEditorIO.GetStoredWorkspaceIds
+                : () => Workspaces.Select(project => project.Id);
             _writeEditTelemetry = writeEditTelemetry;
+            _writeCreateTelemetry = writeCreateTelemetry;
             OrderByIndex = (int)_settings.Properties.SortBy;
 
             StrongReferenceMessenger.Default.Register<SnapshotCapturedMessage>(this, (r, m) => ((MainViewModel)r).OnSnapshotCaptured());
@@ -237,6 +260,7 @@ namespace WorkspacesEditor.ViewModels
         public void Initialize()
         {
             _workspacesEditorIO.CleanupOrphanedRequests();
+            RetryPendingShortcutRemovals();
             foreach (Project project in Workspaces)
             {
                 project.InitializePreview();
@@ -254,6 +278,22 @@ namespace WorkspacesEditor.ViewModels
         [ObservableProperty]
         public partial bool SaveFailed { get; set; }
 
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(HasShortcutNotice))]
+        public partial string ShortcutNotice { get; set; }
+
+        public bool HasShortcutNotice => !string.IsNullOrEmpty(ShortcutNotice);
+
+        internal void DismissShortcutNotice() => SetShortcutNotice(null);
+
+        partial void OnSaveFailedChanged(bool value)
+        {
+            if (value)
+            {
+                DismissShortcutNotice();
+            }
+        }
+
         public void SaveProject(Project projectToSave) => TrySaveProject(projectToSave);
 
         private bool TrySaveProject(Project projectToSave)
@@ -263,25 +303,34 @@ namespace WorkspacesEditor.ViewModels
                 return false;
             }
 
-            var projects = Workspaces.ToList();
-            int index = projects.FindIndex(project => SameId(project.Id, projectToSave.Id));
-            if (index < 0)
+            Project original = Workspaces.FirstOrDefault(project => SameId(project.Id, projectToSave.Id));
+            if (original == null)
             {
                 return false;
             }
 
-            Project original = projects[index];
             string previousName = original.Name;
             EditEvent editEvent = EditEventFactory.Create(original, projectToSave);
             Project saved = PrepareForSave(projectToSave, original);
-            projects[index] = saved;
-            if (!TryPersist(projects))
+            bool applyShortcut = ResolveShortcutIntent(original, saved);
+            if (!string.Equals(original.Name, saved.Name, StringComparison.Ordinal))
+            {
+                RetryPendingShortcutRemovals();
+                if (!TryPrepareShortcutChange(original, deleting: false))
+                {
+                    return false;
+                }
+            }
+
+            if (!TryPersist(original, saved))
             {
                 return false;
             }
 
             original.Name = saved.Name;
             original.IsShortcutNeeded = saved.IsShortcutNeeded;
+            original.IsPositionChangedManually = false;
+            original.NeedsApplicationIdRepair = false;
             original.MoveExistingWindows = saved.MoveExistingWindows;
             original.Monitors.Clear();
             original.Monitors.AddRange(saved.Monitors);
@@ -293,7 +342,22 @@ namespace WorkspacesEditor.ViewModels
 
             original.NotifyApplicationsChanged();
             original.InitializePreview();
-            _shortcuts.Apply(original, previousName);
+            if (applyShortcut)
+            {
+                var shortcut = _shortcuts.ApplyWithResult(original, previousName);
+                ReportShortcutOutcome(shortcut);
+                if (shortcut.Status == WorkspaceShortcutStatus.Success)
+                {
+                    _shortcutPresenceUnknown = false;
+                    _initialShortcutChoice = saved.IsShortcutNeeded;
+                    projectToSave.IsShortcutNeeded = saved.IsShortcutNeeded;
+                }
+            }
+            else
+            {
+                SetShortcutNotice("ShortcutUpdateFailedAfterSave");
+            }
+
             RefreshWorkspacesView();
             _writeEditTelemetry(editEvent);
             return true;
@@ -320,7 +384,11 @@ namespace WorkspacesEditor.ViewModels
                 draft.Name = WorkspaceNameGenerator.Create(defaultNamePrefix, Workspaces.Select(project => project.Name));
             }
 
-            CheckShortcutPresence(draft);
+            draft.IsPositionChangedManually = false;
+            bool? presence = _shortcuts.GetPresence(draft);
+            _shortcutPresenceUnknown = !presence.HasValue;
+            draft.IsShortcutNeeded = presence ?? draft.IsShortcutNeeded;
+            _initialShortcutChoice = draft.IsShortcutNeeded;
             draft.EditorWindowTitle = isNewlyCreated ? GetString("CreateWorkspace") : GetString("EditWorkspace");
             _lastUpdatedTimer?.Stop();
             ShowDraft(draft);
@@ -328,9 +396,30 @@ namespace WorkspacesEditor.ViewModels
 
         private void ShowDraft(Project project)
         {
+            if (_draft != null)
+            {
+                _draft.PropertyChanged -= OnDraftPropertyChanged;
+            }
+
             _draft = project;
+            _draft.PropertyChanged += OnDraftPropertyChanged;
+            NotifyEditActions();
             _draft.InitializePreview();
             StrongReferenceMessenger.Default.Send(new NavigateToEditorMessage(_draft));
+        }
+
+        private void OnDraftPropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName is nameof(Project.CanBeSaved) or nameof(Project.HasUnresolvedMonitors))
+            {
+                NotifyEditActions();
+            }
+        }
+
+        private void NotifyEditActions()
+        {
+            OnPropertyChanged(nameof(CanLaunchAndEdit));
+            OnPropertyChanged(nameof(CanRecaptureCurrentLayout));
         }
 
         private static bool SameId(string left, string right) => string.Equals(left, right, StringComparison.OrdinalIgnoreCase);
@@ -343,11 +432,30 @@ namespace WorkspacesEditor.ViewModels
             return saved;
         }
 
-        private bool TryPersist(List<Project> projects)
+        private List<Project> WorkspacesAfterChange(Project original, Project replacement)
+        {
+            var result = Workspaces.ToList();
+            if (original == null)
+            {
+                result.Add(replacement);
+            }
+            else if (replacement == null)
+            {
+                result.Remove(original);
+            }
+            else
+            {
+                result[result.IndexOf(original)] = replacement;
+            }
+
+            return result;
+        }
+
+        private bool TryPersist(Project original, Project replacement)
         {
             try
             {
-                _serializeWorkspaces(projects);
+                _persistChange(original, replacement);
                 SaveFailed = false;
                 return true;
             }
@@ -369,7 +477,8 @@ namespace WorkspacesEditor.ViewModels
             }
 
             var saved = PrepareForSave(project, project);
-            if (!TryPersist([.. Workspaces, saved]))
+            RetryPendingShortcutRemovals();
+            if (!TryPersist(null, saved))
             {
                 return false;
             }
@@ -377,16 +486,17 @@ namespace WorkspacesEditor.ViewModels
             saved.InitializePreview();
             Workspaces.Add(saved);
             RefreshWorkspacesView();
-            _shortcuts.Apply(saved);
+            var shortcut = _shortcuts.ApplyWithResult(saved);
+            ReportShortcutOutcome(shortcut);
 
-            PowerToysTelemetry.Log.WriteEvent(new Telemetry.CreateEvent
+            _writeCreateTelemetry(new CreateEvent
             {
                 Successful = true,
                 NumScreens = saved.Monitors.Count,
                 AppCount = saved.Applications.Count,
                 CliCount = saved.Applications.Count(app => !string.IsNullOrEmpty(app.CommandLineArguments)),
                 AdminCount = saved.Applications.Count(app => app.IsElevated),
-                ShortcutCreated = saved.IsShortcutNeeded,
+                ShortcutCreated = shortcut.Created,
             });
             return true;
         }
@@ -400,14 +510,19 @@ namespace WorkspacesEditor.ViewModels
                 return false;
             }
 
-            var projects = Workspaces.ToList();
-            if (!projects.Remove(selectedProject) || !TryPersist(projects))
+            if (!Workspaces.Contains(selectedProject) || !TryPrepareShortcutChange(selectedProject, deleting: true) || !TryPersist(selectedProject, null))
             {
                 return false;
             }
 
             Workspaces.Remove(selectedProject);
-            _shortcuts.Remove(selectedProject);
+            var shortcut = _shortcuts.RemoveWithResult(selectedProject);
+            SetShortcutNotice(shortcut.Status == WorkspaceShortcutStatus.Success ? null : "ShortcutCleanupPendingAfterDelete");
+            if (shortcut.Status != WorkspaceShortcutStatus.Success)
+            {
+                _nextShortcutCleanup = Environment.TickCount64 + 30_000;
+            }
+
             RefreshWorkspacesView();
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.DeleteEvent { Successful = true });
             return true;
@@ -448,11 +563,7 @@ namespace WorkspacesEditor.ViewModels
             }
 
             EndEditSession();
-            if (_reloadAfterEdit)
-            {
-                ReloadOverview();
-            }
-
+            ResumeOverview();
             StrongReferenceMessenger.Default.Send(new GoBackMessage());
             _lastUpdatedTimer?.Start();
         }
@@ -460,6 +571,11 @@ namespace WorkspacesEditor.ViewModels
         private void EndEditSession()
         {
             ++_editGeneration;
+            if (_draft != null)
+            {
+                _draft.PropertyChanged -= OnDraftPropertyChanged;
+            }
+
             _draft = null;
             _launchingDraft = null;
             _snapshotBase = null;
@@ -468,16 +584,23 @@ namespace WorkspacesEditor.ViewModels
             _isNewProject = false;
             IsLoading = false;
             SaveFailed = false;
-            DiscardPublishedSnapshot();
+            NotifyEditActions();
+            _workspacesEditorIO.DiscardPublishedCapture();
         }
 
-        private void DiscardPublishedSnapshot()
+        private void ResumeOverview()
         {
-            if (_ownsPublishedSnapshot)
+            if (_draft != null || _snapshotRequested || IsLoading || _isDisposed)
             {
-                WorkspacesEditorIO.DeleteTemporaryFile(_workspacesEditorIO.TempProjectPath);
-                _ownsPublishedSnapshot = false;
+                return;
             }
+
+            if (_reloadAfterEdit)
+            {
+                ReloadOverview();
+            }
+
+            RetryPendingShortcutRemovals();
         }
 
         [RelayCommand]
@@ -491,6 +614,22 @@ namespace WorkspacesEditor.ViewModels
             if (_isDisposed || project == null)
             {
                 return;
+            }
+
+            if (project.HasUnresolvedMonitors)
+            {
+                EditProject(project);
+                return;
+            }
+
+            if (project.NeedsApplicationIdRepair)
+            {
+                if (!TryPersist(project, project))
+                {
+                    return;
+                }
+
+                project.NeedsApplicationIdRepair = false;
             }
 
             if (!await _workspacesEditorIO.LaunchAsync(project.Id, InvokePoint.EditorButton) || _isDisposed)
@@ -541,6 +680,7 @@ namespace WorkspacesEditor.ViewModels
             }
 
             _snapshotRequested = true;
+            NotifyEditActions();
             StrongReferenceMessenger.Default.Send(new MinimizeWindowMessage());
             StrongReferenceMessenger.Default.Send(new ShowSnapshotWindowMessage());
         }
@@ -555,9 +695,11 @@ namespace WorkspacesEditor.ViewModels
             _snapshotRequested = false;
             _snapshotBase = null;
             ++_editGeneration;
-            DiscardPublishedSnapshot();
+            NotifyEditActions();
+            _workspacesEditorIO.DiscardPublishedCapture();
 
             StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
+            ResumeOverview();
         }
 
         private bool IsCurrent(int generation) => !_isDisposed && generation == _editGeneration;
@@ -572,14 +714,14 @@ namespace WorkspacesEditor.ViewModels
 
             _snapshotRequested = false;
             int generation = _editGeneration;
-            Project beforeLaunch = _snapshotBase == null ? null : new Project(_snapshotBase);
+            Project beforeCapture = _snapshotBase;
             _snapshotBase = null;
             var requestId = Guid.NewGuid();
-            StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
             IsLoading = true;
+            StrongReferenceMessenger.Default.Send(new RestoreWindowMessage());
             try
             {
-                if (!await _workspacesEditorIO.CaptureAsync(requestId, beforeLaunch != null) || !IsCurrent(generation))
+                if (!await _workspacesEditorIO.CaptureAsync(requestId, beforeCapture != null) || !IsCurrent(generation))
                 {
                     return;
                 }
@@ -590,16 +732,15 @@ namespace WorkspacesEditor.ViewModels
                     return;
                 }
 
-                _ownsPublishedSnapshot = true;
-                if (beforeLaunch == null)
+                if (beforeCapture == null)
                 {
                     OpenEditor(captured, true);
                 }
                 else
                 {
-                    _projectBeforeLaunch = beforeLaunch;
-                    captured.UpdateAfterLaunchAndEdit(beforeLaunch);
-                    captured.EditorWindowTitle = beforeLaunch.EditorWindowTitle;
+                    _projectBeforeLaunch = new Project(_draft);
+                    captured.UpdateAfterLaunchAndEdit(beforeCapture, _draft);
+                    captured.EditorWindowTitle = _draft.EditorWindowTitle;
                     ShowDraft(captured);
                 }
             }
@@ -613,6 +754,7 @@ namespace WorkspacesEditor.ViewModels
                 if (IsCurrent(generation))
                 {
                     IsLoading = false;
+                    ResumeOverview();
                 }
             }
         }
@@ -620,21 +762,25 @@ namespace WorkspacesEditor.ViewModels
         [RelayCommand]
         internal async Task LaunchAndEditAsync(Project project)
         {
-            if (_isDisposed || project == null || !ReferenceEquals(project, _draft) || !project.CanBeSaved ||
-                ReferenceEquals(project, _launchingDraft) || _snapshotRequested || IsLoading)
+            if (!ReferenceEquals(project, _draft) || !CanLaunchAndEdit)
             {
                 return;
             }
 
             int generation = ++_editGeneration;
             _launchingDraft = project;
+            NotifyEditActions();
             var requestId = Guid.NewGuid();
             string draftPath = _workspacesEditorIO.RequestPath(requestId);
             try
             {
+                Project launchDraft;
                 try
                 {
-                    _workspacesEditorIO.WriteDraft(project, draftPath);
+                    // This is the layout the launcher actually received. Keep subsequent
+                    // edits distinguishable from the positions returned by the snapshot.
+                    launchDraft = new Project(project);
+                    _workspacesEditorIO.WriteDraft(launchDraft, draftPath);
                     SaveFailed = false;
                 }
                 catch (Exception ex)
@@ -646,7 +792,7 @@ namespace WorkspacesEditor.ViewModels
 
                 if (await _workspacesEditorIO.LaunchAsync(project.Id, InvokePoint.LaunchAndEdit, requestId) && IsCurrent(generation))
                 {
-                    _snapshotBase = project;
+                    _snapshotBase = launchDraft;
                     EnterSnapshotMode(true);
                 }
             }
@@ -656,7 +802,18 @@ namespace WorkspacesEditor.ViewModels
                 if (ReferenceEquals(_launchingDraft, project))
                 {
                     _launchingDraft = null;
+                    NotifyEditActions();
                 }
+            }
+        }
+
+        internal void RecaptureCurrentLayout(Project project)
+        {
+            if (ReferenceEquals(project, _draft) && CanRecaptureCurrentLayout)
+            {
+                ++_editGeneration;
+                _snapshotBase = new Project(project);
+                EnterSnapshotMode(true);
             }
         }
 
@@ -701,6 +858,11 @@ namespace WorkspacesEditor.ViewModels
             {
                 project.NotifyLastLaunchedChanged();
             }
+
+            if (_nextShortcutCleanup.HasValue && Environment.TickCount64 >= _nextShortcutCleanup.Value && _draft == null && !_snapshotRequested && !IsLoading)
+            {
+                RetryPendingShortcutRemovals();
+            }
         }
 
         private static string GetString(string key)
@@ -708,9 +870,69 @@ namespace WorkspacesEditor.ViewModels
             return ResourceLoaderInstance.ResourceLoader?.GetString(key) ?? key;
         }
 
-        private void CheckShortcutPresence(Project project)
+        private bool ResolveShortcutIntent(Project original, Project saved)
         {
-            project.IsShortcutNeeded = _shortcuts.Exists(project);
+            if (!_shortcutPresenceUnknown || saved.IsShortcutNeeded != _initialShortcutChoice)
+            {
+                return true;
+            }
+
+            // An unreadable link is not evidence that the user unchecked the box.
+            bool? presence = _shortcuts.GetPresence(original);
+            if (presence.HasValue)
+            {
+                saved.IsShortcutNeeded = presence.Value;
+                return true;
+            }
+
+            saved.IsShortcutNeeded = original.IsShortcutNeeded;
+            return false;
+        }
+
+        private bool TryPrepareShortcutChange(Project original, bool deleting)
+        {
+            if (_shortcuts.TryPrepareChange(original, deleting))
+            {
+                return true;
+            }
+
+            SaveFailed = false;
+            SetShortcutNotice("ShortcutTrackingFailedBeforeSave");
+            return false;
+        }
+
+        private void ReportShortcutOutcome(WorkspaceShortcutResult result)
+        {
+            SetShortcutNotice(result.Status switch
+            {
+                WorkspaceShortcutStatus.Success => null,
+                WorkspaceShortcutStatus.NameConflict => "ShortcutNameConflictAfterSave",
+                _ => "ShortcutUpdateFailedAfterSave",
+            });
+        }
+
+        private void SetShortcutNotice(string resourceKey)
+        {
+            _showingPendingCleanup = resourceKey == "ShortcutCleanupPendingAfterDelete";
+            ShortcutNotice = resourceKey == null ? null : GetString(resourceKey);
+        }
+
+        private void RetryPendingShortcutRemovals()
+        {
+            var ids = _storedWorkspaceIds();
+            if (ids != null)
+            {
+                bool pending = _shortcuts.RetryPendingRemovals(ids);
+                _nextShortcutCleanup = pending ? Environment.TickCount64 + 30_000 : null;
+                if (!pending && _showingPendingCleanup)
+                {
+                    SetShortcutNotice(null);
+                }
+            }
+            else
+            {
+                _nextShortcutCleanup = Environment.TickCount64 + 30_000;
+            }
         }
 
         public void Dispose()
