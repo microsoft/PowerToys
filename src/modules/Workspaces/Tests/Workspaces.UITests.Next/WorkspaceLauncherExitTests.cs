@@ -80,7 +80,21 @@ public sealed partial class WorkspacesTests
         }
 
         using var launcher = Process.Start(startInfo)!;
-        Assert.IsTrue(launcher.WaitForExit(timeoutMilliseconds), "The workspace launcher did not exit.");
+        if (!launcher.WaitForExit(timeoutMilliseconds))
+        {
+            try
+            {
+                launcher.Kill(entireProcessTree: true);
+            }
+            catch (InvalidOperationException) when (launcher.HasExited)
+            {
+                // The launcher exited between the timeout and the termination request.
+            }
+
+            Assert.IsTrue(launcher.WaitForExit(10_000), $"The test-owned launcher PID {launcher.Id} survived termination.");
+            Assert.Fail($"The workspace launcher did not exit within {timeoutMilliseconds} ms.");
+        }
+
         return launcher.ExitCode;
     }
 }

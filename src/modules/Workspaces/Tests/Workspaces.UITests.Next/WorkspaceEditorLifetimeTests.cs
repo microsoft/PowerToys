@@ -12,15 +12,22 @@ public sealed partial class WorkspacesTests
     [TestMethod]
     public void DisablingWorkspacesDuringCaptureSavesEditorPlacement()
     {
-        string placementPath = Path.Combine(WorkspaceTestState.DirectoryPath, "editor-window.json");
-        using var previousPlacement = SettingsConfigHelper.PreserveFile(placementPath);
+        string placementPath = WorkspaceTestState.WindowPlacementPath;
         var toggle = ModuleToggle();
         try
         {
             OpenEditor();
-            var firstWindow = Editor.WindowHandle;
-            OpenEditor();
-            Assert.AreEqual(firstWindow, Editor.WindowHandle, "The second Settings activation did not reuse the editor.");
+            var firstWindow = new IntPtr(Editor.WindowHandle);
+            WindowHelper.MinimizeWindow(firstWindow);
+            Assert.IsTrue(NativeMethods.IsIconic(firstWindow), "The editor did not minimize before reactivation.");
+            RequestEditorFromSettings();
+            Assert.IsTrue(
+                WaitHelper.WaitForStable(
+                    WindowControl.GetForegroundWindowHandle,
+                    foreground => foreground == firstWindow && !NativeMethods.IsIconic(firstWindow),
+                    10_000,
+                    requiredConsecutiveMatches: 2).Succeeded,
+                "The second Settings activation did not restore the original editor to the foreground.");
             _ = StartCapture();
             File.Delete(placementPath);
 

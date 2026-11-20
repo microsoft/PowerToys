@@ -179,6 +179,12 @@ namespace Microsoft.Workspaces.UITests
 
         private void OpenEditor()
         {
+            RequestEditorFromSettings();
+            AttachEditor();
+        }
+
+        private void RequestEditorFromSettings()
+        {
             Step("Clicking Open editor in Settings.");
             var launch = SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
             Assert.IsTrue(launch.Displayed && launch.Width > 0 && launch.Height > 0, "The launch card is not visible.");
@@ -189,7 +195,6 @@ namespace Microsoft.Workspaces.UITests
 
             // SettingsCard exposes a Button role but no InvokePattern; its pointer command is the user action.
             launch.Click(msPostAction: 0);
-            AttachEditor();
         }
 
         private void AttachEditor()
