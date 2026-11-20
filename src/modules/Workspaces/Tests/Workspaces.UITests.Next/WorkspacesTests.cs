@@ -348,10 +348,25 @@ namespace Microsoft.Workspaces.UITests
             return ready.LastObservation!;
         }
 
-        private IEnumerable<JsonElement> EditorRoots(JsonElement tree) =>
-            tree.GetProperty("windows").EnumerateArray()
-                .Where(window => window.GetProperty("hwnd").GetInt64() == Editor.WindowHandle)
-                .SelectMany(window => window.GetProperty("elements").EnumerateArray());
+        private IEnumerable<JsonElement> EditorRoots(JsonElement tree)
+        {
+            // A stale target can return a JSON error envelope while the overview is being rebuilt.
+            if (!tree.TryGetProperty("windows", out var windows))
+            {
+                yield break;
+            }
+
+            foreach (var window in windows.EnumerateArray())
+            {
+                if (window.GetProperty("hwnd").GetInt64() == Editor.WindowHandle && window.TryGetProperty("elements", out var elements))
+                {
+                    foreach (var element in elements.EnumerateArray())
+                    {
+                        yield return element;
+                    }
+                }
+            }
+        }
 
         private static IEnumerable<JsonElement> Subtree(JsonElement element)
         {
@@ -421,8 +436,7 @@ namespace Microsoft.Workspaces.UITests
                 return null;
             }
 
-            // The ItemsRepeater has no peer. Its SettingsCard buttons expose stable GUIDs even
-            // for default names, stale cards, or workspaces the test did not expect to find.
+            // SettingsCard buttons expose stable GUIDs even for default names and unexpected workspaces.
             var cards = new List<WorkspaceCard>();
             foreach (var element in elements)
             {
