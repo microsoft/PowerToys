@@ -97,12 +97,40 @@ Write-Host ("[RUN-MODULE] Module folder: {0}" -f $moduleDir)
 $extraArgsString = $null
 if ($ExtraArgs -and $ExtraArgs.Count -gt 0) { $extraArgsString = ($ExtraArgs -join ' ') }
 
-# Build the module's projects (tests skipped unless -IncludeTests)
-$built = BuildProjectsInDirectory -DirectoryPath $moduleDir -ExtraArgs $extraArgsString `
-    -Platform $Platform -Configuration $Configuration -SkipTests:(-not $IncludeTests)
-if (-not $built) {
+# Discover the module's projects recursively
+$projects = Get-ChildItem -Path $moduleDir -Recurse -File -Include *.csproj, *.vcxproj |
+    Where-Object { $_.FullName -notmatch '\\(obj|bin|packages)\\' }
+if (-not $IncludeTests) {
+    # Test projects are matched by name (Foo.UnitTests, Foo.UITests.Next, Foo.FuzzTests,
+    # Foo.FuzzingTest, UnitTests.vcxproj) and by location (projects living under a *Tests
+    # folder, such as test-only helper projects).
+    $tests = $projects | Where-Object {
+        $_.BaseName -match '(^|\.)(UnitTests|UITests|FuzzTests|FuzzingTests?)(\.|$)' -or
+        $_.BaseName -match 'Tests?$' -or
+        $_.DirectoryName -match '\\[^\\]*Tests?\\'
+    }
+    if ($tests) {
+        $projects = @($projects | Where-Object { $tests -notcontains $_ })
+        Write-Host ("[RUN-MODULE] Skipping {0} test project(s): {1}" -f $tests.Count, (($tests | ForEach-Object { $_.Name }) -join ', '))
+    }
+}
+if (-not $projects -or $projects.Count -eq 0) {
     Write-Error ("No buildable projects found under {0}" -f $moduleDir)
     exit 1
+}
+Write-Host ("[RUN-MODULE] Building {0} project(s): {1}" -f $projects.Count, (($projects | ForEach-Object { $_.Name }) -join ', '))
+
+foreach ($project in $projects) {
+    # Pass the SolutionDir a solution build would give this project, so IntDir/OutDir
+    # land in the shared x64\<Config> tree instead of inside the project folder.
+    $solutionDir = Get-ProjectSolutionDir $project.FullName
+    $projectArgs = "/m"
+    if ($solutionDir -and -not $solutionDir.Contains(' ')) {
+        $projectArgs = "$projectArgs /p:SolutionDir=$solutionDir"
+    }
+    if ($extraArgsString) { $projectArgs = "$projectArgs $extraArgsString" }
+    Write-Host ("[RUN-MODULE] Building {0}" -f $project.FullName)
+    RestoreThenBuild $project.FullName $projectArgs $Platform $Configuration
 }
 
 # Build the runner if it has not been built for this configuration yet
