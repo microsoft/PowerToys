@@ -93,10 +93,9 @@ Describe 'Workspaces installer integration' {
             [IO.File]::WriteAllText((Join-Path $assetsOutput $iconName), "$Platform $iconName")
         }
 
-        # The unmodified production generator also harvests other modules. Give their dependency
-        # queries an empty output directory and leave Workspaces discovery and WiX generation live.
-        $script:workspacesEmptyOutput = New-Item -ItemType Directory -Path (Join-Path $fixtureRoot 'empty')
-        Mock Get-ChildItem { [pscustomobject]@{ Directory = $script:workspacesEmptyOutput } } -ParameterFilter { $Path -like '*.deps.json' }
+        # Other modules have no payload in this fixture. Give the generator each requested
+        # dependency's real parent path even when that directory does not exist on disk.
+        Mock Get-ChildItem { [IO.FileInfo]::new([string]$Path) } -ParameterFilter { $Path -like '*.deps.json' }
         Mock Get-Content { '{"targets":{"empty":{}}}' } -ParameterFilter { $Path -like '*.deps.json' }
         Mock Get-ChildItem { } -ParameterFilter {
             $File -and $Name -and $Path -and $Path -notlike '*\Assets\Workspaces*' -and !(Test-Path -LiteralPath $Path)
