@@ -73,6 +73,8 @@ public sealed partial class MainWindow : Window
         UpdateBackButton();
     }
 
+    internal void ShowActivity() => Navigation.SelectedItem = ActivityTab;
+
     internal void UpdateBackButton()
     {
         var frame = TabContent.Content as Frame;

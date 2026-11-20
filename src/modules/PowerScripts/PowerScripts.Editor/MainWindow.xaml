@@ -72,6 +72,7 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
                 <NavigationViewItem
+                    x:Name="ActivityTab"
                     x:Uid="PowerScripts_ActivityTab"
                     AutomationProperties.AutomationId="PowerScriptsActivityTab"
                     Style="{StaticResource MainNavigationViewItemStyle}"

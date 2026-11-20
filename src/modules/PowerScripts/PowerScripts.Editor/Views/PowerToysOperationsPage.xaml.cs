@@ -26,6 +26,8 @@ namespace PowerScripts.Editor.Views;
 [SuppressMessage("Design", "CA1001:Types that own disposable fields should be disposable", Justification = "Navigation cancels the request; its asynchronous finally block disposes the owned token source.")]
 public sealed partial class PowerToysOperationsPage : Page
 {
+    private const double SideBySideSelectorsMinimumWidth = 560;
+
     private readonly Dictionary<string, PowerScriptOperationDraft> _drafts = new(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _selectedOperationIds = new(StringComparer.OrdinalIgnoreCase);
     private PowerScriptsViewModel _viewModel;
@@ -60,7 +62,6 @@ public sealed partial class PowerToysOperationsPage : Page
         _viewModel = e.Parameter as PowerScriptsViewModel
             ?? throw new ArgumentException("Operation creation requires the PowerScripts view model.", nameof(e));
         _isActive = true;
-        OperationsBreadcrumb.ItemsSource = new[] { "PowerScripts", Resource("PowerScripts_OperationsTitle") };
         await LoadOperationsAsync();
     }
 
@@ -76,23 +77,16 @@ public sealed partial class PowerToysOperationsPage : Page
 
     private static string Resource(string key) => PowerScriptsViewModel.GetResourceString(key);
 
-    private void BackButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (!_isCreating)
-        {
-            EditorNavigation.GoBack(Frame);
-        }
-    }
-
     private void BackKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
         args.Handled = _isCreating || EditorNavigation.GoBack(Frame);
 
-    private void OperationsBreadcrumb_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
+    private void SelectorGrid_SizeChanged(object sender, SizeChangedEventArgs e)
     {
-        if (args.Index == 0 && !_isCreating)
-        {
-            EditorNavigation.GoBack(Frame);
-        }
+        var wide = e.NewSize.Width >= SideBySideSelectorsMinimumWidth;
+        Grid.SetColumnSpan(ModuleSelectorPanel, wide ? 1 : 2);
+        Grid.SetRow(OperationSelectorPanel, wide ? 0 : 1);
+        Grid.SetColumn(OperationSelectorPanel, wide ? 1 : 0);
+        Grid.SetColumnSpan(OperationSelectorPanel, wide ? 1 : 2);
     }
 
     private async void RetryButton_Click(object sender, RoutedEventArgs e) => await LoadOperationsAsync();
