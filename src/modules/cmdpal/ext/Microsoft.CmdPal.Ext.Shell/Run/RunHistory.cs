@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
@@ -178,8 +179,8 @@ public static class RunHistory
     }
 
     /// <summary>
-    /// Executes a command using ShellExecuteEx.
-    /// This is a simplified port of ShellExecCmdLineWithSite.
+    /// Executes ordinary commands through Explorer and elevated commands through ShellExecuteEx.
+    /// Command parsing follows ShellExecCmdLineWithSite.
     /// </summary>
     private static unsafe int ShellExecCmdLine(
         HWND hwnd,
@@ -203,6 +204,20 @@ public static class RunHistory
             command,
             filePath,
             workingDirectory ?? string.Empty);
+
+        if (!runAsAdmin)
+        {
+            try
+            {
+                ShellHelpers.OpenInShellOrThrow(filePath, arguments, qualifiedWorkingDir);
+                return 0;
+            }
+            catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or COMException or ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException)
+            {
+                ExtensionHost.LogMessage($"Unable to open {filePath}: {ex}");
+                return ex.HResult;
+            }
+        }
 
         // Setup ShellExecuteEx
         fixed (char* filePtr = filePath)

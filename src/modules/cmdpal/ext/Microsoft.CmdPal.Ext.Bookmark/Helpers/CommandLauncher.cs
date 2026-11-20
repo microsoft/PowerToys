@@ -2,9 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Runtime.CompilerServices;
-using ManagedCommon;
-using ManagedCsWin32;
 using Microsoft.CmdPal.Common.Helpers;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.Helpers;
@@ -39,42 +36,11 @@ internal static class CommandLauncher
     private static bool ActivateAppId(string aumidOrAppsFolder, string? arguments)
     {
         const string shellAppsFolder = "shell:AppsFolder\\";
-        try
+        if (aumidOrAppsFolder.StartsWith(shellAppsFolder, StringComparison.OrdinalIgnoreCase))
         {
-            if (aumidOrAppsFolder.StartsWith(shellAppsFolder, StringComparison.OrdinalIgnoreCase))
-            {
-                aumidOrAppsFolder = aumidOrAppsFolder[shellAppsFolder.Length..];
-            }
-
-            ApplicationActivationManager.ActivateApplication(aumidOrAppsFolder, arguments, 0, out _);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Can't activate AUMID using app store '{aumidOrAppsFolder}'", ex);
+            aumidOrAppsFolder = aumidOrAppsFolder[shellAppsFolder.Length..];
         }
 
-        try
-        {
-            ShellHelpers.OpenInShell(shellAppsFolder + aumidOrAppsFolder, arguments);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError($"Can't activate AUMID using shell '{aumidOrAppsFolder}'", ex);
-        }
-
-        return false;
-    }
-
-    private static class ApplicationActivationManager
-    {
-        public static void ActivateApplication(string aumid, string? args, int options, out uint pid)
-        {
-            var mgr = ComHelper.CreateComInstance<IApplicationActivationManager>(
-                ref Unsafe.AsRef(in CLSID.ApplicationActivationManager),
-                CLSCTX.InProcServer);
-            mgr.ActivateApplication(aumid, args ?? string.Empty, options, out pid);
-        }
+        return ShellHelpers.OpenInShell(shellAppsFolder + aumidOrAppsFolder, arguments);
     }
 }

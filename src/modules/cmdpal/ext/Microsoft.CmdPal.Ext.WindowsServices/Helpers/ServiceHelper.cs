@@ -179,13 +179,7 @@ public static class ServiceHelper
     {
         try
         {
-            var startInfo = new System.Diagnostics.ProcessStartInfo
-            {
-                FileName = "services.msc",
-                UseShellExecute = true,
-            };
-
-            System.Diagnostics.Process.Start(startInfo);
+            ShellHelpers.OpenInShellOrThrow("services.msc");
         }
 #pragma warning disable IDE0059, CS0168, SA1005
         catch (Exception ex)
