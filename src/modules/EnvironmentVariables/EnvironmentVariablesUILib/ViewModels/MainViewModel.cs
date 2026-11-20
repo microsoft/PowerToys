@@ -46,16 +46,47 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         public ProfileVariablesSet AppliedProfile { get; set; }
 
+        /// <summary>
+        /// Gets a value indicating whether Group Policy disables the editor. When set, nothing is loaded or written.
+        /// </summary>
+        public bool IsDisabledByPolicy { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the host can restart elevated to allow editing system variables.
+        /// </summary>
+        public bool CanRequestElevation { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainViewModel"/> class.
+        /// </summary>
+        /// <param name="elevationHelper">Elevation state and optional elevation request. Defaults to the current process token when <see langword="null"/>.</param>
+        /// <param name="environmentVariablesService">Profile storage.</param>
+        /// <param name="logger">Optional logger.</param>
+        /// <param name="telemetry">Optional telemetry sink.</param>
         public MainViewModel(IElevationHelper elevationHelper, IEnvironmentVariablesService environmentVariablesService, ILogger logger, ITelemetry telemetry)
+            : this(elevationHelper, environmentVariablesService, logger, telemetry, EnvironmentVariablesPolicy.IsDisabled())
         {
+        }
+
+        internal MainViewModel(IElevationHelper elevationHelper, IEnvironmentVariablesService environmentVariablesService, ILogger logger, ITelemetry telemetry, bool isDisabledByPolicy)
+        {
+            ArgumentNullException.ThrowIfNull(environmentVariablesService);
+
             _environmentVariablesService = environmentVariablesService;
 
-            ElevationHelper.ElevationHelperInstance = elevationHelper;
-            LoggerInstance.Logger = logger;
-            TelemetryInstance.Telemetry = telemetry;
+            HostServices.Initialize(elevationHelper, logger, telemetry);
 
-            var isElevated = ElevationHelper.ElevationHelperInstance.IsElevated;
-            IsElevated = isElevated;
+            IsDisabledByPolicy = isDisabledByPolicy;
+            IsElevated = ElevationHelper.ElevationHelperInstance.IsElevated;
+            CanRequestElevation = !IsElevated && ElevationHelper.ElevationHelperInstance.CanRequestElevation;
+        }
+
+        internal void RequestElevation()
+        {
+            if (CanRequestElevation)
+            {
+                ElevationHelper.ElevationHelperInstance.RequestElevation();
+            }
         }
 
         private void LoadDefaultVariables()
@@ -103,6 +134,11 @@ namespace EnvironmentVariablesUILib.ViewModels
 
         public void LoadEnvironmentVariables()
         {
+            if (IsDisabledByPolicy)
+            {
+                return;
+            }
+
             LoadDefaultVariables();
             LoadProfiles();
             PopulateAppliedVariables();
