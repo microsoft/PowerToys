@@ -53,6 +53,171 @@ public class WorkspaceWriteTests
     }
 
     [TestMethod]
+    public void EditingOneWorkspacePreservesOtherRowsAndNativeMetadata()
+    {
+        var document = JsonNode.Parse("""
+            { "extension": { "version": 3 }, "workspaces": [
+                { "id": "A", "name": "First", "applications": [ { "application-path": "old.exe" } ] },
+                { "id": "B", "name": "Second", "last-launched-time": 5, "extra": true,
+                  "applications": [ { "id": "app", "application-path": "before.exe", "command-line-arguments": "", "extension": "keep" } ] }
+            ] }
+            """)!.AsObject();
+        var rows = document["workspaces"]!.AsArray();
+        var expected = rows[1]!.DeepClone().AsObject();
+        var originalView = expected.DeepClone().AsObject();
+        originalView.Remove("extra");
+        originalView["applications"]![0]!.AsObject().Remove("extension");
+        var edited = originalView.DeepClone().AsObject();
+        edited["name"] = "Second, edited";
+        edited["applications"]![0]!["command-line-arguments"] = "--profile=work";
+
+        // While B is open in the editor, native launchers update both rows, and another
+        // writer adds an entry the editor could not deserialize.
+        rows[0]!["applications"]![0]!["application-path"] = "first-updated.exe";
+        rows[0]!["applications"]![0]!["id"] = Guid.NewGuid().ToString("B");
+        rows[0]!["applications"]![0]!["package-full-name"] = "updated-package";
+        rows[1]!["last-launched-time"] = 20;
+        rows[1]!["applications"]![0]!["application-path"] = "second-updated.exe";
+        rows.Insert(0, JsonNode.Parse("""{ "future-format": [1, 2] }"""));
+        File.WriteAllText(file, document.ToJsonString());
+
+        IOUtils.WriteWorkspaceChange(file, expected, originalView, edited);
+
+        var saved = JsonNode.Parse(File.ReadAllText(file))!;
+        Assert.IsTrue(JsonNode.DeepEquals(document["extension"], saved["extension"]));
+        var savedRows = saved["workspaces"]!.AsArray();
+        Assert.AreEqual(3, savedRows.Count);
+        Assert.IsTrue(JsonNode.DeepEquals(rows[0], savedRows[0]));
+        Assert.IsTrue(JsonNode.DeepEquals(rows[1], savedRows[1]));
+        Assert.AreEqual("Second, edited", savedRows[2]!["name"]!.GetValue<string>());
+        Assert.AreEqual(20L, savedRows[2]!["last-launched-time"]!.GetValue<long>());
+        Assert.IsTrue(savedRows[2]!["extra"]!.GetValue<bool>());
+        var app = savedRows[2]!["applications"]![0]!;
+        Assert.AreEqual("second-updated.exe", app["application-path"]!.GetValue<string>());
+        Assert.AreEqual("--profile=work", app["command-line-arguments"]!.GetValue<string>());
+        Assert.AreEqual("keep", app["extension"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void EditedLegacyApplicationKeepsTheIdAssignedByTheLauncher()
+    {
+        var expected = JsonNode.Parse("""{ "id": "A", "applications": [ { "application-path": "before.exe" } ] }""")!.AsObject();
+        var originalView = expected.DeepClone().AsObject();
+        originalView["applications"]![0]!["id"] = Guid.NewGuid().ToString("B");
+        var edited = originalView.DeepClone().AsObject();
+        edited["applications"]![0]!["command-line-arguments"] = "--edited";
+        var initialized = expected.DeepClone();
+        string nativeId = Guid.NewGuid().ToString("B");
+        initialized["applications"]![0]!["id"] = nativeId;
+        File.WriteAllText(file, new JsonObject { ["workspaces"] = new JsonArray(initialized) }.ToJsonString());
+
+        var saved = IOUtils.WriteWorkspaceChange(file, expected, originalView, edited);
+
+        Assert.AreEqual(nativeId, saved["applications"]![0]!["id"]!.GetValue<string>());
+        Assert.AreEqual("--edited", saved["applications"]![0]!["command-line-arguments"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void DisplaySortingAndRecaptureKeepExtensionsOnTheCorrectMonitor()
+    {
+        const string monitors = "monitor-configuration";
+        var stored = JsonNode.Parse("""
+            { "id": "A", "name": "Original", "applications": [], "monitor-configuration": [
+                { "instance-id": "shared", "id": "model", "monitor-number": 2, "dpi": 96, "extension": "right" },
+                { "instance-id": "shared", "id": "model", "monitor-number": 1, "dpi": 96, "extension": "left" },
+                { "instance-id": "distinct", "id": "model", "monitor-number": 3, "dpi": 96, "extension": "projector" }
+            ] }
+            """)!.AsObject();
+        IOUtils.WriteWorkspaceChange(file, null, null, stored);
+        var originalView = stored.DeepClone().AsObject();
+        foreach (var monitor in originalView[monitors]!.AsArray())
+        {
+            monitor!.AsObject().Remove("extension");
+        }
+
+        var sorted = originalView.DeepClone().AsObject();
+        sorted["name"] = "Renamed";
+        var ordered = sorted[monitors]!.AsArray();
+        var right = ordered[0];
+        ordered.RemoveAt(0);
+        ordered.Insert(1, right);
+        var renamed = IOUtils.WriteWorkspaceChange(file, stored, originalView, sorted);
+        Assert.IsTrue(JsonNode.DeepEquals(stored[monitors], renamed[monitors]), "A name-only save must preserve the raw monitor array, including its order.");
+
+        // The editor model is now sorted differently from the saved array. Recapture changes
+        // both identical-model displays and Windows assigns the distinct projector another number.
+        var recaptured = sorted.DeepClone().AsObject();
+        recaptured[monitors]![0]!["dpi"] = 144;
+        recaptured[monitors]![1]!["dpi"] = 192;
+        recaptured[monitors]![2]!["monitor-number"] = 4;
+        IOUtils.WriteWorkspaceChange(file, renamed, sorted, recaptured);
+        var saved = JsonNode.Parse(File.ReadAllText(file))!["workspaces"]![0]![monitors]!.AsArray();
+        Assert.AreEqual(1, saved[0]!["monitor-number"]!.GetValue<int>());
+        Assert.AreEqual(144, saved[0]!["dpi"]!.GetValue<int>());
+        Assert.AreEqual("left", saved[0]!["extension"]!.GetValue<string>());
+        Assert.AreEqual(2, saved[1]!["monitor-number"]!.GetValue<int>());
+        Assert.AreEqual(192, saved[1]!["dpi"]!.GetValue<int>());
+        Assert.AreEqual("right", saved[1]!["extension"]!.GetValue<string>());
+        Assert.AreEqual(4, saved[2]!["monitor-number"]!.GetValue<int>());
+        Assert.AreEqual("projector", saved[2]!["extension"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void SavingAnOtherwiseUnchangedRowPersistsRepairedLegacyIds()
+    {
+        var duplicate = Guid.NewGuid().ToString("D");
+        var apps = new JsonArray(new JsonObject { ["id"] = duplicate }, new JsonObject { ["id"] = duplicate });
+        var expected = new JsonObject { ["id"] = "A", ["applications"] = apps };
+        var repaired = expected.DeepClone().AsObject();
+        repaired["applications"]![0]!["id"] = Guid.Parse(duplicate).ToString("B");
+        repaired["applications"]![1]!["id"] = Guid.NewGuid().ToString("B");
+        IOUtils.WriteWorkspaceChange(file, null, null, expected);
+
+        IOUtils.WriteWorkspaceChange(file, expected, repaired, repaired);
+
+        Assert.IsTrue(JsonNode.DeepEquals(repaired, JsonNode.Parse(File.ReadAllText(file))!["workspaces"]![0]));
+    }
+
+    [TestMethod]
+    public void StaleUpdatesAndDeletesNeverOverwriteAnotherEditorsChanges()
+    {
+        var expected = JsonNode.Parse("""{ "id": "A", "name": "Original", "applications": [] }""")!.AsObject();
+        var edited = expected.DeepClone().AsObject();
+        edited["name"] = "My edit";
+        var current = expected.DeepClone().AsObject();
+        current["name"] = "Someone else's edit";
+        IOUtils.WriteWorkspaceChange(file, null, null, current);
+        var before = File.ReadAllBytes(file);
+
+        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, edited));
+        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, null));
+        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, null, null, edited));
+        CollectionAssert.AreEqual(before, File.ReadAllBytes(file));
+
+        IOUtils.WriteWorkspaceChange(file, current, current, null);
+        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, edited));
+        Assert.IsEmpty(JsonNode.Parse(File.ReadAllText(file))!["workspaces"]!.AsArray());
+    }
+
+    [TestMethod]
+    public void ConcurrentChangesToDifferentWorkspacesBothSurvive()
+    {
+        var first = JsonNode.Parse("""{ "id": "A", "name": "First", "applications": [] }""")!.AsObject();
+        var second = JsonNode.Parse("""{ "id": "B", "name": "Second", "applications": [] }""")!.AsObject();
+        IOUtils.WriteWorkspaceChange(file, null, null, first);
+        IOUtils.WriteWorkspaceChange(file, null, null, second);
+        var renamed = second.DeepClone().AsObject();
+        renamed["name"] = "Renamed";
+        Parallel.Invoke(
+            () => IOUtils.WriteWorkspaceChange(file, first, first, null),
+            () => IOUtils.WriteWorkspaceChange(file, second, second, renamed));
+
+        var rows = JsonNode.Parse(File.ReadAllText(file))!["workspaces"]!.AsArray();
+        Assert.AreEqual(1, rows.Count);
+        Assert.IsTrue(JsonNode.DeepEquals(renamed, rows[0]));
+    }
+
+    [TestMethod]
     public async Task ReplacementWaitsForTransientReaderWithoutDeleteSharing()
     {
         const string original = """{"workspaces":[]}""";
