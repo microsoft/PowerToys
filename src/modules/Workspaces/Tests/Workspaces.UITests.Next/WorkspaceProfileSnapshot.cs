@@ -124,11 +124,8 @@ namespace Microsoft.Workspaces.UITests
                     RequireRegularFileOrMissing(path);
                     if (entries.TryGetValue(name, out var entry))
                     {
-                        WriteAtomically(path, destination =>
-                        {
-                            using var source = entry.Open();
-                            source.CopyTo(destination);
-                        }, overwrite: true);
+                        using var source = entry.Open();
+                        WriteAtomically(path, source.CopyTo, overwrite: true);
                     }
                     else
                     {

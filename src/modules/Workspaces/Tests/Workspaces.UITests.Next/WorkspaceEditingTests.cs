@@ -18,14 +18,21 @@ namespace Microsoft.Workspaces.UITests
             var original = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
             OpenEditor();
             AssertWorkspaceNames(names);
-            Search("aTlAs");
+
+            // Correct a typo through the keyboard so the AutoSuggestBox receives a real text edit.
+            Search("aTlAsx");
+            var searchInput = SearchInput();
+            Editor.EnsureForeground();
+            searchInput.Focus();
+            Assert.IsTrue(searchInput.WaitForProperty("HasKeyboardFocus", "True", 5_000), "The search input did not receive keyboard focus.");
+            KeyboardHelper.SendChord(Key.End);
+            KeyboardHelper.SendChord(Key.Backspace);
+            Assert.IsTrue(searchInput.WaitForValue("aTlAs"), "Correcting the query should update the search input.");
             AssertWorkspaceNames(names);
             WaitForSearchSuggestions(names[0]);
-            var searchInput = SearchInput();
-            searchInput.Focus();
-            KeyboardHelper.SendKeys(Key.Down);
-            Assert.IsTrue(searchInput.WaitForValue(names[0]), "Down should fill the search input with the selected workspace name.");
-            KeyboardHelper.SendKeys(Key.Enter);
+            KeyboardHelper.SendChord(Key.Down);
+            Assert.IsTrue(searchInput.WaitForValue(names[0]), $"Down should fill the selected workspace name. Observed '{searchInput.Value}'.");
+            KeyboardHelper.SendChord(Key.Enter);
             Assert.IsTrue(
                 Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(names[0], timeoutMS: 10_000),
                 "Enter should open the selected workspace for editing.");
