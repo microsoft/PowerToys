@@ -34,6 +34,17 @@ Tip: Add `D:\PowerToys\tools\build` to your PATH to use the wrappers anywhere.
    - Example:
      - `./tools/build/build-installer.ps1 -Platform x64 -Configuration Release -PerUser true -InstallerSuffix wix5`
 
+4) `run-module.ps1` (from any folder, locates the repo from the script path)
+   - Builds one or more modules' projects (tests skipped unless `-IncludeTests`), the runner
+     if needed and the dev layout, then launches the runner.
+   - Auto-detects Platform; initializes VS Dev environment automatically.
+   - Use it instead of a full-solution build when working on a single module.
+   - Key options: `-Module <name>[,<name>...]`, `-Configuration Debug|Release`, `-NoLaunch`, `-IncludeTests`.
+   - Examples:
+     - `./tools/build/run-module.ps1 -Module peek`
+     - `./tools/build/run-module.ps1 -Module peek -Configuration Release -NoLaunch`
+     - `./tools/build/run-module.ps1 -Module peek,poweraccent`
+
 ## Logs and troubleshooting
 - On failure, see logs in `artifacts\logs\<project>\` at the root of the repo/worktree that contains the project being built (the first parent folder with `PowerToys.slnx`, even when the `tools\build` scripts come from another clone on PATH), where `<project>` is the solution/project file name without its extension:
   - `build.<configuration>.<platform>.all.log` — full text log
