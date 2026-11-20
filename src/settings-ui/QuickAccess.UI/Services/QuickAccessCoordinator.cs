@@ -15,7 +15,7 @@ namespace Microsoft.PowerToys.QuickAccess.Services;
 
 internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposable
 {
-    private readonly MainWindow _window;
+    private readonly Action _hideFlyout;
     private readonly QuickAccessLaunchContext _launchContext;
     private readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private readonly object _generalSettingsLock = new();
@@ -23,9 +23,9 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
     private TwoWayPipeMessageIPCManaged? _ipcManager;
     private bool _ipcUnavailableLogged;
 
-    public QuickAccessCoordinator(MainWindow window, QuickAccessLaunchContext launchContext)
+    public QuickAccessCoordinator(QuickAccessLaunchContext launchContext, Action hideFlyout)
     {
-        _window = window;
+        _hideFlyout = hideFlyout;
         _launchContext = launchContext;
         InitializeIpc();
     }
@@ -34,19 +34,19 @@ internal sealed class QuickAccessCoordinator : IQuickAccessCoordinator, IDisposa
 
     public void HideFlyout()
     {
-        _window.RequestHide();
+        _hideFlyout();
     }
 
     public void OpenSettings()
     {
         SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Dashboard);
-        _window.RequestHide();
+        _hideFlyout();
     }
 
     public void OpenGeneralSettingsForUpdates()
     {
         SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Overview);
-        _window.RequestHide();
+        _hideFlyout();
     }
 
     public Task<bool> ShowDocumentationAsync()
