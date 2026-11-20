@@ -21,6 +21,7 @@ public sealed class SettingsLinkResolver : ISettingsLinkResolver
         CreateTarget(SettingsLinkIds.General.RecentItems, SettingsPageTags.General, "recent-items-section"),
         CreateTarget(SettingsLinkIds.General.AppBehavior, SettingsPageTags.General, "behavior-section"),
         CreateTarget(SettingsLinkIds.General.SystemTrayIcon, SettingsPageTags.General, "system-tray-icon"),
+        CreateTarget(SettingsLinkIds.General.TrayIconClickAction, SettingsPageTags.General, "tray-icon-click-action"),
         CreateTarget(SettingsLinkIds.General.AltF4, SettingsPageTags.General, "alt-f4"),
         CreateTarget(SettingsLinkIds.General.Language, SettingsPageTags.General, "language"),
         CreateTarget(SettingsLinkIds.General.ExternalLinks, SettingsPageTags.General, "external-links-section"),

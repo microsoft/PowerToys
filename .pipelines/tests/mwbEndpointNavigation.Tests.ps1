@@ -3,7 +3,7 @@
 # See the LICENSE file in the project root for more information.
 
 $payloadRoot = Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Payload'
-function Invoke-GuestUi { param([string[]]$Arguments, [int]$TimeoutSeconds) }
+function Invoke-GuestUi { param([string[]]$Arguments, [int]$TimeoutSeconds, [switch]$AllowWaitTimeout) }
 function Request-SettingsMaximize {}
 function Get-SettingsWindowLayout {}
 function Write-RunJson { param($Path, $Value) }
@@ -18,7 +18,7 @@ Describe 'MWB owned Settings readiness' {
         $ast = [Management.Automation.Language.Parser]::ParseFile(
             (Join-Path $payloadRoot 'EndpointSupport.ps1'), [ref]$tokens, [ref]$errors)
         if ($errors.Count) { throw 'Endpoint support contains parse errors.' }
-        foreach ($name in @('Wait-GuestMwbControl', 'Set-SettingsWindowMaximized', 'Connect-Guest')) {
+        foreach ($name in @('Test-GuestUiWaitTimeout', 'Wait-GuestMwbControl', 'Set-SettingsWindowMaximized', 'Connect-Guest')) {
             $definition = $ast.Find({
                 param($node)
                 $node -is [Management.Automation.Language.FunctionDefinitionAst] -and $node.Name -ceq $name
@@ -37,6 +37,11 @@ Describe 'MWB owned Settings readiness' {
         $script:wrongResult = $null
         $script:lostWindow = $false
         $script:published = $null
+        $script:revealClicks = 0
+        $script:ignoreRevealClicks = 0
+        $script:hideRevealButton = $false
+        $script:revealCompletesAfterProbe = $false
+        $script:keyProbes = 0
         Mock Start-Sleep {}
         Mock Request-SettingsMaximize {}
         Mock Get-SettingsWindowLayout {
@@ -50,14 +55,29 @@ Describe 'MWB owned Settings readiness' {
         }
         Mock Write-RunJson { param($Path, $Value) $script:published = $Value }
         Mock Invoke-GuestUi {
-            param($Arguments)
+            param($Arguments, $AllowWaitTimeout)
             $script:actions.Add("$($Arguments[0]):$($Arguments[1])")
             if ($Arguments[1] -eq $script:failControl) { throw [TimeoutException]::new('Owned control readiness failed') }
             if ($null -ne $script:wrongResult) { return $script:wrongResult }
+            if ($Arguments[0] -eq 'click' -and $Arguments[1] -eq 'MouseWithoutBordersShowConnectFieldsButton') {
+                $script:revealClicks++
+            }
             if ($Arguments[0] -eq 'wait-for') {
+                if ($Arguments[1] -eq 'ConnectSecurityKeyTextBox') {
+                    $script:keyProbes++
+                    $ready = $script:revealClicks -gt $script:ignoreRevealClicks -or
+                        ($script:revealCompletesAfterProbe -and $script:keyProbes -gt 1)
+                    if (-not $ready) {
+                        if (-not $AllowWaitTimeout) { throw 'Connect fields did not become ready' }
+                        return [pscustomobject]@{ found = $false; timedOut = $true; waitedMs = [int]$Arguments[3] }
+                    }
+                }
                 return [pscustomobject]@{
                     found = $true
-                    element = [pscustomobject]@{ automationId = $Arguments[1]; isEnabled = $true }
+                    element = [pscustomobject]@{
+                        automationId = $Arguments[1]; isEnabled = $true
+                        isOffscreen = $script:hideRevealButton -and $script:keyProbes -gt 0
+                    }
                 }
             }
         }
@@ -134,10 +154,57 @@ Describe 'MWB owned Settings readiness' {
         Assert-MockCalled Wait-GuestConnectAcknowledgement -Times 0 -Exactly -Scope It
     }
 
-    It 'retains the ninety-second per-command readiness ceiling without whole-window lookups' {
+    It 'repeats only a still-visible reveal command after an explicitly unacknowledged click' {
+        $script:ignoreRevealClicks = 1
+        (Connect-Guest 'private-fixture-key' 'PEER').Acknowledged | Should Be $true
+        $script:revealClicks | Should Be 2
+        Assert-MockCalled Invoke-GuestUi -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'invoke' -and $Arguments[1] -eq 'MouseWithoutBordersConnectButton'
+        }
+        Assert-MockCalled Write-RunJson -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Path -like '*connect-field-readiness.json' -and $Value.RepeatedReveal -eq $true
+        }
+    }
+
+    It 'does not replay a hidden reveal button while the fields finish becoming ready' {
+        $script:ignoreRevealClicks = 1
+        $script:hideRevealButton = $true
+        $script:revealCompletesAfterProbe = $true
+        (Connect-Guest 'private-fixture-key' 'PEER').Acknowledged | Should Be $true
+        $script:revealClicks | Should Be 1
+        Assert-MockCalled Write-RunJson -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Path -like '*connect-field-readiness.json' -and $Value.RepeatedReveal -eq $false
+        }
+    }
+
+    It 'fails closed when the bounded reveal recovery does not expose the real fields' {
+        $script:ignoreRevealClicks = 2
+        { Connect-Guest 'private-fixture-key' 'PEER' } | Should Throw 'did not become ready'
+        $script:revealClicks | Should Be 2
+        Assert-MockCalled Invoke-GuestUi -Times 0 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'set-value' -or $Arguments[1] -eq 'MouseWithoutBordersConnectButton'
+        }
+    }
+
+    It 'does not treat a failed or hung UI command as a completed negative readiness observation' {
+        $script:failControl = 'ConnectSecurityKeyTextBox'
+        { Connect-Guest 'private-fixture-key' 'PEER' } | Should Throw 'readiness failed'
+        $script:revealClicks | Should Be 1
+        Assert-MockCalled Wait-GuestConnectAcknowledgement -Times 0 -Exactly -Scope It
+    }
+
+    It 'keeps normal readiness at ninety seconds and uses a short bounded reveal observation' {
         Connect-Guest 'private-fixture-key' 'PEER'
-        Assert-MockCalled Invoke-GuestUi -Times 3 -Exactly -Scope It -ParameterFilter {
+        Assert-MockCalled Invoke-GuestUi -Times 2 -Exactly -Scope It -ParameterFilter {
             $Arguments[0] -eq 'wait-for' -and $Arguments[3] -eq '90000'
+        }
+        Assert-MockCalled Invoke-GuestUi -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'wait-for' -and $Arguments[1] -eq 'ConnectSecurityKeyTextBox' -and
+                $Arguments[3] -eq '10000' -and $AllowWaitTimeout -and $Arguments[-2] -eq '--type' -and $Arguments[-1] -eq 'Edit'
+        }
+        Assert-MockCalled Invoke-GuestUi -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Arguments[0] -eq 'wait-for' -and $Arguments[1] -eq 'MouseWithoutBordersShowConnectFieldsButton' -and
+                $Arguments[-2] -eq '--type' -and $Arguments[-1] -eq 'Button'
         }
         Assert-MockCalled Invoke-GuestUi -Times 0 -Exactly -Scope It -ParameterFilter {
             $Arguments[0] -eq 'search' -or $Arguments[0] -eq 'inspect'
@@ -209,12 +276,14 @@ Describe 'MWB owned Settings readiness' {
         $wrapper | Should Match 'Start-LocalVm.ps1[\s\S]*-ResourceProfile \$ResourceProfile -Wait'
     }
 
-    It 'awaits the guest cleanup and abort-test viewer independently without relaxing fault assertions' {
+    It 'preserves guest cleanup and aborts at owned creation without relaxing fault assertions' {
         $root = Split-Path $payloadRoot
         $fixture = Get-Content -LiteralPath (Join-Path $root 'TwoEndpointFixture.cs') -Raw
         $fixture | Should Match 'guest.Request\("StopPeers", timeoutSeconds: SandboxTimeouts.GuestStopRequestSeconds\)'
         $recovery = Get-Content -LiteralPath (Join-Path $root 'RecoveryTests.cs') -Raw
-        $recovery | Should Match 'SandboxTimeouts.LegacyViewerStart'
+        $recovery | Should Match 'legacy.Discover\(\);'
+        $recovery | Should Match 'identity.Any\(record => record.IsCurrent\(\)\)'
+        $recovery | Should Not Match 'SandboxTimeouts.LegacyViewerStart'
         $recovery | Should Match 'Assert.ThrowsExactly<RecoveryBoundaryException>'
         $recovery | Should Match 'Assert.IsTrue\(refusalObserved && ownedIdentityPreserved\)'
         $recovery | Should Match 'Assert.IsFalse\(owned.GuestAcknowledged'

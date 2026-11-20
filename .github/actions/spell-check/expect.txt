@@ -218,6 +218,7 @@ CHILDWINDOW
 CHOOSEFONT
 chu
 CIBUILD
+cifhbcnohmdccbgoicgdjpfamggdegmo
 cidl
 CIELCh
 cim
@@ -337,6 +338,7 @@ cursorwrap
 customaction
 CUSTOMACTIONTEST
 CUSTOMFORMATPLACEHOLDER
+cw5n1h2txyewy
 cvd
 CWMO
 CXSCREEN
@@ -420,6 +422,7 @@ dfx
 DIALOGEX
 diffs
 digicert
+dimm
 DINORMAL
 DISABLEASACTIONKEY
 DISABLENOSCROLL
@@ -572,6 +575,7 @@ fffffffzzz
 FFh
 Figma
 figma
+fmgjjmmmlfnkbppncijlocphclkkleod
 FILEEXPLORER
 fileexploreraddons
 fileexplorerpreview
@@ -701,6 +705,7 @@ HCRYPTPROV
 hcursor
 hcwhite
 hdc
+hdd
 HDEVNOTIFY
 hdmi
 hdr
@@ -825,6 +830,7 @@ imagingdevices
 ime
 IMEAceept
 imgflip
+immersivecontrolpanel
 inapp
 inbox
 INCONTACT
@@ -1291,6 +1297,7 @@ NULLCURSOR
 nullonfailure
 nullref
 numberbox
+nvme
 nwc
 ocr
 Ocrsettings
@@ -1628,6 +1635,7 @@ rollups
 ROUNDSMALL
 rpcrt
 RRF
+rsmb
 rsop
 Rsp
 rstringalnum
@@ -1786,6 +1794,7 @@ SMTO
 SNAPPROCESS
 snk
 snwprintf
+sodimm
 softline
 softpub
 SOURCECLIENTAREAONLY
@@ -1983,6 +1992,7 @@ tstoi
 tsv
 tweakable
 TWF
+txyewy
 tymed
 TYPEKEYBOARD
 TYPEMOUSE
@@ -2129,6 +2139,7 @@ wcsicmp
 wcsncpy
 wcsnicmp
 WDA
+wdk
 wdm
 wdp
 wdupenv

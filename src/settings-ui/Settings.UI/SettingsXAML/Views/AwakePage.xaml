@@ -94,16 +94,16 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
-                        x:Uid="Awake_DisplaySettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
-                        IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
-                    </tkcontrols:SettingsCard>
-
-                    <tkcontrols:SettingsCard
                         x:Uid="ShowThemeAdaptiveTrayIcon"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="Awake_AllowDisplayOffWhileLockedSettingsCard"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE72E;}"
+                        IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.AllowDisplayOffWhileLocked, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>

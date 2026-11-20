@@ -45,6 +45,8 @@ namespace Awake.Core
 
         private static bool IsScreenLocked { get; set; }
 
+        private static bool AllowDisplayOffWhileLocked { get; set; } = true;
+
         private static uint TimeRemaining { get; set; }
 
         private static string ScreenStateString => IsDisplayOn ? Resources.AWAKE_SCREEN_ON : Resources.AWAKE_SCREEN_OFF;
@@ -158,7 +160,15 @@ namespace Awake.Core
 
         private static ExecutionState ComputeAwakeState(bool keepDisplayOn)
         {
-            return AwakeStateCalculator.ComputeAwakeState(keepDisplayOn, IsScreenLocked);
+            return AwakeStateCalculator.ComputeAwakeState(keepDisplayOn, IsScreenLocked, AllowDisplayOffWhileLocked);
+        }
+
+        internal static void SetAllowDisplayOffWhileLocked(bool value)
+        {
+            lock (StateLock)
+            {
+                AllowDisplayOffWhileLocked = value;
+            }
         }
 
         /// <summary>
@@ -600,6 +610,26 @@ namespace Awake.Core
                 {
                     Logger.LogError($"Failed to handle display setting command: {ex.Message}");
                 }
+            }
+        }
+
+        internal static void ToggleAllowDisplayOffWhileLocked([CallerMemberName] string callerName = "")
+        {
+            Logger.LogInfo($"Toggling lock display policy. Invoked by {callerName}.");
+            if (!IsUsingPowerToysConfig)
+            {
+                return;
+            }
+
+            try
+            {
+                AwakeSettings currentSettings = ModuleSettings!.GetSettings<AwakeSettings>(Constants.AppName) ?? new AwakeSettings();
+                currentSettings.Properties.AllowDisplayOffWhileLocked = !currentSettings.Properties.AllowDisplayOffWhileLocked;
+                ModuleSettings!.SaveSettings(JsonSerializer.Serialize(currentSettings), Constants.AppName);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"Failed to toggle lock display policy: {ex.Message}");
             }
         }
 

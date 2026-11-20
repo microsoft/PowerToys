@@ -147,7 +147,7 @@ Describe 'Virtual HID suite selection' {
         $root = Join-Path $TestDrive 'dispatch'
         New-Item (Join-Path $root '.pipelines') -ItemType Directory -Force | Out-Null
         @'
-param($TestExecutable, $ResultsDirectory, $Filter)
+param($TestExecutable, $ResultsDirectory, $Filter, [ref]$DesktopWorkerUnconfirmed)
 $global:umdfDispatchFilter = $Filter
 $global:LASTEXITCODE = 0
 '@ | Set-Content (Join-Path $root '.pipelines\runUiTestAsUser.ps1')
@@ -156,6 +156,7 @@ $global:LASTEXITCODE = 0
         $resultsDir = Join-Path $root 'results'
         $base = 'PowerDisplay.UITests'
         $nonElevatedSuites = @($base)
+        $desktopWorkerUnconfirmed = $false
         $testFilter = (Get-UmdfHidUiTestSelection -Modules $base -FixtureModule $base -Platform ARM64).Filter
         $originalExit = $global:LASTEXITCODE
         try {

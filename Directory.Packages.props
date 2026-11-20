@@ -13,7 +13,6 @@
     <PackageVersion Include="boost" Version="1.87.0" TargetFramework="native" />
     <PackageVersion Include="CommunityToolkit.Labs.WinUI.Controls.OpacityMaskView" Version="0.1.261027-build.2704" />
     <PackageVersion Include="Microsoft.Bot.AdaptiveExpressions.Core" Version="4.23.1" />
-    <PackageVersion Include="Appium.WebDriver" Version="4.4.5" />
     <PackageVersion Include="CommunityToolkit.Common" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageVersion Include="CommunityToolkit.WinUI.Animations" Version="8.2.251219" />
@@ -68,18 +67,22 @@
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="Microsoft.WindowsPackageManager.ComInterop" Version="1.10.340" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="0.3.269" />
-    <!-- CsWinRT version needs to be set to have a WinRT.Runtime.dll at the same version contained inside the NET SDK we're currently building on CI. -->
+    <!--
+      CsWinRT must ship the same WinRT.Runtime.dll version as the Microsoft.Windows.SDK.NET.Ref pack selected by WindowsSdkPackageVersion in src\Common.Dotnet.props.
+      Class-library deps.json files list both copies, and .pipelines\verifyDepsJsonLibraryVersions.ps1 fails the build when their versions differ.
+    -->
     <!-- 
       TODO: in Common.Dotnet.CsWinRT.props, on upgrade, verify RemoveCsWinRTPackageAnalyzer is no longer needed.  
       This is present due to a bug in CsWinRT where WPF projects cause the analyzer to fail.
 	-->
-    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <PackageVersion Include="Microsoft.Windows.CsWinRT" Version="2.3.1" />
     <PackageVersion Include="Microsoft.Windows.ImplementationLibrary" Version="1.0.260126.7" />
     <PackageVersion Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9169" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.6.4" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.6.4" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.6.4" />
-    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.6.4" />
+    <PackageVersion Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.251221100" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.6.5" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Foundation" Version="2.6.5" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.AI" Version="2.6.5" />
+    <PackageVersion Include="Microsoft.WindowsAppSDK.Runtime" Version="2.6.5" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.WinUI.Managed" Version="2.0.9" />
     <PackageVersion Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
     <PackageVersion Include="ModernWpfUI" Version="0.9.4" />
@@ -117,18 +120,12 @@
     <PackageVersion Include="System.IO.Abstractions" Version="22.0.13" />
     <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="22.0.13" />
     <PackageVersion Include="System.Management" Version="$(DotNetRuntimePackageVersion)" />
-    <!-- Security pin (CVE-2018-8292): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
-    <PackageVersion Include="System.Net.Http" Version="4.3.4" />
     <PackageVersion Include="System.Numerics.Tensors" Version="10.0.2" />
-    <!-- Security pin (CVE-2019-0657, CVE-2019-0980, CVE-2019-0981): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
-    <PackageVersion Include="System.Private.Uri" Version="4.3.2" />
     <PackageVersion Include="System.Reactive" Version="6.0.1" />
     <PackageVersion Include="System.Runtime.Caching" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Text.Encoding.CodePages" Version="$(DotNetRuntimePackageVersion)" />
     <PackageVersion Include="System.Text.Json" Version="$(DotNetRuntimePackageVersion)" />
-    <!-- Security pin (CVE-2019-0820): UI tests pull 4.3.0 via Appium -> Castle.Core when package pruning is off (VS 2022). -->
-    <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
     <PackageVersion Include="ToolGood.Words.Pinyin" Version="3.1.0.3" />
     <PackageVersion Include="UnitsNet" Version="5.56.0" />
     <PackageVersion Include="UTF.Unknown" Version="2.6.0" />

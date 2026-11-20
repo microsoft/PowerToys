@@ -46,13 +46,33 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: uiTestDiagnosticCohorts
+    type: object
+    default: []
+    displayName: "Diagnostic execution cohorts (fresh x64 builds only; empty for normal CI)"
   - name: umdfHidSmokeOnly
     type: boolean
     default: false
     displayName: "Experimental UMDF HID smoke only (no PowerToys build)"
-
+  # Scale UI tests out: number of parallel test agents (shards) per test platform, 1-6.
+  # 1 keeps the single job per platform. Suites are balanced via .pipelines\uiTestDurations.json.
+  - name: uiTestShardsX64Win10
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
+    displayName: "UI test shards: x64 Win10"
+  - name: uiTestShardsX64Win11
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
+    displayName: "UI test shards: x64 Win11"
+  - name: uiTestShardsArm64
+    type: number
+    default: 1
+    values: [1, 2, 3, 4, 5, 6]
+    displayName: "UI test shards: arm64"
 stages:
-  - ${{ if eq(parameters.umdfHidSmokeOnly, true) }}:
+  - ${{ if and(eq(parameters.umdfHidSmokeOnly, true), eq(length(parameters.uiTestDiagnosticCohorts), 0)) }}:
     - template: pipeline-umdf-hid-smoke.yml
       parameters:
         ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
@@ -61,11 +81,25 @@ stages:
           umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
         buildPlatforms: ${{ parameters.buildPlatforms }}
         uiTestModules: ${{ parameters.uiTestModules }}
-  - ${{ if eq(parameters.umdfHidSmokeOnly, false) }}:
+  - ${{ if or(eq(parameters.umdfHidSmokeOnly, false), gt(length(parameters.uiTestDiagnosticCohorts), 0)) }}:
     - ${{ each platform in parameters.buildPlatforms }}:
       # Full build path: buildNow runs the complete artifact in place; buildNowSlim
       # downloads and installs its installer. MWB requires one of these current-source paths.
-      - ${{ if or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim')) }}:
+      - ${{ if gt(length(parameters.uiTestDiagnosticCohorts), 0) }}:
+        - template: pipeline-ui-tests-diagnostic.yml
+          parameters:
+            platform: ${{ platform }}
+            buildSource: ${{ parameters.buildSource }}
+            enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+            useVSPreview: ${{ parameters.useVSPreview }}
+            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+            uiTestModules: ${{ parameters.uiTestModules }}
+            ${{ if eq(parameters.umdfHidSmokeOnly, true) }}:
+              executionMode: smokeOnly
+            ${{ else }}:
+              executionMode: fullProduct
+            cohorts: ${{ parameters.uiTestDiagnosticCohorts }}
+      - ${{ if and(eq(length(parameters.uiTestDiagnosticCohorts), 0), or(eq(parameters.buildSource, 'buildNow'), eq(parameters.buildSource, 'buildNowSlim'))) }}:
         - template: pipeline-ui-tests-full-build.yml
           parameters:
             ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
@@ -78,9 +112,12 @@ stages:
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             uiTestModules: ${{ parameters.uiTestModules }}
+            uiTestShardsX64Win10: ${{ parameters.uiTestShardsX64Win10 }}
+            uiTestShardsX64Win11: ${{ parameters.uiTestShardsX64Win11 }}
+            uiTestShardsArm64: ${{ parameters.uiTestShardsArm64 }}
 
       # Official build path: build UI tests only and download the selected official build.
-      - ${{ if and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim')) }}:
+      - ${{ if and(eq(length(parameters.uiTestDiagnosticCohorts), 0), and(ne(parameters.buildSource, 'buildNow'), ne(parameters.buildSource, 'buildNowSlim'))) }}:
         - template: pipeline-ui-tests-official-build.yml
           parameters:
             ${{ if eq(parameters.umdfHidArm64Image, 'disabled') }}:
@@ -92,3 +129,6 @@ stages:
             specificBuildId: ${{ parameters.specificBuildId }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             uiTestModules: ${{ parameters.uiTestModules }}
+            uiTestShardsX64Win10: ${{ parameters.uiTestShardsX64Win10 }}
+            uiTestShardsX64Win11: ${{ parameters.uiTestShardsX64Win11 }}
+            uiTestShardsArm64: ${{ parameters.uiTestShardsArm64 }}

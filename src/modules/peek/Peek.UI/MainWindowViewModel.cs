@@ -176,7 +176,7 @@ namespace Peek.UI
 
         private void InitializeFromCli(string path)
         {
-            InitializeFromCliPaths([path]);
+            InitializeFromCliPaths(new[] { path });
         }
 
         private void InitializeFromCliPaths(IReadOnlyList<string> paths)
