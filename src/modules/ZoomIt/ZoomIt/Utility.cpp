@@ -757,6 +757,39 @@ POINT ScalePointInRects( POINT point, const RECT& source, const RECT& target )
 
 //----------------------------------------------------------------------------
 //
+// IsAltGrCharacterHotkey
+//
+// Windows treats Ctrl+Alt as AltGr, so on layouts such as German or French
+// a Ctrl+Alt hotkey is the same keystroke as an AltGr character (AltGr+9
+// types ']' on German) and RegisterHotKey would swallow that character.
+//
+//----------------------------------------------------------------------------
+bool IsAltGrCharacterHotkey( UINT modifiers, UINT key, HKL layout )
+{
+    if( ( modifiers & ( MOD_CONTROL | MOD_ALT ) ) != ( MOD_CONTROL | MOD_ALT ) || ( modifiers & MOD_WIN ) )
+    {
+        return false;
+    }
+
+    BYTE keyState[256]{};
+    keyState[VK_CONTROL] = keyState[VK_LCONTROL] = 0x80;
+    keyState[VK_MENU] = keyState[VK_RMENU] = 0x80;
+    if( modifiers & MOD_SHIFT )
+    {
+        keyState[VK_SHIFT] = keyState[VK_LSHIFT] = 0x80;
+    }
+
+    // Flag 0x4 leaves the keyboard state untouched so a dead key is not left pending.
+    WCHAR chars[8]{};
+    const int count = ToUnicodeEx( key, MapVirtualKeyExW( key, MAPVK_VK_TO_VSC, layout ), keyState,
+                                   chars, ARRAYSIZE( chars ), 0x4, layout );
+
+    // A negative count is a dead key; control characters are not typed text.
+    return count < 0 || ( count > 0 && chars[0] >= L' ' );
+}
+
+//----------------------------------------------------------------------------
+//
 // ScaleDialogForDpi
 //
 // Scales a dialog and all its child controls for the specified DPI.

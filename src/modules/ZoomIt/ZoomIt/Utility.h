@@ -21,6 +21,9 @@ RECT RectFromPointsMinSize( POINT a, POINT b, LONG minSize );
 int ScaleForDpi( int value, UINT dpi );
 POINT ScalePointInRects( POINT point, const RECT& source, const RECT& target );
 
+// True when a Ctrl+Alt hotkey is the same keystroke as an AltGr character on the layout.
+bool IsAltGrCharacterHotkey( UINT modifiers, UINT key, HKL layout );
+
 // Dialog DPI scaling functions
 void ScaleDialogForDpi( HWND hDlg, UINT newDpi, UINT oldDpi = DPI_BASELINE );
 void ScaleChildControlsForDpi( HWND hParent, UINT newDpi, UINT oldDpi = DPI_BASELINE );
