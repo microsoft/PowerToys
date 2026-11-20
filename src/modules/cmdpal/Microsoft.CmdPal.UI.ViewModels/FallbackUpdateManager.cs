@@ -61,7 +61,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
         _onFallbackChanged = onFallbackChanged;
     }
 
-    internal void BeginUpdate(string query, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
+    internal void BeginUpdate(string query, string queryId, IReadOnlyList<TopLevelViewModel> commands, CancellationToken cancellationToken)
     {
         if (commands.Count == 0 || string.IsNullOrWhiteSpace(query))
         {
@@ -103,7 +103,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     var pendingCommand = command;
                     var pendingQuery = query;
                     var pendingCt = cancellationToken;
-                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, pendingCt, counter), pendingCt);
+                    counter.SetPending(() => RetryFallbackUpdate(pendingCommand, pendingQuery, queryId, pendingCt, counter), pendingCt);
                     continue;
                 }
 
@@ -138,7 +138,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
                     var sw = Stopwatch.StartNew();
                     Logger.LogDebug($"UpdateFallbacks: Worker: command id '{command.Id}', '{command.DisplayTitle}' updating with '{query}'");
 #endif
-                    changed = command.SafeUpdateFallbackTextSynchronous(query);
+                    changed = command.SafeUpdateFallbackTextSynchronous(query, queryId, cancellationToken);
 #if CMDPAL_FF_MAINPAGE_TIME_FALLBACK_UPDATES
                     var elapsed = sw.Elapsed;
                     var tail = elapsed > FallbackItemSlowTimeout ? " is slow" : string.Empty;
@@ -195,7 +195,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
 
         // One-shot retry for a command that was skipped due to MaxInflightPerFallback.
         // Claims a slot, runs the COM call, releases, and propagates the next pending (if any).
-        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, CancellationToken ct, InflightCounter ctr)
+        void RetryFallbackUpdate(TopLevelViewModel cmd, string q, string id, CancellationToken ct, InflightCounter ctr)
         {
             if (ct.IsCancellationRequested)
             {
@@ -212,7 +212,7 @@ internal sealed partial class FallbackUpdateManager : IDisposable
             var changed = false;
             try
             {
-                changed = cmd.SafeUpdateFallbackTextSynchronous(q);
+                changed = cmd.SafeUpdateFallbackTextSynchronous(q, id, ct);
             }
             catch (Exception ex)
             {
