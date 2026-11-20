@@ -36,6 +36,8 @@ public partial class PageViewModel : ExtensionObjectViewModel, IPageContext
 
     public bool IsLoading => ModelIsLoading || (!IsInitialized);
 
+    public virtual bool HasContent => true;
+
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLoading))]
     public virtual partial bool IsInitialized { get; protected set; }

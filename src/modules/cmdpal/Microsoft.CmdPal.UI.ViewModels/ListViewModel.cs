@@ -90,6 +90,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
         !IsFetching &&
         !IsLoading;
 
+    public override bool HasContent =>
+        !ShowEmptyContent ||
+        EmptyContent.Model.HasValue ||
+        !string.IsNullOrEmpty(ErrorMessage);
+
     public bool IsGridView { get; private set; }
 
     public IGridPropertiesViewModel? GridProperties { get; private set; }
@@ -1430,6 +1435,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null);
                 EmptyContent.SlowInitializeProperties();
+                UpdateProperty(nameof(HasContent));
                 break;
             case nameof(Filters):
                 Filters?.PropertyChanged -= FiltersPropertyChanged;
@@ -1447,7 +1453,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void UpdateEmptyContent()
     {
-        UpdateProperty(nameof(ShowEmptyContent));
+        UpdateProperty(nameof(ShowEmptyContent), nameof(HasContent));
         if (!ShowEmptyContent || EmptyContent.Model.Unsafe is null)
         {
             return;
