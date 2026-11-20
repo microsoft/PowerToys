@@ -18,11 +18,10 @@ namespace Microsoft.Workspaces.UITests
         private int applicationIndex;
         private WorkspacesDisplay.TargetDisplay? target;
 
-        internal WorkspaceTestState()
+        internal WorkspaceTestState(WorkspaceProfileSnapshot profile)
         {
-            Preserve(SettingsPath);
-            Preserve(WorkspacesPath);
-            Preserve(TemporaryPath);
+            profile.Isolate();
+            snapshots.Add(profile);
         }
 
         internal static string DirectoryPath => Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "Workspaces");
@@ -32,6 +31,8 @@ namespace Microsoft.Workspaces.UITests
         internal static string WorkspacesPath => Path.Combine(DirectoryPath, "workspaces.json");
 
         internal static string TemporaryPath => Path.Combine(DirectoryPath, "temp-workspaces.json");
+
+        internal static string WindowPlacementPath => Path.Combine(DirectoryPath, "editor-window.json");
 
         internal TestAppFixture Fixture { get; } = new();
 
@@ -74,10 +75,28 @@ namespace Microsoft.Workspaces.UITests
 
             // UITestBase has already journaled the global settings before this pre-launch hook.
             var globalPath = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "settings.json");
-            var global = ReadObject(globalPath);
-            global["enable_quick_access"] = true;
-            global["run_elevated"] = false;
-            File.WriteAllText(globalPath, global.ToJsonString());
+            const int sharingViolation = unchecked((int)0x80070020);
+            const int maxAttempts = 20;
+            for (var attempt = 1; attempt <= maxAttempts; attempt++)
+            {
+                try
+                {
+                    var global = ReadObject(globalPath);
+                    if (!JsonNode.DeepEquals(global["enable_quick_access"], true) || !JsonNode.DeepEquals(global["run_elevated"], false))
+                    {
+                        global["enable_quick_access"] = true;
+                        global["run_elevated"] = false;
+                        File.WriteAllText(globalPath, global.ToJsonString());
+                    }
+
+                    return;
+                }
+                catch (IOException error) when (error.HResult == sharingViolation && attempt < maxAttempts)
+                {
+                    // A settings reader can briefly deny writes. Read the current JSON again after it releases the file.
+                    Thread.Sleep(100);
+                }
+            }
         }
 
         internal void Reset()
@@ -129,7 +148,7 @@ namespace Microsoft.Workspaces.UITests
         {
             var name = $"{Prefix}-{suffix}";
             var id = Guid.NewGuid().ToString("B");
-            Preserve(Path.Combine(DirectoryPath, "WorkspacesIcons", id + ".ico"));
+            TrackProjectShortcutFiles(id);
             TrackShortcut(name);
             var display = Target;
             return new JsonObject
@@ -179,6 +198,15 @@ namespace Microsoft.Workspaces.UITests
         }
 
         internal void TrackShortcut(string name) => Preserve(ShortcutPath(name));
+
+        internal void TrackProjectShortcutFiles(string id)
+        {
+            // The icon uses the stored ID spelling. The ownership record uses the braced GUID.
+            var workspaceId = Guid.Parse(id);
+            var directory = Path.Combine(DirectoryPath, "WorkspacesIcons");
+            Preserve(Path.Combine(directory, id + ".ico"));
+            Preserve(Path.Combine(directory, $"{workspaceId:B}.links.json"));
+        }
 
         internal static string ShortcutPath(string name) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), name + ".lnk");
 

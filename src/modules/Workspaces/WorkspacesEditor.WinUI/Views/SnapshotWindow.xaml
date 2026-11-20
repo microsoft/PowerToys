@@ -53,6 +53,7 @@
                     x:Uid="SnapshotButton"
                     Grid.Column="0"
                     HorizontalAlignment="Stretch"
+                    AutomationProperties.AutomationId="SnapshotButton"
                     Click="SnapshotButtonClicked"
                     Style="{ThemeResource AccentButtonStyle}" />
                 <Button
@@ -60,6 +61,7 @@
                     x:Uid="SnapshotCancelButton"
                     Grid.Column="1"
                     HorizontalAlignment="Stretch"
+                    AutomationProperties.AutomationId="CancelButton"
                     Click="CancelButtonClicked" />
             </Grid>
         </Grid>

@@ -71,6 +71,7 @@ namespace Microsoft.Workspaces.UITests
         // RDP session), so the suite fails fast with guidance instead of a ~96s minimized-placement timeout.
         internal static TargetDisplay GetPrimaryTarget()
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
             var primary = MonitorInfo.GetPrimary()
                 ?? throw new InvalidOperationException(UnsupportedDesktopMessage("<none>"));
             var (number, id, instanceId) = ResolveNumberAndId(primary.DeviceName, EnumerateDevices(primary.DeviceName));
@@ -92,9 +93,19 @@ namespace Microsoft.Workspaces.UITests
                 primary.IsPrimary);
         }
 
+        internal static (int Number, string Id, string InstanceId, MonitorInfo.Monitor Bounds) GetCaptureMonitor(IntPtr window)
+        {
+            // Workspaces stores GetMonitorInfo's DPI-unaware monitor rectangle for a minimized window.
+            // Scaling a secondary monitor's physical origin can give a different result.
+            var monitor = PhysicalCoordinateScope.ReadDpiUnaware(() => MonitorInfo.GetFromWindow(window));
+            var (number, id, instanceId) = ResolveNumberAndId(monitor.DeviceName, EnumerateDevices(monitor.DeviceName));
+            return (number, id, instanceId, monitor);
+        }
+
         // Do not silently ignore an unresolvable display when choosing a genuinely absent monitor number.
         internal static IReadOnlyList<int> ConnectedMonitorNumbers()
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
             var numbers = new List<int>();
             foreach (var monitor in MonitorInfo.GetAll())
             {

@@ -8,8 +8,8 @@ using `Microsoft.PowerToys.UITest.Next` and the repository-pinned winappcli.
 The suite uses the real Settings/Runner scope with only Workspaces enabled.
 Runner and Settings are reused within the class; every case closes the previous
 editor/launcher/fixture processes and starts with independent workspace data.
-Settings, workspace storage, temporary snapshots, desktop shortcuts, and generated
-shortcut icons are journaled and restored after the owning processes stop.
+The suite reserves the Workspaces profile before starting Runner and restores its files
+after the owning processes stop. Desktop shortcuts and generated icons are tracked individually.
 Failure screenshots, recordings, product logs, editor UIA trees, and workspace
 JSON are collected before cleanup removes the diagnostic windows.
 
@@ -21,19 +21,47 @@ case opens the Runner-owned flyout through its show event, then invokes its
 Workspaces tile; it does not substitute direct editor activation for the tile.
 
 Saved-file assertions complement UI assertions rather than replacing them.
-Capture reads the native snapshot and compares fixture identity, package identity,
-window geometry, and minimized state. Launch cases observe actual fixture windows,
+Capture compares the native snapshot with each fixture's identity and geometry. Before
+minimizing a window, the test records its monitor from the HWND, using a secondary display
+when available. The unpackaged case runs independently of package signing. Launch cases observe actual fixture windows,
 their Workspaces placement stamp, geometry/state, received arguments, and process
-identity. Search checks exact inclusion and exclusion; sorting checks order and a
-real editor close/reopen. Preview tests compare composed pixels from the visible
+identity. Search checks the suggestion list and activates its chosen item in the popup's
+own window. Sorting sends one successful change, then verifies the saved order and
+the selection after reopening the editor. Preview tests compare composed pixels from the visible
 preview before/after editing and require removal/add-back to restore the original
 image. They do not use OS-specific golden screenshots or assert geometry on
 off-screen application rows.
 
-The product changes are automation identifiers only: the workspace-card container
-identity (its name, so a card stays addressable after the list re-projects its
-items), sort and window-position selectors, the preview image, and the launch
-progress/state indicators.
+The tests read every SettingsCard button with a workspace GUID from the editor's
+overview, including cards with default names. They accept an empty list once the
+overview displays its empty-state message. The mouse case scrolls a target card into
+the viewport, checks that the editor owns the point, and verifies that a click was sent.
+Editing uses the title-bar Back button or Escape, and deletion uses the
+editor's confirmation dialog. Application inclusion
+uses the separate Remove/Add back action, which remains enabled when application
+details are disabled. Preview and launcher state assertions use their explicit
+automation identifiers.
+
+After a fresh capture, both the existing workspace named `Workspace` and the new
+card must be present. Launch and Edit must open the fixture using its unsaved command-line
+arguments while keeping the saved workspace intact. The Revert test replaces a launched fixture window with a
+new one, checks its row in the editing page, then verifies that Revert restores
+the saved row and removes the newly captured row before Back or Escape returns
+to the list. Other migration cases cover name sorting and card identity after a
+rename, cleanup of old shortcuts, externally deleted shortcuts, and cancellation
+of deletion with unsaved edits.
+Closing the minimized editor during capture also requires its snapshot controls
+and overlays to exit without saving a workspace.
+Shortcut reactivation verifies the existing editor's native foreground and window
+state without the test restoring it, including restoration from minimized state
+while retaining its previous maximized size.
+Separate restart tests verify the editor's saved normal bounds and maximized
+state. The normal-bounds case reports Inconclusive when the primary work area
+cannot fit the editor's 750 × 680 effective-pixel minimum. The maximized case
+runs at every supported desktop size. Both cases reopen the editor without
+changing its state. Native coordinate operations use synchronous per-monitor DPI
+scopes so VSTest's host coordinates agree with UIA's physical pixels on scaled
+displays.
 
 ## Fixtures and prerequisites
 
@@ -92,14 +120,19 @@ Requirements for a host run:
   project does not rebuild Runner, Settings, or Workspaces Editor. Stale editor
   binaries can lack the automation identifiers used by the suite. When staging
   binaries elsewhere, keep the complete runtime/dependency set, including
-  `PowerToys.WorkspacesEditor.dll.config` and the launcher UI configuration;
-  copying a lone editor DLL is not a supported deployment.
+  the WinUI editor/launcher executables, their runtime configuration, resources,
+  and the shared `WinUI3Apps` dependencies.
 - **Do not touch the mouse or keyboard** while a case runs — the tests move the
   real cursor and rely on foreground ownership.
-- Settings, workspace storage, temporary snapshots, desktop shortcuts, and
-  generated icons are journaled before each run and restored afterwards, so a run
-  does not lose your existing Workspaces data. Cleanup stops only the fixture and
-  Workspaces module processes it owns, never unrelated apps.
+- The suite moves the original module settings, workspace list, editor placement, temporary
+  capture, and GUID-named requests into `%LOCALAPPDATA%\Microsoft\PowerToys\Workspaces.UITestRecovery\original`.
+  Moving the files preserves their original NTFS permissions, alternate data streams, attributes,
+  and modification times. Isolation and restoration hold the product's `workspaces.json.lock`.
+  The editor and launcher can acquire that lock during the tests.
+- After an interruption, the next run restores files already moved and keeps newer versions
+  that would be replaced in a dated `interrupted-*` directory. This also covers a request
+  that reuses a saved GUID. Pending `original.zip` backups from earlier versions are recovered.
+  Normal cleanup also restores the tracked desktop shortcuts and generated icons.
 
 The **unpackaged** placement/launch/cancel cases can use matching local Debug
 product builds without signing the fixture. The two **packaged** cases report
@@ -134,12 +167,12 @@ shared limited-token UI-test runner, not through an elevated test host.
 | 7 | Manual: capture a genuinely elevated app with elevated PowerToys |
 | 8 | `CaptureIncludesPackagedUnpackagedAndMinimizedWindows` saves and verifies the new list entry and stored application IDs |
 | 9 | `CancelCaptureLeavesWorkspaceListAndStorageUnchanged`; `CancellingCapturedWorkspaceDiscardsIt` |
-| 10 | `SearchFiltersByWorkspaceAndApplicationNames` |
+| 10 | `SearchSuggestsWorkspacesAndApplicationsAndOpensSelection` |
 | 11 | `SortOrderPersistsAcrossEditorRestart`, all three sort orders |
 | 12 | `SortOrderPersistsAcrossEditorRestart` |
 | 13 | `DeleteRemovesOnlyTheSelectedWorkspace` |
-| 14 | `WorkspaceCardAndEditMenuOpenEditingPage`, menu case |
-| 15 | `WorkspaceCardAndEditMenuOpenEditingPage`, card case |
+| 14 | `WorkspaceCardOpensEditingPageWithMouseAndKeyboard`, keyboard case (the WinUI card replaces the old Edit menu) |
+| 15 | `WorkspaceCardOpensEditingPageWithMouseAndKeyboard`, mouse case |
 | 16 | `RemoveAndAddBackUpdatePreviewAndSavedApplicationList` |
 | 17 | `RemoveAndAddBackUpdatePreviewAndSavedApplicationList` |
 | 18 | `WindowStateChangesUpdatePreviewAndPersist`, minimized case |
@@ -148,8 +181,8 @@ shared limited-token UI-test runner, not through an elevated test host.
 | 21 | `NameArgumentsAdminAndGeometryEditsPersist`; `CommandLineArgumentsReachUnpackagedAndPackagedApps` |
 | 22 | `NameArgumentsAdminAndGeometryEditsPersist` compares preview changes after changing all four position fields |
 | 23 | `NameArgumentsAdminAndGeometryEditsPersist` |
-| 24 | Save assertions throughout; `CancelAndBreadcrumbDiscardUnsavedEdits`; `CancellingCapturedWorkspaceDiscardsIt` |
-| 25 | `CancelAndBreadcrumbDiscardUnsavedEdits`, breadcrumb case |
+| 24 | Save assertions throughout; `BackAndEscapeDiscardUnsavedEdits`; `CancellingCapturedWorkspaceDiscardsIt` |
+| 25 | `BackAndEscapeDiscardUnsavedEdits`, title-bar Back case |
 | 26 | `DesktopShortcutTracksFilePresenceAndLaunchesWorkspace` |
 | 27 | `DesktopShortcutTracksFilePresenceAndLaunchesWorkspace`, including externally deleting the shortcut |
 | 28 | `LaunchAndEditCaptureAddsWindowsToTheExistingWorkspace` |
