@@ -4443,6 +4443,18 @@ Activate by holding the key for the character you want to add an accent to, then
     <value>Shell integration</value>
     <comment>This refers to directly integrating in with Windows</comment>
   </data>
+  <data name="FileLocksmith_EndTaskGroup.Header" xml:space="preserve">
+    <value>End task</value>
+    <comment>Header of the settings group for the End task button in the File Locksmith window. File Locksmith is the name of the utility.</comment>
+  </data>
+  <data name="FileLocksmith_ConfirmOnlyForOthers.Header" xml:space="preserve">
+    <value>Ask only for system and other users' processes</value>
+    <comment>Toggle. When on, File Locksmith asks for confirmation only before ending processes that belong to the system or to another user. File Locksmith is the name of the utility.</comment>
+  </data>
+  <data name="FileLocksmith_ConfirmOnlyForOthers.Description" xml:space="preserve">
+    <value>When off, File Locksmith asks before ending any process.</value>
+    <comment>Description of the toggle above. Explains what happens when it is off (the default). File Locksmith is the name of the utility.</comment>
+  </data>
   <data name="GPO_SettingIsManaged.Title" xml:space="preserve">
     <value>This setting is managed by your organization.</value>
   </data>

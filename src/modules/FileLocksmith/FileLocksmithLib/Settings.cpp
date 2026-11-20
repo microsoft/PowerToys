@@ -33,6 +33,7 @@ void FileLocksmithSettings::Save()
     json::JsonObject jsonData;
 
     jsonData.SetNamedValue(constants::nonlocalizable::JsonKeyShowInExtendedContextMenu, json::value(settings.showInExtendedContextMenu));
+    jsonData.SetNamedValue(constants::nonlocalizable::JsonKeyConfirmOnlyForOthers, json::value(settings.confirmOnlyForOthers));
 
     json::to_file(jsonFilePath, jsonData);
     GetSystemTimeAsFileTime(&lastLoadedTime);
@@ -98,6 +99,10 @@ void FileLocksmithSettings::ParseJson()
             if (json::has(jsonSettings, constants::nonlocalizable::JsonKeyShowInExtendedContextMenu, json::JsonValueType::Boolean))
             {
                 settings.showInExtendedContextMenu = jsonSettings.GetNamedBoolean(constants::nonlocalizable::JsonKeyShowInExtendedContextMenu);
+            }
+            if (json::has(jsonSettings, constants::nonlocalizable::JsonKeyConfirmOnlyForOthers, json::JsonValueType::Boolean))
+            {
+                settings.confirmOnlyForOthers = jsonSettings.GetNamedBoolean(constants::nonlocalizable::JsonKeyConfirmOnlyForOthers);
             }
         }
         catch (const winrt::hresult_error&)

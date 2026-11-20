@@ -12,10 +12,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public FileLocksmithProperties()
         {
             ExtendedContextMenuOnly = new BoolProperty(false);
+            ConfirmOnlyForOthers = new BoolProperty(false);
         }
 
         [JsonPropertyName("bool_show_extended_menu")]
         public BoolProperty ExtendedContextMenuOnly { get; set; }
+
+        [JsonPropertyName("bool_confirm_only_for_others")]
+        public BoolProperty ConfirmOnlyForOthers { get; set; }
 
         public override string ToString() => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.FileLocksmithProperties);
     }

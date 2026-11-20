@@ -30,6 +30,16 @@ public:
         settings.showInExtendedContextMenu = extendedOnly;
     }
 
+    inline bool GetConfirmOnlyForOthers() const
+    {
+        return settings.confirmOnlyForOthers;
+    }
+
+    inline void SetConfirmOnlyForOthers(bool confirmOnlyForOthers)
+    {
+        settings.confirmOnlyForOthers = confirmOnlyForOthers;
+    }
+
     void Save();
     void Load();
 
@@ -38,6 +48,7 @@ private:
     {
         bool enabled{ true };
         bool showInExtendedContextMenu{ false };
+        bool confirmOnlyForOthers{ false };
     };
 
     void RefreshEnabledState();

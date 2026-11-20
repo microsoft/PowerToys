@@ -30,6 +30,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             Properties = new FileLocksmithProperties();
             Properties.ExtendedContextMenuOnly.Value = localProperties.ExtendedContextMenuOnly;
+            Properties.ConfirmOnlyForOthers.Value = localProperties.ConfirmOnlyForOthers;
             Version = "1";
             Name = ModuleName;
         }

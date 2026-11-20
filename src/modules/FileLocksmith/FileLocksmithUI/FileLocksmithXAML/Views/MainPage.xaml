@@ -118,10 +118,7 @@
                                                 <TextBlock x:Uid="ProcessIsSystemUserWarning" TextWrapping="Wrap" />
                                             </ToolTipService.ToolTip>
                                         </FontIcon>
-                                        <Button
-                                            MinWidth="128"
-                                            Command="{Binding Path=DataContext.EndTaskCommand, ElementName=ProcessesListView}"
-                                            CommandParameter="{Binding}">
+                                        <Button MinWidth="128" Click="EndTask_Click">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                 <FontIcon FontSize="16" Glyph="&#xf140;" />
                                                 <TextBlock x:Uid="EndTask" />
@@ -197,6 +194,20 @@
                     x:Uid="ProcessFilesListDialogTextBlock"
                     IsTextSelectionEnabled="True" />
             </ScrollViewer>
+        </ContentDialog>
+        <ContentDialog
+            x:Name="EndTaskConfirmDialog"
+            x:Uid="EndTaskConfirmDialog"
+            DefaultButton="Close">
+            <StackPanel Spacing="12">
+                <TextBlock x:Name="EndTaskConfirmMessage" TextWrapping="Wrap" />
+                <TextBlock
+                    x:Name="EndTaskConfirmSystemWarning"
+                    x:Uid="ProcessIsSystemUserWarning"
+                    Foreground="{ThemeResource InfoBarWarningSeverityIconBackground}"
+                    TextWrapping="Wrap"
+                    Visibility="Collapsed" />
+            </StackPanel>
         </ContentDialog>
     </Grid>
 </Page>

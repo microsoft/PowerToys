@@ -14,10 +14,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public FileLocksmithLocalProperties()
         {
             ExtendedContextMenuOnly = false;
+            ConfirmOnlyForOthers = false;
         }
 
         [JsonPropertyName("showInExtendedContextMenu")]
         public bool ExtendedContextMenuOnly { get; set; }
+
+        [JsonPropertyName("confirmOnlyForOthers")]
+        public bool ConfirmOnlyForOthers { get; set; }
 
         public string ToJsonString()
         {

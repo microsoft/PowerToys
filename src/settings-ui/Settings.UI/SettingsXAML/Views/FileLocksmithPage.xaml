@@ -37,6 +37,12 @@
                         IsTabStop="True"
                         Severity="Informational" />
                 </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="FileLocksmith_EndTaskGroup" IsEnabled="{x:Bind ViewModel.IsFileLocksmithEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard Name="FileLocksmithConfirmOnlyForOthers" x:Uid="FileLocksmith_ConfirmOnlyForOthers">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ConfirmOnlyForOthers, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
         <controls:SettingsPageControl.PrimaryLinks>

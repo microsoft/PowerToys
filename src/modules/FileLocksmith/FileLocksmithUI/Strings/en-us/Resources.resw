@@ -127,6 +127,26 @@
   <data name="EndTask.Text" xml:space="preserve">
     <value>End task</value>
   </data>
+  <data name="EndTaskConfirmDialog.PrimaryButtonText" xml:space="preserve">
+    <value>End task</value>
+    <comment>Button that ends (kills) the process</comment>
+  </data>
+  <data name="EndTaskConfirmDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Closes the dialog without ending the process</comment>
+  </data>
+  <data name="EndTaskConfirmTitle" xml:space="preserve">
+    <value>End {0}?</value>
+    <comment>{0} is the process name, for example notepad.exe. Do not translate {0}.</comment>
+  </data>
+  <data name="EndTaskConfirmMessage" xml:space="preserve">
+    <value>Unsaved data in this process may be lost.</value>
+    <comment>Shown before ending a process</comment>
+  </data>
+  <data name="EndTaskConfirmOtherUserMessage" xml:space="preserve">
+    <value>This process belongs to {0}. Unsaved data may be lost.</value>
+    <comment>{0} is a user account name. Do not translate {0}.</comment>
+  </data>
   <data name="Files.Text" xml:space="preserve">
     <value>Files</value>
   </data>
