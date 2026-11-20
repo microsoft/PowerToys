@@ -162,9 +162,23 @@ namespace MouseWithoutBorders.Class
                     shouldSaveNewSettingsValues = true;
                 }
 
-                if (shouldSaveNewSettingsValues)
-                {
-                    saveSettings();
+                        if (shouldSaveNewSettingsValues)
+                        {
+                            SaveSettings();
+                        }
+
+                        if (last_properties.ShowThemeAdaptiveTrayIcon != _settings.Properties.ShowThemeAdaptiveTrayIcon)
+                        {
+                            Common.DoSomethingInUIThread(() =>
+                            {
+                                if (Common.MainForm != null)
+                                {
+                                    Common.MainForm.ConfigureTrayThemeListener();
+                                    Common.MainForm.RefreshTrayIcon();
+                                }
+                            });
+                        }
+                    }
                 }
             }
         }
@@ -1285,12 +1299,22 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        internal bool ShowThemeAdaptiveTrayIcon
         internal bool AllowNonConsoleSessions
         {
             get
             {
                 lock (_loadingSettingsLock)
                 {
+                    return _properties.ShowThemeAdaptiveTrayIcon;
+                }
+            }
+
+            set
+            {
+                lock (_loadingSettingsLock)
+                {
+                    _properties.ShowThemeAdaptiveTrayIcon = value;
                     return _properties.AllowNonConsoleSessions.Value;
                 }
             }
