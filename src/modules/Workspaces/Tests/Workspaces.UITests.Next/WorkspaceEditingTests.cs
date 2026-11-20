@@ -20,8 +20,15 @@ namespace Microsoft.Workspaces.UITests
             AssertWorkspaceNames(names);
             Search("aTlAs");
             AssertWorkspaceNames(names);
-            var nameMatches = WaitForSearchSuggestions(names[0]);
-            ChooseSearchSuggestion(nameMatches[0]);
+            WaitForSearchSuggestions(names[0]);
+            var searchInput = SearchInput();
+            searchInput.Focus();
+            KeyboardHelper.SendKeys(Key.Down);
+            Assert.IsTrue(searchInput.WaitForValue(names[0]), "Down should fill the search input with the selected workspace name.");
+            KeyboardHelper.SendKeys(Key.Enter);
+            Assert.IsTrue(
+                Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000).WaitForValue(names[0], timeoutMS: 10_000),
+                "Enter should open the selected workspace for editing.");
             CancelEditing();
 
             Search("editor fixture");
