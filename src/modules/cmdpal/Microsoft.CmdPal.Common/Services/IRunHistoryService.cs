@@ -51,5 +51,8 @@ public struct ParseCommandlineResult
     public string FilePath;
     public string Arguments;
 
+    // True if FilePath was found on disk, as a file or a folder. False otherwise.
+    public bool TargetFound;
+
     public bool Success => Result == 0;
 }

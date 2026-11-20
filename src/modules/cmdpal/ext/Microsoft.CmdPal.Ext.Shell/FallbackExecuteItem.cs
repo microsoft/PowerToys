@@ -17,8 +17,10 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
 
     private readonly IRunHistoryService _historyService;
     private readonly ITelemetryService _telemetryService;
+
+    private readonly Lock _queryLock = new(); // track the latest query to discard old overlapping queries
+    private long _latestQuery;
     private CancellationTokenSource? _cancellationTokenSource;
-    private RunExeItem? _currentExeItem;
 
     public FallbackExecuteItem(IRunHistoryService historyService, ITelemetryService telemetryService)
         : base(
@@ -35,15 +37,25 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
 
     public override void UpdateQuery(string query)
     {
-        // Cancel any ongoing query processing
-        _cancellationTokenSource?.Cancel();
+        var cancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = cancellationTokenSource.Token;
+        long queryNumber;
+        CancellationTokenSource? displaced;
 
-        _cancellationTokenSource = new CancellationTokenSource();
-        var cancellationToken = _cancellationTokenSource.Token;
+        // Together, so an older query that gets here late can't cancel a newer one
+        lock (_queryLock)
+        {
+            queryNumber = ++_latestQuery;
+            displaced = _cancellationTokenSource;
+            _cancellationTokenSource = cancellationTokenSource;
+        }
+
+        // Cancel any ongoing query processing
+        displaced?.Cancel();
 
         try
         {
-            DoUpdateQuery(query, cancellationToken);
+            DoUpdateQuery(query, queryNumber, cancellationToken);
         }
         catch (Exception)
         {
@@ -52,7 +64,7 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
     }
 
-    private void DoUpdateQuery(string query, CancellationToken cancellationToken)
+    private void DoUpdateQuery(string query, long queryNumber, CancellationToken cancellationToken)
     {
         // Check for cancellation at the start
         if (cancellationToken.IsCancellationRequested)
@@ -65,8 +77,15 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
 
         if (string.IsNullOrEmpty(searchText) || string.IsNullOrWhiteSpace(searchText))
         {
-            Command = null;
-            Title = string.Empty;
+            lock (_queryLock)
+            {
+                if (queryNumber == _latestQuery)
+                {
+                    Command = null;
+                    Title = string.Empty;
+                }
+            }
+
             return;
         }
 
@@ -80,10 +99,11 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
             var timeoutToken = combinedCts.Token;
 
             var pathResolutionTask = Task.Run(
-                () => { parseResult = _historyService.ParseCommandline(searchText, string.Empty); },
+                () => _historyService.ParseCommandline(searchText, string.Empty),
                 CancellationToken.None);
 
             pathResolutionTask.Wait(timeoutToken);
+            parseResult = pathResolutionTask.Result;
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -98,13 +118,6 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         if (cancellationToken.IsCancellationRequested)
         {
             return;
-        }
-
-        // Unsubscribe from the old item's property changes
-        if (_currentExeItem is not null)
-        {
-            _currentExeItem.PropChanged -= OnExeItemPropChanged;
-            _currentExeItem = null;
         }
 
         string filePath;
@@ -122,47 +135,67 @@ internal sealed partial class FallbackExecuteItem : FallbackCommandItem, IDispos
         }
 
         // Create a RunExeItem to resolve the icon from the file path
-        _currentExeItem = new RunExeItem(
+        var exeItem = new RunExeItem(
             filePath,
             args,
             filePath,
             (s) => _historyService.AddRunHistoryItem(s),
             _telemetryService);
-        _currentExeItem.PropChanged += OnExeItemPropChanged;
 
-        Title = ResourceLoaderInstance.GetString("Run_command_line_command_title");
-        Subtitle = searchText;
-        Command = _currentExeItem.Command;
-        MoreCommands = _currentExeItem.MoreCommands;
+        // Parsing also succeeds for text that names no file, trust its check instead of making another
+        var targetFound = parseResult is { Success: true, IsUri: false, TargetFound: true };
+        IIconInfo icon = (targetFound ? exeItem.Icon : null) ?? Icons.RunV2Icon;
 
-        // Trigger the lazy icon load by accessing the Icon property.
-        // FileItem loads icons asynchronously and raises PropChanged when done.
-        var icon = _currentExeItem.Icon;
-        Icon = icon ?? Icons.RunV2Icon;
-
-        // Final cancellation check
-        if (cancellationToken.IsCancellationRequested)
+        lock (_queryLock)
         {
-            return;
+            if (queryNumber != _latestQuery)
+            {
+                return;
+            }
+
+            Title = ResourceLoaderInstance.GetString("Run_command_line_command_title");
+            Subtitle = searchText;
+            Command = exeItem.Command;
+
+            // Until the new menu is ready, so the old one can't run the old arguments
+            MoreCommands = [];
+
+            // Keep the instance when only the arguments change, so the row doesn't reload it
+            if (!IsSameIcon(Icon, icon))
+            {
+                Icon = icon;
+            }
+        }
+
+        // Building the menu checks for a folder, which can be slow on a network path
+        var moreCommands = exeItem.MoreCommands;
+
+        lock (_queryLock)
+        {
+            if (queryNumber == _latestQuery)
+            {
+                MoreCommands = moreCommands;
+            }
         }
     }
 
-    private void OnExeItemPropChanged(object sender, IPropChangedEventArgs args)
+    // Items for the same file carry equal Shell icon requests, this is in-extension, so safe to compare
+    private static bool IsSameIcon(IIconInfo? current, IIconInfo next)
     {
-        if (args.PropertyName == nameof(Icon) && _currentExeItem is not null)
+        if (ReferenceEquals(current, next))
         {
-            Icon = _currentExeItem.Icon ?? Icons.RunV2Icon;
+            return true;
         }
+
+        return current?.Light?.Icon is { Length: > 0 } light
+               && light == next.Light?.Icon
+               && current.Dark?.Icon == next.Dark?.Icon;
     }
 
     public void Dispose()
     {
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
-        if (_currentExeItem is not null)
-        {
-            _currentExeItem.PropChanged -= OnExeItemPropChanged;
-        }
     }
 
     internal static bool SuppressFileFallbackIf(string query)

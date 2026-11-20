@@ -10,6 +10,8 @@ internal sealed class Icons
 {
     internal static IconInfo RunV2Icon { get; } = IconHelpers.FromRelativePath("Assets\\Run.svg");
 
+    internal static IconInfo RunGeneric { get; } = IconHelpers.FromRelativePaths("Assets\\Run_Generic.light.svg", "Assets\\Run_Generic.dark.svg");
+
     internal static IconInfo FolderIcon { get; } = new IconInfo("📁");
 
     internal static IconInfo AdminIcon { get; } = new IconInfo("\xE7EF"); // Admin Icon
