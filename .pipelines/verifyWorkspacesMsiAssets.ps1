@@ -13,7 +13,9 @@ foreach ($path in $DecompiledMsi) {
     [xml]$wix = Get-Content -LiteralPath $path -Raw
     $ns = [Xml.XmlNamespaceManager]::new($wix.NameTable)
     $ns.AddNamespace('w', 'http://wixtoolset.org/schemas/v4/wxs')
-    $featureComponents = $wix.SelectNodes('//w:Feature/w:ComponentRef/@Id', $ns).Value
+    # PowerToys installs CoreFeature at the default MSI install level (1).
+    $coreComponents = $wix.SelectNodes(
+        "/w:Wix/w:Package/w:Feature[@Id='CoreFeature' and (not(@Level) or @Level=1)]/w:ComponentRef/@Id", $ns).Value
     foreach ($folder in @('Assets\Workspaces', 'WinUI3Apps\Assets\Workspaces')) {
         $segments = $folder.Split('\') | ForEach-Object { "w:Directory[@Name='$_']" }
         $directory = "//w:Directory[@Id='INSTALLFOLDER']/" + ($segments -join '/')
@@ -22,14 +24,14 @@ foreach ($path in $DecompiledMsi) {
             if ($files.Count -ne 1) {
                 throw "Expected one '$folder\$icon' in '$path', found $($files.Count)."
             }
-            if ($files[0].ParentNode.GetAttribute('Id') -notin $featureComponents) {
-                throw "No feature installs '$folder\$icon' in '$path'."
+            if ($files[0].ParentNode.GetAttribute('Id') -cnotin $coreComponents) {
+                throw "CoreFeature does not install '$folder\$icon' in '$path'."
             }
         }
         $directoryId = $wix.SelectSingleNode($directory, $ns).GetAttribute('Id')
-        $cleanup = "//w:RemoveFolder[@Directory='$directoryId' and (@On='uninstall' or @On='both')]"
-        if ($null -eq $wix.SelectSingleNode($cleanup, $ns)) {
-            throw "Missing uninstall cleanup for '$folder' in '$path'."
+        $cleanup = $wix.SelectNodes("//w:Component/w:RemoveFolder[@Directory='$directoryId' and (@On='uninstall' or @On='both')]", $ns)
+        if (-not ($cleanup | Where-Object { $_.ParentNode.GetAttribute('Id') -cin $coreComponents })) {
+            throw "CoreFeature has no uninstall cleanup for '$folder' in '$path'."
         }
     }
 }
