@@ -75,10 +75,10 @@ activation, which sends the activation shortcut only once.
 
 Before file actions, the fixture focuses Explorer's empty content area and
 requires native keyboard focus under `SHELLDLL_DefView`; an empty `UIItemsView`
-does not expose a keyboard-focusable UIA item. Action-list commands are invoked
-once through their enabled UI Automation list items, like the other Settings and
-menu controls. No coordinate-click retry, paste retry, or direct file-copy
-substitute is used.
+does not expose a keyboard-focusable UIA item. File actions from the list use a
+single real click on the visible, enabled UI Automation item in the foreground
+Advanced Paste window. Other action-list tests invoke their UI Automation items.
+No click retry, paste retry, or direct file-copy substitute is used.
 File delivery is observed on disk before reading CF_HDROP, so the test does not
 open the clipboard while Explorer is consuming the product's Ctrl+V.
 Text, rich-text, and startup clipboard snapshot access use the fixture's message-pumping STA.

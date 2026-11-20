@@ -254,9 +254,9 @@ public abstract class AdvancedPasteTestBase : UITestBase
         }
     }
 
-    protected void SelectAction(Session window, string name)
+    protected void SelectAction(Session window, string name, bool useMouse = false)
     {
-        Step($"Invoking '{name}'");
+        Step($"Locating '{name}'");
         var handle = new IntPtr(window.WindowHandle);
         WaitUntil(
             () => WindowControl.GetForegroundWindowHandle() == handle,
@@ -279,6 +279,43 @@ public abstract class AdvancedPasteTestBase : UITestBase
             action.ScrollIntoView();
         }
 
+        if (useMouse)
+        {
+            // File paste exercises the real ItemClick and return to the Explorer destination.
+            // End any row hover on the title bar before resolving a clickable point. Hovering the
+            // target first can leave the previous row's tooltip between the pointer and the list.
+            var (left, top, right, _) = WindowHelper.GetWindowBounds(handle);
+            MouseHelper.MoveTo(left + ((right - left) / 2), top + 12);
+
+            static (int X, int Y) ActionPoint(Element item) => (item.X + (item.Width / 2), item.Y + (item.Height / 2));
+
+            var clickable = WaitHelper.WaitForStable(
+                FindAction,
+                candidate =>
+                {
+                    if (candidate is not { Width: > 0, Height: > 0 } ||
+                        candidate.IsOffscreen ||
+                        !candidate.IsEnabled ||
+                        WindowControl.GetForegroundWindowHandle() != handle)
+                    {
+                        return false;
+                    }
+
+                    var point = ActionPoint(candidate);
+                    return WindowControl.IsPointOwnedByWindow(handle, point.X, point.Y);
+                },
+                timeoutMS: 15_000,
+                requiredConsecutiveMatches: 2,
+                shouldRetryException: AdvancedPasteUi.IsStaleElement);
+            var target = clickable.LastObservation is { } last ? ActionPoint(last).ToString() : "<not found>";
+            Assert.IsTrue(clickable.Succeeded, $"'{name}' did not become clickable at {target}. Cursor: {MouseHelper.GetMousePosition()}; foreground: {WindowControl.GetForegroundWindowInfo()}; last exception: {clickable.LastException}.");
+            Step($"Clicking '{name}' in the action list");
+            var clickPoint = ActionPoint(clickable.LastObservation!);
+            MouseHelper.LeftClickAt(clickPoint.X, clickPoint.Y);
+            return;
+        }
+
+        Step($"Invoking '{name}'");
         action.Invoke(msPostAction: 0);
     }
 

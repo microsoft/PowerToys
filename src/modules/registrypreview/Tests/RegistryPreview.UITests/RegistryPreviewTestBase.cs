@@ -504,15 +504,13 @@ public abstract class RegistryPreviewTestBase : UITestBase
     private static bool WaitForEditorReadyStable(Session window)
     {
         var selector = By.AccessibilityId("Browser");
-        if (!window.WaitForElement(selector, EditorTimeoutMS))
-        {
-            return false;
-        }
 
+        // A single UIA search can take seconds on a constrained guest. Give both samples
+        // the editor's readiness budget rather than restarting an editor that already loaded.
         return WaitHelper.WaitForStable(
-            () => window.Has(selector, timeoutMS: 2_000),
+            () => window.Has(selector, timeoutMS: 0),
             present => present,
-            timeoutMS: 2_000,
+            timeoutMS: EditorTimeoutMS,
             requiredConsecutiveMatches: 2,
             pollIntervalMS: 250).Succeeded;
     }
