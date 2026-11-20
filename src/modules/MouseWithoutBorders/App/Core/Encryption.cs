@@ -173,7 +173,7 @@ internal static class Encryption
         }
         catch (IOException e)
         {
-            Logger.Log($"{nameof(ExchangeEncryptionHeader)}: Exception {(send ? "writing" : "reading")} the encryption header to the socket stream: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)");
+            Logger.Log($"{nameof(ExchangeEncryptionHeader)}: Exception {(send ? "writing" : "reading")} the encryption header to the socket stream: {Logger.FormatException(e)}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)");
 
             if (e is not EndOfStreamException && e.InnerException is not (SocketException or ObjectDisposedException))
             {

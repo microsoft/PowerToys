@@ -368,7 +368,7 @@ internal static class Clipboard
         }
         catch (Exception e)
         {
-            Logger.Log("ReceiveClipboardDataUsingTCP: " + e.Message);
+            Logger.Log("ReceiveClipboardDataUsingTCP: " + Logger.FormatException(e));
         }
     }
 
@@ -424,7 +424,7 @@ internal static class Clipboard
 
             if (!Common.IsConnectedByAClientSocketTo(remoteMachine))
             {
-                Logger.Log($"No potential inbound connection from {Common.MachineName} to {remoteMachine}, ask for a push back instead.");
+                Logger.Log($"No potential inbound connection from {Logger.MaskName(Common.MachineName)} to {Logger.MaskName(remoteMachine)}, ask for a push back instead.");
                 ID machineId = MachineStuff.MachinePool.ResolveID(remoteMachine);
 
                 if (machineId != ID.NONE)
@@ -442,13 +442,13 @@ internal static class Clipboard
                 }
                 else
                 {
-                    Logger.Log($"Unable to resolve {remoteMachine} to its long IP.");
+                    Logger.Log($"Unable to resolve {Logger.MaskName(remoteMachine)} to its long IP.");
                 }
 
                 return;
             }
 
-            Common.ShowToolTip("Connecting to " + remoteMachine, 2000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus);
+            Common.ShowToolTip("Connecting to " + remoteMachine, 2000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus, logText: "Connecting to " + Logger.MaskName(remoteMachine));
 
             clipboardTcpClient = ConnectToRemoteClipboardSocket(remoteMachine);
         }
@@ -470,7 +470,7 @@ internal static class Clipboard
                 Common.ICON_BIG_CLIPBOARD,
                 -1, Common.ICON_BIG_CLIPBOARD, -1,
             });
-            Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+            Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: Logger.FormatException(e));
             return;
         }
 
@@ -913,7 +913,7 @@ internal static class Clipboard
                 Common.ICON_BIG_CLIPBOARD,
                 -1, Common.ICON_BIG_CLIPBOARD, -1,
             });
-            Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus);
+            Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus, logText: Logger.FormatException(e));
             CloseDestinationFile();
 
             return;
@@ -970,6 +970,7 @@ internal static class Clipboard
 
         try
         {
+            string remoteLogName = Logger.MaskEndpoint((System.Net.IPEndPoint)s.RemoteEndPoint);
             DATA package = new()
             {
                 Type = clientPushData ? PackageType.ClipboardPush : PackageType.Clipboard,
@@ -1003,8 +1004,9 @@ internal static class Clipboard
                 if (package.Type is PackageType.Clipboard or PackageType.ClipboardPush)
                 {
                     name = remoteName = package.MachineName;
+                    remoteLogName = Logger.MaskName(name);
 
-                    Logger.LogDebug($"{nameof(ShakeHand)}: Connection from {name}:{package.Src}");
+                    Logger.LogDebug($"{nameof(ShakeHand)}: Connection from {Logger.MaskName(name)}:{package.Src}");
 
                     if (MachineStuff.MachinePool.ResolveID(name) == package.Src && Common.IsConnectedTo(package.Src))
                     {
@@ -1015,7 +1017,7 @@ internal static class Clipboard
                     }
                     else
                     {
-                        Logger.LogDebug($"{nameof(ShakeHand)}: No active connection to the machine: {name}.");
+                        Logger.LogDebug($"{nameof(ShakeHand)}: No active connection to the machine: {Logger.MaskName(name)}.");
                     }
                 }
                 else
@@ -1031,8 +1033,9 @@ internal static class Clipboard
             if (!handShaken)
             {
                 string msg = $"Clipboard connection rejected: {name}:{remoteName}/{package.Src}\r\n\r\nMake sure you run the same version in all machines.";
-                Logger.Log(msg);
-                Common.ShowToolTip(msg, 3000, ToolTipIcon.Warning);
+                string log = $"Clipboard connection rejected: {Logger.MaskName(name)}:{remoteLogName}/{package.Src}\r\n\r\nMake sure you run the same version in all machines.";
+                Logger.Log(log);
+                Common.ShowToolTip(msg, 3000, ToolTipIcon.Warning, logText: log);
                 Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_BIG_CLIPBOARD, -1, -1, -1 });
             }
         }
@@ -1045,7 +1048,7 @@ internal static class Clipboard
         {
             if (e is IOException)
             {
-                string log = $"{nameof(ShakeHand)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
+                string log = $"{nameof(ShakeHand)}: Exception accessing the socket: {Logger.FormatException(e)}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
                 Logger.Log(log);
             }
             else
@@ -1059,7 +1062,7 @@ internal static class Clipboard
                 -1, Common.ICON_BIG_CLIPBOARD, -1,
             });
             Common.MainForm.UpdateNotifyIcon();
-            Common.ShowToolTip(e.Message + "\r\n\r\nMake sure you run the same version in all machines.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+            Common.ShowToolTip(e.Message + "\r\n\r\nMake sure you run the same version in all machines.", 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: Logger.FormatException(e));
         }
 
         return handShaken;
@@ -1078,7 +1081,7 @@ internal static class Clipboard
             Common.DoSomethingInUIThread(() => Common.MainForm.ChangeIcon(Common.ICON_SMALL_CLIPBOARD));
 
             System.Net.IPAddress ip = Common.GetConnectedClientSocketIPAddressFor(remoteMachine);
-            Logger.LogDebug($"{nameof(ConnectToRemoteClipboardSocket)}Connecting to {remoteMachine}:{ip}:{sk.TcpPort}...");
+            Logger.LogDebug($"{nameof(ConnectToRemoteClipboardSocket)}Connecting to {Logger.MaskName(remoteMachine)}:{Logger.MaskAddress(ip)}:{sk.TcpPort}...");
 
             if (ip != null)
             {
@@ -1089,7 +1092,7 @@ internal static class Clipboard
                 clipboardTcpClient.Connect(remoteMachine, sk.TcpPort);
             }
 
-            Logger.LogDebug($"Connected from {clipboardTcpClient.Client.LocalEndPoint}. Getting data...");
+            Logger.LogDebug($"Connected from {Logger.MaskEndpoint((System.Net.IPEndPoint)clipboardTcpClient.Client.LocalEndPoint)}. Getting data...");
             return clipboardTcpClient;
         }
         else
