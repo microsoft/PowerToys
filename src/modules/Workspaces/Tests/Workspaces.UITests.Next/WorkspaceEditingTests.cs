@@ -210,6 +210,13 @@ namespace Microsoft.Workspaces.UITests
             ToggleApplicationInclusion("Primary fixture", include: false);
             Assert.IsFalse(Editor.Find(By.AccessibilityId("Primary fixture")).IsEnabled, "The removed application remained editable.");
             PreviewSnapshot.AssertChanged(TestContext, Editor, before);
+
+            var save = Editor.Find<Button>(By.AccessibilityId("SaveButton"));
+            ToggleApplicationInclusion("Secondary fixture", include: false);
+            Assert.IsTrue(save.WaitForProperty("IsEnabled", "False", 5_000), "Save should be disabled when every application is excluded.");
+            ToggleApplicationInclusion("Secondary fixture", include: true);
+            Assert.IsTrue(save.WaitForProperty("IsEnabled", "True", 5_000), "Adding an application back should re-enable Save.");
+
             ToggleApplicationInclusion("Primary fixture", include: true);
             Assert.IsTrue(Editor.Find(By.AccessibilityId("Primary fixture")).IsEnabled, "Add back did not restore the application.");
             PreviewSnapshot.AssertRestored(TestContext, Editor, before);
@@ -313,10 +320,10 @@ namespace Microsoft.Workspaces.UITests
 
         private void AssertCustomCoordinatesAvailable(Element row, bool expected)
         {
+            // WinUI removes a collapsed SettingsCard's children from UIA. A text box scrolled
+            // out of view stays in the tree and can still accept keyboard input.
             var ready = WaitHelper.WaitForStable(
                 () => FindDescendants<TextBox>(row, "Edit", "LeftTextBox"),
-                // WinUI removes a collapsed SettingsCard's children from UIA. A text box scrolled
-                // out of view stays in the tree and can still accept keyboard input.
                 fields => expected
                     ? fields is [var input] &&
                         string.Equals(input.GetProperty("IsKeyboardFocusable"), bool.TrueString, StringComparison.OrdinalIgnoreCase) &&
