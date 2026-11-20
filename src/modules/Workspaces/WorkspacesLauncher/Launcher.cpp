@@ -318,6 +318,7 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
         if (!SetEvent(m_options.cancelEvent))
             Logger::error(L"Unable to signal session cancellation: {}", GetLastError());
         m_approval.Cancel();
+        Logger::trace(L"Accepted UI cancellation for workspace {}", m_project.id);
         m_launchingStatus.Cancel();
 
         try
