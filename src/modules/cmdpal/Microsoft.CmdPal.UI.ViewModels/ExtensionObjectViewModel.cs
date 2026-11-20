@@ -28,6 +28,46 @@ public abstract partial class ExtensionObjectViewModel : ObservableObject, IBatc
 
     public WeakReference<IPageContext> PageContext { get; private set; } = null!;
 
+    /// <summary>
+    /// Gets the fallback query that produced this view-model, if there was one.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A fallback result is valid only for the query that produced it. The context
+    /// carries the query token, which tells a command whether the result is still
+    /// current, and the snapshot reference, which keeps the extension data open.
+    /// </para>
+    /// <para>
+    /// The value is null for every view-model that does not come from a fallback,
+    /// which is the usual case. <see cref="ListItemViewModel"/> decides the value for
+    /// a row. Every other view-model inherits it from its parent through
+    /// <see cref="InheritFallbackContext"/>.
+    /// </para>
+    /// </remarks>
+    internal FallbackQueryContext? FallbackContext { get; private set; }
+
+    /// <summary>
+    /// Copies the fallback context of the parent view-model to this one.
+    /// </summary>
+    /// <remarks>
+    /// Call this from the constructor of the parent, right after it builds the child.
+    /// This does not take a reference on the snapshot: the child lives no longer than
+    /// the parent, and the parent already holds one.
+    /// </remarks>
+    internal void InheritFallbackContext(FallbackQueryContext? fallbackContext) => FallbackContext = fallbackContext;
+
+    /// <summary>
+    /// Gives a child view-model the same fallback context as this one.
+    /// </summary>
+    /// <param name="child">A view-model that this one just built.</param>
+    /// <returns>The child, so that the caller can build and assign in one statement.</returns>
+    protected TChild ShareFallbackContext<TChild>(TChild child)
+        where TChild : ExtensionObjectViewModel
+    {
+        child.FallbackContext = FallbackContext;
+        return child;
+    }
+
     TaskScheduler IBatchUpdateTarget.UIScheduler => _uiScheduler;
 
     void IBatchUpdateTarget.ApplyPendingUpdates() => ApplyPendingUpdates();
