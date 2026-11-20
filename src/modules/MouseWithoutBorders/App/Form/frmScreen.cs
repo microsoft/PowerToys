@@ -575,6 +575,9 @@ namespace MouseWithoutBorders
                             }
 
                             Common.CloseAnUnusedSocket();
+
+                            // Every other reconnect waits for an event, so retry the machines that lost their connection here.
+                            Common.Sk?.RetryMachinesWithoutConnection();
                         }
                     }
                     else if ((count % 36005) == 0)
