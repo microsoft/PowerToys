@@ -79,6 +79,10 @@ namespace Peek.FilePreviewer
 
         private CancellationTokenSource _cancellationTokenSource = new();
 
+        public Windows.Media.Playback.MediaPlayer VideoPlayer => VideoPreview.MediaPlayer;
+
+        public Windows.Media.Playback.MediaPlayer AudioPlayer => AudioPreview.MediaPlayer;
+
         public FilePreview()
         {
             InitializeComponent();
