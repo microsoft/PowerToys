@@ -1,0 +1,39 @@
+<Project>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>CompatibilityExtension</RootNamespace>
+    <ApplicationManifest>..\Shared\app.manifest</ApplicationManifest>
+    <UseWinUI>false</UseWinUI>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <SelfContained>true</SelfContained>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishAot>false</PublishAot>
+    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
+    <AppxBundle>Never</AppxBundle>
+    <AppxPackageDir>$(MSBuildThisFileDirectory)AppPackages\$(Platform)\$(Configuration)\$(MSBuildProjectName)\</AppxPackageDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CommandPalette.Extensions" Version="[$(CmdPalSdkVersion)]" />
+    <PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.2.0" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.6901" />
+    <PackageReference Include="Shmuelie.WinRTServer" Version="2.1.1" />
+    <Compile Include="..\Shared\**\*.cs" Link="Shared\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\Shared\Assets\*.png" Link="Assets\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\Shared\Public\README.txt" Link="Public\README.txt" CopyToOutputDirectory="PreserveNewest" />
+    <Manifest Include="$(ApplicationManifest)" />
+    <ProjectCapability Include="Msix" />
+  </ItemGroup>
+  <Target Name="GenerateCompatibilityBaseline" BeforeTargets="CoreCompile" DependsOnTargets="PrepareForBuild">
+    <PropertyGroup>
+      <_BaselineSource>$(IntermediateOutputPath)Baseline.g.cs</_BaselineSource>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(_BaselineSource)" Overwrite="true" WriteOnlyWhenDifferent="true"
+      Lines="// &lt;auto-generated/&gt;&#xA;namespace CompatibilityExtension%3B&#xA;internal static class Baseline&#xA;{&#xA;    internal const string SdkVersion = &quot;$(CmdPalSdkVersion)&quot;%3B&#xA;    internal const string Clsid = &quot;$(ExtensionClsid)&quot;%3B&#xA;}" />
+    <ItemGroup>
+      <Compile Include="$(_BaselineSource)" />
+    </ItemGroup>
+  </Target>
+</Project>
