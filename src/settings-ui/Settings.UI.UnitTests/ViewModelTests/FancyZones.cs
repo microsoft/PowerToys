@@ -63,6 +63,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.FancyzonesMakeDraggedWindowTransparent.Value, viewModel.MakeDraggedWindowsTransparent);
             Assert.AreEqual(originalSettings.Properties.FancyzonesMouseSwitch.Value, viewModel.MouseSwitch);
             Assert.AreEqual(originalSettings.Properties.FancyzonesMoveWindowsAcrossMonitors.Value, viewModel.MoveWindowsAcrossMonitors);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesCycleThroughAllZones.Value, viewModel.CycleThroughAllZones);
             Assert.AreEqual(originalSettings.Properties.FancyzonesMoveWindowsBasedOnPosition.Value, viewModel.MoveWindowsBasedOnPosition);
             Assert.AreEqual(originalSettings.Properties.FancyzonesOpenWindowOnActiveMonitor.Value, viewModel.OpenWindowOnActiveMonitor);
             Assert.AreEqual(originalSettings.Properties.FancyzonesOverrideSnapHotkeys.Value, viewModel.OverrideSnapHotkeys);
