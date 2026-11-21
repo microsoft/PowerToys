@@ -59,6 +59,7 @@
     </ClCompile>
     <ClCompile Include="Window.Tests.cpp" />
     <ClCompile Include="InputInjection.Tests.cpp" />
+    <ClCompile Include="CopySelection.Tests.cpp" />
     <ClCompile Include="GameMode.Tests.cpp" />
     <ClCompile Include="Gpo.Tests.cpp" />
     <ClCompile Include="MsiUtils.Tests.cpp" />
