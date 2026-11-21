@@ -115,3 +115,16 @@ void Trace::TrayIconRightClick(bool quickAccessEnabled)
         TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
         TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
 }
+
+void Trace::SlowHotkeyAction(const std::wstring& moduleName, std::wstring_view dispatchPath, long long durationMs)
+{
+    TraceLoggingWriteWrapper(
+        g_hProvider,
+        "Runner_SlowHotkeyAction",
+        TraceLoggingWideString(moduleName.c_str(), "ModuleName"),
+        TraceLoggingCountedWideString(dispatchPath.data(), static_cast<USHORT>(dispatchPath.size()), "DispatchPath"),
+        TraceLoggingInt64(durationMs, "DurationMs"),
+        ProjectTelemetryPrivacyDataTag(ProjectTelemetryTag_ProductAndServicePerformance),
+        TraceLoggingBoolean(TRUE, "UTCReplace_AppSessionGuid"),
+        TraceLoggingKeyword(PROJECT_KEYWORD_MEASURE));
+}

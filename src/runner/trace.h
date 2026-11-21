@@ -1,6 +1,7 @@
 #pragma once
 
 #include <common/Telemetry/TraceBase.h>
+#include <string_view>
 
 struct GeneralSettings;
 
@@ -18,4 +19,7 @@ public:
     static void TrayIconLeftClick(bool quickAccessEnabled);
     static void TrayIconDoubleClick(bool quickAccessEnabled);
     static void TrayIconRightClick(bool quickAccessEnabled);
+
+    // A module hotkey action blocked the keyboard hook thread for too long
+    static void SlowHotkeyAction(const std::wstring& moduleName, std::wstring_view dispatchPath, long long durationMs);
 };
