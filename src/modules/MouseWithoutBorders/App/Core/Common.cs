@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
@@ -856,6 +857,11 @@ internal static class Common
             return true;
         }
 
+        if (InputHookDispatcher.IsInHookCallback)
+        {
+            return IsConnectedToFromHook(remoteMachineID);
+        }
+
         SocketStuff sk = Common.Sk;
 
         if (sk != null)
@@ -890,6 +896,88 @@ internal static class Common
         return false;
     }
 
+    // Upper bound on how long a hook callback waits for TcpSocketsLock. On timeout the hook does not switch machines
+    // for that event; the edge-switch is retried on a following mouse move.
+    private const int HookSocketsLockTimeoutMs = 20;
+
+    /// <summary>
+    /// Hook-safe snapshot of the machines that currently have a Connected socket. Checks socket status only (no
+    /// probe send) and waits at most <see cref="HookSocketsLockTimeoutMs"/> for TcpSocketsLock.
+    /// </summary>
+    /// <returns>The connected machine IDs, or null if the socket list could not be read in time.</returns>
+    internal static HashSet<uint> TryGetConnectedMachineIdsForHook()
+    {
+        HashSet<uint> connected = new();
+        SocketStuff sk = Common.Sk;
+
+        if (sk == null)
+        {
+            return connected;
+        }
+
+        bool lockTaken = false;
+
+        try
+        {
+            Monitor.TryEnter(sk.TcpSocketsLock, HookSocketsLockTimeoutMs, ref lockTaken);
+
+            if (!lockTaken)
+            {
+                return null;
+            }
+
+            if (sk.TcpSockets != null)
+            {
+                foreach (TcpSk t in sk.TcpSockets)
+                {
+                    if (t.Status == SocketStatus.Connected)
+                    {
+                        _ = connected.Add(t.MachineId);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            if (lockTaken)
+            {
+                Monitor.Exit(sk.TcpSocketsLock);
+            }
+        }
+
+        return connected;
+    }
+
+    private static bool IsConnectedToFromHook(ID remoteMachineID)
+    {
+        HashSet<uint> connected = TryGetConnectedMachineIdsForHook();
+        return connected != null && connected.Contains((uint)remoteMachineID);
+    }
+
+    /// <summary>
+    /// Runs the blocking connection probe that <see cref="IsConnectedTo"/> does synchronously outside the hook, for a
+    /// switch the hook already made based on socket status alone. If the probe fails while input is still routed to
+    /// that machine, switch input back to this machine right away, as the synchronous probe would have cancelled the
+    /// switch.
+    /// </summary>
+    internal static void VerifySwitchFromHook(ID switchedToMachineID)
+    {
+        if (!IsConnectedTo(switchedToMachineID) && (DesMachineID == switchedToMachineID || MachineStuff.NewDesMachineID == switchedToMachineID))
+        {
+            Logger.Log($"Connection probe to {switchedToMachineID} failed after switching; switching back to this machine.");
+            SwitchBackToThisMachine();
+        }
+    }
+
+    private static void SwitchBackToThisMachine()
+    {
+        MachineStuff.NewDesMachineID = DesMachineID = MachineID;
+        MachineStuff.SwitchLocation.X = Event.XY_BY_PIXEL + Event.myLastX;
+        MachineStuff.SwitchLocation.Y = Event.XY_BY_PIXEL + Event.myLastY;
+        MachineStuff.SwitchLocation.ResetCount();
+        EvSwitch.Set();
+    }
+
 #if DEBUG
     private static long minSendTime = long.MaxValue;
     private static long avgSendTime;
@@ -898,7 +986,21 @@ internal static class Common
     private static long totalSendTime;
 #endif
 
-    internal static void SkSend(DATA data, uint? exceptDes, bool includeHandShakingSockets)
+    internal static void SkSend(DATA data, uint? exceptDes, bool includeHandShakingSockets, bool coalesceWhenQueued = false)
+    {
+        if (InputHookDispatcher.IsInHookCallback)
+        {
+            // A socket send can block for up to SendTimeout and contends on TcpSocketsLock, so it must not run
+            // inside a low-level hook callback. Queue a snapshot (callers reuse their DATA instances) in order.
+            DATA snapshot = data.Clone();
+            _ = InputHookDispatcher.Default.Post(() => SkSendNow(snapshot, exceptDes, includeHandShakingSockets, queuedFromHook: true), coalesceWhenQueued);
+            return;
+        }
+
+        SkSendNow(data, exceptDes, includeHandShakingSockets, queuedFromHook: false);
+    }
+
+    private static void SkSendNow(DATA data, uint? exceptDes, bool includeHandShakingSockets, bool queuedFromHook)
     {
         bool connected = false;
 
@@ -954,14 +1056,14 @@ internal static class Common
                 {
                     Logger.LogDebug("********** No active connection found for the remote machine! **********" + data.Des.ToString());
 
-                    if (data.Des == ID.NONE || MachineStuff.RemoveDeadMachines(data.Des))
+                    // A queued send runs after the hook has returned, so input may already have been routed elsewhere;
+                    // only fall back to this machine if input is still going to the machine that just failed.
+                    bool stillTargeted = !queuedFromHook || data.Des == ID.NONE || DesMachineID == data.Des;
+
+                    if (stillTargeted && (data.Des == ID.NONE || MachineStuff.RemoveDeadMachines(data.Des)))
                     {
                         // SwitchToMachine(MachineName.Trim());
-                        MachineStuff.NewDesMachineID = DesMachineID = MachineID;
-                        MachineStuff.SwitchLocation.X = Event.XY_BY_PIXEL + Event.myLastX;
-                        MachineStuff.SwitchLocation.Y = Event.XY_BY_PIXEL + Event.myLastY;
-                        MachineStuff.SwitchLocation.ResetCount();
-                        EvSwitch.Set();
+                        SwitchBackToThisMachine();
                     }
                 }
 

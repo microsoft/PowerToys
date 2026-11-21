@@ -76,6 +76,7 @@ namespace MouseWithoutBorders.Class
         private static KeyboardHookStruct keyboardHookStruct;
         private static MOUSEDATA hookCallbackMouseData;
         private static KEYBDDATA hookCallbackKeybdData;
+        private static int mainFormDotPending;
 
         private static bool winDown;
         private static bool altDown;
@@ -204,6 +205,11 @@ namespace MouseWithoutBorders.Class
 
         private int MouseHookProc(int nCode, int wParam, IntPtr lParam)
         {
+            // Everything below must stay cheap: blocking work reached from here (socket sends, pacing sleeps,
+            // cross-thread UI waits) is queued to InputHookDispatcher. Routing state (desMachineID, SwitchLocation,
+            // LastPos, ...) is still updated synchronously because it decides whether this event is swallowed.
+            using var hookScope = InputHookDispatcher.EnterHookCallback();
+
             int rv = 1, dx = 0, dy = 0;
             bool local = false;
             Event.InputEventCount++;
@@ -227,7 +233,7 @@ namespace MouseWithoutBorders.Class
                         local = true;
                         if (Common.MainFormVisible && !DragDrop.IsDropping)
                         {
-                            Helper.MainFormDot();
+                            PostMainFormDot();
                         }
                     }
 
@@ -334,8 +340,43 @@ namespace MouseWithoutBorders.Class
             return rv;
         }
 
+        // Helper.MainFormDot waits for the UI thread, so run it on the dispatcher. Mouse events arrive faster than
+        // it completes; coalesce so at most one is queued at a time.
+        private static void PostMainFormDot()
+        {
+            if (System.Threading.Interlocked.CompareExchange(ref mainFormDotPending, 1, 0) != 0)
+            {
+                return;
+            }
+
+            bool posted = InputHookDispatcher.Default.Post(() =>
+            {
+                try
+                {
+                    // Input may have moved to another machine since this was queued; MainFormDot would undo that.
+                    if ((MachineStuff.NewDesMachineID == Common.MachineID || MachineStuff.NewDesMachineID == ID.ALL)
+                        && Common.MainFormVisible && !DragDrop.IsDropping)
+                    {
+                        Helper.MainFormDot();
+                    }
+                }
+                finally
+                {
+                    System.Threading.Volatile.Write(ref mainFormDotPending, 0);
+                }
+            });
+
+            if (!posted)
+            {
+                System.Threading.Volatile.Write(ref mainFormDotPending, 0);
+            }
+        }
+
         private int KeyboardHookProc(int nCode, int wParam, IntPtr lParam)
         {
+            // See MouseHookProc: keep this path cheap and let InputHookDispatcher run anything that can block.
+            using var hookScope = InputHookDispatcher.EnterHookCallback();
+
             Event.InputEventCount++;
             if (!RealData)
             {

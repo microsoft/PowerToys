@@ -102,7 +102,8 @@ internal static class Event
                 MousePackage.Md.WheelDelta = e.WheelDelta;
 
                 // Relative move
-                if (Setting.Values.MoveMouseRelatively && Math.Abs(dx) >= MOVE_MOUSE_RELATIVE && Math.Abs(dy) >= MOVE_MOUSE_RELATIVE)
+                bool isRelativeMove = Setting.Values.MoveMouseRelatively && Math.Abs(dx) >= MOVE_MOUSE_RELATIVE && Math.Abs(dy) >= MOVE_MOUSE_RELATIVE;
+                if (isRelativeMove)
                 {
                     MousePackage.Md.X = dx;
                     MousePackage.Md.Y = dy;
@@ -113,11 +114,14 @@ internal static class Event
                     MousePackage.Md.Y = (e.Y - MachineStuff.primaryScreenBounds.Top) * 65535 / Common.screenHeight;
                 }
 
-                Common.SkSend(MousePackage, null, false);
+                // An absolute move is fully superseded by the next one, so a backed-up dispatcher only needs the latest.
+                // Relative moves carry deltas and are always sent individually.
+                bool coalesce = !isRelativeMove && e.dwFlags == WM.WM_MOUSEMOVE;
+                Common.SkSend(MousePackage, null, false, coalesce);
 
                 if (MousePackage.Md.dwFlags is WM.WM_LBUTTONUP or WM.WM_RBUTTONUP)
                 {
-                    Thread.Sleep(10);
+                    InputHookDispatcher.Pause(10);
                 }
 
                 NativeMethods.GetCursorPos(ref actualLastPos);
@@ -177,6 +181,13 @@ internal static class Event
         }
         else
         {
+            if (InputHookDispatcher.IsInHookCallback && newDesMachineID != Common.MachineID)
+            {
+                // From the hook, IsConnectedTo only checked socket status. Queue the blocking probe ahead of the sends
+                // below (same wire order as before); it switches back here if the machine turns out to be unreachable.
+                _ = InputHookDispatcher.Default.Post(() => Common.VerifySwitchFromHook(newDesMachineID));
+            }
+
             MachineStuff.newDesMachineID = newDesMachineID;
             MachineStuff.SwitchLocation.X = desMachineXY.X;
             MachineStuff.SwitchLocation.Y = desMachineXY.Y;
@@ -267,7 +278,7 @@ internal static class Event
                 Common.SkSend(KeybdPackage, null, false);
                 if (KeybdPackage.Kd.dwFlags is WM.WM_KEYUP or WM.WM_SYSKEYUP)
                 {
-                    Thread.Sleep(10);
+                    InputHookDispatcher.Pause(10);
                 }
             }
         }
