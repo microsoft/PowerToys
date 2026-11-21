@@ -68,7 +68,6 @@ public class AvailableResultsListTests
     [DataRow("month and year", "March 2022")]
     [DataRow("ISO 8601", "2022-03-02T22:30:45")]
     [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
-    [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
     [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
     public void LocalFormatsWithShortTimeAndShortDate(string formatLabel, string expectedResult)
     {
@@ -192,7 +191,6 @@ public class AvailableResultsListTests
     [DataRow("month and year", "March 2022")]
     [DataRow("ISO 8601", "2022-03-02T22:30:45")]
     [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
-    [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
     [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
     public void LocalFormatsWithShortTimeAndLongDate(string formatLabel, string expectedResult)
     {
@@ -228,7 +226,6 @@ public class AvailableResultsListTests
     [DataRow("month and year", "March 2022")]
     [DataRow("ISO 8601", "2022-03-02T22:30:45")]
     [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
-    [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
     [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
     public void LocalFormatsWithLongTimeAndShortDate(string formatLabel, string expectedResult)
     {
@@ -264,7 +261,6 @@ public class AvailableResultsListTests
     [DataRow("month and year", "March 2022")]
     [DataRow("ISO 8601", "2022-03-02T22:30:45")]
     [DataRow("ISO 8601 with time zone", "2022-03-02T22:30:45")]
-    [DataRow("RFC1123", "Wed, 02 Mar 2022 22:30:45 GMT")]
     [DataRow("Date and time in filename-compatible format", "2022-03-02_22-30-45")]
     public void LocalFormatsWithLongTimeAndLongDate(string formatLabel, string expectedResult)
     {
@@ -423,6 +419,28 @@ public class AvailableResultsListTests
         Assert.AreEqual("2025-07-01T14:05:06-07:00", results.Single(x => x.Label == Resources.Microsoft_plugin_timedate_Iso8601Zone).Value);
         Assert.AreEqual("Tue, 01 Jul 2025 21:05:06 GMT", results.Single(x => x.Label == Resources.Microsoft_plugin_timedate_Rfc1123).Value);
         Assert.AreEqual("133958775060000000", results.Single(x => x.Label == Resources.Microsoft_plugin_timedate_WindowsFileTime).Value);
+    }
+
+    [DataTestMethod]
+    [DataRow(DateTimeKind.Local)]
+    [DataRow(DateTimeKind.Unspecified)]
+    [DataRow(DateTimeKind.Utc)]
+    public void Rfc1123FormatIsConvertedToUtc(DateTimeKind kind)
+    {
+        // Setup
+        var formatLabel = "RFC1123";
+        var timeValue = DateTime.SpecifyKind(GetDateTimeForTest(), kind);
+        var settings = new SettingsManager();
+        var helperResults = AvailableResultsList.GetList(true, settings, null, null, timeValue);
+
+        // RFC1123 is always expressed in GMT, so the expected value is the UTC instant of the input (Unspecified is treated as local time).
+        var expectedResult = new DateTimeOffset(timeValue).UtcDateTime.ToString("R", CultureInfo.InvariantCulture);
+
+        // Act
+        var result = helperResults.FirstOrDefault(x => x.Label.Equals(formatLabel, StringComparison.OrdinalIgnoreCase));
+
+        // Assert
+        Assert.AreEqual(expectedResult, result?.Value);
     }
 
     [TestMethod]
