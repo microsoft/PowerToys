@@ -102,6 +102,9 @@ internal sealed class DATA
         Bytes = initialData;
     }
 
+    // All fields are value types, so a shallow copy is a full copy.
+    internal DATA Clone() => (DATA)MemberwiseClone();
+
     internal byte[] Bytes
     {
         get

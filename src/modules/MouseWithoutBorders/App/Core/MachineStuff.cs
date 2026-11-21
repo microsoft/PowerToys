@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
@@ -939,7 +940,29 @@ internal static class MachineStuff
         get
         {
             bool twoRow = !Setting.Values.MatrixOneRow;
-            string[] connectedMachines = twoRow ? MachineMatrix : MachineMatrix.Select(m => Common.IsConnectedTo(IdFromName(m)) ? m : string.Empty).ToArray();
+            if (twoRow)
+            {
+                return MachineMatrix;
+            }
+
+            if (InputHookDispatcher.IsInHookCallback)
+            {
+                // Read the socket list once: probing per machine would block the hook, and a per-machine lock timeout
+                // could blank out a live neighbour and route input to the wrong machine. Null means "don't switch now".
+                HashSet<uint> connectedIds = Common.TryGetConnectedMachineIdsForHook();
+                if (connectedIds == null)
+                {
+                    return null;
+                }
+
+                return MachineMatrix.Select(m =>
+                {
+                    ID id = IdFromName(m);
+                    return id == Common.MachineID || connectedIds.Contains((uint)id) ? m : string.Empty;
+                }).ToArray();
+            }
+
+            string[] connectedMachines = MachineMatrix.Select(m => Common.IsConnectedTo(IdFromName(m)) ? m : string.Empty).ToArray();
             Logger.LogDebug($"Matrix: {string.Join(",", MachineMatrix)}, Connected: {string.Join(",", connectedMachines)}");
 
             return connectedMachines;
