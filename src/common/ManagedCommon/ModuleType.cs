@@ -42,5 +42,6 @@ namespace ManagedCommon
         ZoomIt,
         MouseButtonLock,
         GeneralSettings,
+        FileConverter,
     }
 }
