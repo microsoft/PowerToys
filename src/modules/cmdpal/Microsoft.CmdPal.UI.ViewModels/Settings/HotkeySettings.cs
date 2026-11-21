@@ -150,6 +150,19 @@ public record HotkeySettings// : ICmdLineRepresentable
         return shortcutList;
     }
 
+    /// <summary>Compares modifiers and the virtual-key code, ignoring display text in <see cref="Key"/>.</summary>
+    /// <param name="other">Shortcut to compare against.</param>
+    /// <returns>Whether both shortcuts use the same keys; <see langword="false"/> for <see langword="null"/>.</returns>
+    public bool HasSameKeyCombination(HotkeySettings? other)
+    {
+        return other is not null
+               && Win == other.Win
+               && Ctrl == other.Ctrl
+               && Alt == other.Alt
+               && Shift == other.Shift
+               && Code == other.Code;
+    }
+
     public bool IsValid()
     {
         return IsAccessibleShortcut() ? false : (Alt || Ctrl || Win || Shift) && Code != 0;

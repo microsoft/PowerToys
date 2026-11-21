@@ -91,13 +91,19 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
         }
     }
 
-    public void SetWindowsKeyAction(string commandId)
+    public void SetWindowsKeyAction(string? commandId)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        ArgumentNullException.ThrowIfNull(commandId);
         lock (_hotkeysLock)
         {
+            if (_windowsKeyCommand == commandId)
+            {
+                return;
+            }
+
             _windowsKeyCommand = commandId;
+            _windowsKeysDown = 0;
+            _pendingWindowsKey = 0;
         }
     }
 
@@ -151,6 +157,14 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
         }
 
         return false;
+    }
+
+    public void RemoveHotkeyAction(bool win, bool ctrl, bool shift, bool alt, byte key)
+    {
+        lock (_hotkeysLock)
+        {
+            _hotkeys.Remove(new(win, ctrl, shift, alt, key));
+        }
     }
 
     private string? GetHotkeyCommand(bool win, bool ctrl, bool shift, bool alt, byte key)
