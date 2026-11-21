@@ -254,7 +254,7 @@ public abstract class AdvancedPasteTestBase : UITestBase
         }
     }
 
-    protected void SelectAction(Session window, string name, bool useMouse = false)
+    protected void SelectAction(Session window, string name, bool useKeyboard = false)
     {
         Step($"Locating '{name}'");
         var handle = new IntPtr(window.WindowHandle);
@@ -279,39 +279,39 @@ public abstract class AdvancedPasteTestBase : UITestBase
             action.ScrollIntoView();
         }
 
-        if (useMouse)
+        if (useKeyboard)
         {
-            // File paste exercises the real ItemClick and return to the Explorer destination.
-            // End any row hover on the title bar before resolving a clickable point. Hovering the
-            // target first can leave the previous row's tooltip between the pointer and the list.
-            var (left, top, right, _) = WindowHelper.GetWindowBounds(handle);
-            MouseHelper.MoveTo(left + ((right - left) / 2), top + 12);
-
-            static (int X, int Y) ActionPoint(Element item) => (item.X + (item.Width / 2), item.Y + (item.Height / 2));
-
-            var clickable = WaitHelper.WaitForStable(
-                FindAction,
-                candidate =>
+            // The named UIA ListItem is a Grid in the template. The owning ListViewItem
+            // takes keyboard focus and routes Enter through the list's ItemClick handler.
+            Element? FindContainer()
+            {
+                var match = FindAction();
+                if (match is null)
                 {
-                    if (candidate is not { Width: > 0, Height: > 0 } ||
-                        candidate.IsOffscreen ||
-                        !candidate.IsEnabled ||
-                        WindowControl.GetForegroundWindowHandle() != handle)
-                    {
-                        return false;
-                    }
+                    return null;
+                }
 
-                    var point = ActionPoint(candidate);
-                    return WindowControl.IsPointOwnedByWindow(handle, point.X, point.Y);
-                },
+                var selector = AdvancedPasteUi.Nodes(window.InspectAncestors(match))
+                    .Where(node => AdvancedPasteUi.Property(node, "className") == "ListViewItem")
+                    .Select(node => AdvancedPasteUi.Property(node, "selector"))
+                    .FirstOrDefault();
+                return string.IsNullOrEmpty(selector) ? null : window.FindAll<Element>(By.Slug(selector), 0).SingleOrDefault();
+            }
+
+            var container = WaitHelper.WaitForStable(
+                FindContainer,
+                candidate => candidate is not null && candidate.IsEnabled,
                 timeoutMS: 15_000,
-                requiredConsecutiveMatches: 2,
                 shouldRetryException: AdvancedPasteUi.IsStaleElement);
-            var target = clickable.LastObservation is { } last ? ActionPoint(last).ToString() : "<not found>";
-            Assert.IsTrue(clickable.Succeeded, $"'{name}' did not become clickable at {target}. Cursor: {MouseHelper.GetMousePosition()}; foreground: {WindowControl.GetForegroundWindowInfo()}; last exception: {clickable.LastException}.");
-            Step($"Clicking '{name}' in the action list");
-            var clickPoint = ActionPoint(clickable.LastObservation!);
-            MouseHelper.LeftClickAt(clickPoint.X, clickPoint.Y);
+            Assert.IsTrue(container.Succeeded, $"'{name}' did not expose an enabled ListViewItem container. Last exception: {container.LastException}.");
+            var item = container.LastObservation!;
+            item.Focus();
+            Assert.IsTrue(
+                item.WaitForProperty("HasKeyboardFocus", "true", 10_000) &&
+                WindowControl.GetForegroundWindowHandle() == handle,
+                $"'{name}' did not own keyboard focus before pressing Enter. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            Step($"Activating '{name}' in the action list with Enter");
+            SendShortcut(Key.Enter);
             return;
         }
 

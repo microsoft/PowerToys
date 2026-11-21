@@ -198,7 +198,7 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         }
         else
         {
-            SelectAction(OpenAdvancedPasteForWindow(new IntPtr(explorer.WindowHandle)), action, useMouse: true);
+            SelectAction(OpenAdvancedPasteForWindow(new IntPtr(explorer.WindowHandle)), action, useKeyboard: true);
         }
 
         // Reading CF_HDROP opens the clipboard and can race Explorer's actual Ctrl+V.

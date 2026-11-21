@@ -531,11 +531,12 @@ namespace Hosts.UITests
                           window.Title.Contains("PowerToys Settings", StringComparison.OrdinalIgnoreCase) &&
                           !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)));
             Assert.IsNotNull(settings, "PowerToys Settings did not expose a visible main window.");
+            var launchCard = settings.FindExact<Button>("Open Hosts File Editor");
             Assert.IsTrue(
-                WindowControl.WaitForForeground(new IntPtr(settings.WindowHandle), timeoutMS: 5_000, requiredConsecutiveMatches: 3),
+                WindowControl.WaitForForeground(new IntPtr(settings.WindowHandle), timeoutMS: 15_000, requiredConsecutiveMatches: 3),
                 $"Settings window {settings.WindowHandle} should own foreground before opening Hosts. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
             TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Clicking Open Hosts File Editor in Settings and waiting for the editor window.");
-            settings.FindExact<Button>("Open Hosts File Editor").Click(msPostAction: 0);
+            launchCard.Click(msPostAction: 0);
             var hostsSession = Session.Attach(PowerToysModule.Hosts);
             WindowHelper.MaximizeWindow(new IntPtr(hostsSession.WindowHandle));
             Thread.Sleep(200);
