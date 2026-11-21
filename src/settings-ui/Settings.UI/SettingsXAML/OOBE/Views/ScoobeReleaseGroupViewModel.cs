@@ -4,10 +4,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 using Microsoft.PowerToys.Settings.UI.Helpers;
+using Microsoft.Windows.Globalization;
+using Windows.Globalization.DateTimeFormatting;
 
 namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 {
@@ -42,9 +43,11 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 var latestRelease = releases[0];
                 IsPreview = releases.All(release => release.IsPrerelease);
                 VersionText = GetVersionFromRelease(latestRelease);
+                var language = ApplicationLanguages.PrimaryLanguageOverride;
+                var formatter = new DateTimeFormatter("month year", string.IsNullOrEmpty(language) ? ApplicationLanguages.Languages : new[] { language });
                 DateText = IsPreview ?
                     ResourceLoaderInstance.ResourceLoader.GetString("ScoobeReleaseGroup_Preview") :
-                    latestRelease.PublishedDate.ToString("MMMM yyyy", CultureInfo.CurrentCulture);
+                    formatter.Format(latestRelease.PublishedDate);
             }
             else
             {
