@@ -632,6 +632,44 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public void GoHome_PerformsRootCleanupAndRequestsHomeNavigation()
+    {
+        var rootPage = new Mock<IRootPageService>();
+        using var viewModel = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPage.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(new TestAppExtensionHost()).Object);
+        ShellNavigationRequestedEventArgs? navigationRequest = null;
+        viewModel.GoHomeRequested += (_, args) => navigationRequest = args;
+
+        viewModel.GoHome(withAnimation: false, focusSearch: false);
+
+        rootPage.Verify(service => service.GoHome(), Times.Once);
+        Assert.IsNotNull(navigationRequest);
+        Assert.IsFalse(navigationRequest.WithAnimation);
+        Assert.IsFalse(navigationRequest.FocusSearch);
+    }
+
+    [TestMethod]
+    public void OnNavigatedHome_PerformsRootCleanupWithoutRequestingHomeNavigation()
+    {
+        var rootPage = new Mock<IRootPageService>();
+        using var viewModel = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPage.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(new TestAppExtensionHost()).Object);
+        var navigationRequested = false;
+        viewModel.GoHomeRequested += (_, _) => navigationRequested = true;
+
+        viewModel.OnNavigatedHome();
+
+        rootPage.Verify(service => service.GoHome(), Times.Once);
+        Assert.IsFalse(navigationRequested);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public async Task PerformCommand_FailuresAreLoggedWithExceptionAndCallSite(bool throwDuringInvoke)
