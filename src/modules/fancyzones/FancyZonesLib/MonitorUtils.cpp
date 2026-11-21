@@ -383,18 +383,67 @@ namespace MonitorUtils
             retryCounter++;
         }
 
-        for (const auto& monitor : monitors)
+        AssignSerialNumbers(displaysResult.second, monitors);
+
+        return displaysResult.second;
+    }
+
+    void AssignSerialNumbers(std::vector<FancyZonesDataTypes::MonitorId>& displays, const std::vector<FancyZonesDataTypes::MonitorId>& hardwareMonitors) noexcept
+    {
+        for (auto& display : displays)
         {
-            for (auto& display : displaysResult.second)
+            // Monitors of the same model share the device id, so the instance id is needed to tell them apart.
+            // Matching on the device id alone gives every one of them the serial number of whichever was listed last.
+            auto exactMatch = std::find_if(hardwareMonitors.begin(), hardwareMonitors.end(), [&](const FancyZonesDataTypes::MonitorId& monitor) {
+                return monitor.deviceId.id == display.deviceId.id && monitor.deviceId.instanceId == display.deviceId.instanceId;
+            });
+
+            if (exactMatch != hardwareMonitors.end())
             {
-                if (monitor.deviceId.id == display.deviceId.id)
-                {
-                    display.serialNumber = monitor.serialNumber;    
-                }
+                display.serialNumber = exactMatch->serialNumber;
+                continue;
+            }
+
+            // Fall back to the device id only if it identifies a single monitor.
+            auto sameDeviceId = [&](const FancyZonesDataTypes::MonitorId& monitor) { return monitor.deviceId.id == display.deviceId.id; };
+            if (std::count_if(hardwareMonitors.begin(), hardwareMonitors.end(), sameDeviceId) == 1)
+            {
+                display.serialNumber = std::find_if(hardwareMonitors.begin(), hardwareMonitors.end(), sameDeviceId)->serialNumber;
             }
         }
-        
-        return displaysResult.second;
+    }
+
+    ConnectedMonitorSync SyncWithConnectedMonitor(FancyZonesDataTypes::MonitorId& savedId, const std::vector<FancyZonesDataTypes::MonitorId>& connectedMonitors) noexcept
+    {
+        for (const auto& monitor : connectedMonitors)
+        {
+            if (savedId.deviceId.id != monitor.deviceId.id || savedId.deviceId.instanceId != monitor.deviceId.instanceId)
+            {
+                continue;
+            }
+
+            auto result = ConnectedMonitorSync::Unchanged;
+
+            // Don't overwrite saved values with unknown ones, e.g. when the WMI query failed.
+            if (!monitor.serialNumber.empty() && savedId.serialNumber != monitor.serialNumber)
+            {
+                savedId.serialNumber = monitor.serialNumber;
+                result = ConnectedMonitorSync::SerialNumberUpdated;
+            }
+
+            if (monitor.deviceId.number != 0 && savedId.deviceId.number != monitor.deviceId.number)
+            {
+                savedId.deviceId.number = monitor.deviceId.number;
+                if (result == ConnectedMonitorSync::Unchanged)
+                {
+                    result = ConnectedMonitorSync::NumberUpdated;
+                }
+            }
+
+            return result;
+        }
+
+        return ConnectedMonitorSync::NotConnected;
     }
 
     FancyZonesUtils::Rect GetWorkAreaRect(HMONITOR monitor)

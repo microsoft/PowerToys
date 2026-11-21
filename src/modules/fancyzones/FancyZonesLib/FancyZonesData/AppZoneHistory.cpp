@@ -289,22 +289,8 @@ void AppZoneHistory::AdjustWorkAreaIds(const std::vector<FancyZonesDataTypes::Mo
     {
         for (auto& dataIter : data)
         {
-            auto& dataMonitorId = dataIter.workAreaId.monitorId;
-            bool serialNumberNotSet = dataMonitorId.serialNumber.empty() && !dataMonitorId.deviceId.isDefault();
-            bool monitorNumberNotSet = dataMonitorId.deviceId.number == 0;
-            if (serialNumberNotSet || monitorNumberNotSet)
-            {
-                for (const auto& monitorId : ids)
-                {
-                    if (dataMonitorId.deviceId.id == monitorId.deviceId.id && dataMonitorId.deviceId.instanceId == monitorId.deviceId.instanceId)
-                    {
-                        dataMonitorId.serialNumber = monitorId.serialNumber;
-                        dataMonitorId.deviceId.number = monitorId.deviceId.number;
-                        dirtyFlag = true;
-                        break;
-                    }
-                }
-            }
+            auto syncResult = MonitorUtils::SyncWithConnectedMonitor(dataIter.workAreaId.monitorId, ids);
+            dirtyFlag |= syncResult == MonitorUtils::ConnectedMonitorSync::NumberUpdated || syncResult == MonitorUtils::ConnectedMonitorSync::SerialNumberUpdated;
         }
     }
 

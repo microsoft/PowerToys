@@ -19,6 +19,19 @@ namespace MonitorUtils
     }
 
     std::vector<FancyZonesDataTypes::MonitorId> IdentifyMonitors() noexcept;
+    void AssignSerialNumbers(std::vector<FancyZonesDataTypes::MonitorId>& displays, const std::vector<FancyZonesDataTypes::MonitorId>& hardwareMonitors) noexcept;
+
+    enum class ConnectedMonitorSync
+    {
+        NotConnected,
+        Unchanged,
+        NumberUpdated,
+        SerialNumberUpdated
+    };
+
+    // Updates the serial number and monitor number of a saved id from the connected monitor with the same device and instance id.
+    ConnectedMonitorSync SyncWithConnectedMonitor(FancyZonesDataTypes::MonitorId& savedId, const std::vector<FancyZonesDataTypes::MonitorId>& connectedMonitors) noexcept;
+
     void OpenWindowOnActiveMonitor(HWND window, HMONITOR monitor) noexcept;
 
     FancyZonesUtils::Rect GetWorkAreaRect(HMONITOR monitor);
