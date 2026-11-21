@@ -25,6 +25,7 @@
 #include <FancyZonesLib/KeyboardInput.h>
 #include <FancyZonesLib/MonitorUtils.h>
 #include <FancyZonesLib/on_thread_executor.h>
+#include <FancyZonesLib/PendingNewWindows.h>
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/trace.h>
@@ -87,6 +88,11 @@ namespace
 
     constexpr UINT_PTR MonitorRotationCommitTimerId = 0x4D525443;
     constexpr UINT MonitorRotationCommitDelayMillis = 760;
+
+    // New windows are moved only after they stayed visible this long, so windows that an application
+    // shows and hides again right away (e.g. 3ds Max's MAXScript Debugger during startup) are left alone.
+    constexpr UINT_PTR NewWindowSettleTimerId = 0x4E575354;
+    constexpr UINT NewWindowSettleDelayMillis = 100;
 
     struct WindowRotationSnapshot
     {
@@ -328,6 +334,7 @@ public:
     void AbortMoveSize();
 
     void WindowCreated(HWND window) noexcept;
+    void ProcessSettledNewWindows() noexcept;
     void ToggleEditor() noexcept;
 
     LRESULT WndProc(HWND, UINT, WPARAM, LPARAM) noexcept;
@@ -379,6 +386,7 @@ private:
     MonitorRotation::KeyState m_monitorRotationKeyState;
     std::optional<bool> m_pendingMonitorRotationReverse;
     std::unordered_map<HMONITOR, size_t> m_monitorRotationContentNumbers;
+    PendingNewWindows m_pendingNewWindows{ NewWindowSettleDelayMillis };
 
     wil::unique_handle m_terminateEditorEvent; // Handle of FancyZonesEditor.exe we launch and wait on
 
@@ -678,6 +686,30 @@ void FancyZones::WindowCreated(HWND window) noexcept
         {
             FancyZonesWindowProperties::StampMovedOnOpeningProperty(window);
             m_dpiUnawareThread.submit(OnThreadExecutor::task_t{ [&] { MonitorUtils::OpenWindowOnActiveMonitor(window, active); } }).wait();
+        }
+    }
+}
+
+void FancyZones::ProcessSettledNewWindows() noexcept
+{
+    KillTimer(m_window, NewWindowSettleTimerId);
+
+    // WindowCreated checks again whether each window is still visible and can be processed.
+    for (HWND window : m_pendingNewWindows.TakeSettled(GetTickCount64()))
+    {
+        WindowCreated(window);
+    }
+
+    if (const auto delay = m_pendingNewWindows.NextSettleDelay(GetTickCount64()); delay.has_value())
+    {
+        const UINT timeout = (std::max)(static_cast<UINT>(*delay), static_cast<UINT>(USER_TIMER_MINIMUM));
+        if (SetTimer(m_window, NewWindowSettleTimerId, timeout, nullptr) == 0)
+        {
+            Logger::error(L"Failed to set the new window settle timer, {}", get_last_error_or_default(GetLastError()));
+            for (HWND window : m_pendingNewWindows.TakeAll())
+            {
+                WindowCreated(window);
+            }
         }
     }
 }
@@ -1012,12 +1044,29 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         }
         else if (message == WM_PRIV_WINDOWCREATED)
         {
-            auto hwnd = reinterpret_cast<HWND>(wparam);
-            WindowCreated(hwnd);
+            const auto& settings = FancyZonesSettings::settings();
+            if (settings.appLastZone_moveWindows || settings.openWindowOnActiveMonitor)
+            {
+                // Arm the timer only for the first pending window: restarting it on every event would
+                // postpone processing indefinitely while other windows keep being created.
+                auto hwnd = reinterpret_cast<HWND>(wparam);
+                const bool timerArmed = !m_pendingNewWindows.Empty();
+                m_pendingNewWindows.Add(hwnd, GetTickCount64());
+                if (!timerArmed && SetTimer(m_window, NewWindowSettleTimerId, NewWindowSettleDelayMillis, nullptr) == 0)
+                {
+                    m_pendingNewWindows.Remove(hwnd);
+                    WindowCreated(hwnd);
+                }
+            }
+        }
+        else if (message == WM_TIMER && wparam == NewWindowSettleTimerId)
+        {
+            ProcessSettledNewWindows();
         }
         else if (message == WM_PRIV_WINDOWDESTROYED)
         {
             auto hwnd = reinterpret_cast<HWND>(wparam);
+            m_pendingNewWindows.Remove(hwnd);
             // If the destroyed window was being dragged, abort the drag without
             // snapping. Calling MoveSizeEnd() here would snap the now-destroyed
             // HWND into a zone and corrupt the layout state.
