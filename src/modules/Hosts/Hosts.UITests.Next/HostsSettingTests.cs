@@ -99,7 +99,6 @@ namespace Hosts.UITests
         public void TestWarningDialog()
         {
             var hostsSession = LaunchFromSetting(showWarning: true);
-            var settingsSession = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
 
             // Validating Warning-Dialog will be shown if 'Show a warning at startup' toggle is on.
             Assert.IsTrue(
@@ -128,8 +127,7 @@ namespace Hosts.UITests
             TestContext.WriteLine("Startup Quit closed the editor.");
 
             // Re-launch Hosts File Editor from Settings.
-            settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
-            hostsSession = AttachHostsEditor();
+            hostsSession = LaunchHostsEditor();
 
             // Should show warning dialog.
             Assert.IsTrue(
@@ -519,14 +517,26 @@ namespace Hosts.UITests
             settingsSession.FindExact<ToggleSwitch>("Open as administrator").Toggle(openAsAdmin);
             settingsSession.FindExact<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 
-            // Launch Hosts File Editor.
-            settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
-
-            return AttachHostsEditor();
+            return LaunchHostsEditor();
         }
 
-        private static Session AttachHostsEditor()
+        private Session LaunchHostsEditor()
         {
+            // Settings can have visible helper windows; bind the actual main window before clicking its card.
+            const string settingsProcess = "PowerToys.Settings";
+            var settings = WindowsFinder.WaitForWindowByApp(
+                settingsProcess,
+                window => string.Equals(window.ProcessName, settingsProcess, StringComparison.OrdinalIgnoreCase) &&
+                          window.ClassName == "WinUIDesktopWin32WindowClass" &&
+                          window.Title.Contains("PowerToys Settings", StringComparison.OrdinalIgnoreCase) &&
+                          !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)));
+            Assert.IsNotNull(settings, "PowerToys Settings did not expose a visible main window.");
+            var launchCard = settings.FindExact<Button>("Open Hosts File Editor");
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(settings.WindowHandle), timeoutMS: 15_000, requiredConsecutiveMatches: 3),
+                $"Settings window {settings.WindowHandle} should own foreground before opening Hosts. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Clicking Open Hosts File Editor in Settings and waiting for the editor window.");
+            launchCard.Click(msPostAction: 0);
             var hostsSession = Session.Attach(PowerToysModule.Hosts);
             WindowHelper.MaximizeWindow(new IntPtr(hostsSession.WindowHandle));
             Thread.Sleep(200);
