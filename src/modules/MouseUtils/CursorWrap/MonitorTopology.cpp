@@ -8,6 +8,48 @@
 #include "../../../common/logger/logger.h"
 #include <algorithm>
 #include <cmath>
+#include <optional>
+#include <utility>
+
+namespace
+{
+    // Seamless Multi-Screen Cursor, another Mouse Utility in this process, moves the cursor to a physically adjacent
+    // monitor across parts of outer edges; CursorWrap must not wrap there. Its exports are looked up once, which is
+    // enough because the runner loads every module DLL before it enables any of them. The DLL is pinned: on exit or
+    // restart the runner may unload it while this hook is still running.
+    FARPROC SeamlessCursorExport(const char* name)
+    {
+        static const HMODULE module = []() -> HMODULE {
+            HMODULE seamless = nullptr;
+            return GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_PIN, L"PowerToys.SeamlessCursor.dll", &seamless) ? seamless : nullptr;
+        }();
+
+        return module ? GetProcAddress(module, name) : nullptr;
+    }
+
+    // Both modules number edges left, right, top, bottom from 0.
+    bool IsEdgeClaimedBySeamlessCursor(const RECT& monitorRect, EdgeType edge, int along)
+    {
+        using IsEdgeClaimed = bool(__cdecl*)(RECT, int, int);
+        static const auto isEdgeClaimed = reinterpret_cast<IsEdgeClaimed>(SeamlessCursorExport("SeamlessCursor_IsEdgeClaimed"));
+        return isEdgeClaimed && isEdgeClaimed(monitorRect, static_cast<int>(edge), along);
+    }
+
+    // Where its calibration tells, Seamless gives the coordinate on the target monitor at the same physical position,
+    // so a wrap between monitors of different pixel size keeps the pointer's physical height (or horizontal position).
+    std::optional<int> MapWrapWithSeamlessCursor(const RECT& from, EdgeType edge, int along, const RECT& to)
+    {
+        using MapWrap = bool(__cdecl*)(RECT, int, int, RECT, int*);
+        static const auto mapWrap = reinterpret_cast<MapWrap>(SeamlessCursorExport("SeamlessCursor_MapWrap"));
+        int mapped = 0;
+        if (mapWrap && mapWrap(from, static_cast<int>(edge), along, to, &mapped))
+        {
+            return mapped;
+        }
+
+        return std::nullopt;
+    }
+}
 
 void MonitorTopology::Initialize(const std::vector<MonitorInfo>& monitors)
 {
@@ -314,6 +356,11 @@ bool MonitorTopology::IsOnOuterEdge(HMONITOR monitor, const POINT& cursorPos, Ed
         }
     }
 
+    std::erase_if(candidateEdges, [&](EdgeType edge) {
+        const int along = (edge == EdgeType::Left || edge == EdgeType::Right) ? cursorPos.y : cursorPos.x;
+        return IsEdgeClaimedBySeamlessCursor(monitorRect, edge, along);
+    });
+
     if (candidateEdges.empty())
     {
         return false;
@@ -445,6 +492,59 @@ POINT MonitorTopology::GetWrapDestination(HMONITOR fromMonitor, const POINT& cur
         {
             // Overlapping region - preserve X coordinate
             result.x = cursorPos.x;
+        }
+    }
+
+    // Seamless may know where the same physical position is. The target monitor was picked by pixel coordinate; when
+    // that position lies off it, the outermost other outer edge of the same side where it lands takes the cursor. Wraps
+    // within one monitor are left alone.
+    const auto isMonitor = [this](int index) { return index >= 0 && static_cast<size_t>(index) < m_monitors.size(); };
+    const auto inside = [](int along, const MonitorEdge& edge) { return along >= edge.start && along < edge.end; };
+    MonitorEdge target = oppositeResult.edge;
+    if (isMonitor(target.monitorIndex) && target.monitorIndex != monitorIndex)
+    {
+        const RECT& fromRect = m_monitors[monitorIndex].rect;
+        auto mapped = MapWrapWithSeamlessCursor(fromRect, edgeType, cursorCoord, m_monitors[target.monitorIndex].rect);
+        if (mapped && !inside(*mapped, target))
+        {
+            // Right and bottom edges lie further out the larger their position, left and top edges the smaller.
+            const bool outerIsLarger = target.type == EdgeType::Right || target.type == EdgeType::Bottom;
+            std::optional<std::pair<MonitorEdge, int>> best;
+            for (const auto& edge : m_outerEdges)
+            {
+                if (edge.type != target.type || edge.monitorIndex == target.monitorIndex || !isMonitor(edge.monitorIndex))
+                {
+                    continue;
+                }
+
+                const auto other = MapWrapWithSeamlessCursor(fromRect, edgeType, cursorCoord, m_monitors[edge.monitorIndex].rect);
+                if (other && inside(*other, edge) &&
+                    (!best || (outerIsLarger ? edge.position > best->first.position : edge.position < best->first.position)))
+                {
+                    best = std::make_pair(edge, *other);
+                }
+            }
+
+            if (best)
+            {
+                target = best->first;
+                mapped = best->second;
+            }
+        }
+
+        if (mapped)
+        {
+            // Keep clear of the rows at the ends of the edge, which IsOnOuterEdge takes for the adjacent edge.
+            const int margin = target.end - target.start > 6 ? 2 : 0;
+            const int along = std::clamp(*mapped, target.start + margin, target.end - 1 - margin);
+            if (edgeType == EdgeType::Left || edgeType == EdgeType::Right)
+            {
+                result = { target.position, along };
+            }
+            else
+            {
+                result = { along, target.position };
+            }
         }
     }
 

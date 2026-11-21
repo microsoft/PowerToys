@@ -103,6 +103,10 @@ namespace winrt::PowerToys::Interop::implementation
     {
         return CommonSharedConstants::CURSOR_WRAP_TRIGGER_EVENT;
     }
+    hstring Constants::SeamlessCursorCalibrateEvent()
+    {
+        return CommonSharedConstants::SEAMLESS_CURSOR_CALIBRATE_EVENT;
+    }
     hstring Constants::LightSwitchToggleEvent()
     {
         return CommonSharedConstants::LIGHTSWITCH_TOGGLE_EVENT;

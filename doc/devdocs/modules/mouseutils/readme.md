@@ -19,6 +19,7 @@ Mouse Utilities includes the following sub-modules:
 - **[Mouse Jump](mousejump.md)**: Allows quick cursor movement to specific screen locations
 - **[Mouse Pointer Crosshairs](mousepointer.md)**: Displays crosshair lines that follow the mouse cursor
 - **[Mouse Button Lock](mousebuttonlock.md)**: A ClickLock equivalent for the left, right, and middle mouse buttons - hold a button to lock it down for hands-free dragging, then click any button to release (left is optional and off by default)
+- **[Seamless Multi-Screen Cursor](seamlesscursor.md)**: Moves the pointer between monitors at the same physical position
 
 ## Architecture
 
@@ -41,6 +42,7 @@ Most of the sub-modules (Find My Mouse, Mouse Highlighter, Mouse Pointer Crossha
 - [MouseJumpUI](/src/modules/MouseUtils/MouseJumpUI)
 - [MouseJump.Common](/src/modules/MouseUtils/MouseJump.Common)
 - [MouseButtonLock](/src/modules/MouseUtils/MouseButtonLock)
+- [SeamlessCursor](/src/modules/MouseUtils/SeamlessCursor)
 
 ## Community Contributors
 

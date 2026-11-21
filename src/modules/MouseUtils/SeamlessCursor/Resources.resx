@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Seamless_Cursor_Name" xml:space="preserve">
+    <value>Seamless Multi-Screen Cursor</value>
+    <comment>Seamless Multi-Screen Cursor is a product name of a PowerToys Mouse Utility.</comment>
+  </data>
+  <data name="Overlay_Instructions_Align" xml:space="preserve">
+    <value>Each border between two monitors has two numbered pairs of lines in its color. Drag the lines of each pair until together they look like one straight line running across the bezel. Keep pair 1 and pair 2 far apart.</value>
+    <comment>First paragraph of the calibration instructions. Lines are colored markers along the edges of each monitor.</comment>
+  </data>
+  <data name="Overlay_Instructions_Try" xml:space="preserve">
+    <value>Try while adjusting: move the pointer across a border to check the result before you save. With Pointer trail on, move it straight across: its trail should look straight.</value>
+    <comment>Second paragraph of the calibration instructions. "Try while adjusting" is the name of a switch in the same panel.</comment>
+  </data>
+  <data name="Overlay_Instructions_Switches" xml:space="preserve">
+    <value>To keep the usual Windows behavior at a border, turn its Smooth crossing switch off. To let the pointer cross a gap between two monitors that face each other, turn their Glue switch on.</value>
+    <comment>Third paragraph of the calibration instructions. "Smooth crossing" and "Glue" are names of switches on the monitors.</comment>
+  </data>
+  <data name="Overlay_Key_Tab" xml:space="preserve">
+    <value>Tab: next line, switch or button</value>
+    <comment>Keyboard hint, kept on one line. Tab is a key name.</comment>
+  </data>
+  <data name="Overlay_Key_Arrows" xml:space="preserve">
+    <value>Arrow keys: move the line (Shift: faster)</value>
+    <comment>Keyboard hint, kept on one line. Shift is a key name.</comment>
+  </data>
+  <data name="Overlay_Key_Space" xml:space="preserve">
+    <value>Space: press</value>
+    <comment>Keyboard hint, kept on one line. Space is a key name; "press" means using the switch or button that Tab selected.</comment>
+  </data>
+  <data name="Overlay_Key_Enter" xml:space="preserve">
+    <value>Enter: save</value>
+    <comment>Keyboard hint, kept on one line. Enter is a key name.</comment>
+  </data>
+  <data name="Overlay_Key_Esc" xml:space="preserve">
+    <value>Esc: cancel</value>
+    <comment>Keyboard hint, kept on one line. Esc is a key name.</comment>
+  </data>
+  <data name="Overlay_No_Borders" xml:space="preserve">
+    <value>No monitors share a border. Arrange the monitors so they touch in Windows display settings, then calibrate again.</value>
+    <comment>Shown in the calibration panel when no two monitors touch.</comment>
+  </data>
+  <data name="Overlay_Save" xml:space="preserve">
+    <value>Save</value>
+    <comment>Button</comment>
+  </data>
+  <data name="Overlay_Reset" xml:space="preserve">
+    <value>Reset</value>
+    <comment>Button that puts all lines back to their predicted positions</comment>
+  </data>
+  <data name="Overlay_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Button</comment>
+  </data>
+  <data name="Overlay_Close" xml:space="preserve">
+    <value>Close</value>
+    <comment>Button</comment>
+  </data>
+  <data name="Overlay_Crossing_On" xml:space="preserve">
+    <value>Smooth crossing: On</value>
+    <comment>Switch for one border between two monitors, in its on state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Crossing_Off" xml:space="preserve">
+    <value>Smooth crossing: Off</value>
+    <comment>Switch for one border between two monitors, in its off state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Issue_Too_Close" xml:space="preserve">
+    <value>The pairs are close together. Move them further apart for better precision.</value>
+    <comment>Warning shown next to a border. A pair is two lines, one on each monitor.</comment>
+  </data>
+  <data name="Overlay_Issue_Invalid" xml:space="preserve">
+    <value>Two lines are at the same spot. This border is not used until they are apart.</value>
+    <comment>Error shown next to a border</comment>
+  </data>
+  <data name="Overlay_Issue_Reversed" xml:space="preserve">
+    <value>The lines are in a different order on the two screens. This border is not used until that is fixed.</value>
+    <comment>Error shown next to a border</comment>
+  </data>
+  <data name="Overlay_Issue_Scale" xml:space="preserve">
+    <value>The lines do not match a plausible screen size. This border is not used until they do.</value>
+    <comment>Error shown next to a border</comment>
+  </data>
+  <data name="Overlay_Save_Failed" xml:space="preserve">
+    <value>Saving failed. Try again, or press Esc to close without saving.</value>
+    <comment>Esc is a key name</comment>
+  </data>
+  <data name="Overlay_Save_Blocked" xml:space="preserve">
+    <value>Cannot save, because the saved calibration could not be read. Press Esc, then open the calibration again.</value>
+    <comment>Esc is a key name</comment>
+  </data>
+  <data name="Overlay_Preview_On" xml:space="preserve">
+    <value>Try while adjusting: On</value>
+    <comment>Switch in its on state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Preview_Off" xml:space="preserve">
+    <value>Try while adjusting: Off</value>
+    <comment>Switch in its off state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Glue_On" xml:space="preserve">
+    <value>Glue to {0}: On</value>
+    <comment>Switch in its on state. {0} is the name of the other monitor. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Glue_Off" xml:space="preserve">
+    <value>Glue to {0}: Off</value>
+    <comment>Switch in its off state. {0} is the name of the other monitor. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Map_On" xml:space="preserve">
+    <value>Edge map: On</value>
+    <comment>Switch in its on state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Map_Off" xml:space="preserve">
+    <value>Edge map: Off</value>
+    <comment>Switch in its off state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Trail_On" xml:space="preserve">
+    <value>Pointer trail: On</value>
+    <comment>Switch in its on state: the pointer leaves fading dots behind it. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Trail_Off" xml:space="preserve">
+    <value>Pointer trail: Off</value>
+    <comment>Switch in its off state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Stop_On" xml:space="preserve">
+    <value>Stop at empty edges: On</value>
+    <comment>Switch in its on state: the pointer stops where no monitor is physically across. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Stop_Off" xml:space="preserve">
+    <value>Stop at empty edges: Off</value>
+    <comment>Switch in its off state. Keep it short: it is shown on a fixed-width switch.</comment>
+  </data>
+  <data name="Overlay_Map_Legend" xml:space="preserve">
+    <value>Edge map: in the border's color, the pointer crosses. Red, it stops (CursorWrap can still wrap it at outer edges). No color, Windows decides.</value>
+    <comment>Legend for the colored strips along the monitor edges. CursorWrap is a product name of another Mouse Utility.</comment>
+  </data>
+  <data name="Setting_Stop_At_Empty_Edges" xml:space="preserve">
+    <value>Stop the pointer where no monitor is physically across</value>
+    <comment>Setting</comment>
+  </data>
+  <data name="Setting_Map_Cursor_Wrap" xml:space="preserve">
+    <value>Keep the physical position when CursorWrap wraps the pointer</value>
+    <comment>Setting. CursorWrap is a product name of another Mouse Utility.</comment>
+  </data>
+  <data name="Overlay_Monitors_Unknown" xml:space="preserve">
+    <value>Windows does not report which monitors are connected right now, for example in a remote session, so they cannot be calibrated. Try again later.</value>
+    <comment>Shown in the calibration panel instead of the instructions.</comment>
+  </data>
+</root>
