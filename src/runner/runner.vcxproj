@@ -68,6 +68,7 @@
   <ClCompile Include="quick_access_host.cpp" />
     <ClCompile Include="restart_elevated.cpp" />
     <ClCompile Include="centralized_kb_hook.cpp" />
+    <ClCompile Include="slow_hotkey_watchdog.cpp" />
     <ClCompile Include="settings_telemetry.cpp" />
     <ClCompile Include="settings_window.cpp" />
     <ClCompile Include="trace.cpp" />
@@ -88,6 +89,7 @@
     <ClInclude Include="hotkey_conflict_detector.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="centralized_kb_hook.h" />
+    <ClInclude Include="slow_hotkey_watchdog.h" />
     <ClInclude Include="settings_telemetry.h" />
     <ClInclude Include="UpdateUtils.h" />
     <ClInclude Include="powertoy_module.h" />

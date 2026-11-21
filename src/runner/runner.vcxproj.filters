@@ -33,6 +33,9 @@
     <ClCompile Include="centralized_kb_hook.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
+    <ClCompile Include="slow_hotkey_watchdog.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
     <ClCompile Include="..\common\interop\two_way_pipe_message_ipc.cpp">
       <Filter>Utils</Filter>
     </ClCompile>
@@ -100,6 +103,9 @@
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="centralized_kb_hook.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="slow_hotkey_watchdog.h">
       <Filter>Utils</Filter>
     </ClInclude>
     <ClInclude Include="settings_telemetry.h">

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "centralized_kb_hook.h"
+#include "slow_hotkey_watchdog.h"
 #include <atomic>
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
@@ -77,12 +78,41 @@ namespace CentralizedKeyboardHook
                 // This prevents ghost activations after the key was already released.
                 if (GetAsyncKeyState(static_cast<int>(it.virtualKey)) & 0x8000)
                 {
+                    const auto start = SlowHotkeyWatchdog::Clock::now();
                     it.action();
+                    const auto elapsed = SlowHotkeyWatchdog::Clock::now() - start;
+                    if (SlowHotkeyWatchdog::IsSlow(elapsed)) [[unlikely]]
+                    {
+                        SlowHotkeyWatchdog::ReportSlowAction(L"key hold timer", it.moduleName, L"hold " + SlowHotkeyWatchdog::DescribeHotkey(false, false, false, false, it.virtualKey), elapsed);
+                    }
                 }
             }
         }
 
         KillTimer(hwnd, idTimer);
+    }
+
+    // Slow path only: the descriptor is looked up again so the fast path doesn't copy the module name.
+    void ReportSlowHotkeyAction(const Hotkey& hotkey, SlowHotkeyWatchdog::Clock::duration elapsed) noexcept
+    {
+        try
+        {
+            std::wstring moduleName = L"<unknown>";
+            {
+                std::unique_lock lock{ mutex };
+                HotkeyDescriptor dummy{ .hotkey = hotkey };
+                auto it = hotkeyDescriptors.find(dummy);
+                if (it != hotkeyDescriptors.end())
+                {
+                    moduleName = it->moduleName;
+                }
+            }
+
+            SlowHotkeyWatchdog::ReportSlowAction(L"keyboard hook", moduleName, SlowHotkeyWatchdog::DescribeHotkey(hotkey.win, hotkey.ctrl, hotkey.shift, hotkey.alt, hotkey.key), elapsed);
+        }
+        catch (...)
+        {
+        }
     }
 
     LRESULT CALLBACK KeyboardHookProc(_In_ int nCode, _In_ WPARAM wParam, _In_ LPARAM lParam)
@@ -176,7 +206,15 @@ namespace CentralizedKeyboardHook
 
         if (action)
         {
-            if (action())
+            const auto start = SlowHotkeyWatchdog::Clock::now();
+            const bool swallow = action();
+            const auto elapsed = SlowHotkeyWatchdog::Clock::now() - start;
+            if (SlowHotkeyWatchdog::IsSlow(elapsed)) [[unlikely]]
+            {
+                ReportSlowHotkeyAction(hotkey, elapsed);
+            }
+
+            if (swallow)
             {
                 // After invoking the hotkey send a dummy key to prevent Start Menu from activating
                 INPUT dummyEvent[1] = {};
