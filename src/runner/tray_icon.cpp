@@ -491,7 +491,6 @@ void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
                                   nullptr);
         WINRT_VERIFY(hwnd);
         CentralizedHotkeys::RegisterWindow(hwnd);
-        CentralizedKeyboardHook::RegisterWindow(hwnd);
         memset(&tray_icon_data, 0, sizeof(tray_icon_data));
         tray_icon_data.cbSize = sizeof(tray_icon_data);
         tray_icon_data.hIcon = icon;
@@ -642,10 +641,11 @@ void update_quick_access_hotkey(bool enabled, PowerToysSettings::HotkeyObject ho
         };
 
         hkmng.AddHotkey(hk, L"GeneralSettings", 0, true);
-        CentralizedKeyboardHook::SetHotkeyAction(L"QuickAccess", hk, []() {
-            open_quick_access_flyout_window();
-            return true;
-        });
+        CentralizedKeyboardHook::SetHotkeyAction(
+            L"QuickAccess",
+            hk,
+            [] { return CentralizedKeyboardHook::HotkeyDisposition::InvokeAndSwallow; },
+            [] { open_quick_access_flyout_window(); });
 
         current_hotkey = hotkey;
         is_registered = true;

@@ -17,7 +17,7 @@ namespace SlowHotkeyWatchdog
             }
 
             const auto durationMs = std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
-            Logger::warn(L"Slow hotkey action: {} ({}) took {} ms via {} (threshold {} ms). Hotkey actions run on the keyboard hook thread and must return quickly.",
+            Logger::warn(L"Slow hotkey action: {} ({}) took {} ms via {} (threshold {} ms). Hotkey actions run in order on the runner's main thread and delay later hotkeys while they run.",
                          moduleName,
                          hotkeyName,
                          durationMs,

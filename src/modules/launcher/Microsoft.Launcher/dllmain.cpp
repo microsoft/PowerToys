@@ -321,6 +321,24 @@ public:
         }
     }
 
+    // Runs on the keyboard hook thread. PowerToys Run normally owns its activation hotkey
+    // through RegisterHotKey, so the key passes through unless the centralized hook setting
+    // is on. The invoke still runs to start the process if it isn't running yet.
+    virtual HotkeyDisposition should_handle_hotkey(size_t /*hotkeyId*/) override
+    {
+        if (!m_enabled)
+        {
+            return HotkeyDisposition::PassThrough;
+        }
+
+        if (m_use_centralized_keyboard_hook)
+        {
+            return HotkeyDisposition::InvokeAndSwallow;
+        }
+
+        return processStarted ? HotkeyDisposition::PassThrough : HotkeyDisposition::InvokeAndPassThrough;
+    }
+
     // Process the hotkey event
     virtual bool on_hotkey(size_t /*hotkeyId*/) override
     {

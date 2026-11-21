@@ -25,13 +25,13 @@
     - set_config() to set various settings,
     - call_custom_action() when the user selects clicks a custom action in settings,
     - get_hotkeys() when the settings change, to make sure the hotkey(s) are up to date.
-    - on_hotkey() when the corresponding hotkey is pressed.
+    - should_handle_hotkey() and invoke_hotkey() when the corresponding hotkey is pressed.
 
   When terminating, the runner will:
     - call destroy() which should free all the memory and delete the PowerToy object,
     - unload the DLL.
 
-  The runner will call on_hotkey() even if the module is disabled.
+  The runner will call should_handle_hotkey() even if the module is disabled.
  */
 
 class PowertoyModuleIface
@@ -123,26 +123,23 @@ public:
         return std::nullopt;
     }
 
-    /* Called on the runner UI thread (via WM_HOTKEY), which also pumps the
-     * low-level keyboard hook, so the same "return quickly" contract as
-     * on_hotkey() applies.
+    /* Called on the runner's main thread (via WM_HOTKEY). This is the same thread
+     * that runs invoke_hotkey(), so it is serialized with the other module calls.
+     * A slow implementation delays other hotkeys, the tray icon and Settings, so
+     * keep it short. The runner logs a warning when it takes longer than 50 ms.
      */
     virtual void OnHotkeyEx()
     {
     }
 
-    /* Called when one of the registered hotkeys is pressed. Should return true
-     * if the key press is to be swallowed.
+    /* Legacy single-phase hotkey handler. Should return true if the key press is
+     * to be swallowed.
      *
-     * Threading contract: this is called synchronously on the runner thread that
-     * services the system-wide low-level keyboard hook (WH_KEYBOARD_LL). While it
-     * runs, keyboard input is stalled for the whole machine, and if it exceeds
-     * LowLevelHooksTimeout Windows may skip or remove the hook, which can leave
-     * modifier keys latched. Implementations must return quickly: do not launch
-     * processes, do file or network I/O, sleep, wait on blocking locks or events,
-     * touch the clipboard, or call SendInput here. Signal an event or post a
-     * message to another thread and do the heavy work there. The runner logs a
-     * warning when an action takes longer than 50 ms.
+     * The runner no longer calls this from the low-level keyboard hook. It calls
+     * should_handle_hotkey() on the hook thread and invoke_hotkey() on the
+     * runner's main thread. The default invoke_hotkey() calls on_hotkey() and
+     * ignores the return value, so modules that only implement on_hotkey() keep
+     * working. See should_handle_hotkey() for how the swallow decision is made.
      */
     virtual bool on_hotkey(size_t /*hotkeyId*/)
     {
@@ -170,6 +167,58 @@ public:
     virtual powertoys_gpo::gpo_rule_configured_t gpo_policy_enabled_configuration()
     {
         return powertoys_gpo::gpo_rule_configured_not_configured;
+    }
+
+    /* How the runner handles a press of a registered hotkey. */
+    enum class HotkeyDisposition
+    {
+        // Don't invoke the module and let the key reach the foreground app.
+        PassThrough,
+        // Invoke the module and also let the key reach the foreground app.
+        InvokeAndPassThrough,
+        // Invoke the module and swallow the key press.
+        InvokeAndSwallow,
+    };
+
+    /* Two-phase hotkey contract, phase 1. Called on the runner's low-level
+     * keyboard hook thread when one of the hotkeys from get_hotkeys() is pressed,
+     * to decide whether the key press is swallowed and whether invoke_hotkey()
+     * runs. Keyboard input for the whole machine waits for this call, so it must
+     * finish in microseconds: no I/O, COM, process launches, waits or locks that
+     * other threads may hold. Reading plain fields that other module methods
+     * write is acceptable here.
+     *
+     * The default returns InvokeAndSwallow when the module is enabled and
+     * PassThrough otherwise, which matches modules whose on_hotkey() returns
+     * their enabled state. Override it when the swallow decision depends on more
+     * than that (for example, on the foreground window).
+     *
+     * Appended at the end of the interface so that the existing vtable layout
+     * is unchanged.
+     */
+    virtual HotkeyDisposition should_handle_hotkey(size_t /*hotkeyId*/)
+    {
+        return is_enabled() ? HotkeyDisposition::InvokeAndSwallow : HotkeyDisposition::PassThrough;
+    }
+
+    /* Two-phase hotkey contract, phase 2. Called in FIFO order on the runner's
+     * main thread, the same thread that calls enable(), disable(), set_config()
+     * and the other module methods, after should_handle_hotkey() returned one of
+     * the Invoke dispositions. It is also called for the legacy Windows-key hold
+     * (WIN_KEY_HOLD_HOTKEY_ID) when the module is enabled.
+     *
+     * Keyboard input is not blocked while this runs, but the hook waits up to
+     * 50 ms for it to finish before releasing the key press. That keeps the
+     * foreground activation rights from the key press available to fast actions
+     * (SetForegroundWindow, AllowSetForegroundWindow). Slow actions still delay
+     * later hotkeys, the tray icon and Settings, and the runner logs a warning
+     * when one takes longer than 50 ms.
+     *
+     * The default calls on_hotkey() and ignores the return value.
+     */
+    virtual void invoke_hotkey(size_t hotkeyId)
+    {
+        on_hotkey(hotkeyId);
     }
 
     // Some actions like AdvancedPaste generate new inputs, which we don't want to catch again.

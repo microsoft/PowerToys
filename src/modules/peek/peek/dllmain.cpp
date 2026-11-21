@@ -423,6 +423,40 @@ private:
         return is_explorer_window(foregroundWindowHandle);
     }
 
+    // Hook-safe variant of is_peek_or_explorer_or_desktop_window_focused: identifies
+    // File Explorer by window class instead of enumerating ShellWindows over COM.
+    bool is_peek_or_explorer_or_desktop_window_focused_fast()
+    {
+        HWND foregroundWindowHandle = GetForegroundWindow();
+        if (foregroundWindowHandle == NULL)
+        {
+            return false;
+        }
+
+        DWORD pid{};
+        if (GetWindowThreadProcessId(foregroundWindowHandle, &pid) != 0)
+        {
+            const DWORD peekPid = m_processPid;
+            if (peekPid != 0 && pid == peekPid)
+            {
+                return true;
+            }
+        }
+
+        if (is_desktop_window(foregroundWindowHandle))
+        {
+            return true;
+        }
+
+        wchar_t className[MAX_PATH];
+        if (GetClassName(foregroundWindowHandle, className, MAX_PATH) == 0)
+        {
+            return false;
+        }
+
+        return wcscmp(className, L"CabinetWClass") == 0 || wcscmp(className, L"ExploreWClass") == 0;
+    }
+
     bool is_viewer_running()
     {
         if (m_hProcess == 0)
@@ -621,48 +655,64 @@ public:
         }
     }
 
-    virtual bool on_hotkey(size_t /*hotkeyId*/) override
+    // Runs on the keyboard hook thread, so it must not use COM or launch anything.
+    // Space mode passes the key through so typing a space still works in Explorer.
+    virtual HotkeyDisposition should_handle_hotkey(size_t /*hotkeyId*/) override
     {
-        if (m_enabled)
+        if (!m_enabled)
         {
-            bool spaceMode = m_enableSpaceToActivate && !(m_hotkey.win || m_hotkey.alt || m_hotkey.shift || m_hotkey.ctrl) && m_hotkey.key == ' ';
-            bool eligible = false;
-            if (spaceMode && g_foregroundHookActive.load(std::memory_order_relaxed))
-            {
-                eligible = g_foregroundEligible.load(std::memory_order_relaxed);
-            }
-            else
-            {
-                eligible = is_peek_or_explorer_or_desktop_window_focused();
-            }
-
-            if (eligible)
-            {
-                Logger::trace(L"Peek hotkey pressed and eligible for launching");
-
-                // TODO: fix VK_SPACE DestroyWindow in viewer app
-                if (!is_viewer_running())
-                {
-                    launch_process();
-                }
-
-                SetEvent(m_hInvokeEvent);
-
-                Trace::PeekInvoked();
-
-
-                if (spaceMode)
-                {
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
+            return HotkeyDisposition::PassThrough;
         }
 
-        return false;
+        bool spaceMode = m_enableSpaceToActivate && !(m_hotkey.win || m_hotkey.alt || m_hotkey.shift || m_hotkey.ctrl) && m_hotkey.key == ' ';
+        bool eligible = false;
+        if (spaceMode && g_foregroundHookActive.load(std::memory_order_relaxed))
+        {
+            eligible = g_foregroundEligible.load(std::memory_order_relaxed);
+        }
+        else
+        {
+            eligible = is_peek_or_explorer_or_desktop_window_focused_fast();
+        }
+
+        if (!eligible)
+        {
+            return HotkeyDisposition::PassThrough;
+        }
+
+        return spaceMode ? HotkeyDisposition::InvokeAndPassThrough : HotkeyDisposition::InvokeAndSwallow;
+    }
+
+    virtual void invoke_hotkey(size_t /*hotkeyId*/) override
+    {
+        if (!m_enabled)
+        {
+            return;
+        }
+
+        Logger::trace(L"Peek hotkey pressed and eligible for launching");
+
+        // TODO: fix VK_SPACE DestroyWindow in viewer app
+        if (!is_viewer_running())
+        {
+            launch_process();
+        }
+
+        SetEvent(m_hInvokeEvent);
+
+        Trace::PeekInvoked();
+    }
+
+    virtual bool on_hotkey(size_t hotkeyId) override
+    {
+        const auto disposition = should_handle_hotkey(hotkeyId);
+        if (disposition == HotkeyDisposition::PassThrough)
+        {
+            return false;
+        }
+
+        invoke_hotkey(hotkeyId);
+        return disposition == HotkeyDisposition::InvokeAndSwallow;
     }
 
     virtual void send_settings_telemetry() override

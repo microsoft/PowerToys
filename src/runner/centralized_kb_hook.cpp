@@ -1,19 +1,42 @@
 #include "pch.h"
 #include "centralized_kb_hook.h"
+#include "hotkey_dispatcher.h"
 #include "slow_hotkey_watchdog.h"
 #include <atomic>
+#include <future>
 #include <common/debug_control.h>
 #include <common/utils/winapi_error.h>
 #include <common/logger/logger.h>
 #include <common/interop/shared_constants.h>
 
+// Threading model:
+// - The WH_KEYBOARD_LL hook runs on a dedicated hook thread that does nothing else. For each
+//   registered hotkey it only calls the fast should_handle callback to decide whether the
+//   key press is swallowed.
+// - Module actions are queued to HotkeyDispatch::Dispatcher and run in FIFO order on the
+//   runner's main thread, which is the thread that calls the other module methods
+//   (enable, disable, set_config, ...). Modules rely on that serialization.
+// - The hook waits up to HandoffBudget for the queued action before it releases the key
+//   press, so fast actions finish while the runner still has the foreground activation
+//   rights of the key press, as they did when they ran inside the hook. Slow actions keep
+//   running after the hook returns, so they can no longer stall input.
 namespace CentralizedKeyboardHook
 {
+    namespace
+    {
+        constexpr auto HandoffBudget = SlowHotkeyWatchdog::SlowThreshold;
+        constexpr std::chrono::milliseconds HookThreadExitTimeout{ 2000 };
+        constexpr UINT WM_DRAIN_HOTKEY_ACTIONS = WM_APP + 1;
+        constexpr wchar_t DispatchWindowClassName[] = L"PToyCentralizedKbHookDispatch";
+    }
+
     struct HotkeyDescriptor
     {
         Hotkey hotkey;
         std::wstring moduleName;
-        std::function<bool()> action;
+        std::function<HotkeyDisposition()> shouldHandle;
+        std::function<void()> invoke;
+        std::shared_ptr<const HotkeyDispatch::HotkeyLabel> label;
 
         bool operator<(const HotkeyDescriptor& other) const
         {
@@ -30,7 +53,8 @@ namespace CentralizedKeyboardHook
     {
         DWORD virtualKey; // Virtual Key code of the key we're keeping track of.
         std::wstring moduleName;
-        std::function<bool()> action;
+        std::function<void()> action;
+        std::shared_ptr<const HotkeyDispatch::HotkeyLabel> label;
         UINT_PTR idTimer; // Timer ID for calling SET_TIMER with.
         UINT millisecondsToPress; // How much time the key must be pressed.
         bool operator<(const PressedKeyDescriptor& other) const
@@ -41,13 +65,22 @@ namespace CentralizedKeyboardHook
     };
     std::multiset<PressedKeyDescriptor> pressedKeyDescriptors;
     std::mutex pressedKeyMutex;
+    std::atomic_bool hasPressedKeyDescriptors{ false };
 
     // keep track of last pressed key, to detect repeated keys and if there are more keys pressed.
     const DWORD VK_DISABLED = CommonSharedConstants::VK_DISABLED;
     std::atomic<DWORD> vkCodePressed{ VK_DISABLED };
 
-    // Save the runner window handle for registering timers.
-    HWND runnerWindow;
+    HotkeyDispatch::Dispatcher dispatcher;
+
+    // Message-only window on the main thread. Posting to it wakes the hotkey worker. Window
+    // messages, unlike thread messages, are also dispatched by modal loops.
+    HWND dispatchWindow{};
+
+    // Hook thread state. timerWindow is owned by the hook thread and hosts the key hold timers.
+    std::thread hookThread;
+    DWORD hookThreadId{};
+    HWND timerWindow{};
 
     struct DestroyOnExit
     {
@@ -57,58 +90,76 @@ namespace CentralizedKeyboardHook
         }
     } destroyOnExitObj;
 
-    // Handle the pressed key proc
+    // Runs on the hook thread when a key was held long enough.
     void PressedKeyTimerProc(
         HWND hwnd,
         UINT /*message*/,
         UINT_PTR idTimer,
         DWORD /*dwTime*/)
     {
-        std::multiset<PressedKeyDescriptor> copy;
+        KillTimer(hwnd, idTimer);
+
+        std::vector<HotkeyDispatch::WorkItem> actions;
         {
-            // Make a copy, to look for the action to call.
             std::unique_lock lock{ pressedKeyMutex };
-            copy = pressedKeyDescriptors;
-        }
-        for (const auto& it : copy)
-        {
-            if (it.idTimer == idTimer)
+            for (const auto& it : pressedKeyDescriptors)
             {
                 // Revalidate that the key is still physically held before firing.
                 // This prevents ghost activations after the key was already released.
-                if (GetAsyncKeyState(static_cast<int>(it.virtualKey)) & 0x8000)
+                if (it.idTimer == idTimer && (GetAsyncKeyState(static_cast<int>(it.virtualKey)) & 0x8000))
                 {
-                    const auto start = SlowHotkeyWatchdog::Clock::now();
-                    it.action();
-                    const auto elapsed = SlowHotkeyWatchdog::Clock::now() - start;
-                    if (SlowHotkeyWatchdog::IsSlow(elapsed)) [[unlikely]]
-                    {
-                        SlowHotkeyWatchdog::ReportSlowAction(L"key hold timer", it.moduleName, L"hold " + SlowHotkeyWatchdog::DescribeHotkey(false, false, false, false, it.virtualKey), elapsed);
-                    }
+                    actions.push_back({ it.action, it.label });
                 }
             }
         }
 
-        KillTimer(hwnd, idTimer);
+        for (auto& action : actions)
+        {
+            dispatcher.Enqueue(std::move(action));
+        }
     }
 
-    // Slow path only: the descriptor is looked up again so the fast path doesn't copy the module name.
-    void ReportSlowHotkeyAction(const Hotkey& hotkey, SlowHotkeyWatchdog::Clock::duration elapsed) noexcept
+    // Slow path only: the report is queued so the hook thread doesn't log.
+    void QueueSlowCheckReport(const std::shared_ptr<const HotkeyDispatch::HotkeyLabel>& label, SlowHotkeyWatchdog::Clock::duration elapsed) noexcept
+    {
+        if (!label)
+        {
+            return;
+        }
+
+        dispatcher.Enqueue({ [label, elapsed] {
+                                SlowHotkeyWatchdog::ReportSlowAction(L"keyboard hook should_handle_hotkey", label->moduleName, label->hotkeyName + L" (should_handle_hotkey)", elapsed);
+                            },
+                             nullptr });
+    }
+
+    // Runs on the worker after each queued action.
+    void OnActionCompleted(const HotkeyDispatch::WorkItem& item, HotkeyDispatch::Clock::duration elapsed, std::exception_ptr error) noexcept
     {
         try
         {
-            std::wstring moduleName = L"<unknown>";
+            if (error)
             {
-                std::unique_lock lock{ mutex };
-                HotkeyDescriptor dummy{ .hotkey = hotkey };
-                auto it = hotkeyDescriptors.find(dummy);
-                if (it != hotkeyDescriptors.end())
+                const auto moduleName = item.label ? item.label->moduleName : std::wstring{ L"<unknown>" };
+                try
                 {
-                    moduleName = it->moduleName;
+                    std::rethrow_exception(error);
+                }
+                catch (const std::exception& e)
+                {
+                    Logger::error(L"Hotkey action for {} threw an exception", moduleName);
+                    Logger::error("Hotkey action exception: {}", e.what());
+                }
+                catch (...)
+                {
+                    Logger::error(L"Hotkey action for {} threw an unknown exception", moduleName);
                 }
             }
 
-            SlowHotkeyWatchdog::ReportSlowAction(L"keyboard hook", moduleName, SlowHotkeyWatchdog::DescribeHotkey(hotkey.win, hotkey.ctrl, hotkey.shift, hotkey.alt, hotkey.key), elapsed);
+            if (item.label && SlowHotkeyWatchdog::IsSlow(elapsed)) [[unlikely]]
+            {
+                SlowHotkeyWatchdog::ReportSlowAction(item.label->dispatchPath, item.label->moduleName, item.label->hotkeyName, elapsed);
+            }
         }
         catch (...)
         {
@@ -131,7 +182,7 @@ namespace CentralizedKeyboardHook
         }
 
         // Check if the keys are pressed.
-        if (!pressedKeyDescriptors.empty())
+        if (hasPressedKeyDescriptors.load(std::memory_order_relaxed))
         {
             bool wasKeyPressed = vkCodePressed != VK_DISABLED;
             // Hold the lock for the shortest possible duration
@@ -145,7 +196,7 @@ namespace CentralizedKeyboardHook
                     auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
                     for (; it != last; ++it)
                     {
-                        SetTimer(runnerWindow, it->idTimer, it->millisecondsToPress, PressedKeyTimerProc);
+                        SetTimer(timerWindow, it->idTimer, it->millisecondsToPress, PressedKeyTimerProc);
                     }
                 }
                 else if (vkCodePressed != keyPressInfo.vkCode)
@@ -156,7 +207,7 @@ namespace CentralizedKeyboardHook
                     auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
                     for (; it != last; ++it)
                     {
-                        KillTimer(runnerWindow, it->idTimer);
+                        KillTimer(timerWindow, it->idTimer);
                     }
                 }
                 vkCodePressed = keyPressInfo.vkCode;
@@ -168,7 +219,7 @@ namespace CentralizedKeyboardHook
                 auto [it, last] = pressedKeyDescriptors.equal_range(dummy);
                 for (; it != last; ++it)
                 {
-                    KillTimer(runnerWindow, it->idTimer);
+                    KillTimer(timerWindow, it->idTimer);
                 }
                 vkCodePressed = 0x100;
             }
@@ -192,7 +243,9 @@ namespace CentralizedKeyboardHook
             return CallNextHookEx(hHook, nCode, wParam, lParam);
         }
 
-        std::function<bool()> action;
+        std::function<HotkeyDisposition()> shouldHandle;
+        std::function<void()> invoke;
+        std::shared_ptr<const HotkeyDispatch::HotkeyLabel> label;
         {
             // Hold the lock for the shortest possible duration
             std::unique_lock lock{ mutex };
@@ -200,54 +253,153 @@ namespace CentralizedKeyboardHook
             auto it = hotkeyDescriptors.find(dummy);
             if (it != hotkeyDescriptors.end())
             {
-                action = it->action;
+                shouldHandle = it->shouldHandle;
+                invoke = it->invoke;
+                label = it->label;
             }
         }
 
-        if (action)
+        if (shouldHandle)
         {
-            const auto start = SlowHotkeyWatchdog::Clock::now();
-            const bool swallow = action();
-            const auto elapsed = SlowHotkeyWatchdog::Clock::now() - start;
-            if (SlowHotkeyWatchdog::IsSlow(elapsed)) [[unlikely]]
+            auto disposition = HotkeyDisposition::PassThrough;
+            const auto checkStart = SlowHotkeyWatchdog::Clock::now();
+            try
             {
-                ReportSlowHotkeyAction(hotkey, elapsed);
+                disposition = shouldHandle();
+            }
+            catch (...)
+            {
+                disposition = HotkeyDisposition::PassThrough;
             }
 
-            if (swallow)
+            const auto checkElapsed = SlowHotkeyWatchdog::Clock::now() - checkStart;
+            if (SlowHotkeyWatchdog::IsSlow(checkElapsed)) [[unlikely]]
             {
-                // After invoking the hotkey send a dummy key to prevent Start Menu from activating
-                INPUT dummyEvent[1] = {};
-                dummyEvent[0].type = INPUT_KEYBOARD;
-                dummyEvent[0].ki.wVk = 0xFF;
-                dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
-                dummyEvent[0].ki.dwExtraInfo = PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-                SendInput(1, dummyEvent, sizeof(INPUT));
+                QueueSlowCheckReport(label, checkElapsed);
+            }
 
-                // Swallow the key press
-                return 1;
+            if (disposition != HotkeyDisposition::PassThrough)
+            {
+                const auto ticket = dispatcher.Enqueue({ std::move(invoke), std::move(label) });
+
+                // Let a fast action finish while this key press is still being processed. A
+                // slow one keeps running on the worker after the budget, without stalling input.
+                dispatcher.WaitForCompletion(ticket, HandoffBudget);
+
+                if (disposition == HotkeyDisposition::InvokeAndSwallow)
+                {
+                    // After invoking the hotkey send a dummy key to prevent Start Menu from activating
+                    INPUT dummyEvent[1] = {};
+                    dummyEvent[0].type = INPUT_KEYBOARD;
+                    dummyEvent[0].ki.wVk = 0xFF;
+                    dummyEvent[0].ki.dwFlags = KEYEVENTF_KEYUP;
+                    dummyEvent[0].ki.dwExtraInfo = PowertoyModuleIface::CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+                    SendInput(1, dummyEvent, sizeof(INPUT));
+
+                    // Swallow the key press
+                    return 1;
+                }
             }
         }
 
         return CallNextHookEx(hHook, nCode, wParam, lParam);
     }
 
-    void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<bool()>&& action) noexcept
+    void HookThreadProc(std::promise<DWORD> ready) noexcept
     {
-        Logger::trace(L"Register hotkey action for {}", moduleName);
-        std::unique_lock lock{ mutex };
-        hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .action = std::move(action) });
+        // Create the message queue before reporting readiness, so that Stop() can post WM_QUIT.
+        MSG msg{};
+        PeekMessageW(&msg, nullptr, WM_USER, WM_USER, PM_NOREMOVE);
+
+        timerWindow = CreateWindowExW(0, L"STATIC", L"", 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, nullptr, nullptr);
+        hHook = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardHookProc, NULL, NULL);
+        const DWORD error = hHook ? ERROR_SUCCESS : GetLastError();
+        ready.set_value(error);
+
+        if (hHook)
+        {
+            while (GetMessageW(&msg, nullptr, 0, 0) > 0)
+            {
+                DispatchMessageW(&msg);
+            }
+
+            UnhookWindowsHookEx(hHook);
+            hHook = NULL;
+        }
+
+        if (timerWindow)
+        {
+            // Also kills the key hold timers.
+            DestroyWindow(timerWindow);
+            timerWindow = nullptr;
+        }
     }
 
-    void AddPressedKeyAction(const std::wstring& moduleName, const DWORD vk, const UINT milliseconds, std::function<bool()>&& action) noexcept
+    LRESULT CALLBACK DispatchWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+    {
+        if (message == WM_DRAIN_HOTKEY_ACTIONS)
+        {
+            dispatcher.DrainPending();
+            return 0;
+        }
+
+        return DefWindowProcW(hwnd, message, wParam, lParam);
+    }
+
+    bool CreateDispatchWindow() noexcept
+    {
+        const auto instance = GetModuleHandleW(nullptr);
+        WNDCLASSEXW windowClass{ .cbSize = sizeof(WNDCLASSEXW), .lpfnWndProc = DispatchWindowProc, .hInstance = instance, .lpszClassName = DispatchWindowClassName };
+        if (!RegisterClassExW(&windowClass) && GetLastError() != ERROR_CLASS_ALREADY_EXISTS)
+        {
+            return false;
+        }
+
+        dispatchWindow = CreateWindowExW(0, DispatchWindowClassName, L"", 0, 0, 0, 0, 0, HWND_MESSAGE, nullptr, instance, nullptr);
+        return dispatchWindow != nullptr;
+    }
+
+    void SetHotkeyAction(const std::wstring& moduleName, const Hotkey& hotkey, std::function<HotkeyDisposition()>&& shouldHandle, std::function<void()>&& invoke) noexcept
+    {
+        Logger::trace(L"Register hotkey action for {}", moduleName);
+        try
+        {
+            auto label = std::make_shared<const HotkeyDispatch::HotkeyLabel>(HotkeyDispatch::HotkeyLabel{
+                .dispatchPath = L"keyboard hook",
+                .moduleName = moduleName,
+                .hotkeyName = SlowHotkeyWatchdog::DescribeHotkey(hotkey.win, hotkey.ctrl, hotkey.shift, hotkey.alt, hotkey.key) });
+
+            std::unique_lock lock{ mutex };
+            hotkeyDescriptors.insert({ .hotkey = hotkey, .moduleName = moduleName, .shouldHandle = std::move(shouldHandle), .invoke = std::move(invoke), .label = std::move(label) });
+        }
+        catch (...)
+        {
+            Logger::error(L"Failed to register hotkey action for {}", moduleName);
+        }
+    }
+
+    void AddPressedKeyAction(const std::wstring& moduleName, const DWORD vk, const UINT milliseconds, std::function<void()>&& action) noexcept
     {
         // Calculate a unique TimerID.
         auto hash = std::hash<std::wstring>{}(moduleName); // Hash the module as the upper part of the timer ID.
         const UINT upperId = hash & 0xFFFF;
         const UINT lowerId = vk & 0xFFFF; // The key to press can be the lower ID.
         const UINT timerId = upperId << 16 | lowerId;
-        std::unique_lock lock{ pressedKeyMutex };
-        pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .idTimer = timerId, .millisecondsToPress = milliseconds });
+        try
+        {
+            auto label = std::make_shared<const HotkeyDispatch::HotkeyLabel>(HotkeyDispatch::HotkeyLabel{
+                .dispatchPath = L"key hold timer",
+                .moduleName = moduleName,
+                .hotkeyName = L"hold " + SlowHotkeyWatchdog::DescribeHotkey(false, false, false, false, vk) });
+
+            std::unique_lock lock{ pressedKeyMutex };
+            pressedKeyDescriptors.insert({ .virtualKey = vk, .moduleName = moduleName, .action = std::move(action), .label = std::move(label), .idTimer = timerId, .millisecondsToPress = milliseconds });
+            hasPressedKeyDescriptors = true;
+        }
+        catch (...)
+        {
+            Logger::error(L"Failed to register pressed key action for {}", moduleName);
+        }
     }
 
     void ClearPressedKeyActions(const std::wstring& moduleName) noexcept
@@ -261,12 +413,9 @@ namespace CentralizedKeyboardHook
         {
             if (it->moduleName == moduleName)
             {
+                // A timer that is still pending for this descriptor finds no match when it
+                // fires on the hook thread and stops itself.
                 removedTrackedKey |= it->virtualKey == trackedKey;
-                if (it->idTimer != 0)
-                {
-                    KillTimer(runnerWindow, it->idTimer);
-                }
-
                 it = pressedKeyDescriptors.erase(it);
             }
             else
@@ -275,6 +424,7 @@ namespace CentralizedKeyboardHook
             }
         }
 
+        hasPressedKeyDescriptors = !pressedKeyDescriptors.empty();
         if (pressedKeyDescriptors.empty())
         {
             vkCodePressed = VK_DISABLED;
@@ -318,42 +468,72 @@ namespace CentralizedKeyboardHook
 #else
         const bool hook_disabled = false;
 #endif
-        if (!hook_disabled)
+        if (hook_disabled || hookThread.joinable())
         {
-            if (!hHook)
+            return;
+        }
+
+        if (!dispatchWindow && !CreateDispatchWindow())
+        {
+            DWORD errorCode = GetLastError();
+            show_last_error_message(L"CreateWindowEx", errorCode, L"centralized_kb_hook");
+            return;
+        }
+
+        try
+        {
+            dispatcher.Start(
+                [] { PostMessageW(dispatchWindow, WM_DRAIN_HOTKEY_ACTIONS, 0, 0); },
+                OnActionCompleted);
+
+            std::promise<DWORD> ready;
+            auto hookResult = ready.get_future();
+            hookThread = std::thread(HookThreadProc, std::move(ready));
+            hookThreadId = GetThreadId(hookThread.native_handle());
+
+            const DWORD errorCode = hookResult.get();
+            if (errorCode != ERROR_SUCCESS)
             {
-                hHook = SetWindowsHookExW(WH_KEYBOARD_LL, KeyboardHookProc, NULL, NULL);
-                if (!hHook)
-                {
-                    DWORD errorCode = GetLastError();
-                    show_last_error_message(L"SetWindowsHookEx", errorCode, L"centralized_kb_hook");
-                }
+                hookThread.join();
+                hookThreadId = 0;
+                dispatcher.Shutdown();
+                show_last_error_message(L"SetWindowsHookEx", errorCode, L"centralized_kb_hook");
             }
+        }
+        catch (...)
+        {
+            dispatcher.Shutdown();
+            Logger::error("Failed to start the centralized keyboard hook thread");
         }
     }
 
     void Stop() noexcept
     {
-        // Kill all pending pressed-key timers before unhooking to prevent
-        // ghost callbacks firing after the hook is removed.
+        // Drop the queued actions before anything else, so that no module action runs after
+        // this point even if the caller pumps messages while unloading modules.
+        dispatcher.Shutdown();
+
+        if (hookThread.joinable())
         {
-            std::unique_lock lock{ pressedKeyMutex };
-            for (const auto& it : pressedKeyDescriptors)
+            PostThreadMessageW(hookThreadId, WM_QUIT, 0, 0);
+            if (WaitForSingleObject(hookThread.native_handle(), static_cast<DWORD>(HookThreadExitTimeout.count())) == WAIT_OBJECT_0)
             {
-                KillTimer(runnerWindow, it.idTimer);
+                hookThread.join();
             }
+            else
+            {
+                Logger::warn("The centralized keyboard hook thread didn't exit in time");
+                hookThread.detach();
+            }
+
+            hookThreadId = 0;
         }
 
         vkCodePressed = VK_DISABLED;
 
-        if (hHook && UnhookWindowsHookEx(hHook))
+        if (dispatchWindow && DestroyWindow(dispatchWindow))
         {
-            hHook = NULL;
+            dispatchWindow = nullptr;
         }
-    }
-
-    void RegisterWindow(HWND hwnd) noexcept
-    {
-        runnerWindow = hwnd;
     }
 }
