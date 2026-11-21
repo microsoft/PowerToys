@@ -55,6 +55,8 @@ namespace ColorPicker.UnitTests.ViewModels
 
             public SettingItem<bool> ShowColorName { get; } = new SettingItem<bool>(false);
 
+            public SettingItem<int> SampleSize { get; } = new SettingItem<int>(1);
+
             public void SendSettingsTelemetry()
             {
             }

@@ -15,6 +15,7 @@ using Windows.Foundation;
 using Windows.UI;
 
 using DrawingColor = System.Drawing.Color;
+using DrawingRectangle = System.Drawing.Rectangle;
 
 namespace ColorPicker.Views
 {
@@ -34,10 +35,28 @@ namespace ColorPicker.Views
 
         private Storyboard _resizeStoryboard;
         private Vector2 _pointerOffsetFromHostCenter;
+        private int _sampleSize = 1;
 
         public ZoomView()
         {
             InitializeComponent();
+        }
+
+        /// <summary>
+        /// Gets or sets the width and height, in source pixels, of the area around the pointer whose
+        /// average color is picked. The highlight covers the whole area so the user can see what is sampled.
+        /// </summary>
+        internal int SampleSize
+        {
+            get => _sampleSize;
+            set
+            {
+                if (_sampleSize != value)
+                {
+                    _sampleSize = value;
+                    ZoomCanvas.Invalidate();
+                }
+            }
         }
 
         /// <summary>
@@ -177,7 +196,7 @@ namespace ColorPicker.Views
                 return false;
             }
 
-            Color pixel = _zoomPixels[(pixelY * BaseZoomImageSize) + pixelX];
+            Color pixel = GetSampleColor(_zoomPixels, BaseZoomImageSize, pixelX, pixelY, _sampleSize);
             color = DrawingColor.FromArgb(pixel.A, pixel.R, pixel.G, pixel.B);
             return true;
         }
@@ -252,16 +271,15 @@ namespace ColorPicker.Views
                 }
             }
 
-            // Highlight the source cell under the live pointer, then restore a small opaque patch at
-            // the exact pointer position. MouseInfoProvider samples that physical screen pixel, so
-            // drawing the patch last prevents the grid/highlight from becoming the copied color.
-            float cellX = pointerPixelX * cell;
-            float cellY = pointerPixelY * cell;
-            Color pointerPixel = _zoomPixels[(pointerPixelY * n) + pointerPixelX];
-            var highlight = IsLight(pointerPixel) ? Colors.Black : Colors.White;
-            ds.DrawRectangle(new Rect(cellX, cellY, cell, cell), highlight, 2f);
+            // Highlight the sampled source cells around the live pointer, then restore a small opaque
+            // patch at the exact pointer position. MouseInfoProvider samples that physical screen pixel,
+            // so drawing the patch last prevents the grid/highlight from becoming the copied color.
+            var sampleCells = GetSampleCells(n, pointerPixelX, pointerPixelY, _sampleSize);
+            Color sampleColor = GetSampleColor(_zoomPixels, n, pointerPixelX, pointerPixelY, _sampleSize);
+            var highlight = IsLight(sampleColor) ? Colors.Black : Colors.White;
+            ds.DrawRectangle(new Rect(sampleCells.X * cell, sampleCells.Y * cell, sampleCells.Width * cell, sampleCells.Height * cell), highlight, 2f);
 
-            Color cursorSample = Color.FromArgb(byte.MaxValue, pointerPixel.R, pointerPixel.G, pointerPixel.B);
+            Color cursorSample = Color.FromArgb(byte.MaxValue, sampleColor.R, sampleColor.G, sampleColor.B);
             ds.FillRectangle(GetCursorSamplePatchBounds(pointerPosition), cursorSample);
         }
 
@@ -290,6 +308,53 @@ namespace ColorPicker.Views
             pixelX = Math.Min((int)(pointerPosition.X / (canvasWidth / bitmapSize)), bitmapSize - 1);
             pixelY = Math.Min((int)(pointerPosition.Y / (canvasHeight / bitmapSize)), bitmapSize - 1);
             return true;
+        }
+
+        /// <summary>
+        /// Returns the <paramref name="sampleSize"/> x <paramref name="sampleSize"/> block of source
+        /// cells centered on (<paramref name="pixelX"/>, <paramref name="pixelY"/>), clipped to the
+        /// <paramref name="bitmapSize"/> x <paramref name="bitmapSize"/> captured region.
+        /// </summary>
+        internal static DrawingRectangle GetSampleCells(int bitmapSize, int pixelX, int pixelY, int sampleSize)
+        {
+            var halfSize = sampleSize / 2;
+            var sampleCells = new DrawingRectangle(pixelX - halfSize, pixelY - halfSize, sampleSize, sampleSize);
+            sampleCells.Intersect(new DrawingRectangle(0, 0, bitmapSize, bitmapSize));
+            return sampleCells;
+        }
+
+        /// <summary>
+        /// Returns the color picked at (<paramref name="pixelX"/>, <paramref name="pixelY"/>): the pixel
+        /// itself for a sample size of 1, otherwise the average of the sampled block of source pixels.
+        /// </summary>
+        internal static Color GetSampleColor(Color[] pixels, int bitmapSize, int pixelX, int pixelY, int sampleSize)
+        {
+            if (sampleSize <= 1)
+            {
+                return pixels[(pixelY * bitmapSize) + pixelX];
+            }
+
+            var sampleCells = GetSampleCells(bitmapSize, pixelX, pixelY, sampleSize);
+            var red = 0;
+            var green = 0;
+            var blue = 0;
+            for (var y = sampleCells.Top; y < sampleCells.Bottom; y++)
+            {
+                for (var x = sampleCells.Left; x < sampleCells.Right; x++)
+                {
+                    var pixel = pixels[(y * bitmapSize) + x];
+                    red += pixel.R;
+                    green += pixel.G;
+                    blue += pixel.B;
+                }
+            }
+
+            var count = sampleCells.Width * sampleCells.Height;
+            return Color.FromArgb(
+                byte.MaxValue,
+                (byte)((red + (count / 2)) / count),
+                (byte)((green + (count / 2)) / count),
+                (byte)((blue + (count / 2)) / count));
         }
 
         internal static Vector2 GetPointerOffsetFromScreenPosition(
