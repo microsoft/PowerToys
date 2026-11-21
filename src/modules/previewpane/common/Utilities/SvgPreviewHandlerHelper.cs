@@ -82,6 +82,27 @@ namespace Common.Utilities
             return data.Substring(start, end - start);
         }
 
+        /// <summary>
+        /// Finds an attribute of the tag spanning [tagStartIndex, tagEndIndex). Only whole attribute names
+        /// (preceded by whitespace) match, so e.g. "width=" does not match inside "stroke-width=".
+        /// </summary>
+        private static int FindAttributeIndex(string data, string attributeName, int tagStartIndex, int tagEndIndex)
+        {
+            int index = tagStartIndex;
+
+            while ((index = data.IndexOf(attributeName, index, tagEndIndex - index, StringComparison.InvariantCultureIgnoreCase)) != -1)
+            {
+                if (index > 0 && char.IsWhiteSpace(data[index - 1]))
+                {
+                    return index;
+                }
+
+                index++;
+            }
+
+            return -1;
+        }
+
         private static string RemoveAttribute(string data, int startIndex, string attributeName, out int numRemoved)
         {
             numRemoved = 0;
@@ -171,15 +192,15 @@ namespace Common.Utilities
             firstXmlOpenTagIndex -= numRemoved;
             firstXmlCloseTagIndex -= numRemoved;
 
-            int widthIndex = stringSvgData.IndexOf(WidthAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex, StringComparison.InvariantCultureIgnoreCase);
-            int heightIndex = stringSvgData.IndexOf(HeightAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex, StringComparison.InvariantCultureIgnoreCase);
-            int styleIndex = stringSvgData.IndexOf(StyleAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex, StringComparison.InvariantCultureIgnoreCase);
+            int widthIndex = FindAttributeIndex(stringSvgData, WidthAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex);
+            int heightIndex = FindAttributeIndex(stringSvgData, HeightAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex);
+            int styleIndex = FindAttributeIndex(stringSvgData, StyleAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex);
 
             string width = GetAttributeValue(WidthAttribute.Length, stringSvgData, widthIndex);
             string height = GetAttributeValue(HeightAttribute.Length, stringSvgData, heightIndex);
             string oldStyle = GetAttributeValue(StyleAttribute.Length, stringSvgData, styleIndex);
 
-            bool hasViewBox = stringSvgData.IndexOf(ViewboxAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex - firstXmlOpenTagIndex, StringComparison.InvariantCultureIgnoreCase) != -1;
+            bool hasViewBox = FindAttributeIndex(stringSvgData, ViewboxAttribute, firstXmlOpenTagIndex, firstXmlCloseTagIndex) != -1;
 
             stringSvgData = RemoveAttribute(stringSvgData, widthIndex, WidthAttribute, out numRemoved);
             if (heightIndex != -1 && heightIndex > widthIndex)
