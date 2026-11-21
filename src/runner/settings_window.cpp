@@ -28,6 +28,7 @@
 #include <common/updating/updateState.h>
 #include <common/themes/windows_colors.h>
 #include "settings_window.h"
+#include "settings_window_logging.h"
 #include "settings_window_startup.h"
 #include "bug_report.h"
 
@@ -204,11 +205,11 @@ void dispatch_received_json(const std::wstring& json_to_parse)
     const bool ok = json::JsonObject::TryParse(json_to_parse, j);
     if (!ok)
     {
-        Logger::error(L"dispatch_received_json: got malformed json: {}", json_to_parse);
+        Logger::error(L"dispatch_received_json: got malformed json");
         return;
     }
 
-    Logger::info(L"dispatch_received_json: {}", json_to_parse);
+    settings_window_logging::log_received_settings(json_to_parse);
 
     for (const auto& base_element : j)
     {
