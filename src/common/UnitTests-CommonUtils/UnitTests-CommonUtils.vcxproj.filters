@@ -84,6 +84,9 @@
     <ClCompile Include="InputInjection.Tests.cpp">
       <Filter>Source Files\Process</Filter>
     </ClCompile>
+    <ClCompile Include="CopySelection.Tests.cpp">
+      <Filter>Source Files\Process</Filter>
+    </ClCompile>
     <ClCompile Include="Exec.Tests.cpp">
       <Filter>Source Files\Process</Filter>
     </ClCompile>
