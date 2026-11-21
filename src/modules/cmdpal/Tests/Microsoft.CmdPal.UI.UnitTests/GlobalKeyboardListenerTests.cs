@@ -435,7 +435,7 @@ public partial class GlobalKeyboardListenerTests
     {
         var failure = new Win32Exception(5);
         var hook = new FakeHook { InstallError = failure };
-        using var listener = new GlobalKeyboardListener(_ => { }, _ => { }, hook);
+        using var listener = new GlobalKeyboardListener(_ => { }, _ => { }, RunInline, hook);
 
         Assert.IsFalse(listener.Start(out var error));
         Assert.AreSame(failure, error);
@@ -479,11 +479,131 @@ public partial class GlobalKeyboardListenerTests
         Assert.ThrowsExactly<ObjectDisposedException>(() => harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "command"));
     }
 
+    [TestMethod]
+    public void SlowCommandDoesNotBlockHookAndRunsInOrderLater()
+    {
+        var queue = new QueuedDispatcher();
+        using var harness = new Harness(dispatch: queue.Enqueue, commandHandoffBudget: TimeSpan.FromMilliseconds(1));
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "first");
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4C, "second");
+        harness.Hook.SetModifiers(ctrl: true);
+
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        Assert.AreEqual(1, harness.Hook.Key(0x4C));
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.AreEqual(2, harness.Hook.DummyKeys);
+        Assert.AreEqual(0, harness.Hook.Forwarded);
+
+        queue.RunAll();
+        Assert.AreEqual(2, harness.Commands.Count);
+        Assert.AreEqual("first", harness.Commands[0]);
+        Assert.AreEqual("second", harness.Commands[1]);
+    }
+
+    [TestMethod]
+    public void WindowsKeyCommandIsDispatchedAfterReleasingWindowsKey()
+    {
+        var queue = new QueuedDispatcher();
+        using var harness = new Harness(dispatch: queue.Enqueue, commandHandoffBudget: TimeSpan.FromMilliseconds(1));
+        harness.Listener.SetWindowsKeyAction("win");
+
+        Assert.AreEqual(42, harness.Hook.Key((uint)VIRTUAL_KEY.VK_LWIN));
+        Assert.AreEqual(1, harness.Hook.Key((uint)VIRTUAL_KEY.VK_LWIN, message: 0x0101));
+        CollectionAssert.AreEqual(new[] { VIRTUAL_KEY.VK_LWIN }, harness.Hook.WindowsKeyReleases);
+        Assert.AreEqual(0, harness.Commands.Count);
+
+        queue.RunAll();
+        Assert.AreEqual(1, harness.Commands.Count);
+        Assert.AreEqual("win", harness.Commands[0]);
+    }
+
+    [TestMethod]
+    public void FastCommandOnAnotherThreadFinishesBeforeDummyKeyUp()
+    {
+        var dummyKeysAtCommand = -1;
+        Harness? harness = null;
+        using (harness = new Harness(
+            _ => dummyKeysAtCommand = harness!.Hook.DummyKeys,
+            dispatch: action => ThreadPool.QueueUserWorkItem(_ => action()),
+            commandHandoffBudget: TimeSpan.FromSeconds(10)))
+        {
+            harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, string.Empty);
+            harness.Hook.SetModifiers(ctrl: true);
+
+            Assert.AreEqual(1, harness.Hook.Key(0x4B));
+            Assert.AreEqual(0, dummyKeysAtCommand);
+            Assert.AreEqual(1, harness.Hook.DummyKeys);
+        }
+    }
+
+    [TestMethod]
+    public async Task DispatchFailureIsReportedAndKeyIsStillSwallowedAndMasked()
+    {
+        using var harness = new Harness(dispatch: _ => false);
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "command");
+        harness.Hook.SetModifiers(ctrl: true);
+
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        Assert.AreEqual(0, harness.Hook.Forwarded);
+        Assert.AreEqual(1, harness.Hook.DummyKeys);
+        Assert.AreEqual(0, harness.Commands.Count);
+        Assert.IsInstanceOfType<InvalidOperationException>(await harness.ReportedError.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+    }
+
+    [TestMethod]
+    public void QueuedCommandDoesNotRunAfterDispose()
+    {
+        var queue = new QueuedDispatcher();
+        using var harness = new Harness(dispatch: queue.Enqueue, commandHandoffBudget: TimeSpan.FromMilliseconds(1));
+        harness.Listener.SetHotkeyAction(false, true, false, false, 0x4B, "command");
+        harness.Hook.SetModifiers(ctrl: true);
+
+        Assert.AreEqual(1, harness.Hook.Key(0x4B));
+        harness.Listener.Dispose();
+        queue.RunAll();
+
+        Assert.AreEqual(0, harness.Commands.Count);
+    }
+
+    private static bool RunInline(Action action)
+    {
+        action();
+        return true;
+    }
+
+    private sealed partial class QueuedDispatcher
+    {
+        private readonly Queue<Action> _actions = new();
+
+        public bool Enqueue(Action action)
+        {
+            _actions.Enqueue(action);
+            return true;
+        }
+
+        public void RunAll()
+        {
+            while (_actions.TryDequeue(out var action))
+            {
+                action();
+            }
+        }
+    }
+
     private sealed partial class Harness : IDisposable
     {
-        public Harness(Action<string>? processCommand = null, Action<Exception>? reportError = null)
+        public Harness(
+            Action<string>? processCommand = null,
+            Action<Exception>? reportError = null,
+            Func<Action, bool>? dispatch = null,
+            TimeSpan? commandHandoffBudget = null)
         {
-            Listener = new GlobalKeyboardListener(processCommand ?? Commands.Add, reportError ?? (error => ReportedError.TrySetResult(error)), Hook);
+            Listener = new GlobalKeyboardListener(
+                processCommand ?? Commands.Add,
+                reportError ?? (error => ReportedError.TrySetResult(error)),
+                dispatch ?? RunInline,
+                Hook,
+                commandHandoffBudget);
             Assert.IsTrue(Listener.Start(out var error), error?.ToString());
         }
 

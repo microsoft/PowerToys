@@ -184,9 +184,12 @@ public sealed partial class MainWindow : WindowEx,
 
         _hiddenOwnerBehavior.ShowInTaskbar(this, Debugger.IsAttached);
 
+        // Capture the dispatcher here because the hook callback runs on its own thread.
+        var keyboardDispatcher = DispatcherQueue;
         _keyboardListener = new GlobalKeyboardListener(
             HandleSummon,
-            static error => Logger.LogError("Failed when invoking global keyboard hook", error));
+            static error => Logger.LogError("Failed when invoking global keyboard hook", error),
+            action => keyboardDispatcher.TryEnqueue(() => action()));
         StartKeyboardListener();
 
         WM_TASKBAR_RESTART = PInvoke.RegisterWindowMessage("TaskbarCreated");

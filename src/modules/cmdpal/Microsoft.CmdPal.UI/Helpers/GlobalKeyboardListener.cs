@@ -12,8 +12,13 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed partial class GlobalKeyboardListener : IDisposable
 {
+    // Matches the runner's hotkey handoff budget (#52257). Well under LowLevelHooksTimeout.
+    internal static readonly TimeSpan DefaultCommandHandoffBudget = TimeSpan.FromMilliseconds(50);
+
     private readonly Action<string> _processCommand;
     private readonly Action<Exception> _reportError;
+    private readonly Func<Action, bool> _dispatch;
+    private readonly TimeSpan _commandHandoffBudget;
     private readonly IGlobalKeyboardHook _hook;
     private readonly HOOKPROC _hookProc; // Keep the callback alive while the hook is installed.
     private readonly object _hotkeysLock = new();
@@ -22,14 +27,27 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
     private int _windowsKeysDown;
     private byte _pendingWindowsKey;
     private IDisposable? _handle;
-    private bool _disposed;
+    private volatile bool _disposed;
 
-    public GlobalKeyboardListener(Action<string> processCommand, Action<Exception> reportError, IGlobalKeyboardHook? hook = null)
+    /// <param name="processCommand">Runs a matched shortcut's command. Always invoked through <paramref name="dispatch"/>.</param>
+    /// <param name="reportError">Reports failures. Never invoked on the hook thread.</param>
+    /// <param name="dispatch">Queues work to the thread that owns <paramref name="processCommand"/>, in FIFO order, without running it inline.</param>
+    /// <param name="hook">The low-level keyboard hook to install.</param>
+    /// <param name="commandHandoffBudget">How long the hook waits for a queued command before it releases the key press.</param>
+    public GlobalKeyboardListener(
+        Action<string> processCommand,
+        Action<Exception> reportError,
+        Func<Action, bool> dispatch,
+        IGlobalKeyboardHook? hook = null,
+        TimeSpan? commandHandoffBudget = null)
     {
         ArgumentNullException.ThrowIfNull(processCommand);
         ArgumentNullException.ThrowIfNull(reportError);
+        ArgumentNullException.ThrowIfNull(dispatch);
         _processCommand = processCommand;
         _reportError = reportError;
+        _dispatch = dispatch;
+        _commandHandoffBudget = commandHandoffBudget ?? DefaultCommandHandoffBudget;
         _hook = hook ?? new GlobalKeyboardHook();
         _hookProc = KeyboardHook;
     }
@@ -46,7 +64,7 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
 
         try
         {
-            // The callback runs on this thread, which must keep pumping messages.
+            // The hook runs on its own thread, so a busy UI thread cannot stall keyboard input.
             _handle = _hook.Install(_hookProc);
             return true;
         }
@@ -167,6 +185,10 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
         }
     }
 
+    // Runs on the hook thread, which stalls all keyboard input until it returns. Only the
+    // swallow decision and the masking key-ups happen here. Commands run on the dispatch
+    // thread. The key-ups stay here because they replace or follow the swallowed key press,
+    // and sending them later could leave a modifier logically held.
     private unsafe LRESULT KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam)
     {
         var matched = false;
@@ -182,7 +204,7 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
                 {
                     _hook.SendWindowsKeyUp((VIRTUAL_KEY)key);
                     matched = true;
-                    _processCommand(windowsCommandId);
+                    DispatchCommand(windowsCommandId);
                 }
                 else if (isDown && GetHotkeyCommand(
                     _hook.IsKeyDown(VIRTUAL_KEY.VK_LWIN) || _hook.IsKeyDown(VIRTUAL_KEY.VK_RWIN),
@@ -194,7 +216,7 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
                     matched = true;
                     try
                     {
-                        _processCommand(commandId);
+                        DispatchCommand(commandId);
                     }
                     finally
                     {
@@ -207,11 +229,46 @@ internal sealed partial class GlobalKeyboardListener : IDisposable
         catch (Exception ex)
         {
             // Defer reporting so a slow logger cannot block keyboard input.
-            _ = Task.Run(() => _reportError(ex));
+            ReportErrorAsync(ex);
         }
 
         return matched ? (LRESULT)1 : _hook.CallNext(nCode, wParam, lParam);
     }
+
+    private void DispatchCommand(string commandId)
+    {
+        var completed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (!_dispatch(() => RunCommand(commandId, completed)))
+        {
+            throw new InvalidOperationException("Failed to queue the shortcut command.");
+        }
+
+        // Give a fast command time to finish while this key press is still being processed,
+        // so it keeps the foreground activation rights of the key press. A slow command keeps
+        // running on the dispatch thread after the budget instead of stalling input.
+        _ = completed.Task.Wait(_commandHandoffBudget);
+    }
+
+    private void RunCommand(string commandId, TaskCompletionSource completed)
+    {
+        try
+        {
+            if (!_disposed)
+            {
+                _processCommand(commandId);
+            }
+        }
+        catch (Exception ex)
+        {
+            ReportErrorAsync(ex);
+        }
+        finally
+        {
+            completed.TrySetResult();
+        }
+    }
+
+    private void ReportErrorAsync(Exception error) => _ = Task.Run(() => _reportError(error));
 
     public void Dispose()
     {
