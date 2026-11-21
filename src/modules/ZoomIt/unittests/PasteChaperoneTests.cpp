@@ -1,6 +1,7 @@
 #include "pch.h"
 #include <CppUnitTest.h>
 #include "ClipboardPayload.h"
+#include "..\ZoomIt\Utility.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -14,6 +15,7 @@ namespace
     std::atomic<int> imagePastes{ 0 };
     std::atomic<int> textPastes{ 0 };
     std::atomic<int> physicalPastes{ 0 };
+    std::atomic<bool> targetAboveIntegrity{ false };
     thread_local bool physicalControlDown = false;
 
     LRESULT CALLBACK TestMessageHook( int code, WPARAM wordParam, LPARAM longParam );
@@ -68,6 +70,11 @@ namespace
         ConsumeClipboard();
         return count;
     }
+
+    bool TestWindowAboveIntegrity( HWND )
+    {
+        return targetAboveIntegrity.load();
+    }
 }
 
 // Exercise the real worker, hook callback and timers without changing the
@@ -81,6 +88,7 @@ namespace
 #define SendInput TestSendInput
 #define PublishSnipClipboard TestPublishClipboard
 #define OutputDebug TestOutputDebug
+#define IsWindowAboveOurIntegrity TestWindowAboveIntegrity
 #include "..\ZoomIt\PasteChaperone.cpp"
 #undef SetWindowsHookEx
 #undef GetClipboardSequenceNumber
@@ -90,6 +98,7 @@ namespace
 #undef SendInput
 #undef PublishSnipClipboard
 #undef OutputDebug
+#undef IsWindowAboveOurIntegrity
 
 namespace
 {
@@ -142,6 +151,7 @@ namespace PasteChaperoneTests
             imagePastes = 0;
             textPastes = 0;
             physicalPastes = 0;
+            targetAboveIntegrity = false;
             HBITMAP bitmap = CreateBitmap( 1, 1, 1, 32, nullptr );
             Assert::IsNotNull( bitmap );
             const bool armed = PasteChaperone::Arm( bitmap, L"Dictated text", SNIP_CLIPBOARD_ALL );
@@ -202,6 +212,16 @@ namespace PasteChaperoneTests
             Assert::AreEqual( static_cast<DWORD>( SNIP_CLIPBOARD_TEXT ), clipboardFormats.load() );
             Assert::AreEqual( 1, imagePastes.load() );
             Assert::AreEqual( 1, textPastes.load() );
+        }
+
+        TEST_METHOD(HigherIntegrityTargetGetsNoSynthesizedPaste)
+        {
+            targetAboveIntegrity = true;
+            Assert::IsTrue( PostThreadMessageW( g_ThreadId, WM_TEST_PASTE, 0, 0 ) != FALSE );
+            WaitUntil( [] { return physicalPastes == 1 && !PasteChaperone::IsArmed(); } );
+            Assert::AreEqual( 0, textPastes.load(), L"No transcription paste may be synthesized into the target." );
+            Assert::AreEqual( static_cast<DWORD>( SNIP_CLIPBOARD_ALL ), clipboardFormats.load(),
+                             L"The combined payload must be restored." );
         }
 
         TEST_METHOD(CancelStopsRepeatMonitoringWithoutChangingCombinedPayload)

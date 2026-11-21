@@ -28,4 +28,10 @@ RCZOOMITSCR            BINRES  MOVEABLE PURE   "ZoomItBreak64a.scr"
 // Embed the selfie segmentation ONNX model (platform-independent).
 RCSEGMODEL             BINRES  MOVEABLE PURE   "selfie_segmentation.onnx"
 
+// uiAccess lets LiveZoom stay above shell surfaces (Start, flyouts) but needs a trusted
+// signature, so it's only enabled for signed builds (see ZoomItUIAccess in ZoomIt.vcxproj).
+#ifdef ZOOMIT_UIACCESS
+CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "ZoomIt.uiaccess.exe.manifest"
+#else
 CREATEPROCESS_MANIFEST_RESOURCE_ID RT_MANIFEST "ZoomIt.exe.manifest"
+#endif
