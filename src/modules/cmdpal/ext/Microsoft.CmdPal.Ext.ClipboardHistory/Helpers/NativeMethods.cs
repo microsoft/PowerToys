@@ -99,6 +99,12 @@ public static partial class NativeMethods
     [DllImport("user32.dll")]
     internal static extern bool GetCursorPos(out PointInter lpPoint);
 
+    [LibraryImport("user32.dll")]
+    internal static partial IntPtr GetForegroundWindow();
+
+    [LibraryImport("user32.dll")]
+    internal static partial uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
     [LibraryImport("ole32.dll")]
     internal static partial int CoInitialize(IntPtr pvReserved);
 
