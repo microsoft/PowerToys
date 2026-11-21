@@ -66,6 +66,9 @@
     <ClInclude Include="powertoy_module.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="module_registration.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
     <ClInclude Include="trace.h">
       <Filter>Utils</Filter>
     </ClInclude>
