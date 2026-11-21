@@ -68,10 +68,16 @@ void PowertoyModule::update_hotkeys()
         {
             hkmng.AddHotkey(hotkeys[i], pt_module->get_key(), static_cast<int>(i), pt_module->is_enabled());
 
-            CentralizedKeyboardHook::SetHotkeyAction(pt_module->get_key(), hotkeys[i], [modulePtr, i] {
-                Logger::trace(L"{} hotkey is invoked from Centralized keyboard hook", modulePtr->get_key());
-                return modulePtr->on_hotkey(i);
-            });
+            CentralizedKeyboardHook::SetHotkeyAction(
+                pt_module->get_key(),
+                hotkeys[i],
+                [modulePtr, i] {
+                    return modulePtr->should_handle_hotkey(i);
+                },
+                [modulePtr, i] {
+                    Logger::trace(L"{} hotkey is invoked from Centralized keyboard hook", modulePtr->get_key());
+                    modulePtr->invoke_hotkey(i);
+                });
         }
     }
 }
@@ -109,10 +115,8 @@ void PowertoyModule::UpdateHotkeyEx()
         auto action = [modulePtr] {
             if (modulePtr->is_enabled())
             {
-                return modulePtr->on_hotkey(PowertoyModuleIface::WIN_KEY_HOLD_HOTKEY_ID);
+                modulePtr->invoke_hotkey(PowertoyModuleIface::WIN_KEY_HOLD_HOTKEY_ID);
             }
-
-            return false;
         };
         CentralizedKeyboardHook::AddPressedKeyAction(pt_module->get_key(), VK_LWIN, pt_module->milliseconds_win_key_must_be_pressed(), action);
         CentralizedKeyboardHook::AddPressedKeyAction(pt_module->get_key(), VK_RWIN, pt_module->milliseconds_win_key_must_be_pressed(), action);

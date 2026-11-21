@@ -12,10 +12,11 @@
 #include <string_view>
 #include <utility>
 
-// Module hotkey actions run on the runner thread that services the low-level keyboard
-// hook. While an action runs, keyboard input is stalled system-wide, and once
-// LowLevelHooksTimeout is exceeded Windows may skip or remove the hook, which can leave
-// modifier keys latched. This watchdog times each action and reports slow ones.
+// Module hotkey actions run in FIFO order on the runner's main thread (the hotkey worker).
+// The low-level keyboard hook waits up to SlowThreshold for an action before it releases
+// the key press, so a slow action no longer stalls input, but it still delays later
+// hotkeys, the tray icon and Settings. This watchdog times each action and reports slow
+// ones.
 namespace SlowHotkeyWatchdog
 {
     using Clock = std::chrono::steady_clock;

@@ -90,6 +90,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="centralized_kb_hook.h" />
     <ClInclude Include="slow_hotkey_watchdog.h" />
+    <ClInclude Include="hotkey_dispatcher.h" />
     <ClInclude Include="settings_telemetry.h" />
     <ClInclude Include="UpdateUtils.h" />
     <ClInclude Include="powertoy_module.h" />

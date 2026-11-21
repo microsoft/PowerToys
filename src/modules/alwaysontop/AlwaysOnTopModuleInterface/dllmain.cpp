@@ -109,6 +109,32 @@ public:
         }
     }
 
+    // Runs on the keyboard hook thread. The opacity hotkeys only apply to pinned windows,
+    // so pass them through otherwise.
+    virtual HotkeyDisposition should_handle_hotkey(size_t hotkeyId) override
+    {
+        if (!m_enabled)
+        {
+            return HotkeyDisposition::PassThrough;
+        }
+
+        if (hotkeyId == 0)
+        {
+            return HotkeyDisposition::InvokeAndSwallow;
+        }
+
+        if (hotkeyId == 1 || hotkeyId == 2)
+        {
+            const HWND foregroundWindow = GetForegroundWindow();
+            if (foregroundWindow && IsWindow(foregroundWindow) && GetPropW(foregroundWindow, NonLocalizable::PinnedWindowProp))
+            {
+                return HotkeyDisposition::InvokeAndSwallow;
+            }
+        }
+
+        return HotkeyDisposition::PassThrough;
+    }
+
     virtual bool on_hotkey(size_t hotkeyId) override
     {
         if (!m_enabled)
