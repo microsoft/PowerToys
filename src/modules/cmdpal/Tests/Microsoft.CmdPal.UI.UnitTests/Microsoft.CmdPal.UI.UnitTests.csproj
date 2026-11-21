@@ -43,6 +43,8 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockFocusNavigation.cs" Link="Helpers\DockFocusNavigation.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockItemActions.cs" Link="Helpers\DockItemActions.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Dock\DockPageBackNavigation.cs" Link="Dock\DockPageBackNavigation.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Dock\WindowsEventsListener.cs" Link="Dock\WindowsEventsListener.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Dock\ForegroundWindowChangedEventArgs.cs" Link="Dock\ForegroundWindowChangedEventArgs.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Controls\SearchBarBackRequestKind.cs" Link="Controls\SearchBarBackRequestKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\DockDropHelper.cs" Link="Helpers\DockDropHelper.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\QuickAccessShelfItemActions.cs" Link="Helpers\QuickAccessShelfItemActions.cs" />

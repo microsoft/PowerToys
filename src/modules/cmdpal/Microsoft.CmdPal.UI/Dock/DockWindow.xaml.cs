@@ -25,7 +25,6 @@ using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.Graphics.Dwm;
-using Windows.Win32.UI.Accessibility;
 using Windows.Win32.UI.Input.KeyboardAndMouse;
 using Windows.Win32.UI.Shell;
 using Windows.Win32.UI.WindowsAndMessaging;
@@ -45,7 +44,6 @@ namespace Microsoft.CmdPal.UI.Dock;
 /// screen work area and position itself at the edge of the display.
 /// </summary>
 public sealed partial class DockWindow : WindowEx,
-    IRecipient<BringToTopMessage>,
     IRecipient<RequestShowPaletteAtMessage>,
     IRecipient<ShowDockMonitorLabelsMessage>,
     IRecipient<QuitMessage>,
@@ -133,17 +131,7 @@ public sealed partial class DockWindow : WindowEx,
     private WNDPROC? _customWndProc;
 
     // internal Settings CurrentSettings => _settings;
-    public DockWindow()
-        : this(App.Current.Services.GetService<DockViewModel>()!)
-    {
-    }
-
-    public DockWindow(DockViewModel dockViewModel)
-        : this(dockViewModel, null, null)
-    {
-    }
-
-    public DockWindow(DockViewModel dockViewModel, MonitorInfo? targetMonitor, DockSide? sideOverride)
+    internal DockWindow(DockViewModel dockViewModel, MonitorInfo? targetMonitor, DockSide? sideOverride)
     {
         _targetMonitor = targetMonitor;
         _sideOverride = sideOverride;
@@ -183,7 +171,6 @@ public sealed partial class DockWindow : WindowEx,
         UpdateWindowFrame();
         this.Activated += DockWindow_Activated;
 
-        WeakReferenceMessenger.Default.Register<BringToTopMessage>(this);
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<ShowDockMonitorLabelsMessage>(this);
         WeakReferenceMessenger.Default.Register<QuitMessage>(this);
@@ -214,7 +201,6 @@ public sealed partial class DockWindow : WindowEx,
         style &= ~WINDOW_STYLE.WS_MAXIMIZEBOX; // Remove WS_MAXIMIZEBOX
         _ = PInvoke.SetWindowLong(_hwnd, WINDOW_LONG_PTR_INDEX.GWL_STYLE, (int)style);
 
-        ShowDesktop.AddHook(this);
         var userNotificationFlags = WindowHelper.GetUserNotificationFlags();
         _isFullScreenAppOpen = userNotificationFlags.IsFullscreenState || userNotificationFlags.IsBusy;
         UpdateSettingsOnUiThread();
@@ -576,8 +562,13 @@ public sealed partial class DockWindow : WindowEx,
         _collapsedRect = default;
     }
 
-    private void UpdateTopmostState(bool bringToFront = false)
+    internal void UpdateTopmostState(bool bringToFront = false)
     {
+        if (_isDisposed)
+        {
+            return;
+        }
+
         var shouldStayOnTop = _settings.AlwaysOnTop && !_isFullScreenAppOpen;
         const SET_WINDOW_POS_FLAGS flags = SET_WINDOW_POS_FLAGS.SWP_NOMOVE | SET_WINDOW_POS_FLAGS.SWP_NOSIZE | SET_WINDOW_POS_FLAGS.SWP_NOACTIVATE;
 
@@ -1658,21 +1649,12 @@ public sealed partial class DockWindow : WindowEx,
                 }
 
                 CreateAppBar(_hwnd);
+                UpdateTopmostState();
             });
-
-            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(false));
         }
 
         // Call the original window procedure for all other messages
         return PInvoke.CallWindowProc(_originalWndProc, hwnd, msg, wParam, lParam);
-    }
-
-    void IRecipient<BringToTopMessage>.Receive(BringToTopMessage message)
-    {
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            UpdateTopmostState(message.BringToFront);
-        });
     }
 
     public void Receive(QuitMessage message)
@@ -1883,7 +1865,6 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         _isDisposed = true;
-
         _settingsService?.SettingsChanged -= SettingsChangedHandler;
 
         Activated -= DockWindow_Activated;
@@ -1901,88 +1882,8 @@ public sealed partial class DockWindow : WindowEx,
         {
             DestroyAppBar(_hwnd);
         }
-
-        // Unhook the window procedure
-        ShowDesktop.RemoveHook();
     }
 }
-
-// Thank you to https://stackoverflow.com/a/35422795/1481137
-internal static class ShowDesktop
-{
-    private const string WORKERW = "WorkerW";
-    private const string PROGMAN = "Progman";
-
-    private static WINEVENTPROC? _hookProc;
-    private static IntPtr _hookHandle = IntPtr.Zero;
-
-    public static void AddHook(Window window)
-    {
-        if (IsHooked)
-        {
-            return;
-        }
-
-        IsHooked = true;
-
-        _hookProc = (WINEVENTPROC)WinEventCallback;
-        _hookHandle = PInvoke.SetWinEventHook(PInvoke.EVENT_SYSTEM_FOREGROUND, PInvoke.EVENT_SYSTEM_FOREGROUND, HMODULE.Null, _hookProc, 0, 0, PInvoke.WINEVENT_OUTOFCONTEXT);
-    }
-
-    public static void RemoveHook()
-    {
-        if (!IsHooked)
-        {
-            return;
-        }
-
-        IsHooked = false;
-
-        PInvoke.UnhookWinEvent((HWINEVENTHOOK)_hookHandle);
-        _hookProc = null;
-        _hookHandle = IntPtr.Zero;
-    }
-
-    private static string GetWindowClass(HWND hwnd)
-    {
-        unsafe
-        {
-            fixed (char* c = new char[32])
-            {
-                _ = PInvoke.GetClassName(hwnd, (PWSTR)c, 32);
-                return new string(c);
-            }
-        }
-    }
-
-    internal delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
-
-    private static void WinEventCallback(
-        HWINEVENTHOOK hWinEventHook,
-        uint eventType,
-        HWND hwnd,
-        int idObject,
-        int idChild,
-        uint dwEventThread,
-        uint dwmsEventTime)
-    {
-        if (eventType == PInvoke.EVENT_SYSTEM_FOREGROUND)
-        {
-            var @class = GetWindowClass(hwnd);
-            var bringToFront = string.Equals(@class, WORKERW, StringComparison.Ordinal) || string.Equals(@class, PROGMAN, StringComparison.Ordinal);
-            if (bringToFront)
-            {
-                Logger.LogDebug("ShowDesktop invoked. Bring us back");
-            }
-
-            WeakReferenceMessenger.Default.Send<BringToTopMessage>(new(bringToFront));
-        }
-    }
-
-    public static bool IsHooked { get; private set; }
-}
-
-internal sealed record BringToTopMessage(bool BringToFront);
 
 internal sealed record RequestShowPaletteAtMessage(Point PosDips, IntPtr OwnerHwnd);
 
