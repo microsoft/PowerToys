@@ -82,6 +82,50 @@ namespace WorkspacesLibUnitTests
             }
         }
 
+        TEST_METHOD (RecaptureRequiresAConfirmedLaunchOrPlacement)
+        {
+            WorkspacesSession::Result result;
+            const auto app = Project().apps.front();
+            auto& outcome = result.applications[app];
+            for (const auto state : { LaunchingState::Waiting, LaunchingState::Failed, LaunchingState::Skipped, LaunchingState::Canceled })
+            {
+                outcome.state = state;
+                Assert::IsFalse(result.CanRecapture());
+            }
+            for (const auto state : { LaunchingState::Launched, LaunchingState::LaunchedAndMoved })
+            {
+                outcome.state = state;
+                Assert::IsTrue(result.CanRecapture());
+            }
+
+            outcome.state = LaunchingState::Failed;
+            result.launchedAnyApplication = true;
+            Assert::IsTrue(result.CanRecapture());
+        }
+
+        TEST_METHOD (WorkerPreservesConfirmedLaunchWhenArrangementFails)
+        {
+            WorkspacesSession::Result result;
+            result.operationId = L"operation";
+            result.project = Project();
+            result.project.apps.resize(1);
+            result.project.monitors.push_back({ .number = 1, .dpi = 96 });
+            auto& app = result.project.apps.front();
+            app.monitor = 1;
+            app.position = { 10, 20, 640, 400 };
+            result.applications.emplace(app, WorkspacesData::LaunchingAppState{ app, nullptr, LaunchingState::Failed });
+            result.launchedAnyApplication = true;
+
+            const auto wire = WorkspacesSession::SerializeResult(result);
+            const auto decoded = WorkspacesSession::DeserializeResult(wire, result.operationId);
+            Assert::IsTrue(decoded.CanRecapture());
+            Assert::IsTrue(decoded.applications.at(app).state == LaunchingState::Failed);
+
+            // Older session hosts supplied only the terminal window state.
+            wire.Remove(L"launchedAnyApplication");
+            Assert::IsFalse(WorkspacesSession::DeserializeResult(wire, result.operationId).CanRecapture());
+        }
+
         TEST_METHOD (CliAdapterPreservesSessionPersistenceAndProgress)
         {
             auto project = Project();

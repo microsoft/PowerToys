@@ -22,7 +22,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_Empty_ReturnsAllWorkspaces()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("DevSetup", 0, 0, "VS Code", "Terminal"),
@@ -37,7 +37,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_Null_ReturnsAllWorkspaces()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("DevSetup", 0, 0, "VS Code"),
@@ -53,7 +53,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_MatchesWorkspaceName_ReturnsMatching()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("DevSetup", 0, 0, "VS Code"),
@@ -72,7 +72,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_MatchesAppName_ReturnsWorkspaceContainingApp()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("DevSetup", 0, 0, "VS Code", "Terminal"),
@@ -90,7 +90,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_CaseInsensitive_MatchesRegardlessOfCase()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("DevSetup", 0, 0, "VS Code"),
@@ -105,7 +105,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_NoMatch_ReturnsEmpty()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("DevSetup", 0, 0, "VS Code"),
@@ -120,7 +120,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_PartialMatch_MatchesSubstring()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("MyDevelopmentSetup", 0, 0, "VS Code"),
@@ -135,7 +135,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_MatchesMultiple_ReturnsAll()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("DevSetup1", 0, 0, "VS Code"),
@@ -151,7 +151,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_Changed_RaisesPropertyChangedForWorkspacesView()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("Test", 0, 0, "App"),
@@ -168,7 +168,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_EmptyCollection_ReturnsEmptyAndSetsFlag()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>();
 
             vm.SearchTerm = "anything";
@@ -180,7 +180,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("ViewModel.Search")]
         public void SearchTerm_MatchesAppNameCaseInsensitive_ReturnsWorkspace()
         {
-            var vm = TestHelpers.CreateViewModel();
+            using var vm = TestHelpers.CreateViewModel();
             vm.Workspaces = new ObservableCollection<Project>
             {
                 TestHelpers.CreateProject("MySetup", 0, 0, "Visual Studio Code"),

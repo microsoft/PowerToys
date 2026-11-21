@@ -141,6 +141,15 @@ namespace WorkspacesSession
         project = std::move(prepared);
     }
 
+    bool Result::CanRecapture() const
+    {
+        // A placement failure can replace a confirmed launch in the final window states.
+        return launchedAnyApplication || std::ranges::any_of(applications, [](const auto& entry) {
+            const auto state = entry.second.state;
+            return state == LaunchingState::Launched || state == LaunchingState::LaunchedAndMoved;
+        });
+    }
+
     json::JsonObject SerializeResult(const Result& result)
     {
         json::JsonObject message;
@@ -160,6 +169,8 @@ namespace WorkspacesSession
         }
         message.SetNamedValue(L"applications", applications);
         message.SetNamedValue(L"loggingAvailable", json::value(result.loggingAvailable));
+        if (result.launchedAnyApplication)
+            message.SetNamedValue(L"launchedAnyApplication", json::value(true));
         if (result.persistence)
             message.SetNamedValue(L"persistence", json::value(static_cast<int>(*result.persistence)));
         return message;
@@ -234,6 +245,7 @@ namespace WorkspacesSession
             }
         }
         result.loggingAvailable = message.GetNamedBoolean(L"loggingAvailable");
+        result.launchedAnyApplication = message.GetNamedBoolean(L"launchedAnyApplication", false);
         if (message.HasKey(L"persistence"))
         {
             const auto value = message.GetNamedNumber(L"persistence");

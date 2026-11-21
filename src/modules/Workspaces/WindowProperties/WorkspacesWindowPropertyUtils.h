@@ -1,6 +1,10 @@
 #pragma once
 
 #include <Windows.h>
+#include <objbase.h>
+#include <array>
+#include <cstring>
+#include <string>
 
 namespace WorkspacesWindowProperties
 {
@@ -10,6 +14,50 @@ namespace WorkspacesWindowProperties
         const wchar_t WorkspacesAppID[] = L"PowerToys_WorkspacesAppId";
     }
 
+    namespace detail
+    {
+        inline constexpr size_t GuidPartCount = sizeof(GUID) / sizeof(ULONG_PTR);
+        using GuidParts = std::array<ULONG_PTR, GuidPartCount>;
+
+        inline const auto& GuidPartNames()
+        {
+            static const auto names = [] {
+                std::array<std::wstring, GuidPartCount> result;
+                for (size_t i = 0; i < result.size(); ++i)
+                {
+                    result[i] = Properties::WorkspacesAppID + std::to_wstring(i);
+                }
+                return result;
+            }();
+            return names;
+        }
+
+        struct GuidProperties
+        {
+            GuidParts parts{};
+            size_t found{};
+        };
+
+        inline BOOL CALLBACK CollectGuidPart(HWND, LPWSTR name, HANDLE value, ULONG_PTR context)
+        {
+            auto& stamp = *reinterpret_cast<GuidProperties*>(context);
+            if (!IS_INTRESOURCE(name))
+            {
+                const auto& names = GuidPartNames();
+                for (size_t i = 0; i < names.size(); ++i)
+                {
+                    if (CompareStringOrdinal(name, -1, names[i].c_str(), -1, TRUE) == CSTR_EQUAL)
+                    {
+                        stamp.parts[i] = reinterpret_cast<ULONG_PTR>(value);
+                        ++stamp.found;
+                        break;
+                    }
+                }
+            }
+            return stamp.found != stamp.parts.size();
+        }
+    }
+
     inline void StampWorkspacesLaunchedProperty(HWND window)
     {
         ::SetPropW(window, Properties::LaunchedByWorkspacesID, reinterpret_cast<HANDLE>(1));
@@ -17,60 +65,56 @@ namespace WorkspacesWindowProperties
 
     inline void StampWorkspacesGuidProperty(HWND window, const std::wstring& appId)
     {
-        GUID guid;
-        HRESULT hr = CLSIDFromString(appId.c_str(), static_cast<LPCLSID> (&guid));
-        if (hr != S_OK)
+        const auto text = appId.size() == 36 ? L"{" + appId + L"}" : appId;
+        GUID guid{};
+        if (text.size() != 38 || text.front() != L'{' || text.back() != L'}' || FAILED(CLSIDFromString(text.c_str(), &guid)))
         {
             return;
         }
 
-        const size_t workspacesAppIDLength = wcslen(Properties::WorkspacesAppID);
-        wchar_t* workspacesAppIDPart = new wchar_t[workspacesAppIDLength + 2];
-        std::memcpy(&workspacesAppIDPart[0], &Properties::WorkspacesAppID, workspacesAppIDLength * sizeof(wchar_t));
-        workspacesAppIDPart[workspacesAppIDLength + 1] = 0;
-
-        // the size of the HANDLE type can vary on different systems: 4 or 8 bytes. As we can set only a HANDLE as a property, we need more properties (2 or 4) to be able to store a GUID (16 bytes)
-        const int numberOfProperties = sizeof(GUID) / sizeof(HANDLE);
-
-        uint64_t parts[numberOfProperties];
-        std::memcpy(&parts[0], &guid, sizeof(GUID));
-        for (unsigned char partIndex = 0; partIndex < numberOfProperties; partIndex++)
+        detail::GuidParts parts{};
+        std::memcpy(parts.data(), &guid, sizeof(guid));
+        const auto& names = detail::GuidPartNames();
+        // Publish the first word last so an interrupted replacement has no complete stamp.
+        RemovePropW(window, names.front().c_str());
+        for (size_t i = 1; i < parts.size(); ++i)
         {
-            workspacesAppIDPart[workspacesAppIDLength] = '0' + partIndex;
-            ::SetPropW(window, workspacesAppIDPart, reinterpret_cast<HANDLE>(parts[partIndex]));
+            if (!SetPropW(window, names[i].c_str(), reinterpret_cast<HANDLE>(parts[i])))
+            {
+                return;
+            }
         }
+        SetPropW(window, names.front().c_str(), reinterpret_cast<HANDLE>(parts.front()));
     }
 
-    inline const std::wstring GetGuidFromHwnd(HWND window)
+    inline std::wstring GetGuidFromHwnd(HWND window)
     {
-        const size_t workspacesAppIDLength = wcslen(Properties::WorkspacesAppID);
-        wchar_t* workspacesAppIDPart = new wchar_t[workspacesAppIDLength + 2];
-        std::memcpy(&workspacesAppIDPart[0], &Properties::WorkspacesAppID, workspacesAppIDLength * sizeof(wchar_t));
-        workspacesAppIDPart[workspacesAppIDLength + 1] = 0;
-
-        // the size of the HANDLE type can vary on different systems: 4 or 8 bytes. As we can set only a HANDLE as a property, we need more properties (2 or 4) to be able to store a GUID (16 bytes)
-        const int numberOfProperties = sizeof(GUID) / sizeof(HANDLE);
-
-        uint64_t parts[numberOfProperties];
-        for (unsigned char partIndex = 0; partIndex < numberOfProperties; partIndex++)
+        const auto& names = detail::GuidPartNames();
+        detail::GuidProperties stamp;
+        for (size_t i = 0; i < names.size(); ++i)
         {
-            workspacesAppIDPart[workspacesAppIDLength] = '0' + partIndex;
-            HANDLE rawData = GetPropW(window, workspacesAppIDPart);
-            if (rawData)
+            stamp.parts[i] = reinterpret_cast<ULONG_PTR>(GetPropW(window, names[i].c_str()));
+            if (!stamp.parts[i])
             {
-                parts[partIndex] = reinterpret_cast<uint64_t>(rawData);
+                break;
             }
-            else
+            ++stamp.found;
+        }
+        if (stamp.found != stamp.parts.size() || GetPropW(window, names.front().c_str()) != reinterpret_cast<HANDLE>(stamp.parts.front()))
+        {
+            // GetPropW returns null for both a missing property and a stored zero word.
+            // Enumeration includes zero-valued properties written by older versions too.
+            stamp = {};
+            EnumPropsExW(window, detail::CollectGuidPart, reinterpret_cast<LPARAM>(&stamp));
+            if (stamp.found != stamp.parts.size())
             {
-                return L"";
+                return {};
             }
         }
 
         GUID guid;
-        std::memcpy(&guid, &parts[0], sizeof(GUID));
-        WCHAR* guidString;
-        StringFromCLSID(guid, &guidString);
-
-        return guidString;
+        std::memcpy(&guid, stamp.parts.data(), sizeof(guid));
+        wchar_t text[39];
+        return StringFromGUID2(guid, text, ARRAYSIZE(text)) ? text : L"";
     }
 }

@@ -189,6 +189,30 @@
   <data name="WorkspaceName" xml:space="preserve">
     <value>Workspace name</value>
   </data>
+  <data name="WorkspacePreviewImage.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Workspace layout preview</value>
+  </data>
+  <data name="WorkspaceSaveError.Message" xml:space="preserve">
+    <value>Couldn’t save your workspace changes. Try again.</value>
+  </data>
+  <data name="ShortcutNameConflictAfterSave" xml:space="preserve">
+    <value>Your workspace was saved, but its desktop shortcut name is already in use. Choose another workspace name or rename the existing desktop item, then select “Create desktop shortcut” and save again.</value>
+  </data>
+  <data name="ShortcutUpdateFailedAfterSave" xml:space="preserve">
+    <value>Your workspace was saved, but PowerToys couldn’t finish updating its desktop shortcut. Reopen the workspace, choose the shortcut setting you want, and save again.</value>
+  </data>
+  <data name="ShortcutCleanupPendingAfterDelete" xml:space="preserve">
+    <value>Your workspace was deleted. PowerToys will retry removing its desktop shortcut.</value>
+  </data>
+  <data name="ShortcutTrackingFailedBeforeSave" xml:space="preserve">
+    <value>PowerToys couldn’t record the existing desktop shortcut, so your workspace change wasn’t saved. Try again.</value>
+  </data>
+  <data name="WorkspaceMissingMonitor.Message" xml:space="preserve">
+    <value>An app refers to a display missing from this workspace’s saved layout. Arrange your windows and recapture the current desktop, or remove the affected app.</value>
+  </data>
+  <data name="RecaptureCurrentLayoutButton.Content" xml:space="preserve">
+    <value>Recapture current layout</value>
+  </data>
   <data name="Workspaces" xml:space="preserve">
     <value>Workspaces</value>
   </data>

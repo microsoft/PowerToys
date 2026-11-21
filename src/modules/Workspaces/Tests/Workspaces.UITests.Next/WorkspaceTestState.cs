@@ -33,6 +33,8 @@ namespace Microsoft.Workspaces.UITests
 
         internal static string TemporaryPath => Path.Combine(DirectoryPath, "temp-workspaces.json");
 
+        internal static string WindowPlacementPath => Path.Combine(DirectoryPath, "editor-window.json");
+
         internal TestAppFixture Fixture { get; } = new();
 
         internal string Prefix { get; private set; } = string.Empty;
@@ -69,6 +71,7 @@ namespace Microsoft.Workspaces.UITests
                   }
                 }
                 """;
+            Preserve(WindowPlacementPath);
             Directory.CreateDirectory(DirectoryPath);
             File.WriteAllText(SettingsPath, Settings);
 
@@ -85,10 +88,10 @@ namespace Microsoft.Workspaces.UITests
             Prefix = $"PTUITest-{Guid.NewGuid():N}";
             applicationIndex = 0;
 
-            // WriteProjects creates the Workspaces directory; run it first so deleting a leftover
-            // temporary snapshot cannot throw DirectoryNotFoundException on a fresh profile.
+            // WriteProjects creates the Workspaces directory before the per-test files are cleared.
             WriteProjects();
             File.Delete(TemporaryPath);
+            File.Delete(WindowPlacementPath);
         }
 
         internal JsonObject Application(string name, string title, string? arguments = null, string? path = null)
@@ -97,13 +100,9 @@ namespace Microsoft.Workspaces.UITests
             var (x, y, width, height) = WorkspacesDisplay.DefaultApplicationPosition(Target);
             return new JsonObject
             {
-                // Deterministic, ordering-stable application IDs. The value keeps its ascending index in
-                // the final GUID group so the native launcher's ID-keyed std::map iterates in a predictable
-                // order, and pins a non-zero first group so neither 8-byte half of the GUID is all zero:
-                // WorkspacesWindowProperties::GetGuidFromHwnd treats a zero half as "unstamped" and returns
-                // an empty ID, which would break Launch-and-Edit identity round-tripping for a window whose
-                // saved ID had a zero half.
-                ["id"] = $"{{00000001-0000-0000-0000-{applicationIndex.ToString("x12", CultureInfo.InvariantCulture)}}}",
+                // The ascending suffix keeps native launch order deterministic. Legacy unbraced IDs
+                // with a zero first word must also survive launching a window and capturing it again.
+                ["id"] = $"00000000-0000-0000-0000-{applicationIndex.ToString("x12", CultureInfo.InvariantCulture)}",
                 ["application"] = name,
                 ["application-path"] = path ?? Fixture.ExecutablePath,
                 ["package-full-name"] = string.Empty,
@@ -129,7 +128,7 @@ namespace Microsoft.Workspaces.UITests
         {
             var name = $"{Prefix}-{suffix}";
             var id = Guid.NewGuid().ToString("B");
-            Preserve(Path.Combine(DirectoryPath, "WorkspacesIcons", id + ".ico"));
+            TrackProjectShortcutFiles(id);
             TrackShortcut(name);
             var display = Target;
             return new JsonObject
@@ -179,6 +178,15 @@ namespace Microsoft.Workspaces.UITests
         }
 
         internal void TrackShortcut(string name) => Preserve(ShortcutPath(name));
+
+        internal void TrackProjectShortcutFiles(string id)
+        {
+            // The icon uses the stored ID spelling. The ownership record uses the braced GUID.
+            var workspaceId = Guid.Parse(id);
+            var directory = Path.Combine(DirectoryPath, "WorkspacesIcons");
+            Preserve(Path.Combine(directory, id + ".ico"));
+            Preserve(Path.Combine(directory, $"{workspaceId:B}.links.json"));
+        }
 
         internal static string ShortcutPath(string name) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), name + ".lnk");
 

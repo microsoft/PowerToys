@@ -12,7 +12,9 @@
 
 #include <WorkspacesLib/trace.h>
 #include <WorkspacesLib/WorkspacesData.h>
+#include <workspaces-common/GuidUtils.h>
 
+#include <mutex>
 #include <shellapi.h>
 
 #include "resource.h"
@@ -31,6 +33,7 @@ namespace
     const wchar_t JSON_KEY_RUN_SNAPSHOT_TOOL_HOTKEY[] = L"run-snapshot-tool-hotkey";
     const wchar_t JSON_KEY_RUN_LAUNCHER_HOTKEY[] = L"run-launcher-hotkey";
     const wchar_t JSON_KEY_VALUE[] = L"value";
+    constexpr DWORD EditorShutdownTimeoutMs = 3000;
 }
 
 BOOL APIENTRY DllMain(HMODULE /*hModule*/, DWORD ul_reason_for_call, LPVOID /*lpReserved*/)
@@ -76,14 +79,7 @@ public:
 
     virtual void OnHotkeyEx() override
     {
-        if (is_process_running())
-        {
-            sendHotkeyEvent();
-        }
-        else
-        {
-            launch_editor();
-        }
+        open_editor(true);
     }
 
     // Return the configured status for the gpo policy for the module
@@ -156,6 +152,7 @@ public:
     // Returns if the powertoy is enabled
     virtual bool is_enabled() override
     {
+        std::scoped_lock lock(m_editorMutex);
         Logger::info("enabled = {}", m_enabled);
         return m_enabled;
     }
@@ -163,6 +160,7 @@ public:
     // Destroy the powertoy and free memory
     virtual void destroy() override
     {
+        m_toggleEditorEventWaiter.stop();
         Disable(false);
 
         if (m_toggleEditorEvent)
@@ -211,7 +209,7 @@ public:
             if (err == ERROR_SUCCESS)
             {
                 Logger::trace(L"{} event was signaled", CommonSharedConstants::WORKSPACES_LAUNCH_EDITOR_EVENT);
-                launch_editor();
+                open_editor(false);
             }
         });
     }
@@ -219,14 +217,11 @@ public:
 private:
     void Enable()
     {
+        std::scoped_lock lock(m_editorMutex);
         Logger::info("Enable");
         m_enabled = true;
 
         Trace::Workspaces::Enable(true);
-
-        unsigned long powertoys_pid = GetCurrentProcessId();
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
     }
 
     void sendHotkeyEvent()
@@ -240,6 +235,7 @@ private:
 
     void Disable(bool const traceEvent)
     {
+        std::scoped_lock lock(m_editorMutex);
         Logger::info("Disable");
         m_enabled = false;
         if (traceEvent)
@@ -257,11 +253,18 @@ private:
             ResetEvent(m_hotkeyEvent);
         }
 
-        if (m_hProcess)
+        if (m_editorProcess && WaitForSingleObject(m_editorProcess.get(), 0) == WAIT_TIMEOUT)
         {
-            TerminateProcess(m_hProcess, 0);
-            m_hProcess = nullptr;
+            if (!m_editorShutdownEvent || !SetEvent(m_editorShutdownEvent.get()) ||
+                WaitForSingleObject(m_editorProcess.get(), EditorShutdownTimeoutMs) != WAIT_OBJECT_0)
+            {
+                Logger::warn("Workspaces Editor did not shut down gracefully.");
+                TerminateProcess(m_editorProcess.get(), 0);
+            }
         }
+        m_editorProcess.close();
+        m_editorShutdownEvent.close();
+        m_editorActivationEventName.clear();
     }
 
     // Load the settings file.
@@ -317,13 +320,47 @@ private:
         }
     }
 
-    void launch_editor()
+    void open_editor(bool fromHotkey)
     {
+        std::scoped_lock lock(m_editorMutex);
+        if (!m_enabled)
+        {
+            return;
+        }
+
+        if (m_editorProcess && WaitForSingleObject(m_editorProcess.get(), 0) == WAIT_TIMEOUT)
+        {
+            if (fromHotkey)
+            {
+                sendHotkeyEvent();
+            }
+            else if (!m_editorActivationEventName.empty())
+            {
+                // Settings and Quick Access always show the window. Only the hotkey toggles it closed.
+                winrt::handle activationEvent{ OpenEventW(EVENT_MODIFY_STATE, FALSE, m_editorActivationEventName.c_str()) };
+                if (activationEvent)
+                {
+                    SetEvent(activationEvent.get());
+                }
+            }
+            return;
+        }
+
         Logger::trace(L"Starting Workspaces Editor");
 
-        unsigned long powertoys_pid = GetCurrentProcessId();
-        std::wstring executable_args = L"";
-        executable_args.append(std::to_wstring(powertoys_pid));
+        // Keep this launch's request signaled even if the Editor is still initializing its dispatcher.
+        std::wstring executable_args = std::to_wstring(GetCurrentProcessId());
+        const auto shutdownEventName = CreateGuidString();
+        winrt::handle shutdownEvent{ shutdownEventName.empty() ? nullptr : CreateEventW(nullptr, TRUE, FALSE, shutdownEventName.c_str()) };
+        if (shutdownEvent && GetLastError() != ERROR_ALREADY_EXISTS)
+        {
+            executable_args += L" " + shutdownEventName;
+        }
+        else
+        {
+            Logger::warn("Could not create the Workspaces Editor shutdown event.");
+            shutdownEvent.close();
+        }
 
         SHELLEXECUTEINFOW sei{ sizeof(sei) };
         sei.fMask = SEE_MASK_NOCLOSEPROCESS;
@@ -332,19 +369,15 @@ private:
         sei.lpParameters = executable_args.data();
         if (ShellExecuteExW(&sei))
         {
+            m_editorProcess.attach(sei.hProcess);
+            m_editorActivationEventName = shutdownEvent ? shutdownEventName + L"-activate" : L"";
+            m_editorShutdownEvent = std::move(shutdownEvent);
             Logger::trace("Successfully started the Workspaces Editor");
         }
         else
         {
             Logger::error(L"Workspaces Editor failed to start. {}", get_last_error_or_default(GetLastError()));
         }
-
-        m_hProcess = sei.hProcess;
-    }
-
-    bool is_process_running() const
-    {
-        return WaitForSingleObject(m_hProcess, 0) == WAIT_TIMEOUT;
     }
 
     std::wstring app_name;
@@ -352,7 +385,10 @@ private:
     std::wstring app_key;
 
     bool m_enabled = false;
-    HANDLE m_hProcess = nullptr;
+    std::mutex m_editorMutex;
+    winrt::handle m_editorProcess;
+    winrt::handle m_editorShutdownEvent;
+    std::wstring m_editorActivationEventName;
 
     // Handle to event used to invoke Workspaces Editor
     HANDLE m_toggleEditorEvent;
