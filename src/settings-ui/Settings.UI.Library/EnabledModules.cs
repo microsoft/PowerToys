@@ -629,6 +629,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool windowTabs;
+
+        [JsonPropertyName("WindowTabs")]
+        public bool WindowTabs
+        {
+            get => windowTabs;
+            set
+            {
+                if (windowTabs != value)
+                {
+                    LogTelemetryEvent(value);
+                    windowTabs = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();
