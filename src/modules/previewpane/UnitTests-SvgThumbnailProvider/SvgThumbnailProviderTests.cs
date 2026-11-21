@@ -243,6 +243,23 @@ namespace SvgThumbnailProviderUnitTests
         }
 
         [TestMethod]
+        [DataRow(256, 256, PixelFormat.Format32bppArgb, false)]
+        [DataRow(256, 128, PixelFormat.Format32bppArgb, false)]
+        [DataRow(128, 256, PixelFormat.Format32bppArgb, false)]
+        [DataRow(256, 300, PixelFormat.Format32bppArgb, true)]
+        [DataRow(300, 256, PixelFormat.Format32bppArgb, true)]
+        [DataRow(384, 384, PixelFormat.Format32bppArgb, true)]
+        [DataRow(128, 128, PixelFormat.Format32bppArgb, true)]
+        [DataRow(256, 256, PixelFormat.Format24bppRgb, true)]
+        [DataRow(256, 256, PixelFormat.Format32bppRgb, true)]
+        public void IsResizeRequiredShouldOnlySkipFittingArgbImages(int width, int height, PixelFormat pixelFormat, bool expected)
+        {
+            using Bitmap image = new Bitmap(width, height, pixelFormat);
+
+            Assert.AreEqual(expected, SvgThumbnailProvider.IsResizeRequired(image, 256));
+        }
+
+        [TestMethod]
         public void GetThumbnailShouldPreserveTransparentBackground()
         {
             var svgBuilder = new StringBuilder();
