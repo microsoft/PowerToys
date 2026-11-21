@@ -377,7 +377,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
                     },
                     new AvailableResult()
                     {
-                        Value = dateTimeNow.ToString("R"),
+                        Value = dateTimeNowUtc.ToString("R", CultureInfo.InvariantCulture),
                         Label = Resources.Microsoft_plugin_timedate_Rfc1123,
                         AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                         IconType = ResultIconType.DateTime,
