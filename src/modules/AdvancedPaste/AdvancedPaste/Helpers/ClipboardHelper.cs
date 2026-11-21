@@ -15,6 +15,15 @@ namespace AdvancedPaste.Helpers;
 
 internal static class ClipboardHelper
 {
+    private static readonly InputChordOptions PasteChordOptions = new()
+    {
+        // Any key event with the extra info set to this value is ignored by the keyboard hook and sent to the system instead.
+        ExtraInfo = (UIntPtr)0x5555,
+
+        // The user may still be holding the modifiers of the shortcut that triggered the paste.
+        ModifierReleaseTimeout = TimeSpan.FromSeconds(1),
+    };
+
     internal static async Task TryCopyPasteAsync(DataPackage dataPackage, Action onCopied)
     {
         Logger.LogTrace();
@@ -28,7 +37,9 @@ internal static class ClipboardHelper
             bool flushed = await FlushAsync();
             Logger.LogInfo($"Clipboard output flush completed: flushed={flushed}.");
             onCopied();
-            SendPasteKeyCombination();
+
+            // Waiting for the modifiers to be released blocks, so keep it off the UI thread.
+            await Task.Run(SendPasteKeyCombination);
         }
     }
 
@@ -94,46 +105,18 @@ internal static class ClipboardHelper
     {
         Logger.LogTrace();
 
-        SendSingleKeyboardInput((short)VirtualKey.LeftControl, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightControl, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.LeftWindows, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightWindows, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.LeftShift, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightShift, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.LeftMenu, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightMenu, (uint)NativeMethods.KeyEventF.KeyUp);
+        var result = InputInjection.SendChord(new[] { (ushort)VirtualKey.Control, (ushort)VirtualKey.V }, PasteChordOptions);
+        if (result.ModifierWaitTimedOut)
+        {
+            Logger.LogWarning($"Modifier keys still held after {PasteChordOptions.ModifierReleaseTimeout.TotalMilliseconds}ms; released them before sending Ctrl+V");
+        }
 
-        // Send Ctrl + V
-        SendSingleKeyboardInput((short)VirtualKey.Control, (uint)NativeMethods.KeyEventF.KeyDown);
-        SendSingleKeyboardInput((short)VirtualKey.V, (uint)NativeMethods.KeyEventF.KeyDown);
-        SendSingleKeyboardInput((short)VirtualKey.V, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.Control, (uint)NativeMethods.KeyEventF.KeyUp);
+        if (!result.Succeeded)
+        {
+            Logger.LogError($"SendInput failed for Ctrl+V. Expected to send {result.Requested} inputs and sent only {result.Sent}; released {result.CleanupSent} of {result.CleanupRequested} pressed keys. Error {result.Error}");
+            return;
+        }
 
         Logger.LogInfo("Paste sent");
-    }
-
-    // Function to send a single key event
-    private static void SendSingleKeyboardInput(short keyCode, uint keyStatus)
-    {
-        UIntPtr ignoreKeyEventFlag = (UIntPtr)0x5555;
-
-        NativeMethods.INPUT inputShift = new NativeMethods.INPUT
-        {
-            type = NativeMethods.INPUTTYPE.INPUT_KEYBOARD,
-            data = new NativeMethods.InputUnion
-            {
-                ki = new NativeMethods.KEYBDINPUT
-                {
-                    wVk = keyCode,
-                    dwFlags = keyStatus,
-
-                    // Any keyevent with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
-                    dwExtraInfo = ignoreKeyEventFlag,
-                },
-            },
-        };
-
-        NativeMethods.INPUT[] inputs = new NativeMethods.INPUT[] { inputShift };
-        _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
     }
 }
