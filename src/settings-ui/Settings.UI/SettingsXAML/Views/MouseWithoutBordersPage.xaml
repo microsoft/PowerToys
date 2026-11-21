@@ -340,6 +340,12 @@
                         HeaderIcon="{ui:FontIcon Glyph=&#xE91C;}">
                         <ToggleSwitch IsOn="{x:Bind ViewModel.ShowClipboardAndNetworkStatusMessages, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="MouseWithoutBordersReverseRemoteScrollWheel"
+                        x:Uid="MouseWithoutBorders_ReverseRemoteScrollWheel"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE174;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ReverseRemoteScrollWheel, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
 
                 <controls:SettingsGroup x:Uid="MouseWithoutBorders_EasyMouseSettings_Group" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
