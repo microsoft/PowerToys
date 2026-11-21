@@ -4,6 +4,8 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Messages;
+using Microsoft.CmdPal.Common.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.Windows.Storage.Pickers;
@@ -19,7 +21,10 @@ internal static class AdaptiveFilePicker
         IEnumerable<string> fileTypeFilter,
         string commitButtonText)
     {
-        var picker = new FileOpenPicker(GetOwnerWindowId(owner))
+        var ownerWindowId = GetOwnerWindowId(owner);
+        using var dismissalHold = App.Current.Services.GetRequiredService<WindowDismissalService>()
+            .Acquire(Win32Interop.GetWindowFromWindowId(ownerWindowId));
+        var picker = new FileOpenPicker(ownerWindowId)
         {
             CommitButtonText = commitButtonText,
         };
@@ -41,7 +46,10 @@ internal static class AdaptiveFilePicker
 
     public static async Task<string?> PickFolderAsync(FrameworkElement owner, string commitButtonText)
     {
-        var picker = new FolderPicker(GetOwnerWindowId(owner))
+        var ownerWindowId = GetOwnerWindowId(owner);
+        using var dismissalHold = App.Current.Services.GetRequiredService<WindowDismissalService>()
+            .Acquire(Win32Interop.GetWindowFromWindowId(ownerWindowId));
+        var picker = new FolderPicker(ownerWindowId)
         {
             CommitButtonText = commitButtonText,
         };

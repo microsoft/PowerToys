@@ -27,7 +27,6 @@ CallWindowProc
 ShowWindow
 SetForegroundWindow
 EnableWindow
-IsWindowEnabled
 SetFocus
 SetActiveWindow
 MonitorFromWindow
