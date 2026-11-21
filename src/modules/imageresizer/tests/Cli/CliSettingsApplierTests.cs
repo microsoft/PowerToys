@@ -26,10 +26,12 @@ namespace ImageResizer.Tests.Cli
         {
             var options = new CliOptions { Width = 800 };
             var settings = CreateDefaultSettings();
+            settings.CustomSize.Height = 321.5;
 
             CliSettingsApplier.Apply(options, settings);
 
             Assert.AreEqual(800.0, settings.CustomSize.Width);
+            Assert.AreEqual(0.0, settings.CustomSize.Height);
         }
 
         [TestMethod]
@@ -37,10 +39,12 @@ namespace ImageResizer.Tests.Cli
         {
             var options = new CliOptions { Height = 600 };
             var settings = CreateDefaultSettings();
+            settings.CustomSize.Width = 321.5;
 
             CliSettingsApplier.Apply(options, settings);
 
             Assert.AreEqual(600.0, settings.CustomSize.Height);
+            Assert.AreEqual(0.0, settings.CustomSize.Width);
         }
 
         [TestMethod]
@@ -53,6 +57,43 @@ namespace ImageResizer.Tests.Cli
 
             // Custom size index should be settings.Sizes.Count
             Assert.AreEqual(settings.Sizes.Count, settings.SelectedSizeIndex);
+        }
+
+        [DataTestMethod]
+        [DataRow(0, 800.0, null)]
+        [DataRow(0, null, 600.0)]
+        [DataRow(0, 800.0, 600.0)]
+        [DataRow(0, 0.0, null)]
+        [DataRow(0, null, 0.0)]
+        [DataRow(0, 0.0, 0.0)]
+        [DataRow(1, 800.0, null)]
+        [DataRow(1, null, 600.0)]
+        [DataRow(1, 800.0, 600.0)]
+        [DataRow(1, 0.0, null)]
+        [DataRow(1, null, 0.0)]
+        [DataRow(1, 0.0, 0.0)]
+        [DataRow(3, 800.0, null)]
+        [DataRow(3, null, 600.0)]
+        [DataRow(3, 800.0, 600.0)]
+        [DataRow(3, 0.0, null)]
+        [DataRow(3, null, 0.0)]
+        [DataRow(3, 0.0, 0.0)]
+        public void Apply_WithDimensions_SelectsCustomSizeAfterPresetList(int presetCount, double? width, double? height)
+        {
+            var options = new CliOptions { Width = width, Height = height };
+            var settings = CreateDefaultSettings();
+            settings.Sizes.Clear();
+            for (var i = 0; i < presetCount; i++)
+            {
+                settings.Sizes.Add(new ResizeSize(i, $"Preset {i}", ResizeFit.Fit, 854, 480, ResizeUnit.Pixel));
+            }
+
+            settings.SelectedSizeIndex = 42;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(presetCount, settings.SelectedSizeIndex);
+            Assert.AreSame(settings.CustomSize, settings.SelectedSize);
         }
 
         [TestMethod]
@@ -95,6 +136,68 @@ namespace ImageResizer.Tests.Cli
         }
 
         [TestMethod]
+        public void Apply_WithNoOptions_PreservesCustomSizeAndSelection()
+        {
+            var options = new CliOptions();
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.SelectedSizeIndex = 2;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(321.5, settings.CustomSize.Width);
+            Assert.AreEqual(123.5, settings.CustomSize.Height);
+            Assert.AreEqual(ResizeUnit.Inch, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, settings.CustomSize.Fit);
+            Assert.AreEqual(2, settings.SelectedSizeIndex);
+        }
+
+        [TestMethod]
+        public void Apply_WithOnlyPreset_PreservesCustomSize()
+        {
+            var options = new CliOptions { SizeIndex = 1 };
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.SelectedSizeIndex = 2;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(321.5, settings.CustomSize.Width);
+            Assert.AreEqual(123.5, settings.CustomSize.Height);
+            Assert.AreEqual(ResizeUnit.Inch, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, settings.CustomSize.Fit);
+            Assert.AreEqual(1, settings.SelectedSizeIndex);
+        }
+
+        [DataTestMethod]
+        [DataRow(null, 2)]
+        [DataRow(1, 1)]
+        public void Apply_WithUnitAndFitWithoutDimensions_PreservesCustomSize(int? sizeIndex, int expectedSelectedSizeIndex)
+        {
+            var options = new CliOptions { Unit = ResizeUnit.Pixel, Fit = ResizeFit.Fill, SizeIndex = sizeIndex };
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+            settings.SelectedSizeIndex = 2;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(ResizeUnit.Inch, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, settings.CustomSize.Fit);
+            Assert.AreEqual(321.5, settings.CustomSize.Width);
+            Assert.AreEqual(123.5, settings.CustomSize.Height);
+            Assert.AreEqual(expectedSelectedSizeIndex, settings.SelectedSizeIndex);
+        }
+
+        [TestMethod]
         public void Apply_WithUnit_SetsCustomSizeUnit()
         {
             var options = new CliOptions { Width = 100, Unit = ResizeUnit.Percent };
@@ -114,6 +217,76 @@ namespace ImageResizer.Tests.Cli
             CliSettingsApplier.Apply(options, settings);
 
             Assert.AreEqual(ResizeFit.Fill, settings.CustomSize.Fit);
+        }
+
+        [DataTestMethod]
+        [DataRow(800.0, null, 800.0, 0.0)]
+        [DataRow(null, 600.0, 0.0, 600.0)]
+        [DataRow(800.0, 600.0, 800.0, 600.0)]
+        public void Apply_WithDimensionsAndOmittedUnitAndFit_PreservesCustomPreferences(
+            double? width, double? height, double expectedWidth, double expectedHeight)
+        {
+            var options = new CliOptions { Width = width, Height = height };
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(ResizeUnit.Inch, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, settings.CustomSize.Fit);
+            Assert.AreEqual(expectedWidth, settings.CustomSize.Width);
+            Assert.AreEqual(expectedHeight, settings.CustomSize.Height);
+        }
+
+        [DataTestMethod]
+        [DataRow(800.0, null, 800.0, 0.0)]
+        [DataRow(null, 600.0, 0.0, 600.0)]
+        [DataRow(800.0, 600.0, 800.0, 600.0)]
+        public void Apply_WithDimensionsAndFitButNoUnit_PreservesCustomUnit(
+            double? width, double? height, double expectedWidth, double expectedHeight)
+        {
+            var options = new CliOptions { Width = width, Height = height, Fit = ResizeFit.Fill };
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+            settings.SelectedSizeIndex = 2;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(ResizeUnit.Inch, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Fill, settings.CustomSize.Fit);
+            Assert.AreEqual(expectedWidth, settings.CustomSize.Width);
+            Assert.AreEqual(expectedHeight, settings.CustomSize.Height);
+            Assert.AreEqual(7, settings.SelectedSizeIndex);
+        }
+
+        [DataTestMethod]
+        [DataRow(800.0, null, 800.0, 0.0)]
+        [DataRow(null, 600.0, 0.0, 600.0)]
+        [DataRow(800.0, 600.0, 800.0, 600.0)]
+        public void Apply_WithDimensionsAndUnitButNoFit_PreservesCustomFit(
+            double? width, double? height, double expectedWidth, double expectedHeight)
+        {
+            var options = new CliOptions { Width = width, Height = height, Unit = ResizeUnit.Pixel };
+            var settings = CreateDefaultSettings();
+            settings.CustomSize.Unit = ResizeUnit.Inch;
+            settings.CustomSize.Fit = ResizeFit.Stretch;
+            settings.CustomSize.Width = 321.5;
+            settings.CustomSize.Height = 123.5;
+            settings.SelectedSizeIndex = 2;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.AreEqual(ResizeUnit.Pixel, settings.CustomSize.Unit);
+            Assert.AreEqual(ResizeFit.Stretch, settings.CustomSize.Fit);
+            Assert.AreEqual(expectedWidth, settings.CustomSize.Width);
+            Assert.AreEqual(expectedHeight, settings.CustomSize.Height);
+            Assert.AreEqual(7, settings.SelectedSizeIndex);
         }
 
         [TestMethod]
@@ -153,6 +326,57 @@ namespace ImageResizer.Tests.Cli
         }
 
         [TestMethod]
+        public void Apply_WithUnspecifiedSimpleOptions_PreservesExistingSettings()
+        {
+            var options = new CliOptions();
+            var settings = CreateDefaultSettings();
+            settings.ShrinkOnly = true;
+            settings.Replace = true;
+            settings.IgnoreOrientation = false;
+            settings.RemoveMetadata = true;
+            settings.KeepDateModified = true;
+            settings.JpegQualityLevel = 83;
+            settings.FileName = "kept_%1";
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.IsTrue(settings.ShrinkOnly);
+            Assert.IsTrue(settings.Replace);
+            Assert.IsFalse(settings.IgnoreOrientation);
+            Assert.IsTrue(settings.RemoveMetadata);
+            Assert.IsTrue(settings.KeepDateModified);
+            Assert.AreEqual(83, settings.JpegQualityLevel);
+            Assert.AreEqual("kept_%1", settings.FileName);
+        }
+
+        [TestMethod]
+        public void Apply_WithExplicitFalseSimpleOptions_DisablesExistingOptions()
+        {
+            var options = new CliOptions
+            {
+                ShrinkOnly = false,
+                Replace = false,
+                IgnoreOrientation = false,
+                RemoveMetadata = false,
+                KeepDateModified = false,
+            };
+            var settings = CreateDefaultSettings();
+            settings.ShrinkOnly = true;
+            settings.Replace = true;
+            settings.IgnoreOrientation = true;
+            settings.RemoveMetadata = true;
+            settings.KeepDateModified = true;
+
+            CliSettingsApplier.Apply(options, settings);
+
+            Assert.IsFalse(settings.ShrinkOnly);
+            Assert.IsFalse(settings.Replace);
+            Assert.IsFalse(settings.IgnoreOrientation);
+            Assert.IsFalse(settings.RemoveMetadata);
+            Assert.IsFalse(settings.KeepDateModified);
+        }
+
+        [TestMethod]
         public void Apply_WithShrinkOnly_SetsShrinkOnly()
         {
             var options = new CliOptions { ShrinkOnly = true };
@@ -179,6 +403,7 @@ namespace ImageResizer.Tests.Cli
         {
             var options = new CliOptions { IgnoreOrientation = true };
             var settings = CreateDefaultSettings();
+            settings.IgnoreOrientation = false;
 
             CliSettingsApplier.Apply(options, settings);
 
@@ -246,11 +471,13 @@ namespace ImageResizer.Tests.Cli
         {
             var options = new CliOptions { FileName = string.Empty };
             var settings = CreateDefaultSettings();
+            settings.FileName = "kept_%1";
             var originalFileName = settings.FileName;
 
             CliSettingsApplier.Apply(options, settings);
 
             Assert.AreEqual(originalFileName, settings.FileName);
+            Assert.AreEqual("kept_%1", settings.FileName);
         }
 
         [TestMethod]
