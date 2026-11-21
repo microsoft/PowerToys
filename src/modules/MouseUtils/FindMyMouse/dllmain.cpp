@@ -28,6 +28,7 @@ namespace
     const wchar_t JSON_KEY_SHAKING_MINIMUM_DISTANCE[] = L"shaking_minimum_distance";
     const wchar_t JSON_KEY_SHAKING_INTERVAL_MS[] = L"shaking_interval_ms";
     const wchar_t JSON_KEY_SHAKING_FACTOR[] = L"shaking_factor";
+    const wchar_t JSON_KEY_HAPTICS_ENABLED[] = L"haptics_enabled";
     const wchar_t JSON_KEY_ACTIVATION_SHORTCUT[] = L"activation_shortcut";
 }
 
@@ -566,6 +567,18 @@ void FindMyMouse::parse_settings(PowerToysSettings::PowerToyValues& settings)
         catch (...)
         {
             Logger::warn("Failed to initialize Shaking Factor from settings. Will use default value");
+        }
+    }
+
+    if (properties.HasKey(JSON_KEY_HAPTICS_ENABLED))
+    {
+        try
+        {
+            findMyMouseSettings.hapticsEnabled = properties.GetNamedObject(JSON_KEY_HAPTICS_ENABLED).GetNamedBoolean(JSON_KEY_VALUE);
+        }
+        catch (...)
+        {
+            Logger::warn("Failed to initialize haptic feedback from settings. Will use default value");
         }
     }
 
