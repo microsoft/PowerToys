@@ -7,8 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using ManagedCommon;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
 using Windows.Data.Html;
@@ -21,6 +23,14 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory;
 
 internal static class ClipboardHelper
 {
+    private static readonly ushort[] PasteChord = [(ushort)VirtualKey.Control, (ushort)VirtualKey.V];
+
+    private static readonly InputChordOptions PasteChordOptions = new()
+    {
+        // Any key event with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
+        ExtraInfo = (UIntPtr)0x5555,
+    };
+
     private static readonly HashSet<string> ImageFileTypes = new(StringComparer.InvariantCultureIgnoreCase) { ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".tiff", ".ico", ".svg" };
 
     private static readonly (string DataFormat, ClipboardFormat ClipboardFormat)[] DataFormats =
@@ -170,49 +180,17 @@ internal static class ClipboardHelper
         }
     }
 
-    // Function to send a single key event
-    private static void SendSingleKeyboardInput(short keyCode, uint keyStatus)
-    {
-        var ignoreKeyEventFlag = (UIntPtr)0x5555;
-
-        var inputShift = new NativeMethods.INPUT
-        {
-            type = NativeMethods.INPUTTYPE.INPUT_KEYBOARD,
-            data = new NativeMethods.InputUnion
-            {
-                ki = new NativeMethods.KEYBDINPUT
-                {
-                    wVk = keyCode,
-                    dwFlags = keyStatus,
-
-                    // Any keyevent with the extraInfo set to this value will be ignored by the keyboard hook and sent to the system instead.
-                    dwExtraInfo = ignoreKeyEventFlag,
-                },
-            },
-        };
-
-        var inputs = new NativeMethods.INPUT[] { inputShift };
-        _ = NativeMethods.SendInput(1, inputs, NativeMethods.INPUT.Size);
-    }
-
     internal static void SendPasteKeyCombination()
     {
         ExtensionHost.LogMessage(new LogMessage() { Message = "Sending paste keys..." });
 
-        SendSingleKeyboardInput((short)VirtualKey.LeftControl, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightControl, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.LeftWindows, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightWindows, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.LeftShift, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightShift, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.LeftMenu, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.RightMenu, (uint)NativeMethods.KeyEventF.KeyUp);
-
-        // Send Ctrl + V
-        SendSingleKeyboardInput((short)VirtualKey.Control, (uint)NativeMethods.KeyEventF.KeyDown);
-        SendSingleKeyboardInput((short)VirtualKey.V, (uint)NativeMethods.KeyEventF.KeyDown);
-        SendSingleKeyboardInput((short)VirtualKey.V, (uint)NativeMethods.KeyEventF.KeyUp);
-        SendSingleKeyboardInput((short)VirtualKey.Control, (uint)NativeMethods.KeyEventF.KeyUp);
+        // Releases any modifier that is still held and sends Ctrl+V, all in one batch.
+        var result = InputInjection.SendChord(PasteChord, PasteChordOptions);
+        if (!result.Succeeded)
+        {
+            ExtensionHost.LogMessage(new LogMessage() { Message = $"Paste input was not fully sent: sent {result.Sent} of {result.Requested} events, error {result.Error}, cleanup sent {result.CleanupSent} of {result.CleanupRequested}", State = MessageState.Error });
+            return;
+        }
 
         ExtensionHost.LogMessage(new LogMessage() { Message = "Paste sent" });
     }

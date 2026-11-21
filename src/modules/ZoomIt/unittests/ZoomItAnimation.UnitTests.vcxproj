@@ -17,7 +17,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>..\ZoomIt;..\..\..\common\sysinternals;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\ZoomIt;..\..\..\;..\..\..\common\sysinternals;$(VCInstallDir)UnitTest\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <TreatAngleIncludeAsExternal>true</TreatAngleIncludeAsExternal>
       <UseFullPaths>true</UseFullPaths>
