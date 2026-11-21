@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
 using Microsoft.CmdPal.UI.ViewModels.Properties;
 using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -47,7 +48,9 @@ public sealed class MainListPageCacheTests
                 if (Interlocked.Exchange(ref _blockNextRead, 0) != 0)
                 {
                     _readStarted.Set();
-                    if (!_continueRead.Wait(TimeSpan.FromSeconds(5)))
+
+                    // Keep the older rebuild blocked throughout the test's bounded waits for the newer rebuild.
+                    if (!_continueRead.Wait(TimeSpan.FromSeconds(15)))
                     {
                         throw new TimeoutException("Timed out waiting to continue reading the provider ID.");
                     }
@@ -112,6 +115,7 @@ public sealed class MainListPageCacheTests
             appStateService.Object,
             new(new ListPage()));
 
+        Task<IListItem[]>? rebuild = null;
         try
         {
             _ = page.GetItems();
@@ -119,7 +123,7 @@ public sealed class MainListPageCacheTests
             commandManager.RebuildPinnedCache();
 
             providerContext.BlockNextRead();
-            var rebuild = Task.Run(page.GetItems);
+            rebuild = Task.Run(page.GetItems);
             Assert.IsTrue(providerContext.WaitForBlockedRead(TimeSpan.FromSeconds(5)));
 
             settings = settings.TryPinCommand(ProviderId, second.Id);
@@ -140,6 +144,11 @@ public sealed class MainListPageCacheTests
         finally
         {
             providerContext.ContinueRead();
+            if (rebuild is not null)
+            {
+                await rebuild.WaitAsync(TimeSpan.FromSeconds(5));
+            }
+
             first.Cleanup();
             second.Cleanup();
             GC.KeepAlive(pageContext);
