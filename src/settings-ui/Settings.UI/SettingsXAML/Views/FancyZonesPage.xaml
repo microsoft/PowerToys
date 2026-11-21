@@ -327,17 +327,17 @@
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Accessible">
                                         <StackPanel Orientation="Vertical" Spacing="4">
                                             <ptcontrols:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex" />
-                                            <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
-                                                <Run x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description" />
-                                            </TextBlock>
+                                            <ptcontrols:IsEnabledTextBlock
+                                                x:Uid="FancyZones_MoveWindowLeftRightBasedOnZoneIndex_Description"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                         </StackPanel>
                                     </ComboBoxItem>
                                     <ComboBoxItem x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Accessible">
                                         <StackPanel Orientation="Vertical" Spacing="4">
                                             <ptcontrols:IsEnabledTextBlock x:Uid="FancyZones_MoveWindowBasedOnRelativePosition" />
-                                            <TextBlock FontFamily="{ThemeResource SymbolThemeFontFamily}" Style="{StaticResource SecondaryTextStyle}">
-                                                <Run x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description" />
-                                            </TextBlock>
+                                            <ptcontrols:IsEnabledTextBlock
+                                                x:Uid="FancyZones_MoveWindowBasedOnRelativePosition_Description"
+                                                Style="{StaticResource SecondaryIsEnabledTextBlockStyle}" />
                                         </StackPanel>
                                     </ComboBoxItem>
                                 </ComboBox>
