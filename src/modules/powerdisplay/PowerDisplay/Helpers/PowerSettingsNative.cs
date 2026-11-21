@@ -8,8 +8,9 @@ using System.Runtime.InteropServices;
 namespace PowerDisplay.Helpers;
 
 /// <summary>
-/// P/Invoke for the console-display-state power-setting notification used by
-/// <see cref="DisplayChangeWatcher"/>.
+/// P/Invoke for the power-setting notifications used by
+/// <see cref="DisplayChangeWatcher"/> (console display state) and
+/// <see cref="BuiltInBrightnessWatcher"/> (built-in display brightness).
 /// </summary>
 internal static partial class PowerSettingsNative
 {
@@ -21,6 +22,16 @@ internal static partial class PowerSettingsNative
     /// </summary>
     internal static readonly Guid GuidConsoleDisplayState =
         new("6fe69556-704a-47a0-8f24-c28d936fda47");
+
+    /// <summary>
+    /// GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS: the active power scheme's display
+    /// brightness (0-100). Windows updates it whenever the user changes the
+    /// built-in panel brightness (hardware brightness keys, Quick Settings slider,
+    /// Settings app), including while that panel is inactive (e.g. "Second screen
+    /// only" projection). Data is a DWORD.
+    /// </summary>
+    internal static readonly Guid GuidVideoCurrentMonitorBrightness =
+        new("aded5e82-b909-4619-9949-f5d71dac0bcb");
 
     internal const uint DisplayStateOff = 0;
     internal const uint DisplayStateOn = 1;
