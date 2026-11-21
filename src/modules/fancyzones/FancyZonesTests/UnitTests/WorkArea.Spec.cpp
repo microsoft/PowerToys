@@ -1,7 +1,10 @@
 #include "pch.h"
 
 #include <algorithm>
+#include <chrono>
 #include <filesystem>
+#include <mutex>
+#include <thread>
 #include <vector>
 
 #include <FancyZonesLib/WorkArea.h>
@@ -273,6 +276,56 @@ namespace FancyZonesUnitTests
         }
     };
 
+    namespace
+    {
+        std::mutex s_sizeMessagesMutex;
+        std::vector<UINT> s_sizeMessages;
+        WNDPROC s_originalWndProc{};
+
+        LRESULT CALLBACK SizeMessagesRecordingProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+        {
+            if (message == WM_ENTERSIZEMOVE || message == WM_SIZE || message == WM_EXITSIZEMOVE)
+            {
+                std::scoped_lock lock(s_sizeMessagesMutex);
+                s_sizeMessages.push_back(message);
+            }
+
+            return CallWindowProcW(s_originalWndProc, window, message, wparam, lparam);
+        }
+
+        // Subclasses a window created by Mocks::WindowCreate, which runs on its own thread
+        void RecordSizeMessages(HWND window)
+        {
+            {
+                std::scoped_lock lock(s_sizeMessagesMutex);
+                s_sizeMessages.clear();
+            }
+
+            s_originalWndProc = reinterpret_cast<WNDPROC>(GetWindowLongPtrW(window, GWLP_WNDPROC));
+            SetWindowLongPtrW(window, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(SizeMessagesRecordingProc));
+        }
+
+        // Async placements and notify messages are processed later on the window's thread
+        std::vector<UINT> WaitForRecordedMessage(UINT message)
+        {
+            for (int i = 0; i < 100; ++i)
+            {
+                {
+                    std::scoped_lock lock(s_sizeMessagesMutex);
+                    if (std::ranges::find(s_sizeMessages, message) != s_sizeMessages.end())
+                    {
+                        return s_sizeMessages;
+                    }
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+
+            std::scoped_lock lock(s_sizeMessagesMutex);
+            return s_sizeMessages;
+        }
+    }
+
     TEST_CLASS (WorkAreaSnapUnitTests)
     {
         HINSTANCE m_hInst{};
@@ -365,6 +418,59 @@ namespace FancyZonesUnitTests
             Assert::AreEqual(zoneRect.right, zonedWindowRect.right);
             Assert::AreEqual(zoneRect.top, zonedWindowRect.top);
             Assert::AreEqual(zoneRect.bottom, zonedWindowRect.bottom);
+        }
+
+        TEST_METHOD (WhenSnappingAfterDragTheResizeShouldBeBetweenSizeMoveNotifications)
+        {
+            LayoutData layout{
+                .uuid = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC58}").value(),
+                .type = FancyZonesDataTypes::ZoneSetLayoutType::Grid,
+                .showSpacing = false,
+                .spacing = 0,
+                .zoneCount = 4,
+                .sensitivityRadius = 20,
+            };
+            AppliedLayouts::instance().ApplyLayout(m_workAreaId, layout);
+
+            const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
+            const auto window = Mocks::WindowCreate(m_hInst, L"", L"", 0, WS_THICKFRAME);
+
+            SetWindowPos(window, nullptr, 150, 150, 450, 550, SWP_SHOWWINDOW);
+            RecordSizeMessages(window);
+
+            Assert::IsTrue(workArea->Snap(window, { 1 }, true, true));
+
+            const auto messages = WaitForRecordedMessage(WM_EXITSIZEMOVE);
+            Assert::IsTrue(messages.size() >= 3);
+            Assert::AreEqual<UINT>(WM_ENTERSIZEMOVE, messages.front());
+            Assert::AreEqual<UINT>(WM_EXITSIZEMOVE, messages.back());
+            Assert::IsTrue(std::all_of(messages.begin() + 1, messages.end() - 1, [](UINT message) { return message == WM_SIZE; }));
+        }
+
+        TEST_METHOD (WhenSnappingNotAfterDragNoSizeMoveNotificationsShouldBeSent)
+        {
+            LayoutData layout{
+                .uuid = FancyZonesUtils::GuidFromString(L"{61FA9FC0-26A6-4B37-A834-491C148DFC58}").value(),
+                .type = FancyZonesDataTypes::ZoneSetLayoutType::Grid,
+                .showSpacing = false,
+                .spacing = 0,
+                .zoneCount = 4,
+                .sensitivityRadius = 20,
+            };
+            AppliedLayouts::instance().ApplyLayout(m_workAreaId, layout);
+
+            const auto workArea = WorkArea::Create(m_hInst, m_workAreaId, m_parentUniqueId, m_workAreaRect);
+            const auto window = Mocks::WindowCreate(m_hInst, L"", L"", 0, WS_THICKFRAME);
+
+            SetWindowPos(window, nullptr, 150, 150, 450, 550, SWP_SHOWWINDOW);
+            RecordSizeMessages(window);
+
+            Assert::IsTrue(workArea->Snap(window, { 1 }, true));
+
+            const auto messages = WaitForRecordedMessage(WM_SIZE);
+            Assert::IsTrue(std::ranges::find(messages, static_cast<UINT>(WM_SIZE)) != messages.end());
+            Assert::IsTrue(std::ranges::find(messages, static_cast<UINT>(WM_ENTERSIZEMOVE)) == messages.end());
+            Assert::IsTrue(std::ranges::find(messages, static_cast<UINT>(WM_EXITSIZEMOVE)) == messages.end());
         }
 
         TEST_METHOD (SnapWindowPropertyTest)

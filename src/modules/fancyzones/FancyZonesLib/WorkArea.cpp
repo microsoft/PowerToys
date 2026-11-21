@@ -124,7 +124,7 @@ WorkArea::~WorkArea()
     windowPool.FreeZonesOverlayWindow(m_window);
 }
 
-bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
+bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition, bool afterDrag)
 {
     if (!m_layout || zones.empty())
     {
@@ -147,7 +147,7 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
         const auto rect = m_layout->GetCombinedZonesRect(zones);
         const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
         FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
-        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect, true, afterDrag);
     }
 
     return FancyZonesWindowProperties::StampZoneIndexProperty(window, zones);

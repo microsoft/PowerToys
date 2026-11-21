@@ -126,7 +126,7 @@ void WindowMouseSnap::MoveSizeEnd()
         }
         else if (m_currentWorkArea)
         {
-            m_currentWorkArea->Snap(m_window, m_highlightedZones.Zones());
+            m_currentWorkArea->Snap(m_window, m_highlightedZones.Zones(), true /*updatePosition*/, true /*afterDrag*/);
         }
     }
     else
@@ -140,7 +140,7 @@ void WindowMouseSnap::MoveSizeEnd()
             }
             else if (!FancyZonesWindowUtils::IsWindowMaximized(m_window))
             {
-                FancyZonesWindowUtils::RestoreWindowSize(m_window);
+                FancyZonesWindowUtils::RestoreWindowSize(m_window, true /*afterDrag*/);
             }
         }
     }

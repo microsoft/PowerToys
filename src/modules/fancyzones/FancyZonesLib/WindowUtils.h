@@ -31,9 +31,9 @@ namespace FancyZonesWindowUtils
     bool IsExcludedByDefault(const HWND& hwnd, const std::wstring& processPath) noexcept;
 
     void SwitchToWindow(HWND window) noexcept;
-    void SizeWindowToRect(HWND window, RECT rect, BOOL snapZone = true) noexcept; // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)
+    void SizeWindowToRect(HWND window, RECT rect, BOOL snapZone = true, bool afterDrag = false) noexcept; // Parameter rect must be in screen coordinates (e.g. obtained from GetWindowRect)
     void SaveWindowSizeAndOrigin(HWND window) noexcept;
-    void RestoreWindowSize(HWND window) noexcept;
+    void RestoreWindowSize(HWND window, bool afterDrag = false) noexcept;
     void RestoreWindowOrigin(HWND window) noexcept;
     void MakeWindowTransparent(HWND window);
     RECT AdjustRectForSizeWindowToRect(HWND window, RECT rect, HWND windowOfRect) noexcept; // Parameter rect is in windowOfRect coordinates
