@@ -4,12 +4,13 @@
 
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
 [TestClass]
-public class BookmarkManagerTests
+public partial class BookmarkManagerTests
 {
     [TestMethod]
     public void BookmarkManager_CanBeInstantiated()
@@ -188,7 +189,7 @@ public class BookmarkManagerTests
     }
 
     [TestMethod]
-    public void BookmarkManager_LegacyData_IdsArePersistedAcrossLoads()
+    public async Task BookmarkManager_LegacyData_IdsArePersistedAcrossLoads()
     {
         // Arrange
         const string json = """
@@ -213,9 +214,7 @@ public class BookmarkManagerTests
         // Keep a name->id map to be insensitive to ordering
         var firstIdsByName = firstLoad.ToDictionary(b => b.Name, b => b.Id);
 
-        // Wait deterministically for async persistence to complete
-        var wasSaved = dataSource.WaitForSave(1, 5000);
-        Assert.IsTrue(wasSaved, "Data was not saved within the expected time.");
+        await manager1.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
 
         // Second load: should read back the same IDs from persisted data
         var manager2 = new BookmarksManager(dataSource);

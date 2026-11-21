@@ -25,7 +25,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     IRecipient<PinCommandItemMessage>,
     IRecipient<UnpinCommandItemMessage>,
     IRecipient<PinToDockMessage>,
-    IDisposable
+    IDisposable,
+    IAsyncDisposable
 {
     private static readonly TimeSpan CommandLoadTimeout = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan BackgroundCommandLoadTimeout = TimeSpan.FromSeconds(60);
@@ -33,6 +34,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     private readonly IServiceProvider _serviceProvider;
     private readonly IEnumerable<IExtensionService> _extensionServices;
     private readonly TaskScheduler _taskScheduler;
+    private readonly TimeProvider _timeProvider;
 
     private readonly List<CommandProviderWrapper> _commandProviders = [];
     private readonly Lock _commandProvidersLock = new();
@@ -42,7 +44,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     // lock CommandProviders before locking DockBands, or you will cause a
     // deadlock.
     private readonly Lock _dockBandsLock = new();
-    private readonly SupersedingAsyncGate _reloadCommandsGate;
+    private readonly CoalescingAsyncRunner _reloadCommandsRunner;
+    private readonly Lock _stateLock = new();
+    private TaskCompletionSource? _disposeCompletion;
+    private TaskCompletionSource? _providerActivitiesDrained;
+    private bool _disposing;
+    private int _providerActivities;
+    private int _providerActivitiesEnding;
+    private bool _startupPending = true;
+    private bool _isLoading = true;
     private CancellationTokenSource _extensionLoadCts = new();
     private CancellationToken _currentExtensionLoadCancellationToken;
     private IReadOnlyList<PinnedCommandSettings> _pinnedCommands = [];
@@ -50,9 +60,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     internal event EventHandler? PinnedCommandsChanged;
 
     public TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices)
+        : this(serviceProvider, extensionServices, TimeProvider.System)
+    {
+    }
+
+    internal TopLevelCommandManager(IServiceProvider serviceProvider, IEnumerable<IExtensionService> extensionServices, TimeProvider timeProvider)
     {
         _serviceProvider = serviceProvider;
         _extensionServices = extensionServices;
+        _timeProvider = timeProvider;
         _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
         _taskScheduler = _serviceProvider.GetService<TaskScheduler>()!;
         WeakReferenceMessenger.Default.Register<ReloadCommandsMessage>(this);
@@ -60,7 +76,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         WeakReferenceMessenger.Default.Register<PinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<UnpinCommandItemMessage>(this);
         WeakReferenceMessenger.Default.Register<PinToDockMessage>(this);
-        _reloadCommandsGate = new(ReloadAllCommandsAsyncCore);
+        _reloadCommandsRunner = new(ReloadAllCommandsAsyncCore);
+        _reloadCommandsRunner.BusyChanged += ReloadBusyChanged;
         RebuildPinnedCache();
 
         foreach (var service in _extensionServices)
@@ -79,8 +96,19 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     // here avoids dozens of redundant rebuilds for one provider reload.
     public DockBandsCollection DockBands { get; } = new();
 
-    [ObservableProperty]
-    public partial bool IsLoading { get; private set; } = true;
+    /// <summary>
+    /// Gets a value indicating whether startup, a reload, or a provider activity is in progress.
+    /// </summary>
+    public bool IsLoading
+    {
+        get
+        {
+            lock (_stateLock)
+            {
+                return _isLoading;
+            }
+        }
+    }
 
     public IEnumerable<CommandProviderWrapper> CommandProviders
     {
@@ -93,7 +121,10 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot() => Volatile.Read(ref _pinnedCommands);
+    internal IReadOnlyList<PinnedCommandSettings> GetPinnedCommandsSnapshot()
+    {
+        return Volatile.Read(ref _pinnedCommands);
+    }
 
     internal void RebuildPinnedCache()
     {
@@ -262,11 +293,148 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    public async Task ReloadAllCommandsAsync()
+    /// <summary>
+    /// Requests a command reload, coalescing requests that arrive before the next run starts.
+    /// </summary>
+    /// <returns>A task with the assigned reload's outcome, or a canceled task if disposal has started.</returns>
+    public Task ReloadAllCommandsAsync()
     {
-        // gate ensures that the reload is serialized and if multiple calls
-        // request a reload, only the first and the last one will be executed.
-        await _reloadCommandsGate.ExecuteAsync(CancellationToken.None);
+        Task request;
+        bool loadingChanged;
+        lock (_stateLock)
+        {
+            request = _reloadCommandsRunner.RequestAsync();
+            loadingChanged = UpdateLoadingState();
+        }
+
+        NotifyLoadingChanged(loadingChanged);
+        return request;
+    }
+
+    private void ReloadBusyChanged(bool isBusy)
+    {
+        bool loadingChanged;
+        lock (_stateLock)
+        {
+            loadingChanged = UpdateLoadingState();
+        }
+
+        NotifyLoadingChanged(loadingChanged);
+
+        bool reloadFinished;
+        lock (_stateLock)
+        {
+            // A loading observer may have requested another reload
+            reloadFinished = !isBusy && !_reloadCommandsRunner.IsBusy && !_disposing;
+        }
+
+        if (reloadFinished)
+        {
+            WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+        }
+    }
+
+    private bool BeginProviderActivity(out CancellationToken cancellationToken, out bool loadingChanged)
+    {
+        cancellationToken = default;
+        loadingChanged = false;
+        lock (_stateLock)
+        {
+            if (_disposing)
+            {
+                return false;
+            }
+
+            if (_providerActivities == 0 && _providerActivitiesEnding == 0)
+            {
+                _providerActivitiesDrained = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+
+            _providerActivities++;
+            cancellationToken = _currentExtensionLoadCancellationToken;
+            loadingChanged = UpdateLoadingState();
+            return true;
+        }
+    }
+
+    private void EndProviderActivity(bool completesStartup = false)
+    {
+        bool loadingChanged;
+        lock (_stateLock)
+        {
+            _providerActivities--;
+            _providerActivitiesEnding++;
+            if (completesStartup)
+            {
+                _startupPending = false;
+            }
+
+            loadingChanged = UpdateLoadingState();
+        }
+
+        try
+        {
+            NotifyLoadingChanged(loadingChanged);
+        }
+        finally
+        {
+            lock (_stateLock)
+            {
+                // Disposal also waits for the final loading notifications
+                _providerActivitiesEnding--;
+                if (_providerActivities == 0 && _providerActivitiesEnding == 0)
+                {
+                    _providerActivitiesDrained!.TrySetResult();
+                }
+            }
+        }
+    }
+
+    private void CompleteStartup()
+    {
+        bool loadingChanged;
+        lock (_stateLock)
+        {
+            _startupPending = false;
+            loadingChanged = UpdateLoadingState();
+        }
+
+        NotifyLoadingChanged(loadingChanged);
+    }
+
+    private bool UpdateLoadingState()
+    {
+        // The caller holds _stateLock while updating the loading inputs
+        var isLoading = _startupPending || _providerActivities != 0 || _reloadCommandsRunner.IsBusy;
+        if (_isLoading == isLoading)
+        {
+            return false;
+        }
+
+        _isLoading = isLoading;
+        return true;
+    }
+
+    private void NotifyLoadingChanged(bool loadingChanged)
+    {
+        if (loadingChanged)
+        {
+            try
+            {
+                OnPropertyChanged(nameof(IsLoading));
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    Logger.LogError("Failed to notify the command loading state", ex);
+                }
+                catch (Exception)
+                {
+                    // Notification and logging failures must not change accepted work's outcome
+                }
+            }
+        }
     }
 
     /// <summary>
@@ -288,43 +456,92 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
     /// the root page is displayed so the UI is not blocked by extension startup.
     /// Commands appear progressively via <see cref="IExtensionService.OnProviderAdded"/>.
     /// </summary>
-    [RelayCommand]
+    // Startup calls Execute on a worker; keep cancellation and failures on ExecutionTask to avoid a fatal rethrow
+    [RelayCommand(FlowExceptionsToTaskScheduler = true)]
     public async Task LoadExternalProvidersAsync()
     {
-        IsLoading = true;
+        if (!BeginProviderActivity(out var ct, out var loadingChanged))
+        {
+            return;
+        }
+
         try
         {
-            var ct = _currentExtensionLoadCancellationToken;
+            NotifyLoadingChanged(loadingChanged);
             foreach (var service in _extensionServices.Where(s => s is not BuiltInExtensionService))
             {
+                ct.ThrowIfCancellationRequested();
+
+                // Keep the activity alive until the service stops using its dependencies
                 var wrappers = await service.LoadProvidersAsync(ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
                 await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
             }
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            Logger.LogError("Failed to load external command providers", ex);
+            throw;
         }
         finally
         {
-            IsLoading = false;
+            EndProviderActivity(completesStartup: true);
         }
     }
 
-    private async Task ReloadAllCommandsAsyncCore(CancellationToken cancellationToken)
+    private async Task ReloadAllCommandsAsyncCore()
     {
-        IsLoading = true;
-
         try
         {
-            // Invalidate any background continuations from the previous load cycle
-            await _extensionLoadCts.CancelAsync().ConfigureAwait(false);
-            _extensionLoadCts.Dispose();
-            _extensionLoadCts = new();
-            _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
+            CancellationTokenSource previousLoad;
+            Task cancellation;
+            lock (_stateLock)
+            {
+                if (_disposing)
+                {
+                    throw new OperationCanceledException(_currentExtensionLoadCancellationToken);
+                }
+
+                previousLoad = _extensionLoadCts;
+                cancellation = previousLoad.CancelAsync();
+            }
+
+            CancellationToken ct;
+            try
+            {
+                await cancellation.ConfigureAwait(false);
+            }
+            finally
+            {
+                // A throwing callback must not leave later activities on the canceled generation
+                bool replaceGeneration;
+                lock (_stateLock)
+                {
+                    replaceGeneration = !_disposing;
+                    if (replaceGeneration)
+                    {
+                        _extensionLoadCts = new();
+                        _currentExtensionLoadCancellationToken = _extensionLoadCts.Token;
+                    }
+
+                    ct = _currentExtensionLoadCancellationToken;
+                }
+
+                if (replaceGeneration)
+                {
+                    previousLoad.Dispose();
+                }
+            }
 
             // Signal all services to stop their running providers
             foreach (var service in _extensionServices)
             {
+                ct.ThrowIfCancellationRequested();
                 await service.SignalStopAsync().ConfigureAwait(false);
             }
 
+            ct.ThrowIfCancellationRequested();
             List<TopLevelViewModel> removedTopLevel;
             lock (TopLevelCommands)
             {
@@ -354,31 +571,45 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 item.Cleanup();
             }
 
-            var ct = _currentExtensionLoadCancellationToken;
-
             // Load providers from each service sequentially (order matters: built-ins first)
             foreach (var service in _extensionServices)
             {
+                ct.ThrowIfCancellationRequested();
                 var wrappers = await service.LoadProvidersAsync(ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
                 await RegisterAndLoadCommandsAsync(wrappers, ct).ConfigureAwait(false);
             }
+
+            ct.ThrowIfCancellationRequested();
         }
         finally
         {
-            IsLoading = false;
-            WeakReferenceMessenger.Default.Send<ReloadFinishedMessage>();
+            CompleteStartup();
         }
     }
 
     private async Task UpdateProviderEnabledStateAsyncCore(string providerId, bool isEnabled)
     {
-        IsLoading = true;
+        if (!BeginProviderActivity(out var ct, out var loadingChanged))
+        {
+            return;
+        }
 
         try
         {
+            NotifyLoadingChanged(loadingChanged);
+            ct.ThrowIfCancellationRequested();
+
+            CommandProviderWrapper? provider;
+            lock (_commandProvidersLock)
+            {
+                provider = _commandProviders.FirstOrDefault(p => p.ProviderId == providerId);
+            }
+
             // If disabled, we'll remove that providers commands from top level commands, dock bands, and pinned commands.
             if (!isEnabled)
             {
+                provider?.InvalidatePendingCommands();
                 List<TopLevelViewModel> commandsToRemove;
                 lock (TopLevelCommands)
                 {
@@ -411,40 +642,23 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             }
             else
             {
-                CommandProviderWrapper? provider;
-                lock (_commandProvidersLock)
-                {
-                    provider = _commandProviders.FirstOrDefault(p => p.ProviderId == providerId);
-                }
-
                 if (provider != null)
                 {
-                    await provider.LoadTopLevelCommands(_serviceProvider);
-
-                    lock (TopLevelCommands)
+                    var loadTask = provider.PrepareTopLevelCommandsAsync(_serviceProvider);
+                    CommandProviderWrapper.PreparedCommands prepared;
+                    try
                     {
-                        foreach (var command in provider.TopLevelItems)
-                        {
-                            if (!TopLevelCommands.Any(a => a.Id == command.Id))
-                            {
-                                TopLevelCommands.Add(command);
-                            }
-                        }
-
-                        foreach (var item in provider.FallbackItems)
-                        {
-                            if (!TopLevelCommands.Any(a => a.Id == item.Id) && item.IsEnabled)
-                            {
-                                TopLevelCommands.Add(item);
-                            }
-                        }
+                        // Drain canceled enables too, but never let a hung extension hold loading forever
+                        prepared = await loadTask.WaitAsync(CommandLoadTimeout, _timeProvider).ConfigureAwait(false);
+                    }
+                    catch (TimeoutException)
+                    {
+                        _ = CompleteTimedOutEnableAsync(provider, loadTask, ct);
+                        Logger.LogWarning($"Timed out loading commands while enabling provider '{providerId}'.");
+                        return;
                     }
 
-                    lock (_dockBandsLock)
-                    {
-                        var existingIds = DockBands.Select(b => b.Id).ToHashSet();
-                        DockBands.AddRange(provider.DockBandItems.Where(band => existingIds.Add(band.Id)));
-                    }
+                    PublishEnabledCommands(provider, prepared, ct);
                 }
                 else
                 {
@@ -455,7 +669,92 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
         finally
         {
-            IsLoading = false;
+            EndProviderActivity();
+        }
+    }
+
+    private async Task CompleteTimedOutEnableAsync(
+        CommandProviderWrapper provider,
+        Task<CommandProviderWrapper.PreparedCommands> loadTask,
+        CancellationToken ct)
+    {
+        try
+        {
+            var prepared = await loadTask.ConfigureAwait(false);
+
+            if (ct.IsCancellationRequested || !provider.IsCurrentLoad(prepared))
+            {
+                prepared.Cleanup();
+                return;
+            }
+
+            // Only publication participates in loading and disposal after the foreground wait expires
+            if (!BeginProviderActivity(out _, out var loadingChanged))
+            {
+                prepared.Cleanup();
+                return;
+            }
+
+            try
+            {
+                NotifyLoadingChanged(loadingChanged);
+                PublishEnabledCommands(provider, prepared, ct);
+            }
+            finally
+            {
+                EndProviderActivity();
+            }
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError($"Failed to complete a timed-out enable for provider '{provider.ProviderId}'.", ex);
+        }
+    }
+
+    private void PublishEnabledCommands(CommandProviderWrapper provider, CommandProviderWrapper.PreparedCommands prepared, CancellationToken ct)
+    {
+        bool isRegistered;
+        lock (_commandProvidersLock)
+        {
+            isRegistered = _commandProviders.Contains(provider);
+        }
+
+        if (ct.IsCancellationRequested || !isRegistered || !provider.TryPublishTopLevelCommands(prepared, _serviceProvider))
+        {
+            prepared.Cleanup();
+            ct.ThrowIfCancellationRequested();
+            return;
+        }
+
+        lock (TopLevelCommands)
+        {
+            foreach (var command in prepared.TopLevelItems ?? [])
+            {
+                if (!ct.IsCancellationRequested && provider.IsCurrentLoad(prepared) && !TopLevelCommands.Any(a => a.Id == command.Id))
+                {
+                    TopLevelCommands.Add(command);
+                }
+            }
+
+            foreach (var item in prepared.FallbackItems ?? [])
+            {
+                if (!ct.IsCancellationRequested && provider.IsCurrentLoad(prepared) && !TopLevelCommands.Any(a => a.Id == item.Id) && item.IsEnabled)
+                {
+                    TopLevelCommands.Add(item);
+                }
+            }
+        }
+
+        lock (_dockBandsLock)
+        {
+            if (!ct.IsCancellationRequested && provider.IsCurrentLoad(prepared))
+            {
+                var existingIds = DockBands.Select(b => b.Id).ToHashSet();
+                DockBands.AddRange((prepared.DockBandItems ?? []).Where(band => existingIds.Add(band.Id)));
+            }
         }
     }
 
@@ -887,11 +1186,15 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    public void Receive(ReloadCommandsMessage message) =>
+    public void Receive(ReloadCommandsMessage message)
+    {
         _ = ReloadAllCommandsAsync();
+    }
 
-    public void Receive(ProviderEnabledStateChangedMessage message) =>
+    public void Receive(ProviderEnabledStateChangedMessage message)
+    {
         _ = UpdateProviderEnabledStateAsyncCore(message.ProviderId, message.IsEnabled);
+    }
 
     public void Receive(PinCommandItemMessage message)
     {
@@ -991,16 +1294,83 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public void Dispose()
     {
-        foreach (var service in _extensionServices)
+        _ = ObserveDisposalAsync();
+    }
+
+    /// <inheritdoc/>
+    /// <remarks>
+    /// Stops accepting work, cancels the current load generation, and drains reloads and provider activities.
+    /// Command loads that have timed out may continue in the background.
+    /// </remarks>
+    public ValueTask DisposeAsync()
+    {
+        TaskCompletionSource completion;
+        Task cancellation;
+        Task providerActivities;
+        lock (_stateLock)
         {
-            service.OnProviderAdded -= ExtensionService_OnProviderAdded;
-            service.OnProviderRemoved -= ExtensionService_OnProviderRemoved;
+            if (_disposeCompletion is not null)
+            {
+                return new ValueTask(_disposeCompletion.Task);
+            }
+
+            _disposing = true;
+            _disposeCompletion = completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            _reloadCommandsRunner.Dispose();
+            cancellation = _extensionLoadCts.CancelAsync();
+            providerActivities = _providerActivitiesDrained?.Task ?? Task.CompletedTask;
         }
 
-        _extensionLoadCts.Cancel();
-        _extensionLoadCts.Dispose();
-        _reloadCommandsGate.Dispose();
         GC.SuppressFinalize(this);
+        _ = DisposeCoreAsync(cancellation, providerActivities, completion);
+        return new ValueTask(completion.Task);
+    }
+
+    private async Task ObserveDisposalAsync()
+    {
+        try
+        {
+            await DisposeAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError("Failed to dispose the top-level command manager", ex);
+        }
+    }
+
+    private async Task DisposeCoreAsync(Task cancellation, Task providerActivities, TaskCompletionSource completion)
+    {
+        try
+        {
+            try
+            {
+                _reloadCommandsRunner.BusyChanged -= ReloadBusyChanged;
+                WeakReferenceMessenger.Default.UnregisterAll(this);
+                foreach (var service in _extensionServices)
+                {
+                    service.OnProviderAdded -= ExtensionService_OnProviderAdded;
+                    service.OnProviderRemoved -= ExtensionService_OnProviderRemoved;
+                }
+            }
+            finally
+            {
+                try
+                {
+                    await Task.WhenAll(_reloadCommandsRunner.DisposeAsync().AsTask(), providerActivities, cancellation).ConfigureAwait(false);
+                }
+                finally
+                {
+                    _extensionLoadCts.Dispose();
+                    CompleteStartup();
+                }
+            }
+
+            completion.TrySetResult();
+        }
+        catch (Exception ex)
+        {
+            completion.TrySetException(ex);
+        }
     }
 
     private sealed class CommandLoadResult
