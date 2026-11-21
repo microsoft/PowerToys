@@ -119,6 +119,7 @@
                         <TextBlock
                             x:Uid="Settings_GalleryPage_Banner_Header"
                             HorizontalAlignment="Center"
+                            AutomationProperties.HeadingLevel="Level1"
                             FontSize="32"
                             FontWeight="Bold"
                             Foreground="{ThemeResource GalleryTitleBrush}" />
@@ -288,6 +289,7 @@
                     <!--  Extensions list  -->
                     <ItemsView
                         x:Name="GalleryItemsView"
+                        x:Uid="Settings_GalleryPage_GalleryItemsView"
                         x:Load="{x:Bind ViewModel.HasResults, Mode=OneWay}"
                         IsItemInvokedEnabled="True"
                         ItemInvoked="GalleryItemsView_ItemInvoked"
