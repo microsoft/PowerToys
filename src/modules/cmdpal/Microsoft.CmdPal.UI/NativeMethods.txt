@@ -88,6 +88,11 @@ WM_KEYDOWN
 WM_KEYUP
 WM_SYSKEYDOWN
 WM_SYSKEYUP
+GetMessage
+PeekMessage
+PostThreadMessage
+DispatchMessage
+WM_QUIT
 
 GetWindowLong
 SetWindowLong
