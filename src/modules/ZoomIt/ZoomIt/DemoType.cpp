@@ -36,41 +36,39 @@
 #define BLOCK_STATE         4
 #define KILL_STATE          5
 
-// Each injection is tracked so that the hook
-// procedure can identify injections and allow them
-// to pass through while blocking accidental keystrokes.
+// Every keystroke DemoType synthesizes carries this tag in dwExtraInfo so the
+// hook procedure can let our injections through while blocking accidental
+// user keystrokes, without sharing a queue (and a lock) with the injector.
 //
-// Each injection is identified by either a virtual
-// key code or a unicode character passed as a scan code
-// which is wrapped into a VK_PACKET by SendInput when
-// the KEYEVENTF_UNICODE flag is specified.
-//
-// VK_PACKET allows us to synthesize keystrokes which are
+// Unicode characters are sent with KEYEVENTF_UNICODE, which SendInput wraps
+// into a VK_PACKET. VK_PACKET allows us to synthesize keystrokes which are
 // not mapped to virtual-key codes (e.g. foreign characters).
-struct Injection
-{
-    DWORD vkCode;
-    DWORD scanCode;
+#define DEMOTYPE_INJECTION_TAG static_cast<ULONG_PTR>(0x5A4D4454) // 'ZMDT'
 
-    Injection( DWORD vkCode, DWORD scanCode )
-        : vkCode(vkCode), scanCode(scanCode) {}
-};
+// The low-level keyboard hook must return quickly: Windows stalls all system
+// input while it runs and silently removes hooks that exceed
+// LowLevelHooksTimeout. The hook therefore only decides whether to swallow
+// each event and signals the controller or the user-driven worker, which do
+// all typing, clipboard work and waiting on their own threads.
 
 bool                    g_UserDriven = false;
 bool                    g_Notepad = false;
 bool                    g_Clipboard = false;
 TCHAR                   g_LastFilePath[MAX_PATH] = {0};
 HHOOK                   g_hHook = nullptr;
+std::atomic<DWORD>      g_HookThreadId = 0;
+HWND                    g_hWndFocus = nullptr;
+int                     g_InjectionRatio = 1;
+bool                    g_SwallowedKeys[256] = {};
 size_t                  g_TextLen = 0;
 std::unique_ptr<wchar_t[]> g_ClipboardCache;
 std::wstring            g_Text = L"";
 std::vector<size_t>     g_TextSegments;
 std::wstring            g_BaselineIndentation = L"";
 std::atomic<size_t>     g_Index = 0;
-std::condition_variable g_EpochReady;
-std::mutex              g_EpochMutex;
-std::deque<Injection>   g_Injections;
-std::mutex              g_InjectionsMutex;
+std::atomic<int>        g_PendingInjections = 0;
+std::atomic<int>        g_PendingAdvances = 0;
+std::atomic<bool>       g_SeekingBaseline = false;
 std::atomic<bool>       g_Active = false;
 std::atomic<bool>       g_End = false;
 std::atomic<bool>       g_Kill = false;
@@ -79,6 +77,85 @@ std::atomic<int>        g_EmitterState = INACTIVE_STATE;
 DWORD                   g_LastClipboardSeq = 0;
 DWORD                   g_SpeedSlider = static_cast<int>((
     (MIN_TYPING_SPEED - MAX_TYPING_SPEED) / 2) + MAX_TYPING_SPEED);
+
+//----------------------------------------------------------------------------
+//
+// GetEpochEvent
+//
+// Signaled whenever hook, emitter or worker state changes so the controller
+// can re-check its wait condition. SetEvent never blocks, unlike taking the
+// mutex a condition variable requires, so the hook can signal it safely.
+//
+//----------------------------------------------------------------------------
+HANDLE GetEpochEvent()
+{
+    static wil::unique_event epochEvent( wil::EventOptions::None );
+    return epochEvent.get();
+}
+
+//----------------------------------------------------------------------------
+//
+// GetAdvanceEvent
+//
+// Wakes the user-driven worker when the hook queues work or a kill request.
+//
+//----------------------------------------------------------------------------
+HANDLE GetAdvanceEvent()
+{
+    static wil::unique_event advanceEvent( wil::EventOptions::None );
+    return advanceEvent.get();
+}
+
+//----------------------------------------------------------------------------
+//
+// SignalEpoch
+//
+//----------------------------------------------------------------------------
+void SignalEpoch()
+{
+    SetEvent( GetEpochEvent() );
+}
+
+//----------------------------------------------------------------------------
+//
+// WaitForEpoch
+//
+// Waits until `predicate` holds or `timeoutMs` elapses. Returns the final
+// value of `predicate`.
+//
+//----------------------------------------------------------------------------
+template <typename Predicate>
+bool WaitForEpoch( Predicate predicate, const DWORD timeoutMs = INFINITE )
+{
+    const ULONGLONG start = GetTickCount64();
+    while( !predicate() )
+    {
+        DWORD wait = INFINITE;
+        if( timeoutMs != INFINITE )
+        {
+            const ULONGLONG elapsed = GetTickCount64() - start;
+            if( elapsed >= timeoutMs )
+            {
+                return predicate();
+            }
+            wait = static_cast<DWORD>(timeoutMs - elapsed);
+        }
+        WaitForSingleObject( GetEpochEvent(), wait );
+    }
+    return true;
+}
+
+//----------------------------------------------------------------------------
+//
+// RequestKill
+//
+//----------------------------------------------------------------------------
+void RequestKill()
+{
+    g_Kill = true;
+    SignalEpoch();
+    SetEvent( GetAdvanceEvent() );
+}
 
 //----------------------------------------------------------------------------
 //
@@ -101,33 +178,12 @@ bool IsWindowNotepad( const HWND hwnd )
 
 //----------------------------------------------------------------------------
 //
-// IsInjected
+// IsDemoTypeInjection
 //
 //----------------------------------------------------------------------------
-bool IsInjected( const DWORD vkCode, const DWORD scanCode )
+bool IsDemoTypeInjection( const KBDLLHOOKSTRUCT& kbd )
 {
-    bool injected = false;
-    bool locked = false;
-    if( g_EmitterState == ACTIVE_STATE )
-    {
-        g_InjectionsMutex.lock();
-        locked = true;
-    }
-
-    if( !g_Injections.empty() )
-    {
-        if( (g_Injections.front().vkCode != NULL && g_Injections.front().vkCode == vkCode)
-         || (g_Injections.front().vkCode == NULL && g_Injections.front().scanCode == scanCode) )
-        {
-            injected = true;
-        }
-    }
-
-    if( locked )
-    {
-        g_InjectionsMutex.unlock();
-    }
-    return injected;
+    return (kbd.flags & LLKHF_INJECTED) != 0 && kbd.dwExtraInfo == DEMOTYPE_INJECTION_TAG;
 }
 
 //----------------------------------------------------------------------------
@@ -155,54 +211,6 @@ bool IsAutoFormatTrigger( wchar_t lastCh, wchar_t ch )
 
 //----------------------------------------------------------------------------
 //
-// PopInjection
-// 
-// See comments above `Injection` struct definition
-//
-//----------------------------------------------------------------------------
-void PopInjection()
-{
-    bool locked = false;
-    if( g_EmitterState == ACTIVE_STATE )
-    {
-        g_InjectionsMutex.lock();
-        locked = true;
-    }
-
-    g_Injections.pop_front();
-
-    if( locked )
-    {
-        g_InjectionsMutex.unlock();
-    }
-}
-
-//----------------------------------------------------------------------------
-//
-// PushInjection
-// 
-// See comments above `Injection` struct definition
-//
-//----------------------------------------------------------------------------
-void PushInjection( const WORD vK, const wchar_t ch )
-{
-    bool locked = false;
-    if( g_EmitterState == ACTIVE_STATE )
-    {
-        g_InjectionsMutex.lock();
-        locked = true;
-    }
-
-    g_Injections.push_back( Injection( static_cast<DWORD>(vK), static_cast<DWORD>(ch) ) );
-    
-    if( locked )
-    {
-        g_InjectionsMutex.unlock();
-    }
-}
-
-//----------------------------------------------------------------------------
-//
 // IsNotPrintable
 //
 //----------------------------------------------------------------------------
@@ -213,13 +221,14 @@ bool IsNotPrintable( wchar_t ch )
 
 //----------------------------------------------------------------------------
 //
-// SendKeyInput
+// MakeKeyInput
 //
 //----------------------------------------------------------------------------
-void SendKeyInput( const WORD vK, const wchar_t ch, const bool keyup = false )
+constexpr INPUT MakeKeyInput( const WORD vK, const wchar_t ch, const bool keyup )
 {
     INPUT input = {0};
     input.type = INPUT_KEYBOARD;
+    input.ki.dwExtraInfo = DEMOTYPE_INJECTION_TAG;
 
     // Send unicode character via VK_PACKET
     if( vK == NULL )
@@ -243,47 +252,119 @@ void SendKeyInput( const WORD vK, const wchar_t ch, const bool keyup = false )
     {
         input.ki.dwFlags |= KEYEVENTF_KEYUP;
     }
+    return input;
+}
 
-    SendInput( 1, &input, sizeof( INPUT ) );
-
-    // Add latency between keydown/up to accommodate notepad input handling
-    if( !keyup && g_Notepad )
+//----------------------------------------------------------------------------
+//
+// SendDemoTypeInputs
+//
+// Counts injections before sending them because the hook thread may observe
+// them before SendInput returns.
+//
+//----------------------------------------------------------------------------
+UINT SendDemoTypeInputs( INPUT* inputs, const UINT count )
+{
+    if( count == 0 )
     {
-        std::this_thread::sleep_for( std::chrono::milliseconds( NOTEPAD_REFRESH ) );
+        return 0;
+    }
+
+    g_PendingInjections += static_cast<int>(count);
+    const UINT sent = SendInput( count, inputs, sizeof( INPUT ) );
+    if( sent < count )
+    {
+        g_PendingInjections -= static_cast<int>(count - sent);
+    }
+    return sent;
+}
+
+//----------------------------------------------------------------------------
+//
+// SendKeyUps
+//
+// Retries once so a partially blocked send cannot strand a key-down.
+//
+//----------------------------------------------------------------------------
+void SendKeyUps( std::vector<INPUT>& keyUps )
+{
+    const UINT count = static_cast<UINT>(keyUps.size());
+    const UINT sent = SendDemoTypeInputs( keyUps.data(), count );
+    if( sent < count )
+    {
+        SendDemoTypeInputs( keyUps.data() + sent, count - sent );
     }
 }
 
-//----------------------------------------------------------------------------
-//
-// SendUnicodeKeyDown
-//
-//----------------------------------------------------------------------------
-void SendUnicodeKeyDown( const wchar_t ch )
+struct DemoTypeKey
 {
-    PushInjection( NULL, ch );
-    SendKeyInput ( NULL, ch );
+    WORD    vK;
+    wchar_t ch;
+};
+
+//----------------------------------------------------------------------------
+//
+// SendKeyChord
+//
+// Presses `keys` in order and releases them in reverse order. Every key-down
+// is always followed by its key-up, so no injected key can be left logically
+// pressed, even if part of the input could not be injected.
+//
+//----------------------------------------------------------------------------
+void SendKeyChord( const std::initializer_list<DemoTypeKey> keys )
+{
+    std::vector<INPUT> keyDowns;
+    std::vector<INPUT> keyUps;
+    for( const auto& key : keys )
+    {
+        keyDowns.push_back( MakeKeyInput( key.vK, key.ch, false ) );
+    }
+    for( auto key = std::rbegin( keys ); key != std::rend( keys ); ++key )
+    {
+        keyUps.push_back( MakeKeyInput( key->vK, key->ch, true ) );
+    }
+
+    if( !g_Notepad )
+    {
+        std::vector<INPUT> chord( keyDowns );
+        chord.insert( chord.end(), keyUps.begin(), keyUps.end() );
+
+        const UINT count = static_cast<UINT>(chord.size());
+        if( SendDemoTypeInputs( chord.data(), count ) < count )
+        {
+            // Releasing a key that is already up is harmless
+            SendKeyUps( keyUps );
+        }
+        return;
+    }
+
+    // Add latency after each keydown to accommodate notepad input handling
+    for( auto& keyDown : keyDowns )
+    {
+        SendDemoTypeInputs( &keyDown, 1 );
+        std::this_thread::sleep_for( std::chrono::milliseconds( NOTEPAD_REFRESH ) );
+    }
+    SendKeyUps( keyUps );
 }
 
 //----------------------------------------------------------------------------
 //
-// SendUnicodeKeyUp
+// SendUnicodeKeyPress
 //
 //----------------------------------------------------------------------------
-void SendUnicodeKeyUp( const wchar_t ch )
+void SendUnicodeKeyPress( const wchar_t ch )
 {
-    PushInjection( NULL, ch );
-    SendKeyInput ( NULL, ch, true );
+    SendKeyChord( { { NULL, ch } } );
 }
 
 //----------------------------------------------------------------------------
 //
-// SendVirtualKeyDown
+// SendVirtualKeyPress
 //
 //----------------------------------------------------------------------------
-void SendVirtualKeyDown( const WORD vK )
+void SendVirtualKeyPress( const WORD vK )
 {
-    PushInjection( vK, NULL );
-    SendKeyInput ( vK, NULL );
+    SendKeyChord( { { vK, NULL } } );
 }
 
 //----------------------------------------------------------------------------
@@ -293,8 +374,8 @@ void SendVirtualKeyDown( const WORD vK )
 //----------------------------------------------------------------------------
 void SendVirtualKeyUp( const WORD vK )
 {
-    PushInjection( vK, NULL );
-    SendKeyInput ( vK, NULL, true );
+    INPUT input = MakeKeyInput( vK, NULL, true );
+    SendDemoTypeInputs( &input, 1 );
 }
 
 //----------------------------------------------------------------------------
@@ -311,28 +392,29 @@ unsigned int GetRandomNumber( unsigned int lower, unsigned int upper )
 //
 // BlockModifierKeys
 //
+// Releases held modifiers so they don't combine with injected keystrokes.
+// Modifiers are only ever released here, never pressed again to restore them.
+//
 //----------------------------------------------------------------------------
-int BlockModifierKeys()
+void BlockModifierKeys()
 {
-    int blockDepth = 0;
     const std::vector<WORD> MODIFIERS = { VK_LSHIFT, VK_RSHIFT,
         VK_LCONTROL, VK_RCONTROL, VK_LMENU, VK_RMENU };
 
     if( (GetKeyState( VK_CAPITAL ) & 0x0001) != 0 )
     {
-        SendVirtualKeyDown( VK_CAPITAL );
-        SendVirtualKeyUp  ( VK_CAPITAL );
+        SendVirtualKeyPress( VK_CAPITAL );
     }
+
+    std::vector<INPUT> keyUps;
     for( auto modifier : MODIFIERS )
     {
         if( (GetKeyState( modifier ) & 0x8000) != 0 )
         {
-            blockDepth++;
-            SendVirtualKeyUp( modifier );
+            keyUps.push_back( MakeKeyInput( modifier, NULL, true ) );
         }
     }
-
-    return blockDepth;
+    SendKeyUps( keyUps );
 }
 
 //----------------------------------------------------------------------------
@@ -454,23 +536,21 @@ void GetBaselineIndentation()
     // indentation to materialize, so avoid an insert/delete probe in its document.
     if( !g_Notepad )
     {
-        SendVirtualKeyDown( VK_SPACE );
-        SendVirtualKeyUp  ( VK_SPACE );
-        SendVirtualKeyDown( VK_BACK  );
-        SendVirtualKeyUp  ( VK_BACK  );
+        SendVirtualKeyPress( VK_SPACE );
+        SendVirtualKeyPress( VK_BACK  );
     }
 
     for( int i = 0; i < MAX_INDENT_DEPTH; i++ )
     {
-        SendVirtualKeyDown( VK_LSHIFT );
-        SendVirtualKeyDown( VK_LEFT   );
-        SendVirtualKeyUp  ( VK_LEFT   );
-        SendVirtualKeyUp  ( VK_LSHIFT );
+        // Stop probing as soon as a kill is requested so the session can wind down promptly
+        if( g_Kill )
+        {
+            resetCursor = false;
+            break;
+        }
 
-        SendVirtualKeyDown( VK_LCONTROL );
-        SendVirtualKeyDown( VK_C        );
-        SendVirtualKeyUp  ( VK_C        );
-        SendVirtualKeyUp  ( VK_LCONTROL );
+        SendKeyChord( { { VK_LSHIFT, NULL }, { VK_LEFT, NULL } } );
+        SendKeyChord( { { VK_LCONTROL, NULL }, { VK_C, NULL } } );
 
         std::this_thread::sleep_for( std::chrono::milliseconds( CLIPBOARD_REFRESH ) );
 
@@ -505,8 +585,7 @@ void GetBaselineIndentation()
 
     if( resetCursor )
     {
-        SendVirtualKeyDown( VK_RIGHT );
-        SendVirtualKeyUp  ( VK_RIGHT );
+        SendVirtualKeyPress( VK_RIGHT );
     }
 
     // Extract line indentation
@@ -573,10 +652,7 @@ wchar_t InjectByClipboard( wchar_t lastCh, wchar_t ch, const std::wstring& overr
     }
     std::this_thread::sleep_for( std::chrono::milliseconds( CLIPBOARD_REFRESH ) );
 
-    SendVirtualKeyDown( VK_LCONTROL );
-    SendVirtualKeyDown( VK_V        );
-    SendVirtualKeyUp  ( VK_V        );
-    SendVirtualKeyUp  ( VK_LCONTROL );
+    SendKeyChord( { { VK_LCONTROL, NULL }, { VK_V, NULL } } );
 
     std::this_thread::sleep_for( std::chrono::milliseconds( CLIPBOARD_REFRESH ) );
 
@@ -584,8 +660,7 @@ wchar_t InjectByClipboard( wchar_t lastCh, wchar_t ch, const std::wstring& overr
     // Because it might be the start of a control keyword
     if( trim )
     {
-        SendVirtualKeyDown( VK_BACK );
-        SendVirtualKeyUp  ( VK_BACK );
+        SendVirtualKeyPress( VK_BACK );
 
         g_Index += static_cast<unsigned long long>(i) - 1;
         return g_Text[g_Index];
@@ -674,28 +749,23 @@ bool HandleControlKeyword()
         {
             if( control == L"[enter]" )
             {
-                SendVirtualKeyDown( VK_RETURN );
-                SendVirtualKeyUp  ( VK_RETURN );
+                SendVirtualKeyPress( VK_RETURN );
             }
             else if( control == L"[up]" )
             {
-                SendVirtualKeyDown( VK_UP );
-                SendVirtualKeyUp  ( VK_UP );
+                SendVirtualKeyPress( VK_UP );
             }
             else if( control == L"[down]" )
             {
-                SendVirtualKeyDown( VK_DOWN );
-                SendVirtualKeyUp  ( VK_DOWN );
+                SendVirtualKeyPress( VK_DOWN );
             }
             else if( control == L"[left]" )
             {
-                SendVirtualKeyDown( VK_LEFT );
-                SendVirtualKeyUp  ( VK_LEFT );
+                SendVirtualKeyPress( VK_LEFT );
             }
             else if( control == L"[right]" )
             {
-                SendVirtualKeyDown( VK_RIGHT );
-                SendVirtualKeyUp  ( VK_RIGHT );
+                SendVirtualKeyPress( VK_RIGHT );
             }
             else
             {
@@ -749,8 +819,7 @@ void HandleInjection( bool init = false )
     }
     else
     {
-        SendUnicodeKeyDown( ch );
-        SendUnicodeKeyUp  ( ch );
+        SendUnicodeKeyPress( ch );
     }
     lastCh = ch;
     g_Index++;
@@ -789,85 +858,162 @@ void DemoTypeEmitter()
     }
 
     g_EmitterState = INACTIVE_STATE;
-    g_Kill = true;
+    RequestKill();
+}
+
+//----------------------------------------------------------------------------
+//
+// AdvanceUserDriven
+//
+//----------------------------------------------------------------------------
+void AdvanceUserDriven()
+{
+    // Inject n keys per 1 input keys where n is injectionRatio
+    for( int i = 0; i < g_InjectionRatio && g_Index < g_TextLen && !g_End && !g_Kill; i++ )
     {
-        std::lock_guard<std::mutex> epochLock(g_EpochMutex);
+        HandleInjection();
     }
-    g_EpochReady.notify_one();
+    if( g_Index >= g_TextLen )
+    {
+        g_Index = 0;
+
+        // Synthesize [end] at end of script if no [end] is present
+        if( !g_End )
+        {
+            g_End = true;
+            g_TextSegments.push_back( g_Index );
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// DemoTypeUserDrivenWorker
+//
+// Types on behalf of the hook in user-driven mode so the hook itself never
+// injects input, sleeps or touches the clipboard.
+//
+//----------------------------------------------------------------------------
+void DemoTypeUserDrivenWorker()
+{
+    // Wait for the hook to finish negating modifiers
+    while( !g_Kill && g_HookState != ACTIVE_STATE )
+    {
+        WaitForSingleObject( GetAdvanceEvent(), DEMOTYPE_REFRESH );
+    }
+
+    if( !g_Kill )
+    {
+        // Set baseline indentation to a blocking flag
+        g_BaselineIndentation = INDENT_SEEK_FLAG;
+
+        // Initialize the injection handler
+        HandleInjection( true );
+    }
+    g_SeekingBaseline = false;
+
+    while( !g_Kill )
+    {
+        if( g_PendingAdvances > 0 )
+        {
+            g_PendingAdvances--;
+            AdvanceUserDriven();
+        }
+        else
+        {
+            WaitForSingleObject( GetAdvanceEvent(), INFINITE );
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// ActivateDemoTypeHook
+//
+// Moves the hook from INIT_STATE to ACTIVE_STATE once every modifier release
+// we injected has passed through the hook.
+//
+//----------------------------------------------------------------------------
+void ActivateDemoTypeHook()
+{
+    int expected = INIT_STATE;
+    if( g_PendingInjections <= 0 && g_HookState.compare_exchange_strong( expected, ACTIVE_STATE ) )
+    {
+        SignalEpoch();
+        SetEvent( GetAdvanceEvent() );
+    }
+}
+
+//----------------------------------------------------------------------------
+//
+// BlockDemoTypeHook
+//
+// Moves the hook to BLOCK_STATE without overriding a KILL_STATE request.
+//
+//----------------------------------------------------------------------------
+void BlockDemoTypeHook()
+{
+    int state = g_HookState;
+    while( (state == START_STATE || state == INIT_STATE || state == ACTIVE_STATE)
+        && !g_HookState.compare_exchange_weak( state, BLOCK_STATE ) )
+    {
+    }
 }
 
 //----------------------------------------------------------------------------
 //
 // DemoTypeHookProc
 //
+// Runs on the hook thread for every keystroke in the system, so it must only
+// decide whether to swallow the keystroke and signal other threads.
+//
 //----------------------------------------------------------------------------
 LRESULT CALLBACK DemoTypeHookProc( int nCode, WPARAM wParam, LPARAM lParam )
 {
-    static HWND hWndFocus = nullptr;
-    static int injectionRatio = 1;
-    static int blockDepth = 0;
+    if( nCode != HC_ACTION )
+    {
+        return CallNextHookEx( g_hHook, nCode, wParam, lParam );
+    }
 
-    if( g_HookState == KILL_STATE )
+    const KBDLLHOOKSTRUCT* pKbdStruct = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
+    const DWORD vkCode = pKbdStruct->vkCode & 0xFF;
+    const bool injected = IsDemoTypeInjection( *pKbdStruct );
+    const bool keyUp = (pKbdStruct->flags & LLKHF_UP) != 0;
+
+    // The asynchronous key state is not yet updated for this keystroke
+    const bool keyWasDown = (GetAsyncKeyState( static_cast<int>(vkCode) ) & 0x8000) != 0;
+    const bool keyDownSwallowed = g_SwallowedKeys[vkCode];
+    if( keyUp )
+    {
+        g_SwallowedKeys[vkCode] = false;
+    }
+
+    if( injected )
+    {
+        g_PendingInjections--;
+    }
+
+    bool swallow = false;
+    const int state = g_HookState;
+    if( state == KILL_STATE )
     {
         PostQuitMessage( 0 );
-        return 1;
+        swallow = true;
     }
-    else if( g_HookState == START_STATE )
+    else if( state == BLOCK_STATE )
     {
-        g_HookState = INIT_STATE;
-        if( g_UserDriven )
-        {
-            injectionRatio = min( 3, max( 1, static_cast<int>(g_SpeedSlider / THIRD_TYPING_SPEED) + 1 ) );
-        }
-
-        hWndFocus = GetForegroundWindow();
-        g_Notepad = IsWindowNotepad( hWndFocus );
-        blockDepth = BlockModifierKeys();
+        swallow = true;
     }
-
-    if( nCode == HC_ACTION )
+    else
     {
-        KBDLLHOOKSTRUCT* pKbdStruct = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
-
-        bool injected = IsInjected( pKbdStruct->vkCode, pKbdStruct->scanCode );
-
-        // Block non-injected input until we've negated all modifiers
-        if( g_HookState == INIT_STATE )
-        {
-            if( g_Injections.empty() )
-            {
-                g_HookState = ACTIVE_STATE;
-                {
-                    std::lock_guard<std::mutex> epochLock(g_EpochMutex);
-                }
-                g_EpochReady.notify_one();
-
-                if( g_UserDriven )
-                {
-                    // Set baseline indentation to a blocking flag
-                    g_BaselineIndentation = INDENT_SEEK_FLAG;
-
-                    // Initialize the injection handler
-                    HandleInjection( true );
-                }
-                return 1;
-            }
-        }
-        else if( g_HookState == BLOCK_STATE )
-        {
-            return 1;
-        }
+        const bool focusChanged = g_hWndFocus != GetForegroundWindow();
 
         // Handle two possible kill signals: user inputted escape or focus change
-        if( (pKbdStruct->vkCode == VK_ESCAPE && !injected) || hWndFocus != GetForegroundWindow() )
+        if( (vkCode == VK_ESCAPE && !injected) || focusChanged )
         {
             // Notify the controller that the hook is going to BLOCK_STATE and requesting kill
-            g_HookState = BLOCK_STATE;
-            g_Kill = true;
-            {
-                std::lock_guard<std::mutex> epochLock(g_EpochMutex);
-            }
-            g_EpochReady.notify_one();
+            BlockDemoTypeHook();
+            RequestKill();
 
             // In user-driven mode, we can kill the hook without controller approval
             // In standard mode, we need to stay alive until the emitter is terminated
@@ -877,70 +1023,51 @@ LRESULT CALLBACK DemoTypeHookProc( int nCode, WPARAM wParam, LPARAM lParam )
             }
 
             // Only pass through if the kill signal was user input after a focus change
-            if( hWndFocus != GetForegroundWindow() && injected )
-            {
-                return 1;
-            }
+            swallow = focusChanged && injected;
         }
         else if( injected )
         {
-            PopInjection();
+            if( state == INIT_STATE )
+            {
+                ActivateDemoTypeHook();
+            }
         }
         else
         {
-            switch( wParam )
+            if( wParam == WM_KEYUP && g_UserDriven )
             {
-            case WM_KEYUP:
                 // In user-driven mode, [end] needs to be acknowledged by the user with a space before proceeding to kill
-                if( pKbdStruct->vkCode == VK_SPACE && g_UserDriven && g_End )
+                if( vkCode == VK_SPACE && g_End )
                 {
-                    // Notify the controller that the hook is going to BLOCK_STATE and requesting kill
-                    g_HookState = BLOCK_STATE;
-                    g_Kill = true;
-                    {
-                        std::lock_guard<std::mutex> epochLock(g_EpochMutex);
-                    }
-                    g_EpochReady.notify_one();
-
+                    BlockDemoTypeHook();
+                    RequestKill();
                     PostQuitMessage( 0 );
                 }
-                else if( g_UserDriven )
+                // Advance only on releases of keys pressed during the session (not the DemoType hotkey)
+                else if( state == ACTIVE_STATE && keyDownSwallowed && !g_SeekingBaseline )
                 {
-                    // Block up to the number of DEMOTYPE_HOTKEY keys
-                    if( blockDepth > 0 )
-                    {
-                        blockDepth--;
-                        return 1;
-                    }
-                    else if( g_BaselineIndentation == INDENT_SEEK_FLAG )
-                    {
-                        return 1;
-                    }
-                    
-                    // Inject n keys per 1 input keys where n is injectionRatio
-                    for( int i = 0; i < injectionRatio && g_Index < g_TextLen && !g_End; i++ )
-                    {
-                        HandleInjection();
-                    }
-                    if( g_Index >= g_TextLen )
-                    {
-                        g_Index = 0;
-
-                        // Synthesize [end] at end of script if no [end] is present
-                        if( !g_End )
-                        {
-                            g_End = true;
-                            g_TextSegments.push_back( g_Index );
-                        }
-                    }
+                    g_PendingAdvances++;
+                    SetEvent( GetAdvanceEvent() );
                 }
-                [[fallthrough]];
-            case WM_KEYDOWN:
-            case WM_SYSKEYUP:
-            case WM_SYSKEYDOWN:
-                return 1;
             }
+            swallow = true;
         }
+    }
+
+    // Never swallow the release of a key that the system still considers
+    // pressed, otherwise it stays logically stuck until it is pressed again
+    if( swallow && keyUp && keyWasDown && !keyDownSwallowed )
+    {
+        swallow = false;
+    }
+
+    if( swallow )
+    {
+        if( !keyUp && !keyWasDown )
+        {
+            g_SwallowedKeys[vkCode] = true;
+        }
+        return 1;
     }
     return CallNextHookEx( g_hHook, nCode, wParam, lParam );
 }
@@ -952,26 +1079,69 @@ LRESULT CALLBACK DemoTypeHookProc( int nCode, WPARAM wParam, LPARAM lParam )
 //----------------------------------------------------------------------------
 void StartDemoTypeHook()
 {
+    MSG msg;
+
+    // Create the message queue before publishing the thread id so the controller can post WM_QUIT
+    PeekMessage( &msg, nullptr, WM_USER, WM_USER, PM_NOREMOVE );
+    g_HookThreadId = GetCurrentThreadId();
+    std::fill( std::begin( g_SwallowedKeys ), std::end( g_SwallowedKeys ), false );
+
     g_hHook = SetWindowsHookEx( WH_KEYBOARD_LL, DemoTypeHookProc, GetModuleHandle( nullptr ), 0 );
     if( g_hHook == nullptr )
     {
+        g_HookThreadId = 0;
         g_HookState = INACTIVE_STATE;
+        SignalEpoch();
         return;
     }
 
-    // Jump start the hook with an inert message to prevent a stall
-    KBDLLHOOKSTRUCT KbdStruct{};
-    DemoTypeHookProc( HC_ACTION, 0, reinterpret_cast<LPARAM>(&KbdStruct) );
-
-    MSG msg;
-    while( GetMessage( &msg, nullptr, 0, 0 ) )
+    std::thread worker;
+    int expected = START_STATE;
+    if( g_HookState.compare_exchange_strong( expected, INIT_STATE ) )
     {
-        TranslateMessage( &msg );
-        DispatchMessage( &msg );
+        g_hWndFocus = GetForegroundWindow();
+        g_Notepad = IsWindowNotepad( g_hWndFocus );
+        if( g_UserDriven )
+        {
+            g_InjectionRatio = min( 3, max( 1, static_cast<int>(g_SpeedSlider / THIRD_TYPING_SPEED) + 1 ) );
+            worker = std::thread( DemoTypeUserDrivenWorker );
+        }
+
+        // Block non-injected input until we've negated all modifiers
+        BlockModifierKeys();
+        ActivateDemoTypeHook();
+
+        while( GetMessage( &msg, nullptr, 0, 0 ) > 0 )
+        {
+            TranslateMessage( &msg );
+            DispatchMessage( &msg );
+        }
+    }
+
+    RequestKill();
+
+    // Keep servicing the hook while the worker winds down so its remaining
+    // injections are still filtered and system input never waits on us
+    if( worker.joinable() )
+    {
+        HANDLE hWorker = worker.native_handle();
+        while( MsgWaitForMultipleObjects( 1, &hWorker, FALSE, INFINITE, QS_ALLINPUT ) == WAIT_OBJECT_0 + 1 )
+        {
+            while( PeekMessage( &msg, nullptr, 0, 0, PM_REMOVE ) )
+            {
+                if( msg.message != WM_QUIT )
+                {
+                    TranslateMessage( &msg );
+                    DispatchMessage( &msg );
+                }
+            }
+        }
+        worker.join();
     }
 
     UnhookWindowsHookEx( g_hHook );
     g_hHook = nullptr;
+    g_HookThreadId = 0;
 
     // Clean up any trailing shift modifier from our injections
     if( (GetKeyState( VK_LSHIFT ) & 0x8000) != 0 )
@@ -980,6 +1150,7 @@ void StartDemoTypeHook()
     }
 
     g_HookState = INACTIVE_STATE;
+    SignalEpoch();
 }
 
 //----------------------------------------------------------------------------
@@ -989,11 +1160,31 @@ void StartDemoTypeHook()
 //----------------------------------------------------------------------------
 void KillDemoTypeHook()
 {
-    if( g_HookState != INACTIVE_STATE )
+    int state = g_HookState;
+    do
     {
-        g_HookState = KILL_STATE;
-        SendVirtualKeyUp( VK_ESCAPE );
+        if( state == INACTIVE_STATE )
+        {
+            return;
+        }
+    } while( !g_HookState.compare_exchange_weak( state, KILL_STATE ) );
+
+    // Wake the hook thread even if no keyboard input arrives
+    const DWORD hookThreadId = g_HookThreadId;
+    if( hookThreadId != 0 )
+    {
+        PostThreadMessage( hookThreadId, WM_QUIT, 0, 0 );
     }
+}
+
+//----------------------------------------------------------------------------
+//
+// WaitForDemoTypeHookExit
+//
+//----------------------------------------------------------------------------
+void WaitForDemoTypeHookExit()
+{
+    WaitForEpoch( [] { return g_HookState == INACTIVE_STATE; }, DEMOTYPE_TIMEOUT );
 }
 
 //----------------------------------------------------------------------------
@@ -1003,9 +1194,9 @@ void KillDemoTypeHook()
 //----------------------------------------------------------------------------
 void DemoTypeController()
 {
-    std::chrono::milliseconds timeout(DEMOTYPE_TIMEOUT);
-
-    g_Injections.clear();
+    g_PendingInjections = 0;
+    g_PendingAdvances = 0;
+    g_SeekingBaseline = g_UserDriven;
     g_End = false;
     g_Kill = false;
     g_Active = true;
@@ -1013,29 +1204,27 @@ void DemoTypeController()
 
     std::thread( StartDemoTypeHook ).detach();
 
-    // Spool up the emitter
-    if( !g_UserDriven )
+    // Wait for the hook to negate held modifiers and start blocking input
+    const bool started = WaitForEpoch( [] {
+        return g_HookState == ACTIVE_STATE || g_HookState == INACTIVE_STATE || g_Kill;
+    }, DEMOTYPE_TIMEOUT );
+    if( !started || (g_HookState == INACTIVE_STATE && !g_Kill) )
     {
-        std::unique_lock<std::mutex> epochLock(g_EpochMutex);
-        if( g_EpochReady.wait_for( epochLock, timeout,
-            [] { return g_HookState == ACTIVE_STATE; } ) )
-        { 
-            g_EmitterState = ACTIVE_STATE;
-            std::thread( DemoTypeEmitter ).detach();
-        }
-        else
-        {
-            KillDemoTypeHook();
-            g_Active = false;
-            return;
-        }
+        KillDemoTypeHook();
+        WaitForDemoTypeHookExit();
+        g_Active = false;
+        return;
+    }
+
+    // Spool up the emitter
+    if( !g_UserDriven && !g_Kill )
+    {
+        g_EmitterState = ACTIVE_STATE;
+        std::thread( DemoTypeEmitter ).detach();
     }
 
     // Wait for kill request
-    {
-        std::unique_lock<std::mutex> epochLock(g_EpochMutex);
-        g_EpochReady.wait( epochLock, [] { return g_Kill == true; } );
-    }
+    WaitForEpoch( [] { return g_Kill.load(); } );
 
     // Send kill messages
     if( !g_UserDriven )
@@ -1043,13 +1232,16 @@ void DemoTypeController()
         if( g_EmitterState != INACTIVE_STATE )
         {
             g_EmitterState = KILL_STATE;
-            g_HookState = BLOCK_STATE;
+            BlockDemoTypeHook();
 
-            std::unique_lock<std::mutex> epochLock(g_EpochMutex);
-            g_EpochReady.wait_for( epochLock, timeout, [] { return g_EmitterState == INACTIVE_STATE; } );
+            WaitForEpoch( [] { return g_EmitterState == INACTIVE_STATE; }, DEMOTYPE_TIMEOUT );
         }
     }
     KillDemoTypeHook();
+
+    // The user-driven worker types on the hook thread's behalf, so wait for it
+    // to stop before restoring the clipboard and moving the script index
+    WaitForDemoTypeHookExit();
 
     if( g_ClipboardCache != nullptr )
     {

@@ -80,6 +80,49 @@ namespace
         clipboardBytes = clipboardText.size() * sizeof(wchar_t);
         ++fixtureSequence;
     }
+
+    std::vector<INPUT> sentInputs;
+    std::vector<UINT> sendInputBatches;
+    std::vector<UINT> sendInputLimits;
+    size_t sendInputCall = 0;
+    bool keyDownState[256] = {};
+    HWND foregroundWindow = nullptr;
+    int callNextCount = 0;
+    int postQuitCount = 0;
+
+    UINT TestSendInput(UINT count, LPINPUT inputs, int)
+    {
+        sendInputBatches.push_back(count);
+        UINT sent = count;
+        if (sendInputCall < sendInputLimits.size())
+        {
+            sent = count < sendInputLimits[sendInputCall] ? count : sendInputLimits[sendInputCall];
+        }
+        ++sendInputCall;
+        sentInputs.insert(sentInputs.end(), inputs, inputs + sent);
+        return sent;
+    }
+
+    SHORT TestGetKeyState(int vk)
+    {
+        return keyDownState[vk & 0xFF] ? static_cast<SHORT>(0x8000) : 0;
+    }
+
+    HWND TestGetForegroundWindow()
+    {
+        return foregroundWindow;
+    }
+
+    LRESULT TestCallNextHookEx(HHOOK, int, WPARAM, LPARAM)
+    {
+        ++callNextCount;
+        return 0;
+    }
+
+    void TestPostQuitMessage(int)
+    {
+        ++postQuitCount;
+    }
 }
 
 // Compile the actual reader and prefix handling against isolated clipboard data.
@@ -91,6 +134,13 @@ namespace
 #define GlobalLock TestGlobalLock
 #define GlobalUnlock TestGlobalUnlock
 #define GetClipboardSequenceNumber TestGetClipboardSequenceNumber
+// Observe injections and hook decisions without touching real input.
+#define SendInput TestSendInput
+#define GetKeyState TestGetKeyState
+#define GetAsyncKeyState TestGetKeyState
+#define GetForegroundWindow TestGetForegroundWindow
+#define CallNextHookEx TestCallNextHookEx
+#define PostQuitMessage TestPostQuitMessage
 // Keep production CRT diagnostics separate from the test code.
 #pragma warning(push)
 #pragma warning(disable : 4996)
@@ -104,6 +154,12 @@ namespace
 #undef GlobalLock
 #undef GlobalUnlock
 #undef GetClipboardSequenceNumber
+#undef SendInput
+#undef GetKeyState
+#undef GetAsyncKeyState
+#undef GetForegroundWindow
+#undef CallNextHookEx
+#undef PostQuitMessage
 
 namespace DemoTypeClipboardTests
 {
@@ -282,5 +338,250 @@ namespace DemoTypeClipboardTests
                     Assert::AreEqual(1, lockCount);
                     Assert::AreEqual(0, unlockCount);
                 }
+    };
+
+    TEST_CLASS (InputHookTests)
+    {
+        static bool IsKeyUp(const INPUT& input)
+        {
+            return (input.ki.dwFlags & KEYEVENTF_KEYUP) != 0;
+        }
+
+        static void AssertKey(const INPUT& input, WORD vk, bool keyUp)
+        {
+            Assert::AreEqual(static_cast<DWORD>(INPUT_KEYBOARD), input.type);
+            Assert::AreEqual(vk, input.ki.wVk);
+            Assert::AreEqual(keyUp, IsKeyUp(input));
+            Assert::AreEqual(DEMOTYPE_INJECTION_TAG, input.ki.dwExtraInfo);
+        }
+
+        // Mirrors the system: key state only changes for events the hook passes on.
+        static LRESULT SendHookEvent(DWORD vk, bool keyUp, bool injected = false)
+        {
+            KBDLLHOOKSTRUCT event{};
+            event.vkCode = vk;
+            event.flags = (keyUp ? LLKHF_UP : 0) | (injected ? LLKHF_INJECTED : 0);
+            event.dwExtraInfo = injected ? DEMOTYPE_INJECTION_TAG : 0;
+            const LRESULT result = DemoTypeHookProc(HC_ACTION, keyUp ? WM_KEYUP : WM_KEYDOWN, reinterpret_cast<LPARAM>(&event));
+            if (result == 0)
+            {
+                keyDownState[vk] = !keyUp;
+            }
+            return result;
+        }
+
+        static void StartHook(int state, bool userDriven)
+        {
+            g_HookState = state;
+            g_UserDriven = userDriven;
+            g_SeekingBaseline = false;
+        }
+
+    public:
+        TEST_METHOD_INITIALIZE(Initialize)
+        {
+            sentInputs.clear();
+            sendInputBatches.clear();
+            sendInputLimits.clear();
+            sendInputCall = 0;
+            std::fill(std::begin(keyDownState), std::end(keyDownState), false);
+            std::fill(std::begin(g_SwallowedKeys), std::end(g_SwallowedKeys), false);
+            foregroundWindow = reinterpret_cast<HWND>(1);
+            g_hWndFocus = foregroundWindow;
+            callNextCount = postQuitCount = 0;
+            g_PendingInjections = 0;
+            g_PendingAdvances = 0;
+            g_SeekingBaseline = false;
+            g_Notepad = false;
+            g_UserDriven = false;
+            g_End = false;
+            g_Kill = false;
+            g_HookState = INACTIVE_STATE;
+        }
+
+        TEST_METHOD_CLEANUP(Cleanup)
+        {
+            g_HookState = INACTIVE_STATE;
+            g_Kill = false;
+            g_UserDriven = false;
+            g_hWndFocus = nullptr;
+        }
+
+        TEST_METHOD (ChordIsInjectedAsOneBatchReleasedInReverse)
+        {
+            SendKeyChord({ { VK_CONTROL, NULL }, { 'V', NULL } });
+
+            Assert::AreEqual(size_t{ 1 }, sendInputBatches.size());
+            Assert::AreEqual(size_t{ 4 }, sentInputs.size());
+            AssertKey(sentInputs[0], VK_CONTROL, false);
+            AssertKey(sentInputs[1], 'V', false);
+            AssertKey(sentInputs[2], 'V', true);
+            AssertKey(sentInputs[3], VK_CONTROL, true);
+            Assert::AreEqual(4, g_PendingInjections.load());
+        }
+
+        TEST_METHOD (PartiallyInjectedChordStillReleasesEveryKey)
+        {
+            sendInputLimits = { 1 };
+
+            SendKeyChord({ { VK_CONTROL, NULL }, { 'V', NULL } });
+
+            Assert::AreEqual(size_t{ 3 }, sentInputs.size());
+            AssertKey(sentInputs[0], VK_CONTROL, false);
+            AssertKey(sentInputs[1], 'V', true);
+            AssertKey(sentInputs[2], VK_CONTROL, true);
+            Assert::AreEqual(3, g_PendingInjections.load());
+        }
+
+        TEST_METHOD (RetriesUnsentKeyUps)
+        {
+            g_Notepad = true;
+            sendInputLimits = { 1, 1, 1 };
+
+            SendKeyChord({ { VK_SHIFT, NULL }, { VK_LEFT, NULL } });
+
+            const std::vector<UINT> expectedBatches{ 1, 1, 2, 1 };
+            Assert::IsTrue(expectedBatches == sendInputBatches);
+            Assert::AreEqual(size_t{ 4 }, sentInputs.size());
+            AssertKey(sentInputs[2], VK_LEFT, true);
+            AssertKey(sentInputs[3], VK_SHIFT, true);
+            Assert::AreEqual(static_cast<DWORD>(KEYEVENTF_EXTENDEDKEY | KEYEVENTF_KEYUP), sentInputs[2].ki.dwFlags);
+        }
+
+        TEST_METHOD (UnicodeKeyPressIsInjectedAsPacketPair)
+        {
+            SendUnicodeKeyPress(L'\u4F60');
+
+            Assert::AreEqual(size_t{ 2 }, sentInputs.size());
+            Assert::AreEqual(static_cast<DWORD>(KEYEVENTF_UNICODE), sentInputs[0].ki.dwFlags);
+            Assert::AreEqual(static_cast<DWORD>(KEYEVENTF_UNICODE | KEYEVENTF_KEYUP), sentInputs[1].ki.dwFlags);
+            Assert::AreEqual(static_cast<WORD>(L'\u4F60'), sentInputs[1].ki.wScan);
+        }
+
+        TEST_METHOD (BlockModifierKeysOnlyReleasesHeldModifiers)
+        {
+            keyDownState[VK_LCONTROL] = true;
+            keyDownState[VK_RSHIFT] = true;
+
+            BlockModifierKeys();
+
+            Assert::AreEqual(size_t{ 1 }, sendInputBatches.size());
+            Assert::AreEqual(size_t{ 2 }, sentInputs.size());
+            AssertKey(sentInputs[0], VK_RSHIFT, true);
+            AssertKey(sentInputs[1], VK_LCONTROL, true);
+        }
+
+        TEST_METHOD (HookActivatesOnceInjectedModifierReleasesArrive)
+        {
+            StartHook(INIT_STATE, false);
+            keyDownState[VK_LCONTROL] = true;
+            keyDownState[VK_RSHIFT] = true;
+            BlockModifierKeys();
+
+            Assert::AreEqual(0LL, static_cast<long long>(SendHookEvent(VK_RSHIFT, true, true)));
+            Assert::AreEqual(INIT_STATE, g_HookState.load());
+            Assert::AreEqual(0LL, static_cast<long long>(SendHookEvent(VK_LCONTROL, true, true)));
+            Assert::AreEqual(ACTIVE_STATE, g_HookState.load());
+            Assert::AreEqual(0, g_PendingInjections.load());
+        }
+
+        TEST_METHOD (UserDrivenKeystrokeQueuesAdvanceWithoutInjecting)
+        {
+            StartHook(ACTIVE_STATE, true);
+
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('A', false)));
+            Assert::AreEqual(0, g_PendingAdvances.load());
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('A', true)));
+
+            Assert::AreEqual(1, g_PendingAdvances.load());
+            Assert::IsTrue(sentInputs.empty());
+            Assert::AreEqual(0, callNextCount);
+        }
+
+        TEST_METHOD (ReleaseOfKeyHeldBeforeStartPassesWithoutAdvancing)
+        {
+            StartHook(ACTIVE_STATE, true);
+            keyDownState['D'] = true;
+
+            Assert::AreEqual(0LL, static_cast<long long>(SendHookEvent('D', true)));
+
+            Assert::IsFalse(keyDownState['D']);
+            Assert::AreEqual(0, g_PendingAdvances.load());
+        }
+
+        TEST_METHOD (AutorepeatOfHeldKeyDoesNotAdvance)
+        {
+            StartHook(ACTIVE_STATE, true);
+            keyDownState['D'] = true;
+
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('D', false)));
+            Assert::AreEqual(0LL, static_cast<long long>(SendHookEvent('D', true)));
+
+            Assert::AreEqual(0, g_PendingAdvances.load());
+        }
+
+        TEST_METHOD (KeystrokesWhileSeekingBaselineDoNotAdvance)
+        {
+            StartHook(ACTIVE_STATE, true);
+            g_SeekingBaseline = true;
+
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('A', false)));
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('A', true)));
+
+            Assert::AreEqual(0, g_PendingAdvances.load());
+        }
+
+        TEST_METHOD (BlockStateNeverStrandsALogicallyDownKey)
+        {
+            StartHook(BLOCK_STATE, false);
+            keyDownState[VK_LCONTROL] = true;
+
+            Assert::AreEqual(0LL, static_cast<long long>(SendHookEvent(VK_LCONTROL, true, true)));
+            Assert::IsFalse(keyDownState[VK_LCONTROL]);
+
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('B', false)));
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('B', true)));
+            Assert::IsFalse(keyDownState['B']);
+        }
+
+        TEST_METHOD (UserEscapeRequestsKillAndPassesThrough)
+        {
+            StartHook(ACTIVE_STATE, true);
+
+            Assert::AreEqual(0LL, static_cast<long long>(SendHookEvent(VK_ESCAPE, false)));
+
+            Assert::IsTrue(g_Kill.load());
+            Assert::AreEqual(BLOCK_STATE, g_HookState.load());
+            Assert::AreEqual(1, postQuitCount);
+            Assert::AreEqual(0LL, static_cast<long long>(SendHookEvent(VK_ESCAPE, true)));
+        }
+
+        TEST_METHOD (FocusChangeBlocksInjectionsButNotKillState)
+        {
+            StartHook(ACTIVE_STATE, false);
+            foregroundWindow = reinterpret_cast<HWND>(2);
+
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent('X', false, true)));
+            Assert::IsTrue(g_Kill.load());
+            Assert::AreEqual(BLOCK_STATE, g_HookState.load());
+            Assert::AreEqual(0, postQuitCount);
+
+            KillDemoTypeHook();
+            BlockDemoTypeHook();
+            Assert::AreEqual(KILL_STATE, g_HookState.load());
+        }
+
+        TEST_METHOD (UserDrivenSpaceAfterEndRequestsKill)
+        {
+            StartHook(ACTIVE_STATE, true);
+            g_End = true;
+
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent(VK_SPACE, false)));
+            Assert::AreEqual(1LL, static_cast<long long>(SendHookEvent(VK_SPACE, true)));
+
+            Assert::IsTrue(g_Kill.load());
+            Assert::AreEqual(1, postQuitCount);
+            Assert::AreEqual(0, g_PendingAdvances.load());
+        }
     };
 }
