@@ -12,8 +12,8 @@ inline long FindEdge(const BGRATextureView& texture, const POINT centerPoint, co
 
     const size_t maxDim = IsX ? texture.width : texture.height;
 
-    long x = std::clamp<long>(centerPoint.x, 1, static_cast<long>(texture.width - 2));
-    long y = std::clamp<long>(centerPoint.y, 1, static_cast<long>(texture.height - 2));
+    long x = std::clamp<long>(centerPoint.x, 0, static_cast<long>(texture.width - 1));
+    long y = std::clamp<long>(centerPoint.y, 0, static_cast<long>(texture.height - 1));
 
     const uint32_t startPixel = texture.GetPixel(x, y);
     while (true)
