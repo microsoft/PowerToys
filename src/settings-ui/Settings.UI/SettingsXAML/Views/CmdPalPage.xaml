@@ -91,6 +91,7 @@
                                 Grid.Row="1"
                                 Margin="0,24,0,4"
                                 HorizontalAlignment="Center"
+                                AutomationProperties.HeadingLevel="Level1"
                                 FontSize="36"
                                 FontWeight="Bold"
                                 RequestedTheme="Dark">
