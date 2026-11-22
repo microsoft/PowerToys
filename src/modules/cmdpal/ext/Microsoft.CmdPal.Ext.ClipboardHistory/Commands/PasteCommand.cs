@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
@@ -37,6 +38,7 @@ internal sealed partial class PasteCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
+        var setTime = DateTimeOffset.Now;
         ClipboardHelper.SetClipboardContent(_clipboardItem, _clipboardFormat);
         HideWindow();
 
@@ -60,8 +62,10 @@ internal sealed partial class PasteCommand : InvokableCommand
 
         if (!_settings.KeepAfterPaste)
         {
-            // Deferred and retried so it doesn't compete with the target app's OpenClipboard.
-            ClipboardHistoryDeleter.DeleteAfterPaste(_clipboardItem.Item);
+            // Deferred and retried so it doesn't compete with the target app's OpenClipboard. It also removes the
+            // new history entry created by putting the content back on the clipboard.
+            var pasted = new PastedContent(_clipboardFormat, _clipboardFormat == ClipboardFormat.Text ? _clipboardItem.Content : null);
+            ClipboardHistoryDeleter.DeleteAfterPaste(_clipboardItem.Item, pasted, setTime);
         }
 
         return CommandResult.ShowToast(Properties.Resources.paste_toast_text);
