@@ -1,6 +1,5 @@
 #include "pch.h"
 #include <interface/powertoy_module_interface.h>
-#include "trace.h"
 #include <common/logger/logger.h>
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
@@ -14,13 +13,11 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        Trace::RegisterProvider();
         break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        Trace::UnregisterProvider();
         break;
     }
     return TRUE;
@@ -177,7 +174,6 @@ public:
         if (m_process && WaitForSingleObject(m_process, 0) == WAIT_TIMEOUT)
         {
             m_enabled = true;
-            Trace::Enable(true);
             Logger::debug(L"ScrollAcceleration process already running.");
             return;
         }
@@ -239,7 +235,6 @@ public:
         Logger::info(L"ScrollAcceleration process launched successfully (PID: {}).", pi.dwProcessId);
         m_process = pi.hProcess;
         m_enabled = true;
-        Trace::Enable(true);
         CloseHandle(pi.hThread);
     }
 
@@ -268,7 +263,6 @@ public:
             m_process = nullptr;
         }
 
-        Trace::Enable(false);
     }
 
     virtual bool is_enabled() override
