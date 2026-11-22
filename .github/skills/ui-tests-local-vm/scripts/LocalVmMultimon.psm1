@@ -18,6 +18,9 @@ $ErrorActionPreference = 'Stop'
 $script:DefaultGuestRoot = 'C:\PowerToysUiTestRun\Multimon'
 $script:TaskPrefix = 'PowerToysUiTest-Multimon-'
 $script:DriverPackageName = 'IddSampleDriver'
+# IddSampleDriver.inf at Build-IddSampleDriver.ps1's pinned commit has only an
+# NT$ARCH$.10.0...22000 models section, so it installs on Windows 11 and no Windows 10 build.
+$script:DriverMinimumBuild = 22000
 $script:LayoutScript = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..\templates\multimon\Set-MonitorLayout.ps1'))
 
 function Get-MultimonSetting {
@@ -60,7 +63,8 @@ function Get-MultimonPlatform {
 function Get-MultimonDriverPackage {
     <#
     .SYNOPSIS
-    Describes the IndirectDisplay sample's driver package: its name, its files, and its host folder.
+    Describes the IndirectDisplay sample's driver package: its name, its files, its host folder, and
+    the lowest guest build its INF installs on.
 
     .DESCRIPTION
     The folder is the override when given, else Multimon.DriverPath, else multimon\IddSampleDriver
@@ -76,10 +80,11 @@ function Get-MultimonDriverPackage {
 
     $name = $script:DriverPackageName
     [pscustomobject]@{
-        Name  = $name
-        Files = @('inf', 'cat', 'dll' | ForEach-Object { "$name.$_" })
-        Path  = Get-MultimonSetting -Configuration $Configuration -Name 'DriverPath' -Override $Override `
+        Name         = $name
+        Files        = @('inf', 'cat', 'dll' | ForEach-Object { "$name.$_" })
+        Path         = Get-MultimonSetting -Configuration $Configuration -Name 'DriverPath' -Override $Override `
             -Default (Join-Path $VmRoot "multimon\$name")
+        MinimumBuild = $script:DriverMinimumBuild
     }
 }
 

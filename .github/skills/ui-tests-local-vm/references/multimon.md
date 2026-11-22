@@ -5,6 +5,13 @@ edges, layout, or mixed DPI (Mouse Utilities, FancyZones, Mouse Without Borders)
 layer adds three virtual monitors inside the guest's console session, arranges them, and captures a
 second baseline checkpoint. It runs after [setup.md](setup.md) has produced `provisioned-baseline`.
 
+Windows 11 (build 22000+) guests only. At the pinned commit, `IddSampleDriver.inf` has only an
+`NT$ARCH$.10.0...22000` models section, so Windows 10 finds no compatible driver.
+`Initialize-LocalVmMultimon.ps1` reads the guest's build over PowerShell Direct and compares it with
+the floor in `LocalVmMultimon.psm1`. On an older guest it stops before copying files, trusting the
+certificate, or creating the device. `Install-IddSampleDriver.ps1` repeats the check inside the
+guest. Raising the pinned commit means rechecking that floor against the new INF.
+
 | Concern | Mechanism |
 |---|---|
 | Virtual monitors | The IndirectDisplay sample from [microsoft/Windows-driver-samples](https://github.com/microsoft/Windows-driver-samples/tree/main/video/IndirectDisplay), built at a pinned commit, unmodified |

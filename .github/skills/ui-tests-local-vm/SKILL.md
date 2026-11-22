@@ -226,7 +226,8 @@ starts or exits without status, summarizes TRX, and leaves the persistent VM run
 
 The default guest has one display. For behavior that depends on monitor edges, layout, or mixed DPI,
 add three virtual monitors from Microsoft's IndirectDisplay driver sample and capture a second
-baseline. This runs after host setup, with the guest running:
+baseline. Windows 11 (build 22000+) guests only: the pinned sample's INF targets no Windows 10
+build, so the Windows 10 guest keeps one display. This runs after host setup, with the guest running:
 
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Build-IddSampleDriver.ps1 -VmRoot X:\PowerToysUiTestVm

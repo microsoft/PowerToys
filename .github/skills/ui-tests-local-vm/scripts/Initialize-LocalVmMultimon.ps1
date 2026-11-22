@@ -10,6 +10,10 @@ Adds virtual monitors to a provisioned local UI-test guest, applies a layout, an
 Runs on the host after Initialize-LocalVmHost.ps1 has created and provisioned the guest, with the
 guest running and its standard user logged on. Every installation happens inside the guest.
 
+The guest must run a build the driver INF targets, which for the pinned sample is Windows 11 (build
+22000 or newer). The script reads the guest build first and stops before copying anything when the
+guest is older.
+
 1. Copies the guest scripts from templates\multimon, the built IndirectDisplay sample driver,
    upstream Capture-MonitorLayout.ps1, and, when it is built, MonitorReportTool into the guest work
    root. The guest signs the driver catalog with built-in PowerShell, so no signing tool is copied.
@@ -178,6 +182,16 @@ if ($vm.State -ne 'Running') {
 }
 $credential = Import-Clixml -LiteralPath $CredentialPath
 
+# The driver package installs only on the builds its INF targets. Every later step copies into the
+# guest or changes its trust stores and devices, so an unsupported guest stops here.
+$minimumBuild = $driverPackage.MinimumBuild
+$guestBuild = [int](Invoke-Command -VMName $vmName -Credential $credential -ScriptBlock {
+        (Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
+    })
+if ($guestBuild -lt $minimumBuild) {
+    throw "BLOCKED: '$vmName' is Windows build $guestBuild, and $($driverPackage.Name).inf installs only on build $minimumBuild or newer. Nothing was copied or installed. Virtual monitors need a Windows 11 guest; see references\multimon.md."
+}
+
 $guestPaths = Get-MultimonGuestPath
 $guestRoot = $guestPaths.Root
 $guestOutput = $guestPaths.Output
@@ -228,7 +242,7 @@ foreach ($item in $payload) {
 if ($PSCmdlet.ShouldProcess($vmName, 'Install the IndirectDisplay sample driver and create its root device')) {
     $install = Invoke-Command -VMName $vmName -Credential $credential `
         -FilePath (Join-Path $guestTemplates 'Install-IddSampleDriver.ps1') `
-        -ArgumentList "$guestRoot\driver-source", "$guestRoot\driver", $driverPackage.Name
+        -ArgumentList "$guestRoot\driver-source", "$guestRoot\driver", $driverPackage.Name, $minimumBuild
     $install | Format-List | Out-String | Write-Verbose
     if ($install.RebootRequired) {
         throw 'Windows requested a restart to finish the driver installation. Run Stop-LocalVm.ps1, then Start-LocalVm.ps1 -Wait, then rerun this script; the installation steps it already completed are skipped.'

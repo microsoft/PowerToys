@@ -34,6 +34,7 @@ reads it from, which defaults to multimon\IddSampleDriver under VmRoot.
 
 .PARAMETER Commit
 Windows-driver-samples commit to build. Raise it deliberately, after reviewing the sample's changes.
+The guest build floor in LocalVmMultimon.psm1 follows this commit's IddSampleDriver.inf.
 
 .PARAMETER PackageSource
 The only NuGet source the restore uses.

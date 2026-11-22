@@ -46,6 +46,10 @@ Guest folder holding the signed package that is installed.
 .PARAMETER PackageName
 Base name of the driver package's files.
 
+.PARAMETER MinimumBuild
+Lowest Windows build the package's INF targets. Initialize-LocalVmMultimon.ps1 passes the value
+from LocalVmMultimon.psm1. The script stops before changing anything on an older guest.
+
 .PARAMETER HardwareId
 Hardware ID of the root device. The sample INF matches Root\IddSampleDriver.
 
@@ -59,7 +63,7 @@ Monitors the driver creates. The unmodified sample creates three.
 Upper bound on waiting for the device and its monitors after installation.
 
 .EXAMPLE
-Invoke-Command -VMName PowerToysUiTest-Win11 -Credential $credential -FilePath .\Install-IddSampleDriver.ps1 -ArgumentList 'C:\PowerToysUiTestRun\Multimon\driver-source', 'C:\PowerToysUiTestRun\Multimon\driver', 'IddSampleDriver'
+Invoke-Command -VMName PowerToysUiTest-Win11 -Credential $credential -FilePath .\Install-IddSampleDriver.ps1 -ArgumentList 'C:\PowerToysUiTestRun\Multimon\driver-source', 'C:\PowerToysUiTestRun\Multimon\driver', 'IddSampleDriver', 22000
 #>
 
 [CmdletBinding()]
@@ -73,6 +77,9 @@ param(
     [Parameter(Mandatory, Position = 2)]
     [ValidatePattern('^[A-Za-z0-9_-]+$')]
     [string]$PackageName,
+    [Parameter(Mandatory, Position = 3)]
+    [ValidateRange(0, 2147483647)]
+    [int]$MinimumBuild,
     [ValidateNotNullOrEmpty()]
     [string]$HardwareId = 'Root\IddSampleDriver',
     [ValidateNotNullOrEmpty()]
@@ -85,6 +92,13 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# Every later step changes the guest's trust stores or devices, so a build the INF does not target
+# stops before any of them.
+$guestBuild = [int](Get-ItemProperty -LiteralPath 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
+if ($guestBuild -lt $MinimumBuild) {
+    throw "BLOCKED: this guest is Windows build $guestBuild, and $PackageName.inf installs only on build $MinimumBuild or newer. Nothing was changed."
+}
 
 if ($null -eq ('PowerToysUiTestVm.RootDeviceInstaller' -as [type])) {
     Add-Type -TypeDefinition @'
