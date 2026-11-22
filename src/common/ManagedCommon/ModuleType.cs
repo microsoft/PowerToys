@@ -39,6 +39,7 @@ namespace ManagedCommon
         PowerOCR,
         Workspaces,
         GrabAndMove,
+        ScrollAcceleration,
         ZoomIt,
         MouseButtonLock,
         GeneralSettings,

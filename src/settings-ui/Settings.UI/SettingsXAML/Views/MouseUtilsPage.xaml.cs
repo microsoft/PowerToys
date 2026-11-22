@@ -16,6 +16,8 @@ namespace Microsoft.PowerToys.Settings.UI.Views
     {
         private MouseUtilsViewModel ViewModel { get; set; }
 
+        private ScrollAccelerationViewModel ScrollAccelerationViewModel { get; set; }
+
         public MouseUtilsPage()
         {
             try
@@ -47,17 +49,35 @@ namespace Microsoft.PowerToys.Settings.UI.Views
                 SettingsRepository<MouseButtonLockSettings>.GetInstance(settingsUtils),
                 ShellPage.SendDefaultIPCMessage);
 
+            var scrollAccelerationRepository = SettingsRepository<ScrollAccelerationSettings>.GetInstance(settingsUtils);
+            ScrollAccelerationViewModel = new ScrollAccelerationViewModel(
+                SettingsRepository<GeneralSettings>.GetInstance(settingsUtils),
+                scrollAccelerationRepository.SettingsConfig,
+                ShellPage.SendDefaultIPCMessage);
+
+            // The utility updates the exclusion list itself (exclude-app shortcut); mirror it into the UI.
+            scrollAccelerationRepository.SettingsChanged += config =>
+            {
+                var value = config?.Properties?.ExcludedApps?.Value ?? string.Empty;
+                DispatcherQueue?.TryEnqueue(() => ScrollAccelerationViewModel.UpdateExcludedAppsFromFile(value));
+            };
+
             DataContext = ViewModel;
             InitializeComponent();
 
             this.MouseUtils_MouseJump_Panel.ViewModel = ViewModel;
 
-            Loaded += (s, e) => ViewModel.OnPageLoaded();
+            Loaded += (s, e) =>
+            {
+                ViewModel.OnPageLoaded();
+                ScrollAccelerationViewModel.OnPageLoaded();
+            };
         }
 
         public void RefreshEnabledState()
         {
             ViewModel.RefreshEnabledState();
+            ScrollAccelerationViewModel.RefreshEnabledState();
         }
 
         private void OpenAnimationsSettings_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)

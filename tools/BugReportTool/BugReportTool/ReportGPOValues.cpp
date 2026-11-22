@@ -52,6 +52,7 @@ void ReportGPOValues(const std::filesystem::path &tmpDir)
     report << "getConfiguredFileLocksmithEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredFileLocksmithEnabledValue()) << std::endl;
     report << "getConfiguredLightSwitchEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredLightSwitchEnabledValue()) << std::endl;
     report << "getConfiguredGrabAndMoveEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredGrabAndMoveEnabledValue()) << std::endl;
+    report << "getConfiguredScrollAccelerationEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredScrollAccelerationEnabledValue()) << std::endl;
     report << "getConfiguredSvgPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredSvgPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMarkdownPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMarkdownPreviewEnabledValue()) << std::endl;
     report << "getConfiguredMonacoPreviewEnabledValue: " << gpo_rule_configured_to_string(powertoys_gpo::getConfiguredMonacoPreviewEnabledValue()) << std::endl;

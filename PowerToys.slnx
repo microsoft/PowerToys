@@ -786,6 +786,8 @@
     <Project Path="src/modules/MouseUtils/MouseJump/MouseJump.vcxproj" Id="8a08d663-4995-40e3-b42c-3f910625f284" />
     <Project Path="src/modules/MouseUtils/MousePointerCrosshairs/MousePointerCrosshairs.vcxproj" Id="eae14c0e-7a6b-45da-9080-a7d8c077ba6e" />
     <Project Path="src/modules/MouseUtils/MouseButtonLock/MouseButtonLock.vcxproj" Id="b550866e-10a1-4517-886c-e63d5f1f7d61" />
+    <Project Path="src/modules/MouseUtils/ScrollAcceleration/ScrollAcceleration.vcxproj" Id="7a246562-d038-4d9c-adf5-2ef48a7389d0" />
+    <Project Path="src/modules/MouseUtils/ScrollAccelerationModuleInterface/ScrollAccelerationModuleInterface.vcxproj" Id="b8a25a7b-0684-4893-9e4d-a4ee062ed13a" />
   </Folder>
   <Folder Name="/modules/MouseUtils/Tests/">
     <Project Path="src/modules/MouseUtils/MouseJump.Common.UnitTests/MouseJump.Common.UnitTests.csproj">
@@ -806,6 +808,10 @@
     </Project>
     <Project Path="src/modules/MouseUtils/MouseButtonLock.UnitTests/MouseButtonLock.UnitTests.vcxproj" Id="15f55815-dffc-4eb7-99e4-b6754a52a5c7" />
     <Project Path="src/modules/MouseUtils/MouseButtonLock.FuzzingTest/MouseButtonLock.FuzzingTest.vcxproj" Id="c3b77613-9c8c-4c23-9a55-73def4921125">
+      <Build Solution="*|ARM64" Project="false" />
+    </Project>
+    <Project Path="src/modules/MouseUtils/ScrollAcceleration.UnitTests/ScrollAccelerationUnitTests.vcxproj" Id="c4d8a1e2-6b3f-4f7a-9e51-0d2b7a8c3f64" />
+    <Project Path="src/modules/MouseUtils/ScrollAcceleration.FuzzTests/ScrollAcceleration.FuzzingTest.vcxproj" Id="e7a9c3b4-52d1-4f08-8a6e-3b1d9c0f7a42">
       <Build Solution="*|ARM64" Project="false" />
     </Project>
   </Folder>
@@ -1401,6 +1407,8 @@
     <BuildDependency Project="src/modules/fancyzones/FancyZonesModuleInterface/FancyZonesModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/GrabAndMove/GrabAndMove/GrabAndMove.vcxproj" />
     <BuildDependency Project="src/modules/GrabAndMove/GrabAndMoveModuleInterface/GrabAndMoveModuleInterface.vcxproj" />
+    <BuildDependency Project="src/modules/MouseUtils/ScrollAcceleration/ScrollAcceleration.vcxproj" />
+    <BuildDependency Project="src/modules/MouseUtils/ScrollAccelerationModuleInterface/ScrollAccelerationModuleInterface.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/dll/ImageResizerExt.vcxproj" />
     <BuildDependency Project="src/modules/imageresizer/ui/ImageResizerUI.csproj" />
     <BuildDependency Project="src/modules/keyboardmanager/dll/KeyboardManager.vcxproj" />

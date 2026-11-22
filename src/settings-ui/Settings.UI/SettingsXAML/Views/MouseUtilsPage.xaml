@@ -367,6 +367,109 @@
                     </tkcontrols:SettingsExpander>
                 </controls:SettingsGroup>
 
+                <controls:SettingsGroup x:Uid="MouseUtils_ScrollAcceleration" AutomationProperties.AutomationId="MouseUtils_ScrollAccelerationTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ScrollAccelerationViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableScrollAcceleration"
+                            x:Uid="MouseUtils_Enable_ScrollAcceleration"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/MouseUtils.png}"
+                            IsEnabled="{x:Bind ScrollAccelerationViewModel.IsEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch x:Uid="ToggleSwitch" AutomationProperties.AutomationId="MouseUtils_ScrollAccelerationToggleId" IsOn="{x:Bind ScrollAccelerationViewModel.IsEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsCard
+                        x:Uid="MouseUtils_ScrollAcceleration_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}"
+                        IsEnabled="{x:Bind ScrollAccelerationViewModel.IsEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ScrollAccelerationViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsScrollAccelerationExcludedApps"
+                        x:Uid="MouseUtils_ScrollAcceleration_ExcludedApps"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsEnabled="{x:Bind ScrollAccelerationViewModel.IsEnabled, Mode=OneWay}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ScrollAccelerationViewModel.ExcludeAppShortcut, Mode=TwoWay}" />
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="MouseUtils_ScrollAcceleration_ExcludedApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="120"
+                                    AcceptsReturn="True"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ScrollAccelerationViewModel.ExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsScrollAccelerationSettingsExpander"
+                        x:Uid="MouseUtils_ScrollAcceleration_Options"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE9D9;}"
+                        IsEnabled="{x:Bind ScrollAccelerationViewModel.IsEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_AccelerationPercent">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="500"
+                                    Minimum="0"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ScrollAccelerationViewModel.AccelerationPercent, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_SlowScrollPercent">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="100"
+                                    Minimum="5"
+                                    SmallChange="5"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ScrollAccelerationViewModel.SlowScrollPercent, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_MaxMultiplier">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="50"
+                                    Minimum="1"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ScrollAccelerationViewModel.MaxMultiplier, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_TimeThresholdMs">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="1000"
+                                    Minimum="10"
+                                    SmallChange="10"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ScrollAccelerationViewModel.TimeThresholdMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_MomentumEnabled">
+                                <ToggleSwitch IsOn="{x:Bind ScrollAccelerationViewModel.MomentumEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_MomentumDurationMs" IsEnabled="{x:Bind ScrollAccelerationViewModel.MomentumEnabled, Mode=OneWay}">
+                                <NumberBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    Maximum="3000"
+                                    Minimum="100"
+                                    SmallChange="100"
+                                    SpinButtonPlacementMode="Compact"
+                                    Value="{x:Bind ScrollAccelerationViewModel.MomentumDurationMs, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_ApplyToHorizontalWheel">
+                                <ToggleSwitch IsOn="{x:Bind ScrollAccelerationViewModel.ApplyToHorizontalWheel, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard x:Uid="ScrollAcceleration_IgnoreWithCtrl">
+                                <ToggleSwitch IsOn="{x:Bind ScrollAccelerationViewModel.IgnoreWithCtrl, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_MouseHighlighter" AutomationProperties.AutomationId="MouseUtils_MouseHighlighterTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsHighlighterEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard

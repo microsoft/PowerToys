@@ -6985,4 +6985,100 @@ Text uses the current drawing color.</value>
   <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
     <value>Pairing could not be loaded or updated. Try again.</value>
   </data>
+  <data name="ScrollAcceleration.ModuleDescription" xml:space="preserve">
+    <value>Accelerate mouse wheel scrolling based on how fast you spin the wheel. Slow turns stay precise, fast turns scroll further.</value>
+    <comment>"Scroll Acceleration" is the name of the utility</comment>
+  </data>
+  <data name="ScrollAcceleration.ModuleTitle" xml:space="preserve">
+    <value>Scroll Acceleration</value>
+    <comment>"Scroll Acceleration" is the name of the utility</comment>
+  </data>
+  <data name="ScrollAcceleration_AccelerationPercent.Header" xml:space="preserve">
+    <value>Acceleration</value>
+  </data>
+  <data name="ScrollAcceleration_AccelerationPercent.Description" xml:space="preserve">
+    <value>Extra speed added for each consecutive fast wheel tick, in percent.</value>
+  </data>
+  <data name="ScrollAcceleration_MaxMultiplier.Header" xml:space="preserve">
+    <value>Maximum multiplier</value>
+  </data>
+  <data name="ScrollAcceleration_MaxMultiplier.Description" xml:space="preserve">
+    <value>The highest factor the scroll distance can be multiplied by.</value>
+  </data>
+  <data name="ScrollAcceleration_TimeThresholdMs.Header" xml:space="preserve">
+    <value>Acceleration window</value>
+  </data>
+  <data name="ScrollAcceleration_TimeThresholdMs.Description" xml:space="preserve">
+    <value>Maximum time in milliseconds between wheel ticks for them to count as one continuous scroll.</value>
+  </data>
+  <data name="ScrollAcceleration_MomentumEnabled.Header" xml:space="preserve">
+    <value>Smooth scroll</value>
+  </data>
+  <data name="ScrollAcceleration_MomentumEnabled.Description" xml:space="preserve">
+    <value>Glide instead of jumping on every wheel tick, and keep gliding to a stop after a fast spin.</value>
+  </data>
+  <data name="ScrollAcceleration_MomentumDurationMs.Header" xml:space="preserve">
+    <value>Smooth scroll glide time</value>
+  </data>
+  <data name="ScrollAcceleration_MomentumDurationMs.Description" xml:space="preserve">
+    <value>How long the scroll keeps gliding after you stop spinning the wheel, in milliseconds.</value>
+  </data>
+  <data name="ScrollAcceleration_ApplyToHorizontalWheel.Header" xml:space="preserve">
+    <value>Accelerate horizontal scrolling</value>
+  </data>
+  <data name="ScrollAcceleration_IgnoreWithCtrl.Header" xml:space="preserve">
+    <value>Do not accelerate while Ctrl is held</value>
+  </data>
+  <data name="ScrollAcceleration_IgnoreWithCtrl.Description" xml:space="preserve">
+    <value>Keeps Ctrl + scroll zooming precise.</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration.Header" xml:space="preserve">
+    <value>Scroll Acceleration</value>
+    <comment>"Scroll Acceleration" is the name of the utility. Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration.Description" xml:space="preserve">
+    <value>Scroll further the faster you spin the mouse wheel, with optional smooth scroll</value>
+    <comment>Mouse as in the hardware peripheral.</comment>
+  </data>
+  <data name="MouseUtils_Enable_ScrollAcceleration.Header" xml:space="preserve">
+    <value>Scroll Acceleration</value>
+    <comment>"Scroll Acceleration" is the name of the utility.</comment>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_Options.Header" xml:space="preserve">
+    <value>Scroll behavior</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_Options.Description" xml:space="preserve">
+    <value>Tune how acceleration and smooth scroll respond to the mouse wheel</value>
+  </data>
+  <data name="Oobe_MouseUtils_ScrollAcceleration.Text" xml:space="preserve">
+    <value>Scroll Acceleration</value>
+    <comment>"Scroll Acceleration" is the name of the utility.</comment>
+  </data>
+  <data name="Oobe_MouseUtils_ScrollAcceleration_Description.Text" xml:space="preserve">
+    <value>Speeds up mouse wheel scrolling the faster you spin the wheel, with optional smooth scroll. Slow turns stay precise.</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_ActivationShortcut.Header" xml:space="preserve">
+    <value>Activation shortcut</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_ActivationShortcut.Description" xml:space="preserve">
+    <value>Turns acceleration and smooth scroll off and on again without disabling the utility</value>
+  </data>
+  <data name="ScrollAcceleration_SlowScrollPercent.Header" xml:space="preserve">
+    <value>Slow scroll distance</value>
+  </data>
+  <data name="ScrollAcceleration_SlowScrollPercent.Description" xml:space="preserve">
+    <value>How far a single, slow wheel tick scrolls, in percent of the normal distance. Lower values give fine, precise scrolling; spinning faster ramps up from here.</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_ExcludeAppShortcut.Header" xml:space="preserve">
+    <value>Exclude current app shortcut</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_ExcludedApps.Header" xml:space="preserve">
+    <value>Excluded apps</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_ExcludedApps.Description" xml:space="preserve">
+    <value>Scroll Acceleration is not applied while one of these apps is in the foreground. Use the shortcut to add or remove the current app, or type executable names below, one per line.</value>
+  </data>
+  <data name="MouseUtils_ScrollAcceleration_ExcludedApps_TextBoxControl.PlaceholderText" xml:space="preserve">
+    <value>For example: chrome.exe</value>
+  </data>
 </root>

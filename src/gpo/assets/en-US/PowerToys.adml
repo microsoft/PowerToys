@@ -303,6 +303,7 @@ Note: Online/remote images (http/https URLs) are always blocked regardless of th
       <string id="ConfigureEnabledUtilityQuickAccent">Quick Accent: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityRegistryPreview">Registry Preview: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityScreenRuler">Screen Ruler: Configure enabled state</string>
+      <string id="ConfigureEnabledUtilityScrollAcceleration">Scroll Acceleration: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityShortcutGuide">Shortcut Guide: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityTextExtractor">Text Extractor: Configure enabled state</string>
       <string id="ConfigureEnabledUtilityZoomIt">Zoom It: Configure enabled state</string>

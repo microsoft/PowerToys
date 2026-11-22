@@ -150,6 +150,12 @@ namespace CommonSharedConstants
     // Path to the events used by GrabAndMove
     const wchar_t GRABANDMOVE_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysGrabAndMove-RefreshSettingsEvent-a7b3c1d2-4e5f-6a7b-8c9d-0e1f2a3b4c5d";
     const wchar_t GRABANDMOVE_EXIT_EVENT[] = L"Local\\PowerToysGrabAndMove-ExitEvent-b8c4d2e3-5f6a-7b8c-9d0e-1f2a3b4c5d6e";
+
+    // Path to the events used by ScrollAcceleration
+    const wchar_t SCROLLACCELERATION_REFRESH_SETTINGS_EVENT[] = L"Local\\PowerToysScrollAcceleration-RefreshSettingsEvent-3f9a6c1e-7d24-4b85-a1c0-52e8d4b9f6a7";
+    const wchar_t SCROLLACCELERATION_EXIT_EVENT[] = L"Local\\PowerToysScrollAcceleration-ExitEvent-9b2e5d83-1c6f-4a07-8e3d-d7a40c15b268";
+    const wchar_t SCROLLACCELERATION_EXCLUDE_APP_EVENT[] = L"Local\\PowerToysScrollAcceleration-ExcludeAppEvent-4a7e92d1-5c38-4f60-b1a9-0e6d83c2f175";
+    const wchar_t SCROLLACCELERATION_TOGGLE_EVENT[] = L"Local\\PowerToysScrollAcceleration-ToggleEvent-c84d1f26-0b97-4e53-a2d6-6f1e9a3b7c40";
     const wchar_t ZOOMIT_EXIT_EVENT[] = L"Local\\PowerToysZoomIt-ExitEvent-36641ce6-df02-4eac-abea-a3fbf9138220";
     const wchar_t ZOOMIT_ZOOM_EVENT[] = L"Local\\PowerToysZoomIt-ZoomEvent-1e4190d7-94bc-4ad5-adc0-9a8fd07cb393";
     const wchar_t ZOOMIT_DRAW_EVENT[] = L"Local\\PowerToysZoomIt-DrawEvent-56338997-404d-4549-bd9a-d132b6766975";

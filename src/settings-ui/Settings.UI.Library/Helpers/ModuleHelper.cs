@@ -22,6 +22,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.MousePointerCrosshairs => "MouseUtils_MousePointerCrosshairs/Header",
                 ModuleType.CursorWrap => "MouseUtils_CursorWrap/Header",
                 ModuleType.MouseButtonLock => "MouseUtils_MouseButtonLock/Header",
+                ModuleType.ScrollAcceleration => "MouseUtils_ScrollAcceleration/Header",
                 ModuleType.GeneralSettings => "QuickAccessTitle/Title",
                 _ => $"{moduleType}/ModuleTitle",
             };
@@ -34,6 +35,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.AdvancedPaste => "ms-appx:///Assets/Settings/Icons/AdvancedPaste.png",
                 ModuleType.AltWindowCycle => "ms-appx:///Assets/Settings/Icons/WindowHopper.png",
                 ModuleType.AutoHideCursor => "ms-appx:///Assets/Settings/Icons/CursorHide.png",
+                ModuleType.ScrollAcceleration => "ms-appx:///Assets/Settings/Icons/MouseUtils.png",
                 ModuleType.Workspaces => "ms-appx:///Assets/Settings/Icons/Workspaces.png",
                 ModuleType.PowerOCR => "ms-appx:///Assets/Settings/Icons/TextExtractor.png",
                 ModuleType.PowerAccent => "ms-appx:///Assets/Settings/Icons/QuickAccent.png",
@@ -83,6 +85,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerDisplay => generalSettingsConfig.Enabled.PowerDisplay,
                 ModuleType.Workspaces => generalSettingsConfig.Enabled.Workspaces,
                 ModuleType.GrabAndMove => generalSettingsConfig.Enabled.GrabAndMove,
+                ModuleType.ScrollAcceleration => generalSettingsConfig.Enabled.ScrollAcceleration,
                 ModuleType.ZoomIt => generalSettingsConfig.Enabled.ZoomIt,
                 ModuleType.GeneralSettings => generalSettingsConfig.EnableQuickAccess,
                 _ => false,
@@ -127,6 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 case ModuleType.PowerDisplay: generalSettingsConfig.Enabled.PowerDisplay = isEnabled; break;
                 case ModuleType.Workspaces: generalSettingsConfig.Enabled.Workspaces = isEnabled; break;
                 case ModuleType.GrabAndMove: generalSettingsConfig.Enabled.GrabAndMove = isEnabled; break;
+                case ModuleType.ScrollAcceleration: generalSettingsConfig.Enabled.ScrollAcceleration = isEnabled; break;
                 case ModuleType.ZoomIt: generalSettingsConfig.Enabled.ZoomIt = isEnabled; break;
                 case ModuleType.GeneralSettings: generalSettingsConfig.EnableQuickAccess = isEnabled; break;
             }
@@ -174,6 +178,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Helpers
                 ModuleType.PowerOCR => PowerOcrSettings.ModuleName,
                 ModuleType.Workspaces => WorkspacesSettings.ModuleName,
                 ModuleType.GrabAndMove => GrabAndMoveSettings.ModuleName,
+                ModuleType.ScrollAcceleration => ScrollAccelerationSettings.ModuleName,
                 ModuleType.ZoomIt => ZoomItSettings.ModuleName,
                 _ => moduleType.ToString(),
             };

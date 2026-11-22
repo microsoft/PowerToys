@@ -339,6 +339,7 @@ int runner(bool isProcessElevated, bool openSettings, std::string settingsWindow
             L"PowerToys.LightSwitchModuleInterface.dll",
             L"PowerToys.PowerDisplayModuleInterface.dll",
             L"PowerToys.GrabAndMoveModuleInterface.dll",
+            L"PowerToys.ScrollAccelerationModuleInterface.dll",
             L"PowerToys.AltWindowCycle.dll",
         };
 

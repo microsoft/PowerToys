@@ -263,6 +263,12 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.GrabAndMove_EnableGrabAndMove | Triggered when Grab And Move is enabled or disabled. |
 | Microsoft.PowerToys.GrabAndMove_ShortcutUse | Logs an attempt to move or resize a window via the Alt+Drag shortcut, including whether it succeeded, the action type (move or resize), and the reason (e.g., started, blocked by game mode). |
 
+### Scroll Acceleration
+
+| Event Name | Description |
+| --- | --- |
+| Microsoft.PowerToys.ScrollAcceleration_EnableScrollAcceleration | Triggered when Scroll Acceleration is enabled or disabled. |
+
 ### Hosts File Editor
 
 | Event Name | Description |
