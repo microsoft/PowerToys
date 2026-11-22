@@ -8,7 +8,6 @@ using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
 
@@ -61,7 +60,8 @@ internal sealed partial class PasteCommand : InvokableCommand
 
         if (!_settings.KeepAfterPaste)
         {
-            Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
+            // Deferred and retried so it doesn't compete with the target app's OpenClipboard.
+            ClipboardHistoryDeleter.DeleteAfterPaste(_clipboardItem.Item);
         }
 
         return CommandResult.ShowToast(Properties.Resources.paste_toast_text);
