@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 
@@ -59,8 +60,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return hotkeyAccessors.ToArray();
         }
 
-        // This can be utilized in the future if the settings.json file is to be modified/deleted.
+        // Normalizes invalid values (for example from a hand-edited settings.json) in memory: an unknown
+        // capture mode becomes Normal. Returns false, so the settings file is not rewritten.
         public bool UpgradeSettingsConfiguration()
-            => false;
+        {
+            if (!Enum.IsDefined(Properties.DefaultCaptureMode))
+            {
+                Properties.DefaultCaptureMode = PowerOcrCaptureMode.Normal;
+            }
+
+            return false;
+        }
     }
 }

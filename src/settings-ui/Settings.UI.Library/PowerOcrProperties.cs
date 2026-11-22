@@ -4,6 +4,7 @@
 
 using System.Text.Json;
 
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Settings.UI.Library.Attributes;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -17,11 +18,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             ActivationShortcut = DefaultActivationShortcut;
             PreferredLanguage = string.Empty;
+            DefaultCaptureMode = PowerOcrCaptureMode.Normal;
         }
 
         public HotkeySettings ActivationShortcut { get; set; }
 
         public string PreferredLanguage { get; set; }
+
+        public PowerOcrCaptureMode DefaultCaptureMode { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.PowerOcrProperties);

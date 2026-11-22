@@ -4452,6 +4452,22 @@ Activate by holding the key for the character you want to add an accent to, then
   <data name="TextExtractor_Languages.Header" xml:space="preserve">
     <value>Preferred language</value>
   </data>
+  <data name="TextExtractor_DefaultCaptureMode.Header" xml:space="preserve">
+    <value>Default capture mode</value>
+  </data>
+  <data name="TextExtractor_DefaultCaptureMode.Description" xml:space="preserve">
+    <value>The capture mode used each time Text Extractor opens. Press S or T to change it for one capture.</value>
+    <comment>S and T are keyboard keys. Do not localize them.</comment>
+  </data>
+  <data name="TextExtractor_DefaultCaptureMode_Normal.Content" xml:space="preserve">
+    <value>Normal</value>
+  </data>
+  <data name="TextExtractor_DefaultCaptureMode_SingleLine.Content" xml:space="preserve">
+    <value>Single line</value>
+  </data>
+  <data name="TextExtractor_DefaultCaptureMode_Table.Content" xml:space="preserve">
+    <value>Table</value>
+  </data>
   <data name="Alternate_OOBE_AlwaysOnTop_Description.Text" xml:space="preserve">
     <value>Pin a window so that:</value>
   </data>
