@@ -129,6 +129,7 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestDemand.cs" Link="Helpers\Icons\IconRequestDemand.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconRequestDemandState.cs" Link="Helpers\Icons\IconRequestDemandState.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconSourceProvider.cs" Link="Helpers\Icons\IconSourceProvider.cs" />
+    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\ImagePreviewDecode.cs" Link="Helpers\Icons\ImagePreviewDecode.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconUiResponsivenessProbe.cs" Link="Helpers\Icons\IconUiResponsivenessProbe.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconLoaderService.cs" Link="Helpers\Icons\IIconLoaderService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IIconProtocolProcessor.cs" Link="Helpers\Icons\IIconProtocolProcessor.cs" />

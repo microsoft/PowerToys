@@ -8,8 +8,6 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 
 internal static class DetailsMarkdownHelper
 {
-    private const int ImagePreviewMaxHeight = 200;
-
     public static string BuildTextBody(string? text)
     {
         if (string.IsNullOrEmpty(text))
@@ -25,9 +23,4 @@ internal static class DetailsMarkdownHelper
 
         return $"{fence}text\n{text}\n{fence}";
     }
-
-    public static string BuildImageBody(string? imagePath, string altText)
-        => string.IsNullOrEmpty(imagePath)
-            ? string.Empty
-            : $"![{altText}]({new Uri(imagePath).AbsoluteUri}?--x-cmdpal-fit=fit&--x-cmdpal-maxheight={ImagePreviewMaxHeight})";
 }

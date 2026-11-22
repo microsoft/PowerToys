@@ -4,10 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Common.Helpers;
@@ -16,7 +13,6 @@ using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.ApplicationModel.DataTransfer;
-using Windows.Storage.Streams;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Pages;
 
@@ -60,7 +56,6 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
         var loadSucceeded = false;
         try
         {
-            CleanupCachedImages(clipboardHistory.Where(static item => item.ImagePath is not null).Select(static item => item.ImagePath!));
             List<ClipboardItem> items = [];
 
             if (!Clipboard.IsHistoryEnabled())
@@ -76,35 +71,31 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
 
             foreach (var item in historyItems.Items)
             {
-                if (item.Content.Contains(StandardDataFormats.Text))
+                if (disposed.Value)
                 {
-                    var text = await item.Content.GetTextAsync().AsTask().ConfigureAwait(false);
-                    items.Add(new ClipboardItem { Settings = _settingsManager, Content = text, Item = item });
+                    return;
                 }
-                else if (item.Content.Contains(StandardDataFormats.Bitmap))
+
+                var content = item.Content;
+                var hasText = content.Contains(StandardDataFormats.Text);
+                var hasBitmap = content.Contains(StandardDataFormats.Bitmap);
+                if (!hasText && !hasBitmap)
                 {
-                    items.Add(new ClipboardItem { Settings = _settingsManager, Item = item });
+                    continue;
                 }
+
+                items.Add(new ClipboardItem
+                {
+                    Settings = _settingsManager,
+                    Item = item,
+                    Content = hasText ? await content.GetTextAsync().AsTask().ConfigureAwait(false) : null,
+                    ImageData = hasBitmap ? await content.GetBitmapAsync().AsTask().ConfigureAwait(false) : null,
+                });
             }
 
-            foreach (var item in items)
+            if (disposed.Value)
             {
-                if (item.Item.Content.Contains(StandardDataFormats.Bitmap))
-                {
-                    var imageReceived = await item.Item.Content.GetBitmapAsync().AsTask().ConfigureAwait(false);
-
-                    if (imageReceived is not null)
-                    {
-                        if (disposed.Value)
-                        {
-                            return;
-                        }
-
-                        item.ImageData = imageReceived;
-                        item.ImagePath = GetImagePath(item.Item.Id);
-                        await CacheImageAsync(imageReceived, item.ImagePath).ConfigureAwait(false);
-                    }
-                }
+                return;
             }
 
             clipboardHistory = [.. items];
@@ -121,10 +112,6 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
         {
             loadInFlight.Value = false;
 
-            // Dispose can race this worker, so cleanup happens after the in-flight flag is cleared.
-            CleanupCachedImages(disposed.Value
-                ? []
-                : clipboardHistory.Where(static item => item.ImagePath is not null).Select(static item => item.ImagePath!));
             if (!loadSucceeded)
             {
                 hasLoadedOnce.Value = false;
@@ -157,72 +144,6 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
             }
         }
     }
-
-    private static string GetImagePath(string id)
-    {
-        var directory = GetCacheDirectory();
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(id)));
-        return Path.Combine(directory, $"{hash}.png");
-    }
-
-    private static void CleanupCachedImages(IEnumerable<string> activePaths)
-    {
-        try
-        {
-            var activeFileNames = activePaths.Select(Path.GetFileName).ToHashSet(StringComparer.OrdinalIgnoreCase);
-            var directory = GetCacheDirectory();
-            if (!Directory.Exists(directory))
-            {
-                return;
-            }
-
-            foreach (var path in Directory.EnumerateFiles(directory, "*.png"))
-            {
-                if (!activeFileNames.Contains(Path.GetFileName(path)))
-                {
-                    try
-                    {
-                        File.Delete(path);
-                    }
-                    catch (IOException ex)
-                    {
-                        TryLogMessage($"Failed to remove cached clipboard image: {ex.Message}");
-                    }
-                    catch (UnauthorizedAccessException ex)
-                    {
-                        TryLogMessage($"Failed to remove cached clipboard image: {ex.Message}");
-                    }
-                }
-            }
-        }
-        catch (IOException ex)
-        {
-            TryLogMessage($"Failed to enumerate cached clipboard images: {ex.Message}");
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            TryLogMessage($"Failed to enumerate cached clipboard images: {ex.Message}");
-        }
-    }
-
-    private static async Task CacheImageAsync(RandomAccessStreamReference imageData, string path)
-    {
-        try
-        {
-            using var stream = await imageData.OpenReadAsync().AsTask().ConfigureAwait(false);
-            using var input = stream.AsStreamForRead();
-            var directory = Path.GetDirectoryName(path)!;
-            Directory.CreateDirectory(directory);
-            using var output = new FileStream(path, FileMode.Create, FileAccess.Write, FileShare.Read, 64 * 1024, useAsync: true);
-            await input.CopyToAsync(output).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            TryLogMessage($"Failed to cache clipboard image data: {ex}");
-        }
-    }
-
-    private static string GetCacheDirectory() => Path.Combine(Path.GetTempPath(), "PowerToys", "CmdPal", "ClipboardHistory");
 
     private static void TryLogMessage(string message)
     {
@@ -321,10 +242,6 @@ internal sealed partial class ClipboardHistoryListPage : ListPage, IDisposable
         }
 
         Clipboard.HistoryChanged -= TrackClipboardHistoryChanged_EventHandler;
-        if (!loadInFlight.Value)
-        {
-            CleanupCachedImages([]);
-        }
 
         GC.SuppressFinalize(this);
     }

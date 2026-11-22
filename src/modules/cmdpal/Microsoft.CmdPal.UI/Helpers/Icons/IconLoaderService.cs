@@ -149,7 +149,8 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         TaskCompletionSource<IconSource?> tcs,
         IconLoadPriority priority = IconLoadPriority.Low,
         IconLoadMeasurement? diagnostics = null,
-        IconLoadDemand? demand = null)
+        IconLoadDemand? demand = null,
+        ImagePreviewDecode? previewDecode = null)
     {
         demand ??= IconLoadDemand.CreateDemanded();
         var operation = new IconLoadOperation(
@@ -161,7 +162,8 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             scale,
             theme,
             tcs,
-            diagnostics);
+            diagnostics,
+            previewDecode);
         if (_queue.TryEnqueue(operation, priority, demand, out var actualPriority))
         {
 #if DEBUG
@@ -247,7 +249,8 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         double scale,
         ElementTheme theme,
         TaskCompletionSource<IconSource?> tcs,
-        IconLoadMeasurement? diagnostics)
+        IconLoadMeasurement? diagnostics,
+        ImagePreviewDecode? previewDecode)
     {
         var workerDiagnostics = diagnostics;
         try
@@ -257,7 +260,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                 diagnostics = null;
             }
 
-            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, scale, theme, diagnostics).ConfigureAwait(false);
+            var result = await LoadIconCoreAsync(iconString, fontFamily, streamRef, iconSize, scale, theme, diagnostics, previewDecode).ConfigureAwait(false);
             diagnostics?.Complete();
             tcs.TrySetResult(result);
         }
@@ -462,7 +465,8 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         Size iconSize,
         double scale,
         ElementTheme theme,
-        IconLoadMeasurement? diagnostics)
+        IconLoadMeasurement? diagnostics,
+        ImagePreviewDecode? previewDecode)
     {
         var scaledSize = iconSize.IsEmpty
             ? iconSize
@@ -619,8 +623,11 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             {
                 var preparationStartedAt = diagnostics?.BeginBackgroundPreparation() ?? 0;
                 using var bitmapStream = await streamRef.OpenReadAsync().AsTask().ConfigureAwait(false);
+                var decodeSize = previewDecode is not null
+                    ? await previewDecode.GetSizeAsync(bitmapStream, scaledSize).ConfigureAwait(false)
+                    : scaledSize;
                 diagnostics?.CompleteBackgroundPreparation(preparationStartedAt);
-                return await CreateImageIconSourceAsync(bitmapStream, scaledSize, diagnostics).ConfigureAwait(false);
+                return await CreateImageIconSourceAsync(bitmapStream, decodeSize, diagnostics, useBothDecodeDimensions: previewDecode is not null).ConfigureAwait(false);
             }
 #pragma warning disable CS0168 // Variable is declared but never used
             catch (Exception ex)
@@ -743,7 +750,8 @@ internal sealed partial class IconLoaderService : IIconLoaderService
     private async Task<IconSource?> CreateImageIconSourceAsync(
         IRandomAccessStream bitmapStream,
         Size scaledSize,
-        IconLoadMeasurement? diagnostics)
+        IconLoadMeasurement? diagnostics,
+        bool useBothDecodeDimensions = false)
     {
         var dispatcherEnqueuedAt = diagnostics?.BeginDispatcherWait(
             IconDispatcherMaterializationKind.BitmapStream) ?? 0;
@@ -768,7 +776,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             try
             {
                 var bitmap = new BitmapImage();
-                ApplyDecodeSize(bitmap, scaledSize);
+                ApplyDecodeSize(bitmap, scaledSize, useBothDecodeDimensions);
                 var operation = bitmap.SetSourceAsync(bitmapStream);
                 suspensionStartedAt = diagnostics?.DispatcherUiSliceCompleted(
                     dispatcherStartedAt,
@@ -810,18 +818,19 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         }
     }
 
-    private static void ApplyDecodeSize(BitmapImage bitmap, Size size)
+    private static void ApplyDecodeSize(BitmapImage bitmap, Size size, bool useBothDimensions)
     {
         if (size.IsEmpty)
         {
             return;
         }
 
-        if (size.Width >= size.Height)
+        if (useBothDimensions || size.Width >= size.Height)
         {
             bitmap.DecodePixelWidth = (int)size.Width;
         }
-        else
+
+        if (useBothDimensions || size.Height > size.Width)
         {
             bitmap.DecodePixelHeight = (int)size.Height;
         }
@@ -838,6 +847,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
         private readonly ElementTheme _theme;
         private readonly TaskCompletionSource<IconSource?> _completion;
         private readonly IconLoadMeasurement? _diagnostics;
+        private readonly ImagePreviewDecode? _previewDecode;
 
         public IconLoadOperation(
             IconLoaderService owner,
@@ -848,7 +858,8 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             double scale,
             ElementTheme theme,
             TaskCompletionSource<IconSource?> completion,
-            IconLoadMeasurement? diagnostics)
+            IconLoadMeasurement? diagnostics,
+            ImagePreviewDecode? previewDecode)
         {
             _owner = owner;
             _iconString = iconString;
@@ -859,6 +870,7 @@ internal sealed partial class IconLoaderService : IIconLoaderService
             _theme = theme;
             _completion = completion;
             _diagnostics = diagnostics;
+            _previewDecode = previewDecode;
         }
 
         public override void Enqueued(IconLoadPriority priority, int workerCount)
@@ -883,7 +895,8 @@ internal sealed partial class IconLoaderService : IIconLoaderService
                 _scale,
                 _theme,
                 _completion,
-                _diagnostics);
+                _diagnostics,
+                _previewDecode);
 
         public override void Fail(Exception failure)
         {

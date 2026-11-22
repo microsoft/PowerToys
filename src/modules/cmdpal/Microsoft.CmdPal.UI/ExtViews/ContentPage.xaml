@@ -84,7 +84,7 @@
             </DataTemplate>
 
             <DataTemplate x:Key="ImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
-                <Grid Margin="0,4,4,4" Padding="12,8,8,8">
+                <Grid Margin="0,4,4,4" Padding="25,17,17,17">
                     <extViews:ImageContentViewer DataContext="{x:Bind}" />
                 </Grid>
             </DataTemplate>

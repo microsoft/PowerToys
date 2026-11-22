@@ -20,9 +20,7 @@ public class ClipboardItem
 
     public DateTimeOffset Timestamp => Item?.Timestamp ?? DateTimeOffset.MinValue;
 
-    public RandomAccessStreamReference? ImageData { get; set; }
-
-    public string? ImagePath { get; set; }
+    public RandomAccessStreamReference? ImageData { get; init; }
 
     public string GetDataType()
     {

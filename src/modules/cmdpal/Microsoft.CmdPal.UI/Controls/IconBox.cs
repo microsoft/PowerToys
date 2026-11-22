@@ -151,6 +151,8 @@ public partial class IconBox : ContentControl
         }
     }
 
+    internal event EventHandler? SourceRequestCompleted;
+
     public IconBox()
     {
         _dispatcherQueue = DispatcherQueue;
@@ -368,6 +370,11 @@ public partial class IconBox : ContentControl
     {
         MarkRefreshPending(reason);
         Refresh();
+    }
+
+    internal void RefreshSourceForSizeChange()
+    {
+        RequestRefresh(IconRequestReason.SizeChanged);
     }
 
     private void Refresh()
@@ -833,6 +840,21 @@ public partial class IconBox : ContentControl
             if (eventArgs is not null)
             {
                 iconBox.ClearActiveRequest(requestVersion, eventArgs);
+            }
+
+            if (requestVersion == iconBox._requestVersion && iconBox.SourceRequestCompleted is { } completed)
+            {
+                try
+                {
+                    if (ReferenceEquals(sourceKey, iconBox.SourceKey))
+                    {
+                        completed(iconBox, EventArgs.Empty);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError("Failed to notify icon source request completion", ex);
+                }
             }
         }
     }

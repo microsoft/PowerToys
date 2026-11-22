@@ -1074,7 +1074,8 @@ public partial class CachedIconSourceProviderTests
             TaskCompletionSource<IconSource?> tcs,
             IconLoadPriority priority,
             IconLoadMeasurement? diagnostics = null,
-            IconLoadDemand? demand = null)
+            IconLoadDemand? demand = null,
+            ImagePreviewDecode? previewDecode = null)
         {
             _ = theme;
             Interlocked.Increment(ref _enqueueCount);

@@ -14,4 +14,5 @@ internal enum IconRequestReason
     ThemeChanged = 1 << 3,
     ScaleChanged = 1 << 4,
     Retry = 1 << 5,
+    SizeChanged = 1 << 6,
 }
