@@ -16,8 +16,9 @@ API.
 3. Re-fetch mergeability a few
    times when GitHub still reports it as unknown so a conflicting PR is never
    treated as ready by default.
-4. Deterministically validate closing issue references, merge conflicts, and
-   whether visual evidence is present.
+4. Deterministically validate closing issue references, merge conflicts,
+   whether visual evidence is present, and whether the human Summary is
+   filled in.
 5. Require visual evidence only when the changed paths touch product UI files.
 6. Keep a single canonical comment in sync and manage the `Ready for review`
    and `Needs-Author-Feedback` lifecycle labels.
@@ -34,11 +35,23 @@ label. Draft pull requests receive product labels but skip readiness checks.
   short all-clear note.
 - If the PR is clean and no intake comment exists, nothing is posted.
 
-Missing issue references are advisory. Explicitly invalid references, merge
-conflicts, unknown mergeability, and missing required visual evidence block
-readiness. Draft PR events run deterministic path labeling, remove intake
-lifecycle labels, delete trusted canonical intake comments, and then stop.
-Marking a draft ready triggers full intake.
+Missing issue references and an empty human Summary are advisory. Explicitly
+invalid references, merge conflicts, unknown mergeability, and missing
+required visual evidence block readiness. Draft PR events run deterministic
+path labeling, remove intake lifecycle labels, delete trusted canonical intake
+comments, and then stop. Marking a draft ready triggers full intake.
+
+## Summary reminder
+
+The author must write the Summary in their own words (see
+`CONTRIBUTING.md`). Intake reads it from the `## Summary` heading, or the
+older `## Summary of the Pull Request` heading, up to the next heading of the
+same or a higher level. Text above the heading also counts, because some
+authors write their summary first. HTML comments and `<details>` blocks do not
+count, so the template's placeholder comment and AI-generated notes do not
+fill the Summary. A body without a Summary heading counts when it has any
+visible text. When the Summary is empty, the canonical comment recommends
+writing one; this never blocks readiness.
 
 The existing resource-management policy closes PRs that retain
 `Needs-Author-Feedback` for seven inactive days. PR synchronization is handled
@@ -50,6 +63,9 @@ by this workflow rather than the legacy policy responder.
   (`MAX_CLOSING_REFERENCES`) and verified with bounded concurrency
   (`CLOSING_VERIFY_CONCURRENCY`) so a crafted body cannot exhaust the API rate
   limit.
+- Summary detection bounds the heading title it matches
+  (`MAX_SUMMARY_TITLE_LENGTH`) and scans `<details>` tags in a single pass, so
+  a crafted body cannot cause slow regex backtracking.
 
 Run the focused tests with:
 
