@@ -128,9 +128,9 @@ namespace RemappingLogicTests
         }
 
         // A key event injected by another program (SendInput without KBM's marker in dwExtraInfo).
-        void ForeignInject(WORD vk, bool up)
+        void ForeignInject(WORD vk, bool up, ULONG_PTR extraInfo = 0)
         {
-            mockedInputHandler.SendVirtualInput({ KeyInput(vk, up, ScanOf(vk), IsExtended(vk)) });
+            mockedInputHandler.SendVirtualInput({ KeyInput(vk, up, ScanOf(vk), IsExtended(vk), extraInfo) });
         }
 
         // Count every key-down or key-up of `vk` that reaches the mocked hook (physical or injected).
@@ -569,7 +569,9 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
-        // The hook's classification: only LLKHF_INJECTED with KBM's marker bit is KBM's own output.
+        // The hook's classification: only LLKHF_INJECTED with one of KBM's exact tags is KBM's own output.
+        // Other odd tags (bit 0 set) are other software's input: AutoHotkey's default SendLevel-0 tag
+        // 0xFFC3D44D, other PowerToys modules' 0x5555 / 0x5557, or the bare bit.
         TEST_METHOD (ClassifyKeyEvent_SeparatesPhysicalForeignAndOwnInput)
         {
             using Source = ProfileSwapGate::KeyEventSource;
@@ -577,7 +579,10 @@ namespace RemappingLogicTests
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_EXTENDED | LLKHF_UP, 0) == Source::Physical);
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, 0) == Source::ForeignInjected);
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, 0x1234560) == Source::ForeignInjected);
-            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) == Source::OwnInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) == Source::ForeignInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, 0xFFC3D44D) == Source::ForeignInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, 0x5555) == Source::ForeignInjected);
+            Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, 0x5557) == Source::ForeignInjected);
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG) == Source::OwnInjected);
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG) == Source::OwnInjected);
             Assert::IsTrue(ProfileSwapGate::ClassifyKeyEvent(LLKHF_INJECTED, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG) == Source::OwnInjected);
@@ -633,6 +638,46 @@ namespace RemappingLogicTests
             mockedInputHandler.SetKeyboardState('X', false); // the injector's key-up was lost
             Press('Z');
             Assert::IsFalse(gate->HasStage());
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Release('Z');
+        }
+
+        // moooyo N4: another program injects a chord with an odd dwExtraInfo that is not KBM's (here
+        // AutoHotkey's default tag). A's shortcut handler remaps it (it skips only KBM's exact shortcut
+        // tag), so the chord must be tracked like any foreign input: held across a switch to an empty
+        // profile, it blocks the swap and its key-ups are resolved under A, releasing A's targets.
+        TEST_METHOD (ForeignOddTaggedChord_HeldAcrossSwitch_ReleasedUnderOldProfile)
+        {
+            constexpr ULONG_PTR AutoHotkeyTag = 0xFFC3D44D;
+
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            testState.AddOSLevelShortcut(src, dest);
+
+            ForeignInject(VK_CONTROL, false, AutoHotkeyTag);
+            ForeignInject('C', false, AutoHotkeyTag);
+            Assert::IsTrue(IsDown(VK_MENU));
+            Assert::IsTrue(IsDown('V'));
+            Assert::IsTrue(gate->HeldKeyCount() == 2);
+
+            Offer(MakeProfile(L"B"));
+            Press('Z');
+            Release('Z');
+            Assert::IsTrue(gate->HasStage());
+            Assert::AreEqual(std::wstring(L"A"), gate->AppliedProfile());
+
+            ForeignInject('C', true, AutoHotkeyTag);
+            ForeignInject(VK_CONTROL, true, AutoHotkeyTag);
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+
+            Press('Z');
             Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
             Release('Z');
         }

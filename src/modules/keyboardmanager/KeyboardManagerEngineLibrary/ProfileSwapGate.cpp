@@ -3,7 +3,6 @@
 
 #include <algorithm>
 
-#include <common/interop/shared_constants.h>
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 
@@ -111,9 +110,12 @@ ProfileSwapGate::KeyEventSource ProfileSwapGate::ClassifyKeyEvent(const DWORD fl
         return KeyEventSource::Physical;
     }
 
-    // Same test as the handlers' GeneratedByKBM, so "not tracked" and "ignored as KBM output by the
-    // handlers" mean the same events.
-    if (extraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG)
+    // Only KBM's exact tags. Other software also sets bit 0 (AutoHotkey's default tag, other PowerToys
+    // modules' 0x5555 / 0x5557), and the shortcut handlers remap such input (they skip only the exact
+    // shortcut tag), so it must be tracked like any other foreign input.
+    if (extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG ||
+        extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG ||
+        extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
     {
         return KeyEventSource::OwnInjected;
     }

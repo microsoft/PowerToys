@@ -25,13 +25,14 @@
 // is applied in place right away, as before this gate existed, unless a switch to another profile is
 // pending (a pending "switch" to the applied profile itself is cancelled by such a reload instead).
 //
-// Tracked keys are physical input and input injected by other software whose dwExtraInfo has bit 0
-// (KEYBOARDMANAGER_INJECTED_FLAG) clear, e.g. a plain SendInput with dwExtraInfo 0: KBM's
-// handlers remap both, so both need their down and up resolved under one profile. Any injected event
-// with bit 0 set is treated as KBM output by the gate and by the handlers alike (GeneratedByKBM): not
-// tracked and not remapped. That includes other programs that happen to use an odd dwExtraInfo (some
-// tools tag their own SendInput that way; AutoHotkey's default tag is believed to be odd, not
-// verified here), so their keys are neither remapped nor held back. See ClassifyKeyEvent.
+// Tracked keys are physical input and input injected by other software, i.e. every injected event
+// whose dwExtraInfo is not one of KBM's own exact tags (KEYBOARDMANAGER_SINGLEKEY_FLAG, _SHORTCUT_FLAG,
+// _SUPPRESS_FLAG): KBM's handlers can remap such input, so its down and up need to be resolved under
+// one profile. That includes other programs that set bit 0 (KEYBOARDMANAGER_INJECTED_FLAG) of
+// dwExtraInfo, such as AutoHotkey (its default SendLevel-0 tag is 0xFFC3D44D) and other PowerToys
+// modules (0x5555, 0x5557): the single-key handlers ignore such input (GeneratedByKBM tests bit 0),
+// but the shortcut handlers skip only KBM's exact shortcut tag and remap it. A key the handlers ignore
+// only holds a pending swap back until its key-up. See ClassifyKeyEvent.
 //
 // Known limitations (bounded by the stale-key and forced-swap rules below, not fixed):
 //  - a held key is identified by scan code + extended flag only, so the same key held at once from
@@ -113,13 +114,12 @@ public:
         // No LLKHF_INJECTED: a real keyboard. Tracked.
         Physical,
 
-        // LLKHF_INJECTED without KBM's marker: another program's SendInput. Tracked, like Physical.
+        // LLKHF_INJECTED without one of KBM's exact tags: another program's SendInput, whatever its
+        // dwExtraInfo (also odd values, see the class comment). Tracked, like Physical.
         ForeignInjected,
 
-        // LLKHF_INJECTED and dwExtraInfo has KEYBOARDMANAGER_INJECTED_FLAG (bit 0): treated as KBM's own
-        // output (all KBM flags include that bit; other PowerToys modules set it so KBM ignores their
-        // input; any other program setting it is treated the same). Not tracked: handled by the live
-        // tables directly, and the handlers ignore it as KBM output.
+        // LLKHF_INJECTED and dwExtraInfo is exactly KEYBOARDMANAGER_SINGLEKEY_FLAG, _SHORTCUT_FLAG or
+        // _SUPPRESS_FLAG: KBM's own output. Not tracked: handled by the live tables directly.
         OwnInjected,
 
         // LLKHF_INJECTED and dwExtraInfo == KEYBOARDMANAGER_REPROCESS_FLAG: a key-down KBM re-sends so
