@@ -32,17 +32,13 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 {
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly TimeSpan _debounceDelay;
+    private readonly PowerSettingSubscription _displayStateSubscription; // console display state
 
     private DeviceWatcher? _deviceWatcher;
     private CancellationTokenSource? _debounceCts;
     private bool _isRunning;
     private bool _disposed;
     private bool _initialEnumerationComplete;
-
-    // Console-display-state subscription
-    private IntPtr _displayStateRegistration;
-    private PowerSettingsNative.DeviceNotifyCallbackRoutine? _displayStateCallback;
-    private GCHandle _displayStateCallbackHandle;
 
     // Seeded to ON so Windows' initial-state echo on subscription does not
     // trigger a spurious rescan. Mutated only on the dispatcher thread.
@@ -73,7 +69,11 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         _dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
         _debounceDelay = debounceDelay;
 
-        RegisterDisplayStateNotification();
+        _displayStateSubscription = new PowerSettingSubscription(
+            PowerSettingsNative.GuidConsoleDisplayState,
+            "GUID_CONSOLE_DISPLAY_STATE",
+            nameof(DisplayChangeWatcher),
+            OnDisplayStateChangedNative);
     }
 
     public bool IsRunning => _isRunning;
@@ -200,49 +200,14 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         });
     }
 
-    private void RegisterDisplayStateNotification()
-    {
-        _displayStateCallback = OnDisplayStateChangedNative;
-        _displayStateCallbackHandle = GCHandle.Alloc(_displayStateCallback);
-
-        var subscribeParams = new PowerSettingsNative.DeviceNotifySubscribeParameters
-        {
-            Callback = Marshal.GetFunctionPointerForDelegate(_displayStateCallback),
-            Context = IntPtr.Zero,
-        };
-
-        var guid = PowerSettingsNative.GuidConsoleDisplayState;
-        uint result = PowerSettingsNative.PowerSettingRegisterNotification(
-            ref guid,
-            PowerSettingsNative.DeviceNotifyCallback,
-            ref subscribeParams,
-            out _displayStateRegistration);
-
-        if (result != 0)
-        {
-            Logger.LogWarning(
-                $"[DisplayChangeWatcher] PowerSettingRegisterNotification failed: 0x{result:X}");
-            _displayStateRegistration = IntPtr.Zero;
-        }
-        else
-        {
-            Logger.LogInfo("[DisplayChangeWatcher] Subscribed to GUID_CONSOLE_DISPLAY_STATE");
-        }
-    }
-
     /// <summary>
     /// Callback invoked by Windows on an internal worker thread when the
     /// console display power state changes. Reads the new state, marshals to
     /// the dispatcher, and lets <see cref="HandleDisplayStateChange"/> apply
     /// the policy.
     /// </summary>
-    private uint OnDisplayStateChangedNative(IntPtr context, uint type, IntPtr setting)
+    private void OnDisplayStateChangedNative(IntPtr setting)
     {
-        if (type != PowerSettingsNative.PowerSettingChangeNotification || setting == IntPtr.Zero)
-        {
-            return 0;
-        }
-
         uint newState;
         try
         {
@@ -251,7 +216,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[DisplayChangeWatcher] Failed to read POWERBROADCAST_SETTING data: {ex.Message}");
-            return 0;
+            return;
         }
 
         _dispatcherQueue.TryEnqueue(() =>
@@ -263,8 +228,6 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
             HandleDisplayStateChange(newState);
         });
-
-        return 0;
     }
 
     /// <summary>
@@ -390,29 +353,7 @@ public sealed partial class DisplayChangeWatcher : IDisposable
 
         _disposed = true;
 
-        if (_displayStateRegistration != IntPtr.Zero)
-        {
-            try
-            {
-                uint unregisterResult = PowerSettingsNative.PowerSettingUnregisterNotification(_displayStateRegistration);
-                if (unregisterResult != 0)
-                {
-                    Logger.LogWarning(
-                        $"[DisplayChangeWatcher] PowerSettingUnregisterNotification failed: 0x{unregisterResult:X}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"[DisplayChangeWatcher] Unregister failed: {ex.Message}");
-            }
-
-            _displayStateRegistration = IntPtr.Zero;
-        }
-
-        if (_displayStateCallbackHandle.IsAllocated)
-        {
-            _displayStateCallbackHandle.Free();
-        }
+        _displayStateSubscription.Dispose();
 
         Stop();
         CleanupDeviceWatcher();

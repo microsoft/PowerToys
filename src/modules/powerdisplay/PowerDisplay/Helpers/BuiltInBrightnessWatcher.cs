@@ -24,10 +24,7 @@ namespace PowerDisplay.Helpers;
 internal sealed partial class BuiltInBrightnessWatcher : IDisposable
 {
     private readonly DispatcherQueue _dispatcherQueue;
-
-    private IntPtr _registration;
-    private PowerSettingsNative.DeviceNotifyCallbackRoutine? _callback;
-    private GCHandle _callbackHandle;
+    private readonly PowerSettingSubscription _subscription;
 
     // Last value seen; -1 until Windows' initial echo on subscription arrives. The echo
     // only seeds this field, so enabling the watcher never writes hardware by itself.
@@ -49,52 +46,19 @@ internal sealed partial class BuiltInBrightnessWatcher : IDisposable
     public BuiltInBrightnessWatcher(DispatcherQueue dispatcherQueue)
     {
         _dispatcherQueue = dispatcherQueue ?? throw new ArgumentNullException(nameof(dispatcherQueue));
-        Register();
-    }
-
-    private void Register()
-    {
-        _callback = OnSettingChangedNative;
-
-        // GetFunctionPointerForDelegate does not root the delegate; keep it alive
-        // for the whole registration lifetime.
-        _callbackHandle = GCHandle.Alloc(_callback);
-
-        var subscribeParams = new PowerSettingsNative.DeviceNotifySubscribeParameters
-        {
-            Callback = Marshal.GetFunctionPointerForDelegate(_callback),
-            Context = IntPtr.Zero,
-        };
-
-        var guid = PowerSettingsNative.GuidDevicePowerPolicyVideoBrightness;
-        uint result = PowerSettingsNative.PowerSettingRegisterNotification(
-            ref guid,
-            PowerSettingsNative.DeviceNotifyCallback,
-            ref subscribeParams,
-            out _registration);
-
-        if (result != 0)
-        {
-            Logger.LogWarning($"[BuiltInBrightnessWatcher] PowerSettingRegisterNotification failed: 0x{result:X}");
-            _registration = IntPtr.Zero;
-        }
-        else
-        {
-            Logger.LogInfo("[BuiltInBrightnessWatcher] Subscribed to GUID_DEVICE_POWER_POLICY_VIDEO_BRIGHTNESS");
-        }
+        _subscription = new PowerSettingSubscription(
+            PowerSettingsNative.GuidDevicePowerPolicyVideoBrightness,
+            "GUID_DEVICE_POWER_POLICY_VIDEO_BRIGHTNESS",
+            nameof(BuiltInBrightnessWatcher),
+            OnSettingChangedNative);
     }
 
     /// <summary>
     /// Invoked by Windows on an internal worker thread. Reads the DWORD payload and
     /// marshals it to the dispatcher thread.
     /// </summary>
-    private uint OnSettingChangedNative(IntPtr context, uint type, IntPtr setting)
+    private void OnSettingChangedNative(IntPtr setting)
     {
-        if (type != PowerSettingsNative.PowerSettingChangeNotification || setting == IntPtr.Zero)
-        {
-            return 0;
-        }
-
         int value;
         try
         {
@@ -103,7 +67,7 @@ internal sealed partial class BuiltInBrightnessWatcher : IDisposable
         catch (Exception ex)
         {
             Logger.LogError($"[BuiltInBrightnessWatcher] Failed to read POWERBROADCAST_SETTING data: {ex.Message}");
-            return 0;
+            return;
         }
 
         value = Math.Clamp(value, 0, 100);
@@ -125,8 +89,6 @@ internal sealed partial class BuiltInBrightnessWatcher : IDisposable
 
             BrightnessChanged?.Invoke(this, value);
         });
-
-        return 0;
     }
 
     public void Dispose()
@@ -137,28 +99,6 @@ internal sealed partial class BuiltInBrightnessWatcher : IDisposable
         }
 
         _disposed = true;
-
-        if (_registration != IntPtr.Zero)
-        {
-            try
-            {
-                uint result = PowerSettingsNative.PowerSettingUnregisterNotification(_registration);
-                if (result != 0)
-                {
-                    Logger.LogWarning($"[BuiltInBrightnessWatcher] PowerSettingUnregisterNotification failed: 0x{result:X}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogError($"[BuiltInBrightnessWatcher] Unregister failed: {ex.Message}");
-            }
-
-            _registration = IntPtr.Zero;
-        }
-
-        if (_callbackHandle.IsAllocated)
-        {
-            _callbackHandle.Free();
-        }
+        _subscription.Dispose();
     }
 }
