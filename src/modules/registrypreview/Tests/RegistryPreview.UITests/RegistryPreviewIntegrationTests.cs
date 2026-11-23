@@ -91,7 +91,22 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
         explorer = OpenExplorer(folder);
         var preview = WaitForClassicContextMenuItem(explorer, fixture, ContextMenuCaption, timeoutMS: WindowTimeoutMS);
         Assert.IsNotNull(preview, $"Explorer did not offer '{ContextMenuCaption}' after Registry Preview was enabled.");
-        preview!.Invoke(msPostAction: 300);
+
+        var clickX = preview!.X + (preview.Width / 2);
+        var clickY = preview.Y + (preview.Height / 2);
+        Assert.AreEqual(
+            new IntPtr(explorer.WindowHandle),
+            WindowControl.GetForegroundWindowHandle(),
+            "Explorer lost foreground before the classic Preview menu click.");
+        Assert.IsTrue(
+            WindowControl.EnumerateProcessWindows([explorer.ProcessId]).Any(
+                popup => popup.IsVisible &&
+                    popup.ClassName == ShellMenu.ClassicWindowClassName &&
+                    WindowControl.IsPointOwnedByWindow(popup.Hwnd, clickX, clickY)),
+            $"The classic Preview popup did not own its item at ({clickX},{clickY}).");
+
+        // The owner retains foreground while a native popup tracks mouse input.
+        MouseHelper.LeftClickAt(clickX, clickY);
 
         var registryPreview = WindowsFinder.WaitForWindowByApp(
             RegistryPreviewProcessName,
@@ -122,8 +137,19 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
             "Settings");
 
         Step("Opening a registry file with the Ctrl+O keyboard shortcut");
-        TryBringRegistryPreviewForward();
-        KeyboardHelper.SendKeys(Key.Ctrl, Key.O);
+        var editorHandle = new IntPtr(registryPreview.WindowHandle);
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(editorHandle, ActionTimeoutMS, requiredConsecutiveMatches: 2),
+            $"Registry Preview did not take foreground for Ctrl+O: {WindowControl.GetForegroundWindowInfo()}.");
+
+        // Keep the accelerator on WinUI's command bar rather than sending it into Monaco's WebView.
+        var openButton = registryPreview.Find<Button>(By.AccessibilityId("openButton"), ActionTimeoutMS);
+        openButton.Focus();
+        Assert.IsTrue(
+            openButton.WaitForProperty("HasKeyboardFocus", "true", ActionTimeoutMS) &&
+            WindowControl.GetForegroundWindowHandle() == editorHandle,
+            $"Registry Preview's Open button did not own keyboard focus for Ctrl+O: {WindowControl.GetForegroundWindowInfo()}.");
+        KeyboardHelper.SendChord(Key.Ctrl, Key.O);
         CompleteFileDialogWithPath(fixture);
         AssertExactElement(registryPreview, Path.GetFileName(keyPath), "Ctrl+O-opened visual-tree key");
     }

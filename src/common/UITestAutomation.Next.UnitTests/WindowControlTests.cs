@@ -10,6 +10,93 @@ namespace Microsoft.PowerToys.UITestAutomationNext.UnitTests;
 [TestClass]
 public sealed class WindowControlTests
 {
+    private static readonly string[] ExpectedCaptionClickActions = ["check", "move", "check", "click"];
+
+    [TestMethod]
+    public void CaptionHitTestUsesTheOwnedChildRatherThanTheClientRoot()
+    {
+        var root = new IntPtr(1);
+        var child = new IntPtr(2);
+        Assert.IsTrue(WindowControl.IsExposedCaption(
+            root,
+            child,
+            _ => root,
+            target => target == child ? 2 : 1));
+    }
+
+    [TestMethod]
+    public void CaptionHitTestRejectsAnotherWindowsCaption()
+    {
+        Assert.IsFalse(WindowControl.IsExposedCaption(
+            new IntPtr(1),
+            new IntPtr(2),
+            _ => new IntPtr(3),
+            _ => throw new AssertFailedException("A foreign window must not be hit-tested or clicked.")));
+    }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(8)]
+    [DataRow(9)]
+    [DataRow(20)]
+    public void CaptionHitTestRejectsClientContentAndCaptionButtons(int hit)
+    {
+        var window = new IntPtr(1);
+        Assert.IsFalse(WindowControl.IsExposedCaption(window, window, _ => window, _ => hit));
+    }
+
+    [TestMethod]
+    public void CaptionRecoveryDoesNotClickCoveredOrNonCaptionPoints()
+    {
+        Assert.IsFalse(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) => false,
+            (_, _) => throw new AssertFailedException("No safe caption was found; the pointer must not move."),
+            () => Assert.Fail("No safe caption was found; no click is allowed.")));
+    }
+
+    [TestMethod]
+    public void CaptionRecoveryRechecksOwnershipAfterMovingBeforeOneClick()
+    {
+        var actions = new List<string>();
+        Assert.IsTrue(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) =>
+            {
+                actions.Add("check");
+                return true;
+            },
+            (_, _) =>
+            {
+                actions.Add("move");
+                return true;
+            },
+            () => actions.Add("click")));
+        CollectionAssert.AreEqual(ExpectedCaptionClickActions, actions);
+    }
+
+    [TestMethod]
+    public void CaptionRecoveryDoesNotClickAfterOwnershipChanges()
+    {
+        var checks = 0;
+        Assert.IsFalse(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) => ++checks == 1,
+            (_, _) => true,
+            () => Assert.Fail("Caption ownership changed after pointer movement.")));
+        Assert.AreEqual(2, checks);
+    }
+
+    [TestMethod]
+    public void CaptionRecoveryDoesNotClickWhenPointerDoesNotSettle()
+    {
+        Assert.IsFalse(WindowControl.TryClickExposedCaption(
+            (0, 0, 800, 600),
+            (_, _) => true,
+            (_, _) => false,
+            () => Assert.Fail("The pointer did not reach the verified caption point.")));
+    }
+
     [TestMethod]
     [DataRow(0, false)]
     [DataRow(1, false)]

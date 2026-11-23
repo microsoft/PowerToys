@@ -68,7 +68,9 @@ public class WorkspaceWriteTests
         try
         {
             Assert.IsTrue(started.Wait(TimeSpan.FromSeconds(5)));
-            var completed = await Task.WhenAny(writer, Task.Delay(200));
+            using var delayCts = new CancellationTokenSource();
+            var completed = await Task.WhenAny(writer, Task.Delay(200, delayCts.Token));
+            delayCts.Cancel();
             Assert.AreNotSame(writer, completed, "The writer should wait for the short-lived reader.");
         }
         finally

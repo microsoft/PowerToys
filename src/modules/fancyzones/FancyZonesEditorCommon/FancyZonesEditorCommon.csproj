@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.IO.Abstractions" />
+    <InternalsVisibleTo Include="FancyZonesEditor.UnitTests" />
   </ItemGroup>
 
   <PropertyGroup>

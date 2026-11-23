@@ -91,7 +91,7 @@ Describe 'MWB guest UI error envelopes' {
         $errors = $null
         $ast = [Management.Automation.Language.Parser]::ParseFile(
             (Join-Path $payloadRoot 'EndpointSupport.ps1'), [ref]$tokens, [ref]$errors)
-        foreach ($name in @('Assert-GuestUiResult', 'Get-GuestUiResultDiagnostic', 'Get-SettingsWindowHandle',
+        foreach ($name in @('Test-GuestUiWaitTimeout', 'Assert-GuestUiResult', 'Get-GuestUiResultDiagnostic', 'Get-SettingsWindowHandle',
             'Get-InspectedGuestElement', 'Get-GuestSecurityKeyHeader', 'Get-GuestUiControlKind')) {
             $definition = $ast.Find({
                 param($node)
@@ -120,6 +120,26 @@ Describe 'MWB guest UI error envelopes' {
             $_.Exception.Message | Should Not Match 'private-key|matchCount|property.*cannot'
         }
         finally { Set-StrictMode -Off }
+    }
+
+    It 'allows a completed negative wait only when the caller explicitly requests observation' {
+        $timeout = '{"found":false,"timedOut":true,"waitedMs":10000}' | ConvertFrom-Json
+        { Assert-GuestUiResult 'wait-for' 1 $timeout -AllowWaitTimeout } | Should Not Throw
+        { Assert-GuestUiResult 'wait-for' 1 $timeout } | Should Throw 'Guest winapp wait-for failed'
+        { Assert-GuestUiResult 'invoke' 1 $timeout -AllowWaitTimeout } | Should Throw 'Guest winapp invoke failed'
+    }
+
+    It 'never treats a malformed or error-bearing response as a retryable wait timeout' -TestCases @(
+        @{ Json = '{}' }
+        @{ Json = '{"found":false}' }
+        @{ Json = '{"found":"false","timedOut":true,"waitedMs":10000}' }
+        @{ Json = '{"found":false,"timedOut":"true","waitedMs":10000}' }
+        @{ Json = '{"found":false,"timedOut":true,"waitedMs":-1}' }
+        @{ Json = '{"found":false,"timedOut":true,"waitedMs":10000,"error":{"message":"private-key"}}' }
+    ) {
+        param($Json)
+        { Assert-GuestUiResult 'wait-for' 1 ($Json | ConvertFrom-Json) -AllowWaitTimeout } |
+            Should Throw 'Guest winapp wait-for failed'
     }
 
     It 'preserves the released stderr error code without messages, selectors or UI values' {

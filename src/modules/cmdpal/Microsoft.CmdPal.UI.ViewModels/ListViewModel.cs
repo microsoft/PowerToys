@@ -14,6 +14,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -455,6 +456,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             var nextCache = new Dictionary<IListItem, ListItemViewModel>(newItems.Length, VmCacheComparer);
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+            var imageStretch = (GridProperties as GalleryGridPropertiesViewModel)?.ImageStretch ?? Stretch.UniformToFill;
             var created = 0;
             var reused = 0;
             foreach (var item in newItems)
@@ -472,6 +474,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         existing.LayoutShowsTitle = showsTitle;
                         existing.LayoutShowsSubtitle = showsSubtitle;
+                        existing.LayoutImageStretch = imageStretch;
                         newViewModels.Add(existing);
                         nextCache[item] = existing;
                         reused++;
@@ -485,6 +488,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         viewModel.LayoutShowsTitle = showsTitle;
                         viewModel.LayoutShowsSubtitle = showsSubtitle;
+                        viewModel.LayoutImageStretch = imageStretch;
 
                         newViewModels.Add(viewModel);
                         createdViewModels.Add(viewModel);
@@ -1464,11 +1468,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+            var imageStretch = (GridProperties as GalleryGridPropertiesViewModel)?.ImageStretch ?? Stretch.UniformToFill;
 
             foreach (var item in Items)
             {
                 item.LayoutShowsTitle = showsTitle;
                 item.LayoutShowsSubtitle = showsSubtitle;
+                item.LayoutImageStretch = imageStretch;
             }
         }
     }

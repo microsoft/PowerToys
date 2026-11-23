@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using Windows.Win32;
 using Windows.Win32.System.Power;
 
@@ -33,6 +34,31 @@ internal sealed partial class BatteryStats
     /// Estimated seconds of battery life remaining, or -1 when unknown / charging / on AC.
     /// </summary>
     public int SecondsRemaining { get; set; } = -1;
+
+    /// <summary>Gets the charge rate: positive while charging, negative while discharging.</summary>
+    public int? ChargeRateMilliwatts { get; private set; }
+
+    public int? DesignCapacityMilliwattHours { get; private set; }
+
+    public int? FullChargeCapacityMilliwattHours { get; private set; }
+
+    /// <summary>Reads rates and capacities from the aggregate battery report.</summary>
+    public void ReadReport()
+    {
+        try
+        {
+            var report = global::Windows.Devices.Power.Battery.AggregateBattery.GetReport();
+            ChargeRateMilliwatts = report.ChargeRateInMilliwatts;
+            DesignCapacityMilliwattHours = report.DesignCapacityInMilliwattHours;
+            FullChargeCapacityMilliwattHours = report.FullChargeCapacityInMilliwattHours;
+        }
+        catch (Exception)
+        {
+            ChargeRateMilliwatts = null;
+            DesignCapacityMilliwattHours = null;
+            FullChargeCapacityMilliwattHours = null;
+        }
+    }
 
     public void GetData()
     {

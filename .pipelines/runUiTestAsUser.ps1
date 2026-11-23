@@ -18,6 +18,8 @@ param(
     [Parameter(ParameterSetName = 'Controller')]
     [string] $MwbRecoveryJournal,
     [Parameter(ParameterSetName = 'Controller')]
+    [ref] $DesktopWorkerUnconfirmed,
+    [Parameter(ParameterSetName = 'Controller')]
     [ValidateRange(1, 120)]
     [int] $TimeoutMinutes = 45,
     [Parameter(Mandatory, ParameterSetName = 'Worker')]
@@ -47,6 +49,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
     $exitCode = 1
     $failure = $null
     $process = $null
+    $testProcessInactive = $true
     try {
         try {
             $request = Get-Content -LiteralPath $RequestPath -Raw | ConvertFrom-Json -NoEnumerate
@@ -156,6 +159,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
         foreach ($argument in $arguments) {
             $start.ArgumentList.Add($argument)
         }
+        $testProcessInactive = $false
         $process = [Diagnostics.Process]::Start($start)
         $stdout = $process.StandardOutput.ReadToEndAsync()
         $stderr = $process.StandardError.ReadToEndAsync()
@@ -164,6 +168,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
             $process.Kill($true)
             $process.WaitForExit()
         }
+        $testProcessInactive = $true
         $stdout.GetAwaiter().GetResult() | Set-Content -LiteralPath (Join-Path $runDirectory 'stdout.log')
         $stderr.GetAwaiter().GetResult() | Set-Content -LiteralPath (Join-Path $runDirectory 'stderr.log')
         if ($timedOut) {
@@ -182,6 +187,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Worker') {
             RunId = $runId
             ExitCode = $exitCode
             Error = $failure
+            TestProcessInactive = $testProcessInactive
         }
         $temporaryStatus = Join-Path $runDirectory 'status.tmp'
         $status | ConvertTo-Json | Set-Content -LiteralPath $temporaryStatus
@@ -227,6 +233,7 @@ $taskName = "PowerToys-InteractiveUiTest-$runId"
 $originalDacl = $null
 $recoveryOriginalDacl = $null
 $registered = $false
+$taskCompleted = $false
 try {
     New-Item -ItemType Directory -Path $ResultsDirectory -Force | Out-Null
     New-Item -ItemType Directory -Path $runDirectory | Out-Null
@@ -293,28 +300,44 @@ try {
     $timer = [Diagnostics.Stopwatch]::StartNew()
     $launchObserved = $false
     $schedulerLaunchObserved = $false
+    $observationFailures = 0
+    # A scheduler start can take effect even if its response is lost. Leave the caller's
+    # marker set through observation and cleanup errors until both exit signals agree.
+    if ($null -ne $DesktopWorkerUnconfirmed) { $DesktopWorkerUnconfirmed.Value = $true }
     Start-ScheduledTask -TaskName $taskName
     while ($true) {
         Start-Sleep -Seconds 5
-        $info = Get-ScheduledTaskInfo -TaskName $taskName
-        $task = Get-ScheduledTask -TaskName $taskName
-        $schedulerLaunchObserved = $schedulerLaunchObserved -or $task.State -eq 'Running' -or $info.LastRunTime.Year -ge 2000
-        $launchObserved = $launchObserved -or $schedulerLaunchObserved -or
-            (Test-Path -LiteralPath (Join-Path $runDirectory 'desktop.txt'))
-        # A writable status file alone is not completion evidence. Queued tasks are not terminal.
-        if ($task.State -in @('Ready', 'Disabled') -and $schedulerLaunchObserved) {
-            if (-not (Test-Path -LiteralPath $statusPath)) {
-                throw "Interactive task exited without status (result $($info.LastTaskResult)). Evidence: $runDirectory"
-            }
-            # Refresh the result after observing completion, not from a possibly running snapshot.
+        if ($timer.Elapsed.TotalMinutes -gt ($TimeoutMinutes + 1)) {
+            throw "Timed out waiting for the interactive test task. Evidence: $runDirectory"
+        }
+        try {
             $info = Get-ScheduledTaskInfo -TaskName $taskName
-            break
+            $task = Get-ScheduledTask -TaskName $taskName
+            $schedulerLaunchObserved = $schedulerLaunchObserved -or $task.State -eq 'Running' -or $info.LastRunTime.Year -ge 2000
+            $launchObserved = $launchObserved -or $schedulerLaunchObserved -or
+                (Test-Path -LiteralPath (Join-Path $runDirectory 'desktop.txt'))
+            # A writable status file alone is not completion evidence. Queued tasks are not terminal.
+            if ($task.State -in @('Ready', 'Disabled') -and $schedulerLaunchObserved) {
+                if (-not (Test-Path -LiteralPath $statusPath)) {
+                    throw "Interactive task exited without status (result $($info.LastTaskResult)). Evidence: $runDirectory"
+                }
+                # Refresh the result after observing completion, not from a possibly running snapshot.
+                $info = Get-ScheduledTaskInfo -TaskName $taskName
+                $taskCompleted = $true
+                break
+            }
+            $observationFailures = 0
+        }
+        catch [Microsoft.Management.Infrastructure.CimException], [ComponentModel.Win32Exception] {
+            $observationFailures++
+            Write-Warning "Could not observe interactive task '$taskName' ($observationFailures/3): $($_.Exception.Message). $($_.InvocationInfo.PositionMessage)"
+            if ($observationFailures -ge 3) {
+                throw
+            }
+            continue
         }
         if (-not $launchObserved -and $timer.Elapsed.TotalSeconds -gt 30) {
             throw "The test task never entered the interactive desktop. Evidence: $runDirectory"
-        }
-        if ($timer.Elapsed.TotalMinutes -gt ($TimeoutMinutes + 1)) {
-            throw "Timed out waiting for the interactive test task. Evidence: $runDirectory"
         }
     }
     $status = Get-Content -LiteralPath $statusPath -Raw | ConvertFrom-Json -NoEnumerate
@@ -339,6 +362,10 @@ try {
         ([long]$info.LastTaskResult -band [long][uint32]::MaxValue)) {
         throw "Interactive task result $($info.LastTaskResult) does not match status exit code $($status.ExitCode)."
     }
+    if ($status.TestProcessInactive -isnot [bool] -or -not $status.TestProcessInactive) {
+        throw "The interactive worker did not confirm the test process exited. Evidence: $runDirectory"
+    }
+    if ($null -ne $DesktopWorkerUnconfirmed) { $DesktopWorkerUnconfirmed.Value = $false }
     foreach ($name in @('desktop.txt', 'stdout.log', 'stderr.log')) {
         $path = Join-Path $runDirectory $name
         if (Test-Path -LiteralPath $path) {
@@ -353,7 +380,7 @@ try {
 finally {
     try {
         if ($registered) {
-            if ((Get-ScheduledTask -TaskName $taskName).State -in @('Running', 'Queued')) {
+            if (-not $taskCompleted -and (Get-ScheduledTask -TaskName $taskName).State -in @('Running', 'Queued')) {
                 Stop-ScheduledTask -TaskName $taskName
             }
             Unregister-ScheduledTask -TaskName $taskName -Confirm:$false

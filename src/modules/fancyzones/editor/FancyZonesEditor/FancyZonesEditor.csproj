@@ -34,6 +34,7 @@
   <ItemGroup>
     <PackageReference Include="ModernWpfUI" />
     <PackageReference Include="System.IO.Abstractions" />
+    <InternalsVisibleTo Include="FancyZonesEditor.UnitTests" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\FancyZonesEditor.ico" />
