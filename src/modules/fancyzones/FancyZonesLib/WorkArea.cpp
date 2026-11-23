@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "WorkArea.h"
+#include "NativeSnap.h"
 
 #include <algorithm>
 
