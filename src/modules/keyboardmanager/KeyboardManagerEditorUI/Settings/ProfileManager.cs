@@ -267,7 +267,18 @@ namespace KeyboardManagerEditorUI.Settings
         /// registers it in settings.json. Does not switch to it. Returns false on invalid name or if
         /// a profile with that name already exists.
         /// </summary>
-        public static bool CreateProfile(string profile, bool copyFromActive)
+        public static bool CreateProfile(string profile, bool copyFromActive) =>
+            CreateProfile(profile, copyFromActive ? GetActiveProfile() : null);
+
+        /// <summary>
+        /// Creates a new profile config file and registers it in settings.json. Does not switch to it.
+        /// <paramref name="copyFromProfile"/> names the profile to copy, or is null for an empty
+        /// profile. Callers with a dialog pass the profile captured when it opened, so a profile switch
+        /// while it is open does not change what is copied. Returns false on an invalid name, if a
+        /// profile with that name already exists, or if the profile to copy no longer exists
+        /// ("default" without a file yet is copied as an empty profile).
+        /// </summary>
+        public static bool CreateProfile(string profile, string? copyFromProfile)
         {
             if (!IsValidProfileName(profile))
             {
@@ -284,6 +295,28 @@ namespace KeyboardManagerEditorUI.Settings
                     return false;
                 }
 
+                string? copySource = null;
+                if (copyFromProfile != null)
+                {
+                    bool isDefault = copyFromProfile.Equals(DefaultProfile, StringComparison.OrdinalIgnoreCase);
+                    if (!isDefault && !IsValidProfileName(copyFromProfile))
+                    {
+                        Logger.LogWarning($"ProfileManager.CreateProfile: invalid profile to copy '{copyFromProfile}'");
+                        return false;
+                    }
+
+                    if (File.Exists(ConfigPath(copyFromProfile)))
+                    {
+                        copySource = ConfigPath(copyFromProfile);
+                    }
+                    else if (!isDefault)
+                    {
+                        // Creating an empty profile instead would silently drop the copy asked for.
+                        Logger.LogWarning($"ProfileManager.CreateProfile: the profile to copy, '{copyFromProfile}', no longer exists");
+                        return false;
+                    }
+                }
+
                 // A profile that used this id before may have left mapping membership, keyboard
                 // assignments or a display name behind (a delete from an older build, or one whose
                 // last cleanup steps failed). Clear them first, so the new profile starts empty
@@ -298,9 +331,9 @@ namespace KeyboardManagerEditorUI.Settings
 
                 // Both branches create the file exclusively, so if another editor creates the same
                 // profile between the check above and here, this one fails instead of overwriting it.
-                if (copyFromActive && File.Exists(ConfigPath(GetActiveProfile())))
+                if (copySource != null)
                 {
-                    File.Copy(ConfigPath(GetActiveProfile()), target, overwrite: false);
+                    File.Copy(copySource, target, overwrite: false);
                 }
                 else if (!TryCreateFileExclusive(target, EmptyConfigJson))
                 {

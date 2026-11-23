@@ -275,6 +275,49 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual("Work", ProfileManager.GetDisplayName("Work"));
         }
 
+        // S1 (New profile): "copy the current profile" copies the profile shown when the dialog
+        // opened, even if an auto-switch made another profile active before the user confirmed.
+        [TestMethod]
+        public void CreateProfile_CopiesTheProfileCapturedWhenTheDialogOpened()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.CreateProfile("Home", copyFromActive: false));
+            File.WriteAllText(Path.Combine(_directory, "Work.json"), "work mappings");
+            File.WriteAllText(Path.Combine(_directory, "Home.json"), "home mappings");
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            string copySource = ProfileManager.GetActiveProfile(); // captured when the dialog opens
+
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Home")); // auto-switch while it is open
+
+            Assert.IsTrue(ProfileManager.CreateProfile("Travel", copySource));
+            Assert.AreEqual("work mappings", File.ReadAllText(Path.Combine(_directory, "Travel.json")));
+            Assert.AreEqual("Home", ProfileManager.GetActiveProfile());
+        }
+
+        // The captured source was deleted before the user confirmed: creating an empty profile
+        // instead would silently drop the copy the user asked for.
+        [TestMethod]
+        public void CreateProfile_Fails_WhenTheCapturedCopySourceNoLongerExists()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            Assert.IsTrue(ProfileManager.DeleteProfile("Work"));
+
+            Assert.IsFalse(ProfileManager.CreateProfile("Travel", "Work"));
+            Assert.IsFalse(File.Exists(Path.Combine(_directory, "Travel.json")));
+            CollectionAssert.DoesNotContain(new List<string>(ProfileManager.GetProfiles()), "Travel");
+        }
+
+        // default may legitimately have no file yet (fresh setup); a copy of it is an empty profile.
+        [TestMethod]
+        public void CreateProfile_CopyOfADefaultWithoutAFile_IsEmpty()
+        {
+            Assert.IsFalse(File.Exists(Path.Combine(_directory, "default.json")));
+
+            Assert.IsTrue(ProfileManager.CreateProfile("Travel", "default"));
+            Assert.IsTrue(File.Exists(Path.Combine(_directory, "Travel.json")));
+        }
+
         [TestMethod]
         public void CreateProfile_DoesNotOverwriteAnExistingProfileFile()
         {

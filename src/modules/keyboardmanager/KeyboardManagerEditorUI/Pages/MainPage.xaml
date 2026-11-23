@@ -892,7 +892,18 @@
                     DefaultButton="Primary"
                     IsPrimaryButtonEnabled="False"
                     PrimaryButtonStyle="{StaticResource AccentButtonStyle}">
-                    <controls:UnifiedMappingControl x:Name="UnifiedMappingControl" Margin="0,16,0,0" />
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <!--  The profile this dialog saves into, captured when it opens  -->
+                        <TextBlock x:Name="RemappingDialogProfileText" TextWrapping="Wrap" />
+                        <controls:UnifiedMappingControl
+                            x:Name="UnifiedMappingControl"
+                            Grid.Row="1"
+                            Margin="0,16,0,0" />
+                    </Grid>
                 </ContentDialog>
 
                 <!--  Confirmation Dialog for delete  -->
@@ -920,7 +931,7 @@
                     DefaultButton="Primary">
                     <StackPanel Spacing="12">
                         <TextBox x:Name="NewProfileNameBox" x:Uid="NewProfileNameBox" />
-                        <CheckBox x:Name="CopyCurrentProfileCheckBox" x:Uid="CopyCurrentProfileCheckBox" />
+                        <CheckBox x:Name="CopyCurrentProfileCheckBox" />
                     </StackPanel>
                 </ContentDialog>
 

@@ -652,8 +652,9 @@
   <data name="NewProfileNameBox.PlaceholderText" xml:space="preserve">
     <value>e.g., Mac keyboard</value>
   </data>
-  <data name="CopyCurrentProfileCheckBox.Content" xml:space="preserve">
-    <value>Start from a copy of the current profile (turned-off remappings aren't copied)</value>
+  <data name="CopyCurrentProfileCheckBox_Format" xml:space="preserve">
+    <value>Start from a copy of "{0}" (turned-off remappings aren't copied)</value>
+    <comment>{0} is the profile that will be copied: the one shown when this dialog opened.</comment>
   </data>
   <data name="DeleteProfileDialog.Title" xml:space="preserve">
     <value>Delete profile?</value>
@@ -666,6 +667,17 @@
   </data>
   <data name="DeleteProfileDialogContent.Text" xml:space="preserve">
     <value>This profile and all of its mappings will be permanently deleted. This cannot be undone:</value>
+  </data>
+  <data name="RemappingDialogProfile_Format" xml:space="preserve">
+    <value>Profile: {0}</value>
+    <comment>Shown in the add/edit remapping dialog. {0} is the profile the remapping is saved to.</comment>
+  </data>
+  <data name="Error_ProfileChanged_Title" xml:space="preserve">
+    <value>Profile changed</value>
+  </data>
+  <data name="Error_ProfileChanged_Format" xml:space="preserve">
+    <value>This remapping is for the profile "{0}", but "{1}" is active now, so it wasn't saved. Cancel, switch back to "{0}", and try again.</value>
+    <comment>{0} is the profile the dialog was opened for; {1} is the profile that is active now.</comment>
   </data>
   <data name="ProfileErrorDialog.CloseButtonText" xml:space="preserve">
     <value>OK</value>
@@ -681,7 +693,7 @@
     <value>Couldn't create profile</value>
   </data>
   <data name="ProfileCreateFailed_Format" xml:space="preserve">
-    <value>The profile "{0}" couldn't be created. The name might not be allowed, or a profile with this name might already exist.</value>
+    <value>The profile "{0}" couldn't be created. The name might not be allowed, a profile with this name might already exist, or the profile to copy might have been deleted.</value>
     <comment>{0} is the profile name the user entered.</comment>
   </data>
   <data name="ProfileDeleteFailed_Title" xml:space="preserve">

@@ -42,6 +42,10 @@ namespace KeyboardManagerEditorUI.Pages
         private bool _disposed;
         private bool _isEditMode;
         private EditingItem? _editingItem;
+
+        // The profile the add/edit remapping dialog was opened for. The dialog saves into this profile
+        // only: if another profile becomes active while it is open, the save is refused.
+        private string? _dialogTargetProfile;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
         private bool _isUpdatingToggle;
@@ -502,8 +506,16 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async void NewProfileBtn_Click(object sender, RoutedEventArgs e)
         {
+            // Capture the profile to copy now and name it in the dialog: the active profile can change
+            // while the dialog is open (cycle hotkey, device auto-switch), and the copy must be of the
+            // profile the user saw.
+            string copySource = _mappingService?.ConfigurationName ?? ProfileManager.GetActiveProfile();
             NewProfileNameBox.Text = string.Empty;
             CopyCurrentProfileCheckBox.IsChecked = false;
+            CopyCurrentProfileCheckBox.Content = string.Format(
+                CultureInfo.CurrentCulture,
+                CompositeFormat.Parse(ResourceHelper.GetString("CopyCurrentProfileCheckBox_Format")),
+                copySource);
 
             if (await NewProfileDialog.ShowAsync() != ContentDialogResult.Primary)
             {
@@ -516,7 +528,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            if (ProfileManager.CreateProfile(name, CopyCurrentProfileCheckBox.IsChecked == true))
+            if (ProfileManager.CreateProfile(name, CopyCurrentProfileCheckBox.IsChecked == true ? copySource : null))
             {
                 LoadProfiles();
 
@@ -824,6 +836,13 @@ namespace KeyboardManagerEditorUI.Pages
 
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
+            // Capture the target profile now and show it: the dialog saves into this profile only.
+            _dialogTargetProfile = _mappingService?.ConfigurationName;
+            RemappingDialogProfileText.Text = string.IsNullOrEmpty(_dialogTargetProfile)
+                ? string.Empty
+                : string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("RemappingDialogProfile_Format")), _dialogTargetProfile);
+            RemappingDialogProfileText.Visibility = string.IsNullOrEmpty(_dialogTargetProfile) ? Visibility.Collapsed : Visibility.Visible;
+
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
             RemappingDialog.IsPrimaryButtonEnabled = UnifiedMappingControl.IsInputComplete();
@@ -834,13 +853,37 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
             _isEditMode = false;
             _editingItem = null;
+            _dialogTargetProfile = null;
             KeyboardHookHelper.Instance.CleanupHook();
         }
+
+        // Whether the profile the dialog was opened for is still the one the editor shows and the
+        // engine has active. Duplicate checks run against the editor's current profile, so they are
+        // only meaningful while this holds.
+        private bool IsDialogTargetCurrent() =>
+            _mappingService != null &&
+            MappingDialogTarget.CanSave(_dialogTargetProfile, _mappingService.ConfigurationName, ProfileManager.GetActiveProfile());
+
+        private void ShowDialogProfileChanged() =>
+            UnifiedMappingControl.ShowValidationError(
+                ResourceHelper.GetString("Error_ProfileChanged_Title"),
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    CompositeFormat.Parse(ResourceHelper.GetString("Error_ProfileChanged_Format")),
+                    _dialogTargetProfile,
+                    ProfileManager.GetActiveProfile()));
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
         {
             if (!UnifiedMappingControl.IsInputComplete())
             {
+                RemappingDialog.IsPrimaryButtonEnabled = false;
+                return;
+            }
+
+            if (_mappingService != null && !IsDialogTargetCurrent())
+            {
+                ShowDialogProfileChanged();
                 RemappingDialog.IsPrimaryButtonEnabled = false;
                 return;
             }
@@ -880,6 +923,15 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
+            // Checked before validation: the duplicate checks would otherwise run against the profile
+            // that is active now instead of the one the dialog was opened for.
+            if (!IsDialogTargetCurrent())
+            {
+                ShowDialogProfileChanged();
+                args.Cancel = true;
+                return;
+            }
+
             try
             {
                 List<string> triggerKeys = UnifiedMappingControl.GetTriggerKeys();
@@ -899,16 +951,21 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
-                bool saved = SaveMappingTransaction(triggerKeys);
+                switch (SaveMappingTransaction(triggerKeys))
+                {
+                    case MappingSaveResult.Saved:
+                        LoadAllMappings();
+                        break;
 
-                if (saved)
-                {
-                    LoadAllMappings();
-                }
-                else
-                {
-                    UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
-                    args.Cancel = true;
+                    case MappingSaveResult.ProfileChanged:
+                        ShowDialogProfileChanged();
+                        args.Cancel = true;
+                        break;
+
+                    default:
+                        UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("Error_SaveFailed_Title"), ResourceHelper.GetString("Error_SaveFailed_Message"));
+                        args.Cancel = true;
+                        break;
                 }
             }
             catch (NotImplementedException ex)
@@ -949,17 +1006,17 @@ namespace KeyboardManagerEditorUI.Pages
             };
         }
 
-        private bool SaveMappingTransaction(List<string> triggerKeys)
+        private MappingSaveResult SaveMappingTransaction(List<string> triggerKeys)
         {
             if (_mappingService == null)
             {
-                return false;
+                return MappingSaveResult.Failed;
             }
 
             using FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock();
             if (transactionLock == null || !SettingsManager.TryReloadSettings())
             {
-                return false;
+                return MappingSaveResult.Failed;
             }
 
             KeyboardMappingService? originalService = null;
@@ -969,10 +1026,22 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 originalService = new KeyboardMappingService();
                 candidateService = new KeyboardMappingService();
+
+                // Both services load the profile that is active now. Stop before anything is written
+                // if that is no longer the profile the dialog was opened for: otherwise an add would
+                // land in the new profile, and an edit would briefly rewrite the new profile's config
+                // (and make the engine reload it) before failing.
+                if (!MappingDialogTarget.CanSave(_dialogTargetProfile, _mappingService.ConfigurationName, originalService.ConfigurationName) ||
+                    !MappingDialogTarget.CanSave(_dialogTargetProfile, candidateService.ConfigurationName, candidateService.ConfigurationName))
+                {
+                    Logger.LogWarning($"Remapping not saved: the dialog was opened for profile '{_dialogTargetProfile}', but '{originalService.ConfigurationName}' is active now.");
+                    return MappingSaveResult.ProfileChanged;
+                }
+
                 if (!_mappingService.HasSameMappings(originalService) ||
                     !originalService.HasSameMappings(candidateService))
                 {
-                    return false;
+                    return MappingSaveResult.Failed;
                 }
 
                 string? replacingId = null;
@@ -984,14 +1053,14 @@ namespace KeyboardManagerEditorUI.Pages
                         string.IsNullOrEmpty(existingMapping.Id) ||
                         !SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(existingMapping.Id, out ShortcutSettings? existingSettings))
                     {
-                        return false;
+                        return MappingSaveResult.Failed;
                     }
 
                     replacingId = existingMapping.Id;
                     exactMatch = existingSettings.Shortcut.ExactMatch;
                     if (existingSettings.IsActive && !DeleteMapping(candidateService, existingSettings.Shortcut))
                     {
-                        return false;
+                        return MappingSaveResult.Failed;
                     }
                 }
 
@@ -1000,27 +1069,27 @@ namespace KeyboardManagerEditorUI.Pages
                     HasDuplicateEditorMapping(replacementMapping, replacingId) ||
                     !AddMapping(candidateService, replacementMapping))
                 {
-                    return false;
+                    return MappingSaveResult.Failed;
                 }
 
                 candidateSaveAttempted = true;
                 if (!candidateService.SaveSettingsAndVerify())
                 {
                     RestoreOriginalMappingSettings(originalService);
-                    return false;
+                    return MappingSaveResult.Failed;
                 }
 
                 if (!SettingsManager.TryCommitShortcutKeyMapping(replacementMapping, replacingId, candidateService.ConfigurationName))
                 {
                     RestoreOriginalMappingSettings(originalService);
-                    return false;
+                    return MappingSaveResult.Failed;
                 }
 
                 KeyboardMappingService previousService = _mappingService;
                 _mappingService = candidateService;
                 candidateService = null;
                 previousService.Dispose();
-                return true;
+                return MappingSaveResult.Saved;
             }
             catch (Exception ex)
             {
@@ -1030,7 +1099,7 @@ namespace KeyboardManagerEditorUI.Pages
                     RestoreOriginalMappingSettings(originalService);
                 }
 
-                return false;
+                return MappingSaveResult.Failed;
             }
             finally
             {
