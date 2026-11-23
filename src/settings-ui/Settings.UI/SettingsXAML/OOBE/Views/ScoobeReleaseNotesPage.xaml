@@ -64,6 +64,12 @@
                             Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
                             IsHitTestVisible="False"
                             Visibility="Collapsed" />
+                        <Border
+                            x:Name="CodeBrushProvider"
+                            Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                            IsHitTestVisible="False"
+                            Visibility="Collapsed" />
                     </Grid>
                 </Grid>
             </Grid>

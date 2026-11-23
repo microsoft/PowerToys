@@ -5,12 +5,10 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using Common.UI;
 using CommunityToolkit.WinUI.Animations;
 using ManagedCommon;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.PowerToys.Settings.UI.Library;
-using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -18,7 +16,6 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using ShortcutGuide.Controls;
 using ShortcutGuide.Helpers;
-using Windows.Foundation;
 using Windows.System;
 using WinRT.Interop;
 using WinUIEx;
@@ -45,6 +42,37 @@ namespace ShortcutGuide
         // finishes, so CloseAnimated() doesn't allocate a timer + closure per call.
         private Microsoft.UI.Dispatching.DispatcherQueueTimer? _closeTimer;
 
+        private Microsoft.UI.Dispatching.DispatcherQueueTimer? _taskbarStateTimer;
+        private ScreenLayout _currentScreenLayout;
+        private ScreenLayout? _lastTaskbarLayoutSample;
+        private int _stableTaskbarLayoutSamples;
+        private bool _isTaskbarPaneRequested;
+
+        private const int TaskbarMonitorTimerIntervalMs = 100;
+        private const int TaskbarMonitorTimerActiveIntervalMs = 33;
+        private const int TaskbarLayoutStableSampleCount = 5;
+
+        internal bool IsTaskbarPaneRequested
+        {
+            get => _isTaskbarPaneRequested;
+            set
+            {
+                _isTaskbarPaneRequested = value;
+                ApplyMainPaneMargins(_currentScreenLayout);
+                if (value)
+                {
+                    if (UpdateTaskbarPaneLayout())
+                    {
+                        this.TaskbarPane.Visibility = Visibility.Visible;
+                    }
+                }
+                else
+                {
+                    this.TaskbarPane.Visibility = Visibility.Collapsed;
+                }
+            }
+        }
+
         // Set true around AppWindow.MoveAndResize() so the WndProc swallows
         // WM_DPICHANGED. Without this, WinUIEx re-scales the rect we just
         // wrote by (newDpi / oldDpi), producing a 1.5x/0.66x window on
@@ -57,14 +85,11 @@ namespace ShortcutGuide
         // WM_NCLBUTTONDBLCLK handling.
         private WindowMessageMonitor? _windowMessageMonitor;
 
-        // Screen edge the taskbar is docked to (global Windows setting). Drives
-        // the taskbar-indicator layout and the main pane's inset so the order
-        // from a left/right taskbar reads taskbar | indicators | pane.
-        private TaskbarEdge _taskbarEdge = TaskbarEdge.Bottom;
-
         internal long SessionDurationMs => _sessionStopwatch.ElapsedMilliseconds;
 
         internal string CloseType => _closeType;
+
+        internal event EventHandler? ClosingStarted;
 
         public MainPaneControl MainPaneControl => this.MainPane;
 
@@ -73,6 +98,14 @@ namespace ShortcutGuide
         public OverlayWindow()
         {
             this.InitializeComponent();
+
+            if (this.AppWindow.Presenter is OverlappedPresenter presenter)
+            {
+                presenter.SetBorderAndTitleBar(hasBorder: false, hasTitleBar: false);
+            }
+
+            const string fallbackTitle = "Shortcut Guide";
+            this.Title = fallbackTitle;
 
             // The base TransparentWindow already applies the
             // TransparentTintBackdrop, extends content into the title bar and
@@ -84,7 +117,7 @@ namespace ShortcutGuide
             // control while it reads AppWindow.Title during a deferred layout pass.
             if (string.IsNullOrEmpty(title))
             {
-                title = "Shortcut Guide";
+                title = fallbackTitle;
             }
 
             this.Title = title;
@@ -124,12 +157,6 @@ namespace ShortcutGuide
                 }
             };
 
-            // Edge-to-edge overlay: opt into the aggressive full-bleed DWM
-            // hardening so the OS never reveals a 1-px frame seam around the
-            // monitor-sized transparent window. The baseline chrome is already
-            // applied by the base constructor.
-            this.ApplyFullBleedHardening();
-
             // Pre-size and position BEFORE Activate so the first frame the
             // user sees is already at the correct work-area size on the
             // cursor's monitor. Doing this in OnActivated produces a single
@@ -137,7 +164,6 @@ namespace ShortcutGuide
             // changes (because a later layout pass picks up the correct
             // AppWindow.Size).
             RepositionToCursorMonitor();
-            ApplyMainPaneAlignment();
 
 #if !DEBUG
             this.SetIsAlwaysOnTop(true);
@@ -173,13 +199,6 @@ namespace ShortcutGuide
             {
                 _closeType = "CloseButton";
                 CloseAnimated();
-            };
-
-            // Reveal the main pane after the window has loaded so the
-            // Implicit.ShowAnimations play on first appearance.
-            this.OverlayRoot.Loaded += (_, _) =>
-            {
-                this.MainPane.Visibility = Visibility.Visible;
             };
         }
 
@@ -280,13 +299,7 @@ namespace ShortcutGuide
 
         private void OnMainPaneTaskbarVisibilityChanged(object? sender, bool shouldShow)
         {
-            if (!shouldShow)
-            {
-                this.TaskbarPane.Visibility = Visibility.Collapsed;
-                return;
-            }
-
-            UpdateTaskbarPaneLayout();
+            IsTaskbarPaneRequested = shouldShow;
         }
 
         private void OnMainPaneInitializationFailed(object? sender, EventArgs e)
@@ -308,6 +321,8 @@ namespace ShortcutGuide
             }
 
             _isClosing = true;
+            _taskbarStateTimer?.Stop();
+            ClosingStarted?.Invoke(this, EventArgs.Empty);
 
             // Collapse both pseudo-windows so their Implicit.HideAnimations play
             this.MainPane.Visibility = Visibility.Collapsed;
@@ -337,31 +352,50 @@ namespace ShortcutGuide
         /// <summary>
         /// Recomputes the taskbar pane's indicator children and applies the
         /// resulting layout to the Canvas-positioned pseudo-window.
+        /// Returns <see langword="false"/> if no buttons were found.
         /// </summary>
-        public void UpdateTaskbarPaneLayout()
+        public bool UpdateTaskbarPaneLayout(bool playEntrance = true)
         {
-            var hwnd = WindowNative.GetWindowHandle(this);
-            float dpi = DpiHelper.GetDPIScaleForWindow(hwnd);
-            Rect workArea = DisplayHelper.GetWorkAreaForDisplayWithWindow(hwnd);
+            return UpdateTaskbarPaneLayoutCore(playEntrance);
+        }
+
+        private bool UpdateTaskbarPaneLayoutCore(bool playEntrance)
+        {
+            if ((_currentScreenLayout.IsTaskbarAutoHide && !IsTaskbarLayoutStable) || !_currentScreenLayout.IsTaskbarVisible)
+            {
+                this.TaskbarPane.Visibility = Visibility.Collapsed;
+                return false;
+            }
 
             var layout = this.TaskbarPane.UpdateTasklistButtons(
-                overlayPhysicalOriginX: this.AppWindow.Position.X,
-                overlayPhysicalOriginY: this.AppWindow.Position.Y,
-                dpi: dpi,
-                workAreaPhysical: workArea,
-                edge: _taskbarEdge);
+                overlayPhysicalOriginX: _currentScreenLayout.UsableArea.X,
+                overlayPhysicalOriginY: _currentScreenLayout.UsableArea.Y,
+                dpi: _currentScreenLayout.DpiScale,
+                edge: _currentScreenLayout.TaskbarEdge,
+                playEntrance: playEntrance,
+                monitor: _currentScreenLayout.MonitorHandle);
 
             if (layout is null)
             {
                 this.TaskbarPane.Visibility = Visibility.Collapsed;
-                return;
+                return false;
             }
 
             this.TaskbarPane.Width = layout.Value.Width;
             this.TaskbarPane.Height = layout.Value.Height;
             Canvas.SetLeft(this.TaskbarPane, layout.Value.Left);
             Canvas.SetTop(this.TaskbarPane, layout.Value.Top);
-            this.TaskbarPane.Visibility = Visibility.Visible;
+            return true;
+        }
+
+        public void ShowTaskbarIndicators()
+        {
+            IsTaskbarPaneRequested = true;
+        }
+
+        public void HideTaskbarIndicators()
+        {
+            IsTaskbarPaneRequested = false;
         }
 
         /// <summary>
@@ -375,10 +409,10 @@ namespace ShortcutGuide
         /// </summary>
         public void ShowOverlay()
         {
+            _closeTimer?.Stop();
             _isClosing = false;
 
             RepositionToCursorMonitor();
-            ApplyMainPaneAlignment();
 
             this.AppWindow.Show();
 
@@ -394,11 +428,9 @@ namespace ShortcutGuide
             uint foregroundThread = NativeMethods.GetWindowThreadProcessId(foreground, out _);
             uint thisThread = NativeMethods.GetCurrentThreadId();
 
-            bool attached = false;
-            if (foregroundThread != 0 && foregroundThread != thisThread)
-            {
-                attached = NativeMethods.AttachThreadInput(thisThread, foregroundThread, true);
-            }
+            bool attached = foregroundThread != 0 &&
+                foregroundThread != thisThread &&
+                NativeMethods.AttachThreadInput(thisThread, foregroundThread, true);
 
             try
             {
@@ -415,55 +447,124 @@ namespace ShortcutGuide
 
             this.Activate();
             this.AppWindow.MoveInZOrderAtTop();
+            StartTaskbarStateTimer();
         }
 
         /// <summary>
-        /// Sizes and positions the overlay to cover the work area of the
-        /// monitor that currently contains the cursor. Looks the monitor up
-        /// directly from the cursor position so the work-area rect doesn't
-        /// depend on a previous asynchronous <see cref="AppWindow.Move"/>
-        /// having actually committed yet.
+        /// Applies a single monitor/taskbar layout snapshot to the overlay.
         /// </summary>
         private void RepositionToCursorMonitor()
         {
-            // The taskbar edge is a global setting; refresh it whenever we
-            // reposition so the indicator layout follows a taskbar that the
-            // user moved between sessions.
-            _taskbarEdge = TasklistPositions.GetEdge();
+            ApplyScreenLayout(DisplayHelper.GetScreenLayoutForCursor());
+            _lastTaskbarLayoutSample = null;
+            _stableTaskbarLayoutSamples = 0;
+        }
 
-            if (!NativeMethods.GetCursorPos(out NativeMethods.POINT cursor))
+        private void StartTaskbarStateTimer()
+        {
+            if (_taskbarStateTimer is null)
+            {
+                _taskbarStateTimer = this.DispatcherQueue.CreateTimer();
+                _taskbarStateTimer.Interval = TimeSpan.FromMilliseconds(TaskbarMonitorTimerIntervalMs);
+                _taskbarStateTimer.IsRepeating = true;
+                _taskbarStateTimer.Tick += OnTaskbarStateTimerTick;
+            }
+
+            _taskbarStateTimer.Start();
+        }
+
+        private void OnTaskbarStateTimerTick(Microsoft.UI.Dispatching.DispatcherQueueTimer sender, object args)
+        {
+            if (_isClosing)
             {
                 return;
             }
 
-            IntPtr hmon = NativeMethods.MonitorFromPoint(
-                cursor,
-                (int)NativeMethods.MonitorFromWindowDwFlags.MONITOR_DEFAULTTONEAREST);
-            if (hmon == IntPtr.Zero)
+            IntPtr hwnd = WindowNative.GetWindowHandle(this);
+            IntPtr monitor = NativeMethods.MonitorFromWindow(
+                hwnd, (int)NativeMethods.MonitorFromWindowDwFlags.MONITOR_DEFAULTTONEAREST);
+
+            var layout = monitor == IntPtr.Zero
+                ? DisplayHelper.GetScreenLayoutForCursor()
+                : DisplayHelper.GetScreenLayoutForMonitor(monitor);
+
+            // NB: ScreenLayout must stay a value-equality type so timer samples
+            // compare all monitor and taskbar fields rather than object identity.
+            if (_lastTaskbarLayoutSample == layout)
             {
-                return;
+                if (_stableTaskbarLayoutSamples < TaskbarLayoutStableSampleCount)
+                {
+                    _stableTaskbarLayoutSamples++;
+
+                    if (_stableTaskbarLayoutSamples == TaskbarLayoutStableSampleCount)
+                    {
+                        // Drop back to idle polling rate.
+                        _taskbarStateTimer?.Interval = TimeSpan.FromMilliseconds(TaskbarMonitorTimerIntervalMs);
+
+                        // Now that the taskbar is stable, update the indicators.
+                        if (_isTaskbarPaneRequested && _currentScreenLayout.IsTaskbarVisible && this.TaskbarPane.Visibility != Visibility.Visible)
+                        {
+                            if (UpdateTaskbarPaneLayout(playEntrance: false))
+                            {
+                                this.TaskbarPane.Visibility = Visibility.Visible;
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                // Taskbar is animating. Increase the polling rate.
+                _lastTaskbarLayoutSample = layout;
+                _stableTaskbarLayoutSamples = 1;
+                _taskbarStateTimer?.Interval = TimeSpan.FromMilliseconds(TaskbarMonitorTimerActiveIntervalMs);
             }
 
-            var mi = new NativeMethods.MONITORINFO
+            if (layout != _currentScreenLayout)
             {
-                CbSize = (uint)Marshal.SizeOf<NativeMethods.MONITORINFO>(),
-            };
-            if (!NativeMethods.GetMonitorInfoW(hmon, ref mi))
+                ApplyScreenLayout(layout);
+            }
+        }
+
+        private bool IsTaskbarLayoutStable =>
+            !_currentScreenLayout.IsTaskbarAutoHide ||
+            (_stableTaskbarLayoutSamples >= TaskbarLayoutStableSampleCount && _lastTaskbarLayoutSample == _currentScreenLayout);
+
+        private void ApplyScreenLayout(ScreenLayout layout)
+        {
+            var previousLayout = _currentScreenLayout;
+            var bounds = layout.UsableArea;
+
+            _currentScreenLayout = layout;
+
+            var currentPosition = this.AppWindow.Position;
+            var currentSize = this.AppWindow.Size;
+            bool areaChanged = currentPosition.X != bounds.X || currentPosition.Y != bounds.Y ||
+                               currentSize.Width != bounds.Width || currentSize.Height != bounds.Height ||
+                               previousLayout.MonitorHandle != layout.MonitorHandle;
+
+            if (areaChanged)
             {
-                return;
+                MoveOverlayToBounds(bounds);
             }
 
-            // rcWork is in physical pixels (virtual-screen coordinates).
-            // AppWindow.MoveAndResize takes physical pixels too — no DPI math
-            // required. Using AppWindow directly avoids the WinUIEx
-            // WindowEx.MoveAndResize extension whose x/y are physical but
-            // whose w/h are DIPs (and get DPI-scaled internally).
-            var rect = new Windows.Graphics.RectInt32(
-                mi.RcWork.Left,
-                mi.RcWork.Top,
-                mi.RcWork.Right - mi.RcWork.Left,
-                mi.RcWork.Bottom - mi.RcWork.Top);
+            ApplyMainPaneAlignment(layout);
 
+            if (_isTaskbarPaneRequested)
+            {
+                if (UpdateTaskbarPaneLayout(playEntrance: false))
+                {
+                    this.TaskbarPane.Visibility = Visibility.Visible;
+                }
+            }
+            else
+            {
+                this.TaskbarPane.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        private void MoveOverlayToBounds(Windows.Graphics.RectInt32 rect)
+        {
             // Cross-monitor moves trigger WM_DPICHANGED which causes WinUIEx
             // to auto-rescale the window by (newDpi/oldDpi) ON TOP of the
             // physical rect we just provided — making the overlay 1.5×
@@ -488,19 +589,10 @@ namespace ShortcutGuide
                 _suppressDpiChange = false;
             }
 
-            // Cross-monitor moves can trigger WM_DPICHANGED, and Windows may
-            // reset some of our DWM attributes (border color, corner pref)
-            // during that transition. Re-apply them defensively so the
-            // overlay never reveals an OS-drawn 1-px stroke or rounded
-            // shadow.
             this.ApplyTransparentChrome();
-            this.ApplyFullBleedHardening();
-
-            // The taskbar pane is anchored against the bottom of the work area,
-            // so any move/resize needs a fresh layout pass.
             if (this.TaskbarPane.Visibility == Visibility.Visible)
             {
-                UpdateTaskbarPaneLayout();
+                UpdateTaskbarPaneLayoutCore(playEntrance: false);
             }
         }
 
@@ -508,7 +600,7 @@ namespace ShortcutGuide
         /// Applies the left/right alignment from the user setting to the
         /// main pseudo-window.
         /// </summary>
-        private void ApplyMainPaneAlignment()
+        private void ApplyMainPaneAlignment(ScreenLayout layout)
         {
             var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
             bool isRight = windowPosition == ShortcutGuideWindowPosition.Right;
@@ -517,25 +609,7 @@ namespace ShortcutGuide
                 ? HorizontalAlignment.Right
                 : HorizontalAlignment.Left;
 
-            // When the taskbar is docked to the same side the pane is aligned to,
-            // reserve room for the vertical indicator strip so the layout reads
-            // taskbar | indicators | pane instead of the pane overlapping the
-            // indicators. The reserve = 8px edge gap + 46px (body + tail) + 16px
-            // gap before the pane. Other edges keep the default 16px margin.
-            const double DefaultMarginDip = 16;
-            const double IndicatorReserveDip = 8 + 46 + 16;
-            double leftMargin = DefaultMarginDip;
-            double rightMargin = DefaultMarginDip;
-            if (_taskbarEdge == TaskbarEdge.Left && !isRight)
-            {
-                leftMargin = IndicatorReserveDip;
-            }
-            else if (_taskbarEdge == TaskbarEdge.Right && isRight)
-            {
-                rightMargin = IndicatorReserveDip;
-            }
-
-            this.MainPane.Margin = new Thickness(leftMargin, DefaultMarginDip, rightMargin, DefaultMarginDip);
+            ApplyMainPaneMargins(layout);
 
             // Slide direction matches the pane's edge: left-aligned slides
             // from the left, right-aligned slides from the right — same as
@@ -565,6 +639,15 @@ namespace ShortcutGuide
                 EasingMode = Microsoft.UI.Xaml.Media.Animation.EasingMode.EaseIn,
             });
             Implicit.SetHideAnimations(this.MainPane, hideAnimations);
+        }
+
+        private void ApplyMainPaneMargins(ScreenLayout layout)
+        {
+            var windowPosition = (ShortcutGuideWindowPosition)App.ShortcutGuideProperties.WindowPosition.Value;
+            bool isRight = windowPosition == ShortcutGuideWindowPosition.Right;
+            bool reserveBottomForIndicators = _isTaskbarPaneRequested && layout.IsTaskbarVisible;
+            MainPaneMargins margins = MainPaneLayoutPolicy.GetMargins(layout.TaskbarEdge, isRight, reserveBottomForIndicators);
+            this.MainPane.Margin = new Thickness(margins.Left, margins.Top, margins.Right, margins.Bottom);
         }
     }
 }

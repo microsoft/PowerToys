@@ -8,7 +8,7 @@
         "class": "AdvancedPaste.FuzzTests.FuzzTests",
         "method": "FuzzToJsonFromXmlOrCsv",
         "FuzzingTargetBinaries": [
-          "PowerToys.AdvancedPaste.dll"
+          "PowerToys.AdvancedPaste.Core.dll"
         ]
       },
       "adoTemplate": {
@@ -37,6 +37,8 @@
         // (globs are supported)
         "AdvancedPaste.FuzzTests.dll",
         "AdvancedPaste.FuzzTests.pdb",
+        "PowerToys.AdvancedPaste.Core.dll",
+        "PowerToys.AdvancedPaste.Core.pdb",
         "Microsoft.Windows.SDK.NET.dll",
         "Newtonsoft.Json.dll",
         "WinRT.Runtime.dll"

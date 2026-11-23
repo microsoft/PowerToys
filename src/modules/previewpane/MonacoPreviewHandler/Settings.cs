@@ -180,7 +180,7 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
         /// <remarks>
         /// Source: https://stackoverflow.com/a/283917/14774889
         /// </remarks>
-        public static string AssemblyDirectory
+        public static string? AssemblyDirectory
         {
             get
             {

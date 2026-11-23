@@ -134,6 +134,13 @@ namespace Microsoft.PowerToys.Settings.UI.Controls
                     }
 
                     return true;
+                case ModuleType.MousePointerCrosshairs:
+                    using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MouseCrosshairsTriggerEvent()))
+                    {
+                        eventHandle.Set();
+                    }
+
+                    return true;
                 case ModuleType.MouseWithoutBorders:
                     using (var eventHandle = new EventWaitHandle(false, EventResetMode.AutoReset, Constants.MWBReconnectEvent()))
                     {

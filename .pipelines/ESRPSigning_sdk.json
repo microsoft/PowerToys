@@ -62,7 +62,8 @@
         },
         {
             "MatchedPath": [
-                "Microsoft.CommandPalette.Extensions.dll"
+                "Microsoft.CommandPalette.Extensions.dll",
+                "Microsoft.CommandPalette.Extensions.winmd"
             ],
             "SigningInfo": {
                 "Operations": [

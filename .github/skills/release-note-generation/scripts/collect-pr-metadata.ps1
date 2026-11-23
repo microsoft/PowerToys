@@ -22,6 +22,8 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
+. (Join-Path $PSScriptRoot "release-contributors.ps1")
+
 if ($DeltaPath) {
     $delta = @(Get-Content -LiteralPath $DeltaPath -Raw | ConvertFrom-Json)
     $PrNumbers = @($delta | ForEach-Object { [int]$_.number })
@@ -53,17 +55,15 @@ if ($members.Count -eq 0) {
     throw "Required PowerToys member list is empty: $MemberListPath"
 }
 
-$memberSet = [System.Collections.Generic.HashSet[string]]::new([StringComparer]::OrdinalIgnoreCase)
-foreach ($member in $members) {
-    [void]$memberSet.Add($member)
-}
+& (Join-Path $PSScriptRoot "get-release-member-list.ps1") -OutputPath $MemberListPath | Out-Null
+$members = @(Get-Content -LiteralPath $MemberListPath)
 
 $rows = @()
 foreach ($number in $PrNumbers) {
     Write-Host "Fetching PR #$number..." -ForegroundColor Cyan
     $json = gh pr view $number `
         --repo $Repo `
-        --json number,title,labels,author,url,body,mergedAt
+        --json number,title,labels,author,url,body,mergedAt,mergeCommit
     if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($json)) {
         throw "Failed to fetch required PR #$number from $Repo."
     }
@@ -80,8 +80,14 @@ foreach ($number in $PrNumbers) {
         $labels = @("General")
     }
 
-    $author = [string]$pr.author.login
-    $needThanks = if ($author -and -not $memberSet.Contains($author)) { $author } else { "" }
+    $contributors = @($pr.author)
+    if ($pr.mergeCommit -and $pr.mergeCommit.oid) {
+        $contributors += @(Get-ReleaseCommitAuthors -CommitShas @($pr.mergeCommit.oid) -Repo $Repo)
+    }
+    $author = (@($contributors | Where-Object { $_ } | ForEach-Object {
+        Get-ReleaseContributorLogin -Contributor $_
+    } | Where-Object { $_ } | Sort-Object -Unique) -join ", ")
+    $needThanks = (@(Get-ReleaseExternalContributors -Contributors $contributors -Members $members) -join ", ")
     $body = if ($pr.body) {
         (([string]$pr.body -replace "`r", "") -replace "`n", " ") -replace "\s+", " "
     }

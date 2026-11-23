@@ -9,12 +9,13 @@ using System.Runtime.InteropServices;
 namespace Microsoft.PowerToys.UITest.Next;
 
 /// <summary>
-/// Captures the full desktop (including the mouse cursor) to a PNG. Used only by the pipeline path
-/// of <see cref="UITestBase"/>, which fires <see cref="TimerCallback"/> on a one-second timer so a
-/// failed CI run carries a frame-by-frame trail. Ported from the legacy harness — winappcli has no
-/// equivalent full-desktop capture, so this stays native (GDI).
+/// Captures the full desktop (including the mouse cursor) to a PNG. Used by the pipeline path of
+/// <see cref="UITestBase"/>, which fires <see cref="TimerCallback"/> on a one-second timer so a
+/// failed CI run carries a frame-by-frame trail, and by tests that need to read what the screen
+/// actually shows. Ported from the legacy harness — winappcli has no equivalent full-desktop
+/// capture, so this stays native (GDI).
 /// </summary>
-internal static class ScreenCapture
+public static class ScreenCapture
 {
     [DllImport("user32.dll")]
     private static extern IntPtr GetDC(IntPtr hWnd);

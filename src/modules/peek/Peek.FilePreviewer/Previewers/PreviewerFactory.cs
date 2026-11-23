@@ -11,6 +11,7 @@ using Peek.FilePreviewer.Previewers.Archives;
 using Peek.FilePreviewer.Previewers.Drive;
 using Peek.FilePreviewer.Previewers.MediaPreviewer;
 using Peek.UI.Telemetry.Events;
+using SqliteNS = Peek.FilePreviewer.Previewers.SqlitePreviewer;
 
 namespace Peek.FilePreviewer.Previewers
 {
@@ -41,6 +42,10 @@ namespace Peek.FilePreviewer.Previewers
             {
                 return new WebBrowserPreviewer(item, _previewSettings);
             }
+            else if (SqliteNS.SqlitePreviewer.IsItemSupported(item))
+            {
+                return new SqliteNS.SqlitePreviewer(item);
+            }
             else if (ArchivePreviewer.IsItemSupported(item))
             {
                 return new ArchivePreviewer(item);
@@ -56,6 +61,13 @@ namespace Peek.FilePreviewer.Previewers
             else if (SpecialFolderPreviewer.IsItemSupported(item))
             {
                 return new SpecialFolderPreviewer(item);
+            }
+            else if (WebBrowserPreviewer.IsFallbackCandidate(item))
+            {
+                // No recognized extension. The content check is done asynchronously in
+                // LoadDisplayInfoAsync; if it isn't text, the previewer fails over to
+                // the default/info preview.
+                return new WebBrowserPreviewer(item, _previewSettings);
             }
 
             // Other previewer types check their supported file types here

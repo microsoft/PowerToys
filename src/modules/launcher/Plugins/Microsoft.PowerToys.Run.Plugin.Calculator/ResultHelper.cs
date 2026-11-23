@@ -49,7 +49,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 {
                     try
                     {
-                        Clipboard.SetText(roundedResult?.ToString(culture));
+                        ClipboardHelper.SetText(roundedResult?.ToString(culture));
                         ret = true;
                     }
                     catch (ExternalException ex)

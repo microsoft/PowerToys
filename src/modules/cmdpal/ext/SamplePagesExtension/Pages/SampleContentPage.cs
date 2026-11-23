@@ -256,6 +256,7 @@ internal sealed partial class SampleContentForm : FormContent
     "actions": [
         {
             "type": "Action.Submit",
+            "id": "submit-form",
             "title": "Submit",
             "data": {
                 "id": "1234567890"
@@ -277,6 +278,7 @@ internal sealed partial class SampleContentForm : FormContent
                 "actions": [
                     {
                         "type": "Action.Submit",
+                        "id": "submit-comment",
                         "title": "OK"
                     }
                 ]
@@ -368,6 +370,9 @@ internal sealed partial class SampleContentForm : FormContent
         // Application.Current.GetService<ILocalSettingsService>().SaveSettingAsync("GlobalHotkey", formInput["hotkey"]?.ToString() ?? string.Empty);
         return CommandResult.GoHome();
     }
+
+    public override CommandResult SubmitAction(string actionId, string inputs, string data) =>
+        CommandResult.ShowToast($"Submitted action: {actionId}");
 }
 
 [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "SA1402:File may only contain a single type", Justification = "Sample code")]

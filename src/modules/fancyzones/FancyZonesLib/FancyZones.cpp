@@ -28,6 +28,7 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/SettingsObserver.h>
 #include <FancyZonesLib/trace.h>
+#include <FancyZonesLib/util.h>
 #include <FancyZonesLib/VirtualDesktop.h>
 #include <FancyZonesLib/WindowKeyboardSnap.h>
 #include <FancyZonesLib/WindowMouseSnap.h>
@@ -43,7 +44,7 @@ enum class DisplayChangeType
     Initialization
 };
 
-constexpr wchar_t* DisplayChangeTypeName (const DisplayChangeType type){
+constexpr const wchar_t* DisplayChangeTypeName (const DisplayChangeType type){
     switch (type)
     {
     case DisplayChangeType::WorkArea:
@@ -68,6 +69,22 @@ namespace NonLocalizable
 
 namespace
 {
+    // Layouts the mouse wheel cycles through while dragging: the ones with quick-switch
+    // hotkeys assigned (in hotkey order); when fewer than two of those exist, all custom
+    // layouts in the order they appear in the editor.
+    std::vector<GUID> WheelCycleLayoutIds() noexcept
+    {
+        auto ids = LayoutHotkeys::instance().GetLayoutIds();
+        std::erase_if(ids, [](const GUID& id) { return !CustomLayouts::instance().GetCustomLayoutData(id).has_value(); });
+
+        if (ids.size() < 2)
+        {
+            ids = CustomLayouts::instance().GetLayoutIdsInOrder();
+        }
+
+        return ids;
+    }
+
     constexpr UINT_PTR MonitorRotationCommitTimerId = 0x4D525443;
     constexpr UINT MonitorRotationCommitDelayMillis = 760;
 
@@ -221,6 +238,18 @@ public:
         m_hinstance(hinstance),
         m_draggingState([this]() {
             PostMessageW(m_window, WM_PRIV_LOCATIONCHANGE, NULL, NULL);
+        },
+        [this](bool up) {
+            // Swallow the wheel event only when a switch is actually going to happen, otherwise
+            // the window under the cursor would become unscrollable for nothing
+            const auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
+            if (!workArea || !NextWheelLayout(*workArea, up).has_value())
+            {
+                return false;
+            }
+
+            PostMessageW(m_window, WM_PRIV_WHEEL_LAYOUT_SWITCH, up ? 1 : 0, NULL);
+            return true;
         })
     {
         if (!SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL))
@@ -296,6 +325,7 @@ public:
     void MoveSizeStart(HWND window, HMONITOR monitor);
     void MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen);
     void MoveSizeEnd();
+    void AbortMoveSize();
 
     void WindowCreated(HWND window) noexcept;
     void ToggleEditor() noexcept;
@@ -329,6 +359,9 @@ private:
     void RefreshLayouts() noexcept;
     bool ShouldProcessSnapHotkey(DWORD vkCode) noexcept;
     void ApplyQuickLayout(int key) noexcept;
+    void CycleLayoutByWheel(bool reverse) noexcept;
+    std::optional<LayoutData> NextWheelLayout(const WorkArea& workArea, bool reverse) const noexcept;
+    void SwitchLayout(WorkArea* workArea, const LayoutData& layout) noexcept;
     void FlashZones() noexcept;
 
     HMONITOR WorkAreaKeyFromWindow(HWND window) noexcept;
@@ -514,6 +547,17 @@ void FancyZones::MoveSizeEnd()
 
     // Always disable dragging state, even if m_windowMouseSnapper was already null.
     // This prevents stuck drag state when a window is destroyed mid-drag.
+    m_draggingState.Disable();
+}
+
+void FancyZones::AbortMoveSize()
+{
+    if (m_windowMouseSnapper)
+    {
+        m_windowMouseSnapper->Abort();
+        m_windowMouseSnapper = nullptr;
+    }
+
     m_draggingState.Disable();
 }
 
@@ -732,9 +776,13 @@ FancyZones::OnKeyDown(PKBDLLHOOKSTRUCT info) noexcept
 
     // Only suppress the bare Shift key itself during drag (used for drag-toggle).
     // Do NOT swallow Shift+<other key> combos - that steals keystrokes from apps.
-    if (m_draggingState.IsDragging() &&
+    if (m_windowMouseSnapper &&
         (info->vkCode == VK_LSHIFT || info->vkCode == VK_RSHIFT))
     {
+        // Record the press before swallowing it. Returning 1 removes the key from the input stream
+        // for every listener - including this module's own WM_INPUT handler, which is what normally
+        // calls SetShiftState - so without this the zones could never be switched off with Shift.
+        m_draggingState.SetShiftState(true);
         return true;
     }
     return false;
@@ -976,9 +1024,7 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
             if (m_windowMouseSnapper && m_windowMouseSnapper->GetDraggedWindow() == hwnd)
             {
                 Logger::info(L"Window destroyed during drag - aborting drag");
-                m_windowMouseSnapper->Abort();
-                m_windowMouseSnapper = nullptr;
-                m_draggingState.Disable();
+                AbortMoveSize();
             }
         }
         else if (message == WM_PRIV_LAYOUT_HOTKEYS_FILE_UPDATE)
@@ -1006,6 +1052,11 @@ LRESULT FancyZones::WndProc(HWND window, UINT message, WPARAM wparam, LPARAM lpa
         else if (message == WM_PRIV_QUICK_LAYOUT_KEY)
         {
             ApplyQuickLayout(static_cast<int>(lparam));
+        }
+        else if (message == WM_PRIV_WHEEL_LAYOUT_SWITCH)
+        {
+            // wheel up cycles backwards, wheel down cycles forward
+            CycleLayoutByWheel(wparam != 0);
         }
         else if (message == WM_PRIV_MONITOR_ROTATION_PREVIEW_SHOW)
         {
@@ -1160,9 +1211,9 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
             // every unique_ptr<WorkArea> (and hence the inner ZonesOverlay and
             // its std::mutex). If a drag is in flight, the next MoveSizeUpdate
             // would dereference that dangling WorkArea* and lock the freed
-            // mutex. Drain the active drag first so subsequent drag messages
+            // mutex. Abort the active drag first so subsequent drag messages
             // hit the snapper's `if (m_windowMouseSnapper)` guard and no-op.
-            MoveSizeEnd();
+            AbortMoveSize();
             m_workAreaConfiguration.Clear();
 
             FancyZonesDataTypes::WorkAreaId workAreaId;
@@ -1180,7 +1231,7 @@ void FancyZones::UpdateWorkAreas(bool updateWindowPositions) noexcept
         if (ShouldWorkAreasBeRecreated(monitors, currentVirtualDesktop, workAreas))
         {
             // See comment above the matching Clear() in the span-zones branch.
-            MoveSizeEnd();
+            AbortMoveSize();
             m_workAreaConfiguration.Clear();
             for (const auto& monitor : monitors)
             {
@@ -1571,9 +1622,9 @@ void FancyZones::SettingsUpdate(SettingId id)
     break;
     case SettingId::SpanZonesAcrossMonitors:
     {
-        // See UpdateWorkAreas() — same WindowMouseSnap dangling-WorkArea*
+        // See UpdateWorkAreas() - same WindowMouseSnap dangling-WorkArea*
         // hazard if the user toggles this setting mid-drag.
-        MoveSizeEnd();
+        AbortMoveSize();
         m_workAreaConfiguration.Clear();
         PostMessageW(m_window, WM_PRIV_INIT, NULL, NULL);
     }
@@ -1661,12 +1712,76 @@ void FancyZones::ApplyQuickLayout(int key) noexcept
     auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
     if (workArea)
     {
-        if (AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout.value()))
+        SwitchLayout(workArea, layout.value());
+    }
+}
+
+void FancyZones::CycleLayoutByWheel(bool reverse) noexcept
+{
+    auto workArea = m_workAreaConfiguration.GetWorkAreaFromCursor();
+    if (!workArea)
+    {
+        return;
+    }
+
+    const auto layout = NextWheelLayout(*workArea, reverse);
+    if (layout.has_value())
+    {
+        SwitchLayout(workArea, layout.value());
+    }
+}
+
+// The layout the wheel would switch the work area to, or nothing when no switch is possible
+std::optional<LayoutData> FancyZones::NextWheelLayout(const WorkArea& workArea, bool reverse) const noexcept
+{
+    const auto ids = WheelCycleLayoutIds();
+    if (ids.size() < 2)
+    {
+        return std::nullopt;
+    }
+
+    std::optional<GUID> currentId{};
+    if (const auto current = AppliedLayouts::instance().GetDeviceLayout(workArea.UniqueId()); current.has_value())
+    {
+        currentId = current->uuid;
+    }
+
+    const auto nextId = FancyZonesUtils::PickNextLayoutId(ids, currentId, reverse);
+    if (!nextId.has_value())
+    {
+        return std::nullopt;
+    }
+
+    return CustomLayouts::instance().GetLayout(nextId.value());
+}
+
+// Applies a custom layout picked by a quick switch (hotkey or wheel) to the given work area
+void FancyZones::SwitchLayout(WorkArea* workArea, const LayoutData& layout) noexcept
+{
+    if (!AppliedLayouts::instance().ApplyLayout(workArea->UniqueId(), layout))
+    {
+        return;
+    }
+
+    RefreshLayouts();
+
+    // While dragging, the highlighted zones would keep reflecting the previous layout until the
+    // pointer moves, so recompute them against the new layout at the current cursor position
+    POINT ptScreen{};
+    if (m_windowMouseSnapper && GetPhysicalCursorPos(&ptScreen))
+    {
+        if (auto monitor = MonitorFromPoint(ptScreen, MONITOR_DEFAULTTONULL))
         {
-            RefreshLayouts();
-            FlashZones();
-            AppliedLayouts::instance().SaveData();
+            MoveSizeUpdate(monitor, ptScreen);
         }
+    }
+
+    FlashZones();
+    AppliedLayouts::instance().SaveData();
+
+    if (const auto layoutData = CustomLayouts::instance().GetCustomLayoutData(layout.uuid); layoutData.has_value())
+    {
+        workArea->ShowLayoutNameLabel(layoutData->name);
     }
 }
 

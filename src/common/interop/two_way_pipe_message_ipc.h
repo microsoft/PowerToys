@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <memory>
 #include "pipe_caller_auth.h"
 
 namespace two_way_pipe_message_ipc
@@ -41,5 +42,5 @@ public:
 
 private:
     class TwoWayPipeMessageIPCImpl;
-    TwoWayPipeMessageIPCImpl* impl;
+    std::unique_ptr<TwoWayPipeMessageIPCImpl> impl;
 };

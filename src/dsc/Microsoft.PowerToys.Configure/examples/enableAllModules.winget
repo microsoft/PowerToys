@@ -27,6 +27,8 @@ properties:
           Enabled: true
         FindMyMouse:
           Enabled: true
+        MouseButtonLock:
+          Enabled: true
         MouseHighlighter:
           Enabled: true
         MouseJump:

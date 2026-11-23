@@ -10,6 +10,28 @@
 #include "PowerRenameRegEx.h"
 namespace fs = std::filesystem;
 
+// Names that differ only in Unicode normalization form (NFD vs. NFC) are the same name.
+// Unlike lstrcmp, linguistically equal names such as U+00DF (sharp s) and "ss" are different.
+static bool IsSameName(_In_ PCWSTR first, _In_ PCWSTR second)
+{
+    auto normalize = [](PCWSTR name) {
+        std::wstring normalized(name);
+        int size = NormalizeString(NormalizationC, name, -1, nullptr, 0);
+        if (size > 0)
+        {
+            std::wstring buffer(size, L'\0');
+            size = NormalizeString(NormalizationC, name, -1, buffer.data(), size);
+            if (size > 0)
+            {
+                buffer.resize(static_cast<size_t>(size) - 1);
+                normalized = std::move(buffer);
+            }
+        }
+        return normalized;
+    };
+    return normalize(first) == normalize(second);
+}
+
 bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnumIndex, CComPtr<IPowerRenameItem>& spItem)
 {
     bool wouldRename = false;
@@ -239,7 +261,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
 
     // No change from originalName so set newName to
     // null so we clear it from our UI as well.
-    if (lstrcmp(originalName, newNameToUse) == 0)
+    if (newNameToUse != nullptr && IsSameName(originalName, newNameToUse))
     {
         newNameToUse = nullptr;
     }

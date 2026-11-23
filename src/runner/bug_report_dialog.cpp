@@ -401,8 +401,8 @@ void run_bug_report_dialog(const std::wstring& toolPath, const std::function<voi
         sei.nShow = SW_HIDE;
         if (ShellExecuteExW(&sei) && sei.hProcess)
         {
-            WaitForSingleObject(sei.hProcess, INFINITE);
-            CloseHandle(sei.hProcess);
+            const wil::unique_handle process{ sei.hProcess };
+            WaitForSingleObject(process.get(), INFINITE);
         }
         notifyFinished();
         if (st.hFont)
@@ -423,7 +423,7 @@ void run_bug_report_dialog(const std::wstring& toolPath, const std::function<voi
     const std::wstring desktop = GetDesktopPath();
 
     STARTUPINFOW si{ sizeof(si) };
-    PROCESS_INFORMATION pi{};
+    wil::unique_process_information pi;
     std::wstring cmd = L"\"" + toolPath + L"\"";
     const BOOL started = CreateProcessW(nullptr, cmd.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi);
 
@@ -447,10 +447,7 @@ void run_bug_report_dialog(const std::wstring& toolPath, const std::function<voi
             DWORD exitCode = 1;
             GetExitCodeProcess(pi.hProcess, &exitCode);
             processHandled = true;
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-            pi.hProcess = nullptr;
-            pi.hThread = nullptr;
+            pi.reset();
 
             const std::wstring zip = (exitCode == 0) ? FindNewestReport(desktop) : std::wstring{};
             if (exitCode == 0 && !zip.empty())
@@ -488,14 +485,8 @@ void run_bug_report_dialog(const std::wstring& toolPath, const std::function<voi
     if (pi.hProcess)
     {
         WaitForSingleObject(pi.hProcess, INFINITE);
-        CloseHandle(pi.hProcess);
-        pi.hProcess = nullptr;
     }
-    if (pi.hThread)
-    {
-        CloseHandle(pi.hThread);
-        pi.hThread = nullptr;
-    }
+    pi.reset();
     notifyFinished();
     if (st.hFont)
     {

@@ -8,17 +8,16 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class HeightOption : Option<double?>
     {
-        private static readonly string[] _aliases = ["--height", "-h"];
-
         public HeightOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Height)
+            : base("--height", "-h")
         {
-            AddValidator(result =>
+            Description = Properties.Resources.CLI_Option_Height;
+            Validators.Add(result =>
             {
                 var error = DimensionOptionValidator.Validate(result.Tokens.Count == 1 ? result.Tokens[0].Value : null);
                 if (error != null)
                 {
-                    result.ErrorMessage = error;
+                    result.AddError(error);
                 }
             });
         }

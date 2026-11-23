@@ -186,6 +186,7 @@ void AlwaysOnTop::SettingsUpdate(SettingId id)
             if (isExcluded(window))
             {
                 UnpinTopmostWindow(window);
+                RestoreWindowAlpha(window);
                 toErase.push_back(window);
             }
         }
@@ -1009,14 +1010,5 @@ void AlwaysOnTop::RestoreWindowAlpha(HWND window)
         }
         
         m_windowOriginalLayeredState.erase(it);
-    }
-    else
-    {
-        // Fallback: no cached state, just remove layered style
-        if (exStyle & WS_EX_LAYERED)
-        {
-            SetLayeredWindowAttributes(window, 0, 255, LWA_ALPHA);
-            SetWindowLong(window, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
-        }
     }
 }

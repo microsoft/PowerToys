@@ -39,11 +39,11 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public Func<string, int> SendConfigMSG { get; }
 
-        public ObservableCollection<DashboardListItem> AllModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> AllModules { get; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ShortcutModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> ShortcutModules { get; } = new ObservableCollection<DashboardListItem>();
 
-        public ObservableCollection<DashboardListItem> ActionModules { get; set; } = new ObservableCollection<DashboardListItem>();
+        public ObservableCollection<DashboardListItem> ActionModules { get; } = new ObservableCollection<DashboardListItem>();
 
         public ObservableCollection<QuickAccessItem> QuickAccessItems => _quickAccessViewModel.Items;
 
@@ -223,7 +223,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     IsEnabled = gpo == GpoRuleConfigured.Enabled || (gpo != GpoRuleConfigured.Disabled && ModuleHelper.GetIsModuleEnabled(generalSettingsConfig, moduleType)),
                     IsLocked = gpo == GpoRuleConfigured.Enabled || gpo == GpoRuleConfigured.Disabled,
                     Icon = ModuleHelper.GetModuleTypeFluentIconName(moduleType),
-                    IsNew = moduleType == ModuleType.AltWindowCycle,
+                    IsNew = moduleType == ModuleType.AutoHideCursor,
                     DashboardModuleItems = GetModuleItems(moduleType),
                     ClickCommand = new RelayCommand<object>(DashboardListItemClick),
                 };
@@ -910,6 +910,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 _settingsRepository.SettingsChanged -= OnSettingsChanged;
             }
 
+            _quickAccessViewModel?.Dispose();
             GC.SuppressFinalize(this);
         }
     }

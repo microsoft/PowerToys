@@ -174,6 +174,18 @@ namespace PowerRenameManagerTests
             RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"foo", L"bar", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
         }
 
+        TEST_METHOD (VerifyLinguisticallyEqualNameRename)
+        {
+            // "ß" and "ss" compare equal linguistically but are different names. A name that is only
+            // canonically equivalent to the original (NFD vs. NFC) must still not be renamed.
+            rename_pairs renamePairs[] = {
+                { L"Ma\u00DF.txt", L"Mass.txt", true, true, 0 },
+                { L"Test\u0438\u0306.txt", L"Test\u0439.txt", true, false, 0 }
+            };
+
+            RenameHelper(renamePairs, ARRAYSIZE(renamePairs), L"\u00DF", L"ss", SYSTEMTIME{ 2020, 7, 3, 22, 15, 6, 42, 453 }, DEFAULT_FLAGS);
+        }
+
         TEST_METHOD (VerifyFilesOnlyRename)
         {
             // Verify only files are renamed when folders match too

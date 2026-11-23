@@ -21,6 +21,8 @@ DWORD   g_SnipSaveToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '6';
 DWORD   g_SnipPanoramaToggleKey = ((HOTKEYF_CONTROL) << 8) | '8';
 DWORD   g_SnipPanoramaSaveToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_SHIFT) << 8) | '8';
 DWORD   g_SnipOcrToggleKey = ((HOTKEYF_CONTROL | HOTKEYF_ALT) << 8) | '6';
+// Unassigned by default. Dictation is normally armed by tapping Space during the snip drag.
+DWORD   g_SnipDictateToggleKey = 0;
 DWORD   g_MirrorToggleKey = ((HOTKEYF_CONTROL) << 8) | '9';
 BOOLEAN g_MirrorTrackWindow = TRUE;
 
@@ -74,6 +76,12 @@ BOOLEAN g_RecordAspectRatio = FALSE; // Lock region selection to 16:9
 TCHAR	g_RecordingSaveLocationBuffer[MAX_PATH] = {0};
 TCHAR	g_ScreenshotSaveLocationBuffer[MAX_PATH] = {0};
 BOOLEAN g_SnipCopyToClipboard = FALSE; // When TRUE, saving a snip also copies it to the clipboard.
+// Snip dictation is disabled until explicitly enabled because it opens the microphone.
+BOOLEAN g_SnipDictateEnabled = FALSE;
+BOOLEAN g_SnipDictateOnSnip = FALSE;
+DWORD   g_SnipDictateGrace = 800;
+DWORD   g_SnipDictateClipboardFormats = 0x1F;
+TCHAR   g_SnipDictatePrefix[MAX_PATH] = {0};
 DWORD	g_ThemeOverride = 2; // 0=light, 1=dark, 2=system default
 DWORD	g_TrimDialogWidth = 0;  // 0 means use default; stored in screen pixels
 DWORD	g_TrimDialogHeight = 0; // 0 means use default; stored in screen pixels
@@ -89,6 +97,7 @@ REG_SETTING RegSettings[] = {
     { L"SnipPanoramaToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaToggleKey, static_cast<DOUBLE>(g_SnipPanoramaToggleKey) },
     { L"SnipPanoramaSaveToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipPanoramaSaveToggleKey, static_cast<DOUBLE>(g_SnipPanoramaSaveToggleKey) },
     { L"SnipOcrToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipOcrToggleKey, static_cast<DOUBLE>(g_SnipOcrToggleKey) },
+    { L"SnipDictateToggleKey", SETTING_TYPE_DWORD, 0, &g_SnipDictateToggleKey, static_cast<DOUBLE>(g_SnipDictateToggleKey) },
     { L"MirrorToggleKey", SETTING_TYPE_DWORD, 0, &g_MirrorToggleKey, static_cast<DOUBLE>(g_MirrorToggleKey) },
     { L"MirrorTrackWindow", SETTING_TYPE_BOOLEAN, 0, &g_MirrorTrackWindow, static_cast<DOUBLE>(g_MirrorTrackWindow) },
     { L"PenColor", SETTING_TYPE_DWORD, 0, &g_PenColor, static_cast<DOUBLE>(g_PenColor) },
@@ -142,6 +151,11 @@ REG_SETTING RegSettings[] = {
     { L"RecordingSaveLocation", SETTING_TYPE_STRING, sizeof(g_RecordingSaveLocationBuffer), g_RecordingSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"ScreenshotSaveLocation", SETTING_TYPE_STRING, sizeof(g_ScreenshotSaveLocationBuffer), g_ScreenshotSaveLocationBuffer, static_cast<DOUBLE>(0) },
     { L"SnipCopyToClipboard", SETTING_TYPE_BOOLEAN, 0, &g_SnipCopyToClipboard, static_cast<DOUBLE>(g_SnipCopyToClipboard) },
+    { L"SnipDictateEnabled", SETTING_TYPE_BOOLEAN, 0, &g_SnipDictateEnabled, static_cast<DOUBLE>(g_SnipDictateEnabled) },
+    { L"SnipDictateOnSnip", SETTING_TYPE_BOOLEAN, 0, &g_SnipDictateOnSnip, static_cast<DOUBLE>(g_SnipDictateOnSnip) },
+    { L"SnipDictateGrace", SETTING_TYPE_DWORD, 0, &g_SnipDictateGrace, static_cast<DOUBLE>(g_SnipDictateGrace) },
+    { L"SnipDictateClipboardFormats", SETTING_TYPE_DWORD, 0, &g_SnipDictateClipboardFormats, static_cast<DOUBLE>(g_SnipDictateClipboardFormats) },
+    { L"SnipDictatePrefix", SETTING_TYPE_STRING, sizeof(g_SnipDictatePrefix), g_SnipDictatePrefix, static_cast<DOUBLE>(0) },
     { L"Theme", SETTING_TYPE_DWORD, 0, &g_ThemeOverride, static_cast<DOUBLE>(g_ThemeOverride) },
     { L"TrimDialogWidth", SETTING_TYPE_DWORD, 0, &g_TrimDialogWidth, static_cast<DOUBLE>(0) },
     { L"TrimDialogHeight", SETTING_TYPE_DWORD, 0, &g_TrimDialogHeight, static_cast<DOUBLE>(0) },

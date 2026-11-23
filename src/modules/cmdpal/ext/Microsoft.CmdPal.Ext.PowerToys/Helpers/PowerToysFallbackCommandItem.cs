@@ -20,7 +20,7 @@ internal sealed partial class PowerToysFallbackCommandItem : FallbackCommandItem
     private readonly Command? _mutableCommand;
 
     public PowerToysFallbackCommandItem(ICommand command, string title, string subtitle, IIconInfo? icon, IContextItem[]? moreCommands)
-        : base(command, title, "com.microsoft.powertoys.fallback")
+        : base(command, title, $"{command.Id}.fallback")
     {
         _baseTitle = title ?? string.Empty;
         _baseSubtitle = subtitle ?? string.Empty;

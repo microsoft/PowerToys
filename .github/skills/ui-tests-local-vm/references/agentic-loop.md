@@ -94,6 +94,11 @@ Use the default VM resource profile (4 vCPUs and 8 GB RAM) while creating and st
 not begin on the constrained profile: first prove the test and product behavior with sufficient CPU
 and RAM.
 
+Run the controller synchronously in the foreground and keep the active agent turn attached. It
+requests automatic host sleep prevention, reports `HostSleepPrevented`, and returns only after
+matching status/TRX evidence or a bounded controller failure. It cannot override manual sleep,
+lid-close policy, reboot, or power loss.
+
 ```pwsh
 pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -VmName PowerToysUiTest-Win10 `
@@ -151,6 +156,8 @@ The controller prints scalar TRX counters and per-test outcomes. Read both `stat
   `executed == total` even when the test process exits 0.
 - Zero selected tests/MTP exit code 8 is `BLOCKED`.
 - Missing desktop, control channel, archive, or status is `BLOCKED`.
+- A guest task that never starts or exits without matching status is `BLOCKED` immediately; do not
+  wait out the full suite timeout or accept task exit as completion.
 - Proven display/profile/compositor differences are `ENVIRONMENT`.
 - An N/M pass rate proves the execution loop ran, even when the task did not ask to stabilize tests.
 
@@ -197,8 +204,8 @@ Report:
 
 Then run the **same** filter against the Windows 11 guest with `-Platform x64Win11` and report that
 evidence separately. Narrowing the Windows 11 run to Windows 11-specific tests does not satisfy this
-step. The module is done only when both suites are fully green; a Windows 10 pass with an unrun or
-red Windows 11 suite is an incomplete result, not a success.
+step. The local correctness gate passes only when both suites are fully green; a Windows 10 pass
+with an unrun or red Windows 11 suite is an incomplete result, not a success.
 
 Once the complete target suite is green, stop the guest, then let the controller restart it with the
 `Constrained` profile (1 vCPU and 4 GB RAM). Pass the guest's config explicitly when one VM root owns
@@ -233,6 +240,24 @@ and first-run suppressions. Choose one final confirmation based on risk:
 - Rebuild the guest from media with `New-UiTestVm.ps1 -Force` when the checkpoint itself is suspect.
 
 Do not call a retained run clean merely because the product archive was refreshed.
+
+## 9. Hand implementation tasks to CI automatically
+
+For a create, migrate, or stabilize task, **do not stop after local success**. Complete the default
+and constrained matrices, then invoke
+[ui-tests-pipeline-ci](../../ui-tests-pipeline-ci/SKILL.md) without waiting for another user prompt.
+Keep publication and CI validation as unfinished TODOs.
+
+Pass forward the exact project stems, test-source revision/diff, product version or revision,
+payload hashes, architecture builds, and all required local TRX/evidence paths. If local runs used
+an official runtime rather than the current product source, record that distinction; CI must build
+the pushed revision unless its documented build-reuse conditions are met.
+
+The pipeline skill owns access preflight, scoped commit/push, branch/SHA verification, preview,
+queueing, and synchronous waiting through terminal success or the three-run/blocker limit. A green
+local suite, successful push, or queued build alone is not end-to-end completion. Stop locally only
+for explicit local-only/no-push/no-CI scope, a setup/local-run-only task, or an exact access/environment
+blocker; state which boundary remains unvalidated.
 
 ## Revision comparison
 

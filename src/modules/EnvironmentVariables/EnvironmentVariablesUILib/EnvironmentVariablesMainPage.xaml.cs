@@ -17,7 +17,7 @@ namespace EnvironmentVariablesUILib
 {
     public sealed partial class EnvironmentVariablesMainPage : Page
     {
-        private sealed class RelayCommandParameter
+        private sealed partial class RelayCommandParameter
         {
             public RelayCommandParameter(Variable variable, VariablesSet set)
             {
@@ -477,7 +477,7 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -497,7 +497,7 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonDown_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -518,7 +518,7 @@ namespace EnvironmentVariablesUILib
 
         private void RemoveListVariableButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -531,9 +531,20 @@ namespace EnvironmentVariablesUILib
             EditVariableDialogValueTxtBox.Text = newValues;
         }
 
+        private void RemoveDuplicatePathEntriesButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            var variable = EditVariableDialog.DataContext as Variable;
+            if (variable == null)
+            {
+                return;
+            }
+
+            EditVariableDialogValueTxtBox.Text = EnvironmentVariableComparisonHelper.RemoveDuplicatePathEntries(variable.Values);
+        }
+
         private void InsertListEntryBeforeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            var listItem = (sender as MenuFlyoutItem)?.DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -541,7 +552,7 @@ namespace EnvironmentVariablesUILib
 
             var variable = EditVariableDialog.DataContext as Variable;
             var index = variable.ValuesList.IndexOf(listItem);
-            variable.ValuesList.Insert(index, new Variable.ValuesListItem { Text = string.Empty });
+            variable.ValuesList.Insert(index, new ValuesListItem { Text = string.Empty });
 
             var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
@@ -551,7 +562,7 @@ namespace EnvironmentVariablesUILib
 
         private void InsertListEntryAfterButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            var listItem = (sender as MenuFlyoutItem)?.DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -559,7 +570,7 @@ namespace EnvironmentVariablesUILib
 
             var variable = EditVariableDialog.DataContext as Variable;
             var index = variable.ValuesList.IndexOf(listItem);
-            variable.ValuesList.Insert(index + 1, new Variable.ValuesListItem { Text = string.Empty });
+            variable.ValuesList.Insert(index + 1, new ValuesListItem { Text = string.Empty });
 
             var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
             EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged;
@@ -569,7 +580,7 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableValuesListTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as TextBox)?.DataContext as Variable.ValuesListItem;
+            var listItem = (sender as TextBox)?.DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;

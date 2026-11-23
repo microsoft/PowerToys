@@ -185,7 +185,7 @@ namespace MouseWithoutBorders.Class
 
             Logger.LogDebug("Validating session...");
 
-            if (Common.CurrentProcess.SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+            if (!WinAPI.IsCurrentSessionAllowed())
             {
                 if (Common.DesMachineID != Common.MachineID)
                 {
@@ -346,7 +346,7 @@ namespace MouseWithoutBorders.Class
 
                 if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                 {
-                    IpcHelper.CreateIpcServer(false);
+                    IpcHelper.EnsureIpcServer();
                 }
 
                 Common.MainForm.UpdateNotifyIcon();
@@ -457,18 +457,6 @@ namespace MouseWithoutBorders.Class
             finally
             {
                 Common.ReleaseSocketMutex();
-            }
-
-            if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
-            {
-                try
-                {
-                    IpcHelper.CreateIpcServer(true);
-                }
-                catch (Exception e)
-                {
-                    Logger.Log(e);
-                }
             }
         }
 
@@ -901,10 +889,9 @@ namespace MouseWithoutBorders.Class
 
                 Logger.LogDebug("Connecting to: " + machineName);
 
-                if (!string.IsNullOrEmpty(Setting.Values.Name2IP))
+                if (HasName2IpMappingRules(Setting.Values.Name2IpPolicyList, Setting.Values.Name2IP))
                 {
-                    string combinedName2ipList = Setting.Values.Name2IpPolicyList + Separator + Setting.Values.Name2IP;
-                    string[] name2ip = combinedName2ipList.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+                    string[] name2ip = GetName2IpMappingLines(Setting.Values.Name2IpPolicyList, Setting.Values.Name2IP);
                     string[] nameNip;
 
                     if (name2ip != null)
@@ -1257,6 +1244,18 @@ namespace MouseWithoutBorders.Class
         private long lastRemoteMachineID;
         internal static readonly string[] Separator = new string[] { "\r\n" };
         internal static readonly char[] BlankSeparator = new char[] { ' ' };
+
+        internal static string[] GetName2IpMappingLines(string policyMappings, string userMappings)
+        {
+            string combinedMappings = policyMappings + Separator[0] + userMappings;
+            return combinedMappings.Split(Separator, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        // Policy-defined rules apply on their own: Name2IP is empty when the user has no rules or a policy disables them.
+        internal static bool HasName2IpMappingRules(string policyMappings, string userMappings)
+        {
+            return !string.IsNullOrEmpty(policyMappings) || !string.IsNullOrEmpty(userMappings);
+        }
 
         private void MainTCPRoutine(TcpSk tcp, string machineName, bool isClient)
         {

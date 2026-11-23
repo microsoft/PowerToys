@@ -4,23 +4,32 @@
 #include <FancyZonesLib/Settings.h>
 #include <FancyZonesLib/util.h>
 
-DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback) :
+DraggingState::DraggingState(const std::function<void()>& keyUpdateCallback, const std::function<bool(bool)>& layoutSwitchByWheelCallback) :
     m_secondaryMouseState(false),
     m_middleMouseState(false),
-    m_mouseHook(std::bind(&DraggingState::OnSecondaryMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this)),
+    m_mouseHook(std::bind(&DraggingState::OnSecondaryMouseDown, this), std::bind(&DraggingState::OnMiddleMouseDown, this), std::bind(&DraggingState::OnMouseWheel, this, std::placeholders::_1)),
     m_ctrlKeyState(keyUpdateCallback),
-    m_keyUpdateCallback(keyUpdateCallback)
+    m_keyUpdateCallback(keyUpdateCallback),
+    m_layoutSwitchByWheelCallback(layoutSwitchByWheelCallback)
 {
 }
 
 void DraggingState::Enable()
 {
-    if (FancyZonesSettings::settings().mouseSwitch)
+    if (FancyZonesSettings::settings().mouseSwitch || FancyZonesSettings::settings().mouseWheelLayoutSwitch)
     {
         m_mouseHook.enable();
     }
 
     m_ctrlKeyState.enable();
+
+    // m_shift is fed by raw input (FancyZones::OnKeyboardInput), which cannot
+    // observe Shift transitions delivered while the secure desktop, a detached
+    // session leg (RDP attach/detach), or an elevated foreground window owns
+    // input, so the latched value can go stale between drags. Re-seed it from
+    // the live key state at drag start, the same way KeyState::enable()
+    // re-seeds Ctrl above. Raw input still drives mid-drag transitions.
+    m_shift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
 }
 
 void DraggingState::Disable()
@@ -51,6 +60,18 @@ void DraggingState::OnSecondaryMouseDown()
 {
     m_secondaryMouseState = !m_secondaryMouseState;
     m_keyUpdateCallback();
+}
+
+bool DraggingState::OnMouseWheel(bool up)
+{
+    // Layout switching by wheel is active only while zones are shown, so the wheel
+    // keeps scrolling normally in any other state
+    if (m_dragging && FancyZonesSettings::settings().mouseWheelLayoutSwitch)
+    {
+        return m_layoutSwitchByWheelCallback(up);
+    }
+
+    return false;
 }
 
 void DraggingState::OnMiddleMouseDown()

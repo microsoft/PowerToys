@@ -27,7 +27,7 @@ tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests -Platfor
 
 # 2. Run ELEVATED. Put the run in a .ps1 and launch it with -Verb RunAs (one UAC prompt) so the
 #    harness's runas launch has an elevated host. The script should start WinAppDriver + run vstest:
-#      $dll = "$PWD\x64\Debug\tests\<Module>.UITests\net10.0-windows10.0.26100.0\<Module>.UITests.dll"
+#      $dll = "$PWD\x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Module>.UITests.dll"
 #      Start-Process "C:\Program Files (x86)\Windows Application Driver\WinAppDriver.exe" -ArgumentList "127.0.0.1","4723"
 #      vstest.console.exe $dll /Platform:x64 /InIsolation /Logger:"trx;LogFileName=legacy.trx" /ResultsDirectory:<dir>
 #    Have the script write a DONE marker at the end; poll for it, then read the .trx.
@@ -192,3 +192,9 @@ that covers it, and explicitly call out any items left as manual-only (e.g. "che
 - [ ] One deterministic test and then the module suite were run through the local VM loop in
   [ui-tests-local-vm](../../ui-tests-local-vm/SKILL.md), using a restored baseline or fresh volume
   when clean-profile behavior matters, or the exact host prerequisite/environment blocker was reported.
+- [ ] Full default and constrained suites pass on both OSes, with applicable architecture coverage.
+- [ ] For implementation tasks, automatically continue with
+  [ui-tests-pipeline-ci](../../ui-tests-pipeline-ci/SKILL.md): access preflight, scoped commit/push,
+  exact-revision CI, and synchronous terminal-result validation. Local green is not completion.
+- [ ] CI is terminal and all selected tests passed, or explicit local-only scope/the precise
+  access or environment blocker/three-run escalation is reported without claiming CI validation.

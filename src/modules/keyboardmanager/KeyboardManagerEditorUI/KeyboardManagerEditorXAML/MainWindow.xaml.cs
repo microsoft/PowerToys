@@ -11,8 +11,8 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using KeyboardManagerEditorUI.Helpers;
 using ManagedCommon;
+using Microsoft.PowerToys.Common.UI.Controls.Window;
 using Microsoft.UI;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -41,6 +41,8 @@ namespace KeyboardManagerEditorUI
             ExtendsContentIntoTitleBar = true;
             this.SetIcon(@"Assets\KeyboardManagerEditor\Keyboard.ico");
             this.SetTitleBar(titleBar);
+            TitleBarHelper.SetPreferredTheme(this);
+
             Title = "Keyboard Manager";
             WindowHelpers.ForceTopBorder1PixelInsetOnWindows10(this.GetWindowHandle());
         }
@@ -52,6 +54,10 @@ namespace KeyboardManagerEditorUI
                 // Release the keyboard hook when the window is deactivated
                 KeyboardHookHelper.Instance.CleanupHook();
             }
+            else
+            {
+                MainPageContent.ReloadIfChangedOnDisk();
+            }
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
@@ -59,6 +65,12 @@ namespace KeyboardManagerEditorUI
             KeyboardHookHelper.Instance.Dispose();
             this.Activated -= MainWindow_Activated;
             this.Closed -= MainWindow_Closed;
+        }
+
+        private void SearchBox_FindInvoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args)
+        {
+            SearchBox.Focus(FocusState.Programmatic);
+            args.Handled = true;
         }
     }
 }

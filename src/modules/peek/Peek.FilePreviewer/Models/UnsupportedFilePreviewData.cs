@@ -22,6 +22,21 @@ namespace Peek.FilePreviewer.Models
         private string? fileSize;
 
         [ObservableProperty]
+        private string? folderContents;
+
+        [ObservableProperty]
+        private bool isFolder;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsScanning))]
+        [NotifyPropertyChangedFor(nameof(IsError))]
+        private FolderScanState folderScanState = FolderScanState.Idle;
+
+        public bool IsScanning => FolderScanState == FolderScanState.Scanning;
+
+        public bool IsError => FolderScanState == FolderScanState.PartialError;
+
+        [ObservableProperty]
         private string? dateModified;
     }
 }

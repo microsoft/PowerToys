@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Composition.SystemBackdrops;
@@ -19,6 +20,7 @@ using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -78,9 +80,11 @@ public sealed partial class DockWindow : WindowEx,
     private DockViewModel viewModel;
     private DockControl _dock;
     private DesktopAcrylicController? _acrylicController;
+    private MicaController? _micaController;
     private SystemBackdropConfiguration? _configurationSource;
     private bool _isUpdatingBackdrop;
     private BackdropParameters? _lastAppliedAcrylicBackdrop;
+    private MicaKind? _lastAppliedMicaKind;
     private DockSize _lastSize;
     private bool _isDisposed;
     private DockAppBarMode _appBarMode;
@@ -97,6 +101,8 @@ public sealed partial class DockWindow : WindowEx,
     private bool _slideIsRevealing;
     private System.Diagnostics.Stopwatch? _slideStopwatch;
     private bool _paletteOpenedFromDock;
+    private bool _hasKeyboardFocus;
+    private HWND _windowBeforeKeyboardFocus = HWND.Null;
     private const int AutoHideCollapsedThicknessDips = 0;
     private const int RevealHitTestMarginPixels = 1;
     private static readonly TimeSpan AutoHideCollapseDelay = TimeSpan.FromMilliseconds(250);
@@ -114,6 +120,8 @@ public sealed partial class DockWindow : WindowEx,
     /// Per-monitor dock side override. Null means use the global setting.
     /// </summary>
     private DockSide? _sideOverride;
+
+    internal bool HasKeyboardFocus => _hasKeyboardFocus;
 
     /// <summary>
     /// Gets the effective dock side for this window, respecting per-monitor overrides.
@@ -154,9 +162,11 @@ public sealed partial class DockWindow : WindowEx,
         InitializeBackdropSupport();
         _windowViewModel = new DockWindowViewModel(_themeService);
         _dock = new DockControl(viewModel);
+        _dock.KeyboardFocusReleaseRequested += (_, _) => ReleaseKeyboardFocus(restoreForeground: true);
 
         InitializeComponent();
         Root.Children.Add(_dock);
+        Root.PreviewKeyDown += Root_PreviewKeyDown;
         _hiddenOwnerWindowBehavior.ShowInTaskbar(this, false);
         if (AppWindow.Presenter is OverlappedPresenter overlappedPresenter)
         {
@@ -229,6 +239,12 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
+        if (args.WindowActivationState == WindowActivationState.Deactivated)
+        {
+            // Focus moved somewhere else on its own, so stop pretending we still hold it.
+            ReleaseKeyboardFocus(restoreForeground: false);
+        }
+
         UpdateWindowFrame();
         UpdateTopmostState();
     }
@@ -260,6 +276,11 @@ public sealed partial class DockWindow : WindowEx,
         if (_isDisposed)
         {
             return;
+        }
+
+        if (MonitorLabelTeachingTip.IsOpen)
+        {
+            UpdateMonitorLabelTitle();
         }
 
         this.viewModel.UpdateSettings(_settings);
@@ -297,7 +318,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private void InitializeBackdropSupport()
     {
-        if (DesktopAcrylicController.IsSupported())
+        if (DesktopAcrylicController.IsSupported() || MicaController.IsSupported())
         {
             _configurationSource = new SystemBackdropConfiguration
             {
@@ -318,6 +339,16 @@ public sealed partial class DockWindow : WindowEx,
 
         try
         {
+            if (_configurationSource is not null)
+            {
+                _configurationSource.Theme = _themeService.CurrentDockTheme.Theme switch
+                {
+                    ElementTheme.Light => SystemBackdropTheme.Light,
+                    ElementTheme.Dark => SystemBackdropTheme.Dark,
+                    _ => SystemBackdropTheme.Default,
+                };
+            }
+
             switch (_settings.Backdrop)
             {
                 case DockBackdrop.Transparent:
@@ -327,6 +358,14 @@ public sealed partial class DockWindow : WindowEx,
                         SetupTransparentBackdrop();
                     }
 
+                    break;
+
+                case DockBackdrop.Mica:
+                    SetupMica(MicaKind.Base);
+                    break;
+
+                case DockBackdrop.MicaAlt:
+                    SetupMica(MicaKind.BaseAlt);
                     break;
 
                 case DockBackdrop.Acrylic:
@@ -357,6 +396,15 @@ public sealed partial class DockWindow : WindowEx,
 
     private void CleanupBackdropControllers()
     {
+        if (_micaController is not null)
+        {
+            _micaController.RemoveAllSystemBackdropTargets();
+            _micaController.Dispose();
+            _micaController = null;
+        }
+
+        _lastAppliedMicaKind = null;
+
         if (_acrylicController is not null)
         {
             _acrylicController.RemoveAllSystemBackdropTargets();
@@ -403,7 +451,29 @@ public sealed partial class DockWindow : WindowEx,
         _lastAppliedAcrylicBackdrop = backdrop;
     }
 
-    private void DisposeAcrylic()
+    private void SetupMica(MicaKind kind)
+    {
+        if (_configurationSource is null || !MicaController.IsSupported())
+        {
+            // Try Acrylic before the transparent fallback on systems without Mica support.
+            SetupDesktopAcrylic(_themeService.CurrentDockTheme.BackdropParameters);
+            return;
+        }
+
+        if (_micaController is not null && _lastAppliedMicaKind == kind)
+        {
+            return;
+        }
+
+        CleanupBackdropControllers();
+        SystemBackdrop = null;
+        _micaController = new MicaController { Kind = kind };
+        _micaController.AddSystemBackdropTarget(this.As<ICompositionSupportsSystemBackdrop>());
+        _micaController.SetSystemBackdropConfiguration(_configurationSource);
+        _lastAppliedMicaKind = kind;
+    }
+
+    private void DisposeBackdrop()
     {
         CleanupBackdropControllers();
         _configurationSource = null;
@@ -623,6 +693,11 @@ public sealed partial class DockWindow : WindowEx,
 
         RefreshTargetMonitor();
 
+        if (MonitorLabelTeachingTip.IsOpen)
+        {
+            UpdateMonitorLabelTitle();
+        }
+
         if (_appBarData.hWnd != IntPtr.Zero)
         {
             // The Shell caches the monitor coordinates from the original
@@ -817,6 +892,123 @@ public sealed partial class DockWindow : WindowEx,
         PInvoke.SetWindowPos(_hwnd, HWND.Null, rect.left, rect.top, width, height, flags);
     }
 
+    /// <summary>
+    /// Focuses a dock item, preserving the current focus when traversal reaches the end.
+    /// </summary>
+    public bool TryFocusNextItem(bool moveFromCurrent, bool wrap, bool reverse, bool restoreLastFocus, DockWindow? previousDock = null)
+    {
+        if (_isDisposed)
+        {
+            return false;
+        }
+
+        if (!viewModel.StartItems.Concat(viewModel.CenterItems).Concat(viewModel.EndItems).Any(band => band.Items.Count > 0))
+        {
+            return false;
+        }
+
+        // Check before activation can restore focus to the previous item.
+        restoreLastFocus &= _dock.HasRememberedFocus;
+        var acquiringFocus = !_hasKeyboardFocus;
+        if (acquiringFocus)
+        {
+            var foreground = PInvoke.GetForegroundWindow();
+
+            // Capture the return window before activation releases the previous dock's focus.
+            _windowBeforeKeyboardFocus = previousDock?._windowBeforeKeyboardFocus ?? (foreground == _hwnd ? HWND.Null : foreground);
+            _hasKeyboardFocus = true;
+
+            // Reveal immediately so the focused item is already visible.
+            RevealAutoHideDock(immediate: true);
+            StopCollapseTimer();
+
+            ActivateForKeyboardFocus();
+        }
+
+        if (_dock.TryFocusNextItem(moveFromCurrent, wrap, reverse, restoreLastFocus))
+        {
+            return true;
+        }
+
+        if (acquiringFocus)
+        {
+            // A dock without focusable items must not strand the user in its window.
+            ReleaseKeyboardFocus(restoreForeground: true);
+        }
+
+        return false;
+    }
+
+    internal void ResetRememberedFocus() => _dock.ResetRememberedFocus();
+
+    private void Root_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (_isDisposed || !_hasKeyboardFocus || e.Handled)
+        {
+            return;
+        }
+
+        var modifiers = KeyModifiers.GetCurrent();
+        var chord = KeyChordHelpers.FromModifiers(modifiers.Ctrl, modifiers.Alt, modifiers.Shift, modifiers.Win, e.Key);
+        if (DockFocusNavigation.IsReverseShortcut(_settingsService.Settings.DockFocusHotkey, chord))
+        {
+            e.Handled = true;
+            WeakReferenceMessenger.Default.Send(new FocusDockMessage(Reverse: true));
+        }
+    }
+
+    /// <summary>
+    /// Ends keyboard traversal and lets an auto-hide dock slide away again.
+    /// </summary>
+    /// <param name="restoreForeground">
+    /// False when focus already moved elsewhere on its own, so there is nothing to restore.
+    /// </param>
+    public void ReleaseKeyboardFocus(bool restoreForeground)
+    {
+        if (!_hasKeyboardFocus)
+        {
+            return;
+        }
+
+        _hasKeyboardFocus = false;
+
+        var previous = _windowBeforeKeyboardFocus;
+        _windowBeforeKeyboardFocus = HWND.Null;
+
+        if (restoreForeground && previous != HWND.Null && PInvoke.IsWindow(previous))
+        {
+            PInvoke.SetForegroundWindow(previous);
+        }
+
+        // A pinned dock stays put. Only an auto-hide dock is expected to disappear again.
+        if (_appBarMode == DockAppBarMode.AutoHide)
+        {
+            ScheduleCollapseAutoHideDock();
+        }
+    }
+
+    /// <summary>
+    /// The dock normally goes out of its way to never steal activation, so taking the
+    /// foreground has to be done deliberately, including the thread-input attach that
+    /// Windows requires to let a background process do it.
+    /// </summary>
+    private void ActivateForKeyboardFocus()
+    {
+        var currentThreadId = PInvoke.GetCurrentThreadId();
+        var foregroundThreadId = PInvoke.GetWindowThreadProcessId(PInvoke.GetForegroundWindow());
+
+        if (foregroundThreadId != 0 && foregroundThreadId != currentThreadId)
+        {
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, true);
+            PInvoke.SetForegroundWindow(_hwnd);
+            PInvoke.AttachThreadInput(currentThreadId, foregroundThreadId, false);
+        }
+        else
+        {
+            PInvoke.SetForegroundWindow(_hwnd);
+        }
+    }
+
     private void RevealAutoHideDock(bool immediate = false)
     {
         if (_appBarMode != DockAppBarMode.AutoHide || _isDockRevealed)
@@ -880,6 +1072,11 @@ public sealed partial class DockWindow : WindowEx,
 
     private bool CanCollapseAutoHideDock()
     {
+        if (_hasKeyboardFocus)
+        {
+            return false;
+        }
+
         if (_dock.IsEditMode || _dock.HasOpenTransientUi || _dock.IsDragOperationActive)
         {
             return false;
@@ -1474,11 +1671,6 @@ public sealed partial class DockWindow : WindowEx,
     {
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (message.BringToFront)
-            {
-                RevealAutoHideDock(immediate: true);
-            }
-
             UpdateTopmostState(message.BringToFront);
         });
     }
@@ -1528,13 +1720,23 @@ public sealed partial class DockWindow : WindowEx,
         });
     }
 
-    private void ShowMonitorLabel()
+    private void UpdateMonitorLabelTitle()
     {
-        var name = _targetMonitor?.DisplayName
-            ?? _monitorService.GetPrimaryMonitor()?.DisplayName
-            ?? string.Empty;
+        var monitor = _targetMonitor ?? _monitorService.GetPrimaryMonitor();
+        var name = string.Empty;
+        if (monitor is not null)
+        {
+            var config = _settings.MonitorConfigs.Find(c =>
+                string.Equals(c.MonitorDeviceId, monitor.StableId, StringComparison.OrdinalIgnoreCase));
+            name = DockMonitorDisplayName.Resolve(monitor, config);
+        }
 
         MonitorLabelTeachingTip.Title = name;
+    }
+
+    private void ShowMonitorLabel()
+    {
+        UpdateMonitorLabelTitle();
         MonitorLabelTeachingTip.Target = Root;
 
         // Open the tip on the side opposite the dock alignment so it stays
@@ -1685,11 +1887,13 @@ public sealed partial class DockWindow : WindowEx,
         _settingsService?.SettingsChanged -= SettingsChangedHandler;
 
         Activated -= DockWindow_Activated;
+        Root.PreviewKeyDown -= Root_PreviewKeyDown;
         _themeService.ThemeChanged -= ThemeService_ThemeChanged;
         WeakReferenceMessenger.Default.UnregisterAll(this);
 
         StopCollapseTimer();
-        DisposeAcrylic();
+        DisposeBackdrop();
+        _dock.Dispose();
         _windowViewModel.Dispose();
 
         // Remove our app bar registration

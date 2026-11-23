@@ -41,21 +41,20 @@ CaptureFrameWait::CaptureFrameWait(
 
     m_nextFrameEvent = wil::shared_event(wil::EventOptions::ManualReset);
     m_endEvent = wil::shared_event(wil::EventOptions::ManualReset);
-    m_closedEvent = wil::shared_event(wil::EventOptions::ManualReset);
 
     m_framePool = winrt::Direct3D11CaptureFramePool::CreateFreeThreaded(
         m_device,
         winrt::DirectXPixelFormat::B8G8R8A8UIntNormalized,
-        1,
+        FrameBufferCount,
         size);
     m_session = m_framePool.CreateCaptureSession(m_item);
 
-    if( !borderRequired )
+    if (!borderRequired)
     {
-        ShowCaptureBorder( false );
+        ShowCaptureBorder(false);
     }
 
-    m_framePool.FrameArrived({ this, &CaptureFrameWait::OnFrameArrived });
+    m_frameArrived = m_framePool.FrameArrived(winrt::auto_revoke, { this, &CaptureFrameWait::OnFrameArrived });
     m_session.StartCapture();
 }
 
@@ -67,8 +66,6 @@ CaptureFrameWait::CaptureFrameWait(
 CaptureFrameWait::~CaptureFrameWait()
 {
     StopCapture();
-    // We might end the capture before we ever get another frame.
-    m_closedEvent.wait(200);
 }
 
 //----------------------------------------------------------------------------
@@ -80,65 +77,31 @@ CaptureFrameWait::~CaptureFrameWait()
 //----------------------------------------------------------------------------
 std::optional<CaptureFrame> CaptureFrameWait::TryGetNextFrame()
 {
-    if (m_currentFrame != nullptr)
-    {
-        m_currentFrame.Close();
-        m_currentFrame = nullptr;  // Prevent double-Close on subsequent calls
-    }
-    m_nextFrameEvent.ResetEvent();
-
-    std::vector<HANDLE> events = { m_endEvent.get(), m_nextFrameEvent.get() };
-    auto waitResult = WaitForMultipleObjectsEx(static_cast<DWORD>(events.size()), events.data(), false, INFINITE, false);
-    auto eventIndex = -1;
-    switch (waitResult)
-    {
-    case WAIT_OBJECT_0:
-    case WAIT_OBJECT_0 + 1:
-        eventIndex = waitResult - WAIT_OBJECT_0;
-        break;
-    }
-    WINRT_VERIFY(eventIndex >= 0);
-
-    auto signaledEvent = events[eventIndex];
-    if (signaledEvent == m_endEvent.get())
-    {
-        return std::nullopt;
-    }
-
-    return std::optional<CaptureFrame>(
-        {
-            m_currentFrame.Surface(),
-            m_currentFrame.ContentSize(),
-            m_currentFrame.SystemRelativeTime(),
-        });
+    return TryGetNextFrame(INFINITE);
 }
-
 
 //----------------------------------------------------------------------------
 //
 // CaptureFrameWait::PeekCurrentFrame
 //
-// Returns the frame that is currently held (if any) without closing
-// it and without waiting for a new one.  This is useful during
-// recording startup: the constructor captured a frame when the
-// session began, and OnMediaStreamSourceStarting can use it
-// immediately instead of blocking until the next desktop change.
-// The frame remains alive in the pool until the next
-// TryGetNextFrame() call closes it.
+// Returns the oldest available frame without removing it from the queue.
 //
 //----------------------------------------------------------------------------
 std::optional<CaptureFrame> CaptureFrameWait::PeekCurrentFrame() const
 {
-    if (m_currentFrame != nullptr)
+    auto lock = m_lock.lock_exclusive();
+    if (!m_pendingFrames.empty() && !m_endEvent.is_signaled())
     {
-        return std::optional<CaptureFrame>(
-            {
-                m_currentFrame.Surface(),
-                m_currentFrame.ContentSize(),
-                m_currentFrame.SystemRelativeTime(),
-            });
+        return m_pendingFrames.front();
     }
     return std::nullopt;
+}
+
+void CaptureFrameWait::DiscardPendingFrames()
+{
+    auto lock = m_lock.lock_exclusive();
+    m_pendingFrames.clear();
+    m_nextFrameEvent.ResetEvent();
 }
 
 //----------------------------------------------------------------------------
@@ -150,48 +113,35 @@ std::optional<CaptureFrame> CaptureFrameWait::PeekCurrentFrame() const
 // nullopt is returned.
 //
 //----------------------------------------------------------------------------
-std::optional<CaptureFrame> CaptureFrameWait::TryGetNextFrame( DWORD timeoutMs )
+std::optional<CaptureFrame> CaptureFrameWait::TryGetNextFrame(DWORD timeoutMs)
 {
-    if( m_currentFrame != nullptr )
+    const HANDLE events[] = { m_endEvent.get(), m_nextFrameEvent.get() };
+    const auto waitResult = WaitForMultipleObjectsEx(
+        ARRAYSIZE(events), events, false, timeoutMs, false);
+    if (waitResult == WAIT_FAILED)
     {
-        m_currentFrame.Close();
-        m_currentFrame = nullptr;  // Prevent double-Close on subsequent calls
+        winrt::throw_last_error();
     }
-    m_nextFrameEvent.ResetEvent();
-
-    std::vector<HANDLE> events = { m_endEvent.get(), m_nextFrameEvent.get() };
-    auto waitResult = WaitForMultipleObjectsEx(
-        static_cast<DWORD>( events.size() ), events.data(), false, timeoutMs, false );
-
-    if( waitResult == WAIT_TIMEOUT )
-    {
-        return std::nullopt;  // No new frame within timeout
-    }
-
-    auto eventIndex = -1;
-    switch( waitResult )
-    {
-    case WAIT_OBJECT_0:
-    case WAIT_OBJECT_0 + 1:
-        eventIndex = waitResult - WAIT_OBJECT_0;
-        break;
-    }
-    WINRT_VERIFY( eventIndex >= 0 );
-
-    auto signaledEvent = events[eventIndex];
-    if( signaledEvent == m_endEvent.get() )
+    if (waitResult == WAIT_TIMEOUT)
     {
         return std::nullopt;
     }
 
-    return std::optional<CaptureFrame>(
-        {
-            m_currentFrame.Surface(),
-            m_currentFrame.ContentSize(),
-            m_currentFrame.SystemRelativeTime(),
-        });
-}
+    auto lock = m_lock.lock_exclusive();
+    if (m_endEvent.is_signaled() || m_pendingFrames.empty())
+    {
+        return std::nullopt;
+    }
 
+    auto frame = std::move(m_pendingFrames.front());
+    m_pendingFrames.pop_front();
+    if (m_pendingFrames.empty())
+    {
+        // Reset under the producer's lock, never after it signals a new frame.
+        m_nextFrameEvent.ResetEvent();
+    }
+    return frame;
+}
 
 //----------------------------------------------------------------------------
 //
@@ -202,10 +152,17 @@ std::optional<CaptureFrame> CaptureFrameWait::TryGetNextFrame( DWORD timeoutMs )
 //----------------------------------------------------------------------------
 void CaptureFrameWait::StopCapture()
 {
-    auto lock = m_lock.lock_exclusive();
-    m_endEvent.SetEvent();
-    m_framePool.Close();
-    m_session.Close();
+    std::call_once(m_stopOnce, [this] {
+        {
+            auto lock = m_lock.lock_exclusive();
+            m_endEvent.SetEvent();
+            m_pendingFrames.clear();
+        }
+        // Closing/revoking can wait for a callback; do not hold its lock here.
+        m_frameArrived.revoke();
+        m_session.Close();
+        m_framePool.Close();
+    });
 }
 
 //----------------------------------------------------------------------------
@@ -222,12 +179,14 @@ void CaptureFrameWait::OnFrameArrived(
     auto lock = m_lock.lock_exclusive();
     if (m_endEvent.is_signaled())
     {
-        m_closedEvent.SetEvent();
         return;
     }
     auto frame = sender.TryGetNextFrame();
-    if( frame ) {
-        m_currentFrame = frame;
+    if (frame)
+    {
+        auto owner = std::make_shared<CaptureFrame::Lease>(std::move(frame));
+        m_pendingFrames.push_back(
+            { owner->Frame.Surface(), owner->Frame.ContentSize(), owner->Frame.SystemRelativeTime(), owner });
         m_nextFrameEvent.SetEvent();
     }
 }

@@ -1,11 +1,10 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows.Input;
 
 using ManagedCommon;
 
@@ -18,6 +17,11 @@ namespace ColorPicker.Mouse
     public delegate void SecondaryMouseUpEventHandler(object sender, IntPtr wParam);
 
     public delegate void MiddleMouseDownEventHandler(object sender, IntPtr wParam);
+
+    // WinUI 3 has no System.Windows.Input.MouseWheelEventArgs/InputManager. Carry the raw
+    // wheel delta (the signed high word of MSLLHOOKSTRUCT.mouseData, +/-120 per notch)
+    // directly; consumers decide zoom direction from its sign.
+    public delegate void MouseWheelEventHandler(object sender, int delta);
 
     internal class MouseHook
     {
@@ -184,8 +188,9 @@ namespace ColorPicker.Mouse
                 {
                     if (MouseWheel != null)
                     {
-                        MouseDevice mouseDev = InputManager.Current.PrimaryMouseDevice;
-                        MouseWheel.Invoke(null, new MouseWheelEventArgs(mouseDev, Environment.TickCount, (int)mouseHookStruct.mouseData >> 16));
+                        // High word of mouseData is the signed wheel delta.
+                        int delta = (int)mouseHookStruct.mouseData >> 16;
+                        MouseWheel.Invoke(null, delta);
                         return new IntPtr(-1);
                     }
                 }

@@ -35,4 +35,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           github_issue: ${{ matrix.issue }}
           label_as_duplicate: ${{ github.event.inputs.label_as_duplicate }}
-          
+          state: open

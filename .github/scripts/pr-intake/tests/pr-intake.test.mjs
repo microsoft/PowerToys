@@ -11,6 +11,8 @@ import {
   ApiError,
   buildIntakeReport,
   classifyChangedPaths,
+  deleteCanonicalComments,
+  deriveProductLabelsFromPaths,
   deriveVisualAssessment,
   determineFeedbackSince,
   findClosingIssueReferences,
@@ -40,17 +42,18 @@ function botComment(id, body) {
   };
 }
 
-test('workflow skips normal draft intake and handles draft transitions', () => {
+test('workflow runs product labeling for drafts and handles draft transitions', () => {
   const workflow = fs.readFileSync(
     new URL('../../../workflows/pr-intake.yml', import.meta.url),
     'utf8',
   );
 
   assert.equal(READY_FOR_REVIEW_LABEL, 'Ready for review');
-  assert.match(
-    workflow,
-    /if: \$\{\{ github\.event\.pull_request\.draft == false \|\| github\.event\.action == 'converted_to_draft' \}\}/,
-  );
+  assert.doesNotMatch(workflow, /github\.event\.pull_request\.draft == false/);
+  assert.match(workflow, /- opened/);
+  assert.match(workflow, /- edited/);
+  assert.match(workflow, /- synchronize/);
+  assert.match(workflow, /ref: \$\{\{ github\.event\.repository\.default_branch \}\}/);
   assert.match(workflow, /- ready_for_review/);
   assert.match(workflow, /- converted_to_draft/);
 });
@@ -158,6 +161,80 @@ test('docs-only changes do not require visual evidence', () => {
 
   assert.equal(report.requiresVisualEvidence, false);
   assert.deepEqual(report.categories, ['docs']);
+});
+
+test('path product labels use longest prefixes and suppress Settings side effects', () => {
+  assert.deepEqual(
+    deriveProductLabelsFromPaths([
+      'src/modules/MouseUtils/MouseJump/MouseJump.Common/Helpers.cs',
+      'src/settings-ui/Settings.UI/SettingsXAML/Views/MouseJumpPage.xaml',
+    ]),
+    ['Product-Mouse Jump'],
+  );
+  assert.deepEqual(
+    deriveProductLabelsFromPaths(['src/modules/cmdpal/src/App/App.xaml']),
+    ['Product-Command Palette'],
+  );
+  assert.deepEqual(
+    deriveProductLabelsFromPaths(['src/modules/AltWindowCycle/AltWindowCycle.cpp']),
+    ['Product-Window Hopper'],
+  );
+  assert.deepEqual(
+    deriveProductLabelsFromPaths(
+      ['src/settings-ui/Settings.UI/SettingsXAML/Views/DashboardPage.xaml'],
+      ['Product-FancyZones'],
+    ),
+    [],
+  );
+});
+
+test('path product labels cover module and shared roots additively', () => {
+  assert.deepEqual(deriveProductLabelsFromPaths([
+    'src/modules/AdvancedPaste/AdvancedPaste/Helpers/UserSettings.cs',
+    'src/modules/cmdpal/ext/WindowWalker/ListPage.cs',
+    'src/settings-ui/Settings.UI/ViewModels/AdvancedPasteViewModel.cs',
+    'src/runner/main.cpp',
+    'src/common/utils/helpers.cpp',
+    'src/modules/UnknownModule/main.cpp',
+  ]), [
+    'Product-Advanced Paste',
+    'Product-Command Palette',
+  ]);
+  assert.deepEqual(
+    deriveProductLabelsFromPaths(['src/common/utils/helpers.cpp']),
+    ['Product-General'],
+  );
+  assert.deepEqual(
+    deriveProductLabelsFromPaths(
+      ['src/runner/main.cpp'],
+      ['Product-FancyZones'],
+    ),
+    [],
+  );
+});
+
+test('mouse utility paths map to specific products before the umbrella label', () => {
+  assert.deepEqual(deriveProductLabelsFromPaths([
+    'src/modules/MouseUtils/CursorWrap/CursorWrap.cpp',
+    'src/modules/MouseUtils/MouseJump.Common/Helpers.cs',
+    'src/modules/MouseUtils/MouseUtils.UITests/TestHelpers.cs',
+  ]), [
+    'Product-Cursor Wrap',
+    'Product-Mouse Jump',
+    'Product-Mouse Utilities',
+  ]);
+});
+
+test('every current module root has a deterministic product mapping', () => {
+  const modulesUrl = new URL('../../../../src/modules/', import.meta.url);
+  const moduleRoots = fs.readdirSync(modulesUrl, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name);
+  const unmappedRoots = moduleRoots.filter(
+    (root) => deriveProductLabelsFromPaths([`src/modules/${root}/placeholder.cpp`]).length === 0,
+  );
+
+  assert.deepEqual(unmappedRoots, []);
 });
 
 test('deriveVisualAssessment maps the path hint to a requirement', () => {
@@ -601,6 +678,24 @@ test('canonical upsert updates the oldest trusted comment and deletes extras', a
   assert.equal(api.comments.length, 1);
 });
 
+test('canonical deletion removes only trusted intake comments', async () => {
+  const body = `${CANONICAL_MARKER}\nfirst`;
+  const untrusted = {
+    id: 10,
+    body,
+    user: { login: 'attacker', id: 1, type: 'User' },
+  };
+  const api = new MockApi({
+    comments: [untrusted, botComment(20, body), botComment(40, body)],
+  });
+
+  const deleted = await deleteCanonicalComments({ api, issueNumber: 12 });
+
+  assert.deepEqual(deleted, [20, 40]);
+  assert.deepEqual(api.deleted, [20, 40]);
+  assert.deepEqual(api.comments, [untrusted]);
+});
+
 test('all-clear comment carries the canonical marker', () => {
   const body = renderAllClearComment();
   assert.match(body, /^<!-- powertoys-pr-intake:canonical:v1 -->/);
@@ -643,11 +738,23 @@ test('runPullRequestIntake stays silent on a clean PR with no prior comment', as
   assert.deepEqual(result.labelPlan.add, [READY_FOR_REVIEW_LABEL]);
 });
 
-test('converted draft removes lifecycle labels without running intake', async () => {
+test('draft intake adds path labels, removes lifecycle labels, and deletes canonical comments', async () => {
+  const canonical = botComment(50, `${CANONICAL_MARKER}\n## PR intake`);
+  const untrusted = {
+    id: 51,
+    body: `${CANONICAL_MARKER}\nspoof`,
+    user: { login: 'attacker', id: 1, type: 'User' },
+  };
   const api = new MockApi({
+    comments: [canonical, untrusted],
     issues: [{
       number: 100,
-      labels: [READY_FOR_REVIEW_LABEL, NEEDS_AUTHOR_FEEDBACK_LABEL, 'Product-FancyZones'],
+      labels: [
+        READY_FOR_REVIEW_LABEL,
+        NEEDS_AUTHOR_FEEDBACK_LABEL,
+        'Product-FancyZones',
+        'Area-Setup/Install',
+      ],
       title: 'Draft PR',
     }],
     pullRequests: [{
@@ -659,6 +766,7 @@ test('converted draft removes lifecycle labels without running intake', async ()
       base: { ref: 'main' },
       user: { login: 'alice' },
     }],
+    files: [{ filename: 'src/modules/cmdpal/src/App/AppHost.cs', status: 'modified' }],
   });
 
   const result = await runPullRequestIntake({
@@ -668,12 +776,62 @@ test('converted draft removes lifecycle labels without running intake', async ()
 
   assert.equal(result.skippedDraft, true);
   assert.deepEqual(result.labelPlan, {
-    add: [],
+    add: ['Product-Command Palette'],
     remove: [NEEDS_AUTHOR_FEEDBACK_LABEL, READY_FOR_REVIEW_LABEL],
   });
-  assert.equal(api.listPullRequestFilesCalls, 0);
+  assert.deepEqual(result.pathProductLabels, ['Product-Command Palette']);
+  assert.equal(api.listPullRequestFilesCalls, 1);
+  assert.deepEqual(api.addedLabels, [{
+    issueNumber: 100,
+    labels: ['Product-Command Palette'],
+  }]);
+  assert.deepEqual(api.deleted, [50]);
+  assert.deepEqual(result.deletedCanonicalCommentIds, [50]);
+  assert.deepEqual(api.comments, [untrusted]);
   assert.equal(api.created, 0);
   assert.equal(api.updated, 0);
+});
+
+test('non-draft intake adds deterministic product labels with lifecycle labels', async () => {
+  const api = new MockApi({
+    issues: [{
+      number: 100,
+      labels: ['Product-FancyZones'],
+      title: 'Advanced Paste change',
+    }],
+    pullRequests: [{
+      number: 100,
+      draft: false,
+      mergeable: true,
+      mergeable_state: 'clean',
+      body: 'Closes #12',
+      base: { ref: 'main' },
+      user: { login: 'alice' },
+    }],
+    files: [
+      {
+        filename: 'src/modules/AdvancedPaste/AdvancedPaste/Helpers/UserSettings.cs',
+        status: 'modified',
+      },
+      {
+        filename: 'src/settings-ui/Settings.UI/ViewModels/AdvancedPasteViewModel.cs',
+        status: 'modified',
+      },
+    ],
+  });
+  api.issues.push({ number: 12, title: 'Tracked issue' });
+
+  const result = await runPullRequestIntake({ api, event: intakeEvent() });
+
+  assert.deepEqual(result.pathProductLabels, ['Product-Advanced Paste']);
+  assert.deepEqual(result.labelPlan, {
+    add: ['Product-Advanced Paste', READY_FOR_REVIEW_LABEL],
+    remove: [],
+  });
+  assert.deepEqual(api.addedLabels, [{
+    issueNumber: 100,
+    labels: ['Product-Advanced Paste', READY_FOR_REVIEW_LABEL],
+  }]);
 });
 
 test('runPullRequestIntake replaces a stale comment with an all-clear note when the PR is clean', async () => {

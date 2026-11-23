@@ -7,5 +7,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     public record PowerAccentLanguageModel(string LanguageCode, string LanguageResourceID, string GroupResourceID)
     {
         public string Language { get; set; }
+
+        /// <summary>
+        /// Gets or sets a short sample of the characters provided by this set, used as a
+        /// preview in the Settings UI.
+        /// </summary>
+        public string CharacterPreview { get; set; }
     }
 }

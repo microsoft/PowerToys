@@ -57,32 +57,50 @@ namespace ViewModelTests
                     (UpdateViewModel.TransientUpdateOperation)activeUpdateOperation));
         }
 
-        [TestMethod]
-        public void CheckForUpdatesShouldShowProgressAndSendCurrentSettings()
+        [DataTestMethod]
+        [DataRow(UpdatingSettings.UpdatingState.UpToDate)]
+        [DataRow(UpdatingSettings.UpdatingState.ReadyToDownload)]
+        [DataRow(UpdatingSettings.UpdatingState.ReadyToInstall)]
+        public void CheckForUpdatesCommandShouldShowProgressAndSendActionOnly(UpdatingSettings.UpdatingState initialState)
         {
             string sentMessage = null;
             var generalSettings = new GeneralSettings
             {
                 IncludePrereleaseUpdates = true,
             };
+            generalSettings.Enabled.AlwaysOnTop = false;
+            generalSettings.Enabled.FancyZones = false;
+            generalSettings.Enabled.PowerLauncher = true;
+            var settingsBeforeCheck = generalSettings.ToJsonString();
             var viewModel = CreateViewModel(
                 new TestSettingsRepository(generalSettings),
-                new UpdatingSettings(),
+                new UpdatingSettings
+                {
+                    State = initialState,
+                },
                 message =>
                 {
                     sentMessage = message;
                     return 0;
                 });
 
-            viewModel.CheckForUpdates();
+            viewModel.DismissActivity();
+            Assert.IsFalse(viewModel.IsActivityVisible);
+            Assert.IsTrue(viewModel.CheckForUpdatesCommand.CanExecute(null));
+
+            viewModel.CheckForUpdatesCommand.Execute(null);
 
             Assert.AreEqual(UpdateViewModel.UpdateUIState.Checking, viewModel.CurrentUpdateUIState);
             Assert.IsTrue(viewModel.IsActivityVisible);
             Assert.IsFalse(viewModel.CanStartAction);
+            Assert.IsFalse(viewModel.CheckForUpdatesCommand.CanExecute(null));
 
-            var action = JsonSerializer.Deserialize<GeneralSettingsCustomAction>(sentMessage);
-            Assert.IsTrue(action.GeneralSettingsAction.GeneralSettings.IncludePrereleaseUpdates);
-            Assert.AreEqual("check_for_updates", action.GeneralSettingsAction.GeneralSettings.CustomActionName);
+            using var message = JsonDocument.Parse(sentMessage);
+            var generalAction = message.RootElement.GetProperty("action").GetProperty("general");
+            Assert.AreEqual("check_for_updates", generalAction.GetProperty("action_name").GetString());
+            Assert.IsFalse(generalAction.TryGetProperty("enabled", out _));
+            Assert.IsFalse(generalAction.TryGetProperty("include_prerelease_updates", out _));
+            Assert.AreEqual(settingsBeforeCheck, generalSettings.ToJsonString());
         }
 
         [TestMethod]

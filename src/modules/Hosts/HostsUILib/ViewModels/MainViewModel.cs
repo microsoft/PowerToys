@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -79,7 +80,7 @@ namespace HostsUILib.ViewModels
 
         private ObservableCollection<Entry> _entries;
 
-        public AdvancedCollectionView Entries { get; set; }
+        public AdvancedCollectionView Entries { get; private set; }
 
         public int NextId => _entries?.Count > 0 ? _entries.Max(e => e.Id) + 1 : 0;
 
@@ -202,10 +203,7 @@ namespace HostsUILib.ViewModels
                     }
 
                     _entries.CollectionChanged += Entries_CollectionChanged;
-#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-                    Entries = new AdvancedCollectionView(_entries, true);
-#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
-                    Entries.SortDescriptions.Add(new SortDescription(nameof(Entry.Id), SortDirection.Ascending));
+                    Entries = CreateEntriesView(_entries);
                     ApplyFilters();
                     OnPropertyChanged(nameof(Entries));
                     IsLoading = false;
@@ -214,6 +212,14 @@ namespace HostsUILib.ViewModels
 
                 _duplicateService.Initialize(_entries);
             });
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Sorting uses a comparer instead of a property name, so AdvancedCollectionView does not use reflection.")]
+        private static AdvancedCollectionView CreateEntriesView(ObservableCollection<Entry> entries)
+        {
+            var view = new AdvancedCollectionView(entries, true);
+            view.SortDescriptions.Add(new SortDescription(SortDirection.Ascending, Comparer<Entry>.Create((x, y) => x.Id.CompareTo(y.Id))));
+            return view;
         }
 
         [RelayCommand]

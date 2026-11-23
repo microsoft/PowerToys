@@ -1,7 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-    TEMPLATE — copy into src/modules/<Module>/Tests/<Module>.UITests.Next/ and replace:
+    TEMPLATE — copy this file and app.manifest into src/modules/<Module>/Tests/<Module>.UITests.Next/
+    and replace:
       __MODULE__   ->  the module name used for the project/assembly (e.g. ColorPicker, ScreenRuler)
+      __ASSEMBLY_NAME__ in app.manifest -> the final AssemblyName from this project
       the ProjectReference ..\ depth  ->  enough ..\ to reach src\common from THIS folder
                                           (see references/project-setup.md §2)
     For a GREENFIELD project (module had no UI tests), rename the file and AssemblyName to drop
@@ -13,13 +15,14 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.__MODULE__.UITests</RootNamespace>
     <AssemblyName>__MODULE__.UITests.Next</AssemblyName>
+    <!-- Element.Click uses physical winappcli bounds with Win32 cursor input. -->
+    <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!--
       Microsoft.Testing.Platform: the modern runner Directory.Build.props enables repo-wide, so this
@@ -36,7 +39,9 @@
   <!--
     Stage the built test app under <Platform>\<Configuration>\tests\ so the UI-tests build pipeline
     (CopyFiles glob **/<plat>/<config>/tests/**) picks it up, matching the other *.UITests projects.
-    Without this it builds to bin\ and is never staged into the artifact.
+    Match the project file stem, AssemblyName and tests subfolder exactly (including case).
+    Declare each staged MSIX in FileWrites with Include="$(TargetDir)FixtureName.msix".
+    See "Repository UI-test artifact contract" in .pipelines/tests/uiTestArtifacts.Tests.ps1.
   -->
   <PropertyGroup>
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\__MODULE__.UITests.Next\</OutputPath>
@@ -47,8 +52,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Reference the NEW harness only. NEVER reference ..\common\UITestAutomation\UITestAutomation.csproj.
-         Adjust the ..\ depth so it resolves from this project's folder to src\common. -->
+    <!-- Adjust the ..\ depth so it resolves from this project's folder to src\common. -->
     <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
   </ItemGroup>
 </Project>

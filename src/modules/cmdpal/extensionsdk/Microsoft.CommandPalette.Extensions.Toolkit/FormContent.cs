@@ -4,7 +4,7 @@
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
 
-public partial class FormContent : BaseObservable, IFormContent
+public partial class FormContent : BaseObservable, IFormContent2
 {
     public virtual string DataJson { get; set => SetProperty(ref field, value); } = string.Empty;
 
@@ -15,4 +15,6 @@ public partial class FormContent : BaseObservable, IFormContent
     public virtual ICommandResult SubmitForm(string inputs, string data) => SubmitForm(inputs);
 
     public virtual ICommandResult SubmitForm(string inputs) => CommandResult.KeepOpen();
+
+    public virtual ICommandResult SubmitAction(string actionId, string inputs, string data) => SubmitForm(inputs, data);
 }

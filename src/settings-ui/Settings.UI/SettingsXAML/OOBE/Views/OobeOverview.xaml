@@ -2,40 +2,19 @@
     x:Class="Microsoft.PowerToys.Settings.UI.OOBE.Views.OobeOverview"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     mc:Ignorable="d">
-    <Page.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.ThemeDictionaries>
-                <ResourceDictionary x:Key="Default">
-                    <ImageSource x:Key="HeroImageUrl">ms-appx:///Assets/Settings/Modules/OOBE/pt-hero.dark.png</ImageSource>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="Light">
-                    <ImageSource x:Key="HeroImageUrl">ms-appx:///Assets/Settings/Modules/OOBE/pt-hero.light.png</ImageSource>
-                </ResourceDictionary>
-                <ResourceDictionary x:Key="HighContrast">
-                    <ImageSource x:Key="HeroImageUrl">ms-appx:///Assets/Settings/Modules/OOBE/pt-hero.dark.png</ImageSource>
-                </ResourceDictionary>
-            </ResourceDictionary.ThemeDictionaries>
-        </ResourceDictionary>
-    </Page.Resources>
-
     <Grid Style="{StaticResource PageStyle}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <Image
-            x:Name="HeaderImage"
-            Height="280"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center"
-            Source="{ThemeResource HeroImageUrl}"
-            Stretch="UniformToFill" />
+        <controls:WelcomeHero x:Name="Hero" ModuleInvoked="Hero_ModuleInvoked" />
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <Grid Margin="32,0,32,24">
@@ -49,12 +28,14 @@
                     Spacing="12">
 
                     <TextBlock
+                        x:Name="WelcomeTitle"
                         x:Uid="Oobe_Overview_Title"
                         HorizontalAlignment="Center"
                         AutomationProperties.HeadingLevel="Level1"
                         Style="{StaticResource TitleTextBlockStyle}" />
 
                     <TextBlock
+                        x:Name="WelcomeDescription"
                         x:Uid="Oobe_Overview_Description"
                         HorizontalAlignment="Center"
                         Foreground="{ThemeResource TextFillColorSecondaryBrush}"
@@ -62,6 +43,7 @@
                         TextWrapping="Wrap" />
 
                     <StackPanel
+                        x:Name="WelcomeActions"
                         Margin="0,24,0,48"
                         HorizontalAlignment="Center"
                         Orientation="Horizontal"
@@ -90,6 +72,7 @@
 
                 </StackPanel>
                 <tkcontrols:SettingsCard
+                    x:Name="DataDiagnosticsCard"
                     x:Uid="Oobe_Overview_EnableDataDiagnostics"
                     Grid.Row="1"
                     Background="Transparent"

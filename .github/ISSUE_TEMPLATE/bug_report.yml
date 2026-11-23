@@ -17,9 +17,9 @@ body:
 - id: version
   type: input
   attributes:
-    label: Microsoft PowerToys version
-    placeholder: X.XX.X
-    description: Hover over the system tray icon or look at Settings
+    label: Microsoft PowerToys version and release channel
+    placeholder: 0.100.2 - Stable or 0.101.2211.0 - Preview (Insider)
+    description: Find the version and update channel in PowerToys Settings > General.
   validations:
     required: true
 
@@ -80,6 +80,7 @@ body:
       - Shortcut Guide
       - System tray interaction
       - TextExtractor
+      - Window Hopper
       - Workspaces
       - Welcome / PowerToys Tour window
       - ZoomIt

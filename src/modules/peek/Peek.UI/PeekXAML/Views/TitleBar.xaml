@@ -64,6 +64,18 @@
             </Grid>
         </Grid>
 
+        <!--
+            Prevent a title bar button from being focused on startup. Prevents Space
+            accidentally activating a button when the app is launched.
+        -->
+        <ContentControl
+            x:Name="FocusSink"
+            Width="0"
+            Height="0"
+            AutomationProperties.AccessibilityView="Raw"
+            IsTabStop="True"
+            UseSystemFocusVisuals="False" />
+
         <Button
             x:Name="LaunchAppButton"
             Grid.Column="2"

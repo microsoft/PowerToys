@@ -9,6 +9,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using System.Threading;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -64,6 +65,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             _settingsPath.DeleteSettings(powertoy);
         }
 
+        public void CreateSettingsFolder(string powertoy = "")
+        {
+            _settingsPath.CreateSettingsFolder(powertoy);
+        }
+
         public virtual T GetSettings<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
             where T : ISettingsConfig, new()
         {
@@ -113,6 +119,40 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             T newSettingsItem = new T();
             SaveSettings(newSettingsItem.ToJsonString(), powertoy, fileName);
             return newSettingsItem;
+        }
+
+        /// <summary>
+        /// Reads settings without upgrading or persisting defaults, retrying transient read or parse failures.
+        /// </summary>
+        public virtual T GetSettingsOrDefaultReadOnly<T>(string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+            where T : ISettingsConfig, new()
+        {
+            const int maxAttempts = 5;
+            for (var attempt = 0; attempt < maxAttempts; attempt++)
+            {
+                try
+                {
+                    if (!SettingsExists(powertoy, fileName))
+                    {
+                        return new T();
+                    }
+
+                    return GetFile<T>(powertoy, fileName);
+                }
+                catch (Exception ex) when (ex is IOException or JsonException)
+                {
+                    if (attempt == maxAttempts - 1)
+                    {
+                        throw new InvalidOperationException(
+                            $"Settings file {fileName} for {powertoy} could not be read consistently; no changes were made.",
+                            ex);
+                    }
+
+                    Thread.Sleep(100);
+                }
+            }
+
+            throw new InvalidOperationException("Settings could not be read.");
         }
 
         /// <summary>
@@ -209,15 +249,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         {
             try
             {
-                if (jsonSettings != null)
-                {
-                    if (!_settingsPath.SettingsFolderExists(powertoy))
-                    {
-                        _settingsPath.CreateSettingsFolder(powertoy);
-                    }
-
-                    _file.WriteAllText(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
-                }
+                SaveSettingsCore(jsonSettings, powertoy, fileName);
             }
             catch (Exception e)
             {
@@ -228,6 +260,32 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     throw;
                 }
 #endif
+            }
+        }
+
+        public virtual void SaveSettingsOrThrow(string jsonSettings, string powertoy = DefaultModuleName, string fileName = DefaultFileName)
+        {
+            try
+            {
+                SaveSettingsCore(jsonSettings ?? throw new ArgumentNullException(nameof(jsonSettings)), powertoy, fileName);
+            }
+            catch (Exception e)
+            {
+                Logger.LogError($"Exception encountered while saving {powertoy} settings.", e);
+                throw;
+            }
+        }
+
+        private void SaveSettingsCore(string jsonSettings, string powertoy, string fileName)
+        {
+            if (jsonSettings != null)
+            {
+                if (!_settingsPath.SettingsFolderExists(powertoy))
+                {
+                    _settingsPath.CreateSettingsFolder(powertoy);
+                }
+
+                _file.WriteAllText(_settingsPath.GetSettingsPath(powertoy, fileName), jsonSettings);
             }
         }
 
