@@ -29,7 +29,12 @@ internal static class ExpirationTimeParser
             DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.NoCurrentDateDefault,
             out DateTime parsedNoDefault) && parsedNoDefault.Kind == DateTimeKind.Unspecified)
         {
-            return parsedNoDefault.Date == DateTime.MinValue
+            // Distinguish literal 0001-01-01 dates from time-only strings that default to DateTime.MinValue.
+            bool isTimeOnly = parsedNoDefault.Date == DateTime.MinValue
+                && DateTime.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTime parsedWithDefault)
+                && parsedWithDefault.Date != DateTime.MinValue;
+
+            return isTimeOnly
                 ? ExpirationTimeParseStatus.InvalidFormat
                 : TryResolveLocalDateTime(parsedNoDefault, now, timeZone, out expirationDateTime);
         }
@@ -55,10 +60,23 @@ internal static class ExpirationTimeParser
         TimeZoneInfo timeZone,
         out DateTimeOffset expirationDateTime)
     {
-        DateTimeOffset resolved = new(localDateTime, timeZone.GetUtcOffset(localDateTime));
+        expirationDateTime = default;
+
+        TimeSpan offset = timeZone.GetUtcOffset(localDateTime);
+        long utcTicks = localDateTime.Ticks - offset.Ticks;
+        if (utcTicks < DateTimeOffset.MinValue.Ticks)
+        {
+            return ExpirationTimeParseStatus.InThePast;
+        }
+
+        if (utcTicks > DateTimeOffset.MaxValue.Ticks)
+        {
+            return ExpirationTimeParseStatus.InvalidFormat;
+        }
+
+        DateTimeOffset resolved = new(localDateTime, offset);
         if (resolved <= now)
         {
-            expirationDateTime = default;
             return ExpirationTimeParseStatus.InThePast;
         }
 

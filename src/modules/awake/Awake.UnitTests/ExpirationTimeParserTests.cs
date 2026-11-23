@@ -138,4 +138,43 @@ public class ExpirationTimeParserTests
         Assert.AreEqual(expected, result);
         Assert.AreEqual(expected.Offset, result.Offset);
     }
+
+    [TestMethod]
+    [DataRow("0001-01-01", "UTC")]
+    [DataRow("0001-01-01", "Eastern Standard Time")]
+    [DataRow("0001-01-01", "W. Europe Standard Time")]
+    [DataRow("0001-01-01", "Tokyo Standard Time")]
+    [DataRow("0001-01-01 00:00:00", "Tokyo Standard Time")]
+    [DataRow("0001-01-01 14:05", "Eastern Standard Time")]
+    public void TryParse_WhenLiteralYearOneDateAcrossTimeZones_ReturnsInThePast(string input, string timeZoneId)
+    {
+        TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            input,
+            now,
+            CultureInfo.GetCultureInfo("en-US"),
+            tz,
+            out _);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.InThePast, status);
+    }
+
+    [TestMethod]
+    public void TryParse_WhenMaxDateOverflowsUtcRange_ReturnsInvalidFormat()
+    {
+        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(-5));
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            "9999-12-31 23:59:59",
+            now,
+            CultureInfo.GetCultureInfo("en-US"),
+            eastern,
+            out DateTimeOffset result);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.InvalidFormat, status);
+        Assert.AreEqual(default(DateTimeOffset), result);
+    }
 }
