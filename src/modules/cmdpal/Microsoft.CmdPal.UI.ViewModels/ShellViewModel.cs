@@ -208,10 +208,49 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        PerformCommand(message);
+        if (message.Command is FallbackInvocationViewModel fallback)
+        {
+            _ = PerformFallbackAsync(message, fallback, CurrentPage);
+        }
+        else
+        {
+            PerformCommand(message);
+        }
     }
 
-    private void PerformCommand(PerformCommandMessage message)
+    private async Task PerformFallbackAsync(PerformCommandMessage message, FallbackInvocationViewModel fallback, PageViewModel sourcePage)
+    {
+        try
+        {
+            // Creating the command, reading its properties and probing its interfaces can all call the extension.
+            var resolved = await Task.Run(() =>
+            {
+                var vm = ResolveRequestedCommand(fallback);
+                var command = vm?.Model.Unsafe;
+                return (ViewModel: vm, Page: command as IPage, Invokable: command as IInvokableCommand);
+            }).ConfigureAwait(false);
+            if (resolved.ViewModel is not null)
+            {
+                await Task.Factory.StartNew(
+                    () =>
+                    {
+                        if (fallback.CanInvoke && ReferenceEquals(CurrentPage, sourcePage))
+                        {
+                            PerformCommand(message, resolved.ViewModel, resolved.Page, resolved.Invokable);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    _scheduler).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to resolve fallback command", ex);
+        }
+    }
+
+    private void PerformCommand(PerformCommandMessage message, CommandViewModel? resolved = null, IPage? resolvedPage = null, IInvokableCommand? resolvedInvokable = null)
     {
         var invocationContext = (message.Command as FallbackInvocationViewModel)?.QueryContext.InvocationContext ?? message.CommandContext;
 
@@ -232,14 +271,8 @@ public partial class ShellViewModel : ObservableObject,
 
         try
         {
-            var commandViewModel = ResolveRequestedCommand(message.Command);
-            if (commandViewModel is null)
-            {
-                return;
-            }
-
-            var command = commandViewModel.Model.Unsafe;
-            if (command is null)
+            var commandViewModel = resolved ?? message.Command;
+            if (commandViewModel.Model.Unsafe is not { } command)
             {
                 return;
             }
@@ -250,7 +283,7 @@ public partial class ShellViewModel : ObservableObject,
                 : _pageNavigation.ResolveProviderContext(message, CurrentPage);
 
             // Report page commands only after navigation preparation succeeds.
-            if (command is IPage page)
+            if ((resolved is null ? command as IPage : resolvedPage) is { } page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
 
@@ -329,7 +362,7 @@ public partial class ShellViewModel : ObservableObject,
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
             }
-            else if (command is IInvokableCommand invokable)
+            else if ((resolved is null ? command as IInvokableCommand : resolvedInvokable) is { } invokable)
             {
                 CoreLogger.LogDebug($"Invoking command");
 

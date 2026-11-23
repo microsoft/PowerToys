@@ -13,6 +13,8 @@ internal sealed partial class FallbackInvocationViewModel : CommandViewModel
 
     internal FallbackQueryContext QueryContext { get; }
 
+    internal bool CanInvoke => QueryContext.CanInvoke && !IsCleanedUp && !_fallback.IsCleanedUp;
+
     public override bool IsSet => true;
 
     internal FallbackInvocationViewModel(
@@ -47,19 +49,19 @@ internal sealed partial class FallbackInvocationViewModel : CommandViewModel
 
     internal CommandViewModel? CreateCommand()
     {
-        if (_args is null || !QueryContext.CanInvoke || IsCleanedUp || _fallback.IsCleanedUp)
+        if (_args is null || !CanInvoke)
         {
             return null;
         }
 
         var command = _fallback.UnsafeCreateCommand(_args);
-        if (command is null)
+        if (command is null || !CanInvoke)
         {
             return null;
         }
 
         var viewModel = new CommandViewModel(command, PageContext);
         viewModel.FastInitializeProperties();
-        return QueryContext.CanInvoke && !_fallback.IsCleanedUp ? viewModel : null;
+        return CanInvoke ? viewModel : null;
     }
 }

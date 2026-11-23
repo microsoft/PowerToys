@@ -129,6 +129,52 @@ public sealed partial class FallbackCommandHostTests
     }
 
     [TestMethod]
+    public async Task ShellActivation_BlockedFactoryLeavesShellSchedulerResponsive()
+    {
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var release = new ManualResetEventSlim();
+        var fallback = new RecordingFallback
+        {
+            CommandToCreate = Mock.Of<ICommand>(),
+            OnCreate = () =>
+            {
+                entered.TrySetResult();
+                if (!release.Wait(TimeSpan.FromSeconds(10)))
+                {
+                    throw new TimeoutException();
+                }
+            },
+        };
+        await using var services = CreateServices();
+        var source = await LoadFallbackAsync(fallback, services);
+        PrepareQuery(source, CancellationToken.None);
+        var scheduler = new ConcurrentExclusiveSchedulerPair().ExclusiveScheduler;
+        var dispatched = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var root = new Mock<IRootPageService>();
+        root.Setup(s => s.OnPerformCommand(source, true, source.ExtensionHost)).Callback(() => dispatched.SetResult());
+        using var shell = new ShellViewModel(
+            scheduler,
+            root.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            Mock.Of<IAppHostService>(s => s.GetDefaultHost() == source.ExtensionHost));
+        var ui = new TaskFactory(scheduler);
+        var activation = ui.StartNew(() => shell.Receive(source.GetPerformCommandMessage()));
+        try
+        {
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await ui.StartNew(() => Assert.IsFalse(release.IsSet)).WaitAsync(TimeSpan.FromSeconds(2));
+        }
+        finally
+        {
+            release.Set();
+            await activation.WaitAsync(TimeSpan.FromSeconds(10));
+        }
+
+        await dispatched.Task.WaitAsync(TimeSpan.FromSeconds(10));
+        source.Cleanup();
+    }
+
+    [TestMethod]
     public async Task FallbackInvocation_RejectsCanceledQuery()
     {
         var fallback = new RecordingFallback();
