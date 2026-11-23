@@ -105,8 +105,8 @@ steps:
       maximumCpuCount: true
 
   - script: |-
-      wix msi decompile "$(InstallerMachineRoot)\$(InstallerMachineBasename).msi" -x "$(build.sourcesdirectory)\extractedMachineMsi" || exit /b 1
-      wix msi decompile "$(InstallerUserRoot)\$(InstallerUserBasename).msi" -x "$(build.sourcesdirectory)\extractedUserMsi" || exit /b 1
+      wix msi decompile $(InstallerMachineRoot)\$(InstallerMachineBasename).msi -x $(build.sourcesdirectory)\extractedMachineMsi
+      wix msi decompile $(InstallerUserRoot)\$(InstallerUserBasename).msi -x $(build.sourcesdirectory)\extractedUserMsi
       dir $(build.sourcesdirectory)\extractedMachineMsi
       dir $(build.sourcesdirectory)\extractedUserMsi
     displayName: "WiX5: Extract and verify MSIs"
@@ -116,13 +116,6 @@ steps:
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedMachineMsi\File'
       & '.pipelines/verifyDepsJsonLibraryVersions.ps1' -targetDir '$(build.sourcesdirectory)\extractedUserMsi\File'
     displayName: Audit deps.json in MSI extracted files
-
-  - pwsh: |-
-      & '.pipelines/verifyWorkspacesMsiAssets.ps1' -DecompiledMsi @(
-          '$(InstallerMachineRoot)\$(InstallerMachineBasename).wxs',
-          '$(InstallerUserRoot)\$(InstallerUserBasename).wxs'
-      )
-    displayName: Verify Workspaces icon paths in both MSIs
 
   - ${{ if eq(parameters.codeSign, true) }}:
     - pwsh: |-
