@@ -6956,11 +6956,11 @@ Text uses the current drawing color.</value>
     <value>Display the window position and size on the overlay during drag and resize operations</value>
   </data>
   <data name="GrabAndMove_UseAltResize.Header" xml:space="preserve">
-    <value>Resize windows with the modifier key + right-click</value>
-    <comment>Hold the modifier key and right-click, then drag from the nearest edge or corner to resize the window</comment>
+    <value>Resize windows with the modifier key</value>
+    <comment>With the modifier key, right-click and drag resizes from the nearest edge or corner; adding Shift with either mouse button resizes from the opposite edge or corner.</comment>
   </data>
   <data name="GrabAndMove_UseAltResize.Description" xml:space="preserve">
-    <value>Hold the modifier key and drag with the right mouse button from the nearest edge or corner to resize the window</value>
+    <value>With the modifier key, right-click and drag resizes from the nearest edge or corner; adding Shift with either mouse button resizes from the opposite edge or corner.</value>
   </data>
   <data name="GrabAndMove_ExcludeApps.Header" xml:space="preserve">
     <value>Excluded apps</value>
