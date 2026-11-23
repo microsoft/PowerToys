@@ -33,6 +33,7 @@ namespace Microsoft.Workspaces.UITests
             EditorProcess,
         ];
 
+        private static WorkspaceProfileSnapshot? profileLease;
         private static WorkspaceTestState? state;
         private static WorkspaceShortcutJournalGuard? existingShortcutJournals;
         private Session? editor;
@@ -61,19 +62,44 @@ namespace Microsoft.Workspaces.UITests
         private Session SettingsUi => settingsUi ??= Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
 
         [ClassInitialize]
-        public static void ValidateDesktop(TestContext context)
+        public static void InitializeWorkspaceSuite(TestContext context)
+        {
+            ValidateDesktop(context);
+            try
+            {
+                existingShortcutJournals = WorkspaceShortcutJournalGuard.AcquireForProfile(WorkspaceTestState.DirectoryPath);
+            }
+            catch
+            {
+                profileLease!.Dispose();
+                profileLease = null;
+                throw;
+            }
+        }
+
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        public static void CleanUpWorkspaceSuite()
+        {
+            using var journals = Interlocked.Exchange(ref existingShortcutJournals, null);
+            RestoreWorkspaceState();
+        }
+
+        private static void ValidateDesktop(TestContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
             Assert.IsFalse(ElevationHelper.IsProcessElevated(Environment.ProcessId), "Run Test Explorer and the Workspaces UI tests without elevation.");
             var target = WorkspacesDisplay.GetPrimaryTarget();
-            context.WriteLine($"Workspaces placement target: {target.DeviceName}, monitor {target.Number}, DPI {target.Dpi}.");
+            context.WriteLine($"Workspaces placement target: {target.DeviceName}, monitor {target.Number}, DPI {target.Dpi}, physical size {target.MonitorWidth}x{target.MonitorHeight}, logical width {target.LogicalMonitorRight - target.LogicalMonitorLeft}.");
+
+            // Hold the profile before inherited initialization can close another testhost's windows.
+            profileLease = new WorkspaceProfileSnapshot(WorkspaceTestState.DirectoryPath);
         }
 
         protected override void PrepareTestState()
         {
-            existingShortcutJournals ??= WorkspaceShortcutJournalGuard.Acquire(Path.Combine(WorkspaceTestState.DirectoryPath, "WorkspacesIcons"));
             StopModuleProcesses();
-            state ??= new WorkspaceTestState();
+            AssertSettingsProcessesStopped();
+            state ??= new WorkspaceTestState(profileLease ?? throw new InvalidOperationException("The Workspaces profile has not been reserved."));
             State.PrepareSettings();
         }
 
@@ -94,6 +120,12 @@ namespace Microsoft.Workspaces.UITests
         [TestCleanup]
         public async Task CleanUpWorkspace()
         {
+            if (state is null)
+            {
+                // Initialization failed before the user's files were isolated.
+                return;
+            }
+
             // MSTest appends cleanup errors to the original failure and fails passing tests on leaks.
             // Capture evidence first; fixture cleanup must still run if stopping module processes fails.
             try
@@ -117,17 +149,15 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
-        public static void CleanUpWorkspaceSuite()
+        public static void RestoreWorkspaceState()
         {
-            using var journals = Interlocked.Exchange(ref existingShortcutJournals, null);
-            RestoreWorkspaceState();
-        }
-
-        private static void RestoreWorkspaceState()
-        {
-            if (state is null)
+            var completedState = state;
+            var lease = profileLease;
+            state = null;
+            profileLease = null;
+            if (completedState is null)
             {
+                lease?.Dispose();
                 return;
             }
 
@@ -137,12 +167,23 @@ namespace Microsoft.Workspaces.UITests
 
                 // Defensive and idempotent: stop before file restoration even if inherited cleanup already ran.
                 StopSharedScope();
+                AssertSettingsProcessesStopped();
+            }
+            catch
+            {
+                lease!.LeaveForRecovery();
+                throw;
             }
             finally
             {
-                state?.Dispose();
-                state = null;
+                completedState.Dispose();
             }
+        }
+
+        private static void AssertSettingsProcessesStopped()
+        {
+            Assert.IsTrue(WaitForProcess(SettingsProcess, false), "PowerToys Settings still has access to the Workspaces profile.");
+            Assert.IsTrue(WaitForProcess("PowerToys", false), "PowerToys Runner still has access to the Workspaces profile.");
         }
 
         private void NavigateToSettings()

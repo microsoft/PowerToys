@@ -26,6 +26,25 @@ internal sealed class WorkspaceShortcutJournalGuard : IDisposable
         this.files.Clear();
     }
 
+    internal static WorkspaceShortcutJournalGuard AcquireForProfile(string workspaceDirectory)
+    {
+        Directory.CreateDirectory(workspaceDirectory);
+        var profile = Open(workspaceDirectory, isDirectory: true) ?? throw new DirectoryNotFoundException(workspaceDirectory);
+
+        try
+        {
+            // Keep the profile directory from being replaced between preflight and restoration.
+            var guard = Acquire(Path.Combine(workspaceDirectory, "WorkspacesIcons"));
+            guard.files.Add(profile);
+            return guard;
+        }
+        catch
+        {
+            profile.Dispose();
+            throw;
+        }
+    }
+
     internal static WorkspaceShortcutJournalGuard Acquire(string directory)
     {
         const string suffix = ".links.json";
@@ -36,7 +55,7 @@ internal sealed class WorkspaceShortcutJournalGuard : IDisposable
             using var folder = Open(directory, isDirectory: true);
             if (folder is not null)
             {
-                foreach (var entry in new DirectoryInfo(directory).EnumerateFileSystemInfos("*" + suffix))
+                foreach (var entry in new DirectoryInfo(directory).EnumerateFileSystemInfos("*" + suffix).OrderBy(entry => entry.Name, StringComparer.Ordinal))
                 {
                     string name = entry.Name;
                     if (name.Length != bracedGuidLength + suffix.Length || !name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) ||

@@ -43,8 +43,9 @@ public sealed class WorkspaceShortcutJournalGuardTests
         var folder = Directory.CreateTempSubdirectory();
         try
         {
-            string first = Path.Combine(folder.FullName, $"{Guid.NewGuid():B}.links.json");
-            string busy = Path.Combine(folder.FullName, $"{Guid.NewGuid():B}.links.json");
+            // The guard opens journals in ordinal name order, independent of Windows directory enumeration.
+            string first = Path.Combine(folder.FullName, "{00000000-0000-0000-0000-000000000001}.links.json");
+            string busy = Path.Combine(folder.FullName, "{00000000-0000-0000-0000-000000000002}.links.json");
             File.WriteAllText(first, "unchanged");
             File.WriteAllText(busy, "busy");
             using (File.OpenRead(busy))
@@ -56,6 +57,42 @@ public sealed class WorkspaceShortcutJournalGuardTests
                 Assert.AreEqual(32, error.NativeErrorCode, "The fixture must stop on a sharing violation.");
                 Assert.AreEqual("unchanged", File.ReadAllText(first));
             }
+        }
+        finally
+        {
+            folder.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ExistingJournalsRemainProtectedAcrossProfileIsolationAndRestore()
+    {
+        var folder = Directory.CreateTempSubdirectory();
+        try
+        {
+            var profile = folder.CreateSubdirectory("Workspaces");
+            var icons = profile.CreateSubdirectory("WorkspacesIcons");
+            string journal = Path.Combine(icons.FullName, $"{Guid.NewGuid():B}.links.json");
+            string data = Path.Combine(profile.FullName, "workspaces.json");
+            File.WriteAllText(journal, "journal");
+            File.WriteAllText(data, "user workspace");
+            using (var guard = WorkspaceShortcutJournalGuard.AcquireForProfile(profile.FullName))
+            {
+                Assert.Throws<IOException>(() => File.ReadAllText(journal));
+                Assert.AreEqual("user workspace", File.ReadAllText(data));
+                Assert.Throws<IOException>(() => Directory.Move(profile.FullName, Path.Combine(folder.FullName, "redirected")));
+                using (var lease = new WorkspaceProfileSnapshot(profile.FullName))
+                {
+                    lease.Isolate();
+                    File.WriteAllText(data, "test workspace");
+                }
+
+                Assert.AreEqual("user workspace", File.ReadAllText(data));
+                Assert.Throws<IOException>(() => File.ReadAllText(journal));
+            }
+
+            Assert.AreEqual("user workspace", File.ReadAllText(data));
+            Assert.AreEqual("journal", File.ReadAllText(journal));
         }
         finally
         {
