@@ -294,7 +294,9 @@ namespace Microsoft.Workspaces.UITests
                 WindowHelper.MaximizeWindow(new IntPtr(editor.WindowHandle));
             }
 
-            AssertWorkspaceListReady();
+            // The overview also hosts the retry action when the initial storage read fails.
+            // Wait for the page here; callers that require its data wait for the cards separately.
+            Assert.IsTrue(editor.Has(By.AccessibilityId("NewProjectButton"), 20_000), "The editor did not present its overview.");
         }
 
         private void CloseEditor()
