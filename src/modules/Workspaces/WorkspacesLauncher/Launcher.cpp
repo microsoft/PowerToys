@@ -19,14 +19,20 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
     m_project(project),
     m_invokePoint(invokePoint),
     m_start(std::chrono::high_resolution_clock::now()),
-    m_uiHelper(std::make_unique<LauncherUIHelper>(std::bind(&Launcher::handleUIMessage, this, std::placeholders::_1),
-                                                options.operationId, options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)),
     m_windowArrangerHelper(std::make_unique<WindowArrangerHelper>(
         std::bind(&Launcher::handleWindowArrangerMessage, this, std::placeholders::_1),
         options.operationId)),
     m_launchingStatus(m_project),
     m_options(options)
 {
+    // Install the callback after publishing the helper and before starting the UI process.
+    {
+        std::lock_guard lock(m_uiHelperMutex);
+        m_uiHelper = std::make_unique<LauncherUIHelper>(nullptr, options.operationId, options.presentation == WorkspacesSession::Presentation::ConfirmationOnly);
+        m_uiHelper->SetCallback([this](const std::wstring& message) { handleUIMessage(message); });
+    }
+    auto stopOnFailure = wil::scope_exit([this] { Stop(); });
+
     // main thread
     Logger::info(L"Launch Workspace {} : {}", m_project.name, m_project.id);
 
@@ -54,9 +60,10 @@ Launcher::Launcher(const WorkspacesData::WorkspacesProject& project,
         if (m_launchThread.joinable())
             m_launchThread.join();
     }
+    stopOnFailure.release();
 }
 
-Launcher::~Launcher()
+void Launcher::Stop()
 {
     m_stopping = true;
     m_approval.Cancel();
@@ -70,7 +77,14 @@ Launcher::~Launcher()
     // Stop callbacks while all launch state and synchronization objects are still alive.
     m_windowArrangerHelper->StopCallbacks();
     m_windowArrangerHelper.reset();
+    // Keep the helper available to the cancellation callback until the UI exits and IPC joins.
+    m_uiHelper->Close();
     m_uiHelper.reset();
+}
+
+Launcher::~Launcher()
+{
+    Stop();
     if (m_options.presentation == WorkspacesSession::Presentation::ConfirmationOnly)
         return;
     // main thread, will wait until arranger is finished
@@ -299,11 +313,26 @@ void Launcher::handleUIMessage(const std::wstring& msg) // UI IPC thread
     }
     if (message->type == LauncherUiMessage::Type::Cancel)
     {
+        // Make cancellation visible to the launch thread before acknowledging the UI.
         m_uiCanceled = true;
         if (!SetEvent(m_options.cancelEvent))
             Logger::error(L"Unable to signal session cancellation: {}", GetLastError());
         m_approval.Cancel();
+        Logger::trace(L"Accepted UI cancellation for workspace {}", m_project.id);
         m_launchingStatus.Cancel();
+
+        try
+        {
+            m_uiHelper->AcknowledgeCancellation();
+        }
+        catch (const winrt::hresult_error& error)
+        {
+            Logger::warn(L"Unable to acknowledge Workspaces cancellation: {}", error.message());
+        }
+        catch (const std::exception& error)
+        {
+            Logger::warn("Unable to acknowledge Workspaces cancellation: {}", error.what());
+        }
         return;
     }
     const bool accepted = message->type == LauncherUiMessage::Type::WarningShown ?
