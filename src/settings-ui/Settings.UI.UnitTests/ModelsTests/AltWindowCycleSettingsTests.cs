@@ -35,6 +35,8 @@ namespace CommonLibTest
         [DataRow(0xC0u, 0xC0, DisplayName = "US: VK_OEM_3")]
         [DataRow(0xDFu, 0xDF, DisplayName = "UK: VK_OEM_8")]
         [DataRow(0xDCu, 0xDC, DisplayName = "German: VK_OEM_5")]
+        [DataRow(0xF3u, 0xC0, DisplayName = "Japanese VK_OEM_AUTO: falls back to VK_OEM_3")]
+        [DataRow(0xF4u, 0xC0, DisplayName = "Japanese VK_OEM_ENLW: falls back to VK_OEM_3")]
         [DataRow(0u, 0xC0, DisplayName = "Unmapped: falls back to VK_OEM_3")]
         [DataRow(0x100u, 0xC0, DisplayName = "Out of range: falls back to VK_OEM_3")]
         public void GetDefaultCycleKeyCode_ShouldUseLayoutKeyBelowEscape(uint layoutVirtualKey, int expected)

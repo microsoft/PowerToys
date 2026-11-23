@@ -180,6 +180,8 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_3)); // US
             Assert::AreEqual<int>(VK_OEM_8, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_8)); // UK
             Assert::AreEqual<int>(VK_OEM_5, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_5)); // German
+            Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_AUTO)); // Japanese IME toggle
+            Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_ENLW)); // Japanese IME toggle
             Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(0));
             Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(0x100));
         }

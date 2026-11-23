@@ -19,6 +19,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // VK_OEM_3
         private const int FallbackCycleKeyCode = 0xC0;
 
+        // VK_OEM_1 through VK_OEM_102, the layout-dependent character keys.
+        private const uint FirstOemKeyCode = 0xBA;
+        private const uint LastOemKeyCode = 0xE2;
+
         // Alt+` cycles to the next window of the focused app.
         [JsonIgnore]
         [CmdConfigureIgnore]
@@ -59,10 +63,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return GetDefaultCycleKeyCode(NativeMethods.MapVirtualKeyEx(DefaultCycleKeyScanCode, NativeMethods.MAPVK_VSC_TO_VK, NativeMethods.GetKeyboardLayout(0)));
         }
 
-        // Falls back to VK_OEM_3 when the layout has no usable mapping for the key below Esc.
+        // Falls back to VK_OEM_3 when the layout has no OEM character key below Esc, e.g. on
+        // Japanese layouts, where that key is the half-width/full-width IME toggle (VK_OEM_AUTO).
         public static int GetDefaultCycleKeyCode(uint layoutVirtualKey)
         {
-            return layoutVirtualKey is > 0 and <= 0xFF ? (int)layoutVirtualKey : FallbackCycleKeyCode;
+            return layoutVirtualKey is >= FirstOemKeyCode and <= LastOemKeyCode ? (int)layoutVirtualKey : FallbackCycleKeyCode;
         }
     }
 }
