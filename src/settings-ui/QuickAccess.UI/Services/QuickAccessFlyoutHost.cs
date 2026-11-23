@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -75,8 +76,8 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
             return;
         }
 
-        _flyout.ApplyTemplate();
-        ExecuteFlyoutAction(_visibilityState.RequestShow());
+        var action = _visibilityState.RequestShow();
+        ExecuteFlyoutAction(action);
     }
 
     private void ExecuteFlyoutAction(QuickAccessFlyoutAction action)
@@ -89,8 +90,8 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         if (action == QuickAccessFlyoutAction.Show)
         {
             CancelMemoryTrim();
-            _flyout.Show(GetFlyoutPosition());
 
+            _flyout.Show(GetFlyoutPosition());
             _flyout.RefreshIfAppsList();
         }
         else if (action == QuickAccessFlyoutAction.Hide)
@@ -99,32 +100,33 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         }
     }
 
-    private void HideFlyout()
-    {
-        ExecuteFlyoutAction(_visibilityState.RequestHide());
-    }
-
     private static DesktopFlyoutPosition GetFlyoutPosition()
     {
-        if (TryGetRunnerTrayIconBounds(out var bounds))
+        var initialBounds = GetTrayIconBounds();
+        if (initialBounds is null)
         {
-            return DesktopFlyoutPosition.ForTaskbarAnchor(bounds);
+            return DesktopFlyoutPosition.InWorkArea(
+                DesktopFlyoutWorkAreaPosition.BottomRight,
+                DesktopFlyoutMonitorSelection.Cursor);
         }
 
-        return DesktopFlyoutPosition.InWorkArea(
-            DesktopFlyoutWorkAreaPosition.BottomRight,
-            DesktopFlyoutMonitorSelection.Cursor);
+        return DesktopFlyoutPosition.FromTrayIconBounds(GetLiveBounds);
+
+        Rectangle? GetLiveBounds()
+        {
+            // Use the bounds already found for the initial show, then query the shell for updates.
+            var bounds = initialBounds;
+            initialBounds = null;
+            return bounds ?? GetTrayIconBounds();
+        }
     }
 
-    private static bool TryGetRunnerTrayIconBounds(out System.Drawing.Rectangle bounds)
+    private static Rectangle? GetTrayIconBounds()
     {
-        bounds = System.Drawing.Rectangle.Empty;
-
-        // Match the tray icon registered by Runner in tray_icon.cpp.
         var trayIconWindow = FindWindowW("PToyTrayIconWindow", null);
         if (trayIconWindow == IntPtr.Zero)
         {
-            return false;
+            return null;
         }
 
         var identifier = new NotifyIconIdentifier
@@ -134,15 +136,20 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
             UId = 1,
         };
 
-        if (Shell_NotifyIconGetRect(ref identifier, out var iconRect) < 0 ||
-            iconRect.Right <= iconRect.Left ||
-            iconRect.Bottom <= iconRect.Top)
+        if (Shell_NotifyIconGetRect(ref identifier, out var iconRect) >= 0 &&
+            iconRect.Right > iconRect.Left &&
+            iconRect.Bottom > iconRect.Top)
         {
-            return false;
+            return Rectangle.FromLTRB(iconRect.Left, iconRect.Top, iconRect.Right, iconRect.Bottom);
         }
 
-        bounds = System.Drawing.Rectangle.FromLTRB(iconRect.Left, iconRect.Top, iconRect.Right, iconRect.Bottom);
-        return true;
+        return null;
+    }
+
+    private void HideFlyout()
+    {
+        var action = _visibilityState.RequestHide();
+        ExecuteFlyoutAction(action);
     }
 
     private void OnFlyoutIsOpenChanged(DependencyObject sender, DependencyProperty property)
@@ -299,7 +306,23 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
 
                 // Read the manual-reset state when the UI thread handles the wake-up so
                 // coalesced change signals always apply the latest requested visibility.
-                _dispatcherQueue.TryEnqueue(ApplyRequestedVisibility);
+                _dispatcherQueue.TryEnqueue(() =>
+                {
+                    if (_disposed || _visibilityStateEvent is null)
+                    {
+                        return;
+                    }
+
+                    var requestedVisibility = _visibilityStateEvent.WaitOne(0);
+                    if (requestedVisibility)
+                    {
+                        ShowFlyout();
+                    }
+                    else
+                    {
+                        HideFlyout();
+                    }
+                });
             }
         }
         catch (ObjectDisposedException)
@@ -307,23 +330,6 @@ internal sealed class QuickAccessFlyoutHost : IDisposable
         }
         catch (ThreadInterruptedException)
         {
-        }
-    }
-
-    private void ApplyRequestedVisibility()
-    {
-        if (_disposed || _visibilityStateEvent is null)
-        {
-            return;
-        }
-
-        if (_visibilityStateEvent.WaitOne(0))
-        {
-            ShowFlyout();
-        }
-        else
-        {
-            HideFlyout();
         }
     }
 
