@@ -23,6 +23,27 @@ internal static class ExpirationTimeParser
             return ExpirationTimeParseStatus.InvalidFormat;
         }
 
-        return ExpirationTimeParseStatus.InvalidFormat;
+        if (DateTime.TryParse(
+            value,
+            culture,
+            DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.NoCurrentDateDefault,
+            out DateTime parsedNoDefault) && parsedNoDefault.Kind == DateTimeKind.Unspecified)
+        {
+            return ExpirationTimeParseStatus.InvalidFormat;
+        }
+
+        if (!DateTimeOffset.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTimeOffset parsedOffset))
+        {
+            return ExpirationTimeParseStatus.InvalidFormat;
+        }
+
+        if (parsedOffset <= now)
+        {
+            expirationDateTime = default;
+            return ExpirationTimeParseStatus.InThePast;
+        }
+
+        expirationDateTime = parsedOffset;
+        return ExpirationTimeParseStatus.Success;
     }
 }
