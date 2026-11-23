@@ -45,6 +45,7 @@ namespace Peek.UI
         private bool _isDeleteInProgress;
         private bool _exitAfterClose;
         private bool _isUninitializing;
+        private SelectedItem? _pendingToggleItem;
 
         private IntPtr _keyboardHookHandle;
         private NativeMethods.LowLevelKeyboardProc? _keyboardHookProc;
@@ -151,6 +152,14 @@ namespace Peek.UI
             {
                 Activate();
                 Initialize(selectedItem);
+                return;
+            }
+
+            // A close is still in progress (blanking the WebView). Handle this request once it has
+            // finished, as if it arrived after the close; otherwise the close would tear down the new preview.
+            if (_isUninitializing)
+            {
+                _pendingToggleItem = selectedItem;
                 return;
             }
 
@@ -271,6 +280,12 @@ namespace Peek.UI
                 if (_exitAfterClose)
                 {
                     Environment.Exit(0);
+                }
+
+                if (_pendingToggleItem is { } pending)
+                {
+                    _pendingToggleItem = null;
+                    Toggle(false, pending, false);
                 }
             }
         }
