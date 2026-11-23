@@ -18,4 +18,10 @@ namespace NativeSnap
     // that it can join snap groups. Returns false when native snapping is unavailable or not
     // applicable, and the caller has to fall back to its own window placement.
     bool SnapWindowToRect(HWND window, const RECT& snapRect) noexcept;
+
+    // The Shell applies a snap asynchronously: SnapWindow returns before the window has been
+    // moved, so any work done right after it races the Shell. Waits until the snap has visibly
+    // been applied (the window is arranged and sits at `snapRect`) or the timeout elapses.
+    // Returns true when the snap was observed.
+    bool WaitForSnapApplied(HWND window, const RECT& snapRect, DWORD timeoutMs) noexcept;
 }

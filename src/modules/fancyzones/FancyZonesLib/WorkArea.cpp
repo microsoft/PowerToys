@@ -174,8 +174,14 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
             const RECT snapScreenRect = NativeSnap::ExtendToWorkAreaEdges(targetScreenRect, workAreaRect, zoneSpacing + NativeSnap::EdgeTolerance);
 
             snappedNatively = NativeSnap::SnapWindowToRect(window, snapScreenRect);
+
             if (snappedNatively && !::EqualRect(&snapScreenRect, &targetScreenRect))
             {
+                // The Shell applies a snap asynchronously, so the window has to be at the snapped
+                // position before it is moved again; otherwise the Shell places it afterwards and
+                // the spacing inset is lost.
+                NativeSnap::WaitForSnapApplied(window, snapScreenRect, 400);
+
                 // SetWindowPos keeps the arranged state that SetWindowPlacement drops.
                 const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
                 ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
@@ -198,7 +204,7 @@ bool WorkArea::Unsnap(HWND window)
     {
         return false;
     }
-    
+
     m_layoutWindows.Dismiss(window);
     AppZoneHistory::instance().RemoveAppLastZone(window, m_uniqueId, m_layout->Id());
     FancyZonesWindowProperties::RemoveZoneIndexProperty(window);

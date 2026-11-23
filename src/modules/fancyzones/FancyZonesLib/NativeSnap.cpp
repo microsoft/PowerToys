@@ -4,6 +4,9 @@
 #include <cstdlib>
 #include <roapi.h>
 #include <winstring.h>
+#include <dwmapi.h>
+
+#pragma comment(lib, "dwmapi.lib")
 
 namespace
 {
@@ -253,4 +256,60 @@ bool NativeSnap::SnapWindowToRect(HWND window, const RECT& snapRect) noexcept
     ReleaseInterface(manager);
 
     return SUCCEEDED(snapResult);
+}
+
+bool NativeSnap::WaitForSnapApplied(HWND window, const RECT& snapRect, DWORD timeoutMs) noexcept
+{
+    if (!window)
+    {
+        return false;
+    }
+
+    // IsWindowArranged is set by the Shell once the window is part of the snap layout; the
+    // geometry check makes sure the Shell actually applied the rectangle that was requested
+    // instead of an older one.
+    // The comparison uses the visible frame: GetWindowRect includes the invisible resize border
+    // that Windows 11 draws around windows, so it never matches the requested rectangle.
+    const auto isApplied = [window, &snapRect]() noexcept {
+        if (!::IsWindowArranged(window))
+        {
+            return false;
+        }
+
+        RECT current{};
+        if (FAILED(::DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &current, sizeof(current))))
+        {
+            if (!::GetWindowRect(window, &current))
+            {
+                return false;
+            }
+        }
+
+        return std::abs(current.left - snapRect.left) <= EdgeTolerance &&
+               std::abs(current.top - snapRect.top) <= EdgeTolerance &&
+               std::abs(current.right - snapRect.right) <= EdgeTolerance &&
+               std::abs(current.bottom - snapRect.bottom) <= EdgeTolerance;
+    };
+
+    const ULONGLONG deadline = ::GetTickCount64() + timeoutMs;
+    while (::GetTickCount64() < deadline)
+    {
+        if (isApplied())
+        {
+            return true;
+        }
+
+        // The Shell posts the placement work to this thread's queue, so the queue has to be
+        // drained for the snap to happen at all - waiting alone never completes it.
+        MSG message;
+        while (::PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
+        {
+            ::TranslateMessage(&message);
+            ::DispatchMessageW(&message);
+        }
+
+        ::Sleep(5);
+    }
+
+    return isApplied();
 }

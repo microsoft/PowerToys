@@ -539,10 +539,14 @@ void FancyZones::MoveSizeUpdate(HMONITOR monitor, POINT const& ptScreen)
 
 void FancyZones::MoveSizeEnd()
 {
-    if (m_windowMouseSnapper)
+    // The snapper is released before the call, not after it: applying a native snap pumps the
+    // message queue (the Shell places snapped windows asynchronously), so a reentrant
+    // WM_PRIV_MOVESIZEEND can arrive while this call is still on the stack. Holding the
+    // ownership here would let it snap the same window twice.
+    std::unique_ptr<WindowMouseSnap> snapper = std::move(m_windowMouseSnapper);
+    if (snapper)
     {
-        m_windowMouseSnapper->MoveSizeEnd();
-        m_windowMouseSnapper = nullptr;
+        snapper->MoveSizeEnd();
     }
 
     // Always disable dragging state, even if m_windowMouseSnapper was already null.
