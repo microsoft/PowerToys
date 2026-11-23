@@ -27,7 +27,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         public const uint MAPVK_VSC_TO_VK = 1;
 
         [DllImport("user32.dll")]
-        public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
+        public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr keyboardLayout);
 
         [DllImport("user32.dll")]
         public static extern IntPtr GetKeyboardLayout(uint idThread);
