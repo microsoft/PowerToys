@@ -70,6 +70,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 settingsUpgraded = true;
             }
 
+            // Add DisableCursorWrapInGameMode property if it doesn't exist (for users upgrading from older versions)
+            if (Properties.DisableCursorWrapInGameMode == null)
+            {
+                Properties.DisableCursorWrapInGameMode = new BoolProperty(false); // Default to false
+                settingsUpgraded = true;
+            }
+
             return settingsUpgraded;
         }
     }
