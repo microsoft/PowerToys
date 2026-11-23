@@ -442,6 +442,39 @@ void ProfileSwapGate::ResetHeldKeys(const std::vector<KeySnapshot>& keysDown)
     SeedOrphans(keysDown, m_now());
 }
 
+void ProfileSwapGate::ReconcileHooks(const HookControl& hooks, const AdoptFunction& adopt)
+{
+    for (;;)
+    {
+        if (!hooks.isInstalled() && HasStage())
+        {
+            // No keyboard hook means the live profile remaps nothing, so no key is held "under" it:
+            // apply the stage now. Keys down right now reached the system unremapped; they are recorded
+            // as pass-through orphans so their key-ups also pass through instead of being resolved by
+            // the new profile.
+            ApplyStageWithoutHook(hooks.keysDown(), adopt);
+        }
+
+        if (hooks.hasRemappings())
+        {
+            hooks.install();
+            return;
+        }
+
+        hooks.uninstall();
+
+        // Look again after the removal. A stage offered while the hook was still installed would
+        // otherwise wait for a key-down that the removed hook can no longer see, and a mapping applied
+        // in place between the check above and the removal (the first mapping of an empty profile)
+        // would be left without a hook. Go round once more in either case; each round acts on what it
+        // sees, so this ends once the tables stop changing.
+        if (!HasStage() && !hooks.hasRemappings())
+        {
+            return;
+        }
+    }
+}
+
 size_t ProfileSwapGate::HeldKeyCount() const noexcept
 {
     return m_heldKeys.size();

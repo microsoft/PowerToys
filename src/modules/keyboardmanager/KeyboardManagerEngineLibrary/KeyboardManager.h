@@ -53,8 +53,9 @@ public:
     void StopLowlevelKeyboardHook();
 
     // Hook thread (StartHookMessageID): apply a staged profile change if no keyboard hook is installed,
-    // then install or remove the keyboard/mouse hooks to match the live remap tables. A stage that
-    // arrives while the hook is being removed is applied right after the removal.
+    // then install or remove the keyboard/mouse hooks to match the live remap tables. A stage, or an
+    // in-place reload that adds a mapping, arriving while the hook is being removed is acted on right
+    // after the removal (ProfileSwapGate::ReconcileHooks). The only place hooks change while running.
     void ReconcileHooks();
 
     bool HasRegisteredRemappings() const;
@@ -74,8 +75,8 @@ private:
     // Contains the non localized module name
     std::wstring moduleName = KeyboardManagerConstants::ModuleName;
 
-    // Low level hook handles. Installed on the hook thread; read (and removed) from the settings
-    // watcher thread too, hence atomic.
+    // Low level hook handles. Installed and removed on the hook thread (ReconcileHooks; main.cpp at
+    // startup and shutdown); atomic because other threads may still read them.
     static std::atomic<HHOOK> hookHandle;
 
     // Required for Unhook in old versions of Windows

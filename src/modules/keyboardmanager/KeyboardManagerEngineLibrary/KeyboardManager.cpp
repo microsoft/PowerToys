@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "KeyboardManager.h"
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -579,24 +579,12 @@ void KeyboardManager::OnSettingsChanged()
         return;
     }
 
-    const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
-    // We didn't have any bindings before and we have now
-    if (newHasRemappings && !hookHandle)
-        PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-
-    // All bindings were removed
-    if (!newHasRemappings && hookHandle)
-        StopLowlevelKeyboardHook();
-
-    // The set of "Alone" (dual-key) remaps may have changed without changing whether ANY binding
-    // exists, so reconcile the companion mouse hook. Route an install through the same StartHook
-    // message (SetWindowsHookEx must run on the hook thread); a removal is safe inline, mirroring
-    // the StopLowlevelKeyboardHook call above.
-    const bool needMouseHook = !state.aloneSingleKeyReMap.empty();
-    if (needMouseHook && hookHandle && !mouseHookHandle)
-        PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-    else if (!needMouseHook && mouseHookHandle)
-        StopLowlevelMouseHook();
+    // Applied in place: let the hook thread install or remove the keyboard and mouse hooks for the new
+    // tables (ReconcileHooks). Always post, and never install or remove a hook from this thread: a
+    // decision taken here from the current hookHandle could be overtaken by the hook thread's own
+    // reconciliation, which may be about to remove the hook for the tables this reload replaced (the
+    // first mapping added to an empty profile). An extra message is harmless.
+    PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
 }
 
 void KeyboardManager::AdoptStagedConfiguration(std::unique_ptr<State> staged)
@@ -660,35 +648,18 @@ std::vector<ProfileSwapGate::KeySnapshot> KeyboardManager::SnapshotKeysDown()
 
 void KeyboardManager::ReconcileHooks()
 {
-    for (;;)
-    {
-        if (!hookHandle && profileSwapGate.HasStage())
+    // The hook thread is the only place that installs or removes the hooks: OnSettingsChanged posts
+    // StartHookMessageID after every accepted reload, so the last message always reconciles against
+    // the newest tables.
+    profileSwapGate.ReconcileHooks(
         {
-            // No keyboard hook means the live profile remaps nothing, so no key is held "under" it:
-            // apply the stage now. Keys down right now reached the system unremapped; they are recorded
-            // as pass-through orphans so their key-ups also pass through instead of being resolved by
-            // the new profile.
-            profileSwapGate.ApplyStageWithoutHook(SnapshotKeysDown(), [this](std::unique_ptr<State> staged) {
-                AdoptStagedConfiguration(std::move(staged));
-            });
-        }
-
-        if (HasRegisteredRemappingsUnchecked())
-        {
-            StartLowlevelKeyboardHook();
-            return;
-        }
-
-        StopLowlevelKeyboardHook();
-
-        // A stage offered while the hook was still installed (after the check above) would otherwise
-        // wait for a key-down that the removed hook can no longer see: go round once more to apply it
-        // without the hook. Each round applies the stage it sees, so this ends.
-        if (!profileSwapGate.HasStage())
-        {
-            return;
-        }
-    }
+            [] { return hookHandle.load() != nullptr; },
+            [this] { return HasRegisteredRemappingsUnchecked(); },
+            [this] { StartLowlevelKeyboardHook(); },
+            [this] { StopLowlevelKeyboardHook(); },
+            [] { return SnapshotKeysDown(); },
+        },
+        [this](std::unique_ptr<State> staged) { AdoptStagedConfiguration(std::move(staged)); });
 }
 
 LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const LPARAM lParam)
@@ -816,7 +787,7 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
 void KeyboardManager::StopLowlevelKeyboardHook()
 {
-    // Called from the hook thread and the settings watcher thread: take the handle exactly once.
+    // Called from the hook thread (ReconcileHooks) and at shutdown: take the handle exactly once.
     if (const HHOOK hook = hookHandle.exchange(nullptr))
     {
         UnhookWindowsHookEx(hook);

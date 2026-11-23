@@ -191,6 +191,29 @@ public:
     // while unhooked), so replace it with `keysDown` as pass-through orphans.
     void ResetHeldKeys(const std::vector<KeySnapshot>& keysDown);
 
+    // What ReconcileHooks needs from the engine (injectable for tests).
+    struct HookControl
+    {
+        // Whether the keyboard hook is installed.
+        std::function<bool()> isInstalled;
+
+        // Whether the live tables hold any remapping (read without waiting for a reload to finish).
+        std::function<bool()> hasRemappings;
+
+        // Install the keyboard hook if it is missing, and install or remove the mouse hook to match.
+        std::function<void()> install;
+
+        // Remove the keyboard and mouse hooks.
+        std::function<void()> uninstall;
+
+        // Keys GetAsyncKeyState reports down right now.
+        std::function<std::vector<KeySnapshot>()> keysDown;
+    };
+
+    // Hook thread (the engine's StartHookMessageID): apply a pending stage if no keyboard hook is
+    // installed, then install or remove the hooks to match the live tables.
+    void ReconcileHooks(const HookControl& hooks, const AdoptFunction& adopt);
+
     // Test/diagnostic accessors (hook thread).
     size_t HeldKeyCount() const noexcept;
     size_t OrphanKeyCount() const noexcept;

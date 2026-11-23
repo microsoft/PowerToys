@@ -920,5 +920,92 @@ namespace RemappingLogicTests
             gate->ReportPendingProfile(record);
             Assert::AreEqual(std::wstring{}, pending);
         }
+
+        // Hooks driven by ReconcileHooks in the tests: installed state, a counter per call, and an
+        // optional action run inside uninstall (to interleave the settings thread there).
+        struct FakeHooks
+        {
+            bool installed = true;
+            int installCalls = 0;
+            int uninstallCalls = 0;
+            std::function<void()> duringUninstall;
+        };
+
+        ProfileSwapGate::HookControl HookControlFor(FakeHooks& hooks)
+        {
+            return {
+                [&hooks] { return hooks.installed; },
+                [this] { return !testState.singleKeyReMap.empty() || !testState.osLevelShortcutReMap.empty(); },
+                [&hooks] {
+                    ++hooks.installCalls;
+                    hooks.installed = true;
+                },
+                [&hooks] {
+                    ++hooks.uninstallCalls;
+                    if (hooks.duringUninstall)
+                    {
+                        auto action = std::move(hooks.duringUninstall);
+                        hooks.duringUninstall = nullptr;
+                        action();
+                    }
+                    hooks.installed = false;
+                },
+                [] { return std::vector<ProfileSwapGate::KeySnapshot>{}; }
+            };
+        }
+
+        void Reconcile(FakeHooks& hooks)
+        {
+            gate->ReconcileHooks(HookControlFor(hooks), [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); });
+        }
+
+        // moooyo N2: after a switch to an empty profile the hook thread decides to unhook; before the
+        // removal, the settings thread applies the profile's first mapping in place (and, seeing the hook
+        // still installed, does not ask for it). The reconciliation must not end with the mapping live
+        // and no hook.
+        TEST_METHOD (ReconcileHooks_MappingAddedBeforeUnhook_HookStaysInstalled)
+        {
+            FakeHooks hooks;
+            hooks.duringUninstall = [this] {
+                auto edited = MakeProfile(L"A");
+                edited->AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
+                Assert::IsTrue(Offer(std::move(edited)) == ProfileSwapGate::OfferResult::AppliedInPlace);
+            };
+
+            Reconcile(hooks);
+            Assert::IsTrue(testState.GetSingleKeyRemap('X').has_value());
+            Assert::IsTrue(hooks.installed);
+            Assert::AreEqual(1, hooks.uninstallCalls);
+            Assert::AreEqual(1, hooks.installCalls);
+        }
+
+        // The ordinary cases: an empty profile removes the hook once, a non-empty one installs it, and a
+        // stage offered during the removal is applied without the hook (then its tables decide).
+        TEST_METHOD (ReconcileHooks_FollowsLiveTablesAndAppliesLateStage)
+        {
+            FakeHooks hooks;
+            Reconcile(hooks);
+            Assert::IsFalse(hooks.installed);
+            Assert::AreEqual(1, hooks.uninstallCalls);
+            Assert::AreEqual(0, hooks.installCalls);
+
+            testState.AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
+            Reconcile(hooks);
+            Assert::IsTrue(hooks.installed);
+            Assert::AreEqual(1, hooks.installCalls);
+
+            testState.ClearSingleKeyRemaps();
+            hooks.duringUninstall = [this] {
+                auto b = MakeProfile(L"B");
+                b->AddSingleKeyRemap('X', static_cast<DWORD>('W'));
+                Assert::IsTrue(Offer(std::move(b)) == ProfileSwapGate::OfferResult::Staged);
+            };
+            Reconcile(hooks);
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsFalse(gate->HasStage());
+            Assert::IsTrue(hooks.installed);
+            Assert::AreEqual(2, hooks.uninstallCalls);
+            Assert::AreEqual(2, hooks.installCalls);
+        }
     };
 }
