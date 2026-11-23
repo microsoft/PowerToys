@@ -434,13 +434,8 @@ namespace KeyboardManagerEditorUI.Settings
         /// Whether to rebuild unreadable metadata from the active native mappings. Pass false when the file
         /// may be mid-write (e.g. during a Settings restore) so a failed read does not drop disabled rows.
         /// </param>
-        /// <param name="migrateLegacyRows">
-        /// Whether to assign rows that name no profile (written by the single-profile editor) to the
-        /// active profile, once per file. Pass true only from the editor's start-up reconcile, before
-        /// anything can have switched profiles; see <see cref="ReconcileMappings"/>.
-        /// </param>
         /// <returns>Whether the loaded metadata is now current.</returns>
-        public static bool CorrelateServiceAndEditorMappings(bool regenerateUnreadableSettings = true, bool migrateLegacyRows = false)
+        public static bool CorrelateServiceAndEditorMappings(bool regenerateUnreadableSettings = true)
         {
             if (_mappingService is null)
             {
@@ -489,19 +484,7 @@ namespace KeyboardManagerEditorUI.Settings
                     TargetText = mapping.TargetText,
                 }));
 
-                EditorSettings updatedSettings = CloneSettings(EditorSettings);
-                if (!ReconcileMappings(updatedSettings, activeMappings, service.ConfigurationName, migrateLegacyRows))
-                {
-                    return true;
-                }
-
-                if (!WriteSettings(updatedSettings))
-                {
-                    return false;
-                }
-
-                EditorSettings = updatedSettings;
-                return true;
+                return ReconcileLoadedSettings(activeMappings, service.ConfigurationName);
             }
             catch (Exception exception)
             {
@@ -510,38 +493,49 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
+        /// <summary>
+        /// The part of <see cref="CorrelateServiceAndEditorMappings"/> after the native mappings and
+        /// the editor settings have been loaded (the caller holds the transaction lock): reconciles
+        /// the loaded settings against <paramref name="activeMappings"/> of
+        /// <paramref name="profileName"/>, migrating a file from the single-profile editor on the
+        /// way, and writes the result when anything changed.
+        /// </summary>
+        internal static bool ReconcileLoadedSettings(IEnumerable<ShortcutKeyMapping> activeMappings, string? profileName)
+        {
+            EditorSettings updatedSettings = CloneSettings(EditorSettings);
+            if (!ReconcileMappings(updatedSettings, activeMappings, profileName, IsRegisteredProfile))
+            {
+                return true;
+            }
+
+            if (!WriteSettings(updatedSettings))
+            {
+                return false;
+            }
+
+            EditorSettings = updatedSettings;
+            return true;
+        }
+
         internal static bool ReconcileMappings(
             EditorSettings settings,
             IEnumerable<ShortcutKeyMapping> activeMappings,
             string? profileName = null,
-            bool migrateLegacyRows = false)
+            Func<string, bool>? isRegisteredProfile = null)
         {
             bool profileAware = !string.IsNullOrWhiteSpace(profileName);
             bool shortcutSettingsChanged = NormalizeSettings(settings);
-            if (profileAware && !string.Equals(settings.ActiveProfile, profileName, StringComparison.OrdinalIgnoreCase))
+
+            // Before ActiveProfile is overwritten below: the migration reads the profile the file
+            // was written for.
+            if (profileAware && MigrateLegacyRows(settings, isRegisteredProfile))
             {
-                settings.ActiveProfile = profileName!;
                 shortcutSettingsChanged = true;
             }
 
-            if (migrateLegacyRows && profileAware && settings.SchemaVersion < EditorSettings.CurrentSchemaVersion)
+            if (profileAware && !string.Equals(settings.ActiveProfile, profileName, StringComparison.OrdinalIgnoreCase))
             {
-                // One-time upgrade from the single-profile editor (v0.100 / v0.101). It stored
-                // turned-off rows without a profile and deleted their native mappings, so nothing
-                // below would ever tag them. Untagged rows are treated as belonging to every
-                // profile, so once profiles can be created such a row would show up in a new empty
-                // profile and could be deleted or claimed from there, taking it away from the
-                // profile it came from. Only the start-up reconcile passes migrateLegacyRows: the
-                // profile active then is the one the single-profile editor was working on.
-                foreach (ShortcutSettings shortcutSettings in settings.ShortcutSettingsDictionary.Values)
-                {
-                    if (GetProfiles(shortcutSettings).Count == 0)
-                    {
-                        AddProfile(shortcutSettings, profileName!);
-                    }
-                }
-
-                settings.SchemaVersion = EditorSettings.CurrentSchemaVersion;
+                settings.ActiveProfile = profileName!;
                 shortcutSettingsChanged = true;
             }
 
@@ -631,6 +625,50 @@ namespace KeyboardManagerEditorUI.Settings
 
             return shortcutSettingsChanged;
         }
+
+        /// <summary>
+        /// One-time upgrade of a file from the single-profile editor (v0.100 to v0.102), marked by
+        /// <see cref="EditorSettings.SchemaVersion"/> below <see cref="EditorSettings.CurrentSchemaVersion"/>.
+        /// That editor stored turned-off rows without a profile and deleted their native mappings, so
+        /// reconciling would never tag them. Untagged rows are treated as belonging to every profile,
+        /// so once profiles can be created such a row would show up in a new empty profile and could
+        /// be deleted or claimed from there, taking it away from the profile it came from.
+        /// Every untagged row is assigned to the profile the file was written for: the recorded
+        /// <see cref="EditorSettings.ActiveProfile"/> if it names a profile that still exists, and
+        /// otherwise "default", the only profile those editors could use. The profile active now
+        /// plays no part, so it does not matter when the migration runs: at the first start after
+        /// the upgrade, after a switch, or when a restored backup brings back an old file.
+        /// </summary>
+        /// <returns>Whether the settings changed.</returns>
+        internal static bool MigrateLegacyRows(EditorSettings settings, Func<string, bool>? isRegisteredProfile)
+        {
+            if (settings.SchemaVersion >= EditorSettings.CurrentSchemaVersion)
+            {
+                return false;
+            }
+
+            string recordedProfile = settings.ActiveProfile;
+            string originalProfile = !string.IsNullOrWhiteSpace(recordedProfile) &&
+                (recordedProfile.Equals(ProfileManager.DefaultProfile, StringComparison.OrdinalIgnoreCase) || isRegisteredProfile?.Invoke(recordedProfile) == true)
+                ? recordedProfile
+                : ProfileManager.DefaultProfile;
+
+            foreach (ShortcutSettings shortcutSettings in settings.ShortcutSettingsDictionary.Values)
+            {
+                if (GetProfiles(shortcutSettings).Count == 0)
+                {
+                    AddProfile(shortcutSettings, originalProfile);
+                }
+            }
+
+            settings.SchemaVersion = EditorSettings.CurrentSchemaVersion;
+            return true;
+        }
+
+        // Whether a profile is registered in settings.json or has a config file. Used by the
+        // migration to trust the profile recorded in an old editorSettings.json.
+        private static bool IsRegisteredProfile(string profileName) =>
+            ProfileManager.GetProfiles().Contains(profileName, StringComparer.OrdinalIgnoreCase);
 
         public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId, string? profileName = null)
         {

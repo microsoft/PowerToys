@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using KeyboardManagerEditorUI.Interop;
@@ -12,20 +13,21 @@ namespace KeyboardManagerEditorUI.UnitTests
 {
     /// <summary>
     /// Upgrade from the single-profile editor. The released v0.100.2 editor stored a turned-off
-    /// row in editorSettings.json with no profile membership and deleted its native mapping, so
-    /// nothing on disk says which profile the row came from except the profile active at upgrade.
+    /// row in editorSettings.json with no profile membership and deleted its native mapping. Those
+    /// editors could only use "default", so that is where such rows go (or to the profile the file
+    /// records as active, if it still exists), whichever profile is active when they are migrated.
     /// </summary>
     [TestClass]
     public class LegacyMembershipMigrationTests
     {
-        private const string RowId = "6f1a3c52-0d4e-4b8a-9a51-2a7d5c0e9b11";
+        internal const string RowId = "6f1a3c52-0d4e-4b8a-9a51-2a7d5c0e9b11";
 
         private const string ActiveRowId = "0b7e2d19-5c3a-4f6e-8d21-7e4a9c3b5f02";
 
         // editorSettings.json as the v0.100.2 editor wrote it after the user turned a remapping off:
         // the row has no profile, the profile index and the active profile are empty, and the
         // engine config holds no matching mapping (the toggle deleted it).
-        private const string V0100DisabledRowJson = """
+        internal const string V0100DisabledRowJson = """
             {
               "ShortcutSettingsDictionary": {
                 "6f1a3c52-0d4e-4b8a-9a51-2a7d5c0e9b11": {
@@ -79,13 +81,35 @@ namespace KeyboardManagerEditorUI.UnitTests
             }
             """;
 
+        // A file written by v0.101/v0.102 (which only ever had "default") with ActiveProfile set to
+        // another profile: the row came from a profile the user had made by hand.
+        private const string RecordedHomeJson = """
+            {
+              "ShortcutSettingsDictionary": {
+                "6f1a3c52-0d4e-4b8a-9a51-2a7d5c0e9b11": {
+                  "Id": "6f1a3c52-0d4e-4b8a-9a51-2a7d5c0e9b11",
+                  "Shortcut": { "OriginalKeys": "65", "TargetKeys": "66", "OperationType": 0 },
+                  "Profiles": [],
+                  "IsActive": false
+                }
+              },
+              "ProfileDictionary": {},
+              "ShortcutsByOperationType": {
+                "RemapShortcut": [ "6f1a3c52-0d4e-4b8a-9a51-2a7d5c0e9b11" ]
+              },
+              "ActiveProfile": "Home"
+            }
+            """;
+
+        private static readonly Func<string, bool> AllRegistered = _ => true;
+
         [TestMethod]
-        public void StartupReconcile_AssignsLegacyDisabledRowToTheProfileActiveAtUpgrade()
+        public void StartupReconcile_AssignsLegacyDisabledRowToTheOriginalProfile()
         {
             EditorSettings settings = Load(V0100DisabledRowJson);
             Assert.AreEqual(0, settings.SchemaVersion);
 
-            Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "default", migrateLegacyRows: true));
+            Assert.IsTrue(SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "default", AllRegistered));
 
             ShortcutSettings row = settings.ShortcutSettingsDictionary[RowId];
             CollectionAssert.AreEqual(new List<string> { "default" }, row.Profiles);
@@ -100,7 +124,7 @@ namespace KeyboardManagerEditorUI.UnitTests
         public void LegacyDisabledRow_IsNotInAnEmptyWorkProfile_AndWorkCannotRemoveOrClaimIt()
         {
             EditorSettings settings = Load(V0100DisabledRowJson);
-            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "default", migrateLegacyRows: true);
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "default", AllRegistered);
 
             // Switch to the new, empty Work profile (the editor reconciles against Work's empty config).
             SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work");
@@ -126,7 +150,7 @@ namespace KeyboardManagerEditorUI.UnitTests
         {
             EditorSettings settings = Load(V0101MixedJson);
 
-            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping> { Map("70", "71") }, "default", migrateLegacyRows: true);
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping> { Map("70", "71") }, "default", AllRegistered);
 
             CollectionAssert.AreEqual(new List<string> { "default" }, settings.ShortcutSettingsDictionary[RowId].Profiles);
             Assert.IsFalse(settings.ShortcutSettingsDictionary[RowId].IsActive);
@@ -135,31 +159,83 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEquivalent(new List<string> { RowId, ActiveRowId }, settings.ProfileDictionary["default"]);
         }
 
-        // A reconcile after a profile switch (picker, hotkey, auto-switch, file watcher) must not
-        // migrate: the active profile then is not the one the legacy rows came from.
+        // The first reconcile that sees a version-0 file may run while another profile is active
+        // (a start-up reconcile that failed, a switch, auto-switch before the editor started, a
+        // restored old backup). The rows still go to the profile they came from, not to Work.
         [TestMethod]
-        public void ReconcileAfterASwitch_LeavesLegacyRowsForTheStartupMigration()
+        public void Reconcile_WhileWorkIsActive_AssignsLegacyRowsToDefault()
         {
             EditorSettings settings = Load(V0100DisabledRowJson);
 
-            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work");
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work", AllRegistered);
 
-            Assert.AreEqual(0, settings.ShortcutSettingsDictionary[RowId].Profiles.Count);
-            Assert.AreEqual(0, settings.SchemaVersion);
+            ShortcutSettings row = settings.ShortcutSettingsDictionary[RowId];
+            CollectionAssert.AreEqual(new List<string> { "default" }, row.Profiles);
+            Assert.AreEqual(EditorSettings.CurrentSchemaVersion, settings.SchemaVersion);
+            Assert.AreEqual("Work", settings.ActiveProfile);
+            Assert.IsFalse(SettingsManager.IsMappingInActiveProfile(row, "Work"), "Work must not list default's turned-off row.");
+            Assert.IsFalse(settings.ProfileDictionary.ContainsKey("Work"));
+            Assert.IsFalse(SettingsManager.TryApplyShortcutKeyMappingRemoval(settings, RowId, "Work"));
+        }
 
-            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "default", migrateLegacyRows: true);
+        // All rows of a v0.100 file are untagged, the turned-on ones too. Migrated under Work, they
+        // all go to default; Work's own native mappings get rows of their own.
+        [TestMethod]
+        public void Reconcile_WhileWorkIsActive_KeepsDefaultsTurnedOnRowsInDefault()
+        {
+            EditorSettings settings = Load(V0101MixedJson);
+            settings.ShortcutSettingsDictionary[ActiveRowId].Profiles.Clear();
+            settings.ProfileDictionary.Clear();
+
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping> { Map("70", "71") }, "Work", AllRegistered);
+
+            CollectionAssert.AreEqual(new List<string> { "default" }, settings.ShortcutSettingsDictionary[ActiveRowId].Profiles);
+            Assert.IsFalse(settings.ShortcutSettingsDictionary[ActiveRowId].IsActive);
+            CollectionAssert.AreEquivalent(new List<string> { RowId, ActiveRowId }, settings.ProfileDictionary["default"]);
+            Assert.AreEqual(1, settings.ProfileDictionary["Work"].Count, "Work's native mapping gets its own row.");
+        }
+
+        [TestMethod]
+        public void Reconcile_AssignsLegacyRowsToTheRecordedActiveProfile_WhenItIsStillRegistered()
+        {
+            EditorSettings settings = Load(RecordedHomeJson);
+
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work", name => name is "default" or "Home" or "Work");
+
+            CollectionAssert.AreEqual(new List<string> { "Home" }, settings.ShortcutSettingsDictionary[RowId].Profiles);
+            Assert.AreEqual("Work", settings.ActiveProfile);
+        }
+
+        [TestMethod]
+        public void Reconcile_AssignsLegacyRowsToDefault_WhenTheRecordedProfileIsGone()
+        {
+            EditorSettings settings = Load(RecordedHomeJson);
+
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work", name => name is "default" or "Work");
+
             CollectionAssert.AreEqual(new List<string> { "default" }, settings.ShortcutSettingsDictionary[RowId].Profiles);
         }
 
-        // The migration is one-time: once the file is marked, a later start under another profile
-        // does not adopt rows for that profile.
+        // Without a way to tell which profiles exist, only "default" is trusted.
         [TestMethod]
-        public void StartupReconcile_OfAMigratedFile_DoesNotAssignUntaggedRowsAgain()
+        public void Reconcile_AssignsLegacyRowsToDefault_WhenRegistrationIsUnknown()
+        {
+            EditorSettings settings = Load(RecordedHomeJson);
+
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work");
+
+            CollectionAssert.AreEqual(new List<string> { "default" }, settings.ShortcutSettingsDictionary[RowId].Profiles);
+        }
+
+        // The migration is one-time: once the file is marked, a later reconcile under another
+        // profile does not adopt rows for any profile.
+        [TestMethod]
+        public void Reconcile_OfAMigratedFile_DoesNotAssignUntaggedRowsAgain()
         {
             EditorSettings settings = Load(V0100DisabledRowJson);
             settings.SchemaVersion = EditorSettings.CurrentSchemaVersion;
 
-            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work", migrateLegacyRows: true);
+            SettingsManager.ReconcileMappings(settings, new List<ShortcutKeyMapping>(), "Work", AllRegistered);
 
             Assert.AreEqual(0, settings.ShortcutSettingsDictionary[RowId].Profiles.Count);
             Assert.IsFalse(settings.ProfileDictionary.ContainsKey("Work"));

@@ -54,11 +54,7 @@ namespace KeyboardManagerEditorUI
 
             UnhandledException += App_UnhandledException;
 
-            // The start-up reconcile is the only one that may assign rows from the single-profile
-            // editor to a profile. On the first start after an upgrade the active profile is still the
-            // one the old editor worked on (only this editor creates other profiles), whereas later
-            // reconciles may run after a switch to another profile.
-            SettingsManager.CorrelateServiceAndEditorMappings(migrateLegacyRows: true);
+            SettingsManager.CorrelateServiceAndEditorMappings();
         }
 
         /// <summary>

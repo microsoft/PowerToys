@@ -546,6 +546,48 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual(_directory, KeyboardManagerPaths.SettingsDirectory);
         }
 
+        // Settings restores an old backup (a version-0 editorSettings.json) while
+        // Work is active, and the editor reconciles it on reload (ReloadIfChangedOnDisk). The legacy
+        // rows go to default, not to Work, and the file is marked as migrated.
+        [TestMethod]
+        public void RestoredVersion0EditorSettings_ReconciledWhileWorkIsActive_GoesToDefault()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            Assert.IsTrue(SettingsManager.WriteSettings(new EditorSettings { ActiveProfile = "Work", SchemaVersion = EditorSettings.CurrentSchemaVersion }));
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+
+            File.WriteAllText(EditorSettingsPath, LegacyMembershipMigrationTests.V0100DisabledRowJson); // the restore
+            Assert.IsTrue(SettingsManager.HasSettingsChangedOnDisk());
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+
+            Assert.IsTrue(SettingsManager.ReconcileLoadedSettings(new List<ShortcutKeyMapping>(), ProfileManager.GetActiveProfile()));
+
+            EditorSettings onDisk = ReadEditorSettings();
+            CollectionAssert.AreEqual(new List<string> { "default" }, onDisk.ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].Profiles);
+            Assert.AreEqual(EditorSettings.CurrentSchemaVersion, onDisk.SchemaVersion);
+            Assert.AreEqual("Work", onDisk.ActiveProfile);
+            Assert.IsFalse(SettingsManager.IsMappingInActiveProfile(onDisk.ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId], "Work"));
+        }
+
+        // The recorded active profile is used when it is still registered (checked against the real
+        // profile store), and the rows do not follow the live profile.
+        [TestMethod]
+        public void RestoredVersion0EditorSettings_GoesToItsRecordedProfile_WhenThatProfileExists()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Home", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            File.WriteAllText(
+                EditorSettingsPath,
+                LegacyMembershipMigrationTests.V0100DisabledRowJson.Replace("\"ActiveProfile\": \"\"", "\"ActiveProfile\": \"Home\"", StringComparison.Ordinal));
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+
+            Assert.IsTrue(SettingsManager.ReconcileLoadedSettings(new List<ShortcutKeyMapping>(), "Work"));
+
+            CollectionAssert.AreEqual(new List<string> { "Home" }, ReadEditorSettings().ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].Profiles);
+        }
+
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         private static extern uint GetShortPathNameW(string longPath, StringBuilder shortPath, uint bufferLength);
 
@@ -574,6 +616,9 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
             WriteEditorSettings();
         }
+
+        private EditorSettings ReadEditorSettings() =>
+            System.Text.Json.JsonSerializer.Deserialize<EditorSettings>(File.ReadAllText(EditorSettingsPath)) ?? new EditorSettings();
 
         private static void WriteEditorSettings()
         {

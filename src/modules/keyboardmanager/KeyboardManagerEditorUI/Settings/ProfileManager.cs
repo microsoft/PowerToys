@@ -37,7 +37,7 @@ namespace KeyboardManagerEditorUI.Settings
             NotFullyRestored,
         }
 
-        private const string DefaultProfile = "default";
+        internal const string DefaultProfile = "default";
 
         // Named event the KBM engine waits on; signaling it makes the engine reload its settings.
         private const string SettingsChangedEventName = "PowerToys_KeyboardManager_Event_Settings";

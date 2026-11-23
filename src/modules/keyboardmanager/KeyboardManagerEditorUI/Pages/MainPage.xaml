@@ -898,7 +898,11 @@
                             <RowDefinition Height="*" />
                         </Grid.RowDefinitions>
                         <!--  The profile this dialog saves into, captured when it opens  -->
-                        <TextBlock x:Name="RemappingDialogProfileText" TextWrapping="Wrap" />
+                        <TextBlock
+                            x:Name="RemappingDialogProfileText"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Style="{StaticResource CaptionTextBlockStyle}"
+                            TextWrapping="Wrap" />
                         <controls:UnifiedMappingControl
                             x:Name="UnifiedMappingControl"
                             Grid.Row="1"

@@ -44,8 +44,9 @@ namespace KeyboardManagerEditorUI.Pages
         private EditingItem? _editingItem;
 
         // The profile the add/edit remapping dialog was opened for. The dialog saves into this profile
-        // only: if another profile becomes active while it is open, the save is refused.
-        private string? _dialogTargetProfile;
+        // only: if another profile becomes active while it is open, the save is refused. Null while
+        // the dialog is closed.
+        private MappingDialogTarget? _dialogTarget;
         private string _mappingState = "Empty";
         private bool _isServiceRunning = true;
         private bool _isUpdatingToggle;
@@ -423,6 +424,7 @@ namespace KeyboardManagerEditorUI.Pages
             _mappingService = new KeyboardMappingService();
             SettingsManager.ReloadForActiveProfile();
             LoadAllMappings();
+            RevalidateOpenRemappingDialog();
         }
 
         // The engine rewrites settings.json's activeConfiguration when it auto-switches profiles (or
@@ -847,11 +849,12 @@ namespace KeyboardManagerEditorUI.Pages
         private async System.Threading.Tasks.Task ShowRemappingDialog()
         {
             // Capture the target profile now and show it: the dialog saves into this profile only.
-            _dialogTargetProfile = _mappingService?.ConfigurationName;
-            RemappingDialogProfileText.Text = string.IsNullOrEmpty(_dialogTargetProfile)
+            _dialogTarget = MappingDialogTarget.Capture(_mappingService?.ConfigurationName);
+            string? targetProfile = _dialogTarget.Profile;
+            RemappingDialogProfileText.Text = string.IsNullOrEmpty(targetProfile)
                 ? string.Empty
-                : string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("RemappingDialogProfile_Format")), _dialogTargetProfile);
-            RemappingDialogProfileText.Visibility = string.IsNullOrEmpty(_dialogTargetProfile) ? Visibility.Collapsed : Visibility.Visible;
+                : string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("RemappingDialogProfile_Format")), targetProfile);
+            RemappingDialogProfileText.Visibility = string.IsNullOrEmpty(targetProfile) ? Visibility.Collapsed : Visibility.Visible;
 
             RemappingDialog.PrimaryButtonClick += RemappingDialog_PrimaryButtonClick;
             UnifiedMappingControl.ValidationStateChanged += UnifiedMappingControl_ValidationStateChanged;
@@ -863,7 +866,7 @@ namespace KeyboardManagerEditorUI.Pages
             UnifiedMappingControl.ValidationStateChanged -= UnifiedMappingControl_ValidationStateChanged;
             _isEditMode = false;
             _editingItem = null;
-            _dialogTargetProfile = null;
+            _dialogTarget = null;
             KeyboardHookHelper.Instance.CleanupHook();
         }
 
@@ -872,7 +875,8 @@ namespace KeyboardManagerEditorUI.Pages
         // only meaningful while this holds.
         private bool IsDialogTargetCurrent() =>
             _mappingService != null &&
-            MappingDialogTarget.CanSave(_dialogTargetProfile, _mappingService.ConfigurationName, ProfileManager.GetActiveProfile());
+            _dialogTarget != null &&
+            _dialogTarget.CanSave(_mappingService.ConfigurationName, ProfileManager.GetActiveProfile());
 
         private void ShowDialogProfileChanged() =>
             UnifiedMappingControl.ShowValidationError(
@@ -880,8 +884,27 @@ namespace KeyboardManagerEditorUI.Pages
                 string.Format(
                     CultureInfo.CurrentCulture,
                     CompositeFormat.Parse(ResourceHelper.GetString("Error_ProfileChanged_Format")),
-                    _dialogTargetProfile,
+                    _dialogTarget?.Profile,
                     ProfileManager.GetActiveProfile()));
+
+        // The editor was just rebuilt for the active profile (a switch, or a reload after a
+        // restore). If the add/edit dialog is open, evaluate it again, so a "Profile changed" message
+        // and a disabled Save clear as soon as the dialog's profile is active again (and appear as
+        // soon as it is not), without the user having to change an input first.
+        private void RevalidateOpenRemappingDialog()
+        {
+            if (_dialogTarget == null)
+            {
+                return;
+            }
+
+            if (IsDialogTargetCurrent())
+            {
+                UnifiedMappingControl.HideValidationMessage();
+            }
+
+            UnifiedMappingControl_ValidationStateChanged(this, EventArgs.Empty);
+        }
 
         private void UnifiedMappingControl_ValidationStateChanged(object? sender, EventArgs e)
         {
@@ -1018,7 +1041,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         private MappingSaveResult SaveMappingTransaction(List<string> triggerKeys)
         {
-            if (_mappingService == null)
+            if (_mappingService == null || _dialogTarget == null)
             {
                 return MappingSaveResult.Failed;
             }
@@ -1036,63 +1059,31 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 originalService = new KeyboardMappingService();
                 candidateService = new KeyboardMappingService();
+                KeyboardMappingService original = originalService;
+                KeyboardMappingService candidate = candidateService;
+                KeyboardMappingService editorService = _mappingService;
+                string? persistedProfile = null;
 
-                // Both services load the profile that is active now. Stop before anything is written
-                // if that is no longer the profile the dialog was opened for: otherwise an add would
-                // land in the new profile, and an edit would briefly rewrite the new profile's config
-                // (and make the engine reload it) before failing.
-                if (!MappingDialogTarget.CanSave(_dialogTargetProfile, _mappingService.ConfigurationName, originalService.ConfigurationName) ||
-                    !MappingDialogTarget.CanSave(_dialogTargetProfile, candidateService.ConfigurationName, candidateService.ConfigurationName))
+                // Both services load the profile that is active now. The target check runs before
+                // the write step: otherwise an add would land in the new profile, and an edit would
+                // briefly rewrite the new profile's config (and make the engine reload it) before
+                // failing.
+                MappingSaveResult result = _dialogTarget.Save(
+                    editorService.ConfigurationName,
+                    original.ConfigurationName,
+                    candidate.ConfigurationName,
+                    Write,
+                    () => persistedProfile);
+
+                if (result == MappingSaveResult.ProfileChanged)
                 {
-                    Logger.LogWarning($"Remapping not saved: the dialog was opened for profile '{_dialogTargetProfile}', but '{originalService.ConfigurationName}' is active now.");
-                    return MappingSaveResult.ProfileChanged;
+                    Logger.LogWarning($"Remapping not saved: the dialog was opened for profile '{_dialogTarget.Profile}', but '{ProfileManager.GetActiveProfile()}' is active now.");
+                    return result;
                 }
 
-                if (!_mappingService.HasSameMappings(originalService) ||
-                    !originalService.HasSameMappings(candidateService))
+                if (result != MappingSaveResult.Saved)
                 {
-                    return MappingSaveResult.Failed;
-                }
-
-                string? replacingId = null;
-                bool exactMatch = false;
-
-                if (_isEditMode)
-                {
-                    if (_editingItem?.Item is not IToggleableShortcut existingMapping ||
-                        string.IsNullOrEmpty(existingMapping.Id) ||
-                        !SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(existingMapping.Id, out ShortcutSettings? existingSettings))
-                    {
-                        return MappingSaveResult.Failed;
-                    }
-
-                    replacingId = existingMapping.Id;
-                    exactMatch = existingSettings.Shortcut.ExactMatch;
-                    if (existingSettings.IsActive && !DeleteMapping(candidateService, existingSettings.Shortcut))
-                    {
-                        return MappingSaveResult.Failed;
-                    }
-                }
-
-                ShortcutKeyMapping? replacementMapping = CreateShortcutKeyMapping(candidateService, triggerKeys, exactMatch);
-                if (replacementMapping == null ||
-                    HasDuplicateEditorMapping(replacementMapping, replacingId) ||
-                    !AddMapping(candidateService, replacementMapping))
-                {
-                    return MappingSaveResult.Failed;
-                }
-
-                candidateSaveAttempted = true;
-                if (!candidateService.SaveSettingsAndVerify())
-                {
-                    RestoreOriginalMappingSettings(originalService);
-                    return MappingSaveResult.Failed;
-                }
-
-                if (!SettingsManager.TryCommitShortcutKeyMapping(replacementMapping, replacingId, candidateService.ConfigurationName))
-                {
-                    RestoreOriginalMappingSettings(originalService);
-                    return MappingSaveResult.Failed;
+                    return result;
                 }
 
                 KeyboardMappingService previousService = _mappingService;
@@ -1100,6 +1091,59 @@ namespace KeyboardManagerEditorUI.Pages
                 candidateService = null;
                 previousService.Dispose();
                 return MappingSaveResult.Saved;
+
+                // The write step. Runs only once the target check above has passed.
+                MappingWriteResult Write()
+                {
+                    if (!editorService.HasSameMappings(original) ||
+                        !original.HasSameMappings(candidate))
+                    {
+                        return MappingWriteResult.Failed;
+                    }
+
+                    string? replacingId = null;
+                    bool exactMatch = false;
+
+                    if (_isEditMode)
+                    {
+                        if (_editingItem?.Item is not IToggleableShortcut existingMapping ||
+                            string.IsNullOrEmpty(existingMapping.Id) ||
+                            !SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(existingMapping.Id, out ShortcutSettings? existingSettings))
+                        {
+                            return MappingWriteResult.Failed;
+                        }
+
+                        replacingId = existingMapping.Id;
+                        exactMatch = existingSettings.Shortcut.ExactMatch;
+                        if (existingSettings.IsActive && !DeleteMapping(candidate, existingSettings.Shortcut))
+                        {
+                            return MappingWriteResult.Failed;
+                        }
+                    }
+
+                    ShortcutKeyMapping? replacementMapping = CreateShortcutKeyMapping(candidate, triggerKeys, exactMatch);
+                    if (replacementMapping == null ||
+                        HasDuplicateEditorMapping(replacementMapping, replacingId) ||
+                        !AddMapping(candidate, replacementMapping))
+                    {
+                        return MappingWriteResult.Failed;
+                    }
+
+                    candidateSaveAttempted = true;
+                    if (!candidate.SaveSettingsAndVerify(out persistedProfile))
+                    {
+                        RestoreOriginalMappingSettings(original);
+                        return MappingWriteResult.VerifyFailed;
+                    }
+
+                    if (!SettingsManager.TryCommitShortcutKeyMapping(replacementMapping, replacingId, candidate.ConfigurationName))
+                    {
+                        RestoreOriginalMappingSettings(original);
+                        return MappingWriteResult.Failed;
+                    }
+
+                    return MappingWriteResult.Written;
+                }
             }
             catch (Exception ex)
             {
@@ -1568,6 +1612,7 @@ namespace KeyboardManagerEditorUI.Pages
                 previousService.Dispose();
                 LoadAllMappings();
                 _isReloadPending = false;
+                RevalidateOpenRemappingDialog();
             }
             catch (Exception ex)
             {

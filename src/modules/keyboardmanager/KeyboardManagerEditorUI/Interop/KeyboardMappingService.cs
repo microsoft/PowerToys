@@ -325,8 +325,17 @@ namespace KeyboardManagerEditorUI.Interop
             return KeyboardManagerInterop.SaveMappingSettings(_configHandle);
         }
 
-        internal bool SaveSettingsAndVerify()
+        internal bool SaveSettingsAndVerify() => SaveSettingsAndVerify(out _);
+
+        /// <summary>
+        /// Saves this configuration and reads the active one back to check it.
+        /// <paramref name="persistedConfigurationName"/> receives the profile that was read back, or
+        /// <see langword="null"/> when nothing could be read. It differs from
+        /// <see cref="ConfigurationName"/> when the active profile switched in between.
+        /// </summary>
+        internal bool SaveSettingsAndVerify(out string? persistedConfigurationName)
         {
+            persistedConfigurationName = null;
             if (!SaveSettings())
             {
                 return false;
@@ -335,6 +344,7 @@ namespace KeyboardManagerEditorUI.Interop
             try
             {
                 using var persistedService = new KeyboardMappingService();
+                persistedConfigurationName = persistedService.ConfigurationName;
                 return HasSameMappings(persistedService);
             }
             catch (Exception ex)
