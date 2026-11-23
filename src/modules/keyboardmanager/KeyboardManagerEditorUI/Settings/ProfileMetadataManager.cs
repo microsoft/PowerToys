@@ -22,18 +22,13 @@ namespace KeyboardManagerEditorUI.Settings
     /// </summary>
     internal static class ProfileMetadataManager
     {
-        private static readonly string _filePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft",
-            "PowerToys",
-            "Keyboard Manager",
-            "profileMetadata.json");
-
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         };
+
+        private static string FilePath => Path.Combine(KeyboardManagerPaths.SettingsDirectory, "profileMetadata.json");
 
         private sealed class ProfileMetadataFile
         {
@@ -125,17 +120,17 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static void Save(ProfileMetadataFile file)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-            File.WriteAllText(_filePath, JsonSerializer.Serialize(file, _jsonOptions));
+            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+            File.WriteAllText(FilePath, JsonSerializer.Serialize(file, _jsonOptions));
         }
 
         private static ProfileMetadataFile Load()
         {
             try
             {
-                if (File.Exists(_filePath))
+                if (File.Exists(FilePath))
                 {
-                    return JsonSerializer.Deserialize<ProfileMetadataFile>(File.ReadAllText(_filePath), _jsonOptions)
+                    return JsonSerializer.Deserialize<ProfileMetadataFile>(File.ReadAllText(FilePath), _jsonOptions)
                            ?? new ProfileMetadataFile();
                 }
             }

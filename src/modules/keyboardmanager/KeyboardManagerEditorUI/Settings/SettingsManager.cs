@@ -17,19 +17,17 @@ namespace KeyboardManagerEditorUI.Settings
     {
         internal const string DisableInitializationSwitch = "PowerToys.KeyboardManagerEditorUI.DisableSettingsInitialization";
 
-        private static readonly string _settingsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft",
-            "PowerToys",
-            "Keyboard Manager");
-
-        private static readonly string _settingsFilePath = Path.Combine(_settingsDirectory, "editorSettings.json");
-
-        private static readonly string _transactionLockFilePath = Path.Combine(_settingsDirectory, "editorTransaction.lock");
-
         private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions { WriteIndented = true };
 
         private static readonly KeyboardMappingService? _mappingService;
+
+        // Resolved on every use (not cached in static fields) so unit tests can redirect the folder
+        // through KeyboardManagerPaths before touching any file.
+        private static string SettingsDirectory => KeyboardManagerPaths.SettingsDirectory;
+
+        private static string SettingsFilePath => Path.Combine(SettingsDirectory, "editorSettings.json");
+
+        private static string TransactionLockFilePath => Path.Combine(SettingsDirectory, "editorTransaction.lock");
 
         /// <summary>
         /// Gets a value indicating whether the native C++ wrapper DLL is available.
@@ -87,7 +85,7 @@ namespace KeyboardManagerEditorUI.Settings
         {
             try
             {
-                if (!File.Exists(_settingsFilePath))
+                if (!File.Exists(SettingsFilePath))
                 {
                     if (_mappingService is not null)
                     {
@@ -99,7 +97,7 @@ namespace KeyboardManagerEditorUI.Settings
                     return new EditorSettings();
                 }
 
-                string json = File.ReadAllText(_settingsFilePath);
+                string json = File.ReadAllText(SettingsFilePath);
                 EditorSettings settings = JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
                 NormalizeSettings(settings);
                 return settings;
@@ -115,11 +113,11 @@ namespace KeyboardManagerEditorUI.Settings
             string? temporaryPath = null;
             try
             {
-                Directory.CreateDirectory(_settingsDirectory);
+                Directory.CreateDirectory(SettingsDirectory);
                 string json = JsonSerializer.Serialize(editorSettings, _jsonOptions);
-                temporaryPath = Path.Combine(_settingsDirectory, $"editorSettings.{Guid.NewGuid():N}.tmp");
+                temporaryPath = Path.Combine(SettingsDirectory, $"editorSettings.{Guid.NewGuid():N}.tmp");
                 File.WriteAllText(temporaryPath, json);
-                File.Move(temporaryPath, _settingsFilePath, overwrite: true);
+                File.Move(temporaryPath, SettingsFilePath, overwrite: true);
                 return true;
             }
             catch (Exception)
@@ -143,14 +141,14 @@ namespace KeyboardManagerEditorUI.Settings
 
         internal static FileStream? TryAcquireMappingTransactionLock(int timeoutMS = 10_000)
         {
-            Directory.CreateDirectory(_settingsDirectory);
+            Directory.CreateDirectory(SettingsDirectory);
             DateTime deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
             do
             {
                 try
                 {
                     return new FileStream(
-                        _transactionLockFilePath,
+                        TransactionLockFilePath,
                         FileMode.OpenOrCreate,
                         FileAccess.ReadWrite,
                         FileShare.None);
@@ -169,12 +167,12 @@ namespace KeyboardManagerEditorUI.Settings
         {
             try
             {
-                if (!File.Exists(_settingsFilePath))
+                if (!File.Exists(SettingsFilePath))
                 {
                     return false;
                 }
 
-                string json = File.ReadAllText(_settingsFilePath);
+                string json = File.ReadAllText(SettingsFilePath);
                 EditorSettings settings = JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
                 NormalizeSettings(settings);
                 EditorSettings = settings;
@@ -187,7 +185,7 @@ namespace KeyboardManagerEditorUI.Settings
         }
 
         internal static bool HasSettingsChangedOnDisk() =>
-            !File.Exists(_settingsFilePath) || DiffersFromLoadedSettings(File.ReadAllText(_settingsFilePath));
+            !File.Exists(SettingsFilePath) || DiffersFromLoadedSettings(File.ReadAllText(SettingsFilePath));
 
         internal static bool DiffersFromLoadedSettings(string json)
         {

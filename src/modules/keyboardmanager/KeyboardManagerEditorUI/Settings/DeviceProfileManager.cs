@@ -19,18 +19,13 @@ namespace KeyboardManagerEditorUI.Settings
     /// </summary>
     internal static class DeviceProfileManager
     {
-        private static readonly string _filePath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft",
-            "PowerToys",
-            "Keyboard Manager",
-            "deviceProfiles.json");
-
         private static readonly JsonSerializerOptions _jsonOptions = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             DefaultIgnoreCondition = JsonIgnoreCondition.Never,
         };
+
+        private static string FilePath => Path.Combine(KeyboardManagerPaths.SettingsDirectory, "deviceProfiles.json");
 
         private sealed class DeviceProfilesFile
         {
@@ -84,8 +79,8 @@ namespace KeyboardManagerEditorUI.Settings
                     CycleHotkey = Load().CycleHotkey, // preserve the engine's hotkey definition
                 };
 
-                Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-                File.WriteAllText(_filePath, JsonSerializer.Serialize(file, _jsonOptions));
+                Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+                File.WriteAllText(FilePath, JsonSerializer.Serialize(file, _jsonOptions));
 
                 ProfileManager.SignalEngineReload();
                 return true;
@@ -119,8 +114,8 @@ namespace KeyboardManagerEditorUI.Settings
                     return;
                 }
 
-                Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-                File.WriteAllText(_filePath, JsonSerializer.Serialize(file, _jsonOptions));
+                Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
+                File.WriteAllText(FilePath, JsonSerializer.Serialize(file, _jsonOptions));
                 ProfileManager.SignalEngineReload();
             }
             catch (Exception ex)
@@ -133,9 +128,9 @@ namespace KeyboardManagerEditorUI.Settings
         {
             try
             {
-                if (File.Exists(_filePath))
+                if (File.Exists(FilePath))
                 {
-                    return JsonSerializer.Deserialize<DeviceProfilesFile>(File.ReadAllText(_filePath), _jsonOptions)
+                    return JsonSerializer.Deserialize<DeviceProfilesFile>(File.ReadAllText(FilePath), _jsonOptions)
                            ?? new DeviceProfilesFile();
                 }
             }

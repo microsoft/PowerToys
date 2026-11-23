@@ -33,19 +33,13 @@ namespace KeyboardManagerEditorUI.Settings
             "\"remapShortcuts\":{\"global\":[],\"appSpecific\":[]}," +
             "\"remapShortcutsToText\":{\"global\":[],\"appSpecific\":[]}}";
 
-        private static readonly string _settingsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft",
-            "PowerToys",
-            "Keyboard Manager");
-
-        private static string SettingsJsonPath => Path.Combine(_settingsDirectory, "settings.json");
+        private static string SettingsJsonPath => Path.Combine(SettingsDirectory, "settings.json");
 
         /// <summary>Folder holding the profile configs + settings.json — exposed so the editor can
         /// watch settings.json for engine-driven active-profile changes (auto-switch / cycle hotkey).</summary>
-        public static string SettingsDirectory => _settingsDirectory;
+        public static string SettingsDirectory => KeyboardManagerPaths.SettingsDirectory;
 
-        private static string ConfigPath(string profile) => Path.Combine(_settingsDirectory, profile + ".json");
+        private static string ConfigPath(string profile) => Path.Combine(SettingsDirectory, profile + ".json");
 
         /// <summary>
         /// Creates an empty default.json only when it is missing; never overwrites an existing one
@@ -111,9 +105,9 @@ namespace KeyboardManagerEditorUI.Settings
 
             try
             {
-                if (Directory.Exists(_settingsDirectory))
+                if (Directory.Exists(SettingsDirectory))
                 {
-                    foreach (string file in Directory.EnumerateFiles(_settingsDirectory, "*.json"))
+                    foreach (string file in Directory.EnumerateFiles(SettingsDirectory, "*.json"))
                     {
                         string stem = Path.GetFileNameWithoutExtension(file);
 
@@ -370,6 +364,13 @@ namespace KeyboardManagerEditorUI.Settings
         /// </summary>
         public static void SignalEngineReload()
         {
+            // Unit tests work on a temporary folder; never make a running engine reload the user's
+            // real settings because of them.
+            if (KeyboardManagerPaths.IsRedirectedForTests)
+            {
+                return;
+            }
+
             try
             {
                 using EventWaitHandle handle = EventWaitHandle.OpenExisting(SettingsChangedEventName);
@@ -419,7 +420,7 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static void WriteSettingsRoot(JsonNode root)
         {
-            Directory.CreateDirectory(_settingsDirectory);
+            Directory.CreateDirectory(SettingsDirectory);
             File.WriteAllText(SettingsJsonPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = false }));
         }
 
