@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "WorkArea.h"
 
+#include <algorithm>
+
 #include <common/logger/logger.h>
 
 #include "FancyZonesData/AppliedLayouts.h"
@@ -145,9 +147,45 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
     if (updatePosition)
     {
         const auto rect = m_layout->GetCombinedZonesRect(zones);
-        const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
         FancyZonesWindowUtils::SaveWindowSizeAndOrigin(window);
-        FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+
+        // The zone rectangle is the visible area in work area coordinates. Native snapping takes
+        // absolute screen coordinates and the visible area, without the invisible window borders
+        // that AdjustRectForSizeWindowToRect adds, because the Shell handles the frame itself.
+        const RECT targetScreenRect{
+            .left = m_workAreaRect.left() + rect.left,
+            .top = m_workAreaRect.top() + rect.top,
+            .right = m_workAreaRect.left() + rect.right,
+            .bottom = m_workAreaRect.top() + rect.bottom,
+        };
+
+        // Native snapping puts the window into the Shell snap state, which is what allows it to
+        // join snap groups. If anything about it is unsupported, the original
+        // SetWindowPlacement path below runs instead and the behavior stays as before.
+        bool snappedNatively = false;
+        if (FancyZonesSettings::settings().nativeSnap)
+        {
+            // The Shell only snaps rectangles that touch two work area edges. Zones are inset from
+            // the work area by the layout spacing, so the request uses the zone rectangle extended
+            // onto those edges and the window is moved back to the exact zone rectangle afterwards.
+            const RECT workAreaRect{ m_workAreaRect.left(), m_workAreaRect.top(), m_workAreaRect.right(), m_workAreaRect.bottom() };
+            const LONG zoneSpacing = std::max<LONG>(0, m_layout->ZoneSpacing());
+            const RECT snapScreenRect = NativeSnap::ExtendToWorkAreaEdges(targetScreenRect, workAreaRect, zoneSpacing + NativeSnap::EdgeTolerance);
+
+            snappedNatively = NativeSnap::SnapWindowToRect(window, snapScreenRect);
+            if (snappedNatively && !::EqualRect(&snapScreenRect, &targetScreenRect))
+            {
+                // SetWindowPos keeps the arranged state that SetWindowPlacement drops.
+                const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+                ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+            }
+        }
+
+        if (!snappedNatively)
+        {
+            const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+            FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
+        }
     }
 
     return FancyZonesWindowProperties::StampZoneIndexProperty(window, zones);

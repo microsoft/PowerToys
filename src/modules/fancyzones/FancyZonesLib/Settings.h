@@ -59,6 +59,7 @@ struct Settings
     bool showZoneNumber = true;
     bool allowSnapChildWindows = false;
     bool disableRoundCorners = false;
+    bool nativeSnap = false;
     std::wstring zoneColor = L"#AACDFF";
     std::wstring zoneBorderColor = L"#FFFFFF";
     std::wstring zoneHighlightColor = L"#008CFF";

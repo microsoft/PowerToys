@@ -16,6 +16,10 @@ public:
     GUID Id() const noexcept;
     FancyZonesDataTypes::ZoneSetLayoutType Type() const noexcept;
 
+    // Distance between the outer zones and the work area edges, in pixels. Zero when the layout
+    // does not show spacing.
+    int ZoneSpacing() const noexcept;
+
     const ZonesMap& Zones() const noexcept;
     ZoneIndexSet ZonesFromPoint(POINT pt) const noexcept;
     /**
