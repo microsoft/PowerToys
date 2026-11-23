@@ -949,7 +949,7 @@ namespace FancyZonesEditor.Utils
             return LayoutType.Custom;
         }
 
-        private string LayoutTypeToJsonTag(LayoutType type)
+        internal static string LayoutTypeToJsonTag(LayoutType type)
         {
             switch (type)
             {
