@@ -164,4 +164,32 @@ public class ProgramCliParsingTests
             Assert.AreEqual(0, clock.UtcNowCallCount);
         }
     }
+
+    [TestMethod]
+    [DataRow(false, 0, false, -1, true)]
+    [DataRow(false, 0, false, 0, true)]
+    [DataRow(false, 0, false, 1, false)]
+    [DataRow(true, 0, false, -1, false)]
+    [DataRow(false, 1234, false, -1, false)]
+    [DataRow(false, 0, true, -1, false)]
+    public void IsStandaloneExpirationExpired_EvaluatesModeAndTimestampCorrectly(
+        bool usePtConfig, int pid, bool useParentPid, int offsetSeconds, bool expected)
+    {
+        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
+        DateTimeOffset? expireAt = now.AddSeconds(offsetSeconds);
+
+        bool result = Program.IsStandaloneExpirationExpired(usePtConfig, pid, useParentPid, expireAt, now);
+
+        Assert.AreEqual(expected, result);
+    }
+
+    [TestMethod]
+    public void IsStandaloneExpirationExpired_WhenExpireAtIsNull_ReturnsFalse()
+    {
+        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
+
+        bool result = Program.IsStandaloneExpirationExpired(false, 0, false, null, now);
+
+        Assert.IsFalse(result);
+    }
 }

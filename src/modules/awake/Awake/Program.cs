@@ -347,9 +347,24 @@ namespace Awake
             }
         }
 
+        internal static bool IsStandaloneExpirationExpired(bool usePtConfig, int pid, bool useParentPid, DateTimeOffset? expireAt, DateTimeOffset now)
+        {
+            return !usePtConfig && pid == 0 && !useParentPid && expireAt.HasValue && expireAt.Value <= now;
+        }
+
         private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, DateTimeOffset? expireAt, bool useParentPid, TimeProvider clock)
         {
             ArgumentNullException.ThrowIfNull(clock);
+
+            if (IsStandaloneExpirationExpired(usePtConfig, pid, useParentPid, expireAt, clock.GetLocalNow()))
+            {
+                string errorMessage = $"Date and time value in --expire-at must be in the future. Value used: {expireAt!.Value.ToString("O", CultureInfo.InvariantCulture)}.";
+                Console.Error.WriteLine(errorMessage);
+                Logger.LogError(errorMessage);
+                LogCLITelemetry(successful: false);
+                Exit(errorMessage, 1);
+                return;
+            }
 
             if (pid == 0 && !useParentPid)
             {
@@ -437,7 +452,14 @@ namespace Awake
                 if (expireAt.HasValue)
                 {
                     Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                    Manager.SetExpirableKeepAwake(expireAt.Value, displayOn);
+                    if (!Manager.SetExpirableKeepAwake(expireAt.Value, displayOn))
+                    {
+                        string errorMessage = $"Date and time value in --expire-at must be in the future. Value used: {expireAt.Value.ToString("O", CultureInfo.InvariantCulture)}.";
+                        Logger.LogError(errorMessage);
+                        LogCLITelemetry(successful: false);
+                        Exit(errorMessage, 1);
+                        return;
+                    }
                 }
                 else
                 {
