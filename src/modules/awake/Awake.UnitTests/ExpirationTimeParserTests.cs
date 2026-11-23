@@ -289,8 +289,10 @@ public class ExpirationTimeParserTests
             eastern,
             out DateTimeOffset result);
 
+        DateTimeOffset expected = new(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4));
         Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(new DateTimeOffset(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4)), result);
+        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected.Offset, result.Offset);
     }
 
     [TestMethod]
@@ -306,8 +308,10 @@ public class ExpirationTimeParserTests
             eastern,
             out DateTimeOffset result);
 
+        DateTimeOffset expected = new(2026, 3, 9, 2, 30, 0, TimeSpan.FromHours(-4));
         Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(new DateTimeOffset(2026, 3, 9, 2, 30, 0, TimeSpan.FromHours(-4)), result);
+        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected.Offset, result.Offset);
     }
 
     [TestMethod]
@@ -323,8 +327,10 @@ public class ExpirationTimeParserTests
             eastern,
             out DateTimeOffset result);
 
+        DateTimeOffset expected = new(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4));
         Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(new DateTimeOffset(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4)), result);
+        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected.Offset, result.Offset);
     }
 
     [TestMethod]
@@ -340,8 +346,10 @@ public class ExpirationTimeParserTests
             lordHowe,
             out DateTimeOffset result);
 
+        DateTimeOffset expected = new(2026, 10, 4, 2, 45, 0, TimeSpan.FromHours(11));
         Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(new DateTimeOffset(2026, 10, 4, 2, 45, 0, TimeSpan.FromHours(11)), result);
+        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected.Offset, result.Offset);
     }
 
     [TestMethod]
@@ -357,7 +365,9 @@ public class ExpirationTimeParserTests
             eastern,
             out DateTimeOffset result);
 
+        DateTimeOffset expected = new(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4));
         Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(new DateTimeOffset(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4)), result);
+        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected.Offset, result.Offset);
     }
 }
