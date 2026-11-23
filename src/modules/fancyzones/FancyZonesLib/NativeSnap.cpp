@@ -299,14 +299,14 @@ bool NativeSnap::WaitForSnapApplied(HWND window, const RECT& snapRect, DWORD tim
             return true;
         }
 
-        // The Shell posts the placement work to this thread's queue, so the queue has to be
-        // drained for the snap to happen at all - waiting alone never completes it.
+        // The Shell completes the snap by sending a message to this thread, so the thread has to
+        // service its sent messages; MsgWaitForMultipleObjectsEx and Sleep do not do that and the
+        // snap never lands. PeekMessage with PM_NOREMOVE services sent messages without removing
+        // or dispatching posted ones, which keeps this function from re-entering the module's
+        // window procedure (a display change arriving here would rebuild every work area,
+        // destroying the caller's objects while its stack frame is still live).
         MSG message;
-        while (::PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
-        {
-            ::TranslateMessage(&message);
-            ::DispatchMessageW(&message);
-        }
+        ::PeekMessageW(&message, nullptr, 0, 0, PM_NOREMOVE);
 
         ::Sleep(5);
     }

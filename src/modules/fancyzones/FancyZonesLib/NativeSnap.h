@@ -23,5 +23,7 @@ namespace NativeSnap
     // moved, so any work done right after it races the Shell. Waits until the snap has visibly
     // been applied (the window is arranged and sits at `snapRect`) or the timeout elapses.
     // Returns true when the snap was observed.
+    // Waiting services this thread's sent messages but never dispatches posted ones, so it is safe
+    // to call while holding references into the caller's state.
     bool WaitForSnapApplied(HWND window, const RECT& snapRect, DWORD timeoutMs) noexcept;
 }

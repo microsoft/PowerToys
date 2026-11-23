@@ -179,11 +179,14 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
             {
                 // The Shell applies a snap asynchronously, so the window has to be at the snapped
                 // position before it is moved again; otherwise the Shell places it afterwards and
-                // the spacing inset is lost.
+                // the spacing inset is lost. Capture everything this function still needs first:
+                // the wait runs code outside this object (see WaitForSnapApplied), so no member may
+                // be read afterwards.
+                const HWND workAreaWindow = m_window;
                 NativeSnap::WaitForSnapApplied(window, snapScreenRect, 400);
 
                 // SetWindowPos keeps the arranged state that SetWindowPlacement drops.
-                const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+                const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workAreaWindow);
                 ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
             }
         }
