@@ -81,19 +81,38 @@ internal static class ExpirationTimeParser
     {
         expirationDateTime = default;
 
-        TimeSpan offset = timeZone.GetUtcOffset(localDateTime);
-        long utcTicks = localDateTime.Ticks - offset.Ticks;
-        if (utcTicks < DateTimeOffset.MinValue.Ticks)
+        if (timeZone.IsAmbiguousTime(localDateTime))
         {
+            TimeSpan[] offsets = timeZone.GetAmbiguousTimeOffsets(localDateTime);
+
+            // Larger offsets map to earlier UTC instants, so descending order checks occurrences chronologically.
+            Array.Sort(offsets, static (left, right) => right.CompareTo(left));
+
+            foreach (TimeSpan candidateOffset in offsets)
+            {
+                ExpirationTimeParseStatus candidateStatus = TryCreateDateTimeOffset(localDateTime, candidateOffset, out DateTimeOffset candidate);
+                if (candidateStatus != ExpirationTimeParseStatus.Success)
+                {
+                    return candidateStatus;
+                }
+
+                if (candidate > now)
+                {
+                    expirationDateTime = candidate;
+                    return ExpirationTimeParseStatus.Success;
+                }
+            }
+
             return ExpirationTimeParseStatus.InThePast;
         }
 
-        if (utcTicks > DateTimeOffset.MaxValue.Ticks)
+        TimeSpan offset = timeZone.GetUtcOffset(localDateTime);
+        ExpirationTimeParseStatus status = TryCreateDateTimeOffset(localDateTime, offset, out DateTimeOffset resolved);
+        if (status != ExpirationTimeParseStatus.Success)
         {
-            return ExpirationTimeParseStatus.InvalidFormat;
+            return status;
         }
 
-        DateTimeOffset resolved = new(localDateTime, offset);
         if (timeZone.IsInvalidTime(localDateTime))
         {
             resolved = TimeZoneInfo.ConvertTime(resolved, timeZone);
@@ -105,6 +124,27 @@ internal static class ExpirationTimeParser
         }
 
         expirationDateTime = resolved;
+        return ExpirationTimeParseStatus.Success;
+    }
+
+    private static ExpirationTimeParseStatus TryCreateDateTimeOffset(
+        DateTime localDateTime,
+        TimeSpan offset,
+        out DateTimeOffset resolved)
+    {
+        resolved = default;
+        long utcTicks = localDateTime.Ticks - offset.Ticks;
+        if (utcTicks < DateTimeOffset.MinValue.Ticks)
+        {
+            return ExpirationTimeParseStatus.InThePast;
+        }
+
+        if (utcTicks > DateTimeOffset.MaxValue.Ticks)
+        {
+            return ExpirationTimeParseStatus.InvalidFormat;
+        }
+
+        resolved = new DateTimeOffset(localDateTime, offset);
         return ExpirationTimeParseStatus.Success;
     }
 }
