@@ -13,6 +13,7 @@ using Microsoft.PowerToys.Settings.UI.ViewModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using PowerDisplay.Models;
+using PowerToys.Interop;
 
 namespace ViewModelTests;
 
@@ -175,7 +176,9 @@ public class PowerDisplay
     [TestMethod]
     public void FollowBuiltInDisplayBrightness_Toggle_SavesAndSignalsOnce()
     {
-        using var viewModel = CreateViewModel(out var settings, out var settingsUtils, out var ipcMessages);
+        var namedEvents = new List<string>();
+        var operationOrder = new List<string>();
+        using var viewModel = CreateViewModel(out var settings, out var settingsUtils, out var ipcMessages, namedEvents: namedEvents, operationOrder: operationOrder);
 
         Assert.IsFalse(viewModel.FollowBuiltInDisplayBrightness);
 
@@ -185,9 +188,18 @@ public class PowerDisplay
         Assert.IsTrue(GetSavedSettings(settingsUtils).Properties.FollowBuiltInDisplayBrightness);
         Assert.AreEqual(1, ipcMessages.Count);
 
-        // Setting the same value again is a no-op: no extra save or IPC message.
+        // The running PowerDisplay instance reloads the flag only on this named event, after the save.
+        CollectionAssert.AreEqual(new[] { Constants.SettingsUpdatedPowerDisplayEvent() }, namedEvents);
+        Assert.AreEqual("save,ipc,signal", string.Join(',', operationOrder));
+
+        // Setting the same value again is a no-op: no extra save, IPC message or signal.
         viewModel.FollowBuiltInDisplayBrightness = true;
+        settingsUtils.Verify(
+            utils => utils.SaveSettings(It.IsAny<string>(), PowerDisplaySettings.ModuleName, SettingsUtils.DefaultFileName),
+            Times.Once);
         Assert.AreEqual(1, ipcMessages.Count);
+        Assert.AreEqual(1, namedEvents.Count);
+        Assert.AreEqual("save,ipc,signal", string.Join(',', operationOrder));
     }
 
     [TestMethod]
