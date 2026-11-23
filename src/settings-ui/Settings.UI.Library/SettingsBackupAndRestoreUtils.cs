@@ -309,6 +309,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 var anyFilesUpdated = false;
 
+                // Keyboard Manager profiles that exist only here are left in place by the loop below;
+                // their entries in the shared Keyboard Manager stores must survive the restore too.
+                var retainedKeyboardManagerProfiles = GetRetainedKeyboardManagerProfiles(currentSettingsFiles.Keys, backupSettingsFiles.Keys);
+
                 foreach (var currentFile in backupSettingsFiles)
                 {
                     var relativePath = currentFile.Value.Substring(latestSettingsFolder.Length + 1);
@@ -318,6 +322,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     if (currentSettingsFiles.TryGetValue(currentFile.Key, out string value))
                     {
                         // we have a setting file to restore to
+                        if (retainedKeyboardManagerProfiles.Count > 0 && IsKeyboardManagerSharedStore(currentFile.Key))
+                        {
+                            settingsToRestoreJson = PreserveRetainedKeyboardManagerProfiles(currentFile.Key, settingsToRestoreJson, File.ReadAllText(value), retainedKeyboardManagerProfiles);
+                        }
+
                         var currentSettingsFileJson = GetExportVersion(backupRestoreSettings, currentFile.Key, value);
 
                         if (JsonNormalizer.Normalize(settingsToRestoreJson) != JsonNormalizer.Normalize(currentSettingsFileJson))
@@ -851,6 +860,273 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             return entry != null && entry["overwrite"] != null && (bool)entry["overwrite"];
         }
+
+        private const string KeyboardManagerFolderKey = "\\Keyboard Manager\\";
+        private const string KeyboardManagerEditorSettingsKey = "\\Keyboard Manager\\editorSettings.json";
+        private const string KeyboardManagerDeviceProfilesKey = "\\Keyboard Manager\\deviceProfiles.json";
+        private const string KeyboardManagerProfileMetadataKey = "\\Keyboard Manager\\profileMetadata.json";
+
+        // The Keyboard Manager profile id of a settings file key ("\Keyboard Manager\{id}.json"), or
+        // null when the file is not a profile. The stems excluded here must match
+        // ProfileManager.IsReservedConfigStem in the Keyboard Manager editor
+        // (src/modules/keyboardmanager/KeyboardManagerEditorUI/Settings/ProfileManager.cs).
+        private static string GetKeyboardManagerProfileId(string fileKey)
+        {
+            if (fileKey == null ||
+                !fileKey.StartsWith(KeyboardManagerFolderKey, StringComparison.OrdinalIgnoreCase) ||
+                !fileKey.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            string stem = fileKey.Substring(KeyboardManagerFolderKey.Length, fileKey.Length - KeyboardManagerFolderKey.Length - ".json".Length);
+            bool reserved = stem.Length == 0 ||
+                stem.Contains('\\') ||
+                stem.Contains('.') ||
+                stem.Equals("settings", StringComparison.OrdinalIgnoreCase) ||
+                stem.StartsWith("editorSettings", StringComparison.OrdinalIgnoreCase) ||
+                stem.Equals("deviceProfiles", StringComparison.OrdinalIgnoreCase) ||
+                stem.Equals("profileMetadata", StringComparison.OrdinalIgnoreCase);
+            return reserved ? null : stem;
+        }
+
+        // Whether the file is one of the Keyboard Manager stores shared by all profiles.
+        private static bool IsKeyboardManagerSharedStore(string fileKey) =>
+            string.Equals(fileKey, KeyboardManagerEditorSettingsKey, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(fileKey, KeyboardManagerDeviceProfilesKey, StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(fileKey, KeyboardManagerProfileMetadataKey, StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Returns the Keyboard Manager profiles that a restore keeps although the backup does not
+        /// have them: a profile's "{id}.json" exists here but not in the backup, so the restore never
+        /// touches it (and the merged module settings.json keeps it in keyboardConfigurations).
+        /// </summary>
+        public static HashSet<string> GetRetainedKeyboardManagerProfiles(IEnumerable<string> currentFileKeys, IEnumerable<string> backupFileKeys)
+        {
+            var inBackup = new HashSet<string>(
+                backupFileKeys.Select(GetKeyboardManagerProfileId).Where(id => id != null),
+                StringComparer.OrdinalIgnoreCase);
+            return new HashSet<string>(
+                currentFileKeys.Select(GetKeyboardManagerProfileId).Where(id => id != null && !inBackup.Contains(id)),
+                StringComparer.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        /// Keyboard Manager keeps data for all of its profiles in shared stores (editorSettings.json,
+        /// deviceProfiles.json, profileMetadata.json), which the restore replaces with the backup's
+        /// copy. For profiles the restore keeps (<see cref="GetRetainedKeyboardManagerProfiles"/>)
+        /// that would lose what exists only in those stores: turned-off remappings, keyboard
+        /// assignments, display names. This returns the backup's copy of such a store with the
+        /// current entries of <paramref name="retainedProfiles"/> carried over. Anything else
+        /// (another file, no retained profile, unreadable JSON) returns <paramref name="backupJson"/>
+        /// unchanged.
+        /// </summary>
+        public static string PreserveRetainedKeyboardManagerProfiles(string fileKey, string backupJson, string currentJson, IReadOnlyCollection<string> retainedProfiles)
+        {
+            if (retainedProfiles == null || retainedProfiles.Count == 0 || string.IsNullOrEmpty(currentJson) || !IsKeyboardManagerSharedStore(fileKey))
+            {
+                return backupJson;
+            }
+
+            try
+            {
+                if (JsonNode.Parse(backupJson) is not JsonObject backup || JsonNode.Parse(currentJson) is not JsonObject current)
+                {
+                    return backupJson;
+                }
+
+                var retained = new HashSet<string>(retainedProfiles, StringComparer.OrdinalIgnoreCase);
+                bool changed;
+                if (string.Equals(fileKey, KeyboardManagerEditorSettingsKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    changed = KeepRetainedEditorRows(backup, current, retained);
+                }
+                else if (string.Equals(fileKey, KeyboardManagerDeviceProfilesKey, StringComparison.OrdinalIgnoreCase))
+                {
+                    changed = KeepRetainedDeviceAssignments(backup, current, retained);
+                }
+                else
+                {
+                    changed = KeepRetainedProfileMetadata(backup, current, retained);
+                }
+
+                return changed ? backup.ToJsonString(_serializerOptions) : backupJson;
+            }
+            catch (Exception ex) when (ex is JsonException || ex is InvalidOperationException || ex is FormatException)
+            {
+                Logger.LogError($"Could not keep the retained Keyboard Manager profiles in {fileKey}: {ex.Message}");
+                return backupJson;
+            }
+        }
+
+        // editorSettings.json: rows of a retained profile that the backup lacks are added (tagged
+        // with the retained profiles only, since the other profiles come from the backup); a row the
+        // backup also has gets the retained profiles added to its membership. The operation index and
+        // the retained profiles' entries in the profile index are updated to match.
+        private static bool KeepRetainedEditorRows(JsonObject backup, JsonObject current, HashSet<string> retained)
+        {
+            if (current["ShortcutSettingsDictionary"] is not JsonObject currentRows)
+            {
+                return false;
+            }
+
+            JsonObject backupRows = GetOrAddObject(backup, "ShortcutSettingsDictionary");
+            JsonObject currentOperationIndex = current["ShortcutsByOperationType"] as JsonObject;
+            bool changed = false;
+            foreach (KeyValuePair<string, JsonNode> entry in currentRows)
+            {
+                if (entry.Value is not JsonObject currentRow)
+                {
+                    continue;
+                }
+
+                List<string> keptProfiles = GetStrings(currentRow["Profiles"]).Where(retained.Contains).ToList();
+                if (keptProfiles.Count == 0)
+                {
+                    continue;
+                }
+
+                if (backupRows[entry.Key] is JsonObject backupRow)
+                {
+                    // A row without profiles predates profiles and already belongs to every profile.
+                    if (backupRow["Profiles"] is not JsonArray backupProfiles || backupProfiles.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    foreach (string profile in keptProfiles)
+                    {
+                        if (!GetStrings(backupProfiles).Contains(profile, StringComparer.OrdinalIgnoreCase))
+                        {
+                            backupProfiles.Add(profile);
+                            changed = true;
+                        }
+                    }
+
+                    continue;
+                }
+
+                var copy = (JsonObject)currentRow.DeepClone();
+                copy["Profiles"] = new JsonArray(keptProfiles.Select(profile => (JsonNode)profile).ToArray());
+                backupRows[entry.Key] = copy;
+
+                string operationType = currentOperationIndex?
+                    .FirstOrDefault(index => GetStrings(index.Value).Contains(entry.Key, StringComparer.Ordinal))
+                    .Key;
+                if (operationType != null)
+                {
+                    JsonObject backupOperationIndex = GetOrAddObject(backup, "ShortcutsByOperationType");
+                    if (backupOperationIndex[operationType] is not JsonArray ids)
+                    {
+                        ids = new JsonArray();
+                        backupOperationIndex[operationType] = ids;
+                    }
+
+                    ids.Add(entry.Key);
+                }
+
+                changed = true;
+            }
+
+            if (!changed)
+            {
+                return false;
+            }
+
+            JsonObject profileIndex = GetOrAddObject(backup, "ProfileDictionary");
+            foreach (string profile in retained)
+            {
+                foreach (string key in profileIndex.Select(index => index.Key).Where(key => key.Equals(profile, StringComparison.OrdinalIgnoreCase)).ToList())
+                {
+                    profileIndex.Remove(key);
+                }
+
+                JsonNode[] members = backupRows
+                    .Where(row => row.Value is JsonObject member && GetStrings(member["Profiles"]).Contains(profile, StringComparer.OrdinalIgnoreCase))
+                    .Select(row => (JsonNode)row.Key)
+                    .ToArray();
+                if (members.Length > 0)
+                {
+                    profileIndex[profile] = new JsonArray(members);
+                }
+            }
+
+            return true;
+        }
+
+        // deviceProfiles.json: keyboard assignments to a retained profile are kept unless the backup
+        // assigns the same keyboard. The backup's auto-switch flag and hotkey are kept as they are.
+        private static bool KeepRetainedDeviceAssignments(JsonObject backup, JsonObject current, HashSet<string> retained)
+        {
+            if (current["map"] is not JsonArray currentMap)
+            {
+                return false;
+            }
+
+            if (backup["map"] is not JsonArray backupMap)
+            {
+                backupMap = new JsonArray();
+                backup["map"] = backupMap;
+            }
+
+            var assignedDevices = new HashSet<string>(
+                backupMap.OfType<JsonObject>().Select(entry => GetString(entry["device"])).Where(device => !string.IsNullOrEmpty(device)),
+                StringComparer.OrdinalIgnoreCase);
+            bool changed = false;
+            foreach (JsonObject entry in currentMap.OfType<JsonObject>())
+            {
+                string device = GetString(entry["device"]);
+                string profile = GetString(entry["profile"]);
+                if (!string.IsNullOrEmpty(device) && profile != null && retained.Contains(profile) && assignedDevices.Add(device))
+                {
+                    backupMap.Add(entry.DeepClone());
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        // profileMetadata.json: display names of retained profiles are kept.
+        private static bool KeepRetainedProfileMetadata(JsonObject backup, JsonObject current, HashSet<string> retained)
+        {
+            if (current["profiles"] is not JsonObject currentProfiles)
+            {
+                return false;
+            }
+
+            JsonObject backupProfiles = GetOrAddObject(backup, "profiles");
+            bool changed = false;
+            foreach (KeyValuePair<string, JsonNode> entry in currentProfiles)
+            {
+                if (retained.Contains(entry.Key) &&
+                    entry.Value != null &&
+                    !backupProfiles.Any(existing => existing.Key.Equals(entry.Key, StringComparison.OrdinalIgnoreCase)))
+                {
+                    backupProfiles[entry.Key] = entry.Value.DeepClone();
+                    changed = true;
+                }
+            }
+
+            return changed;
+        }
+
+        private static JsonObject GetOrAddObject(JsonObject parent, string name)
+        {
+            if (parent[name] is not JsonObject child)
+            {
+                child = new JsonObject();
+                parent[name] = child;
+            }
+
+            return child;
+        }
+
+        private static string GetString(JsonNode node) =>
+            node is JsonValue value && value.TryGetValue(out string text) ? text : null;
+
+        private static List<string> GetStrings(JsonNode node) =>
+            node is JsonArray array ? array.Select(GetString).Where(text => text != null).ToList() : new List<string>();
 
         /// <summary>
         /// Method <c>GetExportVersion</c> gets the version of the settings file that we want to backup.
