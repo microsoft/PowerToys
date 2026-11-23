@@ -86,6 +86,23 @@ that retain `Needs-Author-Feedback` for seven days without activity.
 - The Azure Pipelines XAML Styler verification step is removed. The local
   `.pipelines/applyXamlStyling.ps1` developer tool remains available.
 
+## Workflow maintenance
+
+Keep the gh-aw compiler and the generated setup action on the same release.
+After upgrading gh-aw, regenerate the workflow rather than updating action
+references directly in the generated lockfile:
+
+```console
+gh aw compile issue-triage
+gh aw compile issue-triage --validate --no-emit
+```
+
+Commit the regenerated `.github/workflows/issue-triage.lock.yml` and its
+`.github/aw/actions-lock.json` updates together. Compilation supplies the
+detector checksum pins, workflow provenance, and installation-outcome wiring
+needed to distinguish skipped detection from failed detection. Preserve the
+successful-detection gate on the publishing job.
+
 Run the focused tests with:
 
 ```console
