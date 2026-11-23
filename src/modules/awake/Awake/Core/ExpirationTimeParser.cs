@@ -29,7 +29,9 @@ internal static class ExpirationTimeParser
             DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.NoCurrentDateDefault,
             out DateTime parsedNoDefault) && parsedNoDefault.Kind == DateTimeKind.Unspecified)
         {
-            return ExpirationTimeParseStatus.InvalidFormat;
+            return parsedNoDefault.Date == DateTime.MinValue
+                ? ExpirationTimeParseStatus.InvalidFormat
+                : TryResolveLocalDateTime(parsedNoDefault, now, timeZone, out expirationDateTime);
         }
 
         if (!DateTimeOffset.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTimeOffset parsedOffset))
@@ -44,6 +46,23 @@ internal static class ExpirationTimeParser
         }
 
         expirationDateTime = parsedOffset;
+        return ExpirationTimeParseStatus.Success;
+    }
+
+    private static ExpirationTimeParseStatus TryResolveLocalDateTime(
+        DateTime localDateTime,
+        DateTimeOffset now,
+        TimeZoneInfo timeZone,
+        out DateTimeOffset expirationDateTime)
+    {
+        DateTimeOffset resolved = new(localDateTime, timeZone.GetUtcOffset(localDateTime));
+        if (resolved <= now)
+        {
+            expirationDateTime = default;
+            return ExpirationTimeParseStatus.InThePast;
+        }
+
+        expirationDateTime = resolved;
         return ExpirationTimeParseStatus.Success;
     }
 }
