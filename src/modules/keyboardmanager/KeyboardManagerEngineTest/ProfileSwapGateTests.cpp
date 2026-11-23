@@ -156,7 +156,8 @@ namespace RemappingLogicTests
 
             gate = std::make_unique<ProfileSwapGate>(
                 [this] { return now; },
-                [this](DWORD vk) { return IsDown(vk); });
+                [this](DWORD vk) { return IsDown(vk); },
+                [this](const std::vector<INPUT>& inputs) { mockedInputHandler.SendVirtualInput(inputs); });
 
             testState.currentConfig = L"A";
             gate->SetAppliedProfile(L"A");
@@ -360,8 +361,8 @@ namespace RemappingLogicTests
         }
 
         // Forced swap: the stage has waited ForcedSwapTimeout and every held key has been silent that
-        // long. The held keys' key-ups are replayed under the old profile first (releasing the injected
-        // target), and their later physical events follow the old profile's answer, never the new one.
+        // long. What A's output left down is released first (the injected target), and the held keys'
+        // later physical events follow A's answer to their key-downs, never the new profile.
         TEST_METHOD (ForcedSwap_ReleasesOldTargetsAndOrphansHeldKeys)
         {
             testState.AddSingleKeyRemap('X', static_cast<DWORD>('T'));
@@ -385,7 +386,7 @@ namespace RemappingLogicTests
             Press('Z');
             Assert::IsFalse(gate->HasStage());
             Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
-            Assert::IsFalse(IsDown('T')); // T-up injected under A before the swap
+            Assert::IsFalse(IsDown('T')); // T, left down by A, released at the swap
             Assert::IsTrue(gate->OrphanKeyCount() == 2);
             Release('Z');
 
@@ -530,8 +531,8 @@ namespace RemappingLogicTests
             Assert::IsFalse(IsDown(VK_MENU));
         }
 
-        // Forced variant: the shortcut is still held when the swap is forced. Its target is released
-        // under A by the replayed key-ups, and B starts clean.
+        // Forced variant: the shortcut is still held when the swap is forced. Its target (left down by A)
+        // is released at the swap, and B starts clean.
         TEST_METHOD (HalfInvokedShortcut_ForcedSwap_ReleasesTargetUnderOldProfile)
         {
             Shortcut src;
@@ -566,6 +567,103 @@ namespace RemappingLogicTests
             Assert::IsFalse(IsDown('V'));
             Assert::IsFalse(IsDown(VK_CONTROL));
             Assert::IsFalse(testState.osLevelShortcutReMap.begin()->second.isShortcutInvoked);
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // moooyo N3: a forced swap releases only what the old profile left down. A pending "Alone" key
+        // (its key-up lost) must not be resolved as a tap: its action never fires, neither at the swap
+        // nor when the real key-up finally arrives.
+        TEST_METHOD (ForcedSwap_PendingAloneKey_DoesNotFireTap)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, static_cast<DWORD>(VK_IME_ON));
+            Press(VK_RCONTROL); // suppressed, pending as a tap candidate
+            Assert::IsFalse(IsDown(VK_RCONTROL));
+
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+            CountEventsOf(VK_IME_ON);
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Release('Q');
+
+            Release(VK_RCONTROL); // answered for the orphan: suppressed, as its key-down was
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::IsFalse(IsDown(VK_RCONTROL));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // moooyo N3: Ctrl+Shift+C -> Alt+V, C released (V released, Alt still down), and both source
+        // modifiers' key-ups lost. The forced swap releases Alt and must not restore a source modifier
+        // (replaying Shift-up through the shortcut handler injected Ctrl-down, left down for good).
+        TEST_METHOD (ForcedSwap_TwoModifierShortcut_LeavesNoModifierDown)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(VK_SHIFT);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            testState.AddOSLevelShortcut(src, dest);
+
+            Press(VK_CONTROL);
+            Press(VK_SHIFT);
+            Press('C');
+            Release('C');
+            Assert::IsTrue(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Release('Q');
+        }
+
+        // Same, with C still held at the forced swap: the target key and modifier are released, no source
+        // modifier is restored, and the real key-ups that come later leave nothing down.
+        TEST_METHOD (ForcedSwap_TwoModifierShortcutStillHeld_LeavesNoModifierDown)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey(VK_SHIFT);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            testState.AddOSLevelShortcut(src, dest);
+
+            Press(VK_CONTROL);
+            Press(VK_SHIFT);
+            Press('C');
+            Assert::IsTrue(IsDown(VK_MENU));
+            Assert::IsTrue(IsDown('V'));
+
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Release('Q');
+
+            Release('C');
+            Release(VK_SHIFT);
+            Release(VK_CONTROL);
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Assert::IsFalse(IsDown('C'));
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
@@ -786,9 +884,9 @@ namespace RemappingLogicTests
         }
 
         // The forced swap as Windows orders it (assumed): input injected from the hook callback reaches
-        // the hook after the callback returns. The key-ups the old profile injects while replaying the
-        // held keys therefore arrive after the swap and are seen by the new profile's handlers (the
-        // limitation noted for the forced swap). This pins down what B then does with them.
+        // the hook after the callback returns. The key-ups that release A's output therefore arrive after
+        // the swap and are seen by the new profile's handlers. They carry KBM's shortcut tag; this pins
+        // down that B leaves them alone.
         TEST_METHOD (HalfInvokedShortcut_ForcedSwap_DeferredInjection)
         {
             mockedInputHandler.SetDeferInjectedInput(true);
@@ -828,7 +926,7 @@ namespace RemappingLogicTests
             Press('Q');
             Assert::AreEqual(std::wstring(L"B"), testState.currentConfig);
 
-            // A injected the V-up while replaying C's key-up, but B's handlers are the ones that see it.
+            // The V-up releasing A's output was injected at the swap, so B's handlers are the ones that see it.
             Assert::AreEqual(std::wstring(L"B"), profileAtInjectedVUp);
 
             // In this configuration B leaves the injected key-ups alone: nothing is left down and B's

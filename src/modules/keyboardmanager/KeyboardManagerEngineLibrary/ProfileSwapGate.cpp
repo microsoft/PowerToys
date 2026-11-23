@@ -6,9 +6,39 @@
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 
-ProfileSwapGate::ProfileSwapGate(NowFunction now, AsyncKeyDownFunction asyncKeyDown) :
-    m_now(std::move(now)), m_asyncKeyDown(std::move(asyncKeyDown))
+ProfileSwapGate::ProfileSwapGate(NowFunction now, AsyncKeyDownFunction asyncKeyDown, InjectFunction inject) :
+    m_now(std::move(now)), m_asyncKeyDown(std::move(asyncKeyDown)), m_inject(std::move(inject))
 {
+}
+
+bool ProfileSwapGate::IsSameKey(const DWORD vkCode, const DWORD otherVkCode) noexcept
+{
+    if (vkCode == otherVkCode)
+    {
+        return true;
+    }
+
+    // A generic modifier stands for both of its left/right keys.
+    switch (vkCode)
+    {
+    case VK_CONTROL:
+        return otherVkCode == VK_LCONTROL || otherVkCode == VK_RCONTROL;
+    case VK_MENU:
+        return otherVkCode == VK_LMENU || otherVkCode == VK_RMENU;
+    case VK_SHIFT:
+        return otherVkCode == VK_LSHIFT || otherVkCode == VK_RSHIFT;
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+        return otherVkCode == VK_CONTROL;
+    case VK_LMENU:
+    case VK_RMENU:
+        return otherVkCode == VK_MENU;
+    case VK_LSHIFT:
+    case VK_RSHIFT:
+        return otherVkCode == VK_SHIFT;
+    default:
+        return false;
+    }
 }
 
 void ProfileSwapGate::SetAppliedProfile(const std::wstring& profile)
@@ -131,8 +161,10 @@ ProfileSwapGate::KeyEventSource ProfileSwapGate::ClassifyKeyEvent(const DWORD fl
 
 intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt) noexcept
 {
-    // Read before the numpad-origin encoding below changes vkCode.
+    // Read before the numpad-origin encoding below changes vkCode (and before the handlers may rewrite it).
     const KeyEventSource source = ClassifyKeyEvent(event->lParam->flags, event->lParam->dwExtraInfo);
+    const DWORD rawVkCode = event->lParam->vkCode;
+    const bool keyDown = event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN;
     event->lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event->lParam->vkCode, event->lParam->flags & LLKHF_EXTENDED);
 
     if (source != KeyEventSource::Physical)
@@ -140,21 +172,84 @@ intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const Handle
         OnInjectedKeyEvent(event);
     }
 
+    intptr_t result = 0;
     if (source == KeyEventSource::OwnInjected || source == KeyEventSource::OwnReprocessed)
     {
-        return handle(event);
+        result = handle(event);
+    }
+    else
+    {
+        try
+        {
+            result = OnTrackedKeyEvent(event, handle, adopt);
+        }
+        catch (...)
+        {
+            // Bookkeeping failed (e.g. out of memory). OnTrackedKeyEvent does everything that can throw
+            // before it hands the event to `handle`, so `handle` has not run for this event: passing it on
+            // cannot deliver it twice.
+            result = 0;
+        }
     }
 
-    try
+    NoteDeliveredKeyEvent(source, rawVkCode, keyDown, result);
+    return result;
+}
+
+void ProfileSwapGate::NoteDeliveredKeyEvent(const KeyEventSource source, const DWORD rawVkCode, const bool keyDown, const intptr_t result) noexcept
+{
+    // A suppressed event never reaches the system, so it changes nothing there.
+    if (result != 0)
     {
-        return OnTrackedKeyEvent(event, handle, adopt);
+        return;
     }
-    catch (...)
+
+    if (keyDown)
     {
-        // Bookkeeping failed (e.g. out of memory). OnTrackedKeyEvent does everything that can throw
-        // before it hands the event to `handle`, so `handle` has not run for this event: passing it on
-        // cannot deliver it twice.
-        return 0;
+        // Only KBM's own output: physical and foreign keys are released by their own key-ups, which an
+        // orphan passes through or suppresses as its key-down was.
+        if (source == KeyEventSource::OwnInjected)
+        {
+            try
+            {
+                m_ownKeysDown.insert(rawVkCode);
+            }
+            catch (...)
+            {
+                // Out of memory: this key is not released by a forced swap (as before this set existed).
+            }
+        }
+
+        return;
+    }
+
+    // Any key-up that reaches the system releases the key, whoever pressed it.
+    std::erase_if(m_ownKeysDown, [rawVkCode](const DWORD down) { return IsSameKey(rawVkCode, down); });
+}
+
+void ProfileSwapGate::ReleaseOwnKeysDown()
+{
+    if (m_ownKeysDown.empty())
+    {
+        return;
+    }
+
+    // Plain keys first, then modifiers, so no key is released into a different modifier state than it
+    // was pressed with. Tagged as KBM's shortcut output: every handler (the old profile's, or the new
+    // one's when the key-ups arrive after the swap) leaves such input alone.
+    std::vector<DWORD> keys(m_ownKeysDown.begin(), m_ownKeysDown.end());
+    m_ownKeysDown.clear();
+    std::stable_partition(keys.begin(), keys.end(), [](const DWORD key) { return !Shortcut::IsModifier(key); });
+
+    std::vector<INPUT> inputs;
+    for (const DWORD key : keys)
+    {
+        Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, static_cast<WORD>(key), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+    }
+
+    if (m_inject)
+    {
+        m_inject(inputs);
     }
 }
 
@@ -184,7 +279,7 @@ void ProfileSwapGate::PruneStaleKeys(const TimePoint now, const uint32_t keepId)
     }
 }
 
-void ProfileSwapGate::TryApplyStage(const TimePoint now, const HandleFunction& handle, const AdoptFunction& adopt)
+void ProfileSwapGate::TryApplyStage(const TimePoint now, const AdoptFunction& adopt)
 {
     std::unique_ptr<State> staged;
     {
@@ -215,33 +310,18 @@ void ProfileSwapGate::TryApplyStage(const TimePoint now, const HandleFunction& h
 
         if (forced)
         {
-            // Release, under the old profile, everything it did for the keys still believed held:
-            // replay each key-up (most recently pressed first) through the old handlers, which injects
-            // e.g. the remap target's key-up. Keys that are orphans already belong to an even older
-            // profile and keep their recorded action.
-            std::vector<HeldKey*> toRelease;
+            // Every held key's key-up was lost (each has been silent for ForcedSwapTimeout). Release
+            // what KBM's output left down (the old profile's targets) without running any handler: a
+            // replayed key-up would be taken for a real one (an "Alone" key would fire its tap action, a
+            // shortcut would restore its other source modifiers). Each held key becomes an orphan whose
+            // later events are answered as its key-down was: suppressed if the old profile suppressed
+            // it (its output is released here), passed through if the system saw it.
             for (auto& [id, key] : m_heldKeys)
             {
-                if (!key.orphan)
-                {
-                    toRelease.push_back(&key);
-                }
+                key.orphan = true;
             }
 
-            std::sort(toRelease.begin(), toRelease.end(), [](const HeldKey* a, const HeldKey* b) { return a->sequence > b->sequence; });
-
-            for (HeldKey* key : toRelease)
-            {
-                KBDLLHOOKSTRUCT upData = key->downData;
-                upData.flags |= LLKHF_UP;
-                LowlevelKeyboardEvent upEvent{};
-                upEvent.lParam = &upData;
-                upEvent.wParam = key->downMessage == WM_SYSKEYDOWN ? WM_SYSKEYUP : WM_KEYUP;
-
-                // What the old profile did with this key-up is what happens to the real one later.
-                key->suppressed = handle(&upEvent) == 1;
-                key->orphan = true;
-            }
+            ReleaseOwnKeysDown();
         }
 
         staged = std::move(m_staged);
@@ -309,12 +389,11 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
     // already in the set). Only a fresh press may apply a pending stage.
     if (keyDown && found == m_heldKeys.end() && m_hasStage.load())
     {
-        TryApplyStage(now, handle, adopt);
+        TryApplyStage(now, adopt);
     }
 
     // Record the key-down before the handlers run, so nothing after `handle` can throw (see the catch in
     // OnHookEvent). The entry is complete except for `suppressed`, which needs the handlers' answer.
-    // `downData` is copied here, before the handlers may rewrite vkCode (numpad/Shift handling).
     bool inserted = false;
     if (keyDown)
     {
@@ -323,9 +402,6 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
         if (inserted)
         {
             it->second.vkCode = rawVkCode;
-            it->second.downData = *event->lParam;
-            it->second.downMessage = event->wParam;
-            it->second.sequence = ++m_sequence;
         }
 
         it->second.lastEvent = now;
@@ -361,38 +437,9 @@ void ProfileSwapGate::OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noe
     }
 
     const DWORD injectedVkCode = Helpers::ClearKeyNumpadOrigin(event->lParam->vkCode);
-    const auto sameKey = [injectedVkCode](const DWORD heldVkCode) {
-        if (heldVkCode == injectedVkCode)
-        {
-            return true;
-        }
-
-        // A generic modifier stands for both of its left/right keys.
-        switch (injectedVkCode)
-        {
-        case VK_CONTROL:
-            return heldVkCode == VK_LCONTROL || heldVkCode == VK_RCONTROL;
-        case VK_MENU:
-            return heldVkCode == VK_LMENU || heldVkCode == VK_RMENU;
-        case VK_SHIFT:
-            return heldVkCode == VK_LSHIFT || heldVkCode == VK_RSHIFT;
-        case VK_LCONTROL:
-        case VK_RCONTROL:
-            return heldVkCode == VK_CONTROL;
-        case VK_LMENU:
-        case VK_RMENU:
-            return heldVkCode == VK_MENU;
-        case VK_LSHIFT:
-        case VK_RSHIFT:
-            return heldVkCode == VK_SHIFT;
-        default:
-            return false;
-        }
-    };
-
     for (auto& [id, key] : m_heldKeys)
     {
-        if (sameKey(key.vkCode))
+        if (IsSameKey(injectedVkCode, key.vkCode))
         {
             key.asyncStateUnreliable = true;
         }
@@ -401,14 +448,13 @@ void ProfileSwapGate::OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noe
 
 void ProfileSwapGate::SeedOrphans(const std::vector<KeySnapshot>& keysDown, const TimePoint now)
 {
+    // Events were not seen while unhooked, so neither set says anything reliable any more.
+    m_ownKeysDown.clear();
     m_heldKeys.clear();
     for (const KeySnapshot& snapshot : keysDown)
     {
         HeldKey key;
         key.vkCode = snapshot.vkCode;
-        key.downData.vkCode = snapshot.vkCode;
-        key.downData.scanCode = snapshot.scanCode;
-        key.downData.flags = snapshot.extended ? LLKHF_EXTENDED : 0;
         key.suppressed = false; // pass through: no hook was there to remap its key-down
         key.orphan = true;
         // The scan code is MapVirtualKey's guess, which can differ from what the hook reports for this
@@ -417,7 +463,6 @@ void ProfileSwapGate::SeedOrphans(const std::vector<KeySnapshot>& keysDown, cons
         // virtual key until its own event settles the id (see FindHeldKey; limitation R-1 in the header).
         key.estimatedScanCode = true;
         key.lastEvent = now;
-        key.sequence = ++m_sequence;
         m_heldKeys[MakeKeyId(snapshot.scanCode, snapshot.extended, snapshot.vkCode)] = key;
     }
 }

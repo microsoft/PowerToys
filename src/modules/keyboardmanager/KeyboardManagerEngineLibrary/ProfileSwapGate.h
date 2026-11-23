@@ -7,6 +7,7 @@
 #include <mutex>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <common/hooks/LowlevelKeyboardEvent.h>
@@ -19,8 +20,9 @@
 // handed to Offer(), which stages it. The low-level hook thread applies the staged configuration only
 // at a tracked key-down that is not an auto-repeat, and only while it sees no tracked key held, so a
 // key pressed under one profile is released under the same one. The recovery rules below bound how
-// long a lost key-up can block a swap; a forced swap still resolves held keys by the old profile's
-// rules, while a stale drop relies on GetAsyncKeyState being right. A newer stage replaces an
+// long a lost key-up can block a swap; a forced swap releases what the old profile left down and
+// keeps its suppress/pass answer for the held keys, while a stale drop relies on GetAsyncKeyState
+// being right. A newer stage replaces an
 // older one that was not applied yet. A reload of the profile that is already applied (an editor edit)
 // is applied in place right away, as before this gate existed, unless a switch to another profile is
 // pending (a pending "switch" to the applied profile itself is cancelled by such a reload instead).
@@ -40,8 +42,11 @@
 //    the first key-up releases it while the other is still down (review L-3 / N-3);
 //  - a key-up that is lost after the hook suppressed its key-down keeps the key "held" until the
 //    forced swap (L-4);
-//  - on a forced swap, key-ups the old profile injects while releasing held keys reach the hook
-//    after the swap and are seen by the new profile's handlers (L-5);
+//  - on a forced swap, the key-ups that release the old profile's output reach the hook after the
+//    swap; they carry KBM's shortcut tag, which every handler leaves alone (was L-5);
+//  - KBM's output that is down is tracked by virtual key from the events that reach the system, so
+//    a key-up of the same key from any source (e.g. a physical key with the same virtual key as a
+//    remap target) counts as releasing it;
 //  - a key seeded from GetAsyncKeyState (the hook was reinstalled, or a stage applied without a hook,
 //    while it was held and had stopped repeating) whose virtual key is one EncodeKeyNumpadOrigin
 //    distinguishes (Enter, arrows, Home/End, PgUp/PgDn, Ins/Del, numpad /) is matched by virtual key until its own
@@ -67,10 +72,12 @@
 //    for physical keys. An injected key never auto-repeats, so a silent injected key is normal; it
 //    is only dropped once the system also says it is up, and otherwise waits for the forced swap;
 //  - when a stage has waited ForcedSwapTimeout and every held key has been silent that long, the swap
-//    is forced at the next fresh key-down: each held key's key-up is first replayed through the
-//    current (old) profile's handlers, which releases whatever that profile injected for it, and the
-//    key becomes an "orphan". An orphan's later physical events are suppressed or passed through as
-//    the old profile did with the replayed key-up, without consulting the new profile.
+//    is forced at the next fresh key-down. No handler runs for it: a synthetic key-up would be taken
+//    for a real release (an "Alone" key would fire its tap action, a shortcut would restore its other
+//    source modifiers). Instead, every key KBM's own output left down (KBM-tagged key-downs that
+//    reached the system and saw no key-up since) gets a key-up, and each held key becomes an
+//    "orphan": its later events are suppressed if the old profile suppressed its key-down, passed
+//    through if the system saw it, without consulting the new profile.
 //
 // Thread use: Offer / SetAppliedProfile / AppliedProfile / HasStage / StagedProfile from any thread; everything else
 // on the low-level hook thread only (the thread that installs the hook and runs its message loop).
@@ -92,6 +99,9 @@ public:
 
     // Applies a same-profile reload in place (the pre-existing reload behaviour).
     using ApplyInPlaceFunction = std::function<void(State&)>;
+
+    // Injects key events (InputInterface::SendVirtualInput); used to release KBM's output on a forced swap.
+    using InjectFunction = std::function<void(const std::vector<INPUT>&)>;
 
     static constexpr std::chrono::seconds HeldKeyStaleTimeout{ 3 };
     static constexpr std::chrono::seconds ForcedSwapTimeout{ 30 };
@@ -143,7 +153,7 @@ public:
         bool extended = false;
     };
 
-    ProfileSwapGate(NowFunction now, AsyncKeyDownFunction asyncKeyDown);
+    ProfileSwapGate(NowFunction now, AsyncKeyDownFunction asyncKeyDown, InjectFunction inject);
 
     ProfileSwapGate(const ProfileSwapGate&) = delete;
     ProfileSwapGate& operator=(const ProfileSwapGate&) = delete;
@@ -224,10 +234,6 @@ private:
         // Raw virtual key (numpad-origin bit cleared), for GetAsyncKeyState.
         DWORD vkCode = 0;
 
-        // The key-down as the handlers saw it, for replaying its key-up on a forced swap.
-        KBDLLHOOKSTRUCT downData{};
-        WPARAM downMessage = WM_KEYDOWN;
-
         // For a normal key (physical or foreign-injected): whether the hook suppressed its first
         // key-down (then the system never saw it, GetAsyncKeyState cannot vouch for it, and it is never
         // dropped as stale).
@@ -244,7 +250,6 @@ private:
         // reflects the physical key, so it is not dropped as stale.
         bool asyncStateUnreliable = false;
         TimePoint lastEvent{};
-        uint64_t sequence = 0;
     };
 
     // Physical identity of a key: scan code + extended flag, which stays the same between a key's down
@@ -261,6 +266,16 @@ private:
     // never dropped as stale (only the forced swap can release it).
     void OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noexcept;
 
+    // Whether two virtual keys are the same key for the system's key state (a generic modifier stands
+    // for both of its left/right keys).
+    static bool IsSameKey(DWORD vkCode, DWORD otherVkCode) noexcept;
+
+    // After an event was handled: keep m_ownKeysDown in step with what reached the system.
+    void NoteDeliveredKeyEvent(KeyEventSource source, DWORD rawVkCode, bool keyDown, intptr_t result) noexcept;
+
+    // Forced swap: inject a key-up for every key in m_ownKeysDown (tagged as KBM output) and forget them.
+    void ReleaseOwnKeysDown();
+
     // The held entry for an event: by key id; when no record has that id, by virtual key, but only for
     // an orphan seeded from GetAsyncKeyState whose scan code is still an estimate (MapVirtualKey's
     // guess can differ from the real key, e.g. numpad Enter or the numpad navigation keys with NumLock
@@ -271,11 +286,12 @@ private:
     std::unordered_map<uint32_t, HeldKey>::iterator FindHeldKey(uint32_t id, DWORD rawVkCode);
 
     void PruneStaleKeys(TimePoint now, uint32_t keepId);
-    void TryApplyStage(TimePoint now, const HandleFunction& handle, const AdoptFunction& adopt);
+    void TryApplyStage(TimePoint now, const AdoptFunction& adopt);
     void SeedOrphans(const std::vector<KeySnapshot>& keysDown, TimePoint now);
 
     NowFunction m_now;
     AsyncKeyDownFunction m_asyncKeyDown;
+    InjectFunction m_inject;
 
     // Guards the members below it up to the hook-thread-only section.
     mutable std::mutex m_mutex;
@@ -286,5 +302,8 @@ private:
 
     // Hook-thread only.
     std::unordered_map<uint32_t, HeldKey> m_heldKeys;
-    uint64_t m_sequence = 0;
+
+    // Raw virtual keys of KBM's own output (OwnInjected key-downs) that reached the system and have
+    // seen no key-up reaching it since: what the live tables left down, released by a forced swap.
+    std::unordered_set<DWORD> m_ownKeysDown;
 };

@@ -97,7 +97,8 @@ private:
     // thread, at a fresh physical key-down while no physical key is held (see ProfileSwapGate.h).
     ProfileSwapGate profileSwapGate{
         [] { return std::chrono::steady_clock::now(); },
-        [](DWORD vkCode) { return (GetAsyncKeyState(static_cast<int>(vkCode)) & 0x8000) != 0; }
+        [](DWORD vkCode) { return (GetAsyncKeyState(static_cast<int>(vkCode)) & 0x8000) != 0; },
+        [this](const std::vector<INPUT>& inputs) { inputHandler.SendVirtualInput(inputs); }
     };
 
     // Object of class which implements InputInterface. Required for calling library functions while enabling testing
