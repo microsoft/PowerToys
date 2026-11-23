@@ -190,7 +190,7 @@ public class ApplicationIconTests
             using var rendered = icon.ToBitmap();
 
             Assert.AreEqual(1, lookups);
-            Assert.IsFalse(application.IsNotFound);
+            Assert.AreEqual(string.IsNullOrEmpty(fullName), application.IsNotFound);
             Assert.AreEqual(Color.OrangeRed.ToArgb(), rendered.GetPixel(8, 8).ToArgb());
         }
         finally
@@ -204,34 +204,104 @@ public class ApplicationIconTests
     [DataRow(true)]
     public void PackageAvailabilityIsIndependentOfWhetherALogoIsPresent(bool installed)
     {
-        using var application = new BaseApplication { AppUserModelId = "Test.Workspaces_8wekyb3d8bbwe!App" };
+        using var application = new BaseApplication
+        {
+            PackageFullName = "Test.Workspaces_1.2.3.4_neutral__8wekyb3d8bbwe",
+            AppUserModelId = "Test.Workspaces_8wekyb3d8bbwe!App",
+        };
         using var icon = application.LoadIcon(null, family => (installed, null));
         Assert.AreEqual(!installed, application.IsNotFound);
         Assert.IsNotNull(icon);
     }
 
     [TestMethod]
-    public void PwaIconLookupFindsJustTheRequestedAppAndRefreshesAMovedIcon()
+    public void LegacyPackageWithItsOriginalExecutablePresentStaysLaunchable()
+    {
+        using var application = new BaseApplication
+        {
+            AppUserModelId = "Test.Workspaces_8wekyb3d8bbwe!App",
+            AppPath = Environment.ProcessPath,
+        };
+        using var icon = application.LoadIcon(null, _ => (true, null));
+        Assert.IsFalse(application.IsNotFound);
+        Assert.IsNotNull(icon);
+    }
+
+    [TestMethod]
+    public void PwaIconLookupSeparatesBrowsersAndFindsTheCapturedProfile()
     {
         var directory = Directory.CreateTempSubdirectory();
         try
         {
             const string AppId = "samplepwa";
             var resolver = new PwaHelper(directory.FullName);
-            string edge = Path.Combine(directory.FullName, @"Microsoft\Edge\User Data\Default\Web Applications", "_crx__" + AppId);
-            string chrome = Path.Combine(directory.FullName, @"Google\Chrome\User Data\Default\Web Applications\Manifest Resources", AppId, "Icons");
-            string first = Path.Combine(edge, "Edge.ico");
-            string second = Path.Combine(chrome, "Chrome.png");
-            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId));
-            Directory.CreateDirectory(edge);
-            File.WriteAllBytes(first, []);
-            Assert.AreEqual(first, resolver.FindIcon(AppId));
-            Directory.CreateDirectory(chrome);
-            File.WriteAllBytes(second, []);
-            Assert.AreEqual(first, resolver.FindIcon(AppId));
-            File.Delete(first);
-            Assert.AreEqual(second, resolver.FindIcon(AppId));
-            Assert.AreEqual(string.Empty, resolver.FindIcon(@"..\outside"));
+            string WriteIcon(string relative)
+            {
+                string path = Path.Combine(directory.FullName, relative);
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllBytes(path, []);
+                return path;
+            }
+
+            const string Browser = @"C:\Browser\chrome.exe";
+            const string DefaultId = "Chrome._crx_" + AppId;
+            const string ProfileId = DefaultId + ".UserData.Profile1";
+            string edge = WriteIcon(@"Microsoft\Edge\User Data\Default\Web Applications\_crx__samplepwa\Edge.ico");
+            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId, Browser, DefaultId));
+            string chrome = WriteIcon(@"Google\Chrome\User Data\Profile 1\Web Applications\Manifest Resources\samplepwa\Icons\Chrome.png");
+            Assert.AreEqual(chrome, resolver.FindIcon(AppId, Browser, null));
+            string chromeDefault = WriteIcon(@"Google\Chrome\User Data\Default\Web Applications\_crx_samplepwa\Chrome.ico");
+            Assert.AreEqual(edge, resolver.FindIcon(AppId, @"C:\Browser\MSEdge.exe", null));
+            Assert.AreEqual(chromeDefault, resolver.FindIcon(AppId, Browser, DefaultId));
+            Assert.AreEqual(chrome, resolver.FindIcon(AppId, Browser, ProfileId));
+            Assert.AreEqual(chrome, resolver.FindIcon(AppId, null, ProfileId));
+            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId, Browser, "Chrome._crx_otherapp"));
+            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId, Browser, null));
+            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId, null, null));
+
+            File.Delete(chrome);
+            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId, Browser, ProfileId));
+            string replacement = WriteIcon(@"Google\Chrome\User Data\Profile 1\Web Applications\_crx_samplepwa\Updated.ico");
+            Assert.AreEqual(replacement, resolver.FindIcon(AppId, Browser, ProfileId));
+            Assert.AreEqual(string.Empty, resolver.FindIcon(@"..\outside", Browser, DefaultId));
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ChromiumShortenedAumidsMatchBothEndsOfTheAppAndProfileComponents()
+    {
+        const string AppId = "abcdefghijklmnopabcdefghijklmnop";
+        const string Browser = @"C:\Browser\chrome.exe";
+        const string DefaultAumid = "Chrome._crx_abcdefghijabcdefghijklmnop";
+        const string ProfileAumid = "Chrome._crx_abcdeghijklmnop.UserData.Profile1";
+        const string LongProfileAumid = "Chrome._crx_abcdeghijklmnop.UserData.L1234567890";
+        var directory = Directory.CreateTempSubdirectory();
+        try
+        {
+            string Install(string profile)
+            {
+                var icons = directory.CreateSubdirectory(Path.Combine(@"Google\Chrome\User Data", profile, "Web Applications", "_crx_" + AppId));
+                string icon = Path.Combine(icons.FullName, "App.ico");
+                File.WriteAllBytes(icon, []);
+                return icon;
+            }
+
+            var resolver = new PwaHelper(directory.FullName);
+            string normal = Install("Default");
+            string first = Install("Profile 1");
+            string longProfile = Install("LongProfileNameWithSharedTail1234567890");
+            Assert.AreEqual(normal, resolver.FindIcon(AppId, Browser, DefaultAumid));
+            Assert.AreEqual(first, resolver.FindIcon(AppId, Browser, ProfileAumid));
+            Assert.AreEqual(first, resolver.FindIcon(AppId, Browser, "Chrome._crx_" + AppId + ".UserData.Profile1"));
+            Assert.AreEqual(longProfile, resolver.FindIcon(AppId, Browser, LongProfileAumid));
+            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId, Browser, DefaultAumid[..^1] + "a"));
+
+            Install("LongProfileNameZZZZSharedTail1234567890");
+            Assert.AreEqual(string.Empty, resolver.FindIcon(AppId, Browser, LongProfileAumid), "The shortened profile component now matches two installations.");
         }
         finally
         {

@@ -23,7 +23,7 @@ namespace WorkspacesLauncherUI.ViewModels
         private readonly Action<Action, bool> _enqueue;
         private readonly Func<bool> _canDisplayWarning;
         private readonly Action _closeOwner;
-        private readonly Func<string, string, string, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> _loadIcon;
+        private readonly Func<ApplicationWrapper, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> _loadIcon;
         private readonly HashSet<Guid> _seenRequests = new HashSet<Guid>();
         private ActiveWarning _warning;
         private bool _stopped;
@@ -50,7 +50,7 @@ namespace WorkspacesLauncherUI.ViewModels
             Action<Action, bool> enqueue,
             Func<bool> canDisplayWarning,
             Action closeOwner,
-            Func<string, string, string, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> loadIcon = null)
+            Func<ApplicationWrapper, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> loadIcon = null)
         {
             _sendMessage = sendMessage;
             _createWarning = createWarning;
@@ -272,7 +272,7 @@ namespace WorkspacesLauncherUI.ViewModels
                 {
                     Name = app.Application.Application,
                     AppPath = app.Application.ApplicationPath,
-                    IconImage = _loadIcon?.Invoke(app.Application.ApplicationPath, app.Application.PackageFullName, app.Application.PwaAppId),
+                    IconImage = _loadIcon?.Invoke(app.Application),
                     PackagedName = app.Application.PackageFullName,
                     Aumid = app.Application.AppUserModelId,
                     PwaAppId = app.Application.PwaAppId,

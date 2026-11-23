@@ -39,7 +39,7 @@ namespace WorkspacesCsharpLibrary.Models
 
         private Icon _icon;
 
-        public Icon Icon => _icon ??= LoadIcon(PwaHelper.GetPwaIconFilename(PwaAppId));
+        public Icon Icon => _icon ??= LoadIcon(PwaHelper.GetPwaIconFilename(PwaAppId, AppPath, AppUserModelId));
 
         internal Icon LoadIcon(string pwaIconPath, Func<string, (bool Installed, Uri Logo)> findPackage = null)
         {
@@ -50,13 +50,16 @@ namespace WorkspacesCsharpLibrary.Models
             }
 
             bool isPwa = !string.IsNullOrEmpty(PwaAppId);
-            bool launchTargetExists = package.Installed || (isPwa
+
+            // Native package activation and versioned path repair both require a captured full name.
+            // A family inferred from a legacy path or AUMID can still supply the icon.
+            bool launchTargetExists = (package.Installed && !string.IsNullOrEmpty(PackageFullName)) || (isPwa
                 ? PwaHelper.HasLaunchTarget(AppPath, AppUserModelId, Version)
                 : File.Exists(AppPath));
             IsNotFound = !launchTargetExists;
 
-            return TryReadIcon(package.Logo?.LocalPath, LoadImageIcon) ??
-                   TryReadIcon(isPwa ? pwaIconPath : null, LoadImageIcon) ??
+            return TryReadIcon(isPwa ? pwaIconPath : null, LoadImageIcon) ??
+                   TryReadIcon(package.Logo?.LocalPath, LoadImageIcon) ??
                    TryReadIcon(AppPath, Icon.ExtractAssociatedIcon) ??
                    new Icon(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "DefaultIcon.ico"));
         }
