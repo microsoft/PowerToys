@@ -649,8 +649,17 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             DeviceProfileManager.DeviceAssignmentsSaveResult saveResult =
-                DeviceProfileManager.SaveChanges(baseline, AutoSwitchToggle.IsOn, SnapshotKeyboardRows(_keyboardRows));
-            if (saveResult != DeviceProfileManager.DeviceAssignmentsSaveResult.Saved)
+                DeviceProfileManager.SaveChanges(baseline, AutoSwitchToggle.IsOn, SnapshotKeyboardRows(_keyboardRows), out IReadOnlyList<string> droppedProfiles);
+            if (saveResult == DeviceProfileManager.DeviceAssignmentsSaveResult.SavedWithDroppedAssignments)
+            {
+                // The user picked these profiles in this dialog, but another window deleted them
+                // meanwhile. Say so instead of leaving the user believing the keyboards are assigned.
+                string names = string.Join(", ", droppedProfiles.Select(p => $"\"{p}\""));
+                await ShowProfileErrorAsync(
+                    ResourceHelper.GetString("AutoSwitchSaveDropped_Title"),
+                    string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("AutoSwitchSaveDropped_Format")), names));
+            }
+            else if (saveResult != DeviceProfileManager.DeviceAssignmentsSaveResult.Saved)
             {
                 string messageKey = saveResult switch
                 {

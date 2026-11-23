@@ -117,7 +117,7 @@ namespace KeyboardManagerEditorUI.Settings
                 string json = JsonSerializer.Serialize(editorSettings, _jsonOptions);
                 temporaryPath = Path.Combine(SettingsDirectory, $"editorSettings.{Guid.NewGuid():N}.tmp");
                 File.WriteAllText(temporaryPath, json);
-                File.Move(temporaryPath, SettingsFilePath, overwrite: true);
+                SettingsFileReplacer.Replace(temporaryPath, SettingsFilePath);
                 return true;
             }
             catch (Exception)
@@ -503,7 +503,7 @@ namespace KeyboardManagerEditorUI.Settings
         internal static bool ReconcileLoadedSettings(IEnumerable<ShortcutKeyMapping> activeMappings, string? profileName)
         {
             EditorSettings updatedSettings = CloneSettings(EditorSettings);
-            if (!ReconcileMappings(updatedSettings, activeMappings, profileName, IsRegisteredProfile))
+            if (!ReconcileMappings(updatedSettings, activeMappings, profileName, ExistingProfiles))
             {
                 return true;
             }
@@ -521,14 +521,13 @@ namespace KeyboardManagerEditorUI.Settings
             EditorSettings settings,
             IEnumerable<ShortcutKeyMapping> activeMappings,
             string? profileName = null,
-            Func<string, bool>? isRegisteredProfile = null)
+            Func<IEnumerable<string>>? existingProfiles = null)
         {
             bool profileAware = !string.IsNullOrWhiteSpace(profileName);
             bool shortcutSettingsChanged = NormalizeSettings(settings);
 
-            // Before ActiveProfile is overwritten below: the migration reads the profile the file
-            // was written for.
-            if (profileAware && MigrateLegacyRows(settings, isRegisteredProfile))
+            // Before the rows are matched below, so a migrated row is matched with its profiles.
+            if (profileAware && MigrateLegacyRows(settings, existingProfiles))
             {
                 shortcutSettingsChanged = true;
             }
@@ -633,48 +632,86 @@ namespace KeyboardManagerEditorUI.Settings
         /// reconciling would never tag them. Untagged rows are treated as belonging to every profile,
         /// so once profiles can be created such a row would show up in a new empty profile and could
         /// be deleted or claimed from there, taking it away from the profile it came from.
-        /// Every untagged row is assigned to the profile the file was written for: the recorded
-        /// <see cref="EditorSettings.ActiveProfile"/> if it names a profile that still exists, and
-        /// otherwise "default", the only profile those editors could use. The profile active now
-        /// plays no part, so it does not matter when the migration runs: at the first start after
-        /// the upgrade, after a switch, or when a restored backup brings back an old file.
+        /// Where an untagged row goes depends only on the rows of the file:
+        /// <list type="bullet">
+        /// <item>No row names a profile other than "default": the file comes from a released
+        /// single-profile editor (v0.101 and v0.102 tag rows with "default" only), which could only
+        /// use "default", so every row goes to "default".</item>
+        /// <item>Some row names another profile: a pre-release profile-aware build wrote the file, and it
+        /// showed an untagged row in every profile. The row is tagged with every profile that
+        /// exists now (<paramref name="existingProfiles"/>), so it stays where it was visible,
+        /// and deleting it from one profile no longer deletes it from the others.</item>
+        /// </list>
+        /// The recorded <see cref="EditorSettings.ActiveProfile"/> and the profile active now play
+        /// no part, so it does not matter when the migration runs (the first start after the
+        /// upgrade, after a switch, after a restored backup brings back an old file) or which
+        /// profile an earlier write recorded.
         /// </summary>
+        /// <param name="settings">The settings to migrate in place.</param>
+        /// <param name="existingProfiles">The profiles that exist now; when null, "default" and
+        /// the profiles the file's rows name.</param>
         /// <returns>Whether the settings changed.</returns>
-        internal static bool MigrateLegacyRows(EditorSettings settings, Func<string, bool>? isRegisteredProfile)
+        internal static bool MigrateLegacyRows(EditorSettings settings, Func<IEnumerable<string>>? existingProfiles)
         {
             if (settings.SchemaVersion >= EditorSettings.CurrentSchemaVersion)
             {
                 return false;
             }
 
-            string recordedProfile = settings.ActiveProfile;
-            string originalProfile = !string.IsNullOrWhiteSpace(recordedProfile) &&
-                (recordedProfile.Equals(ProfileManager.DefaultProfile, StringComparison.OrdinalIgnoreCase) || isRegisteredProfile?.Invoke(recordedProfile) == true)
-                ? recordedProfile
-                : ProfileManager.DefaultProfile;
+            List<string> namedProfiles = settings.ShortcutSettingsDictionary.Values
+                .SelectMany(GetProfiles)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var targets = new List<string> { ProfileManager.DefaultProfile };
+            if (namedProfiles.Any(profile => !profile.Equals(ProfileManager.DefaultProfile, StringComparison.OrdinalIgnoreCase)))
+            {
+                foreach (string profile in existingProfiles?.Invoke() ?? namedProfiles)
+                {
+                    if (!string.IsNullOrWhiteSpace(profile) && !targets.Contains(profile, StringComparer.OrdinalIgnoreCase))
+                    {
+                        targets.Add(profile);
+                    }
+                }
+            }
 
             foreach (ShortcutSettings shortcutSettings in settings.ShortcutSettingsDictionary.Values)
             {
                 if (GetProfiles(shortcutSettings).Count == 0)
                 {
-                    AddProfile(shortcutSettings, originalProfile);
+                    foreach (string target in targets)
+                    {
+                        AddProfile(shortcutSettings, target);
+                    }
                 }
             }
 
             settings.SchemaVersion = EditorSettings.CurrentSchemaVersion;
+            settings.ProfileDictionary = BuildProfileIndex(settings);
             return true;
         }
 
-        // Whether a profile is registered in settings.json or has a config file. Used by the
-        // migration to trust the profile recorded in an old editorSettings.json.
-        private static bool IsRegisteredProfile(string profileName) =>
-            ProfileManager.GetProfiles().Contains(profileName, StringComparer.OrdinalIgnoreCase);
+        // The profiles registered in settings.json or with a config file. Used by the migration
+        // to tag the untagged rows of a file from a pre-release profile-aware build.
+        private static IEnumerable<string> ExistingProfiles() => ProfileManager.GetProfiles();
+
+        // A profile-aware write tags the row it touches. On a file that no reconcile has migrated
+        // yet, that tag would make a released single-profile file look like one from a
+        // profile-aware build, so the file is migrated first.
+        private static void MigrateBeforeWrite(EditorSettings settings, string? profileName)
+        {
+            if (!string.IsNullOrWhiteSpace(profileName))
+            {
+                MigrateLegacyRows(settings, ExistingProfiles);
+            }
+        }
 
         public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId, string? profileName = null)
         {
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
+                MigrateBeforeWrite(updatedSettings, profileName ?? CurrentProfileName);
 
                 // Attribute the mapping to the profile the caller captured when it built the edit
                 // (candidateService.ConfigurationName), not the live global: the native save happens
@@ -773,6 +810,7 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
+                MigrateBeforeWrite(updatedSettings, profileName ?? CurrentProfileName);
                 if (!TryApplyShortcutKeyMappingRemoval(updatedSettings, guid, profileName ?? CurrentProfileName) ||
                     !WriteSettings(updatedSettings))
                 {
@@ -830,6 +868,7 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
+                MigrateBeforeWrite(updatedSettings, profileName ?? CurrentProfileName);
                 if (!TryApplyShortcutKeyMappingActiveState(
                         updatedSettings,
                         guid,

@@ -74,6 +74,12 @@ namespace KeyboardManagerEditorUI.Settings
         {
             Saved,
 
+            /// <summary>
+            /// Saved, but keyboards the user assigned in this dialog to a profile that was deleted
+            /// meanwhile were left out. The out parameter of SaveChanges names those profiles.
+            /// </summary>
+            SavedWithDroppedAssignments,
+
             /// <summary>Another editor held the transaction lock for too long. Nothing was written.</summary>
             Busy,
 
@@ -99,11 +105,23 @@ namespace KeyboardManagerEditorUI.Settings
         /// exist are dropped. The file is replaced atomically, and the engine is signalled.
         /// </summary>
         public static DeviceAssignmentsSaveResult SaveChanges(DeviceAssignmentsBaseline baseline, bool autoSwitchEnabled, IReadOnlyList<DeviceAssignment> edited) =>
-            SaveChanges(baseline, autoSwitchEnabled, edited, lockTimeoutMS: 10_000);
+            SaveChanges(baseline, autoSwitchEnabled, edited, lockTimeoutMS: 10_000, out _);
 
         /// <inheritdoc cref="SaveChanges(DeviceAssignmentsBaseline, bool, IReadOnlyList{DeviceAssignment})"/>
-        internal static DeviceAssignmentsSaveResult SaveChanges(DeviceAssignmentsBaseline baseline, bool autoSwitchEnabled, IReadOnlyList<DeviceAssignment> edited, int lockTimeoutMS)
+        /// <param name="droppedProfiles">The profiles of the assignments the user made in this
+        /// dialog that were left out because the profile no longer exists. Empty unless the result
+        /// is <see cref="DeviceAssignmentsSaveResult.SavedWithDroppedAssignments"/>.</param>
+        public static DeviceAssignmentsSaveResult SaveChanges(DeviceAssignmentsBaseline baseline, bool autoSwitchEnabled, IReadOnlyList<DeviceAssignment> edited, out IReadOnlyList<string> droppedProfiles) =>
+            SaveChanges(baseline, autoSwitchEnabled, edited, lockTimeoutMS: 10_000, out droppedProfiles);
+
+        /// <inheritdoc cref="SaveChanges(DeviceAssignmentsBaseline, bool, IReadOnlyList{DeviceAssignment})"/>
+        internal static DeviceAssignmentsSaveResult SaveChanges(DeviceAssignmentsBaseline baseline, bool autoSwitchEnabled, IReadOnlyList<DeviceAssignment> edited, int lockTimeoutMS) =>
+            SaveChanges(baseline, autoSwitchEnabled, edited, lockTimeoutMS, out _);
+
+        /// <inheritdoc cref="SaveChanges(DeviceAssignmentsBaseline, bool, IReadOnlyList{DeviceAssignment}, out IReadOnlyList{string})"/>
+        internal static DeviceAssignmentsSaveResult SaveChanges(DeviceAssignmentsBaseline baseline, bool autoSwitchEnabled, IReadOnlyList<DeviceAssignment> edited, int lockTimeoutMS, out IReadOnlyList<string> droppedProfiles)
         {
+            droppedProfiles = Array.Empty<string>();
             try
             {
                 using FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock(lockTimeoutMS);
@@ -122,7 +140,7 @@ namespace KeyboardManagerEditorUI.Settings
                 List<DeviceAssignment> current = file.Map
                     .Select(e => new DeviceAssignment { Device = e.Device, Profile = e.Profile, Name = e.Name })
                     .ToList();
-                file.Map = MergeAssignments(current, baseline.Assignments, edited, existingProfiles.Contains)
+                file.Map = MergeAssignments(current, baseline.Assignments, edited, existingProfiles.Contains, out List<string> dropped)
                     .Select(a => new DeviceProfileEntry { Device = a.Device, Profile = a.Profile, Name = a.Name })
                     .ToList();
                 if (autoSwitchEnabled != baseline.AutoSwitchEnabled)
@@ -132,6 +150,12 @@ namespace KeyboardManagerEditorUI.Settings
 
                 WriteFile(file);
                 ProfileManager.SignalEngineReload();
+                if (dropped.Count > 0)
+                {
+                    droppedProfiles = dropped;
+                    return DeviceAssignmentsSaveResult.SavedWithDroppedAssignments;
+                }
+
                 return DeviceAssignmentsSaveResult.Saved;
             }
             catch (Exception ex)
@@ -149,14 +173,18 @@ namespace KeyboardManagerEditorUI.Settings
         /// change keeps whatever <paramref name="current"/> has, so another editor's newer save of it
         /// survives. A display name refreshed by typing is updated only where the assignment itself
         /// is unchanged. Entries with an empty device or profile, or naming a profile for which
-        /// <paramref name="profileExists"/> is false, are dropped.
+        /// <paramref name="profileExists"/> is false, are dropped. <paramref name="droppedChanges"/>
+        /// lists, once each, the profiles of the assignments the user changed in the dialog that were
+        /// dropped that way; stale entries already in the file are dropped silently.
         /// </summary>
         internal static List<DeviceAssignment> MergeAssignments(
             IReadOnlyList<DeviceAssignment> current,
             IReadOnlyList<DeviceAssignment> baseline,
             IReadOnlyList<DeviceAssignment> edited,
-            Func<string, bool> profileExists)
+            Func<string, bool> profileExists,
+            out List<string> droppedChanges)
         {
+            droppedChanges = new List<string>();
             var result = current
                 .Where(a => !string.IsNullOrEmpty(a.Device) && !string.IsNullOrEmpty(a.Profile))
                 .Select(a => new DeviceAssignment { Device = a.Device, Profile = a.Profile, Name = a.Name })
@@ -189,7 +217,14 @@ namespace KeyboardManagerEditorUI.Settings
                         result.RemoveAt(index);
                     }
 
-                    if (editedProfile.Length > 0)
+                    if (editedProfile.Length > 0 && !profileExists(editedProfile))
+                    {
+                        if (!droppedChanges.Contains(editedProfile, StringComparer.Ordinal))
+                        {
+                            droppedChanges.Add(editedProfile);
+                        }
+                    }
+                    else if (editedProfile.Length > 0)
                     {
                         result.Insert(index >= 0 ? index : result.Count, new DeviceAssignment { Device = row.Device, Profile = editedProfile, Name = row.Name });
                     }
@@ -282,7 +317,7 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 File.WriteAllText(temporaryPath, JsonSerializer.Serialize(file, _jsonOptions));
-                File.Move(temporaryPath, FilePath, overwrite: true);
+                SettingsFileReplacer.Replace(temporaryPath, FilePath);
             }
             finally
             {

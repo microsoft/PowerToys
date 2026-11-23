@@ -111,6 +111,56 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEquivalent(new List<string> { "k1=Work" }, SavedMap());
         }
 
+        // The user assigned a keyboard to a profile that another window deleted meanwhile: the save
+        // reports it and names the profile, so the dialog can tell the user. A stale entry that was
+        // already in the file is dropped silently.
+        [TestMethod]
+        public void AssignmentTheUserMadeToADeletedProfile_IsReported()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Work"), ("k3", "Gone"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+            Assert.IsTrue(ProfileManager.DeleteProfile("Home"));
+
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.SavedWithDroppedAssignments,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Work"), ("k2", "Home"), ("k4", "Home")), out IReadOnlyList<string> dropped));
+
+            CollectionAssert.AreEqual(new List<string> { "Home" }, dropped.ToList());
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Work" }, SavedMap());
+        }
+
+        [TestMethod]
+        public void SaveWithoutDroppedAssignments_ReportsSaved_EvenWhenTheFileHadStaleEntries()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Work"), ("k3", "Gone"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.Saved,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Work"), ("k2", "Home")), out IReadOnlyList<string> dropped));
+
+            Assert.AreEqual(0, dropped.Count);
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Work", "k2=Home" }, SavedMap());
+        }
+
+        // deviceProfiles.json is replaced while a reader has it open without delete sharing (as the
+        // engine's ifstream does) for a moment: the save waits for it instead of failing.
+        [TestMethod]
+        public void Save_WaitsForAReaderThatHasTheFileOpenForAMoment()
+        {
+            WriteFile(autoSwitch: false, ("k1", "Work"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+
+            using (ProfileStoreTests.HoldOpenBriefly(DeviceProfilesPath, millisecondsHeld: 150))
+            {
+                Assert.AreEqual(
+                    DeviceProfileManager.DeviceAssignmentsSaveResult.Saved,
+                    DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: false, Rows(("k1", "Home"))));
+            }
+
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Home" }, SavedMap());
+        }
+
         [TestMethod]
         public void UnreadableFile_IsNotOverwritten()
         {

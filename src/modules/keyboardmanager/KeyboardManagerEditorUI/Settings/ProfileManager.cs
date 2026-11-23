@@ -51,11 +51,12 @@ namespace KeyboardManagerEditorUI.Settings
         // Win32 error codes reported when a create-new target already exists.
         private const int ErrorFileExists = 80;
         private const int ErrorAlreadyExists = 183;
-        private const int ErrorSharingViolation = 32;
 
-        // A config file moved aside by DeleteProfile: "{id}.deleting-<guid "N" format>.json".
+        // A config file moved aside by DeleteProfile: "{id}.deleting-<guid "N" format>.json", or
+        // "{id}.deleting-unregistered-<guid>.json" for a profile that was not registered in
+        // settings.json (a "{name}.json" file that GetProfiles found by scanning the folder).
         private static readonly Regex SetAsideFileName = new(
-            @"^(?<id>[^.]+)\.deleting-[0-9a-f]{32}\.json$",
+            @"^(?<id>[^.]+)\.deleting-(?<unregistered>unregistered-)?[0-9a-f]{32}\.json$",
             RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
         // Lock wait used by the UI; tests pass a shorter one.
@@ -199,8 +200,9 @@ namespace KeyboardManagerEditorUI.Settings
             return names;
         }
 
-        // The moved-aside config files ("{id}.deleting-<guid>.json") in the folder, with their ids.
-        private static IEnumerable<(string Path, string Id)> FindSetAsideFiles()
+        // The moved-aside config files ("{id}.deleting-[unregistered-]<guid>.json") in the folder,
+        // with their ids and whether the profile was unregistered when it was deleted.
+        private static IEnumerable<(string Path, string Id, bool WasUnregistered)> FindSetAsideFiles()
         {
             if (!Directory.Exists(SettingsDirectory))
             {
@@ -212,18 +214,26 @@ namespace KeyboardManagerEditorUI.Settings
                 Match match = SetAsideFileName.Match(Path.GetFileName(file));
                 if (match.Success)
                 {
-                    yield return (file, match.Groups["id"].Value);
+                    yield return (file, match.Groups["id"].Value, match.Groups["unregistered"].Success);
                 }
             }
         }
 
         /// <summary>
         /// Cleans up config files that DeleteProfile moved aside and never finished with: the process
-        /// ended mid-delete, or a step afterwards failed. Only "{id}.deleting-<guid>.json" files whose
-        /// "{id}.json" is absent are touched: one whose id is still registered in settings.json is a
-        /// delete that did not commit, so the file is moved back; otherwise the delete committed and
-        /// the file is removed. Runs only when the editor transaction lock is free right now, because
-        /// a delete in progress holds it while its file is moved aside.
+        /// ended mid-delete, or a step afterwards failed. Only set-aside files whose "{id}.json" is
+        /// absent are touched:
+        /// <list type="bullet">
+        /// <item>The id is still registered in settings.json: the delete did not commit, so the file
+        /// is moved back.</item>
+        /// <item>The profile was not registered when it was deleted (its file name says so): nothing
+        /// on disk tells whether that delete committed, so the file is moved back. Restoring a
+        /// deleted profile only means deleting it again; removing a kept one would lose it.</item>
+        /// <item>Otherwise the delete unregistered the profile, so it committed, and the file is
+        /// removed.</item>
+        /// </list>
+        /// Runs only when the editor transaction lock is free right now, because a delete in progress
+        /// holds it while its file is moved aside.
         /// </summary>
         private static void RecoverSetAsideFiles()
         {
@@ -243,19 +253,8 @@ namespace KeyboardManagerEditorUI.Settings
                     return;
                 }
 
-                var registered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                if (ReadSettingsRoot()?["properties"]?["keyboardConfigurations"]?["value"] is JsonArray configs)
-                {
-                    foreach (JsonNode? item in configs)
-                    {
-                        if (item?.GetValue<string>() is string name)
-                        {
-                            registered.Add(name);
-                        }
-                    }
-                }
-
-                foreach ((string file, string id) in leftovers)
+                HashSet<string> registered = ReadRegisteredProfiles();
+                foreach ((string file, string id, bool wasUnregistered) in leftovers)
                 {
                     string path = ConfigPath(id);
                     if (File.Exists(path))
@@ -263,7 +262,7 @@ namespace KeyboardManagerEditorUI.Settings
                         continue; // an earlier leftover of the same id was just moved back
                     }
 
-                    if (registered.Contains(id))
+                    if (registered.Contains(id) || wasUnregistered)
                     {
                         Logger.LogWarning($"ProfileManager: restoring '{file}', left behind by a delete that did not finish.");
                         RestoreSetAsideFile(file, path);
@@ -514,7 +513,8 @@ namespace KeyboardManagerEditorUI.Settings
             // A moved-aside "{id}.deleting-*.json" means a delete of this id rolled back but could not
             // move its file back (our new file was in the way): that profile still exists, so neither
             // purge its membership nor take its id. Once our file is removed, the leftover cleanup in
-            // GetProfiles() puts the original back.
+            // GetProfiles() puts the original back (the id of such a delete is still registered, or
+            // the set-aside name records that it never was).
             if (FindSetAsideFiles().Any(f => f.Id.Equals(profile, StringComparison.OrdinalIgnoreCase)))
             {
                 Logger.LogWarning($"ProfileManager.CreateProfile('{profile}'): a profile with this id is still being deleted or restored.");
@@ -602,7 +602,10 @@ namespace KeyboardManagerEditorUI.Settings
                     // abort before touching any other store.
                     if (File.Exists(path))
                     {
-                        string target = Path.Combine(SettingsDirectory, $"{profile}.deleting-{Guid.NewGuid():N}.json");
+                        // An unregistered profile's delete leaves no trace in settings.json, so its
+                        // set-aside name records that; see RecoverSetAsideFiles.
+                        string marker = IsRegistered(profile) ? string.Empty : "unregistered-";
+                        string target = Path.Combine(SettingsDirectory, $"{profile}.deleting-{marker}{Guid.NewGuid():N}.json");
                         File.Move(path, target);
                         setAsidePath = target;
                     }
@@ -783,6 +786,40 @@ namespace KeyboardManagerEditorUI.Settings
             return true;
         }
 
+        // The ids listed in settings.json's "keyboardConfigurations" (case-insensitive). Throws when
+        // settings.json exists but cannot be read.
+        private static HashSet<string> ReadRegisteredProfiles()
+        {
+            var registered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (ReadSettingsRoot()?["properties"]?["keyboardConfigurations"]?["value"] is JsonArray configs)
+            {
+                foreach (JsonNode? item in configs)
+                {
+                    if (item?.GetValue<string>() is string name)
+                    {
+                        registered.Add(name);
+                    }
+                }
+            }
+
+            return registered;
+        }
+
+        // Whether the profile is registered. When that cannot be read, it counts as unregistered,
+        // which makes the leftover cleanup keep a moved-aside file rather than remove it.
+        private static bool IsRegistered(string profile)
+        {
+            try
+            {
+                return ReadRegisteredProfiles().Contains(profile);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"ProfileManager: could not read the registered profiles: {ex.Message}");
+                return false;
+            }
+        }
+
         private static JsonNode? ReadSettingsRoot()
         {
             return File.Exists(SettingsJsonPath) ? JsonNode.Parse(File.ReadAllText(SettingsJsonPath)) : null;
@@ -808,21 +845,7 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 File.WriteAllText(temporaryPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = false }));
-
-                // Replacing needs delete access to settings.json, which a reader that has it open
-                // briefly (the engine, the runner, Settings) may not share; retry a few times.
-                for (int attempt = 1; ; attempt++)
-                {
-                    try
-                    {
-                        File.Move(temporaryPath, SettingsJsonPath, overwrite: true);
-                        break;
-                    }
-                    catch (IOException ex) when ((ex.HResult & 0xFFFF) == ErrorSharingViolation && attempt < 5)
-                    {
-                        Thread.Sleep(50);
-                    }
-                }
+                SettingsFileReplacer.Replace(temporaryPath, SettingsJsonPath);
             }
             finally
             {
@@ -831,13 +854,24 @@ namespace KeyboardManagerEditorUI.Settings
 
             // A replace by rename raises no last-write change notification for settings.json, and
             // its watchers (this editor's other windows, the Settings app) only listen for those.
-            try
+            // A reader that has the file open for a moment can block this too, so it is retried
+            // briefly; a lasting failure only delays the other windows until the next change.
+            for (int attempt = 1; ; attempt++)
             {
-                File.SetLastWriteTimeUtc(SettingsJsonPath, DateTime.UtcNow);
-            }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"ProfileManager: could not update the time stamp of settings.json: {ex.Message}");
+                try
+                {
+                    File.SetLastWriteTimeUtc(SettingsJsonPath, DateTime.UtcNow);
+                    break;
+                }
+                catch (Exception) when (attempt < 3)
+                {
+                    Thread.Sleep(50);
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"ProfileManager: could not update the time stamp of settings.json: {ex.Message}");
+                    break;
+                }
             }
         }
 

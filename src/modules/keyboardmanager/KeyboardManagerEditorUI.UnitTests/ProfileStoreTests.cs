@@ -500,6 +500,50 @@ namespace KeyboardManagerEditorUI.UnitTests
             AssertNoLeftoverFiles();
         }
 
+        // A profile that was never registered (a "{name}.json" found by scanning the folder) leaves no
+        // trace of a committed delete in settings.json. Its moved-aside file is put back rather than
+        // removed: deleting it again is possible, getting it back would not be.
+        [TestMethod]
+        public void GetProfiles_MovesBackTheSetAsideFileOfAProfileThatWasUnregisteredWhenDeleted()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            File.WriteAllText(Path.Combine(_directory, $"Travel.deleting-unregistered-{Guid.NewGuid():N}.json"), "travel mappings");
+
+            CollectionAssert.Contains(new List<string>(ProfileManager.GetProfiles()), "Travel");
+
+            Assert.AreEqual("travel mappings", File.ReadAllText(Path.Combine(_directory, "Travel.json")));
+            AssertNoLeftoverFiles();
+        }
+
+        // The rollback of an unregistered profile's delete cannot move its file back (another editor
+        // created the same id meanwhile). Once that file is gone, the cleanup restores the original
+        // instead of removing it.
+        [TestMethod]
+        public void UnregisteredProfile_WhoseDeleteCouldNotBeUndone_IsRestoredByTheCleanup()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            string path = Path.Combine(_directory, "Travel.json");
+            File.WriteAllText(path, "travel mappings");
+            CollectionAssert.Contains(new List<string>(ProfileManager.GetProfiles()), "Travel");
+            string settingsPath = Path.Combine(_directory, "settings.json");
+            ProfileManager.BeforeDeleteCommitForTests = () =>
+            {
+                File.SetAttributes(settingsPath, FileAttributes.ReadOnly);
+                File.WriteAllText(path, "created meanwhile");
+            };
+
+            Assert.AreEqual(ProfileManager.ProfileDeleteResult.NotFullyRestored, ProfileManager.DeleteProfileWithResult("Travel"));
+            Assert.AreEqual(1, Directory.GetFiles(_directory, "Travel.deleting-*.json").Length);
+
+            ProfileManager.BeforeDeleteCommitForTests = null;
+            File.SetAttributes(settingsPath, FileAttributes.Normal);
+            File.Delete(path);
+            CollectionAssert.Contains(new List<string>(ProfileManager.GetProfiles()), "Travel");
+
+            Assert.AreEqual("travel mappings", File.ReadAllText(path));
+            AssertNoLeftoverFiles();
+        }
+
         // Only "{id}.deleting-<32 hex>.json" without an "{id}.json" is cleaned up, and only while no
         // other editor holds the transaction lock (a delete may be in progress).
         [TestMethod]
@@ -570,10 +614,10 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsFalse(SettingsManager.IsMappingInActiveProfile(onDisk.ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId], "Work"));
         }
 
-        // The recorded active profile is used when it is still registered (checked against the real
-        // profile store), and the rows do not follow the live profile.
+        // A version-0 file without tagged rows goes to default even when it records another profile
+        // that exists in the real profile store.
         [TestMethod]
-        public void RestoredVersion0EditorSettings_GoesToItsRecordedProfile_WhenThatProfileExists()
+        public void RestoredVersion0EditorSettings_GoesToDefault_EvenWhenItRecordsAnExistingProfile()
         {
             Assert.IsTrue(ProfileManager.CreateProfile("Home", copyFromActive: false));
             Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
@@ -585,7 +629,118 @@ namespace KeyboardManagerEditorUI.UnitTests
 
             Assert.IsTrue(SettingsManager.ReconcileLoadedSettings(new List<ShortcutKeyMapping>(), "Work"));
 
-            CollectionAssert.AreEqual(new List<string> { "Home" }, ReadEditorSettings().ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].Profiles);
+            CollectionAssert.AreEqual(new List<string> { "default" }, ReadEditorSettings().ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].Profiles);
+        }
+
+        // A version-0 file from a pre-release profile-aware build (rows tagged with other profiles, a recorded profile
+        // other than default): its untagged row goes to every profile of the real store.
+        [TestMethod]
+        public void Version0DevBuildEditorSettings_TagsUntaggedRowsWithEveryExistingProfile()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Apple Magic Keyboard", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            File.WriteAllText(EditorSettingsPath, LegacyMembershipMigrationTests.DevBuildJson);
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+
+            Assert.IsTrue(SettingsManager.ReconcileLoadedSettings(new List<ShortcutKeyMapping>(), "Work"));
+
+            EditorSettings onDisk = ReadEditorSettings();
+            CollectionAssert.AreEquivalent(
+                new List<string> { "default", "Apple Magic Keyboard", "Work" },
+                onDisk.ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].Profiles);
+            Assert.AreEqual(EditorSettings.CurrentSchemaVersion, onDisk.SchemaVersion);
+        }
+
+        // An edit saved before any reconcile has migrated a released version-0 file must not tag
+        // a row first: that would make the file look like one from a profile-aware build. The
+        // write migrates the file, so the untagged rows go to default and Work cannot claim them.
+        [TestMethod]
+        public void WriteToAVersion0File_MigratesFirst_SoWorkCannotClaimDefaultsRows()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            File.WriteAllText(EditorSettingsPath, LegacyMembershipMigrationTests.V0100DisabledRowJson);
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+
+            Assert.IsFalse(SettingsManager.TrySetShortcutKeyMappingActiveState(LegacyMembershipMigrationTests.RowId, true, "Work"));
+            var mapping = new ShortcutKeyMapping { OperationType = ShortcutOperationType.RemapShortcut, OriginalKeys = "80", TargetKeys = "81", TargetText = string.Empty };
+            Assert.IsTrue(SettingsManager.TryCommitShortcutKeyMapping(mapping, null, "Work"));
+
+            EditorSettings onDisk = ReadEditorSettings();
+            Assert.AreEqual(EditorSettings.CurrentSchemaVersion, onDisk.SchemaVersion);
+            CollectionAssert.AreEqual(new List<string> { "default" }, onDisk.ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].Profiles);
+            Assert.IsFalse(onDisk.ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].IsActive);
+
+            // A later reconcile does not move it either.
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+            SettingsManager.ReconcileLoadedSettings(new List<ShortcutKeyMapping> { mapping }, "Work");
+            CollectionAssert.AreEqual(new List<string> { "default" }, ReadEditorSettings().ShortcutSettingsDictionary[LegacyMembershipMigrationTests.RowId].Profiles);
+        }
+
+        // settings.json is replaced while a reader (the engine's ifstream shares read and write, not
+        // delete) has it open for a moment. Windows reports access denied for that; the switch waits
+        // for the reader instead of failing.
+        [TestMethod]
+        public void SetActiveProfile_WaitsForAReaderThatHasSettingsJsonOpenForAMoment()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+
+            using (HoldOpenBriefly(Path.Combine(_directory, "settings.json"), millisecondsHeld: 150))
+            {
+                Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            }
+
+            Assert.AreEqual("Work", ProfileManager.GetActiveProfile());
+            AssertNoLeftoverFiles();
+        }
+
+        [TestMethod]
+        public void ReplaceFile_GivesUp_WhenTheTargetStaysOpen()
+        {
+            string target = Path.Combine(_directory, "target.json");
+            string temporary = Path.Combine(_directory, "target.tmp");
+            File.WriteAllText(target, "old");
+            File.WriteAllText(temporary, "new");
+
+            using (new FileStream(target, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                Assert.ThrowsExactly<UnauthorizedAccessException>(() => SettingsFileReplacer.Replace(temporary, target));
+            }
+
+            Assert.AreEqual("old", File.ReadAllText(target));
+        }
+
+        // A read-only target will not change by waiting, so it fails at once (ten attempts would take
+        // about half a second).
+        [TestMethod]
+        public void ReplaceFile_FailsAtOnce_WhenTheTargetIsReadOnly()
+        {
+            string target = Path.Combine(_directory, "target.json");
+            string temporary = Path.Combine(_directory, "target.tmp");
+            File.WriteAllText(target, "old");
+            File.WriteAllText(temporary, "new");
+            File.SetAttributes(target, FileAttributes.ReadOnly);
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            Assert.ThrowsExactly<UnauthorizedAccessException>(() => SettingsFileReplacer.Replace(temporary, target));
+            stopwatch.Stop();
+
+            Assert.IsTrue(stopwatch.ElapsedMilliseconds < 250, $"Took {stopwatch.ElapsedMilliseconds} ms.");
+            Assert.AreEqual("old", File.ReadAllText(target));
+        }
+
+        // Opens path for reading without delete sharing, as a native reader does, and closes it on
+        // another thread after millisecondsHeld. Disposing waits for that.
+        internal static IDisposable HoldOpenBriefly(string path, int millisecondsHeld)
+        {
+            var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            var release = System.Threading.Tasks.Task.Run(() =>
+            {
+                System.Threading.Thread.Sleep(millisecondsHeld);
+                stream.Dispose();
+            });
+            return new HeldFile(release);
         }
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -669,6 +824,11 @@ namespace KeyboardManagerEditorUI.UnitTests
                     name.Count(c => c == '.') > 1 || name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase),
                     $"Unexpected leftover file '{name}'.");
             }
+        }
+
+        private sealed class HeldFile(System.Threading.Tasks.Task release) : IDisposable
+        {
+            public void Dispose() => release.Wait();
         }
     }
 }
