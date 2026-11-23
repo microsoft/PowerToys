@@ -985,7 +985,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         // backup's row stays as it is for its own profiles, and the current row is added under a new
         // id for the retained profiles: a turned-off row exists only here, so the retained profile's
         // reconcile could not bring its content back. The operation index and the retained
-        // profiles' entries in the profile index are updated to match.
+        // profiles' entries in the profile index are updated to match. A backup written by a
+        // released single-profile editor is migrated first (MigrateReleasedEditorRows).
         private static bool KeepRetainedEditorRows(JsonObject backup, JsonObject current, HashSet<string> retained)
         {
             if (current["ShortcutSettingsDictionary"] is not JsonObject currentRows)
@@ -995,7 +996,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             JsonObject backupRows = GetOrAddObject(backup, "ShortcutSettingsDictionary");
             JsonObject currentOperationIndex = current["ShortcutsByOperationType"] as JsonObject;
-            bool changed = false;
+            bool changed = MigrateReleasedEditorRows(backup, backupRows);
             foreach (KeyValuePair<string, JsonNode> entry in currentRows)
             {
                 if (entry.Value is not JsonObject currentRow)
@@ -1014,7 +1015,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 {
                     if (HasSameEditorRowContent(backupRow, currentRow))
                     {
-                        // A row without profiles predates profiles and already belongs to every profile.
+                        // An untagged row is left only in a version-0 backup of a pre-release
+                        // profile-aware build; the editor's migration puts it in every profile.
                         if (backupRow["Profiles"] is not JsonArray backupProfiles || backupProfiles.Count == 0)
                         {
                             continue;
@@ -1084,6 +1086,58 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
             }
 
+            return true;
+        }
+
+        private const string KeyboardManagerDefaultProfile = "default";
+        private const int KeyboardManagerEditorSchemaVersion = 1;
+
+        // editorSettings.json files written before profiles could be created (v0.100 to v0.102) have
+        // no SchemaVersion, and some of their rows name no profile. When no row names a profile other
+        // than "default", the file comes from a released single-profile editor, and its rows belong to
+        // "default" only. Adding the retained profiles' rows would make such a file look like one from
+        // a pre-release profile-aware build, whose untagged rows the editor puts in every profile.
+        // So the rows are tagged with "default" and SchemaVersion is set first, as the editor does
+        // for released files (SettingsManager.MigrateLegacyRows in
+        // src/modules/keyboardmanager/KeyboardManagerEditorUI/Settings/SettingsManager.cs).
+        // A version-0 file from a pre-release build is left for the editor's own migration.
+        private static bool MigrateReleasedEditorRows(JsonObject backup, JsonObject backupRows)
+        {
+            if (backup["SchemaVersion"] is JsonValue version && version.TryGetValue(out int schemaVersion) && schemaVersion >= KeyboardManagerEditorSchemaVersion)
+            {
+                return false;
+            }
+
+            List<JsonObject> rows = backupRows.Select(row => row.Value).OfType<JsonObject>().ToList();
+            if (rows.Any(row => GetStrings(row["Profiles"]).Any(profile => !profile.Equals(KeyboardManagerDefaultProfile, StringComparison.OrdinalIgnoreCase))))
+            {
+                return false;
+            }
+
+            foreach (JsonObject row in rows)
+            {
+                if (GetStrings(row["Profiles"]).Count == 0)
+                {
+                    row["Profiles"] = new JsonArray(KeyboardManagerDefaultProfile);
+                }
+            }
+
+            JsonObject profileIndex = GetOrAddObject(backup, "ProfileDictionary");
+            foreach (string key in profileIndex.Select(index => index.Key).Where(key => key.Equals(KeyboardManagerDefaultProfile, StringComparison.OrdinalIgnoreCase)).ToList())
+            {
+                profileIndex.Remove(key);
+            }
+
+            JsonNode[] members = backupRows
+                .Where(row => row.Value is JsonObject member && GetStrings(member["Profiles"]).Contains(KeyboardManagerDefaultProfile, StringComparer.OrdinalIgnoreCase))
+                .Select(row => (JsonNode)row.Key)
+                .ToArray();
+            if (members.Length > 0)
+            {
+                profileIndex[KeyboardManagerDefaultProfile] = new JsonArray(members);
+            }
+
+            backup["SchemaVersion"] = KeyboardManagerEditorSchemaVersion;
             return true;
         }
 

@@ -276,6 +276,159 @@ namespace CommonLibTest
             Assert.IsFalse(rows.Single(p => p.Key != "g").Value["IsActive"].GetValue<bool>());
         }
 
+        // A backup taken by v0.100 (version 0: no SchemaVersion, no ActiveProfile, every row untagged)
+        // restored onto a machine that also has Work. Those rows belonged to default only. Adding
+        // Work's rows must not make the file look like one from a pre-release profile-aware build,
+        // whose untagged rows the editor would put in every profile, Work included. So the backup is
+        // migrated as a released file first: its rows go to default, and SchemaVersion is set.
+        [TestMethod]
+        public void PreserveRetained_EditorSettings_V0100Backup_KeepsItsRowsInDefaultOnly()
+        {
+            const string backup = """
+                {
+                  "ShortcutSettingsDictionary": {
+                    "a": { "Id": "a", "Shortcut": { "OriginalKeys": "65", "TargetKeys": "66", "OperationType": 0 }, "Profiles": [], "IsActive": true },
+                    "b": { "Id": "b", "Shortcut": { "OriginalKeys": "67", "TargetKeys": "68", "OperationType": 0 }, "Profiles": [], "IsActive": false }
+                  },
+                  "ProfileDictionary": {},
+                  "ShortcutsByOperationType": { "RemapShortcut": [ "a", "b" ] }
+                }
+                """;
+
+            JsonNode result = JsonNode.Parse(SettingsBackupAndRestoreUtils.PreserveRetainedKeyboardManagerProfiles(
+                "\\Keyboard Manager\\editorSettings.json", backup, CurrentWithWork, RetainedWork));
+
+            AssertBackupRowsInDefaultOnly(result, new List<string> { "a", "b" });
+        }
+
+        // A backup taken by v0.101/v0.102 (version 0, ActiveProfile "default", rows tagged "default",
+        // plus a turned-off row left untagged from v0.100) restored onto a machine that also has Work.
+        [TestMethod]
+        public void PreserveRetained_EditorSettings_V0101Backup_KeepsItsRowsInDefaultOnly()
+        {
+            const string backup = """
+                {
+                  "ShortcutSettingsDictionary": {
+                    "c": { "Id": "c", "Shortcut": { "OriginalKeys": "70", "TargetKeys": "71", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true },
+                    "d": { "Id": "d", "Shortcut": { "OriginalKeys": "72", "TargetKeys": "73", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true },
+                    "e": { "Id": "e", "Shortcut": { "OriginalKeys": "65", "TargetKeys": "66", "OperationType": 0 }, "Profiles": [], "IsActive": false }
+                  },
+                  "ProfileDictionary": { "default": [ "c", "d" ] },
+                  "ShortcutsByOperationType": { "RemapShortcut": [ "c", "d", "e" ] },
+                  "ActiveProfile": "default"
+                }
+                """;
+
+            JsonNode result = JsonNode.Parse(SettingsBackupAndRestoreUtils.PreserveRetainedKeyboardManagerProfiles(
+                "\\Keyboard Manager\\editorSettings.json", backup, CurrentWithWork, RetainedWork));
+
+            AssertBackupRowsInDefaultOnly(result, new List<string> { "c", "d", "e" });
+            Assert.AreEqual("default", result["ActiveProfile"].GetValue<string>());
+        }
+
+        // A version-0 backup whose rows already name a profile other than default comes from a
+        // pre-release profile-aware build. It is not a released file, so it is left for the editor's
+        // own migration of such files.
+        [TestMethod]
+        public void PreserveRetained_EditorSettings_V0BackupOfAPreReleaseBuild_IsNotMigratedAsReleased()
+        {
+            const string backup = """
+                {
+                  "ShortcutSettingsDictionary": {
+                    "u": { "Id": "u", "Shortcut": { "OriginalKeys": "65", "OperationType": 0 }, "Profiles": [], "IsActive": true },
+                    "h": { "Id": "h", "Shortcut": { "OriginalKeys": "66", "OperationType": 0 }, "Profiles": [ "Home" ], "IsActive": true }
+                  },
+                  "ShortcutsByOperationType": { "RemapShortcut": [ "u", "h" ] },
+                  "ActiveProfile": "Home"
+                }
+                """;
+
+            JsonNode result = JsonNode.Parse(SettingsBackupAndRestoreUtils.PreserveRetainedKeyboardManagerProfiles(
+                "\\Keyboard Manager\\editorSettings.json", backup, CurrentWithWork, RetainedWork));
+
+            Assert.AreEqual(0, result["ShortcutSettingsDictionary"]["u"]["Profiles"].AsArray().Count);
+            Assert.IsNull(result["SchemaVersion"]);
+            CollectionAssert.AreEqual(new List<string> { "w" }, Strings(result["ProfileDictionary"]["Work"]));
+        }
+
+        // The whole restore of a v0.100 backup onto a machine that also has Work.
+        [TestMethod]
+        public void RestoreSettingsFiles_V0100Backup_DoesNotPutDefaultsRowsInARetainedProfile()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "PowerToysRestoreTest-" + Guid.NewGuid().ToString("N"));
+            string current = Path.Combine(root, "current");
+            string backupFolder = Path.Combine(root, "backup");
+            try
+            {
+                WriteKeyboardManagerFile(backupFolder, "default.json", """{ "remapKeys": { "inProcess": [] } }""");
+                const string backupEditorSettings = """
+                    {
+                      "ShortcutSettingsDictionary": {
+                        "a": { "Id": "a", "Shortcut": { "OriginalKeys": "65", "TargetKeys": "66", "OperationType": 0 }, "Profiles": [], "IsActive": true },
+                        "b": { "Id": "b", "Shortcut": { "OriginalKeys": "67", "TargetKeys": "68", "OperationType": 0 }, "Profiles": [], "IsActive": false }
+                      },
+                      "ProfileDictionary": {},
+                      "ShortcutsByOperationType": { "RemapShortcut": [ "a", "b" ] }
+                    }
+                    """;
+                WriteKeyboardManagerFile(backupFolder, "editorSettings.json", backupEditorSettings);
+
+                WriteKeyboardManagerFile(current, "default.json", """{ "remapKeys": { "inProcess": [] } }""");
+                WriteKeyboardManagerFile(current, "Work.json", """{ "remapKeys": { "inProcess": [] } }""");
+                WriteKeyboardManagerFile(current, "editorSettings.json", CurrentWithWork);
+
+                Assert.AreEqual(true, SettingsBackupAndRestoreUtils.RestoreSettingsFiles(RestoreConfiguration(), current, backupFolder));
+
+                JsonNode editor = JsonNode.Parse(File.ReadAllText(Path.Combine(current, "Keyboard Manager", "editorSettings.json")));
+                AssertBackupRowsInDefaultOnly(editor, new List<string> { "a", "b" });
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(root, recursive: true);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
+        // This machine's editorSettings.json: a turned-off row in Work (exists only here) and a
+        // default row (replaced by the backup's rows).
+        private const string CurrentWithWork = """
+            {
+              "ShortcutSettingsDictionary": {
+                "w": { "Id": "w", "Shortcut": { "OriginalKeys": "80", "OperationType": 3, "TargetText": "hi" }, "Profiles": [ "Work" ], "IsActive": false },
+                "x": { "Id": "x", "Shortcut": { "OriginalKeys": "81", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true }
+              },
+              "ProfileDictionary": { "default": [ "x" ], "Work": [ "w" ] },
+              "ShortcutsByOperationType": { "RemapShortcut": [ "x" ], "RemapText": [ "w" ] },
+              "ActiveProfile": "Work",
+              "SchemaVersion": 1
+            }
+            """;
+
+        // After restoring a released version-0 backup onto CurrentWithWork: the backup's rows belong
+        // to default only, Work has only its own row, and the file is at SchemaVersion 1, so the
+        // editor's migration of version-0 files (which would read the Work tag as a pre-release file)
+        // does not run on it.
+        private static void AssertBackupRowsInDefaultOnly(JsonNode result, List<string> backupRows)
+        {
+            JsonObject rows = result["ShortcutSettingsDictionary"].AsObject();
+            CollectionAssert.AreEquivalent(backupRows.Append("w").ToList(), rows.Select(p => p.Key).ToList());
+            foreach (string id in backupRows)
+            {
+                CollectionAssert.AreEqual(new List<string> { "default" }, Strings(rows[id]["Profiles"]), $"Backup row {id} must belong to default only.");
+            }
+
+            CollectionAssert.AreEqual(new List<string> { "Work" }, Strings(rows["w"]["Profiles"]));
+            Assert.IsFalse(rows["w"]["IsActive"].GetValue<bool>());
+            CollectionAssert.AreEquivalent(backupRows, Strings(result["ProfileDictionary"]["default"]));
+            CollectionAssert.AreEqual(new List<string> { "w" }, Strings(result["ProfileDictionary"]["Work"]));
+            Assert.AreEqual(1, result["SchemaVersion"]?.GetValue<int>());
+        }
+
         // The whole restore of two folders: the backup has only default, this machine also has Work
         // with a turned-off row, a keyboard assignment and a display name. The retained profile's
         // file stays, and its entries in the shared stores survive; default's come from the backup.
