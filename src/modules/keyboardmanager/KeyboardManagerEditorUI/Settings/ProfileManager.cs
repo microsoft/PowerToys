@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading;
 using ManagedCommon;
 
@@ -22,6 +23,20 @@ namespace KeyboardManagerEditorUI.Settings
     /// </summary>
     internal static class ProfileManager
     {
+        /// <summary>How <see cref="DeleteProfileWithResult(string)"/> ended.</summary>
+        public enum ProfileDeleteResult
+        {
+            /// <summary>The profile was deleted.</summary>
+            Deleted,
+
+            /// <summary>The profile could not be deleted and was kept exactly as it was.</summary>
+            Kept,
+
+            /// <summary>The profile could not be deleted, and undoing the steps already done failed
+            /// too, so part of it (its file or some mapping membership) may be missing.</summary>
+            NotFullyRestored,
+        }
+
         private const string DefaultProfile = "default";
 
         // Named event the KBM engine waits on; signaling it makes the engine reload its settings.
@@ -36,8 +51,30 @@ namespace KeyboardManagerEditorUI.Settings
         // Win32 error codes reported when a create-new target already exists.
         private const int ErrorFileExists = 80;
         private const int ErrorAlreadyExists = 183;
+        private const int ErrorSharingViolation = 32;
+
+        // A config file moved aside by DeleteProfile: "{id}.deleting-<guid "N" format>.json".
+        private static readonly Regex SetAsideFileName = new(
+            @"^(?<id>[^.]+)\.deleting-[0-9a-f]{32}\.json$",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+        // Lock wait used by the UI; tests pass a shorter one.
+        private const int DefaultLockTimeoutMS = 10_000;
 
         private static string SettingsJsonPath => Path.Combine(SettingsDirectory, "settings.json");
+
+        /// <summary>Gets or sets an action run by CreateProfile right after it checked that the
+        /// profile does not exist yet. Unit tests use it to create the file there, as another editor
+        /// could. Always null in the product.</summary>
+        internal static Action? AfterCreateExistenceCheckForTests { get; set; }
+
+        /// <summary>Gets or sets an action run by DeleteProfile just before it writes settings.json.
+        /// Unit tests use it to make later steps fail. Always null in the product.</summary>
+        internal static Action? BeforeDeleteCommitForTests { get; set; }
+
+        /// <summary>Gets or sets the number of engine reloads requested while the folder was redirected
+        /// for tests (and therefore not sent).</summary>
+        internal static int SuppressedEngineReloadsForTests { get; set; }
 
         /// <summary>Folder holding the profile configs + settings.json — exposed so the editor can
         /// watch settings.json for engine-driven active-profile changes (auto-switch / cycle hotkey).</summary>
@@ -107,6 +144,8 @@ namespace KeyboardManagerEditorUI.Settings
         {
             var names = new List<string>();
 
+            RecoverSetAsideFiles();
+
             try
             {
                 if (ReadSettingsRoot()?["properties"]?["keyboardConfigurations"]?["value"] is JsonArray configs)
@@ -158,6 +197,88 @@ namespace KeyboardManagerEditorUI.Settings
             }
 
             return names;
+        }
+
+        // The moved-aside config files ("{id}.deleting-<guid>.json") in the folder, with their ids.
+        private static IEnumerable<(string Path, string Id)> FindSetAsideFiles()
+        {
+            if (!Directory.Exists(SettingsDirectory))
+            {
+                yield break;
+            }
+
+            foreach (string file in Directory.EnumerateFiles(SettingsDirectory, "*.deleting-*.json"))
+            {
+                Match match = SetAsideFileName.Match(Path.GetFileName(file));
+                if (match.Success)
+                {
+                    yield return (file, match.Groups["id"].Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Cleans up config files that DeleteProfile moved aside and never finished with: the process
+        /// ended mid-delete, or a step afterwards failed. Only "{id}.deleting-<guid>.json" files whose
+        /// "{id}.json" is absent are touched: one whose id is still registered in settings.json is a
+        /// delete that did not commit, so the file is moved back; otherwise the delete committed and
+        /// the file is removed. Runs only when the editor transaction lock is free right now, because
+        /// a delete in progress holds it while its file is moved aside.
+        /// </summary>
+        private static void RecoverSetAsideFiles()
+        {
+            try
+            {
+                var leftovers = FindSetAsideFiles()
+                    .Where(f => !File.Exists(ConfigPath(f.Id)))
+                    .ToList();
+                if (leftovers.Count == 0)
+                {
+                    return;
+                }
+
+                using FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock(timeoutMS: 0);
+                if (transactionLock == null)
+                {
+                    return;
+                }
+
+                var registered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                if (ReadSettingsRoot()?["properties"]?["keyboardConfigurations"]?["value"] is JsonArray configs)
+                {
+                    foreach (JsonNode? item in configs)
+                    {
+                        if (item?.GetValue<string>() is string name)
+                        {
+                            registered.Add(name);
+                        }
+                    }
+                }
+
+                foreach ((string file, string id) in leftovers)
+                {
+                    string path = ConfigPath(id);
+                    if (File.Exists(path))
+                    {
+                        continue; // an earlier leftover of the same id was just moved back
+                    }
+
+                    if (registered.Contains(id))
+                    {
+                        Logger.LogWarning($"ProfileManager: restoring '{file}', left behind by a delete that did not finish.");
+                        RestoreSetAsideFile(file, path);
+                    }
+                    else
+                    {
+                        Logger.LogWarning($"ProfileManager: removing '{file}', left behind by a finished delete.");
+                        TryDeleteFile(file);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"ProfileManager: could not clean up moved-aside profile files: {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -274,26 +395,37 @@ namespace KeyboardManagerEditorUI.Settings
         /// Creates a new profile config file and registers it in settings.json. Does not switch to it.
         /// <paramref name="copyFromProfile"/> names the profile to copy, or is null for an empty
         /// profile. Callers with a dialog pass the profile captured when it opened, so a profile switch
-        /// while it is open does not change what is copied. Returns false on an invalid name, if a
-        /// profile with that name already exists, or if the profile to copy no longer exists
-        /// ("default" without a file yet is copied as an empty profile).
+        /// while it is open does not change what is copied. Returns false on an invalid name (including
+        /// "default" in any case), if a profile with that name already exists (ignoring case), if the
+        /// profile to copy no longer exists ("default" without a file yet is copied as an empty
+        /// profile), or if what an earlier profile with the id left behind can't be cleared. The id is
+        /// reserved by creating its file exclusively before anything is cleared, and the file is
+        /// removed again when a later step fails.
         /// </summary>
         public static bool CreateProfile(string profile, string? copyFromProfile)
         {
-            if (!IsValidProfileName(profile))
+            // "default" is the built-in profile: it always exists for the user, even without a file,
+            // and must never be created (or purged) through here, in any letter case.
+            if (!IsValidProfileName(profile) || profile.Equals(DefaultProfile, StringComparison.OrdinalIgnoreCase))
             {
                 Logger.LogWarning($"ProfileManager.CreateProfile: invalid name '{profile}'");
                 return false;
             }
 
+            string target = ConfigPath(profile);
+            bool created = false;
             try
             {
-                string target = ConfigPath(profile);
-                if (File.Exists(target))
+                // Profile ids are file names, so ids differing only in case are the same profile. A
+                // registered profile whose file is missing still counts as existing.
+                if (File.Exists(target) ||
+                    GetProfiles().Any(p => p.Equals(profile, StringComparison.OrdinalIgnoreCase)))
                 {
                     Logger.LogWarning($"ProfileManager.CreateProfile: '{profile}' already exists");
                     return false;
                 }
+
+                AfterCreateExistenceCheckForTests?.Invoke();
 
                 string? copySource = null;
                 if (copyFromProfile != null)
@@ -317,27 +449,32 @@ namespace KeyboardManagerEditorUI.Settings
                     }
                 }
 
-                // A profile that used this id before may have left mapping membership, keyboard
-                // assignments or a display name behind (a delete from an older build, or one whose
-                // last cleanup steps failed). Clear them first, so the new profile starts empty
-                // instead of showing the old profile's turned-off rows or being auto-switched to.
-                if (!SettingsManager.RemoveProfileMembership(profile) ||
-                    !DeviceProfileManager.RemoveAssignmentsForProfile(profile) ||
-                    !ProfileMetadataManager.Remove(profile))
-                {
-                    Logger.LogWarning($"ProfileManager.CreateProfile: could not clear what an earlier '{profile}' left behind");
-                    return false;
-                }
-
-                // Both branches create the file exclusively, so if another editor creates the same
-                // profile between the check above and here, this one fails instead of overwriting it.
+                // Reserve the id first: both branches create the file exclusively, so if another editor
+                // created the same profile after the check above, this one fails instead of
+                // overwriting it, and before it has purged anything that profile owns.
                 if (copySource != null)
                 {
-                    File.Copy(copySource, target, overwrite: false);
+                    try
+                    {
+                        File.Copy(copySource, target, overwrite: false);
+                    }
+                    catch (IOException ex) when ((ex.HResult & 0xFFFF) is ErrorFileExists or ErrorAlreadyExists)
+                    {
+                        Logger.LogWarning($"ProfileManager.CreateProfile: '{profile}' was created by another editor");
+                        return false;
+                    }
                 }
                 else if (!TryCreateFileExclusive(target, EmptyConfigJson))
                 {
                     Logger.LogWarning($"ProfileManager.CreateProfile: '{profile}' was created by another editor");
+                    return false;
+                }
+
+                created = true;
+
+                if (!PurgeLeftoversOfReusedId(profile))
+                {
+                    RemoveCreatedProfileFile(target);
                     return false;
                 }
 
@@ -350,7 +487,57 @@ namespace KeyboardManagerEditorUI.Settings
             catch (Exception ex)
             {
                 Logger.LogError($"ProfileManager.CreateProfile('{profile}'): {ex.Message}");
+                if (created)
+                {
+                    RemoveCreatedProfileFile(target);
+                }
+
                 return false;
+            }
+        }
+
+        // A profile that used this id before may have left mapping membership, keyboard assignments or
+        // a display name behind (a delete from an older build, or one whose last cleanup steps failed).
+        // Clears them, so a new profile with the id starts empty instead of showing the old profile's
+        // turned-off rows or being auto-switched to. Call only after the id was reserved by creating
+        // its file. Runs under the editor transaction lock, which a running delete holds until it has
+        // finished or rolled back.
+        private static bool PurgeLeftoversOfReusedId(string profile)
+        {
+            using FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock();
+            if (transactionLock == null)
+            {
+                Logger.LogWarning($"ProfileManager.CreateProfile('{profile}'): could not acquire the editor transaction lock.");
+                return false;
+            }
+
+            // A moved-aside "{id}.deleting-*.json" means a delete of this id rolled back but could not
+            // move its file back (our new file was in the way): that profile still exists, so neither
+            // purge its membership nor take its id. Once our file is removed, the leftover cleanup in
+            // GetProfiles() puts the original back.
+            if (FindSetAsideFiles().Any(f => f.Id.Equals(profile, StringComparison.OrdinalIgnoreCase)))
+            {
+                Logger.LogWarning($"ProfileManager.CreateProfile('{profile}'): a profile with this id is still being deleted or restored.");
+                return false;
+            }
+
+            if (!SettingsManager.RemoveProfileMembershipWhileLocked(profile, out _) ||
+                !DeviceProfileManager.RemoveAssignmentsForProfile(profile) ||
+                !ProfileMetadataManager.Remove(profile))
+            {
+                Logger.LogWarning($"ProfileManager.CreateProfile: could not clear what an earlier '{profile}' left behind");
+                return false;
+            }
+
+            return true;
+        }
+
+        // Undoes the file creation of a CreateProfile that failed after reserving the id.
+        private static void RemoveCreatedProfileFile(string path)
+        {
+            if (!TryDeleteFile(path))
+            {
+                Logger.LogError($"ProfileManager.CreateProfile: could not remove '{path}' after a failed create.");
             }
         }
 
@@ -358,14 +545,25 @@ namespace KeyboardManagerEditorUI.Settings
         /// Deletes a profile's config file and unregisters it, dropping the profile from the editor
         /// settings' membership as well. The built-in "default" profile cannot be deleted. If the
         /// deleted profile was active, switches to "default" and signals a reload.
-        /// Returns false when the profile could not be deleted. In that case the profile is kept:
-        /// its {name}.json, its registration and its mappings' membership are as they were.
+        /// Returns false when the profile could not be deleted. In that case the profile is normally
+        /// kept as it was (its {name}.json, its registration and its mappings' membership); see
+        /// <see cref="DeleteProfileWithResult(string)"/> for the rare case where undoing failed too.
         /// </summary>
-        public static bool DeleteProfile(string profile)
+        public static bool DeleteProfile(string profile) => DeleteProfileWithResult(profile) == ProfileDeleteResult.Deleted;
+
+        /// <summary>
+        /// Like <see cref="DeleteProfile"/>, but tells a failure that left the profile exactly as it was
+        /// (<see cref="ProfileDeleteResult.Kept"/>) apart from one whose undo also failed
+        /// (<see cref="ProfileDeleteResult.NotFullyRestored"/>).
+        /// </summary>
+        public static ProfileDeleteResult DeleteProfileWithResult(string profile) =>
+            DeleteProfileWithResult(profile, DefaultLockTimeoutMS);
+
+        internal static ProfileDeleteResult DeleteProfileWithResult(string profile, int lockTimeoutMS)
         {
             if (string.IsNullOrWhiteSpace(profile) || profile.Equals(DefaultProfile, StringComparison.OrdinalIgnoreCase))
             {
-                return false;
+                return ProfileDeleteResult.Kept;
             }
 
             string path = ConfigPath(profile);
@@ -380,18 +578,18 @@ namespace KeyboardManagerEditorUI.Settings
             FileStream? transactionLock;
             try
             {
-                transactionLock = SettingsManager.TryAcquireMappingTransactionLock();
+                transactionLock = SettingsManager.TryAcquireMappingTransactionLock(lockTimeoutMS);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"ProfileManager.DeleteProfile('{profile}'): {ex.Message}");
-                return false;
+                return ProfileDeleteResult.Kept;
             }
 
             if (transactionLock == null)
             {
                 Logger.LogWarning($"ProfileManager.DeleteProfile('{profile}'): could not acquire the editor transaction lock.");
-                return false;
+                return ProfileDeleteResult.Kept;
             }
 
             using (transactionLock)
@@ -414,8 +612,7 @@ namespace KeyboardManagerEditorUI.Settings
                         // Keep the profile rather than leave its rows behind: with the file gone, a later
                         // profile reusing the id would show them as its own turned-off rows.
                         Logger.LogWarning($"ProfileManager.DeleteProfile('{profile}'): editor membership cleanup failed; keeping the profile.");
-                        RestoreSetAsideFile(setAsidePath, path);
-                        return false;
+                        return RollBackDelete(profile, path, setAsidePath, previousEditorSettings: null);
                     }
 
                     JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
@@ -447,6 +644,7 @@ namespace KeyboardManagerEditorUI.Settings
                         SetValueProperty(properties, "activeConfiguration", DefaultProfile);
                     }
 
+                    BeforeDeleteCommitForTests?.Invoke();
                     WriteSettingsRoot(root);
                     committed = true;
 
@@ -472,45 +670,70 @@ namespace KeyboardManagerEditorUI.Settings
                         TryDeleteFile(setAsidePath);
                     }
 
-                    return true;
+                    return ProfileDeleteResult.Deleted;
                 }
                 catch (Exception ex)
                 {
                     Logger.LogError($"ProfileManager.DeleteProfile('{profile}'): {ex.Message}");
                     if (committed)
                     {
-                        return true;
+                        return ProfileDeleteResult.Deleted;
                     }
 
                     // A step before settings.json was updated failed: put the membership and the file
                     // back so the profile stays exactly as it was. The lock is still held here.
-                    if (previousEditorSettings != null && !SettingsManager.RestoreSettingsWhileLocked(previousEditorSettings))
-                    {
-                        Logger.LogError($"ProfileManager.DeleteProfile('{profile}'): could not restore the editor membership.");
-                    }
-
-                    RestoreSetAsideFile(setAsidePath, path);
-                    return false;
+                    return RollBackDelete(profile, path, setAsidePath, previousEditorSettings);
                 }
             }
         }
 
+        // Undoes the steps of a DeleteProfile that failed before settings.json was updated. The caller
+        // still holds the editor transaction lock. Reports NotFullyRestored when an undo step fails
+        // too, so the UI does not claim the profile was kept as it was.
+        private static ProfileDeleteResult RollBackDelete(string profile, string path, string? setAsidePath, EditorSettings? previousEditorSettings)
+        {
+            bool restored = true;
+            if (previousEditorSettings != null && !SettingsManager.RestoreSettingsWhileLocked(previousEditorSettings))
+            {
+                Logger.LogError($"ProfileManager.DeleteProfile('{profile}'): could not restore the editor membership.");
+                restored = false;
+            }
+
+            if (!RestoreSetAsideFile(setAsidePath, path))
+            {
+                restored = false;
+            }
+
+            // While the file was moved aside, the engine may have reloaded (e.g. after a change in
+            // Settings) and found no {name}.json for the active profile, which leaves it with an empty
+            // remap table. Ask it to reload now that the file is back; an extra reload is harmless.
+            if (setAsidePath != null && GetActiveProfile().Equals(profile, StringComparison.OrdinalIgnoreCase))
+            {
+                SignalEngineReload();
+            }
+
+            return restored ? ProfileDeleteResult.Kept : ProfileDeleteResult.NotFullyRestored;
+        }
+
         // Puts a config file moved aside by DeleteProfile back under its own name. If that fails, the
-        // moved file is left in place (hidden, but not lost) and the failure is logged with its path.
-        private static void RestoreSetAsideFile(string? setAsidePath, string path)
+        // moved file is left in place (hidden, but not lost), the failure is logged with its path, and
+        // false is returned.
+        private static bool RestoreSetAsideFile(string? setAsidePath, string path)
         {
             if (setAsidePath == null)
             {
-                return;
+                return true;
             }
 
             try
             {
                 File.Move(setAsidePath, path);
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError($"ProfileManager: could not move '{setAsidePath}' back to '{path}': {ex.Message}");
+                return false;
             }
         }
 
@@ -524,6 +747,7 @@ namespace KeyboardManagerEditorUI.Settings
             // real settings because of them.
             if (KeyboardManagerPaths.IsRedirectedForTests)
             {
+                SuppressedEngineReloadsForTests++;
                 return;
             }
 
@@ -574,10 +798,47 @@ namespace KeyboardManagerEditorUI.Settings
             };
         }
 
+        // Writes settings.json through a temporary file that replaces it in one step (as
+        // SettingsManager.WriteSettings does for editorSettings.json), so a failed write leaves the old
+        // file intact instead of a truncated one. Throws on failure.
         private static void WriteSettingsRoot(JsonNode root)
         {
             Directory.CreateDirectory(SettingsDirectory);
-            File.WriteAllText(SettingsJsonPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = false }));
+            string temporaryPath = Path.Combine(SettingsDirectory, $"settings.{Guid.NewGuid():N}.tmp");
+            try
+            {
+                File.WriteAllText(temporaryPath, root.ToJsonString(new JsonSerializerOptions { WriteIndented = false }));
+
+                // Replacing needs delete access to settings.json, which a reader that has it open
+                // briefly (the engine, the runner, Settings) may not share; retry a few times.
+                for (int attempt = 1; ; attempt++)
+                {
+                    try
+                    {
+                        File.Move(temporaryPath, SettingsJsonPath, overwrite: true);
+                        break;
+                    }
+                    catch (IOException ex) when ((ex.HResult & 0xFFFF) == ErrorSharingViolation && attempt < 5)
+                    {
+                        Thread.Sleep(50);
+                    }
+                }
+            }
+            finally
+            {
+                TryDeleteFile(temporaryPath);
+            }
+
+            // A replace by rename raises no last-write change notification for settings.json, and
+            // its watchers (this editor's other windows, the Settings app) only listen for those.
+            try
+            {
+                File.SetLastWriteTimeUtc(SettingsJsonPath, DateTime.UtcNow);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"ProfileManager: could not update the time stamp of settings.json: {ex.Message}");
+            }
         }
 
         private static JsonObject EnsureObject(JsonObject parent, string key)

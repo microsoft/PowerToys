@@ -693,14 +693,18 @@
     <value>Couldn't create profile</value>
   </data>
   <data name="ProfileCreateFailed_Format" xml:space="preserve">
-    <value>The profile "{0}" couldn't be created. The name might not be allowed, a profile with this name might already exist, or the profile to copy might have been deleted.</value>
+    <value>The profile "{0}" couldn't be created. Check that the name is allowed and not used by another profile, and that the profile to copy still exists. If it still fails, another Keyboard Manager window might be saving changes; try again in a moment. The Keyboard Manager log has the details.</value>
     <comment>{0} is the profile name the user entered.</comment>
   </data>
   <data name="ProfileDeleteFailed_Title" xml:space="preserve">
     <value>Couldn't delete profile</value>
   </data>
   <data name="ProfileDeleteFailed_Format" xml:space="preserve">
-    <value>The profile "{0}" couldn't be deleted, so it was kept with all of its mappings. Another Keyboard Manager window might be saving changes. Try again in a moment.</value>
+    <value>The profile "{0}" couldn't be deleted, so it was kept with all of its mappings. Try again in a moment. The Keyboard Manager log has the details.</value>
+    <comment>{0} is the profile that could not be deleted.</comment>
+  </data>
+  <data name="ProfileDeleteNotFullyRestored_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be deleted, and some of the changes made while trying couldn't be undone. The profile or some of its turned-off remappings might be missing. The Keyboard Manager log has the details.</value>
     <comment>{0} is the profile that could not be deleted.</comment>
   </data>
   <data name="AutoSwitchBtn_Text.Text" xml:space="preserve">

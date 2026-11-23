@@ -13,6 +13,9 @@ namespace KeyboardManagerEditorUI.Settings
     /// profileMetadata.json and the editor transaction lock). Every store resolves its path from
     /// <see cref="SettingsDirectory"/> on each use, so unit tests can point all of them at a
     /// temporary folder before any file is touched.
+    /// Only the editor's C# stores are redirected. The native side (KeyboardMappingService and the
+    /// engine library behind it, which resolve the folder through PTSettingsHelper) still reads and
+    /// writes the live folder, so a test must never create a KeyboardMappingService.
     /// </summary>
     internal static class KeyboardManagerPaths
     {
@@ -39,6 +42,9 @@ namespace KeyboardManagerEditorUI.Settings
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(directory);
 
+            // Path.GetFullPath also expands the 8.3 short names of the parts of the path that exist, so
+            // the live folder is recognized in its short form as well.
+            // Junctions and other links are not resolved.
             string full = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory));
             string production = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_productionDirectory));
             if (full.Equals(production, StringComparison.OrdinalIgnoreCase) ||

@@ -380,7 +380,7 @@ namespace KeyboardManagerEditorUI.Pages
             // every later edit goes to the profile that is actually active. Move the picker back to
             // it and tell the user which profile could not be activated. Deferred so the picker is
             // not reset from inside its own SelectionChanged handler.
-            DispatcherQueue.TryEnqueue(() =>
+            bool queued = DispatcherQueue.TryEnqueue(() =>
             {
                 LoadProfiles();
                 _ = ShowProfileErrorAsync(
@@ -391,6 +391,11 @@ namespace KeyboardManagerEditorUI.Pages
                         profile,
                         ProfileManager.GetActiveProfile()));
             });
+            if (!queued)
+            {
+                // Only happens while the window is shutting down.
+                Logger.LogWarning($"Could not queue the picker reset after the failed switch to '{profile}'.");
+            }
         }
 
         // Shows a profile operation failure. Only one ContentDialog can be open at a time; if another
@@ -537,7 +542,7 @@ namespace KeyboardManagerEditorUI.Pages
             }
             else
             {
-                Logger.LogWarning($"Could not create profile '{name}' (invalid name or already exists)");
+                Logger.LogWarning($"Could not create profile '{name}' (see the ProfileManager entries above for the reason)");
                 await ShowProfileErrorAsync(
                     ResourceHelper.GetString("ProfileCreateFailed_Title"),
                     string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("ProfileCreateFailed_Format")), name));
@@ -564,7 +569,8 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            if (ProfileManager.DeleteProfile(selected))
+            ProfileManager.ProfileDeleteResult result = ProfileManager.DeleteProfileWithResult(selected);
+            if (result == ProfileManager.ProfileDeleteResult.Deleted)
             {
                 // DeleteProfile only falls back to "default" when the deleted profile was the active
                 // one; rebuild against whatever is active now and refresh the picker.
@@ -573,12 +579,16 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            // Nothing was deleted: the profile and its mappings are kept. Say so, naming the
-            // profile, and bring the picker back in line with what is on disk.
+            // Not deleted. Usually the profile and its mappings were kept as they were; if undoing the
+            // steps already done failed too, say that part of it may be missing instead. Name the
+            // profile and bring the picker back in line with what is on disk.
+            string format = result == ProfileManager.ProfileDeleteResult.NotFullyRestored
+                ? "ProfileDeleteNotFullyRestored_Format"
+                : "ProfileDeleteFailed_Format";
             LoadProfiles();
             await ShowProfileErrorAsync(
                 ResourceHelper.GetString("ProfileDeleteFailed_Title"),
-                string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("ProfileDeleteFailed_Format")), selected));
+                string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString(format)), selected));
         }
 
         private async void AutoSwitchBtn_Click(object sender, RoutedEventArgs e)
