@@ -103,6 +103,46 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             Assert.AreEqual(CalculateEngine.Round(expectedResult), result.RoundedResult);
         }
 
+        [DataTestMethod]
+        [DataRow("2^96", 96, 1)]
+        [DataRow("-(2^96)", 96, -1)]
+        [DataRow("2^1000", 1000, 1)]
+        [DataRow("-(2^1000)", 1000, -1)]
+        public void Interpret_PreservesLargeFiniteResults(string input, int exponent, int sign)
+        {
+            var result = new CalculateEngine().Interpret(input, CultureInfo.InvariantCulture, out var error);
+
+            Assert.IsNull(error);
+            Assert.AreEqual(sign * Math.Pow(2, exponent), result.LargeResult);
+            Assert.IsNull(result.Result);
+            Assert.IsNull(result.RoundedResult);
+            Assert.AreNotEqual(default(CalculateResult), result);
+            Assert.AreNotEqual(new CalculateResult { LargeResult = -result.LargeResult }, result);
+            Assert.AreEqual(result.GetHashCode(), new CalculateResult { LargeResult = result.LargeResult }.GetHashCode());
+        }
+
+        [TestMethod]
+        public void Interpret_PreservesLargestFiniteDouble()
+        {
+            var result = new CalculateEngine().Interpret("2^1023*(2-2^(-52))", CultureInfo.InvariantCulture, out var error);
+
+            Assert.IsNull(error);
+            Assert.AreEqual(double.MaxValue, result.LargeResult);
+        }
+
+        [DataTestMethod]
+        [DataRow("2^96-2^43", 1)]
+        [DataRow("-(2^96-2^43)", -1)]
+        public void Interpret_PreservesDecimalPathImmediatelyBelowLimit(string input, int sign)
+        {
+            var result = new CalculateEngine().Interpret(input, CultureInfo.InvariantCulture, out var error);
+
+            Assert.IsNull(error);
+            Assert.IsNull(result.LargeResult);
+            Assert.AreEqual(Convert.ToDecimal(sign * Math.BitDecrement(Math.Pow(2, 96))), result.Result);
+            Assert.AreEqual(result.Result, result.RoundedResult);
+        }
+
         private static IEnumerable<object[]> Interpret_QuirkOutput_WhenCalled_Data =>
             new[]
             {

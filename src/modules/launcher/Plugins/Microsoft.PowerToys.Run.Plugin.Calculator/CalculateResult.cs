@@ -12,10 +12,15 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public decimal? RoundedResult { get; set; }
 
-        public bool Equals(CalculateResult other)
-        {
-            return Result == other.Result && RoundedResult == other.RoundedResult;
-        }
+        /// <summary>
+        /// Gets or sets a finite result outside the decimal range, instead of Result and RoundedResult.
+        /// </summary>
+        public double? LargeResult { get; set; }
+
+        public bool Equals(CalculateResult other) =>
+            Result == other.Result &&
+            RoundedResult == other.RoundedResult &&
+            LargeResult == other.LargeResult;
 
         public override bool Equals(object obj)
         {
@@ -24,7 +29,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Result, RoundedResult);
+            return HashCode.Combine(Result, RoundedResult, LargeResult);
         }
 
         public static bool operator ==(CalculateResult left, CalculateResult right)

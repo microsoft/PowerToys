@@ -127,14 +127,14 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
                 }
                 else if (replaceInput)
                 {
-                    var pluginResult = ResultHelper.CreateResult(result.RoundedResult, IconPath, inputCulture, outputCulture);
+                    var pluginResult = ResultHelper.CreateResult(result, IconPath, inputCulture, outputCulture);
                     Context.API.ChangeQuery($"{query.ActionKeyword} {pluginResult.QueryTextDisplay}");
                     return new List<Result>();
                 }
 
                 return new List<Result>
                 {
-                    ResultHelper.CreateResult(result.RoundedResult, IconPath, inputCulture, outputCulture),
+                    ResultHelper.CreateResult(result, IconPath, inputCulture, outputCulture),
                 };
             }
             catch (Mages.Core.ParseException)

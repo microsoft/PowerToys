@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
 using System.Linq;
 
@@ -34,7 +35,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("=log()", "Expression wrong or incomplete (Did you forget some parentheses?)")]
         [DataRow("=0xf0x6", "Expression wrong or incomplete (Did you forget some parentheses?)")]
         [DataRow("=0xf,0x6", "Expression wrong or incomplete (Did you forget some parentheses?)")]
-        [DataRow("=2^96", "Result value was either too large or too small for a decimal number")]
+        [DataRow("=2^1024", "Result value was either too large or too small for a decimal number")]
+        [DataRow("=-(2^1024)", "Result value was either too large or too small for a decimal number")]
         [DataRow("=+()", "Calculation result is not a valid number (NaN)")]
         [DataRow("=[10,10]", "Unsupported use of square brackets")]
         [DataRow("=sqrt(-1)", "Complex numbers are not supported")]
@@ -61,7 +63,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("log()")]
         [DataRow("0xf0x6")]
         [DataRow("0xf,0x6")]
-        [DataRow("2^96")]
+        [DataRow("2^1024")]
+        [DataRow("-(2^1024)")]
         [DataRow("+()")]
         [DataRow("[10,10]")]
         [DataRow("sqrt(-1)")]
@@ -162,6 +165,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("1.0E2", "(1.0 * 10^(2))")]
         [DataRow("-1.0E-2", "(-1.0 * 10^(-2))")]
         [DataRow("1.2E2", "(1.2 * 10^(2))")]
+        [DataRow("1.2E+2", "(1.2 * 10^(+2))")]
+        [DataRow("-1.2e+2", "(-1.2 * 10^(+2))")]
         [DataRow("5/1.0E2", "5/(1.0 * 10^(2))")]
         [DataRow("0.1E2", "(0.1 * 10^(2))")]
         [DataRow(".1E2", "(.1 * 10^(2))")]
@@ -225,6 +230,8 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
         [DataRow("2E2", 200)]
         [DataRow("2E-2", 0.02)]
         [DataRow("1.2E2", 120)]
+        [DataRow("1.2E+2", 120)]
+        [DataRow("-1.2e+2", -120)]
         [DataRow("1.2E-1", 0.12)]
         [DataRow("5/5E3", 0.001)]
         [DataRow("-5/5E3", -0.001)]
@@ -265,6 +272,64 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
             // Assert
             Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), result);
             Assert.AreEqual(answer.ToString(CultureInfo.CurrentCulture), resultWithKeyword);
+        }
+
+        [DataTestMethod]
+        [DataRow("2^96", 96, 1)]
+        [DataRow("-(2^96)", 96, -1)]
+        [DataRow("2^1000", 1000, 1)]
+        [DataRow("-(2^1000)", 1000, -1)]
+        public void CorrectAnswerForLargeFiniteResults(string input, int exponent, int sign)
+        {
+            var expected = (sign * Math.Pow(2, exponent)).ToString(CultureInfo.CurrentCulture);
+
+            var globalResult = _main.Object.Query(new Query(input)).Single();
+            var keywordResult = _main.Object.Query(new Query("=" + input, "=")).Single();
+
+            Assert.AreEqual(expected, globalResult.Title);
+            Assert.AreEqual(expected, keywordResult.Title);
+            Assert.AreEqual(expected, keywordResult.QueryTextDisplay);
+            Assert.AreEqual("Copy this number to the clipboard", keywordResult.SubTitle);
+        }
+
+        [DataTestMethod]
+        [DataRow("2^96", "en-US", "de-DE")]
+        [DataRow("2^96", "de-DE", "en-US")]
+        [DataRow("-(2^1000)", "de-DE", "en-US")]
+        [DataRow("2^1023*(2-2^(-52))", "en-US", "de-DE")]
+        public void LargeResultsUseSeparateInputAndOutputCultures(string input, string inputCultureName, string outputCultureName)
+        {
+            var inputCulture = CultureInfo.GetCultureInfo(inputCultureName);
+            var outputCulture = CultureInfo.GetCultureInfo(outputCultureName);
+            var calculation = new CalculateEngine().Interpret(input, outputCulture, out _);
+            Assert.IsTrue(calculation.LargeResult.HasValue);
+            var value = calculation.LargeResult.Value;
+
+            var result = ResultHelper.CreateResult(calculation, "icon", inputCulture, outputCulture);
+
+            Assert.AreEqual(value.ToString(outputCulture), result.Title);
+            Assert.AreEqual(value.ToString(inputCulture), result.QueryTextDisplay);
+            Assert.AreEqual(value, double.Parse(result.QueryTextDisplay, inputCulture));
+            var translated = NumberTranslator.Create(inputCulture, CultureInfo.InvariantCulture).Translate(result.QueryTextDisplay);
+            var repeated = new CalculateEngine().Interpret(translated, outputCulture, out var error);
+            Assert.IsNull(error);
+            var repeatedResult = ResultHelper.CreateResult(repeated, "icon", inputCulture, outputCulture);
+            Assert.IsNotNull(repeatedResult);
+
+            // Scientific notation is evaluated as multiplication by a power of ten, so allow floating-point rounding.
+            Assert.AreEqual(value, double.Parse(repeatedResult.Title, outputCulture), Math.Abs(value) * 1e-15);
+        }
+
+        [TestMethod]
+        public void LargeResultReplacesInput()
+        {
+            _main.Object.UpdateSettings(new PowerLauncherPluginSettings());
+            var expected = Math.Pow(2, 96).ToString(CultureInfo.CurrentCulture);
+
+            var results = _main.Object.Query(new Query("#2^96=", "#"));
+
+            Assert.AreEqual(0, results.Count);
+            _api.Verify(api => api.ChangeQuery("# " + expected, It.IsAny<bool>()), Times.Once);
         }
 
         [DataTestMethod]
