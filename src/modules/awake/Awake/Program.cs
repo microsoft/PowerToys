@@ -134,9 +134,12 @@ namespace Awake
             }
         }
 
-        private static RootCommand BuildRootCommand()
+        internal static RootCommand BuildRootCommand(TimeProvider? timeProvider = null, CultureInfo? culture = null)
         {
             Logger.LogInfo("Parsing parameters...");
+
+            TimeProvider clock = timeProvider ?? TimeProvider.System;
+            CultureInfo effectiveCulture = culture ?? CultureInfo.CurrentCulture;
 
             Option<bool> configOption = new("--use-pt-config", "-c")
             {
@@ -170,12 +173,49 @@ namespace Awake
                 Required = false,
             };
 
-            Option<string> expireAtOption = new("--expire-at", "-e")
+            Option<DateTimeOffset?> expireAtOption = new("--expire-at", "-e")
             {
                 Description = Resources.AWAKE_CMD_HELP_EXPIRE_AT_OPTION,
-                DefaultValueFactory = _ => string.Empty,
+                DefaultValueFactory = _ => null,
                 Arity = ArgumentArity.ZeroOrOne,
                 Required = false,
+                CustomParser = result =>
+                {
+                    if (result.Tokens.Count == 0)
+                    {
+                        return null;
+                    }
+
+                    string rawValue = result.Tokens[0].Value;
+                    ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+                        rawValue,
+                        clock.GetLocalNow(),
+                        effectiveCulture,
+                        clock.LocalTimeZone,
+                        out DateTimeOffset expirationDateTime);
+
+                    switch (status)
+                    {
+                        case ExpirationTimeParseStatus.Success:
+                            return expirationDateTime;
+
+                        case ExpirationTimeParseStatus.InThePast:
+                            {
+                                string errorMessage = $"Date and time value in --expire-at must be in the future. Value used: {rawValue}.";
+                                Logger.LogError(errorMessage);
+                                result.AddError(errorMessage);
+                                return null;
+                            }
+
+                        default:
+                            {
+                                string errorMessage = $"Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples. Value used: {rawValue}.";
+                                Logger.LogError(errorMessage);
+                                result.AddError(errorMessage);
+                                return null;
+                            }
+                    }
+                },
             };
 
             Option<bool> parentPidOption = new("--use-parent-pid", "-u")
@@ -206,16 +246,6 @@ namespace Awake
                 }
             });
 
-            expireAtOption.Validators.Add(result =>
-            {
-                if (result.Tokens.Count != 0 && !DateTimeOffset.TryParse(result.Tokens[0].Value, out _))
-                {
-                    string errorMessage = $"Date and time value in --expire-at could not be parsed correctly. Check that the value is valid date and time. Refer to https://aka.ms/powertoys/awake for format examples. Value used: {result.Tokens[0].Value}.";
-                    Logger.LogError(errorMessage);
-                    result.AddError(errorMessage);
-                }
-            });
-
             RootCommand? rootCommand =
             [
                 configOption,
@@ -232,8 +262,9 @@ namespace Awake
                 parseResult.GetValue(displayOption),
                 parseResult.GetValue(timeOption),
                 parseResult.GetValue(pidOption),
-                parseResult.GetValue(expireAtOption) ?? string.Empty,
-                parseResult.GetValue(parentPidOption)));
+                parseResult.GetValue(expireAtOption),
+                parseResult.GetValue(parentPidOption),
+                clock));
 
             return rootCommand;
         }
@@ -316,8 +347,10 @@ namespace Awake
             }
         }
 
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, string expireAt, bool useParentPid)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, DateTimeOffset? expireAt, bool useParentPid, TimeProvider clock)
         {
+            ArgumentNullException.ThrowIfNull(clock);
+
             if (pid == 0 && !useParentPid)
             {
                 Logger.LogInfo("No PID specified. Allocating console...");
@@ -334,7 +367,7 @@ namespace Awake
             Logger.LogInfo($"The value for --display-on is: {displayOn}");
             Logger.LogInfo($"The value for --time-limit is: {timeLimit}");
             Logger.LogInfo($"The value for --pid is: {pid}");
-            Logger.LogInfo($"The value for --expire-at is: {expireAt}");
+            Logger.LogInfo($"The value for --expire-at is: {expireAt?.ToString("O", CultureInfo.InvariantCulture) ?? string.Empty}");
             Logger.LogInfo($"The value for --use-parent-pid is: {useParentPid}");
 
             // Start the monitor thread that will be used to track the current state.
@@ -401,19 +434,10 @@ namespace Awake
             {
                 // Date-based binding takes precedence over timed configuration, so we want to
                 // check for that first.
-                if (!string.IsNullOrWhiteSpace(expireAt))
+                if (expireAt.HasValue)
                 {
-                    try
-                    {
-                        DateTimeOffset expirationDateTime = DateTimeOffset.Parse(expireAt, CultureInfo.CurrentCulture);
-                        Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
-                        Manager.SetExpirableKeepAwake(expirationDateTime, displayOn);
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.LogError($"Could not parse date string {expireAt} into a DateTimeOffset object.");
-                        Logger.LogError(ex.Message);
-                    }
+                    Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
+                    Manager.SetExpirableKeepAwake(expireAt.Value, displayOn);
                 }
                 else
                 {
