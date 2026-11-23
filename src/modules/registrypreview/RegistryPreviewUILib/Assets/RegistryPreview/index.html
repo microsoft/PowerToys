@@ -56,13 +56,15 @@
                 editor.layout();
 			};
 
-            editor.getModel().onDidChangeContent((event) => {
-                window.chrome.webview.postMessage({ 'id': 'contentChanged', 'content': editor.getValue() });
-			});
-
 			editor.focus();
 
             window.editor = editor;
+            window.startEditorChangeTracking = () => {
+                editor.getModel().onDidChangeContent((event) => {
+                    window.chrome.webview.postMessage({ 'id': 'contentChanged', 'content': editor.getValue() });
+                });
+            };
+			window.chrome.webview.postMessage({ 'id': 'editorReady' });
 		});      
 	</script>
 </body>
