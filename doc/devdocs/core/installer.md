@@ -16,7 +16,7 @@
 - Separate builds for machine-wide and user-scope installation
 - Supports x64 and ARM64
 - Custom actions DLL must be signed separately before installer build
-- WXS files generated during build process for file components
+- WXS files generated during build process for file components (into `installer\PowerToysSetupVNext\obj\<platform>\Generated`, with deterministic component GUIDs)
 - Localization handling for resource DLLs
 - Firewall exceptions for certain modules
 
@@ -24,8 +24,11 @@
 
 - First builds `PowerToysSetupCustomActionsVNext` DLL and signs it
 - Then builds the installer without cleaning, to reuse the signed DLL
-- Uses PowerShell scripts to modify .wxs files before build
-- Restores original .wxs files after build completes
+- `generateAllFileComponents.ps1` copies the checked-in template .wxs files to `obj\<platform>\Generated` and fills them in there; the checked-in .wxs files are never modified, so nothing has to be restored after a build (or a failed build)
+  - It also assigns Smart Cabbing media (`InstallerMedia.ps1`) in the generated copies of the module .wxs files and `Product.wxs`, and writes `obj\InstallerMedia.json`
+- Generated component GUIDs are UUIDv5 values derived from the component ID, install scope, platform, install directory and file set, so the same build output always produces the same GUIDs
+  - Exception: `MonacoSRC.wxs` is regenerated on every build by `generateMonacoWxs.ps1`, which still uses `heat ... -gg` and `New-Guid`, so its component GUIDs are random
+  - A changed file set gives a component a new GUID. That, and the Monaco exception, are only safe because `Product.wxs` keeps the default `MajorUpgrade` schedule (remove the old product, then install the new one). Moving to `afterInstallExecute` first needs stable per-file components
 - Scripts (`applyBuildInfo.ps1` and `generateFileList.ps1`) dynamically update files list for installer
   - Helps manage all self-contained dependencies (.NET, WinAppSDK DLLs, etc.)
   - Avoids manual maintenance of file lists
@@ -33,7 +36,7 @@
 ### Special Build Processes
 
 - .NET applications need publishing for correct WebView2 DLL inclusion
-- WXS files backed up and regenerated during build
+- WXS files regenerated into `obj\` during build
 - Monaco UI components (JavaScript/HTML) generated during build
 - Localization files downloaded from server during CI release builds
 

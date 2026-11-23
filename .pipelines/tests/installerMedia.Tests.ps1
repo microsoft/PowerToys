@@ -33,10 +33,23 @@ function Import-MediaTestHarvester {
     foreach ($function in $ast.FindAll({
         param($node)
         $node -is [Management.Automation.Language.FunctionDefinitionAst] -and
-            $node.Name -in @('Generate-FileList', 'Generate-FileComponents')
+            $node.Name -in @('Generate-FileList', 'Generate-FileComponents', 'New-DeterministicGuid', 'Get-ComponentGuid', 'Get-ComponentGuidDefine')
     }, $false)) {
         . ([scriptblock]::Create($function.Extent.Text))
     }
+}
+
+function Get-GeneratorTemplateList {
+    $scriptPath = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext\generateAllFileComponents.ps1'
+    $tokens = $null
+    $errors = $null
+    $ast = [Management.Automation.Language.Parser]::ParseFile($scriptPath, [ref]$tokens, [ref]$errors)
+    $assignment = $ast.Find({
+        param($node)
+        $node -is [Management.Automation.Language.AssignmentStatementAst] -and
+            $node.Left.Extent.Text -eq '$templateWxsFiles'
+    }, $false)
+    @($assignment.Right.FindAll({ param($node) $node -is [Management.Automation.Language.StringConstantExpressionAst] }, $true) | ForEach-Object Value)
 }
 
 Describe 'Installer Smart Cabbing media' {
@@ -133,6 +146,7 @@ Describe 'Installer Smart Cabbing media' {
     It 'collects the exact source and component emitted by the file harvester' {
         . Import-MediaTestHarvester
 
+        $platform = 'x64'
         $fileListRoots = @{}
         $installerFiles = [Collections.Generic.List[object]]::new()
         $source = Join-Path $TestDrive 'harvest'
@@ -142,6 +156,7 @@ Describe 'Installer Smart Cabbing media' {
         @'
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?define TestFiles=?>
+  <?define TestFilesPath=$(var.BinDir)Test\?>
   <Fragment><DirectoryRef Id="INSTALLFOLDER">
     <!--TestFiles_Component_Def-->
   </DirectoryRef><ComponentGroup Id="Files">
@@ -157,6 +172,75 @@ Describe 'Installer Smart Cabbing media' {
         $installerFiles[0].SourcePath | Should Be "$source\shared.dll"
         $installerFiles[0].Component | Should Be 'TestFiles_Component'
         $installerFiles[0].WxsPath | Should Be $wxs
+
+        $authoring = Get-Content -LiteralPath $wxs -Raw
+        $perUser = Get-ComponentGuid -componentId TestFiles_Component -scope perUser -platform x64 -installPath '$(var.BinDir)Test\' -fileList @('shared.dll')
+        $perMachine = Get-ComponentGuid -componentId TestFiles_Component -scope perMachine -platform x64 -installPath '$(var.BinDir)Test\' -fileList @('shared.dll')
+        $authoring.Contains('<?if $(var.PerUser) = "true" ?>') | Should Be $true
+        $authoring.Contains("<?define TestFiles_ComponentGuid=""$perUser"" ?>") | Should Be $true
+        $authoring.Contains("<?define TestFiles_ComponentGuid=""$perMachine"" ?>") | Should Be $true
+        $authoring.Contains('<Component Id="TestFiles_Component" Guid="$(var.TestFiles_ComponentGuid)">') | Should Be $true
+    }
+
+    It 'rejects a generated component without an install path define' {
+        . Import-MediaTestHarvester
+
+        $platform = 'x64'
+        $fileListRoots = @{}
+        $installerFiles = [Collections.Generic.List[object]]::new()
+        $wxs = Join-Path $TestDrive 'NoPath.wxs'
+        @'
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <?define TestFiles=a.dll?>
+  <Fragment><DirectoryRef Id="INSTALLFOLDER">
+    <!--TestFiles_Component_Def-->
+  </DirectoryRef><ComponentGroup Id="Files">
+  </ComponentGroup></Fragment>
+</Wix>
+'@ | Set-Content -LiteralPath $wxs -Encoding UTF8
+
+        Assert-MediaFailure { Generate-FileComponents -fileListName TestFiles -wxsFilePath $wxs }
+    }
+
+    It 'derives RFC 4122 version 5 GUIDs' {
+        . Import-MediaTestHarvester
+
+        $dns = [guid]'6ba7b810-9dad-11d1-80b4-00c04fd430c8'
+        New-DeterministicGuid -namespace $dns -name 'www.example.com' | Should Be '2ED6657D-E927-568B-95E1-2665A8AEA6A2'
+        New-DeterministicGuid -namespace $dns -name 'python.org' | Should Be '886313E1-3B8A-5372-9B90-0C9AEE199E5D'
+    }
+
+    It 'keeps component GUIDs stable and changes them with scope, platform, directory or files' {
+        . Import-MediaTestHarvester
+
+        $base = @{
+            componentId = 'Test_Component'
+            scope = 'perMachine'
+            platform = 'x64'
+            installPath = '$(var.BinDir)Assets\Test\'
+            fileList = @('b.dll', 'A.dll')
+        }
+        $guid = Get-ComponentGuid @base
+        Get-ComponentGuid @base | Should Be $guid
+
+        $sameFiles = $base.Clone(); $sameFiles.fileList = @('a.dll', 'B.DLL')
+        Get-ComponentGuid @sameFiles | Should Be $guid
+        $samePlatform = $base.Clone(); $samePlatform.platform = 'X64'
+        Get-ComponentGuid @samePlatform | Should Be $guid
+
+        $changes = @(
+            @{ componentId = 'Other_Component' }
+            @{ scope = 'perUser' }
+            @{ platform = 'ARM64' }
+            @{ installPath = '$(var.BinDir)WinUI3Apps\Assets\Test\' }
+            @{ fileList = @('a.dll', 'b.dll', 'c.dll') }
+            @{ fileList = @('a.dll') }
+        )
+        foreach ($change in $changes) {
+            $arguments = $base.Clone()
+            foreach ($key in $change.Keys) { $arguments[$key] = $change[$key] }
+            Get-ComponentGuid @arguments | Should Not Be $guid
+        }
     }
 
     It 'preserves both File rows, component ownership and unrelated authoring' {
@@ -247,46 +331,24 @@ Describe 'Installer Smart Cabbing media' {
         $empty.Wix.Package.Media.Id | Should Be '1'
     }
 
-    It 'restores the PowerDisplay template across consecutive local harvests' {
-        . Import-MediaTestHarvester
-        $installer = Join-Path $PSScriptRoot '..\..\installer'
-        [xml]$nativeProject = Get-Content -LiteralPath "$installer\PowerToysSetupCustomActionsVNext\PowerToysSetupCustomActionsVNext.vcxproj"
-        [xml]$msiProject = Get-Content -LiteralPath "$installer\PowerToysSetupVNext\PowerToysInstallerVNext.wixproj"
-        $backup = @($nativeProject.Project.ItemDefinitionGroup.PreBuildEvent.Command -split '\r?\n' |
-            Where-Object { $_ -match 'copy .*PowerDisplay\.wxs' }) -join "`r`n"
-        $restore = @($msiProject.Project.PropertyGroup.PostBuildEvent -split '\r?\n' |
-            Where-Object { $_ -match 'move .*PowerDisplay\.wxs' }) -join "`r`n"
-        $projectDir = Join-Path $TestDrive 'installer\PowerToysSetupCustomActionsVNext'
-        $wixDir = Join-Path $TestDrive 'installer\PowerToysSetupVNext'
-        $buildDir = Join-Path $wixDir 'x64\Release\MachineSetup'
-        $source = Join-Path $TestDrive 'assets'
-        $null = New-Item -ItemType Directory -Path $projectDir, $buildDir, $source
-        Set-Content -LiteralPath "$source\PowerDisplay.ico" -Value 'icon payload'
-        Copy-Item -LiteralPath "$installer\PowerToysSetupVNext\PowerDisplay.wxs" -Destination $wixDir
-        $wxs = Join-Path $wixDir 'PowerDisplay.wxs'
-        $template = Get-Content -LiteralPath $wxs -Raw
-        Set-Content -LiteralPath "$buildDir\backup.cmd" -Value $backup.Replace('$(ProjectDir)', "$projectDir\")
-        Set-Content -LiteralPath "$buildDir\restore.cmd" -Value $restore
+    It 'compiles every harvested template from its generated copy' {
+        $installer = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext'
+        $generator = Get-Content -LiteralPath "$installer\generateAllFileComponents.ps1" -Raw
+        [xml]$msiProject = Get-Content -LiteralPath "$installer\PowerToysInstallerVNext.wixproj"
+        $templates = @(Get-GeneratorTemplateList | Sort-Object)
+        $harvested = @([regex]::Matches($generator, '\$outputDir\\(\w+\.wxs)|Join-Path \$outputDir ''(\w+\.wxs)''') |
+            ForEach-Object { @($_.Groups[1].Value, $_.Groups[2].Value) -ne '' } | Sort-Object -Unique)
+        $generated = @($msiProject.Project.ItemGroup.GeneratedWxsTemplate | ForEach-Object Include | Sort-Object)
+        $compiled = @($msiProject.Project.ItemGroup.Compile | ForEach-Object Include)
 
-        Push-Location $buildDir
-        try {
-            foreach ($iteration in 1..2) {
-                & $env:ComSpec /d /c "$buildDir\backup.cmd" | Out-Null
-                $LASTEXITCODE | Should Be 0
-                $fileListRoots = @{}
-                $installerFiles = [Collections.Generic.List[object]]::new()
-                Generate-FileList -fileDepsJson '' -fileListName PowerDisplayAssetsFiles -wxsFilePath $wxs -depsPath "$source\"
-                Generate-FileComponents -fileListName PowerDisplayAssetsFiles -wxsFilePath $wxs
-                $layout = Get-InstallerMediaLayout -Files $installerFiles.ToArray()
-                $layout.Files.Count | Should Be 1
-                $installerFiles[0].SourcePath | Should Be "$source\PowerDisplay.ico"
-
-                & $env:ComSpec /d /c "$buildDir\restore.cmd" | Out-Null
-                $LASTEXITCODE | Should Be 0
-                (Get-Content -LiteralPath $wxs -Raw) | Should Be $template
-            }
+        $templates -contains 'PowerDisplay.wxs' | Should Be $true
+        ($harvested -join ';') | Should Be ($templates -join ';')
+        ($generated -join ';') | Should Be ($templates -join ';')
+        @($compiled | Where-Object { $_ -in $templates }).Count | Should Be 0
+        $compiled -contains "@(GeneratedWxsTemplate->'`$(GeneratedWxsDir)%(Filename)%(Extension)')" | Should Be $true
+        foreach ($template in $templates) {
+            Test-Path -LiteralPath (Join-Path $installer $template) | Should Be $true
         }
-        finally { Pop-Location }
     }
 
     It 'publishes local inputs before harvesting and leaves CI inputs unchanged' {
@@ -372,6 +434,7 @@ Describe 'Installer Smart Cabbing media' {
 
     It 'replaces a previously generated file list instead of appending to it' {
         . Import-MediaTestHarvester
+        $platform = 'x64'
         $fileListRoots = @{}
         $installerFiles = [Collections.Generic.List[object]]::new()
         $source = Join-Path $TestDrive 'payload'
@@ -381,6 +444,7 @@ Describe 'Installer Smart Cabbing media' {
         @'
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?define TestFiles=?>
+  <?define TestFilesPath=$(var.BinDir)Test\?>
   <Fragment><DirectoryRef Id="INSTALLFOLDER">
     <!--TestFiles_Component_Def-->
   </DirectoryRef><ComponentGroup Id="Files">
@@ -398,7 +462,7 @@ Describe 'Installer Smart Cabbing media' {
         $installerFiles[0].SourcePath | Should Be "$source\b.dll"
     }
 
-    It 'restores authoring after a hash failure and permits a clean retry' {
+    It 'never modifies templates and regenerates identical authoring after a failed harvest' {
         $generatorPath = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext\generateAllFileComponents.ps1'
         $generator = Get-Content -LiteralPath $generatorPath -Raw
         $tokens = $null
@@ -408,6 +472,10 @@ Describe 'Installer Smart Cabbing media' {
             param($node)
             $node -is [Management.Automation.Language.CommandAst] -and $node.GetCommandName() -eq 'Generate-FileList'
         }, $false)
+        $templateList = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.AssignmentStatementAst] -and $node.Left.Extent.Text -eq '$templateWxsFiles'
+        }, $false)
         $fixture = Join-Path $TestDrive 'failed-harvest'
         $null = New-Item -ItemType Directory -Path "$fixture\payload"
         Copy-Item -LiteralPath (Join-Path (Split-Path $generatorPath -Parent) 'InstallerMedia.ps1') -Destination $fixture
@@ -415,6 +483,7 @@ Describe 'Installer Smart Cabbing media' {
         @'
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?define TestFiles=?>
+  <?define TestFilesPath=$(var.BinDir)Test\?>
   <Fragment><DirectoryRef Id="INSTALLFOLDER">
     <!--TestFiles_Component_Def-->
   </DirectoryRef><ComponentGroup Id="Files">
@@ -431,23 +500,39 @@ Describe 'Installer Smart Cabbing media' {
 </Wix>
 '@ | Set-Content -LiteralPath "$fixture\Product.wxs" -Encoding UTF8
         $body = @'
-Generate-FileList -fileDepsJson '' -fileListName TestFiles -wxsFilePath "$PSScriptRoot\Files.wxs" -depsPath "$PSScriptRoot\payload\"
-Generate-FileComponents -fileListName TestFiles -wxsFilePath "$PSScriptRoot\Files.wxs"
-Set-InstallerMedia -Files $installerFiles.ToArray() -ProductWxsPath "$PSScriptRoot\Product.wxs" -ManifestPath "$PSScriptRoot\obj\InstallerMedia.json"
+Generate-FileList -fileDepsJson '' -fileListName TestFiles -wxsFilePath "$outputDir\Files.wxs" -depsPath "$PSScriptRoot\payload\"
+Generate-FileComponents -fileListName TestFiles -wxsFilePath "$outputDir\Files.wxs"
+Set-InstallerMedia -Files $installerFiles.ToArray() -ProductWxsPath "$outputDir\Product.wxs" -ManifestPath "$PSScriptRoot\obj\InstallerMedia.json"
 '@
+        $prefix = $generator.Substring(0, $firstHarvest.Extent.StartOffset)
+        $prefix = $prefix.Remove($templateList.Extent.StartOffset, $templateList.Extent.EndOffset - $templateList.Extent.StartOffset).
+            Insert($templateList.Extent.StartOffset, '$templateWxsFiles = @("Files.wxs", "Product.wxs")')
         $scriptPath = Join-Path $fixture 'harvest.ps1'
-        Set-Content -LiteralPath $scriptPath -Value ($generator.Substring(0, $firstHarvest.Extent.StartOffset) + $body) -Encoding UTF8
-        $before = (Get-FileHash -LiteralPath "$fixture\Files.wxs" -Algorithm SHA256).Hash
+        Set-Content -LiteralPath $scriptPath -Value ($prefix + $body) -Encoding UTF8
+        $templates = @{}
+        foreach ($name in @('Files.wxs', 'Product.wxs')) {
+            $templates[$name] = (Get-FileHash -LiteralPath "$fixture\$name" -Algorithm SHA256).Hash
+        }
         $handle = [IO.File]::Open("$fixture\payload\a.dll", [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::None)
         try { Assert-MediaFailure { & $scriptPath -platform x64 } }
         finally { $handle.Dispose() }
-        (Get-FileHash -LiteralPath "$fixture\Files.wxs" -Algorithm SHA256).Hash | Should Be $before
 
-        & $scriptPath -platform x64
+        $generated = Join-Path $fixture 'obj\x64\Generated'
+        $outputs = foreach ($iteration in 1..2) {
+            & $scriptPath -platform x64 | Out-Null
+            foreach ($name in $templates.Keys) {
+                (Get-FileHash -LiteralPath "$fixture\$name" -Algorithm SHA256).Hash | Should Be $templates[$name]
+            }
+            Get-Content -LiteralPath "$generated\Files.wxs" -Raw
+        }
+
+        $outputs[1] | Should Be $outputs[0]
         $manifest = Get-Content -LiteralPath "$fixture\obj\InstallerMedia.json" -Raw | ConvertFrom-Json
         @($manifest.Files).Count | Should Be 1
-        [xml]$actual = Get-Content -LiteralPath "$fixture\Files.wxs"
+        [xml]$actual = Get-Content -LiteralPath "$generated\Files.wxs"
         $actual.GetElementsByTagName('ComponentRef').Count | Should Be 1
         $actual.GetElementsByTagName('File').Count | Should Be 1
+        [xml]$product = Get-Content -LiteralPath "$generated\Product.wxs"
+        @($product.Wix.Package.Media).Count | Should Be 2
     }
 }
