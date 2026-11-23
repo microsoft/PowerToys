@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
 Builds one or more PowerToys modules and launches them in a locally assembled dev layout.
 
@@ -6,7 +6,8 @@ Builds one or more PowerToys modules and launches them in a locally assembled de
 Wraps the common inner loop for module development:
 1. Builds the projects under src\modules\<Module> for each requested module (test projects
    are skipped unless -IncludeTests is passed).
-2. Builds the runner if it has not been built for the requested configuration yet.
+2. Builds the essentials (runner, Settings UI, Quick Access UI) that are missing for the
+   requested configuration.
 3. Assembles a runnable layout through copying the runner's runtime files (Windows App SDK dlls/winmds,
    .pri, locale folders, svgs) next to the module outputs in the repo-root
    x64\<Configuration> folder.
@@ -166,11 +167,19 @@ foreach ($moduleDir in $moduleDirs) {
     }
 }
 
-# Build the runner if it has not been built for this configuration yet
-$runnerExe = Join-Path $repoRoot "src\runner\x64\$Configuration\PowerToys.exe"
-if (-not (Test-Path $runnerExe)) {
-    Write-Host "[RUN-MODULE] Runner not built for $Configuration, building it once."
-    RestoreThenBuild (Join-Path $repoRoot 'src\runner\Runner.vcxproj') $extraArgsString $Platform $Configuration
+# Build the runner, the Settings UI and the Quick Access UI if they have not been
+# built for this configuration yet. Without them the dev runner cannot open its
+# own settings window or the quick access flyout.
+$essentials = @(
+    @{ Exe = "x64\$Configuration\WinUI3Apps\PowerToys.exe"; Project = "src\runner\Runner.vcxproj"; Name = "Runner" }
+    @{ Exe = "x64\$Configuration\WinUI3Apps\PowerToys.Settings.exe"; Project = "src\settings-ui\Settings.UI\PowerToys.Settings.csproj"; Name = "Settings UI" }
+    @{ Exe = "x64\$Configuration\WinUI3Apps\PowerToys.QuickAccess.exe"; Project = "src\settings-ui\QuickAccess.UI\PowerToys.QuickAccess.csproj"; Name = "Quick Access" }
+)
+foreach ($e in $essentials) {
+    $exePath = Join-Path $repoRoot $e.Exe
+    if (Test-Path $exePath) { continue }
+    Write-Host ("[RUN-MODULE] {0} not built for $Configuration, building it once." -f $e.Name)
+    RestoreThenBuild (Join-Path $repoRoot $e.Project) $extraArgsString $Platform $Configuration
 }
 
 # Put runner runtime files next to the module outputs.
