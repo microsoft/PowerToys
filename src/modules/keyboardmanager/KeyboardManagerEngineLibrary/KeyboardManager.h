@@ -64,6 +64,13 @@ private:
     // Returns whether there are any remappings available without waiting for settings to load
     bool HasRegisteredRemappingsUnchecked() const;
 
+    // Install the keyboard hook if it is missing, and install or remove the mouse hook as asked.
+    void InstallHooks(bool mouseHook);
+
+    // Ask the hook thread to reconcile the hooks with the live tables (StartHookMessageID); logs a
+    // failure to post, after which the hooks follow the tables only from the next reload on.
+    void PostReconcileHooks() const;
+
     // Companion low-level mouse hook, installed alongside the keyboard hook only while "Alone"
     // (dual-key) remaps exist. It promotes a held alone key to a real modifier when a click/scroll
     // arrives, so combinations like Ctrl+Click / Ctrl+Wheel work (the keyboard hook handles the

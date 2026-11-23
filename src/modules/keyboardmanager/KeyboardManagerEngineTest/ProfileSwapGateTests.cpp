@@ -15,6 +15,10 @@
 #include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 
+#include <condition_variable>
+#include <mutex>
+#include <thread>
+
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace RemappingLogicTests
@@ -159,7 +163,7 @@ namespace RemappingLogicTests
             retired.clear();
             applyInPlaceCalls = 0;
             tablesReplaced = 0;
-            now =std::chrono::steady_clock::time_point{} + std::chrono::hours(1);
+            now = std::chrono::steady_clock::time_point{} + std::chrono::hours(1);
 
             gate = std::make_unique<ProfileSwapGate>(
                 [this] { return now; },
@@ -674,6 +678,113 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
+        // While a shortcut is invoked, another key's key-down is suppressed and re-sent by the handlers
+        // with the reprocess tag, so the system has that key down as KBM's output. A forced swap must
+        // release it like any other output: the key's own key-up is suppressed later for the orphan,
+        // as its key-down was, and would otherwise leave it down for good.
+        TEST_METHOD (ForcedSwap_ReprocessedKeyDown_IsReleased)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            testState.AddOSLevelShortcut(src, dest);
+
+            Press(VK_CONTROL);
+            Press('C');
+            Press('K'); // suppressed, re-sent by KBM with the reprocess tag
+            Assert::IsTrue(IsDown('K'));
+
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsFalse(IsDown('K'));
+            Release('Q');
+
+            Release('K');
+            Release('C');
+            Release(VK_CONTROL);
+            Assert::IsFalse(IsDown('K'));
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // KBM's output that a key-up from another source has already released is not released again,
+        // also when the key-up names the left/right key of a generic modifier target. Output nobody
+        // released (Shift here) still is.
+        TEST_METHOD (ForcedSwap_OutputReleasedByAnotherSource_IsNotReleasedAgain)
+        {
+            testState.AddSingleKeyRemap('X', static_cast<DWORD>('T'));
+            testState.AddSingleKeyRemap('Y', static_cast<DWORD>(VK_CONTROL));
+            testState.AddSingleKeyRemap('Z', static_cast<DWORD>(VK_SHIFT));
+            Press('X');
+            Press('Y');
+            Press('Z');
+            Assert::IsTrue(IsDown('T'));
+
+            // The user presses and releases the targets themselves: T, and the left Ctrl.
+            Press('T');
+            Release('T');
+            Press(VK_LCONTROL);
+            Release(VK_LCONTROL);
+
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+
+            int releasedAgain = 0;
+            int shiftReleased = 0;
+            mockedInputHandler.SetSendVirtualInputTestHandler([&releasedAgain, &shiftReleased](LowlevelKeyboardEvent* data) {
+                const DWORD vk = data->lParam->vkCode;
+                if ((data->lParam->flags & LLKHF_INJECTED) && (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP))
+                {
+                    if (vk == 'T' || vk == VK_CONTROL || vk == VK_LCONTROL || vk == VK_RCONTROL)
+                    {
+                        ++releasedAgain;
+                    }
+                    else if (vk == VK_SHIFT || vk == VK_LSHIFT || vk == VK_RSHIFT)
+                    {
+                        ++shiftReleased;
+                    }
+                }
+
+                return false;
+            });
+
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::AreEqual(0, releasedAgain);
+            Assert::AreEqual(1, shiftReleased);
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Release('Q');
+        }
+
+        // A reinstalled hook did not see the events while it was away, so it forgets what KBM's output
+        // left down: a forced swap afterwards injects nothing for it.
+        TEST_METHOD (HookReinstalled_ForgetsOwnOutput_ForcedSwapInjectsNothing)
+        {
+            testState.AddSingleKeyRemap('X', static_cast<DWORD>('T'));
+            Press('X');
+            Assert::IsTrue(IsDown('T'));
+
+            // X is reported down, so its seeded record is not dropped as stale and the swap is forced.
+            mockedInputHandler.SetKeyboardState('X', true);
+            gate->ResetHeldKeys({ { 'X', ScanOf('X'), IsExtended('X') } });
+
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+            CountEventsOf('T');
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsTrue(gate->OrphanKeyCount() == 1); // forced: X is still held
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Release('Q');
+        }
+
         // The hook's classification: only LLKHF_INJECTED with one of KBM's exact tags is KBM's own output.
         // Other odd tags (bit 0 set) are other software's input: AutoHotkey's default SendLevel-0 tag
         // 0xFFC3D44D, other PowerToys modules' 0x5555 / 0x5557, or the bare bit.
@@ -780,6 +891,74 @@ namespace RemappingLogicTests
             Assert::IsFalse(IsDown(VK_MENU));
             Assert::IsFalse(IsDown('V'));
             Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+
+            Press('Z');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Release('Z');
+        }
+
+        // The same odd-tagged chord, held until the swap is forced: A's targets are released at the swap,
+        // and the injector's later key-ups are answered for the orphans, leaving nothing down.
+        TEST_METHOD (ForeignOddTaggedChord_ForcedSwap_LeavesNothingDown)
+        {
+            constexpr ULONG_PTR AutoHotkeyTag = 0xFFC3D44D;
+
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            testState.AddOSLevelShortcut(src, dest);
+
+            ForeignInject(VK_CONTROL, false, AutoHotkeyTag);
+            ForeignInject('C', false, AutoHotkeyTag);
+            Assert::IsTrue(IsDown(VK_MENU));
+
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+            Press('Z');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Release('Z');
+
+            ForeignInject('C', true, AutoHotkeyTag);
+            ForeignInject(VK_CONTROL, true, AutoHotkeyTag);
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown('C'));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // Another program's odd-tagged key-up (here AutoHotkey's) for a key held on the keyboard. The
+        // single-key handlers ignore such input, so A's output stays down. The gate must keep the key
+        // held as well: otherwise the key's next auto-repeat counts as a fresh press, applies B, and B
+        // resolves the real key-up, leaving A's output down.
+        TEST_METHOD (ForeignOddTaggedKeyUp_DoesNotEndPhysicalPress)
+        {
+            constexpr ULONG_PTR AutoHotkeyTag = 0xFFC3D44D;
+
+            testState.AddSingleKeyRemap('X', static_cast<DWORD>('T'));
+            Press('X');
+            Assert::IsTrue(IsDown('T'));
+
+            auto b = MakeProfile(L"B");
+            b->AddSingleKeyRemap('X', static_cast<DWORD>('Q'));
+            Offer(std::move(b));
+
+            ForeignInject('X', true, AutoHotkeyTag);
+            Assert::IsTrue(IsDown('T')); // A's handler ignores it
+            Assert::IsTrue(gate->HeldKeyCount() == 1);
+
+            Press('X'); // auto-repeat
+            Assert::AreEqual(std::wstring(L"A"), gate->AppliedProfile());
+
+            Release('X'); // resolved under A
+            Assert::IsFalse(IsDown('T'));
+            Assert::IsFalse(IsDown('Q'));
             Assert::IsTrue(gate->HeldKeyCount() == 0);
 
             Press('Z');
@@ -1214,6 +1393,7 @@ namespace RemappingLogicTests
         struct FakeHooks
         {
             bool installed = true;
+            bool mouseHook = false;
             int installCalls = 0;
             int uninstallCalls = 0;
             std::function<void()> duringUninstall;
@@ -1223,9 +1403,17 @@ namespace RemappingLogicTests
         {
             return {
                 [&hooks] { return hooks.installed; },
-                [this] { return !testState.singleKeyReMap.empty() || !testState.osLevelShortcutReMap.empty(); },
-                [&hooks] {
+                [this] { return !testState.singleKeyReMap.empty() || !testState.osLevelShortcutReMap.empty() || !testState.aloneSingleKeyReMap.empty(); },
+                [this] { return !testState.aloneSingleKeyReMap.empty(); },
+                [this, &hooks](const bool mouseHook) {
                     ++hooks.installCalls;
+                    hooks.mouseHook = mouseHook;
+                    if (!hooks.installed)
+                    {
+                        // As KeyboardManager::StartLowlevelKeyboardHook: a new hook forgets the held keys.
+                        gate->ResetHeldKeys({});
+                    }
+
                     hooks.installed = true;
                 },
                 [&hooks] {
@@ -1237,6 +1425,7 @@ namespace RemappingLogicTests
                         action();
                     }
                     hooks.installed = false;
+                    hooks.mouseHook = false;
                 },
                 [] { return std::vector<ProfileSwapGate::KeySnapshot>{}; }
             };
@@ -1294,6 +1483,86 @@ namespace RemappingLogicTests
             Assert::IsTrue(hooks.installed);
             Assert::AreEqual(2, hooks.uninstallCalls);
             Assert::AreEqual(2, hooks.installCalls);
+        }
+
+        // The settings thread replaces the tables in place one table at a time, under the gate lock. A
+        // reconciliation running meanwhile on the hook thread must not see them half-replaced (all
+        // empty for a moment, here when the last single-key remap is replaced by a shortcut) and remove
+        // the hook: a new hook would forget the held keys and KBM's output left down.
+        TEST_METHOD (ReconcileHooks_DoesNotReadTablesMidReplace)
+        {
+            testState.AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
+
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('C');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+            auto edited = MakeProfile(L"A");
+            edited->AddOSLevelShortcut(src, dest);
+
+            std::mutex signalMutex;
+            std::condition_variable signal;
+            bool midReplace = false;
+            std::thread settingsThread([&] {
+                gate->Offer(Outcome::Loaded, std::move(edited), [&](State& inPlace) {
+                    testState.ClearSingleKeyRemaps(); // the first table is replaced: every table is empty
+                    {
+                        std::lock_guard<std::mutex> lock(signalMutex);
+                        midReplace = true;
+                    }
+
+                    signal.notify_all();
+                    std::this_thread::sleep_for(std::chrono::milliseconds(300));
+                    testState.ApplyReloadInPlace(inPlace, loadingSettings);
+                });
+            });
+
+            {
+                std::unique_lock<std::mutex> lock(signalMutex);
+                signal.wait(lock, [&midReplace] { return midReplace; });
+            }
+
+            FakeHooks hooks;
+            Reconcile(hooks);
+            settingsThread.join();
+
+            Assert::IsFalse(testState.osLevelShortcutReMap.empty());
+            Assert::IsTrue(hooks.installed);
+            Assert::AreEqual(0, hooks.uninstallCalls);
+        }
+
+        // OnSettingsChanged posts a reconciliation after every reload, so most of them find nothing to
+        // change. Such a reconciliation must leave the hook, the held keys and KBM's held output alone.
+        TEST_METHOD (ReconcileHooks_ExtraMessages_KeepHeldKeysAndOutput)
+        {
+            testState.AddSingleKeyRemap('X', static_cast<DWORD>('T'));
+            Press('X');
+            Assert::IsTrue(IsDown('T'));
+
+            FakeHooks hooks;
+            Reconcile(hooks);
+            Reconcile(hooks);
+            Assert::IsTrue(hooks.installed);
+            Assert::AreEqual(0, hooks.uninstallCalls);
+            Assert::IsTrue(gate->HeldKeyCount() == 1);
+            Assert::IsTrue(gate->OrphanKeyCount() == 0);
+            Assert::IsFalse(hooks.mouseHook);
+
+            // KBM's output is still known: a forced swap releases it.
+            Offer(MakeProfile(L"B"));
+            now += std::chrono::seconds(31);
+            Press('Q');
+            Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
+            Assert::IsFalse(IsDown('T'));
+            Release('Q');
+
+            // The mouse hook follows the "Alone" remaps, decided from the same read of the tables.
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, static_cast<DWORD>(VK_ESCAPE));
+            Reconcile(hooks);
+            Assert::IsTrue(hooks.installed);
+            Assert::IsTrue(hooks.mouseHook);
         }
     };
 }

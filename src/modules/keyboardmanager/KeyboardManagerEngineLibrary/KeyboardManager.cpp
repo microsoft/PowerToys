@@ -571,7 +571,7 @@ void KeyboardManager::OnSettingsChanged()
         // hookHandle here: the hook thread may be removing the hook right now, after its own check for a
         // stage, and would then never see a key-down to apply this one. ReconcileHooks does nothing
         // for the stage while the hook is installed, so an extra message is harmless.
-        PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+        PostReconcileHooks();
         return;
     }
 
@@ -580,7 +580,15 @@ void KeyboardManager::OnSettingsChanged()
     // decision taken here from the current hookHandle could be overtaken by the hook thread's own
     // reconciliation, which may be about to remove the hook for the tables this reload replaced (the
     // first mapping added to an empty profile). An extra message is harmless.
-    PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+    PostReconcileHooks();
+}
+
+void KeyboardManager::PostReconcileHooks() const
+{
+    if (!PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0))
+    {
+        Logger::error(L"Could not ask the hook thread to update the hooks (error {}); they follow the remaps again at the next reload", GetLastError());
+    }
 }
 
 void KeyboardManager::AdoptStagedConfiguration(std::unique_ptr<State> staged)
@@ -598,7 +606,7 @@ void KeyboardManager::AdoptStagedConfiguration(std::unique_ptr<State> staged)
 
     // Install/remove the keyboard and mouse hooks for the new tables. Posted, so it runs on this
     // (hook) thread after the current hook callback returns.
-    PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+    PostReconcileHooks();
 
     Logger::trace(L"Profile '{}' applied", state.currentConfig);
 
@@ -651,7 +659,8 @@ void KeyboardManager::ReconcileHooks()
         {
             [] { return hookHandle.load() != nullptr; },
             [this] { return HasRegisteredRemappingsUnchecked(); },
-            [this] { StartLowlevelKeyboardHook(); },
+            [this] { return !state.aloneSingleKeyReMap.empty(); },
+            [this](const bool mouseHook) { InstallHooks(mouseHook); },
             [this] { StopLowlevelKeyboardHook(); },
             [] { return SnapshotKeysDown(); },
         },
@@ -742,6 +751,13 @@ void KeyboardManager::HandleMouseHookEvent() noexcept
 
 void KeyboardManager::StartLowlevelKeyboardHook()
 {
+    // The "Alone" (dual-key) feature also needs a mouse hook so a click/scroll while an alone key is
+    // held counts as a combination. Only install it when alone remaps exist.
+    InstallHooks(!state.aloneSingleKeyReMap.empty());
+}
+
+void KeyboardManager::InstallHooks(const bool mouseHook)
+{
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
     if (IsDebuggerPresent())
     {
@@ -768,10 +784,9 @@ void KeyboardManager::StartLowlevelKeyboardHook()
         }
     }
 
-    // The "Alone" (dual-key) feature also needs a mouse hook so a click/scroll while an alone key is
-    // held counts as a combination. Only install it when alone remaps exist; keep it in sync with the
-    // keyboard hook (this runs on the hook message-loop thread, where SetWindowsHookEx must be called).
-    if (!state.aloneSingleKeyReMap.empty())
+    // Keep the mouse hook in sync with the keyboard hook (this runs on the hook message-loop thread,
+    // where SetWindowsHookEx must be called).
+    if (mouseHook)
     {
         StartLowlevelMouseHook();
     }

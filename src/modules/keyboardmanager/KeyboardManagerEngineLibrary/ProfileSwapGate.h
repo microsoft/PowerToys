@@ -39,11 +39,18 @@
 // Known limitations (bounded by the stale-key and forced-swap rules below, not fixed):
 //  - a held key is identified by scan code + extended flag only, so the same key held at once from
 //    two sources (two keyboards, or a keyboard and another program's injection) shares one record:
-//    the first key-up releases it while the other is still down (review L-3 / N-3);
+//    the first key-up releases it while the other is still down (review L-3 / N-3). One exception:
+//    another program's key-up never ends a press made on a keyboard, because the handlers may not
+//    take it as a release (the single-key handlers ignore odd-tagged input); such a key stays held
+//    until its own key-up, or until the forced swap if that is lost;
 //  - a key-up that is lost after the hook suppressed its key-down keeps the key "held" until the
 //    forced swap (L-4);
 //  - on a forced swap, the key-ups that release the old profile's output reach the hook after the
-//    swap; they carry KBM's shortcut tag, which every handler leaves alone (was L-5);
+//    swap; they carry KBM's shortcut tag, which every handler leaves alone (was L-5). They also reach
+//    the system after the key-down that triggered the swap, so that one key-down is still combined
+//    with a held output modifier (e.g. Win+L for a lost X -> Win key-up), as every key typed during
+//    the 30 s before it was. No dummy key is sent before a modifier is released either. Both are
+//    unchanged from before the release set existed, and only follow a lost key-up;
 //  - KBM's output that is down is tracked by virtual key from the events that reach the system, so
 //    a key-up of the same key from any source (e.g. a physical key with the same virtual key as a
 //    remap target) counts as releasing it;
@@ -54,7 +61,8 @@
 //    the seeded key's key-up is then resolved by the new profile (same family as L-3; review R-1).
 //
 // KBM's re-sent key-downs (KEYBOARDMANAGER_REPROCESS_FLAG, matched by exact value, sent by KBM on
-// key-downs only) are not tracked; a program that copies GetMessageExtraInfo() into its own injection
+// key-downs only) are not tracked as held keys, but count as KBM's output when they reach the system
+// (a forced swap releases them); a program that copies GetMessageExtraInfo() into its own injection
 // could carry that value over, as it could KBM's other flags (review Nit-B).
 //
 // An auto-repeat is recognised as a key-down of a key already in the held set. A held key that stops
@@ -207,11 +215,16 @@ public:
         // Whether the keyboard hook is installed.
         std::function<bool()> isInstalled;
 
-        // Whether the live tables hold any remapping (read without waiting for a reload to finish).
+        // Whether the live tables hold any remapping. Called under the gate lock, so it never runs
+        // while an in-place reload is replacing the tables; it must not take the gate lock itself.
         std::function<bool()> hasRemappings;
 
-        // Install the keyboard hook if it is missing, and install or remove the mouse hook to match.
-        std::function<void()> install;
+        // Whether the live tables hold an "Alone" remap (which needs the mouse hook). Called under the
+        // gate lock, like hasRemappings.
+        std::function<bool()> hasAloneRemappings;
+
+        // Install the keyboard hook if it is missing, and install (true) or remove (false) the mouse hook.
+        std::function<void(bool mouseHook)> install;
 
         // Remove the keyboard and mouse hooks.
         std::function<void()> uninstall;
@@ -221,7 +234,8 @@ public:
     };
 
     // Hook thread (the engine's StartHookMessageID): apply a pending stage if no keyboard hook is
-    // installed, then install or remove the hooks to match the live tables.
+    // installed, then install or remove the hooks to match the live tables (read under the gate lock,
+    // so never half-replaced by an in-place reload).
     void ReconcileHooks(const HookControl& hooks, const AdoptFunction& adopt);
 
     // Test/diagnostic accessors (hook thread).
@@ -242,6 +256,10 @@ private:
 
         bool orphan = false;
 
+        // Its first key-down came from a keyboard (not injected). Another program's key-up does not
+        // end such a press (see EndsPress).
+        bool pressedPhysically = false;
+
         // Seeded from GetAsyncKeyState: the scan code (and so the id) is MapVirtualKey's estimate and
         // not confirmed by an event of the key yet. See FindHeldKey.
         bool estimatedScanCode = false;
@@ -258,7 +276,11 @@ private:
     static uint32_t MakeKeyId(DWORD scanCode, bool extended, DWORD vkCode) noexcept;
 
     // A tracked (physical or foreign-injected) event; see OnHookEvent.
-    intptr_t OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt);
+    intptr_t OnTrackedKeyEvent(LowlevelKeyboardEvent* event, KeyEventSource source, const HandleFunction& handle, const AdoptFunction& adopt);
+
+    // Whether a tracked key-up from `source` ends the press recorded in `key`: not when another program
+    // releases a key held on a keyboard.
+    static bool EndsPress(KeyEventSource source, const HeldKey& key) noexcept;
 
     // An injected event (KBM's own or foreign), before it is handled. An injected key-up for a key
     // believed held (e.g. KBM releasing a held modifier while invoking a shortcut or a text remap)
@@ -273,8 +295,8 @@ private:
     // After an event was handled: keep m_ownKeysDown in step with what reached the system.
     void NoteDeliveredKeyEvent(KeyEventSource source, DWORD rawVkCode, bool keyDown, intptr_t result) noexcept;
 
-    // Forced swap: inject a key-up for every key in m_ownKeysDown (tagged as KBM output) and forget them.
-    void ReleaseOwnKeysDown();
+    // Forced swap: a key-up for every key in m_ownKeysDown (tagged as KBM output), plain keys first.
+    std::vector<INPUT> BuildOwnKeyReleases() const;
 
     // The held entry for an event: by key id; when no record has that id, by virtual key, but only for
     // an orphan seeded from GetAsyncKeyState whose scan code is still an estimate (MapVirtualKey's
@@ -303,7 +325,8 @@ private:
     // Hook-thread only.
     std::unordered_map<uint32_t, HeldKey> m_heldKeys;
 
-    // Raw virtual keys of KBM's own output (OwnInjected key-downs) that reached the system and have
-    // seen no key-up reaching it since: what the live tables left down, released by a forced swap.
+    // Raw virtual keys of KBM's own output (OwnInjected and OwnReprocessed key-downs) that reached the
+    // system and have seen no key-up reaching it since: what the live tables left down, released by a
+    // forced swap.
     std::unordered_set<DWORD> m_ownKeysDown;
 };

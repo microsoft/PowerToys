@@ -181,7 +181,7 @@ intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const Handle
     {
         try
         {
-            result = OnTrackedKeyEvent(event, handle, adopt);
+            result = OnTrackedKeyEvent(event, source, handle, adopt);
         }
         catch (...)
         {
@@ -207,8 +207,10 @@ void ProfileSwapGate::NoteDeliveredKeyEvent(const KeyEventSource source, const D
     if (keyDown)
     {
         // Only KBM's own output: physical and foreign keys are released by their own key-ups, which an
-        // orphan passes through or suppresses as its key-down was.
-        if (source == KeyEventSource::OwnInjected)
+        // orphan passes through or suppresses as its key-down was. A re-sent key-down (reprocess tag)
+        // is KBM's output too: the physical key-down it stands for was suppressed, so that key's own
+        // key-up is suppressed for an orphan and cannot release it.
+        if (source == KeyEventSource::OwnInjected || source == KeyEventSource::OwnReprocessed)
         {
             try
             {
@@ -227,18 +229,12 @@ void ProfileSwapGate::NoteDeliveredKeyEvent(const KeyEventSource source, const D
     std::erase_if(m_ownKeysDown, [rawVkCode](const DWORD down) { return IsSameKey(rawVkCode, down); });
 }
 
-void ProfileSwapGate::ReleaseOwnKeysDown()
+std::vector<INPUT> ProfileSwapGate::BuildOwnKeyReleases() const
 {
-    if (m_ownKeysDown.empty())
-    {
-        return;
-    }
-
     // Plain keys first, then modifiers, so no key is released into a different modifier state than it
     // was pressed with. Tagged as KBM's shortcut output: every handler (the old profile's, or the new
     // one's when the key-ups arrive after the swap) leaves such input alone.
     std::vector<DWORD> keys(m_ownKeysDown.begin(), m_ownKeysDown.end());
-    m_ownKeysDown.clear();
     std::stable_partition(keys.begin(), keys.end(), [](const DWORD key) { return !Shortcut::IsModifier(key); });
 
     std::vector<INPUT> inputs;
@@ -247,10 +243,7 @@ void ProfileSwapGate::ReleaseOwnKeysDown()
         Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, static_cast<WORD>(key), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
     }
 
-    if (m_inject)
-    {
-        m_inject(inputs);
-    }
+    return inputs;
 }
 
 uint32_t ProfileSwapGate::MakeKeyId(const DWORD scanCode, const bool extended, const DWORD vkCode) noexcept
@@ -316,12 +309,20 @@ void ProfileSwapGate::TryApplyStage(const TimePoint now, const AdoptFunction& ad
             // shortcut would restore its other source modifiers). Each held key becomes an orphan whose
             // later events are answered as its key-down was: suppressed if the old profile suppressed
             // it (its output is released here), passed through if the system saw it.
+            // Build the key-ups first: if that throws (out of memory), nothing has changed yet and the
+            // swap is tried again at the next fresh key-down.
+            const std::vector<INPUT> releases = BuildOwnKeyReleases();
             for (auto& [id, key] : m_heldKeys)
             {
                 key.orphan = true;
             }
 
-            ReleaseOwnKeysDown();
+            if (!releases.empty() && m_inject)
+            {
+                m_inject(releases);
+            }
+
+            m_ownKeysDown.clear();
         }
 
         staged = std::move(m_staged);
@@ -358,7 +359,17 @@ std::unordered_map<uint32_t, ProfileSwapGate::HeldKey>::iterator ProfileSwapGate
     return m_heldKeys.insert(std::move(node)).position;
 }
 
-intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt)
+bool ProfileSwapGate::EndsPress(const KeyEventSource source, const HeldKey& key) noexcept
+{
+    // Another program's key-up does not end a press made on a keyboard: the physical key is still
+    // down, and its own key-up is still to come. The handlers may not even take such a key-up as a
+    // release (the single-key handlers ignore odd-tagged input), so dropping the record here would let
+    // the key's next auto-repeat apply a stage and the new profile resolve its real key-up. The
+    // injected key-up has already marked the record (OnInjectedKeyEvent), so it is not dropped as stale.
+    return !(source == KeyEventSource::ForeignInjected && key.pressedPhysically);
+}
+
+intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const KeyEventSource source, const HandleFunction& handle, const AdoptFunction& adopt)
 {
     const bool keyDown = event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN;
     const TimePoint now = m_now();
@@ -377,7 +388,7 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
         {
             found->second.lastEvent = now;
         }
-        else
+        else if (EndsPress(source, found->second))
         {
             m_heldKeys.erase(found);
         }
@@ -402,10 +413,14 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
         if (inserted)
         {
             it->second.vkCode = rawVkCode;
+            it->second.pressedPhysically = source == KeyEventSource::Physical;
         }
 
         it->second.lastEvent = now;
     }
+
+    // Decided before `handle` for the same reason (nothing after it may throw).
+    const bool endsPress = keyDown || found == m_heldKeys.end() || EndsPress(source, found->second);
 
     const intptr_t result = handle(event);
 
@@ -421,7 +436,7 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
             }
         }
     }
-    else
+    else if (endsPress)
     {
         m_heldKeys.erase(id);
     }
@@ -491,6 +506,16 @@ void ProfileSwapGate::ResetHeldKeys(const std::vector<KeySnapshot>& keysDown)
 
 void ProfileSwapGate::ReconcileHooks(const HookControl& hooks, const AdoptFunction& adopt)
 {
+    // The live tables, read under the gate lock: an in-place reload replaces them one by one under the
+    // same lock (Offer's applyInPlace), so they are never seen half-replaced. Half-replaced tables can
+    // all look empty (the last single-key remap replaced by a shortcut), which would remove the hook,
+    // and the hook installed again for the next message would forget the held keys and KBM's output.
+    const auto readTables = [this, &hooks] {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        const bool remapped = hooks.hasRemappings();
+        return std::make_pair(remapped, remapped && hooks.hasAloneRemappings());
+    };
+
     for (;;)
     {
         if (!hooks.isInstalled() && HasStage())
@@ -502,9 +527,9 @@ void ProfileSwapGate::ReconcileHooks(const HookControl& hooks, const AdoptFuncti
             ApplyStageWithoutHook(hooks.keysDown(), adopt);
         }
 
-        if (hooks.hasRemappings())
+        if (const auto [remapped, alone] = readTables(); remapped)
         {
-            hooks.install();
+            hooks.install(alone);
             return;
         }
 
@@ -515,7 +540,7 @@ void ProfileSwapGate::ReconcileHooks(const HookControl& hooks, const AdoptFuncti
         // in place between the check above and the removal (the first mapping of an empty profile)
         // would be left without a hook. Go round once more in either case; each round acts on what it
         // sees, so this ends once the tables stop changing.
-        if (!HasStage() && !hooks.hasRemappings())
+        if (!HasStage() && !readTables().first)
         {
             return;
         }
