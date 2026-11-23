@@ -2017,6 +2017,12 @@ Made with 💗 by Microsoft and the PowerToys community.</value>
   <data name="ColorPicker_ShowColorName.Description" xml:space="preserve">
     <value>Displays the color name while picking a color</value>
   </data>
+  <data name="ColorPicker_EditorAlwaysOnTop.Header" xml:space="preserve">
+    <value>Keep the editor on top</value>
+  </data>
+  <data name="ColorPicker_EditorAlwaysOnTop.Description" xml:space="preserve">
+    <value>The editor stays above other windows, even when you switch to another app</value>
+  </data>
   <data name="ImageResizer_DefaultSize_Large" xml:space="preserve">
     <value>Large</value>
     <comment>The size of the image</comment>

@@ -55,6 +55,8 @@ namespace ColorPicker.UnitTests.ViewModels
 
             public SettingItem<bool> ShowColorName { get; } = new SettingItem<bool>(false);
 
+            public SettingItem<bool> EditorAlwaysOnTop { get; } = new SettingItem<bool>(true);
+
             public void SendSettingsTelemetry()
             {
             }

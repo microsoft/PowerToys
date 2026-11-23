@@ -138,7 +138,7 @@ namespace ColorPicker.Helpers
         {
             if (_colorEditorWindow == null)
             {
-                _colorEditorWindow = new ColorEditorWindow(this);
+                _colorEditorWindow = new ColorEditorWindow(this, _userSettings);
 
                 // Export converts the editor HWND to the WindowId required by FileSavePicker.
                 _colorEditorViewModel.WindowHandle = _colorEditorWindow.GetWindowHandle();
@@ -152,8 +152,7 @@ namespace ColorPicker.Helpers
             }
 
             _colorEditorViewModel.Initialize();
-            _colorEditorWindow.Show();
-            _colorEditorWindow.Activate();
+            _colorEditorWindow.ShowAndActivate();
             SessionEventHelper.Event.EditorOpened = true;
         }
 

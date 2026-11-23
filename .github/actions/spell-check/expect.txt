@@ -496,6 +496,7 @@ easeofaccess
 ecount
 edid
 EDITKEYBOARD
+editoralwaysontop
 EDITSHORTCUTS
 EDITTEXT
 eep

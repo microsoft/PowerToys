@@ -40,6 +40,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             VisibleColorFormats.Add("Decimal", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("Decimal")));
             VisibleColorFormats.Add("HEX Int", new KeyValuePair<bool, string>(false, ColorFormatHelper.GetDefaultFormat("HEX Int")));
             ShowColorName = false;
+            EditorAlwaysOnTop = true;
             ActivationAction = ColorPickerActivationAction.OpenColorPicker;
             PrimaryClickAction = ColorPickerClickAction.PickColorThenEditor;
             MiddleClickAction = ColorPickerClickAction.PickColorAndClose;
@@ -85,6 +86,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("showcolorname")]
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool ShowColorName { get; set; }
+
+        [JsonPropertyName("editoralwaysontop")]
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool EditorAlwaysOnTop { get; set; }
 
         public override string ToString()
             => JsonSerializer.Serialize(this, SettingsSerializationContext.Default.ColorPickerProperties);

@@ -71,6 +71,13 @@ Controls whether color names are displayed in the color picker.
 **Type:** boolean  
 **Default:** `false`
 
+### editoralwaysontop
+
+Controls whether the editor window stays on top of other windows.
+
+**Type:** boolean  
+**Default:** `true`
+
 ### VisibleColorFormats
 
 Defines which color formats are visible in the picker interface.

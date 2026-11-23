@@ -8,9 +8,7 @@
     xmlns:winuiex="using:WinUIEx"
     Width="440"
     Height="380"
-    IsAlwaysOnTop="True"
     IsMaximizable="False"
-    IsMinimizable="False"
     IsResizable="False"
     mc:Ignorable="d">
     <winuiex:WindowEx.SystemBackdrop>
