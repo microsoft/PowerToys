@@ -34,9 +34,25 @@ internal static class ExpirationTimeParser
                 && DateTime.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTime parsedWithDefault)
                 && parsedWithDefault.Date != DateTime.MinValue;
 
-            return isTimeOnly
-                ? ExpirationTimeParseStatus.InvalidFormat
-                : TryResolveLocalDateTime(parsedNoDefault, now, timeZone, out expirationDateTime);
+            if (isTimeOnly)
+            {
+                DateTimeOffset localNow = TimeZoneInfo.ConvertTime(now, timeZone);
+                DateTime todayCandidate = DateTime.SpecifyKind(localNow.Date + parsedNoDefault.TimeOfDay, DateTimeKind.Unspecified);
+                if (TryResolveLocalDateTime(todayCandidate, now, timeZone, out expirationDateTime) == ExpirationTimeParseStatus.Success)
+                {
+                    return ExpirationTimeParseStatus.Success;
+                }
+
+                if (localNow.Date >= DateTime.MaxValue.Date)
+                {
+                    return ExpirationTimeParseStatus.InvalidFormat;
+                }
+
+                DateTime tomorrowCandidate = DateTime.SpecifyKind(localNow.Date.AddDays(1) + parsedNoDefault.TimeOfDay, DateTimeKind.Unspecified);
+                return TryResolveLocalDateTime(tomorrowCandidate, now, timeZone, out expirationDateTime);
+            }
+
+            return TryResolveLocalDateTime(parsedNoDefault, now, timeZone, out expirationDateTime);
         }
 
         if (!DateTimeOffset.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTimeOffset parsedOffset))
