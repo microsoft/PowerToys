@@ -22,5 +22,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 
         [System.Runtime.InteropServices.DllImport("User32.dll")]
         public static extern bool IsIconic(IntPtr handle);
+
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1310:Field names should not contain underscore", Justification = "Interop object")]
+        public const uint MAPVK_VSC_TO_VK = 1;
+
+        [DllImport("user32.dll")]
+        public static extern uint MapVirtualKeyEx(uint uCode, uint uMapType, IntPtr dwhkl);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr GetKeyboardLayout(uint idThread);
     }
 }

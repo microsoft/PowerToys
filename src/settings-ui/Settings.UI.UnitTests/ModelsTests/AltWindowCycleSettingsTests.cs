@@ -12,8 +12,8 @@ namespace CommonLibTest
     [TestClass]
     public class AltWindowCycleSettingsTests
     {
-        // VK_OEM_3 (the backtick / grave-accent key) that both default shortcuts bind to.
-        private const int OemTilde = 0xC0;
+        // The key below Esc on the current keyboard layout, which both default shortcuts bind to.
+        private static readonly int DefaultCycleKey = AltWindowCycleProperties.GetDefaultCycleKeyCode();
 
         [TestMethod]
         public void Defaults_ShouldMatchDocumentedHotkeys()
@@ -25,10 +25,21 @@ namespace CommonLibTest
             Assert.IsNotNull(settings.Properties);
 
             // Next window: Alt+`
-            AssertHotkey(settings.Properties.NextWindowShortcut, win: false, ctrl: false, alt: true, shift: false, code: OemTilde);
+            AssertHotkey(settings.Properties.NextWindowShortcut, win: false, ctrl: false, alt: true, shift: false, code: DefaultCycleKey);
 
             // Previous window: Shift+Alt+`
-            AssertHotkey(settings.Properties.PreviousWindowShortcut, win: false, ctrl: false, alt: true, shift: true, code: OemTilde);
+            AssertHotkey(settings.Properties.PreviousWindowShortcut, win: false, ctrl: false, alt: true, shift: true, code: DefaultCycleKey);
+        }
+
+        [TestMethod]
+        [DataRow(0xC0u, 0xC0, DisplayName = "US: VK_OEM_3")]
+        [DataRow(0xDFu, 0xDF, DisplayName = "UK: VK_OEM_8")]
+        [DataRow(0xDCu, 0xDC, DisplayName = "German: VK_OEM_5")]
+        [DataRow(0u, 0xC0, DisplayName = "Unmapped: falls back to VK_OEM_3")]
+        [DataRow(0x100u, 0xC0, DisplayName = "Out of range: falls back to VK_OEM_3")]
+        public void GetDefaultCycleKeyCode_ShouldUseLayoutKeyBelowEscape(uint layoutVirtualKey, int expected)
+        {
+            Assert.AreEqual(expected, AltWindowCycleProperties.GetDefaultCycleKeyCode(layoutVirtualKey));
         }
 
         [TestMethod]
@@ -81,8 +92,8 @@ namespace CommonLibTest
             var deserialized = JsonSerializer.Deserialize<AltWindowCycleSettings>(Json);
 
             Assert.IsNotNull(deserialized);
-            AssertHotkey(deserialized.Properties.NextWindowShortcut, win: false, ctrl: false, alt: true, shift: false, code: OemTilde);
-            AssertHotkey(deserialized.Properties.PreviousWindowShortcut, win: false, ctrl: false, alt: true, shift: true, code: OemTilde);
+            AssertHotkey(deserialized.Properties.NextWindowShortcut, win: false, ctrl: false, alt: true, shift: false, code: DefaultCycleKey);
+            AssertHotkey(deserialized.Properties.PreviousWindowShortcut, win: false, ctrl: false, alt: true, shift: true, code: DefaultCycleKey);
         }
 
         [TestMethod]
