@@ -1,6 +1,7 @@
 ﻿#include "pch.h"
 #include "MappingConfiguration.h"
 
+#include <algorithm>
 #include <filesystem>
 
 #include <common/SettingsAPI/settings_objects.h>
@@ -564,6 +565,84 @@ void MappingConfiguration::SwapMappings(MappingConfiguration& other) noexcept
     appSpecificShortcutReMapSortedKeys.swap(other.appSpecificShortcutReMapSortedKeys);
     currentConfig.swap(other.currentConfig);
     std::swap(configurationNameResolved, other.configurationNameResolved);
+}
+
+namespace
+{
+    // Every field of a Shortcut that a profile stores; chordStarted is runtime state.
+    bool SameShortcut(const Shortcut& a, const Shortcut& b)
+    {
+        return a.winKey == b.winKey && a.ctrlKey == b.ctrlKey && a.altKey == b.altKey && a.shiftKey == b.shiftKey &&
+               a.actionKey == b.actionKey && a.secondKey == b.secondKey && a.exactMatch == b.exactMatch &&
+               a.operationType == b.operationType && a.runProgramFilePath == b.runProgramFilePath &&
+               a.runProgramArgs == b.runProgramArgs && a.runProgramStartInDir == b.runProgramStartInDir &&
+               a.uriToOpen == b.uriToOpen && a.alreadyRunningAction == b.alreadyRunningAction &&
+               a.elevationLevel == b.elevationLevel && a.startWindowType == b.startWindowType;
+    }
+
+    bool SameTarget(const KeyShortcutTextUnion& a, const KeyShortcutTextUnion& b)
+    {
+        if (a.index() != b.index())
+        {
+            return false;
+        }
+
+        if (const Shortcut* shortcut = std::get_if<Shortcut>(&a))
+        {
+            return SameShortcut(*shortcut, std::get<Shortcut>(b));
+        }
+
+        return a == b;
+    }
+
+    bool SameSingleKeyTable(const SingleKeyRemapTable& a, const SingleKeyRemapTable& b)
+    {
+        if (a.size() != b.size())
+        {
+            return false;
+        }
+
+        for (const auto& [key, target] : a)
+        {
+            const auto other = b.find(key);
+            if (other == b.end() || !SameTarget(target, other->second))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool SameShortcutVector(const std::vector<Shortcut>& a, const std::vector<Shortcut>& b)
+    {
+        return std::equal(a.begin(), a.end(), b.begin(), b.end(), SameShortcut);
+    }
+
+    // Both maps are ordered by the same key comparison, so equal tables list their entries in the same
+    // order.
+    bool SameShortcutTable(const ShortcutRemapTable& a, const ShortcutRemapTable& b)
+    {
+        return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const auto& x, const auto& y) {
+            return SameShortcut(x.first, y.first) && SameTarget(x.second.targetShortcut, y.second.targetShortcut);
+        });
+    }
+}
+
+bool MappingConfiguration::HasSameBindings(const MappingConfiguration& other) const
+{
+    return SameSingleKeyTable(singleKeyReMap, other.singleKeyReMap) &&
+           SameSingleKeyTable(aloneSingleKeyReMap, other.aloneSingleKeyReMap) &&
+           SameSingleKeyTable(singleKeyToTextReMap, other.singleKeyToTextReMap) &&
+           scanMap == other.scanMap &&
+           SameShortcutTable(osLevelShortcutReMap, other.osLevelShortcutReMap) &&
+           SameShortcutVector(osLevelShortcutReMapSortedKeys, other.osLevelShortcutReMapSortedKeys) &&
+           std::equal(appSpecificShortcutReMap.begin(), appSpecificShortcutReMap.end(), other.appSpecificShortcutReMap.begin(), other.appSpecificShortcutReMap.end(), [](const auto& x, const auto& y) {
+               return x.first == y.first && SameShortcutTable(x.second, y.second);
+           }) &&
+           std::equal(appSpecificShortcutReMapSortedKeys.begin(), appSpecificShortcutReMapSortedKeys.end(), other.appSpecificShortcutReMapSortedKeys.begin(), other.appSpecificShortcutReMapSortedKeys.end(), [](const auto& x, const auto& y) {
+               return x.first == y.first && SameShortcutVector(x.second, y.second);
+           });
 }
 
 bool MappingConfiguration::IsConfigurationNameResolved() const

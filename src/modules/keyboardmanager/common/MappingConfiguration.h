@@ -40,6 +40,11 @@ public:
     // numpadKeyPressed, is not exchanged.
     void SwapMappings(MappingConfiguration& other) noexcept;
 
+    // Whether `other` holds exactly the same remappings: every table's sources and targets, compared
+    // field by field (unlike Shortcut::operator==, which compares keys only). Runtime state kept in the
+    // tables (shortcut invocation, started chords) and the configuration name are ignored.
+    bool HasSameBindings(const MappingConfiguration& other) const;
+
     bool IsConfigurationNameResolved() const;
 
     // Save the updated configuration.

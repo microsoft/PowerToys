@@ -556,13 +556,9 @@ void KeyboardManager::OnSettingsChanged()
     }
 
     const auto applyInPlace = [this](State& configuration) {
-        // Same profile (an editor edit): replace the tables right away, as the in-place reload always
-        // did. The hook passes input through while loadingSettings is set. Runtime state other than
-        // the "Alone" keys is kept, as before.
-        loadingSettings = true;
-        state.AdoptConfiguration(configuration, false);
-        state.ClearAllAloneKeyState();
-        loadingSettings = false;
+        // Same profile: replace the tables right away, as the in-place reload always did (see
+        // State::ApplyReloadInPlace). The hook passes input through while loadingSettings is set.
+        state.ApplyReloadInPlace(configuration, loadingSettings);
     };
 
     const auto result = profileSwapGate.Offer(outcome, std::move(loaded), applyInPlace, onRequested);

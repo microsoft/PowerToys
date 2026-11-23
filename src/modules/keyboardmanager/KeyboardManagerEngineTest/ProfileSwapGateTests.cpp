@@ -35,6 +35,8 @@ namespace RemappingLogicTests
         std::unique_ptr<ProfileSwapGate> gate;
         std::vector<std::unique_ptr<State>> retired;
         int applyInPlaceCalls = 0;
+        int tablesReplaced = 0;
+        std::atomic_bool loadingSettings = false;
 
         // Mirrors KeyboardManager::HandleKeyboardHookEvent (without the settings-loading / editor checks).
         intptr_t HandleEvent(LowlevelKeyboardEvent* data)
@@ -80,12 +82,16 @@ namespace RemappingLogicTests
             return profile;
         }
 
+        // Mirrors KeyboardManager::OnSettingsChanged's in-place apply (State::ApplyReloadInPlace).
         ProfileSwapGate::OfferResult Offer(std::unique_ptr<State> configuration, Outcome outcome = Outcome::Loaded, const std::function<void(const std::wstring&)>& onRequested = nullptr)
         {
             return gate->Offer(
                 outcome, std::move(configuration), [this](State& inPlace) {
                     ++applyInPlaceCalls;
-                    testState.AdoptConfiguration(inPlace, false);
+                    if (testState.ApplyReloadInPlace(inPlace, loadingSettings))
+                    {
+                        ++tablesReplaced;
+                    }
                 },
                 onRequested);
         }
@@ -152,7 +158,8 @@ namespace RemappingLogicTests
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
             retired.clear();
             applyInPlaceCalls = 0;
-            now = std::chrono::steady_clock::time_point{} + std::chrono::hours(1);
+            tablesReplaced = 0;
+            now =std::chrono::steady_clock::time_point{} + std::chrono::hours(1);
 
             gate = std::make_unique<ProfileSwapGate>(
                 [this] { return now; },
@@ -1062,6 +1069,144 @@ namespace RemappingLogicTests
             Assert::AreEqual(std::wstring(L"B"), gate->AppliedProfile());
             gate->ReportPendingProfile(record);
             Assert::AreEqual(std::wstring{}, pending);
+        }
+
+        // moooyo N1: saving the keyboard assignments (or anything else that reloads the live profile without
+        // changing its remaps) must not drop a held shortcut's runtime state. Ctrl+A -> Shift+B is held,
+        // the reload runs, then the chord is released: Shift and B must be released too.
+        TEST_METHOD (SameProfileReload_UnchangedBindings_KeepsHeldShortcutState)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('A');
+            Shortcut dest;
+            dest.SetKey(VK_SHIFT);
+            dest.SetKey('B');
+            testState.AddOSLevelShortcut(src, dest);
+
+            Press(VK_CONTROL);
+            Press('A');
+            Assert::IsTrue(IsDown(VK_SHIFT));
+            Assert::IsTrue(IsDown('B'));
+
+            auto same = MakeProfile(L"A");
+            same->AddOSLevelShortcut(src, dest);
+            Assert::IsTrue(Offer(std::move(same)) == ProfileSwapGate::OfferResult::AppliedInPlace);
+            Assert::AreEqual(1, applyInPlaceCalls);
+
+            Release('A');
+            Release(VK_CONTROL);
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown('B'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::AreEqual(0, tablesReplaced);
+        }
+
+        // Same for a pending "Alone" key: an unchanged reload keeps it pending, so its tap still fires.
+        TEST_METHOD (SameProfileReload_UnchangedBindings_KeepsPendingAloneKey)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, static_cast<DWORD>(VK_IME_ON));
+            Press(VK_RCONTROL);
+
+            auto same = MakeProfile(L"A");
+            same->AddSingleKeyAloneRemap(VK_RCONTROL, static_cast<DWORD>(VK_IME_ON));
+            Offer(std::move(same));
+
+            CountEventsOf(VK_IME_ON);
+            Release(VK_RCONTROL);
+            Assert::AreEqual(2, mockedInputHandler.GetSendVirtualInputCallCount()); // tap: down + up
+            Assert::IsFalse(IsDown(VK_RCONTROL));
+        }
+
+        // A reload that does change a binding still replaces the tables in place right away.
+        TEST_METHOD (SameProfileReload_ChangedBinding_ReplacesTables)
+        {
+            testState.AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
+
+            auto edited = MakeProfile(L"A");
+            edited->AddSingleKeyRemap('X', static_cast<DWORD>('Z'));
+            Assert::IsTrue(Offer(std::move(edited)) == ProfileSwapGate::OfferResult::AppliedInPlace);
+            Assert::AreEqual(1, tablesReplaced);
+
+            Press('X');
+            Assert::IsTrue(IsDown('Z'));
+            Assert::IsFalse(IsDown('Y'));
+            Release('X');
+            Assert::IsFalse(IsDown('Z'));
+        }
+
+        // HasSameBindings compares every stored field of every table, and ignores runtime state.
+        TEST_METHOD (HasSameBindings_DetectsEveryStoredChange_IgnoresRuntimeState)
+        {
+            Shortcut ctrlC;
+            ctrlC.SetKey(VK_CONTROL);
+            ctrlC.SetKey('C');
+            Shortcut altV;
+            altV.SetKey(VK_MENU);
+            altV.SetKey('V');
+            Shortcut ctrlR;
+            ctrlR.SetKey(VK_CONTROL);
+            ctrlR.SetKey('R');
+            Shortcut runNotepad;
+            runNotepad.operationType = Shortcut::OperationType::RunProgram;
+            runNotepad.runProgramFilePath = L"notepad.exe";
+            runNotepad.runProgramArgs = L"a.txt";
+
+            struct Options
+            {
+                std::wstring app = L"app.exe";
+                bool exactMatch = false;
+            };
+
+            const auto build = [&](const Options& options, const std::function<void(State&)>& tweak) {
+                State configuration;
+                configuration.AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
+                configuration.AddSingleKeyAloneRemap(VK_RCONTROL, static_cast<DWORD>(VK_ESCAPE));
+                configuration.AddSingleKeyToTextRemap('T', L"text");
+                Shortcut source = ctrlC;
+                source.exactMatch = options.exactMatch;
+                configuration.AddOSLevelShortcut(source, altV);
+                configuration.AddOSLevelShortcut(ctrlR, runNotepad);
+                configuration.AddAppSpecificShortcut(options.app, ctrlC, altV);
+                if (tweak)
+                {
+                    tweak(configuration);
+                }
+
+                return configuration;
+            };
+
+            const State base = build({}, nullptr);
+            Assert::IsTrue(base.HasSameBindings(build({}, nullptr)));
+
+            // Runtime state and the configuration name do not count.
+            Assert::IsTrue(base.HasSameBindings(build({}, [](State& c) {
+                c.osLevelShortcutReMap.begin()->second.isShortcutInvoked = true;
+                c.osLevelShortcutReMap.begin()->second.isOriginalActionKeyPressed = true;
+                c.osLevelShortcutReMapSortedKeys.front().SetChordStarted(true);
+                c.currentConfig = L"Other";
+            })));
+
+            const std::vector<std::function<void(State&)>> changes{
+                [](State& c) { c.singleKeyReMap['X'] = static_cast<DWORD>('Z'); },
+                [](State& c) { c.AddSingleKeyRemap('Q', static_cast<DWORD>('W')); },
+                [](State& c) { c.aloneSingleKeyReMap[VK_RCONTROL] = static_cast<DWORD>(VK_TAB); },
+                [](State& c) { c.singleKeyToTextReMap['T'] = std::wstring(L"other"); },
+                [](State& c) { c.ClearSingleKeyToTextRemaps(); },
+                [ctrlC](State& c) { std::get<Shortcut>(c.osLevelShortcutReMap.find(ctrlC)->second.targetShortcut).actionKey = 'B'; },
+                [ctrlR](State& c) { std::get<Shortcut>(c.osLevelShortcutReMap.find(ctrlR)->second.targetShortcut).runProgramArgs = L"b.txt"; },
+                [ctrlR](State& c) { std::get<Shortcut>(c.osLevelShortcutReMap.find(ctrlR)->second.targetShortcut).elevationLevel = Shortcut::ElevationLevel::Elevated; },
+                [ctrlR](State& c) { c.osLevelShortcutReMap.find(ctrlR)->second.targetShortcut = static_cast<DWORD>('R'); },
+                [ctrlC](State& c) { std::get<Shortcut>(c.appSpecificShortcutReMap[L"app.exe"].find(ctrlC)->second.targetShortcut).actionKey = 'B'; },
+            };
+
+            for (size_t i = 0; i < changes.size(); ++i)
+            {
+                Assert::IsFalse(base.HasSameBindings(build({}, changes[i])), (L"change " + std::to_wstring(i)).c_str());
+            }
+
+            Assert::IsFalse(base.HasSameBindings(build({ .app = L"other.exe" }, nullptr)));
+            Assert::IsFalse(base.HasSameBindings(build({ .exactMatch = true }, nullptr)));
         }
 
         // Hooks driven by ReconcileHooks in the tests: installed state, a counter per call, and an

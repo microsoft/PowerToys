@@ -1,5 +1,6 @@
 #pragma once
 #include <keyboardmanager/common/MappingConfiguration.h>
+#include <atomic>
 #include <unordered_set>
 
 class State : public MappingConfiguration
@@ -30,6 +31,16 @@ public:
     // numpad pressed state). Shortcut invocation state lives inside the tables, so it moves out with
     // them either way. Must run on the low-level hook thread (or while no hook is installed).
     void AdoptConfiguration(MappingConfiguration& configuration, bool resetRuntimeState) noexcept;
+
+    // A reload of the live profile (an editor edit, or a save that leaves the remaps as they are, such
+    // as the keyboard assignments). When the bindings are unchanged (HasSameBindings) nothing is
+    // replaced, so held shortcuts, pending "Alone" keys and started chords keep their state. Otherwise
+    // the tables are replaced in place while `loading` is set (the hook passes input through
+    // meanwhile), keeping runtime state other than the "Alone" keys, as before. Returns whether the
+    // tables were replaced. Called under the gate lock (ProfileSwapGate::Offer), so no staged swap
+    // replaces the tables meanwhile; the hook thread changes only runtime fields, which the
+    // comparison does not read.
+    bool ApplyReloadInPlace(MappingConfiguration& configuration, std::atomic_bool& loading) noexcept;
 
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
