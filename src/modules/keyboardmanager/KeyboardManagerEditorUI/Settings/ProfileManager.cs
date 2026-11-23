@@ -33,6 +33,10 @@ namespace KeyboardManagerEditorUI.Settings
             "\"remapShortcuts\":{\"global\":[],\"appSpecific\":[]}," +
             "\"remapShortcutsToText\":{\"global\":[],\"appSpecific\":[]}}";
 
+        // Win32 error codes reported when a create-new target already exists.
+        private const int ErrorFileExists = 80;
+        private const int ErrorAlreadyExists = 183;
+
         private static string SettingsJsonPath => Path.Combine(SettingsDirectory, "settings.json");
 
         /// <summary>Folder holding the profile configs + settings.json — exposed so the editor can
@@ -51,15 +55,34 @@ namespace KeyboardManagerEditorUI.Settings
         {
             try
             {
-                string path = ConfigPath(DefaultProfile);
-                if (!File.Exists(path))
-                {
-                    File.WriteAllText(path, EmptyConfigJson);
-                }
+                // Exclusive create: another editor's first save can create default.json between
+                // any existence check and our write, and a plain write would truncate it.
+                TryCreateFileExclusive(ConfigPath(DefaultProfile), EmptyConfigJson);
             }
             catch (Exception ex)
             {
                 Logger.LogError($"ProfileManager.EnsureDefaultProfileExists: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Creates <paramref name="path"/> with <paramref name="content"/> only if no file exists
+        /// there yet. Returns false, leaving the existing file untouched, when another process
+        /// created it first; any other I/O failure is thrown. Unlike a File.Exists check followed by
+        /// a write, the create and the existence test are one atomic file-system operation.
+        /// </summary>
+        internal static bool TryCreateFileExclusive(string path, string content)
+        {
+            try
+            {
+                using var stream = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+                using var writer = new StreamWriter(stream);
+                writer.Write(content);
+                return true;
+            }
+            catch (IOException ex) when ((ex.HResult & 0xFFFF) is ErrorFileExists or ErrorAlreadyExists)
+            {
+                return false;
             }
         }
 
@@ -252,13 +275,16 @@ namespace KeyboardManagerEditorUI.Settings
                     return false;
                 }
 
+                // Both branches create the file exclusively, so if another editor creates the same
+                // profile between the check above and here, this one fails instead of overwriting it.
                 if (copyFromActive && File.Exists(ConfigPath(GetActiveProfile())))
                 {
                     File.Copy(ConfigPath(GetActiveProfile()), target, overwrite: false);
                 }
-                else
+                else if (!TryCreateFileExclusive(target, EmptyConfigJson))
                 {
-                    File.WriteAllText(target, EmptyConfigJson);
+                    Logger.LogWarning($"ProfileManager.CreateProfile: '{profile}' was created by another editor");
+                    return false;
                 }
 
                 JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();

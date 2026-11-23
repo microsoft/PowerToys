@@ -97,5 +97,35 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsTrue(File.Exists(Path.Combine(_directory, "settings.json")));
             CollectionAssert.Contains(new System.Collections.Generic.List<string>(ProfileManager.GetProfiles()), "Work");
         }
+
+        // E5: a second creator must fail instead of truncating a file another editor just created.
+        [TestMethod]
+        public void TryCreateFileExclusive_DoesNotTouchAnExistingFile()
+        {
+            string path = Path.Combine(_directory, "Work.json");
+            File.WriteAllText(path, "copied mappings");
+
+            Assert.IsFalse(ProfileManager.TryCreateFileExclusive(path, "{}"));
+            Assert.AreEqual("copied mappings", File.ReadAllText(path));
+        }
+
+        [TestMethod]
+        public void TryCreateFileExclusive_CreatesAMissingFile()
+        {
+            string path = Path.Combine(_directory, "Work.json");
+
+            Assert.IsTrue(ProfileManager.TryCreateFileExclusive(path, "{}"));
+            Assert.AreEqual("{}", File.ReadAllText(path));
+        }
+
+        [TestMethod]
+        public void CreateProfile_DoesNotOverwriteAnExistingProfileFile()
+        {
+            string path = Path.Combine(_directory, "Work.json");
+            File.WriteAllText(path, "copied mappings");
+
+            Assert.IsFalse(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.AreEqual("copied mappings", File.ReadAllText(path));
+        }
     }
 }
