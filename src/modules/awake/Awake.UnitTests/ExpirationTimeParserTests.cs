@@ -275,4 +275,89 @@ public class ExpirationTimeParserTests
         Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
         Assert.AreEqual(new DateTimeOffset(expYear, expMonth, expDay, expHour, expMinute, 0, TimeSpan.Zero), result);
     }
+
+    [TestMethod]
+    public void TryParse_WhenTimeOnlyHitsSpringForwardGapBeforeTransition_ShiftsForwardToday()
+    {
+        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        DateTimeOffset now = new(2026, 3, 8, 1, 30, 0, TimeSpan.FromHours(-5));
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            "02:30",
+            now,
+            CultureInfo.GetCultureInfo("en-US"),
+            eastern,
+            out DateTimeOffset result);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
+        Assert.AreEqual(new DateTimeOffset(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4)), result);
+    }
+
+    [TestMethod]
+    public void TryParse_WhenTimeOnlyHitsSpringForwardGapAfterTransition_RollsToTomorrow()
+    {
+        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        DateTimeOffset now = new(2026, 3, 8, 3, 15, 0, TimeSpan.FromHours(-4));
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            "02:30",
+            now,
+            CultureInfo.GetCultureInfo("en-US"),
+            eastern,
+            out DateTimeOffset result);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
+        Assert.AreEqual(new DateTimeOffset(2026, 3, 9, 2, 30, 0, TimeSpan.FromHours(-4)), result);
+    }
+
+    [TestMethod]
+    public void TryParse_WhenTimeOnlyRollsToTomorrowSpringForwardGap_ShiftsTomorrowForward()
+    {
+        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        DateTimeOffset now = new(2026, 3, 7, 23, 0, 0, TimeSpan.FromHours(-5));
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            "02:30",
+            now,
+            CultureInfo.GetCultureInfo("en-US"),
+            eastern,
+            out DateTimeOffset result);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
+        Assert.AreEqual(new DateTimeOffset(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4)), result);
+    }
+
+    [TestMethod]
+    public void TryParse_WhenTimeOnlyHitsThirtyMinuteSpringForwardGap_ShiftsByThirtyMinutes()
+    {
+        TimeZoneInfo lordHowe = TimeZoneInfo.FindSystemTimeZoneById("Lord Howe Standard Time");
+        DateTimeOffset now = new(2026, 10, 4, 1, 30, 0, TimeSpan.FromMinutes(630));
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            "02:15",
+            now,
+            CultureInfo.GetCultureInfo("en-AU"),
+            lordHowe,
+            out DateTimeOffset result);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
+        Assert.AreEqual(new DateTimeOffset(2026, 10, 4, 2, 45, 0, TimeSpan.FromHours(11)), result);
+    }
+
+    [TestMethod]
+    public void TryParse_WhenExplicitLocalDateHitsSpringForwardGap_ShiftsConsistently()
+    {
+        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+        DateTimeOffset now = new(2026, 3, 8, 1, 30, 0, TimeSpan.FromHours(-5));
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            "2026-03-08 02:30",
+            now,
+            CultureInfo.GetCultureInfo("en-US"),
+            eastern,
+            out DateTimeOffset result);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
+        Assert.AreEqual(new DateTimeOffset(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4)), result);
+    }
 }

@@ -38,7 +38,10 @@ internal static class ExpirationTimeParser
             {
                 DateTimeOffset localNow = TimeZoneInfo.ConvertTime(now, timeZone);
                 DateTime todayCandidate = DateTime.SpecifyKind(localNow.Date + parsedNoDefault.TimeOfDay, DateTimeKind.Unspecified);
-                if (TryResolveLocalDateTime(todayCandidate, now, timeZone, out expirationDateTime) == ExpirationTimeParseStatus.Success)
+
+                // Skip today when wall-clock time is already past a nonexistent spring-forward gap.
+                bool skipToday = timeZone.IsInvalidTime(todayCandidate) && localNow.DateTime >= todayCandidate;
+                if (!skipToday && TryResolveLocalDateTime(todayCandidate, now, timeZone, out expirationDateTime) == ExpirationTimeParseStatus.Success)
                 {
                     return ExpirationTimeParseStatus.Success;
                 }
@@ -91,6 +94,11 @@ internal static class ExpirationTimeParser
         }
 
         DateTimeOffset resolved = new(localDateTime, offset);
+        if (timeZone.IsInvalidTime(localDateTime))
+        {
+            resolved = TimeZoneInfo.ConvertTime(resolved, timeZone);
+        }
+
         if (resolved <= now)
         {
             return ExpirationTimeParseStatus.InThePast;
