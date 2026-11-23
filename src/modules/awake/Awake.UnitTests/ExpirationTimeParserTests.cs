@@ -446,4 +446,49 @@ public class ExpirationTimeParserTests
         Assert.AreEqual(expected, result);
         Assert.AreEqual(expected.Offset, result.Offset);
     }
+
+    [TestMethod]
+    [DataRow("de-DE", "17.08.2025 14:05")]
+    [DataRow("fr-FR", "17 août 2025 14:05")]
+    [DataRow("ja-JP", "2025年8月17日 14:05")]
+    [DataRow("sv-SE", "17 augusti 2025 14:05")]
+    [DataRow("en-GB", "17/08/2025 14:05")]
+    [DataRow("ar-SA", "2025-09-04T20:26:00")]
+    public void TryParse_WhenPastFullDateAcrossCultures_ReturnsInThePast(string cultureName, string input)
+    {
+        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            input,
+            now,
+            CultureInfo.GetCultureInfo(cultureName),
+            TimeZoneInfo.Utc,
+            out _);
+
+        Assert.AreEqual(ExpirationTimeParseStatus.InThePast, status);
+    }
+
+    [TestMethod]
+    [DataRow("fi-FI", "17.00", 2026, 11, 22, 17, 0)]
+    [DataRow("fi-FI", "08.30", 2026, 11, 23, 8, 30)]
+    [DataRow("de-DE", "08:30", 2026, 11, 23, 8, 30)]
+    [DataRow("ar-SA", "17:00", 2026, 11, 22, 17, 0)]
+    [DataRow("ar-SA", "05:00 م", 2026, 11, 22, 17, 0)]
+    public void TryParse_WhenTimeOnlyAcrossCultures_ResolvesAndRollsCorrectly(
+        string cultureName, string input, int expYear, int expMonth, int expDay, int expHour, int expMinute)
+    {
+        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
+
+        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
+            input,
+            now,
+            CultureInfo.GetCultureInfo(cultureName),
+            TimeZoneInfo.Utc,
+            out DateTimeOffset result);
+
+        DateTimeOffset expected = new(expYear, expMonth, expDay, expHour, expMinute, 0, TimeSpan.Zero);
+        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
+        Assert.AreEqual(expected, result);
+        Assert.AreEqual(expected.Offset, result.Offset);
+    }
 }
