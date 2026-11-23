@@ -72,6 +72,12 @@ namespace WorkspacesEditor.Services
             {
                 ((IPersistStream)link).Load(stream);
             }
+            catch (COMException ex) when (ex.HResult is unchecked((int)0x80004005) or unchecked((int)0x8003001E) or unchecked((int)0x800300FB) or unchecked((int)0x80030109))
+            {
+                // The file is already in memory. E_FAIL, STG_E_READFAULT, STG_E_INVALIDHEADER
+                // and STG_E_DOCFILECORRUPT here describe invalid Shell Link content, not a file lock.
+                throw new InvalidDataException("The desktop file is not a readable Shell Link.", ex);
+            }
             finally
             {
                 Marshal.FinalReleaseComObject(stream);

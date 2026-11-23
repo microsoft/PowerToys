@@ -133,7 +133,7 @@ namespace WorkspacesEditor.Services
                 }
 
                 var destination = Inspect(project.Name, workspaceId, retry);
-                if (destination.State == ShortcutState.Foreign)
+                if (destination.State is ShortcutState.Foreign or ShortcutState.Unverifiable)
                 {
                     return new(WorkspaceShortcutStatus.NameConflict);
                 }
@@ -238,7 +238,7 @@ namespace WorkspacesEditor.Services
                     catch (Exception ex)
                     {
                         Logger.LogError("Failed to retry a workspace shortcut removal", ex);
-                        retryNeeded |= ex is IOException or UnauthorizedAccessException;
+                        retryNeeded |= ex is IOException or UnauthorizedAccessException or Win32Exception;
                     }
                 }
             }
@@ -259,6 +259,7 @@ namespace WorkspacesEditor.Services
                 var entry = Inspect(name, workspaceId, retry);
                 string iconPath = GetIconPath(journal);
                 if (entry.State is ShortcutState.Owned or ShortcutState.Unreadable ||
+                    (entry.State == ShortcutState.Unverifiable && HasIcon(iconPath)) ||
                     WorkspaceShortcutFile.MayReferenceIcon(entry.IconPath, iconPath) || (deleting && HasIcon(iconPath)))
                 {
                     names.Add(name);
@@ -333,7 +334,7 @@ namespace WorkspacesEditor.Services
 
             string iconPath = GetIconPath(journal);
             var (remaining, failed) = CleanLinks(names, workspaceId, iconPath, null, retry, currentName, previousName);
-            if (remaining.Count == 0 && HasIcon(iconPath))
+            if (remaining.Count == 0 && HasIcon(iconPath) && !journal.HasUnrecoverableNames)
             {
                 File.Delete(iconPath);
             }
@@ -391,6 +392,16 @@ namespace WorkspacesEditor.Services
                         remaining.Add(name);
                         failed = true;
                         break;
+
+                    case ShortcutState.Unverifiable:
+                        // Malformed or over-limit content cannot establish ownership or icon use.
+                        // Preserve it, but no timed retry can change the bytes already inspected.
+                        if (HasIcon(iconPath))
+                        {
+                            remaining.Add(name);
+                        }
+
+                        break;
                 }
             }
 
@@ -430,6 +441,10 @@ namespace WorkspacesEditor.Services
             catch (FileNotFoundException)
             {
                 return (ShortcutState.Missing, null, null);
+            }
+            catch (InvalidDataException)
+            {
+                return (ShortcutState.Unverifiable, null, null);
             }
             catch (Exception ex)
             {
@@ -480,6 +495,7 @@ namespace WorkspacesEditor.Services
             Missing,
             Owned,
             Foreign,
+            Unverifiable,
             Unreadable,
         }
     }

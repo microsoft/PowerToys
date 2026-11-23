@@ -124,6 +124,17 @@ namespace WorkspacesEditor.Services
             }
         }
 
+        // Recheck the record with writers and replacement excluded, and move that same file.
+        // A valid journal installed between the original read and this open is left in place.
+        internal static void MoveIf(string path, string destination, Func<FileStream, bool> shouldMove)
+        {
+            using FileStream stream = OpenFile(path, FileAccess.Read, forChange: true, retryBudget: null);
+            if (shouldMove(stream))
+            {
+                Rename(stream.SafeFileHandle, destination);
+            }
+        }
+
         private static void Delete(SafeFileHandle handle)
         {
             // Unlink the name when our handle closes, even if another reader is still using
@@ -224,6 +235,12 @@ namespace WorkspacesEditor.Services
                 throw new InvalidDataException("The desktop file is too large to be a workspace shortcut.");
             }
 
+            if (length < 76)
+            {
+                // A Shell Link must start with the 76-byte ShellLinkHeader.
+                throw new InvalidDataException("The desktop file has no complete Shell Link header.");
+            }
+
             var contents = new byte[(int)length];
             stream.ReadExactly(contents);
             return contents;
@@ -246,33 +263,44 @@ namespace WorkspacesEditor.Services
                 return false;
             }
 
-            string candidate = linkIcon.Trim().Trim('"');
-            if (string.Equals(candidate, iconPath, StringComparison.OrdinalIgnoreCase))
+            if (!TryGetIconPathSpelling(iconPath, out string managedPath, out _))
+            {
+                return false;
+            }
+
+            string candidateInput = linkIcon.Trim('"');
+            if (string.Equals(candidateInput, iconPath, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
 
-            candidate = Environment.ExpandEnvironmentVariables(candidate).Replace('/', '\\');
-            if (!Path.IsPathFullyQualified(candidate) ||
-                !string.Equals(Path.GetPathRoot(candidate), Path.GetPathRoot(iconPath), StringComparison.OrdinalIgnoreCase) ||
+            candidateInput = Environment.ExpandEnvironmentVariables(candidateInput);
+            if (!TryGetIconPathSpelling(candidateInput, out string candidate, out bool verbatim) ||
+                !string.Equals(Path.GetPathRoot(candidate), Path.GetPathRoot(managedPath), StringComparison.OrdinalIgnoreCase) ||
                 !string.Equals(Path.GetExtension(candidate), ".ico", StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
+            if (string.Equals(candidate, managedPath, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             try
             {
-                // GetFullPathName normalizes dot segments without expanding a foreign short path.
-                string path = ReadWindowsPath(buffer => GetFullPathNameW(candidate, (uint)buffer.Capacity, buffer, 0));
-                if (string.Equals(path, iconPath, StringComparison.OrdinalIgnoreCase))
+                // Only ordinary Win32 paths interpret dot segments and strip trailing periods.
+                string path = verbatim ? candidate : ReadWindowsPath(buffer => GetFullPathNameW(candidate, (uint)buffer.Capacity, buffer, 0));
+                if (string.Equals(path, managedPath, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
 
-                string directory = Path.GetDirectoryName(iconPath);
+                string directory = Path.GetDirectoryName(managedPath);
+                string trustedDirectory = Path.GetDirectoryName(iconPath);
                 string candidateDirectory = Path.GetDirectoryName(path);
                 if (!string.Equals(directory, candidateDirectory, StringComparison.OrdinalIgnoreCase) &&
-                    !IsShortDirectorySpelling(directory, candidateDirectory))
+                    !IsShortDirectorySpelling(directory, candidateDirectory, trustedDirectory))
                 {
                     return false;
                 }
@@ -285,7 +313,7 @@ namespace WorkspacesEditor.Services
 
                 // Use the trusted directory even when the link used a short name for an ancestor.
                 using var managed = OpenIconMetadata(iconPath);
-                using var referenced = OpenIconMetadata(Path.Combine(directory, leaf));
+                using var referenced = OpenIconMetadata(Path.Combine(trustedDirectory, leaf));
                 if (!TryReadFileId(managed, out var first) || !TryReadFileId(referenced, out var second))
                 {
                     return true;
@@ -300,7 +328,46 @@ namespace WorkspacesEditor.Services
             }
         }
 
-        private static bool IsShortDirectorySpelling(string directory, string candidate)
+        private static bool TryGetIconPathSpelling(string path, out string spelling, out bool verbatim)
+        {
+            const string ExtendedPrefix = @"\\?\";
+            const string ExtendedUncPrefix = @"\\?\UNC\";
+            verbatim = path.StartsWith(ExtendedPrefix, StringComparison.Ordinal);
+            spelling = path.Replace('/', '\\');
+            if (verbatim)
+            {
+                // The extended namespace takes separators and directory names literally. Removing
+                // its prefix must not turn a literal path into a different file on the desktop.
+                if (path.Contains('/'))
+                {
+                    return false;
+                }
+
+                bool unc = path.StartsWith(ExtendedUncPrefix, StringComparison.OrdinalIgnoreCase);
+                string suffix = path[(unc ? ExtendedUncPrefix.Length : ExtendedPrefix.Length)..];
+                if (!unc && (suffix.Length < 3 || !char.IsAsciiLetter(suffix[0]) || suffix[1] != ':' || suffix[2] != '\\'))
+                {
+                    return false;
+                }
+
+                string[] components = (unc ? suffix : suffix[3..]).Split('\\');
+                if ((unc && components.Length < 2) ||
+                    Array.Exists(components, component => component.Length == 0 || component is "." or ".."))
+                {
+                    return false;
+                }
+
+                spelling = unc ? @"\\" + suffix : suffix;
+            }
+
+            // Also reject device prefixes presented with mixed/forward separators.
+            return Path.IsPathFullyQualified(spelling) &&
+                !spelling.StartsWith(ExtendedPrefix, StringComparison.Ordinal) &&
+                !spelling.StartsWith(@"\\.\", StringComparison.Ordinal) &&
+                !spelling.StartsWith(@"\??\", StringComparison.Ordinal);
+        }
+
+        private static bool IsShortDirectorySpelling(string directory, string candidate, string trustedDirectory)
         {
             string[] longParts = directory.Split('\\');
             string[] candidateParts = candidate.Split('\\');
@@ -318,7 +385,13 @@ namespace WorkspacesEditor.Services
                 }
             }
 
-            string[] shortParts = ReadWindowsPath(buffer => GetShortPathNameW(directory, buffer, (uint)buffer.Capacity)).Split('\\');
+            string shortPath = ReadWindowsPath(buffer => GetShortPathNameW(trustedDirectory, buffer, (uint)buffer.Capacity));
+            if (!TryGetIconPathSpelling(shortPath, out string shortDirectory, out _))
+            {
+                return false;
+            }
+
+            string[] shortParts = shortDirectory.Split('\\');
             for (int i = 0; i < longParts.Length; i++)
             {
                 if (!string.Equals(candidateParts[i], longParts[i], StringComparison.OrdinalIgnoreCase) &&

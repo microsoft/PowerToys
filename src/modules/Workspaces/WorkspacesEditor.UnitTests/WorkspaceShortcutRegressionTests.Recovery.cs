@@ -17,6 +17,155 @@ namespace WorkspacesEditor.UnitTests
     public partial class WorkspaceShortcutRegressionTests
     {
         [TestMethod]
+        [DataRow("", false)]
+        [DataRow("{", true)]
+        [DataRow("null", false)]
+        [DataRow("{\"Names\":42,\"PendingRemoval\":true}", true)]
+        [DataRow("{\"ProjectId\":\"{00000000-0000-0000-0000-000000000000}\",\"Names\":[\"Other desktop name\"],\"PendingRemoval\":true}", false)]
+        public void InvalidJournal_IsPreservedAndOnlyTheKnownOwnedLinkIsRecovered(string invalid, bool delete)
+        {
+            using var fixture = new ShortcutFixture();
+            using var session = new ViewModelSession(fixture);
+            Project original = fixture.Project("Before recovery");
+            fixture.Apply(original);
+            fixture.WriteShortcut(original, hotkey: 0x064B, showCommand: 3);
+            string oldPath = fixture.LinkPath(original.Name);
+            string oldIcon = fixture.IconPath(original);
+            byte[] oldIconBytes = File.ReadAllBytes(oldIcon);
+            string journal = Directory.GetFiles(fixture.IconFolder, "*.links.json").Single();
+            byte[] damaged = Encoding.UTF8.GetBytes(invalid);
+            File.WriteAllBytes(journal, damaged);
+
+            Project other = fixture.Project("Other desktop name");
+            fixture.WriteShortcut(other, iconPath: oldIcon);
+            string otherPath = fixture.LinkPath(other.Name);
+            byte[] otherBytes = File.ReadAllBytes(otherPath);
+            session.ViewModel.Workspaces.Add(original);
+            if (delete)
+            {
+                session.ViewModel.DeleteProject(original);
+                Assert.AreEqual(0, session.ViewModel.Workspaces.Count);
+                CollectionAssert.AreEqual(oldIconBytes, File.ReadAllBytes(oldIcon), "Unknown historical links may still reference the ICO.");
+            }
+            else
+            {
+                Project draft = session.Edit(original);
+                draft.Name = "Recovered workspace";
+                session.Save(draft);
+                Assert.AreEqual(draft.Name, original.Name);
+                fixture.AssertShortcut(original);
+                fixture.AssertLaunchOptions(original, 0x064B, 3);
+            }
+
+            Assert.AreEqual(1, session.SerializationCount);
+            Assert.IsFalse(File.Exists(oldPath));
+            Assert.IsFalse(session.ViewModel.HasShortcutNotice);
+            string recoveryCopy = Directory.GetFiles(fixture.IconFolder, Path.GetFileName(journal) + ".corrupt*").Single();
+            CollectionAssert.AreEqual(damaged, File.ReadAllBytes(recoveryCopy));
+            CollectionAssert.AreEqual(otherBytes, File.ReadAllBytes(otherPath));
+        }
+
+        [TestMethod]
+        public void DeletedWorkspace_RestartsPreserveTheUnregisteredShortcutAndSingleRecoveryCopy()
+        {
+            using var fixture = new ShortcutFixture();
+            using var session = new ViewModelSession(fixture);
+            Project project = fixture.Project("Registered workspace");
+            fixture.Apply(project);
+
+            string registeredPath = fixture.LinkPath(project.Name);
+            string customPath = fixture.LinkPath("My own launcher");
+
+            // Copying the link retains the workspace ID and icon without registering this name.
+            File.Copy(registeredPath, customPath);
+            byte[] customLink = File.ReadAllBytes(customPath);
+            string iconPath = fixture.IconPath(project);
+            byte[] icon = File.ReadAllBytes(iconPath);
+            string journal = Directory.GetFiles(fixture.IconFolder, "*.links.json").Single();
+            byte[] damaged = Encoding.UTF8.GetBytes("{");
+            File.WriteAllBytes(journal, damaged);
+
+            session.ViewModel.Workspaces.Add(project);
+            session.ViewModel.DeleteProject(project);
+            Assert.AreEqual(0, session.ViewModel.Workspaces.Count);
+            Assert.IsFalse(File.Exists(registeredPath));
+            string pattern = Path.GetFileName(journal) + ".corrupt*";
+            string backup = Directory.GetFiles(fixture.IconFolder, pattern).Single();
+            for (int restart = 0; restart < 2; restart++)
+            {
+                var service = fixture.OpenService();
+                Assert.IsTrue(service.GetPresence(project) is false, "The custom desktop name must not be adopted.");
+                Assert.IsFalse(service.RetryPendingRemovals([]));
+                CollectionAssert.AreEqual(new[] { backup }, Directory.GetFiles(fixture.IconFolder, pattern));
+                CollectionAssert.AreEqual(damaged, File.ReadAllBytes(backup));
+                CollectionAssert.AreEqual(customLink, File.ReadAllBytes(customPath));
+                CollectionAssert.AreEqual(icon, File.ReadAllBytes(iconPath));
+            }
+        }
+
+        [TestMethod]
+        public void LockedInvalidJournal_IsRecoveredOnlyAfterTheReaderAllowsIt()
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("Invalid record in use");
+            fixture.Apply(project);
+            string journal = Directory.GetFiles(fixture.IconFolder, "*.links.json").Single();
+            byte[] damaged = Encoding.UTF8.GetBytes("[");
+            File.WriteAllBytes(journal, damaged);
+            byte[] link = File.ReadAllBytes(fixture.LinkPath(project.Name));
+            using (var locked = File.OpenRead(journal))
+            {
+                Assert.IsFalse(fixture.Service.TryPrepareChange(project, deleting: true));
+                CollectionAssert.AreEqual(damaged, File.ReadAllBytes(journal));
+                CollectionAssert.AreEqual(link, File.ReadAllBytes(fixture.LinkPath(project.Name)));
+                Assert.AreEqual(0, Directory.GetFiles(fixture.IconFolder, "*.corrupt").Length);
+            }
+
+            Assert.IsTrue(fixture.Service.TryPrepareChange(project, deleting: true));
+            Assert.AreEqual(WorkspaceShortcutStatus.Success, fixture.Service.RemoveWithResult(project).Status);
+            Assert.IsFalse(File.Exists(fixture.LinkPath(project.Name)));
+            CollectionAssert.AreEqual(damaged, File.ReadAllBytes(Directory.GetFiles(fixture.IconFolder, "*.corrupt").Single()));
+        }
+
+        [TestMethod]
+        [DataRow(4)]
+        [DataRow(128)]
+        [DataRow((4 * 1024 * 1024) + 1)]
+        public void UnverifiableDesktopFile_IsRetainedWithoutSchedulingCleanup(int length)
+        {
+            using var fixture = new ShortcutFixture();
+            Project project = fixture.Project("Unverifiable desktop file");
+            fixture.Apply(project);
+            string path = fixture.LinkPath(project.Name);
+            if (length <= 128)
+            {
+                File.WriteAllBytes(path, new byte[length]);
+            }
+            else
+            {
+                // A genuine link followed by additional data still exceeds the inspection limit.
+                using var oversized = File.OpenWrite(path);
+                oversized.SetLength(length);
+            }
+
+            byte[] bytes = File.ReadAllBytes(path);
+            byte[] icon = File.ReadAllBytes(fixture.IconPath(project));
+            Assert.AreEqual(WorkspaceShortcutStatus.NameConflict, fixture.Service.ApplyWithResult(project).Status);
+            Assert.AreEqual(WorkspaceShortcutStatus.Success, fixture.Service.RemoveWithResult(project).Status);
+            Assert.IsFalse(fixture.OpenService().RetryPendingRemovals([]));
+            Assert.IsFalse(fixture.OpenService().RetryPendingRemovals([]));
+            CollectionAssert.AreEqual(bytes, File.ReadAllBytes(path));
+            CollectionAssert.AreEqual(icon, File.ReadAllBytes(fixture.IconPath(project)));
+
+            // Once the file can prove ownership, an explicit sweep can finish the recorded removal.
+            File.Delete(path);
+            fixture.WriteShortcut(project);
+            Assert.IsFalse(fixture.OpenService().RetryPendingRemovals([]));
+            Assert.IsFalse(File.Exists(path));
+            Assert.IsFalse(File.Exists(fixture.IconPath(project)));
+        }
+
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void UnreadableAtOpen_RechecksOwnershipBeforeSavingAnUnrelatedEdit(bool storedChoice)

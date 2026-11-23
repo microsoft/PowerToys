@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using ManagedCommon;
 
 namespace WorkspacesEditor.Services
 {
@@ -39,32 +40,84 @@ namespace WorkspacesEditor.Services
         {
             string path = Path.Combine(iconFolder, $"{workspaceId:B}{Suffix}");
             string fallbackId = IsProjectId(projectId, workspaceId) ? projectId : workspaceId.ToString("B");
-            FileStream stream;
+            string backup = path + ".corrupt";
+            Entry entry;
             try
             {
-                stream = File.OpenRead(path);
+                using var stream = File.OpenRead(path);
+                entry = ReadEntry(stream, workspaceId);
+            }
+            catch (JsonException)
+            {
+                // An invalid record cannot establish ownership of a previous name. Preserve its
+                // bytes separately and let the service rebuild from independently verified links.
+                entry = null;
+                try
+                {
+                    string destination = HasBackup(path) ? $"{backup}.{Guid.NewGuid():N}" : backup;
+                    WorkspaceShortcutFile.MoveIf(path, destination, current =>
+                    {
+                        try
+                        {
+                            entry = ReadEntry(current, workspaceId);
+                            return false;
+                        }
+                        catch (JsonException)
+                        {
+                            return true;
+                        }
+                    });
+                    if (entry == null)
+                    {
+                        Logger.LogWarning($"Preserved an invalid workspace shortcut record as {Path.GetFileName(destination)}");
+                    }
+                }
+                catch (FileNotFoundException)
+                {
+                    // Another recovery already moved the record.
+                }
             }
             catch (Exception ex) when (ex is FileNotFoundException || (ex is DirectoryNotFoundException && !File.Exists(iconFolder)))
             {
-                return new WorkspaceShortcutJournal(path, fallbackId, new HashSet<string>(StringComparer.Ordinal), pendingRemoval: false, hasRecord: false);
+                entry = null;
             }
 
-            using (stream)
+            return new WorkspaceShortcutJournal(
+                path,
+                entry?.ProjectId ?? fallbackId,
+                new HashSet<string>(entry?.Names ?? [], StringComparer.Ordinal),
+                pendingRemoval: entry?.PendingRemoval == true,
+                hasRecord: entry != null);
+        }
+
+        private static Entry ReadEntry(Stream stream, Guid workspaceId)
+        {
+            using var document = JsonDocument.Parse(stream);
+            var root = document.RootElement;
+            Entry entry;
+            if (root.ValueKind == JsonValueKind.Array)
             {
-                using var document = JsonDocument.Parse(stream);
-                JsonElement root = document.RootElement;
-                Entry entry = root.ValueKind == JsonValueKind.Array
-                    ? new Entry { Names = root.Deserialize<string[]>(), PendingRemoval = false }
-                    : root.Deserialize<Entry>();
-                if (entry?.Names == null)
+                entry = new Entry
                 {
-                    throw new JsonException("The workspace shortcut record must include an array of names.");
-                }
-
-                string storedId = IsProjectId(entry.ProjectId, workspaceId) ? entry.ProjectId : fallbackId;
-                var names = new HashSet<string>(entry.Names.Where(IsValidName), StringComparer.Ordinal);
-                return new WorkspaceShortcutJournal(path, storedId, names, entry.PendingRemoval, hasRecord: true);
+                    Names = root.Deserialize<string[]>(),
+                    PendingRemoval = false,
+                };
             }
+            else
+            {
+                entry = root.Deserialize<Entry>();
+                if (entry == null || !IsProjectId(entry.ProjectId, workspaceId))
+                {
+                    throw new JsonException("The workspace shortcut record has an invalid workspace ID.");
+                }
+            }
+
+            if (entry.Names == null || !entry.Names.All(IsValidName))
+            {
+                throw new JsonException("The workspace shortcut record contains an invalid name list.");
+            }
+
+            return entry;
         }
 
         internal static IEnumerable<Guid> EnumerateIds(string folder)
@@ -93,6 +146,22 @@ namespace WorkspacesEditor.Services
             }
 
             return ids;
+        }
+
+        // A preserved corrupt record may have described another name still using this ICO.
+        // Only a link whose name and ownership can be checked may be repaired or removed.
+        internal bool HasUnrecoverableNames => HasBackup(_path);
+
+        private static bool HasBackup(string journalPath)
+        {
+            try
+            {
+                return (File.GetAttributes(journalPath + ".corrupt") & FileAttributes.Directory) == 0;
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                return false;
+            }
         }
 
         internal void Save(IEnumerable<string> names, bool pendingRemoval)
