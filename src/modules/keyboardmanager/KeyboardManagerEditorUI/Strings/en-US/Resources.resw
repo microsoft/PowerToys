@@ -684,6 +684,13 @@
     <value>The profile "{0}" couldn't be created. The name might not be allowed, or a profile with this name might already exist.</value>
     <comment>{0} is the profile name the user entered.</comment>
   </data>
+  <data name="ProfileDeleteFailed_Title" xml:space="preserve">
+    <value>Couldn't delete profile</value>
+  </data>
+  <data name="ProfileDeleteFailed_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be deleted, so it was kept with all of its mappings. Another Keyboard Manager window might be saving changes. Try again in a moment.</value>
+    <comment>{0} is the profile that could not be deleted.</comment>
+  </data>
   <data name="AutoSwitchBtn_Text.Text" xml:space="preserve">
     <value>Auto-switch</value>
   </data>

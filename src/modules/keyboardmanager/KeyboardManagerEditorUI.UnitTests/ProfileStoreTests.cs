@@ -3,7 +3,10 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using KeyboardManagerEditorUI.Interop;
 using KeyboardManagerEditorUI.Settings;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -27,6 +30,8 @@ namespace KeyboardManagerEditorUI.UnitTests
         private string _directory = string.Empty;
 
         private EditorSettings _originalEditorSettings = new EditorSettings();
+
+        private string EditorSettingsPath => Path.Combine(_directory, "editorSettings.json");
 
         [AssemblyCleanup]
         public static void DeleteTestRoot()
@@ -95,7 +100,7 @@ namespace KeyboardManagerEditorUI.UnitTests
 
             Assert.IsTrue(File.Exists(Path.Combine(_directory, "Work.json")));
             Assert.IsTrue(File.Exists(Path.Combine(_directory, "settings.json")));
-            CollectionAssert.Contains(new System.Collections.Generic.List<string>(ProfileManager.GetProfiles()), "Work");
+            CollectionAssert.Contains(new List<string>(ProfileManager.GetProfiles()), "Work");
         }
 
         // E5: a second creator must fail instead of truncating a file another editor just created.
@@ -159,6 +164,117 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsFalse(File.Exists(Path.Combine(_directory, "Home.json")));
         }
 
+        // #6 follow-up: when the membership cleanup cannot run (another editor holds the transaction
+        // lock), the delete must fail without having removed anything.
+        [TestMethod]
+        public void DeleteProfile_FailsAndKeepsEverything_WhenTheTransactionLockIsHeld()
+        {
+            CreateWorkWithTaggedRows();
+            string editorSettingsBefore = File.ReadAllText(EditorSettingsPath);
+            string settingsBefore = File.ReadAllText(Path.Combine(_directory, "settings.json"));
+
+            using (new FileStream(Path.Combine(_directory, "editorTransaction.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+            {
+                Assert.IsFalse(ProfileManager.DeleteProfile("Work"));
+            }
+
+            Assert.IsTrue(File.Exists(Path.Combine(_directory, "Work.json")));
+            Assert.AreEqual(editorSettingsBefore, File.ReadAllText(EditorSettingsPath));
+            Assert.AreEqual(settingsBefore, File.ReadAllText(Path.Combine(_directory, "settings.json")));
+            AssertNoLeftoverFiles();
+        }
+
+        // #6 follow-up: when the membership write fails after the profile file was moved aside, the
+        // file is put back and the delete reports failure.
+        [TestMethod]
+        public void DeleteProfile_RestoresTheProfileFile_WhenTheMembershipWriteFails()
+        {
+            CreateWorkWithTaggedRows();
+            string workContent = File.ReadAllText(Path.Combine(_directory, "Work.json"));
+            string editorSettingsBefore = File.ReadAllText(EditorSettingsPath);
+            File.SetAttributes(EditorSettingsPath, FileAttributes.ReadOnly);
+
+            Assert.IsFalse(ProfileManager.DeleteProfile("Work"));
+
+            Assert.AreEqual(workContent, File.ReadAllText(Path.Combine(_directory, "Work.json")));
+            Assert.AreEqual(editorSettingsBefore, File.ReadAllText(EditorSettingsPath));
+            CollectionAssert.Contains(new List<string>(ProfileManager.GetProfiles()), "Work");
+            Assert.AreEqual("Work", ProfileManager.GetActiveProfile());
+            AssertNoLeftoverFiles();
+        }
+
+        // #6 follow-up: when settings.json can't be updated after the membership was removed, both
+        // the membership and the file are put back.
+        [TestMethod]
+        public void DeleteProfile_RestoresMembershipAndFile_WhenSettingsJsonCannotBeWritten()
+        {
+            CreateWorkWithTaggedRows();
+            string workContent = File.ReadAllText(Path.Combine(_directory, "Work.json"));
+            string editorSettingsBefore = File.ReadAllText(EditorSettingsPath);
+            string settingsPath = Path.Combine(_directory, "settings.json");
+            string settingsBefore = File.ReadAllText(settingsPath);
+            File.SetAttributes(settingsPath, FileAttributes.ReadOnly);
+
+            Assert.IsFalse(ProfileManager.DeleteProfile("Work"));
+
+            Assert.AreEqual(workContent, File.ReadAllText(Path.Combine(_directory, "Work.json")));
+            Assert.AreEqual(settingsBefore, File.ReadAllText(settingsPath));
+            Assert.AreEqual(editorSettingsBefore, File.ReadAllText(EditorSettingsPath));
+            AssertNoLeftoverFiles();
+        }
+
+        [TestMethod]
+        public void DeleteProfile_RemovesTheFileMembershipAndRegistration()
+        {
+            CreateWorkWithTaggedRows();
+            DeviceProfileManager.Save(true, new[] { new DeviceAssignment { Device = "keyboard-1", Profile = "Work", Name = "Keyboard" } });
+            ProfileManager.RenameProfile("Work", "Office");
+
+            Assert.IsTrue(ProfileManager.DeleteProfile("Work"));
+
+            Assert.IsFalse(File.Exists(Path.Combine(_directory, "Work.json")));
+            CollectionAssert.DoesNotContain(new List<string>(ProfileManager.GetProfiles()), "Work");
+            Assert.AreEqual("default", ProfileManager.GetActiveProfile());
+            Assert.IsTrue(File.Exists(Path.Combine(_directory, "default.json")));
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+            Assert.IsFalse(SettingsManager.EditorSettings.ShortcutSettingsDictionary.ContainsKey("work-only"));
+            CollectionAssert.AreEqual(new List<string> { "default" }, SettingsManager.EditorSettings.ShortcutSettingsDictionary["shared"].Profiles);
+            Assert.AreEqual(0, DeviceProfileManager.GetSavedAssignments().Count);
+            Assert.AreEqual("Work", ProfileManager.GetDisplayName("Work"));
+            AssertNoLeftoverFiles();
+        }
+
+        // No editorSettings.json yet (nothing was ever saved in the editor): nothing to clean up, so
+        // the delete still succeeds.
+        [TestMethod]
+        public void DeleteProfile_Succeeds_WhenThereIsNoEditorSettingsFile()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+
+            Assert.IsTrue(ProfileManager.DeleteProfile("Work"));
+            Assert.IsFalse(File.Exists(Path.Combine(_directory, "Work.json")));
+            Assert.IsFalse(File.Exists(EditorSettingsPath));
+            AssertNoLeftoverFiles();
+        }
+
+        // Leftovers of an earlier, partly failed delete (or an older build) must not reappear in a
+        // new profile that reuses the id: no turned-off rows, keyboard assignments or display name.
+        [TestMethod]
+        public void CreateProfile_PurgesLeftoversOfAReusedProfileId()
+        {
+            WriteEditorSettings();
+            DeviceProfileManager.Save(true, new[] { new DeviceAssignment { Device = "keyboard-1", Profile = "Work", Name = "Keyboard" } });
+            ProfileMetadataManager.SetDisplayName("Work", "Office");
+
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+
+            Assert.IsTrue(SettingsManager.TryReloadSettings());
+            Assert.IsFalse(SettingsManager.EditorSettings.ShortcutSettingsDictionary.ContainsKey("work-only"));
+            CollectionAssert.AreEqual(new List<string> { "default" }, SettingsManager.EditorSettings.ShortcutSettingsDictionary["shared"].Profiles);
+            Assert.AreEqual(0, DeviceProfileManager.GetSavedAssignments().Count);
+            Assert.AreEqual("Work", ProfileManager.GetDisplayName("Work"));
+        }
+
         [TestMethod]
         public void CreateProfile_DoesNotOverwriteAnExistingProfileFile()
         {
@@ -167,6 +283,64 @@ namespace KeyboardManagerEditorUI.UnitTests
 
             Assert.IsFalse(ProfileManager.CreateProfile("Work", copyFromActive: false));
             Assert.AreEqual("copied mappings", File.ReadAllText(path));
+        }
+
+        // Work exists and is active; editorSettings.json has a turned-off row owned only by Work and
+        // a row shared by default and Work.
+        private void CreateWorkWithTaggedRows()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            WriteEditorSettings();
+        }
+
+        private static void WriteEditorSettings()
+        {
+            var settings = new EditorSettings();
+            AddRow(settings, "work-only", "65", isActive: false, "Work");
+            AddRow(settings, "shared", "66", isActive: true, "default", "Work");
+            Assert.IsTrue(SettingsManager.WriteSettings(settings));
+        }
+
+        private static void AddRow(EditorSettings settings, string id, string originalKeys, bool isActive, params string[] profiles)
+        {
+            var mapping = new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RemapShortcut,
+                OriginalKeys = originalKeys,
+                TargetKeys = "70",
+                TargetText = string.Empty,
+            };
+            settings.ShortcutSettingsDictionary[id] = new ShortcutSettings { Id = id, Shortcut = mapping, IsActive = isActive, Profiles = new List<string>(profiles) };
+            if (!settings.ShortcutsByOperationType.TryGetValue(mapping.OperationType, out List<string> ids))
+            {
+                ids = new List<string>();
+                settings.ShortcutsByOperationType[mapping.OperationType] = ids;
+            }
+
+            ids.Add(id);
+            foreach (string profile in profiles)
+            {
+                if (!settings.ProfileDictionary.TryGetValue(profile, out List<string> members))
+                {
+                    members = new List<string>();
+                    settings.ProfileDictionary[profile] = members;
+                }
+
+                members.Add(id);
+            }
+        }
+
+        // Only profile configs and the stores may remain: no moved-aside profile file or temp file.
+        private void AssertNoLeftoverFiles()
+        {
+            foreach (string file in Directory.EnumerateFiles(_directory))
+            {
+                string name = Path.GetFileName(file);
+                Assert.IsFalse(
+                    name.Count(c => c == '.') > 1 || name.EndsWith(".tmp", StringComparison.OrdinalIgnoreCase),
+                    $"Unexpected leftover file '{name}'.");
+            }
         }
     }
 }

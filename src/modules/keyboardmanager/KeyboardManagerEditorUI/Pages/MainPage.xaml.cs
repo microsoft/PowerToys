@@ -558,7 +558,15 @@ namespace KeyboardManagerEditorUI.Pages
                 // one; rebuild against whatever is active now and refresh the picker.
                 RebuildForActiveProfile();
                 LoadProfiles();
+                return;
             }
+
+            // Nothing was deleted: the profile and its mappings are kept. Say so, naming the
+            // profile, and bring the picker back in line with what is on disk.
+            LoadProfiles();
+            await ShowProfileErrorAsync(
+                ResourceHelper.GetString("ProfileDeleteFailed_Title"),
+                string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("ProfileDeleteFailed_Format")), selected));
         }
 
         private async void AutoSwitchBtn_Click(object sender, RoutedEventArgs e)

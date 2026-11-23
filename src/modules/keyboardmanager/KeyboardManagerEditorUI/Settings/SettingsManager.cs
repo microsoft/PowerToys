@@ -243,9 +243,43 @@ namespace KeyboardManagerEditorUI.Settings
                 // write never saw it. Reloading inside the lock makes the removal a read-modify-write
                 // against the latest on-disk state.
                 using FileStream? transactionLock = TryAcquireMappingTransactionLock();
-                if (transactionLock == null || !TryReloadSettings())
+                if (transactionLock == null)
                 {
-                    ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): could not acquire the transaction lock or reload the latest settings.");
+                    ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): could not acquire the transaction lock.");
+                    return false;
+                }
+
+                return RemoveProfileMembershipWhileLocked(profileName, out _);
+            }
+            catch (Exception exception)
+            {
+                ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): {exception.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// The part of <see cref="RemoveProfileMembership"/> that runs once the caller already holds
+        /// the transaction lock (<see cref="TryAcquireMappingTransactionLock"/>): reloads the latest
+        /// settings, drops the profile's membership and writes the result. <paramref name="previous"/>
+        /// receives the settings as they were before the change when something was written, so a
+        /// caller that fails later in the same transaction can put them back with
+        /// <see cref="RestoreSettingsWhileLocked"/>. With no editor settings file yet, nothing can
+        /// reference the profile and the call succeeds without writing.
+        /// </summary>
+        internal static bool RemoveProfileMembershipWhileLocked(string profileName, out EditorSettings? previous)
+        {
+            previous = null;
+            try
+            {
+                if (!File.Exists(SettingsFilePath))
+                {
+                    return true;
+                }
+
+                if (!TryReloadSettings())
+                {
+                    ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): could not reload the latest settings.");
                     return false;
                 }
 
@@ -257,9 +291,11 @@ namespace KeyboardManagerEditorUI.Settings
 
                 if (!WriteSettings(updatedSettings))
                 {
+                    ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): could not write the settings.");
                     return false;
                 }
 
+                previous = EditorSettings;
                 EditorSettings = updatedSettings;
                 return true;
             }
@@ -268,6 +304,22 @@ namespace KeyboardManagerEditorUI.Settings
                 ManagedCommon.Logger.LogError($"SettingsManager.RemoveProfileMembership('{profileName}'): {exception.Message}");
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Writes back settings captured by <see cref="RemoveProfileMembershipWhileLocked"/>. The
+        /// caller must still hold the transaction lock it held for that call, so nothing else can
+        /// have changed the file in between.
+        /// </summary>
+        internal static bool RestoreSettingsWhileLocked(EditorSettings previous)
+        {
+            if (!WriteSettings(previous))
+            {
+                return false;
+            }
+
+            EditorSettings = previous;
+            return true;
         }
 
         /// <summary>

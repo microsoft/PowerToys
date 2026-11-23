@@ -96,12 +96,15 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        /// <summary>Drops any stored metadata for a deleted profile id.</summary>
-        public static void Remove(string id)
+        /// <summary>
+        /// Drops any stored metadata for a deleted (or about to be re-created) profile id. Returns
+        /// false when the file could not be updated.
+        /// </summary>
+        public static bool Remove(string id)
         {
             if (string.IsNullOrEmpty(id))
             {
-                return;
+                return true;
             }
 
             try
@@ -111,10 +114,13 @@ namespace KeyboardManagerEditorUI.Settings
                 {
                     Save(file);
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError($"ProfileMetadataManager.Remove('{id}'): {ex.Message}");
+                return false;
             }
         }
 

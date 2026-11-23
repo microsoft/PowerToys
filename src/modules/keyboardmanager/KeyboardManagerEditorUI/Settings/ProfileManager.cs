@@ -284,6 +284,18 @@ namespace KeyboardManagerEditorUI.Settings
                     return false;
                 }
 
+                // A profile that used this id before may have left mapping membership, keyboard
+                // assignments or a display name behind (a delete from an older build, or one whose
+                // last cleanup steps failed). Clear them first, so the new profile starts empty
+                // instead of showing the old profile's turned-off rows or being auto-switched to.
+                if (!SettingsManager.RemoveProfileMembership(profile) ||
+                    !DeviceProfileManager.RemoveAssignmentsForProfile(profile) ||
+                    !ProfileMetadataManager.Remove(profile))
+                {
+                    Logger.LogWarning($"ProfileManager.CreateProfile: could not clear what an earlier '{profile}' left behind");
+                    return false;
+                }
+
                 // Both branches create the file exclusively, so if another editor creates the same
                 // profile between the check above and here, this one fails instead of overwriting it.
                 if (copyFromActive && File.Exists(ConfigPath(GetActiveProfile())))
@@ -313,6 +325,8 @@ namespace KeyboardManagerEditorUI.Settings
         /// Deletes a profile's config file and unregisters it, dropping the profile from the editor
         /// settings' membership as well. The built-in "default" profile cannot be deleted. If the
         /// deleted profile was active, switches to "default" and signals a reload.
+        /// Returns false when the profile could not be deleted. In that case the profile is kept:
+        /// its {name}.json, its registration and its mappings' membership are as they were.
         /// </summary>
         public static bool DeleteProfile(string profile)
         {
@@ -321,75 +335,149 @@ namespace KeyboardManagerEditorUI.Settings
                 return false;
             }
 
+            string path = ConfigPath(profile);
+            string? setAsidePath = null;
+            EditorSettings? previousEditorSettings = null;
+            bool committed = false;
+
+            // Take the editor transaction lock BEFORE touching any file. If another editor holds it,
+            // nothing has been changed yet and the delete fails cleanly. Holding it for the whole
+            // delete, rollback included, also means no other editor can change the membership in
+            // between, so a failure later on can be undone exactly.
+            FileStream? transactionLock;
             try
             {
-                // Abort before touching any other store if the config file can't be removed:
-                // otherwise we'd unregister the profile while its {name}.json stays on disk, and
-                // the directory scan in GetProfiles() would resurrect it on the next refresh.
-                if (!TryDeleteFile(ConfigPath(profile)))
-                {
-                    return false;
-                }
-
-                if (!SettingsManager.RemoveProfileMembership(profile))
-                {
-                    // The config file is already deleted, so we can't cleanly abort; log and continue
-                    // the remaining cleanup. A failure here means a concurrent editor held the lock or
-                    // the write failed, leaving stale editor membership metadata for a profile whose
-                    // file is gone — harmless to the engine, and reconciled away on the next load.
-                    Logger.LogWarning($"ProfileManager.DeleteProfile('{profile}'): editor membership cleanup did not complete.");
-                }
-
-                // Drop any keyboard->profile assignments for the deleted profile so auto-switch
-                // never targets a profile that no longer exists.
-                DeviceProfileManager.RemoveAssignmentsForProfile(profile);
-
-                // Drop the display-name metadata for the deleted id so a later profile that happens
-                // to reuse the id doesn't inherit a stale name.
-                ProfileMetadataManager.Remove(profile);
-
-                JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
-                JsonObject properties = EnsureObject(root, "properties");
-                RemoveFromConfigurationList(properties, profile);
-
-                // Decide the fallback from the state on disk RIGHT NOW, not from a snapshot taken at
-                // the top of this method: an engine auto-switch in another process can set
-                // activeConfiguration to this very profile in the window between that snapshot and
-                // here (the switch writes active=profile while its {name}.json still exists, then we
-                // delete the file). A stale "was it active when I started?" check misses that and would
-                // persist a just-deleted profile as active. Re-reading activeConfiguration here and
-                // normalizing when it names the deleted profile closes that interleaving; the mirror
-                // ordering (we delete first, the switch fires after) is refused by the engine's
-                // commit-time validation in SwitchActiveProfile. Basing the decision purely on the
-                // fresh value also avoids wrongly forcing "default" when an in-between switch moved the
-                // active profile to a different, still-valid one.
-                string? currentActive = properties["activeConfiguration"]?["value"]?.GetValue<string>();
-                bool activeIsDeleted = !string.IsNullOrEmpty(currentActive)
-                    && currentActive.Equals(profile, StringComparison.OrdinalIgnoreCase);
-                if (activeIsDeleted)
-                {
-                    // Guarantee the fallback target exists before we point activeConfiguration at it.
-                    // The engine resolves activeConfiguration by opening {name}.json and, on a failed
-                    // read, keeps its previous in-memory mappings — so falling back to "default" with
-                    // no default.json would leave the just-deleted profile's remaps live while the
-                    // editor shows an empty default.
-                    EnsureDefaultProfileExists();
-                    SetValueProperty(properties, "activeConfiguration", DefaultProfile);
-                }
-
-                WriteSettingsRoot(root);
-
-                if (activeIsDeleted)
-                {
-                    SignalEngineReload();
-                }
-
-                return true;
+                transactionLock = SettingsManager.TryAcquireMappingTransactionLock();
             }
             catch (Exception ex)
             {
                 Logger.LogError($"ProfileManager.DeleteProfile('{profile}'): {ex.Message}");
                 return false;
+            }
+
+            if (transactionLock == null)
+            {
+                Logger.LogWarning($"ProfileManager.DeleteProfile('{profile}'): could not acquire the editor transaction lock.");
+                return false;
+            }
+
+            using (transactionLock)
+            {
+                try
+                {
+                    // Move the config file aside instead of deleting it, so it can be put back if a later
+                    // step fails. The dotted name hides it from GetProfiles() (IsReservedConfigStem), and
+                    // the engine only opens {name}.json. If the file can't be moved (e.g. it is locked),
+                    // abort before touching any other store.
+                    if (File.Exists(path))
+                    {
+                        string target = Path.Combine(SettingsDirectory, $"{profile}.deleting-{Guid.NewGuid():N}.json");
+                        File.Move(path, target);
+                        setAsidePath = target;
+                    }
+
+                    if (!SettingsManager.RemoveProfileMembershipWhileLocked(profile, out previousEditorSettings))
+                    {
+                        // Keep the profile rather than leave its rows behind: with the file gone, a later
+                        // profile reusing the id would show them as its own turned-off rows.
+                        Logger.LogWarning($"ProfileManager.DeleteProfile('{profile}'): editor membership cleanup failed; keeping the profile.");
+                        RestoreSetAsideFile(setAsidePath, path);
+                        return false;
+                    }
+
+                    JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
+                    JsonObject properties = EnsureObject(root, "properties");
+                    RemoveFromConfigurationList(properties, profile);
+
+                    // Decide the fallback from the state on disk RIGHT NOW, not from a snapshot taken at
+                    // the top of this method: an engine auto-switch in another process can set
+                    // activeConfiguration to this very profile in the window between that snapshot and
+                    // here (the switch writes active=profile while its {name}.json still exists, then we
+                    // delete the file). A stale "was it active when I started?" check misses that and would
+                    // persist a just-deleted profile as active. Re-reading activeConfiguration here and
+                    // normalizing when it names the deleted profile closes that interleaving; the mirror
+                    // ordering (we delete first, the switch fires after) is refused by the engine's
+                    // commit-time validation in SwitchActiveProfile. Basing the decision purely on the
+                    // fresh value also avoids wrongly forcing "default" when an in-between switch moved the
+                    // active profile to a different, still-valid one.
+                    string? currentActive = properties["activeConfiguration"]?["value"]?.GetValue<string>();
+                    bool activeIsDeleted = !string.IsNullOrEmpty(currentActive)
+                        && currentActive.Equals(profile, StringComparison.OrdinalIgnoreCase);
+                    if (activeIsDeleted)
+                    {
+                        // Guarantee the fallback target exists before we point activeConfiguration at it.
+                        // The engine resolves activeConfiguration by opening {name}.json and, on a failed
+                        // read, keeps its previous in-memory mappings — so falling back to "default" with
+                        // no default.json would leave the just-deleted profile's remaps live while the
+                        // editor shows an empty default.
+                        EnsureDefaultProfileExists();
+                        SetValueProperty(properties, "activeConfiguration", DefaultProfile);
+                    }
+
+                    WriteSettingsRoot(root);
+                    committed = true;
+
+                    if (activeIsDeleted)
+                    {
+                        SignalEngineReload();
+                    }
+
+                    // The profile is now deleted. The remaining stores only hold leftovers that
+                    // CreateProfile purges before an id is reused, so a failure here is logged, not
+                    // reported. Dropping the assignments keeps auto-switch from targeting the deleted
+                    // profile (the engine also refuses a switch to a missing file); dropping the metadata
+                    // keeps a later profile with the same id from inheriting the old display name.
+                    bool assignmentsRemoved = DeviceProfileManager.RemoveAssignmentsForProfile(profile);
+                    bool metadataRemoved = ProfileMetadataManager.Remove(profile);
+                    if (!assignmentsRemoved || !metadataRemoved)
+                    {
+                        Logger.LogWarning($"ProfileManager.DeleteProfile('{profile}'): keyboard assignment or display-name cleanup did not complete.");
+                    }
+
+                    if (setAsidePath != null)
+                    {
+                        TryDeleteFile(setAsidePath);
+                    }
+
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogError($"ProfileManager.DeleteProfile('{profile}'): {ex.Message}");
+                    if (committed)
+                    {
+                        return true;
+                    }
+
+                    // A step before settings.json was updated failed: put the membership and the file
+                    // back so the profile stays exactly as it was. The lock is still held here.
+                    if (previousEditorSettings != null && !SettingsManager.RestoreSettingsWhileLocked(previousEditorSettings))
+                    {
+                        Logger.LogError($"ProfileManager.DeleteProfile('{profile}'): could not restore the editor membership.");
+                    }
+
+                    RestoreSetAsideFile(setAsidePath, path);
+                    return false;
+                }
+            }
+        }
+
+        // Puts a config file moved aside by DeleteProfile back under its own name. If that fails, the
+        // moved file is left in place (hidden, but not lost) and the failure is logged with its path.
+        private static void RestoreSetAsideFile(string? setAsidePath, string path)
+        {
+            if (setAsidePath == null)
+            {
+                return;
+            }
+
+            try
+            {
+                File.Move(setAsidePath, path);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError($"ProfileManager: could not move '{setAsidePath}' back to '{path}': {ex.Message}");
             }
         }
 

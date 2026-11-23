@@ -97,12 +97,14 @@ namespace KeyboardManagerEditorUI.Settings
         /// were removed, rewrites the file and signals the engine. Called when a profile is deleted
         /// so no keyboard is left mapped to a profile that no longer exists (which would otherwise
         /// make auto-switch write a nonexistent profile into activeConfiguration on the next keystroke).
+        /// Also called before a profile id is (re)created, so the new profile never inherits stale
+        /// assignments. Returns false when the file could not be updated.
         /// </summary>
-        public static void RemoveAssignmentsForProfile(string profile)
+        public static bool RemoveAssignmentsForProfile(string profile)
         {
             if (string.IsNullOrEmpty(profile))
             {
-                return;
+                return true;
             }
 
             try
@@ -111,16 +113,18 @@ namespace KeyboardManagerEditorUI.Settings
                 int removed = file.Map.RemoveAll(e => string.Equals(e.Profile, profile, StringComparison.Ordinal));
                 if (removed == 0)
                 {
-                    return;
+                    return true;
                 }
 
                 Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
                 File.WriteAllText(FilePath, JsonSerializer.Serialize(file, _jsonOptions));
                 ProfileManager.SignalEngineReload();
+                return true;
             }
             catch (Exception ex)
             {
                 Logger.LogError($"Failed to prune deviceProfiles.json for '{profile}': {ex.Message}");
+                return false;
             }
         }
 
