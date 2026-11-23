@@ -273,7 +273,7 @@ public abstract class KernelServiceBase(
                                        : async (Kernel kernel) => await ExecuteStandardTransformAsync(kernel, format),
                 functionName: format.ToString(),
                 description: requiresPrompt ? coreDescription : $"{coreDescription} Puts the result back on the clipboard.",
-                parameters: requiresPrompt ? [new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) }] : null,
+                parameters: requiresPrompt ? new KernelParameterMetadata[] { new(PromptParameterName) { Description = "Input instructions to AI", ParameterType = typeof(string) } } : null,
                 returnParameter: new() { Description = "Array of available clipboard formats after operation" });
 
         HashSet<string> usedFunctionNames = new(Enum.GetNames<PasteFormats>(), StringComparer.OrdinalIgnoreCase);

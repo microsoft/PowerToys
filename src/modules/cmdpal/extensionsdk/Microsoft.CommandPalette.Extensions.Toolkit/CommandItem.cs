@@ -88,6 +88,8 @@ public partial class CommandItem : BaseObservable, ICommandItem
             {
                 OnPropertyChanged(nameof(Title));
             }
+
+            OnCommandChanged(null);
         }
     }
 
@@ -98,6 +100,16 @@ public partial class CommandItem : BaseObservable, ICommandItem
         {
             instance.OnPropertyChanged(nameof(Title));
         }
+
+        instance.OnCommandChanged(args.PropertyName);
+    }
+
+    /// <summary>
+    /// Called when Command is replaced (with a null property name) or when the
+    /// current command raises a property change.
+    /// </summary>
+    private protected virtual void OnCommandChanged(string? propertyName)
+    {
     }
 
     public virtual IContextItem[] MoreCommands { get; set => SetProperty(ref field, value); } = [];

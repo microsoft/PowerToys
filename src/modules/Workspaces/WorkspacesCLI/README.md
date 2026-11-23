@@ -71,6 +71,11 @@ request broad access to the session host through `Process.EnableRaisingEvents`.
 The shared UI helper waits for its receiver pipe to become available before accepting the first
 warning. Startup remains bounded and honors cancellation; process existence alone is not readiness.
 
+The progress UI keeps its pipe connection open after requesting cancellation until the launcher
+replies with cancel-accepted. This prevents closing the window from interrupting the queued
+cancel request. An unavailable acknowledgement, send failure, or owner exit still ends the UI
+through a bounded timeout or the existing process-lifetime monitoring.
+
 ## Local build
 
 Run the repository essentials workflow when dependencies are missing, then from the worktree root:
@@ -142,7 +147,7 @@ reports `outcomeUnknown` and exits; it does not force-kill a thread or report su
 
 `SignatureVerificationTests`, `CliContractTests`, `WorkspaceStoreTests`, managed `WorkspaceWriteTests`, shared `PipeCallerAuthTests`
 and manifest-driven `CliShim` tests cover their respective boundaries.
-`WorkspacesLauncherUI.UnitTests` covers the existing dialog, rendered acknowledgement, Allow/Skip,
+`WorkspacesLauncherUI.UnitTests` covers the WinUI warning lifecycle, rendered acknowledgement, Allow/Skip,
 dismissal and replay rules, including confirmation-only mode without a visible status owner.
 Opt-in `CliRuntimeTests` builds `Tests\RuntimeFixture` to verify code-page restoration and the shared
 GUI/CLI session entry with synthetic snapshots and no additional Launcher host, plus inline cancellation

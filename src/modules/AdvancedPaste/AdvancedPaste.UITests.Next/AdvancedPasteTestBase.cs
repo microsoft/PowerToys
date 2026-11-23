@@ -254,9 +254,9 @@ public abstract class AdvancedPasteTestBase : UITestBase
         }
     }
 
-    protected void SelectAction(Session window, string name)
+    protected void SelectAction(Session window, string name, bool useKeyboard = false)
     {
-        Step($"Invoking '{name}'");
+        Step($"Locating '{name}'");
         var handle = new IntPtr(window.WindowHandle);
         WaitUntil(
             () => WindowControl.GetForegroundWindowHandle() == handle,
@@ -279,6 +279,43 @@ public abstract class AdvancedPasteTestBase : UITestBase
             action.ScrollIntoView();
         }
 
+        if (useKeyboard)
+        {
+            // The named UIA ListItem is a Grid in the template. The owning ListViewItem
+            // takes keyboard focus and routes Enter through the list's ItemClick handler.
+            Element? FindContainer()
+            {
+                var match = FindAction();
+                if (match is null)
+                {
+                    return null;
+                }
+
+                var selector = AdvancedPasteUi.Nodes(window.InspectAncestors(match))
+                    .Where(node => AdvancedPasteUi.Property(node, "className") == "ListViewItem")
+                    .Select(node => AdvancedPasteUi.Property(node, "selector"))
+                    .FirstOrDefault();
+                return string.IsNullOrEmpty(selector) ? null : window.FindAll<Element>(By.Slug(selector), 0).SingleOrDefault();
+            }
+
+            var container = WaitHelper.WaitForStable(
+                FindContainer,
+                candidate => candidate is not null && candidate.IsEnabled,
+                timeoutMS: 15_000,
+                shouldRetryException: AdvancedPasteUi.IsStaleElement);
+            Assert.IsTrue(container.Succeeded, $"'{name}' did not expose an enabled ListViewItem container. Last exception: {container.LastException}.");
+            var item = container.LastObservation!;
+            item.Focus();
+            Assert.IsTrue(
+                item.WaitForProperty("HasKeyboardFocus", "true", 10_000) &&
+                WindowControl.GetForegroundWindowHandle() == handle,
+                $"'{name}' did not own keyboard focus before pressing Enter. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            Step($"Activating '{name}' in the action list with Enter");
+            SendShortcut(Key.Enter);
+            return;
+        }
+
+        Step($"Invoking '{name}'");
         action.Invoke(msPostAction: 0);
     }
 

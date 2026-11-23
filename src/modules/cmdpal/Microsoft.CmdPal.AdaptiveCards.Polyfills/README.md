@@ -12,10 +12,12 @@
 
 The WinUI 3 Adaptive Cards renderer doesn't support everything in the current Adaptive Cards schema. This library fills the gaps until it does:
 
-- The `Chart.Line`, `ProgressBar`, `Badge`, and `Icon` elements.
+- The `Chart.Line`, `Chart.Gauge`, `Chart.Donut`, `Chart.Pie`, `Chart.VerticalBar`, `Chart.HorizontalBar`, `Chart.HorizontalBar.Stacked`, `ProgressBar`, `Badge`, and `Icon` elements.
 - `roundedCorners` and `showBorder` on containers, column sets, and columns.
 
-Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. Nothing here is specific to Command Palette, so each piece can move to the open-source renderer and be deleted here (see [Upstream](#upstream)).
+Cards stay standard Adaptive Cards JSON, and extensions give each element a `fallback` for other hosts. These are partial implementations, not full schema conformance; see [Bar chart limitations](#bar-chart-limitations) and [Gauge, donut, and pie chart limitations](#gauge-donut-and-pie-chart-limitations). Each piece can serve as a reference when adding support to the open-source renderer (see [Upstream](#upstream)).
+
+Extension authors: see `ExtensionTemplate\TemplateCmdPalExtension\.github\skills\add-adaptive-card-form\references\charts-and-visuals.md`, and the Samples extension's "Charts and visuals" page.
 
 ## Use it
 
@@ -41,7 +43,7 @@ Each element has two parts, joined in `AdaptiveCardPolyfills`:
 - **Model** (`*Model.cs`): parses the element JSON with `ChartJson`, leniently. Invalid values read as missing and add a warning. Models don't use WinUI, so unit tests cover them without a window. `IncrementalState` is the element's canonical JSON.
 - **Control** (`*Control.cs`): draws the model with shapes and text. It re-renders when the theme or, for width-dependent layouts, the width changes. `AdaptiveVisualControl` is the base class for controls; `LineChartControl` implements its own updates, so that it can animate a one-sample shift as a scroll.
 
-Models read only the properties that the element's page in the [Adaptive Cards element reference](https://adaptivecards.microsoft.com/) defines, with the defaults it gives, such as `showTitle` off and `showLegend` on. Don't add properties of your own: a card that relies on one renders differently in other hosts, and the schema doesn't allow it. Make rendering choices in the control instead. For example, line charts are always smooth and filled, and a line chart narrower than `LineChartLayout.CompactWidth` draws as a sparkline.
+Models read only the properties that the element's page in the [Adaptive Cards element reference](https://adaptivecards.microsoft.com/) defines, with the defaults it gives, such as `showTitle` off and `showLegend` on. Don't add properties of your own: a card that relies on one renders differently in other hosts, and the schema doesn't allow it. Make rendering choices in the control instead. For example, line charts are always smooth and filled, a line chart narrower than `LineChartLayout.CompactWidth` draws as a sparkline, and a gauge fills up to its value in the color of the segment that the value falls in, with the segments as a thin scale.
 
 `AdaptiveCardPolyfills` lists every element with its parser and control factory. `PatchableElements` lets the incremental updater move a new model into an existing control instead of rebuilding the card, so a line chart that gains one sample scrolls instead of redrawing.
 
@@ -52,7 +54,7 @@ A model whose `RendersItself` is false can't draw itself, so the element shows i
 ## Theming
 
 - `ChartPalette` resolves color names (semantic, categorical, sequential, and diverging) to a light theme and a dark theme variant.
-- `ChartTheme` adds the accent color, text and track colors, and high contrast: data takes the contrast theme's colors in turn, and line series also differ by dash pattern.
+- `ChartTheme` adds the accent color, text and track colors, and high contrast: data takes the contrast theme's colors in turn, line series also differ by dash pattern, and every third and fourth part is an outline.
 - The host config sets text sizes, spacing, and container styles. Command Palette's is in `AdaptiveCardsConfig`.
 
 ## Icons
@@ -63,12 +65,23 @@ Icon sizes map to font sizes from 12 to 48 device-independent pixels (DIPs), wit
 
 To add a name, check that it's in the Adaptive Cards icon catalog (the `IconName` type of `@microsoft/teams.cards`), and compare the two glyphs side by side before adding it. Some glyphs, such as `RAM`, are only in Segoe Fluent Icons; on Windows 10 without that font they don't draw, as with other Command Palette glyphs.
 
+## Bar chart limitations
+
+`Chart.VerticalBar` supports negative values. `Chart.HorizontalBar` and `Chart.HorizontalBar.Stacked` currently support only nonnegative values. Their parsers warn when negative data is supplied: horizontal bars clamp it to zero, and stacked bars omit negative segments from the drawing and totals. Original signed values remain in the model and accessibility summaries. A warning does not invoke the element's fallback.
+
+Supporting signed horizontal data requires a common zero baseline, bars extending to either side, and separate positive and negative totals for stacked groups. `PartToWhole` also needs an explicit policy for negative inputs before it can claim support.
+
+## Gauge, donut, and pie chart limitations
+
+`Chart.Donut` and `Chart.Pie` slices and `Chart.Gauge` segment sizes must be nonnegative. Their parsers warn when a negative value is supplied, and the value is drawn as an empty slice or segment and left out of the total. A warning does not invoke the element's fallback.
+
 ## Add an element
 
 1. Add a model that implements `IAdaptiveVisualModel` with a static `Parse(string elementJson, ICollection<string> warnings)`. Read the properties on the element's reference page, and nothing else.
 2. Add a control that derives from `AdaptiveVisualControl`, and implement `RenderCore` and `ApplyModel`. Add any text it shows to this library's `Properties\Resources.resx`, and read it with `Properties.Resources`.
 3. Add the element to the list in `AdaptiveCardPolyfills`.
 4. Add parsing tests to `Tests\Microsoft.CmdPal.AdaptiveCards.Polyfills.UnitTests`.
+5. Document the element for extension authors, and add it to the Samples extension.
 
 ## Upstream
 
@@ -76,7 +89,7 @@ Everything here is registered through the WinUI 3 renderer's public custom eleme
 
 | Piece | What upstream needs |
 |---|---|
-| `Chart.Line` | An object model class and a XAML renderer. This control and its tests are a reference implementation. |
+| The chart elements | New object model classes and XAML renderers. These controls and their tests are a reference implementation. |
 | `ProgressBar`, `Badge`, `Icon` | The object model classes from the shared C++ model in [microsoft/AdaptiveCards-Mobile](https://github.com/microsoft/AdaptiveCards-Mobile), and XAML renderers. |
 | `roundedCorners`, `showBorder` | The parsing from AdaptiveCards-Mobile's shared model, and support in the container renderers. |
 | `AdaptiveFallbackRenderer` | A fix in `XamlBuilder::RenderAsUIElement`, which renders an element's fallback but returns an empty result. |
