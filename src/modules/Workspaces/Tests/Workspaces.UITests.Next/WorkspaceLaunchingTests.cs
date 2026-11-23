@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -94,7 +93,7 @@ namespace Microsoft.Workspaces.UITests
             // Read the created .lnk through the Windows Script Host shell. StorageFile.GetFileFromPathAsync
             // refuses desktop shortcuts on some images ("Access is denied ... system or hidden"), while the
             // WScript.Shell shortcut object reads the target and arguments the Shell actually stored.
-            var (target, shortcutArguments) = ReadShortcutTargetAndArguments(shortcut);
+            var (target, shortcutArguments) = WorkspaceProfileSnapshot.ReadShortcutTargetAndArguments(shortcut);
             Assert.AreEqual(
                 Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "PowerToys.WorkspacesLauncher.exe"),
                 target,
@@ -154,8 +153,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsNull(State.Fixture.FindWindow(originalTitle), "Launch and Edit also launched the saved command line.");
             CollectionAssert.AreEqual(stored, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Launch and Edit modified the stored workspace before Save.");
             State.Fixture.OpenUnpackaged(addedTitle, TestContext);
-            Capture(capture, addedTitle);
-            Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("RevertButton")).IsEnabled, "Launch and Edit did not expose its revert action.");
+            CaptureIntoEditor(capture, recapture: true);
             SaveWorkspace();
             var saved = WorkspaceTestState.WaitForProject(
                 WorkspaceTestState.Text(project, "id"),
@@ -310,28 +308,6 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(launches[0].IsEnabled, "The workspace Launch button is unavailable.");
             Step($"Launching workspace '{name}' from its editor card.");
             launches[0].Invoke(msPostAction: 0);
-        }
-
-        private static (string Target, string Arguments) ReadShortcutTargetAndArguments(string path)
-        {
-            var shellType = Type.GetTypeFromProgID("WScript.Shell") ?? throw new InvalidOperationException("WScript.Shell is not registered.");
-            dynamic shell = Activator.CreateInstance(shellType)!;
-            try
-            {
-                dynamic link = shell.CreateShortcut(path);
-                try
-                {
-                    return ((string)link.TargetPath, (string)link.Arguments);
-                }
-                finally
-                {
-                    Marshal.FinalReleaseComObject(link);
-                }
-            }
-            finally
-            {
-                Marshal.FinalReleaseComObject(shell);
-            }
         }
 
         private Session LauncherWindow()

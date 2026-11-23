@@ -64,7 +64,9 @@ Describe 'Workspaces installer integration' {
     }
 
     if ($BuildOutput) {
-        It 'copies the window and fallback icons into the built WinUI applications directory' {
+        It 'stages the Editor PRI and both Workspaces icons in the built WinUI applications directory' {
+            $pri = Get-Item -LiteralPath (Join-Path $BuildOutput 'WinUI3Apps\PowerToys.WorkspacesEditor.pri') -ErrorAction Stop
+            & $script:assertWorkspacesEqual -Actual ($pri -is [IO.FileInfo] -and $pri.Length -gt 0) -Expected $true -Context 'Built Editor PRI'
             $source = Join-Path $script:workspacesRepoRoot 'src\modules\Workspaces\Assets\Workspaces'
             $output = Join-Path $BuildOutput 'WinUI3Apps\Assets\Workspaces'
             foreach ($iconName in @('Workspaces.ico', 'DefaultIcon.ico')) {
@@ -75,14 +77,15 @@ Describe 'Workspaces installer integration' {
         }
     }
 
-    It 'harvests the window and fallback icons beside the WinUI apps on <Platform>' -TestCases @(
+    It 'installs the Editor PRI and both Workspaces icons on <Platform>' -TestCases @(
         @{ Platform = 'x64' }
         @{ Platform = 'ARM64' }
     ) {
         param($Platform)
         $fixtureRoot = Join-Path $TestDrive $Platform
         $fixtureInstallerRoot = Join-Path $fixtureRoot 'installer\PowerToysSetupVNext'
-        $assetsOutput = Join-Path $fixtureRoot "$Platform\Release\WinUI3Apps\Assets\Workspaces"
+        $winuiOutput = Join-Path $fixtureRoot "$Platform\Release\WinUI3Apps"
+        $assetsOutput = Join-Path $winuiOutput 'Assets\Workspaces'
         New-Item -ItemType Directory -Path $fixtureInstallerRoot, $assetsOutput -Force | Out-Null
         Copy-Item -Path (Join-Path $script:workspacesInstallerRoot '*.wxs') -Destination $fixtureInstallerRoot
         foreach ($scriptName in @('generateAllFileComponents.ps1', 'InstallerMedia.ps1')) {
@@ -92,6 +95,8 @@ Describe 'Workspaces installer integration' {
         foreach ($iconName in $iconNames) {
             [IO.File]::WriteAllText((Join-Path $assetsOutput $iconName), "$Platform $iconName")
         }
+        $editorPri = 'PowerToys.WorkspacesEditor.pri'
+        [IO.File]::WriteAllText((Join-Path $winuiOutput $editorPri), "$Platform $editorPri")
 
         # Other modules have no payload in this fixture. Give the generator each requested
         # dependency's real parent path even when that directory does not exist on disk.
@@ -106,6 +111,18 @@ Describe 'Workspaces installer integration' {
         [xml]$product = Get-Content -LiteralPath (Join-Path $script:workspacesInstallerRoot 'Product.wxs') -Raw
         $namespace = New-Object System.Xml.XmlNamespaceManager($workspaces.NameTable)
         $namespace.AddNamespace('w', $workspaces.DocumentElement.NamespaceURI)
+        [xml]$winui = Get-Content -LiteralPath (Join-Path $fixtureInstallerRoot 'WinUI3Applications.wxs') -Raw
+        $winuiDirectory = $product.SelectSingleNode('//w:Directory[@Id="INSTALLFOLDER"]/w:Directory[@Name="WinUI3Apps"]', $namespace)
+        & $script:assertWorkspacesEqual -Actual ($null -ne $winuiDirectory) -Expected $true -Context 'Installed WinUI applications directory'
+        $coreGroups = @($product.SelectNodes('//w:Feature[@Id="CoreFeature"]/w:ComponentGroupRef', $namespace)).Id
+        $winuiComponents = @($winui.SelectNodes('//w:ComponentGroup', $namespace) | Where-Object {
+            $_.Id -in $coreGroups
+        } | ForEach-Object { $_.SelectNodes('w:ComponentRef', $namespace) }).Id
+        $installedPri = @($winui.SelectNodes("//w:DirectoryRef[@Id='$($winuiDirectory.Id)']/w:Component/w:File", $namespace) | Where-Object {
+            [IO.Path]::GetFileName($_.Source) -eq $editorPri -and
+                $_.GetAttribute('Name') -in @('', $editorPri) -and $_.ParentNode.Id -in $winuiComponents
+        })
+        & $script:assertWorkspacesEqual -Actual $installedPri.Count -Expected 1 -Context "$Platform Editor PRI installed with CoreFeature in WinUI3Apps"
         $featureGroup = $product.SelectSingleNode('//w:Feature[@Id="CoreFeature"]/w:ComponentGroupRef[@Id="WorkspacesComponentGroup"]', $namespace)
         & $script:assertWorkspacesEqual -Actual ($null -ne $featureGroup) -Expected $true -Context 'Installed Workspaces component group'
         $assets = $product.SelectSingleNode('//w:Directory[@Id="INSTALLFOLDER"]/w:Directory[@Name="WinUI3Apps"]/w:Directory[@Name="Assets"]', $namespace)

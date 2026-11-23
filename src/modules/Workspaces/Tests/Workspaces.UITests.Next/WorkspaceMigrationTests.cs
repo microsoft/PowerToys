@@ -19,7 +19,7 @@ namespace Microsoft.Workspaces.UITests
             OpenEditor();
             Assert.AreEqual("Workspace", Editor.Find<Element>(By.AccessibilityId(WorkspaceTestState.Text(existing, "id"))).Name);
 
-            Capture(StartCapture());
+            CapturePublishedSnapshot(StartCapture());
             var nameInput = Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox"), 15_000);
             Assert.AreEqual("Workspace 1", nameInput.Value, "The unnumbered default workspace name blocked or corrupted the next capture's name.");
             var newName = State.Prefix + "-created-after-prefix";
@@ -57,9 +57,8 @@ namespace Microsoft.Workspaces.UITests
             // so its UIA application name identifies the window we added.
             Assert.IsTrue(WindowControl.TryCloseWindow(originalWindow.WindowHandle), "The original fixture window did not close.");
             State.Fixture.OpenUnpackaged(addedTitle, TestContext);
-            var recaptured = Capture(capture, addedTitle);
-            var addedApp = AppByTitle(recaptured["applications"]!.AsArray(), addedTitle);
-            var addedRow = By.AccessibilityId(WorkspaceTestState.Text(addedApp, "application"));
+            CaptureIntoEditor(capture, recapture: true);
+            var addedRow = By.AccessibilityId(Path.GetFileNameWithoutExtension(State.Fixture.ExecutablePath));
             Assert.IsTrue(Editor.Has(addedRow, 15_000), "The editing page did not show the newly captured fixture.");
             Assert.IsFalse(Editor.Has(originalRow, 500), "The editing page still showed the original fixture before Revert.");
             Assert.AreEqual(name, Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Value, "Recapture lost the saved workspace name.");
@@ -135,7 +134,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.AreEqual(keepShortcut, saved["is-shortcut-needed"]!.GetValue<bool>());
             if (keepShortcut)
             {
-                var (_, arguments) = ReadShortcutTargetAndArguments(newPath);
+                var (_, arguments) = WorkspaceProfileSnapshot.ReadShortcutTargetAndArguments(newPath);
                 StringAssert.Contains(arguments, WorkspaceTestState.Text(project, "id"), "Renaming redirected the shortcut to another workspace.");
             }
 

@@ -53,7 +53,14 @@ namespace Microsoft.Workspaces.UITests
             KeyboardHelper.SendKeys(Key.Enter);
             AssertWorkspaceListReady();
             AssertWorkspaceNames(names);
-            Search(string.Empty);
+
+            Search("editor fixture");
+            var inputToClear = SearchInput();
+            Assert.IsTrue(inputToClear.WaitForProperty("HasKeyboardFocus", "True", 5_000), "The search input did not receive keyboard focus before clearing.");
+            WaitForSearchSuggestions(names[1], names[2]);
+            KeyboardHelper.SendChord(Key.Ctrl, Key.A);
+            KeyboardHelper.SendChord(Key.Backspace);
+            Assert.IsTrue(inputToClear.WaitForValue(string.Empty), "Clearing the query should empty the search input.");
             WaitForSearchSuggestions();
             AssertWorkspaceNames(names);
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Searching or opening a suggestion changed saved workspaces.");

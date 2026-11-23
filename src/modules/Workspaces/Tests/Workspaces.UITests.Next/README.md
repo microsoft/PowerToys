@@ -131,8 +131,11 @@ Requirements for a host run:
   The editor and launcher can acquire that lock during the tests.
 - After an interruption, the next run restores files already moved and keeps newer versions
   that would be replaced in a dated `interrupted-*` directory. This also covers a request
-  that reuses a saved GUID. Pending `original.zip` backups from earlier versions are recovered.
-  Normal cleanup also restores the tracked desktop shortcuts and generated icons.
+  that reuses a saved GUID. Pending `original.zip` backups from earlier versions are checked for
+  length and CRC-32 mismatches before any active file is replaced.
+- Existing shortcut journals stay in recovery until the original workspace list is active again.
+  The suite records its generated workspace IDs and shortcut names on disk so cleanup after an
+  interruption can check the saved journal and the actual link target before removing test files.
 
 The **unpackaged** placement/launch/cancel cases can use matching local Debug
 product builds without signing the fixture. The two **packaged** cases report

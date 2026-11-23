@@ -32,6 +32,7 @@ namespace Microsoft.Workspaces.UITests
 
         private static WorkspaceProfileSnapshot? profileLease;
         private static WorkspaceTestState? state;
+        private static WorkspaceShortcutJournalGuard? existingShortcutJournals;
         private Session? editor;
         private Session? settingsUi;
 
@@ -55,10 +56,32 @@ namespace Microsoft.Workspaces.UITests
         // window-scoped session pinned to the original HWND then fails every lookup with "Window HWND ...
         // not found". Route Settings UIA reads through a process-scoped session (-a) so navigation and
         // toggles survive the swap — winappcli re-resolves the live window on every call.
-        private Session SettingsUi => settingsUi ??= Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
+        private Session SettingsUi => settingsUi ??= OpenWorkspacesSettings();
 
         [ClassInitialize]
-        public static void ValidateDesktop(TestContext context)
+        public static void InitializeWorkspaceSuite(TestContext context)
+        {
+            ValidateDesktop(context);
+            try
+            {
+                existingShortcutJournals = WorkspaceShortcutJournalGuard.AcquireForProfile(WorkspaceTestState.DirectoryPath);
+            }
+            catch
+            {
+                profileLease!.Dispose();
+                profileLease = null;
+                throw;
+            }
+        }
+
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        public static void CleanUpWorkspaceSuite()
+        {
+            using var journals = Interlocked.Exchange(ref existingShortcutJournals, null);
+            RestoreWorkspaceState();
+        }
+
+        private static void ValidateDesktop(TestContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
             Assert.IsFalse(ElevationHelper.IsProcessElevated(Environment.ProcessId), "Run Test Explorer and the Workspaces UI tests without elevation.");
@@ -88,7 +111,6 @@ namespace Microsoft.Workspaces.UITests
             State.Fixture.CloseAll();
             State.Reset();
             settingsUi = null;
-            NavigateToSettings();
         }
 
         [TestCleanup]
@@ -123,7 +145,6 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
         public static void RestoreWorkspaceState()
         {
             var completedState = state;
@@ -161,7 +182,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(WaitForProcess("PowerToys", false), "PowerToys Runner still has access to the Workspaces profile.");
         }
 
-        private void NavigateToSettings()
+        private Session OpenWorkspacesSettings()
         {
             Step("Navigating to Workspaces Settings.");
 
@@ -203,6 +224,7 @@ namespace Microsoft.Workspaces.UITests
                      error.Message.Contains("Window HWND ", StringComparison.OrdinalIgnoreCase) &&
                      error.Message.Contains("not found or not accessible", StringComparison.OrdinalIgnoreCase)));
             Assert.IsTrue(ready.Succeeded, $"The Workspaces Settings page did not become ready. {ready.LastException?.Message}");
+            return Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
 
             static JsonElement? FindControl(string window, string automationId, string controlType)
             {
@@ -707,37 +729,39 @@ namespace Microsoft.Workspaces.UITests
             return capture;
         }
 
-        private JsonObject Capture(Session capture, string? expectedAddedTitle = null)
+        private void CaptureIntoEditor(Session capture, bool recapture = false)
         {
-            var previousId = File.Exists(WorkspaceTestState.TemporaryPath)
-                ? WorkspaceTestState.Text(WorkspaceTestState.ReadObject(WorkspaceTestState.TemporaryPath), "id")
-                : null;
             Step("Capturing the desktop.");
             capture.Find<Button>(By.AccessibilityId("SnapshotButton"), 15_000).Invoke(msPostAction: 0);
             Assert.IsTrue(Editor.Has(By.AccessibilityId("EditNameTextBox"), 45_000), "The captured workspace did not open in the editing page.");
             WindowHelper.MaximizeWindow(new IntPtr(Editor.WindowHandle));
+            if (recapture)
+            {
+                // The old draft stays visible until the editor has accepted the new capture.
+                Assert.IsTrue(
+                    Editor.Find<Button>(By.AccessibilityId("RevertButton"), 15_000).WaitForProperty("IsEnabled", "True", 30_000),
+                    "The editor did not finish applying the recaptured workspace.");
+            }
+        }
 
-            // Recapture keeps the old editing page visible while the snapshot tool runs. Require the new
-            // snapshot's identity/content, then the editor's own completed-recapture state before saving.
+        private JsonObject CapturePublishedSnapshot(Session capture)
+        {
+            var previousId = File.Exists(WorkspaceTestState.TemporaryPath)
+                ? WorkspaceTestState.Text(WorkspaceTestState.ReadObject(WorkspaceTestState.TemporaryPath), "id")
+                : null;
+            CaptureIntoEditor(capture);
             var result = WaitHelper.WaitForStable(
                 () => File.Exists(WorkspaceTestState.TemporaryPath)
                     ? WorkspaceTestState.ReadObject(WorkspaceTestState.TemporaryPath)
                     : null,
                 snapshot => snapshot is not null &&
                     WorkspaceTestState.Text(snapshot, "id") != previousId &&
-                    snapshot["applications"] is JsonArray { Count: > 0 } apps &&
-                    (expectedAddedTitle is null || apps.Any(app => WorkspaceTestState.Text(app!, "title") == expectedAddedTitle)),
+                    snapshot["applications"] is JsonArray { Count: > 0 },
                 timeoutMS: 30_000,
                 requiredConsecutiveMatches: 2,
                 pollIntervalMS: 300,
                 shouldRetryException: error => error is IOException or JsonException);
-            Assert.IsTrue(result.Succeeded, $"A fresh snapshot containing '{expectedAddedTitle ?? "the captured applications"}' was not written.");
-            if (expectedAddedTitle is not null)
-            {
-                Assert.IsTrue(
-                    Editor.Find<Button>(By.AccessibilityId("RevertButton"), 15_000).WaitForProperty("IsEnabled", "True", 30_000),
-                    "The editor did not finish applying the recaptured workspace.");
-            }
+            Assert.IsTrue(result.Succeeded, "A fresh snapshot containing the captured applications was not published.");
 
             var snapshot = result.LastObservation!;
             State.TrackProjectShortcutFiles(WorkspaceTestState.Text(snapshot, "id"));

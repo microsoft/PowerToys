@@ -29,6 +29,8 @@ namespace Microsoft.Workspaces.UITests
             var minimizedHandle = new IntPtr(minimized.WindowHandle);
             MoveToSecondaryDisplayIfAvailable(minimizedHandle);
             var expectedMonitor = WorkspacesDisplay.GetCaptureMonitor(minimizedHandle);
+            var expectedDpi = NativeMethods.GetDpiForWindow(minimizedHandle);
+            Assert.IsTrue(expectedDpi > 0, "Could not read the fixture window's DPI before minimizing it.");
             WindowHelper.MinimizeWindow(minimizedHandle);
             Assert.IsTrue(
                 WaitHelper.WaitForStable(
@@ -45,7 +47,7 @@ namespace Microsoft.Workspaces.UITests
                 State.Fixture.OpenPackaged(TestContext);
             }
 
-            var captured = Capture(capture);
+            var captured = CapturePublishedSnapshot(capture);
             var apps = captured["applications"]!.AsArray();
             var normalApp = AppByTitle(apps, firstTitle);
             var minimizedApp = AppByTitle(apps, minimizedTitle);
@@ -69,6 +71,7 @@ namespace Microsoft.Workspaces.UITests
             var monitor = captured["monitor-configuration"]!.AsArray().Single(node => node!["monitor-number"]!.GetValue<int>() == expectedMonitor.Number)!;
             Assert.AreEqual(expectedMonitor.Id, WorkspaceTestState.Text(monitor, "id"));
             Assert.AreEqual(expectedMonitor.InstanceId, WorkspaceTestState.Text(monitor, "instance-id"));
+            Assert.AreEqual(expectedDpi, monitor["dpi"]!.GetValue<uint>(), "The captured monitor DPI does not match the fixture window's DPI.");
             var bounds = expectedMonitor.Bounds;
             var recorded = monitor["monitor-rect-dpi-unaware"]!;
             var recordedBounds = (
@@ -93,8 +96,22 @@ namespace Microsoft.Workspaces.UITests
             string[] expectedTitles = includePackaged ? [firstTitle, minimizedTitle, TestAppFixture.DefaultTitle] : [firstTitle, minimizedTitle];
             foreach (var title in expectedTitles)
             {
-                var app = AppByTitle(savedApps, title);
-                Assert.IsTrue(Guid.TryParse(WorkspaceTestState.Text(app, "id"), out _), $"Saved application '{title}' needs a stable ID.");
+                AppByTitle(savedApps, title);
+            }
+
+            var savedIds = new HashSet<Guid>();
+            foreach (var app in savedApps)
+            {
+                var id = WorkspaceTestState.Text(app!, "id");
+
+                // The native window stamp accepts a hyphenated GUID with or without braces.
+                Assert.IsTrue(id.Length is 36 or 38, $"Saved application ID '{id}' must use the braced or unbraced GUID format.");
+                var format = id.Length == 38 ? "B" : "D";
+                Assert.IsTrue(
+                    Guid.TryParseExact(id, format, out var guid) && id.Equals(guid.ToString(format), StringComparison.OrdinalIgnoreCase),
+                    $"Saved application ID '{id}' must contain only hexadecimal digits in the native GUID format.");
+                Assert.AreNotEqual(Guid.Empty, guid, "A newly captured application must have a non-empty ID.");
+                Assert.IsTrue(savedIds.Add(guid), $"Multiple captured applications were saved with ID '{id}'.");
             }
         }
 
@@ -122,17 +139,39 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        public void CancellingCapturedWorkspaceDiscardsIt()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void CancellingCapturedWorkspaceDiscardsIt(bool lockExistingSnapshot)
         {
             State.Fixture.OpenUnpackaged(State.Prefix + "-capture-cancel", TestContext);
             var original = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
             OpenEditor();
-            Capture(StartCapture());
+            var capture = StartCapture();
+            byte[] otherSnapshot = """{"id":"{F76581FB-A34F-47C0-9EED-ACE65F5515DB}","applications":[]}"""u8.ToArray();
+            if (lockExistingSnapshot)
+            {
+                File.WriteAllBytes(WorkspaceTestState.TemporaryPath, otherSnapshot);
+            }
+
+            // The editor can accept its private request even when a reader prevents publishing
+            // to the shared path. Release the reader before Cancel so it cannot mask a wrong deletion.
+            using (lockExistingSnapshot ? File.OpenRead(WorkspaceTestState.TemporaryPath) : null)
+            {
+                CaptureIntoEditor(capture);
+            }
+
             Step("Discarding the newly captured workspace.");
             CancelEditing();
             AssertWorkspaceNames();
             CollectionAssert.AreEqual(original, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Cancelling the new workspace persisted it.");
-            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "The discarded temporary snapshot was not removed.");
+            if (lockExistingSnapshot)
+            {
+                CollectionAssert.AreEqual(otherSnapshot, File.ReadAllBytes(WorkspaceTestState.TemporaryPath), "Discarding the capture modified another writer's snapshot.");
+            }
+            else
+            {
+                Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "The discarded temporary snapshot was not removed.");
+            }
         }
 
         private static void MoveToSecondaryDisplayIfAvailable(IntPtr window)

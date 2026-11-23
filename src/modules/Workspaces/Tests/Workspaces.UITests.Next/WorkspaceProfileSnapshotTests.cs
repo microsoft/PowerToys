@@ -213,6 +213,41 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        public void VersionOneBackupWithCorruptReadableEntryLeavesAllLiveFilesUntouched()
+        {
+            var workspace = Path.Combine(profile, "workspaces.json");
+            var settings = Path.Combine(profile, "settings.json");
+            File.WriteAllText(workspace, "live workspace");
+            File.WriteAllText(settings, "live settings");
+            var backup = Path.Combine(Directory.CreateDirectory(RecoveryDirectory).FullName, "original.zip");
+            using (var archive = ZipFile.Open(backup, ZipArchiveMode.Create))
+            {
+                archive.CreateEntry("PowerToys.Workspaces.UITests.Next.v1");
+                using (var first = archive.CreateEntry("workspaces.json").Open())
+                {
+                    first.Write("saved workspace"u8);
+                }
+
+                using var last = archive.CreateEntry("settings.json", CompressionLevel.NoCompression).Open();
+                last.Write("saved settings payload"u8);
+            }
+
+            // Flip a byte in the stored payload, leaving its length and header CRC intact.
+            var damaged = File.ReadAllBytes(backup);
+            int offset = damaged.AsSpan().IndexOf("saved settings payload"u8);
+            Assert.IsTrue(offset >= 0, "The fixture must contain the literal payload.");
+            damaged[offset] ^= 1;
+            File.WriteAllBytes(backup, damaged);
+
+            using var next = new WorkspaceProfileSnapshot(profile);
+            Assert.Throws<InvalidDataException>(() => next.Isolate());
+            Assert.AreEqual("live workspace", File.ReadAllText(workspace));
+            Assert.AreEqual("live settings", File.ReadAllText(settings));
+            CollectionAssert.AreEqual(damaged, File.ReadAllBytes(backup));
+            Assert.HasCount(0, Directory.GetDirectories(RecoveryDirectory, "interrupted-*"));
+        }
+
+        [TestMethod]
         public void SecondSnapshotCannotClaimTheSameProfile()
         {
             var workspace = Path.Combine(profile, "workspaces.json");

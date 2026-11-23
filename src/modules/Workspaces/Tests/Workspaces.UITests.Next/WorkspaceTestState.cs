@@ -13,15 +13,14 @@ namespace Microsoft.Workspaces.UITests
 {
     internal sealed class WorkspaceTestState : IDisposable
     {
-        private readonly List<IDisposable> snapshots = [];
-        private readonly HashSet<string> trackedFiles = new(StringComparer.OrdinalIgnoreCase);
+        private readonly WorkspaceProfileSnapshot profile;
         private int applicationIndex;
         private WorkspacesDisplay.TargetDisplay? target;
 
         internal WorkspaceTestState(WorkspaceProfileSnapshot profile)
         {
+            this.profile = profile;
             profile.Isolate();
-            snapshots.Add(profile);
         }
 
         internal static string DirectoryPath => Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "Workspaces");
@@ -197,16 +196,9 @@ namespace Microsoft.Workspaces.UITests
             File.WriteAllText(WorkspacesPath, root.ToJsonString());
         }
 
-        internal void TrackShortcut(string name) => Preserve(ShortcutPath(name));
+        internal void TrackShortcut(string name) => profile.TrackDesktopShortcut(name);
 
-        internal void TrackProjectShortcutFiles(string id)
-        {
-            // The icon uses the stored ID spelling. The ownership record uses the braced GUID.
-            var workspaceId = Guid.Parse(id);
-            var directory = Path.Combine(DirectoryPath, "WorkspacesIcons");
-            Preserve(Path.Combine(directory, id + ".ico"));
-            Preserve(Path.Combine(directory, $"{workspaceId:B}.links.json"));
-        }
+        internal void TrackProjectShortcutFiles(string id) => profile.TrackProjectShortcutFiles(id);
 
         internal static string ShortcutPath(string name) => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), name + ".lnk");
 
@@ -248,28 +240,13 @@ namespace Microsoft.Workspaces.UITests
                 fixtureError = error;
             }
 
-            List<Exception> errors = [];
-            foreach (var snapshot in snapshots.AsEnumerable().Reverse())
+            try
             {
-                try
-                {
-                    snapshot.Dispose();
-                }
-                catch (Exception error) when (error is IOException or UnauthorizedAccessException)
-                {
-                    errors.Add(error);
-                }
+                profile.Dispose();
             }
-
-            snapshots.Clear();
-            if (errors.Count > 0)
+            catch (Exception error) when (fixtureError is not null)
             {
-                if (fixtureError is not null)
-                {
-                    errors.Insert(0, fixtureError);
-                }
-
-                throw new AggregateException("Could not restore the Workspaces test files.", errors);
+                throw new AggregateException("Could not clean up the Workspaces fixture and its test profile.", fixtureError, error);
             }
 
             if (fixtureError is not null)
@@ -285,13 +262,5 @@ namespace Microsoft.Workspaces.UITests
             ["width"] = width,
             ["height"] = height,
         };
-
-        private void Preserve(string path)
-        {
-            if (trackedFiles.Add(path))
-            {
-                snapshots.Add(SettingsConfigHelper.PreserveFile(path));
-            }
-        }
     }
 }

@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Models;
@@ -20,7 +21,7 @@ namespace WorkspacesEditor.UnitTests
         [TestCategory("Model.Project")]
         public void UpdateAfterLaunchAndEdit_PreservesSettingsAndCapturedLayout()
         {
-            var projectBefore = CreateProject(SavedProjectId, "My workspace", 100, 200, new ApplicationWrapper
+            var projectBefore = CreateProject(SavedProjectId, "My workspace", 100, 200, [CreateMonitor(1, 0)], new ApplicationWrapper
             {
                 Id = FirstAppId.ToString("D"),
                 Application = "Browser",
@@ -33,7 +34,7 @@ namespace WorkspacesEditor.UnitTests
             projectBefore.MoveExistingWindows = true;
             projectBefore.IsShortcutNeeded = true;
 
-            var captured = CreateProject(SnapshotProjectId, string.Empty, 300, 0, new ApplicationWrapper
+            var captured = CreateProject(SnapshotProjectId, string.Empty, 300, 0, [CreateMonitor(1, 0), CreateMonitor(2, 1920)], new ApplicationWrapper
             {
                 Id = FirstAppId.ToString("B").ToUpperInvariant(),
                 Application = "Browser",
@@ -74,6 +75,7 @@ namespace WorkspacesEditor.UnitTests
                 "My workspace",
                 100,
                 200,
+                [CreateMonitor(1, 0)],
                 CreateApp(FirstAppId.ToString("D"), "--first", true),
                 CreateApp(secondAppId.ToString("B"), "--second", false),
                 CreateApp("{1bf80372-956e-405a-86b4-3818f59bc726}", "--removed", true));
@@ -82,6 +84,7 @@ namespace WorkspacesEditor.UnitTests
                 string.Empty,
                 300,
                 0,
+                [CreateMonitor(1, 0)],
                 CreateApp(secondAppId.ToString("D").ToUpperInvariant(), string.Empty, true),
                 CreateApp(FirstAppId.ToString("B").ToUpperInvariant(), string.Empty, false),
                 CreateApp(newAppId.ToString("B"), "--captured", true));
@@ -112,10 +115,30 @@ namespace WorkspacesEditor.UnitTests
                 ApplicationPath = @"C:\Browser.exe",
                 CommandLineArguments = arguments,
                 IsElevated = isElevated,
+                Position = new ApplicationWrapper.WindowPositionWrapper { Width = 640, Height = 480 },
+                Monitor = 1,
             };
         }
 
-        private static Project CreateProject(string id, string name, long creationTime, long lastLaunchedTime, params ApplicationWrapper[] applications)
+        private static MonitorConfigurationWrapper CreateMonitor(int number, int left)
+        {
+            var bounds = new MonitorConfigurationWrapper.MonitorRectWrapper { Left = left, Width = 1920, Height = 1080 };
+            return new MonitorConfigurationWrapper
+            {
+                MonitorNumber = number,
+                Dpi = 96,
+                MonitorRectDpiAware = bounds,
+                MonitorRectDpiUnaware = bounds,
+            };
+        }
+
+        private static Project CreateProject(
+            string id,
+            string name,
+            long creationTime,
+            long lastLaunchedTime,
+            List<MonitorConfigurationWrapper> monitors,
+            params ApplicationWrapper[] applications)
         {
             return new Project(new ProjectWrapper
             {
@@ -124,7 +147,7 @@ namespace WorkspacesEditor.UnitTests
                 CreationTime = creationTime,
                 LastLaunchedTime = lastLaunchedTime,
                 Applications = [.. applications],
-                MonitorConfiguration = [],
+                MonitorConfiguration = monitors,
             });
         }
     }
