@@ -5,6 +5,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -163,6 +164,57 @@ public class WorkspaceWriteTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RecaptureRepairsDuplicateMonitorNumbersWithoutGuessingExtensionOwnership(bool identicalDevices)
+    {
+        const string monitors = "monitor-configuration";
+        var stored = JsonNode.Parse("""
+            { "id": "A", "applications": [], "monitor-configuration": [
+                { "instance-id": "left", "id": "model", "monitor-number": 1, "dpi": 96, "extension": "one" },
+                { "instance-id": "right", "id": "model", "monitor-number": 1, "dpi": 96, "extension": "two" }
+            ] }
+            """)!.AsObject();
+        if (identicalDevices)
+        {
+            stored[monitors]![1]!["instance-id"] = "left";
+        }
+
+        IOUtils.WriteWorkspaceChange(file, null, null, stored);
+        var original = stored.DeepClone().AsObject();
+        foreach (var row in original[monitors]!.AsArray())
+        {
+            row!.AsObject().Remove("extension");
+        }
+
+        var captured = original.DeepClone().AsObject();
+        var ordered = captured[monitors]!.AsArray();
+        var left = ordered[0]!;
+        ordered.RemoveAt(0);
+        ordered.Add(left);
+        ordered[0]!["monitor-number"] = 2;
+        ordered[0]!["dpi"] = 144;
+
+        IOUtils.WriteWorkspaceChange(file, stored, original, captured);
+
+        var result = JsonNode.Parse(File.ReadAllText(file))!["workspaces"]![0]![monitors]!.AsArray();
+        Assert.AreEqual(2, result.Count);
+        Assert.AreEqual(2, result[0]!["monitor-number"]!.GetValue<int>());
+        Assert.AreEqual(144, result[0]!["dpi"]!.GetValue<int>());
+        Assert.AreEqual(1, result[1]!["monitor-number"]!.GetValue<int>());
+        if (identicalDevices)
+        {
+            Assert.IsFalse(result[0]!.AsObject().ContainsKey("extension"));
+            Assert.IsFalse(result[1]!.AsObject().ContainsKey("extension"));
+        }
+        else
+        {
+            Assert.AreEqual("two", result[0]!["extension"]!.GetValue<string>());
+            Assert.AreEqual("one", result[1]!["extension"]!.GetValue<string>());
+        }
+    }
+
+    [TestMethod]
     public void SavingAnOtherwiseUnchangedRowPersistsRepairedLegacyIds()
     {
         var duplicate = Guid.NewGuid().ToString("D");
@@ -189,14 +241,29 @@ public class WorkspaceWriteTests
         IOUtils.WriteWorkspaceChange(file, null, null, current);
         var before = File.ReadAllBytes(file);
 
-        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, edited));
-        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, null));
-        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, null, null, edited));
+        Assert.ThrowsExactly<WorkspaceConflictException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, edited));
+        Assert.ThrowsExactly<WorkspaceConflictException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, null));
+        Assert.ThrowsExactly<WorkspaceConflictException>(() => IOUtils.WriteWorkspaceChange(file, null, null, edited));
         CollectionAssert.AreEqual(before, File.ReadAllBytes(file));
 
         IOUtils.WriteWorkspaceChange(file, current, current, null);
-        Assert.ThrowsExactly<IOException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, edited));
+        Assert.ThrowsExactly<WorkspaceConflictException>(() => IOUtils.WriteWorkspaceChange(file, expected, expected, edited));
         Assert.IsEmpty(JsonNode.Parse(File.ReadAllText(file))!["workspaces"]!.AsArray());
+    }
+
+    [TestMethod]
+    public void IncompatibleNativeAndEditorApplicationPathChangesAreRecoverableConflicts()
+    {
+        var original = JsonNode.Parse("""{ "id":"A", "applications":[{ "id":"app", "application-path":"old.exe" }] }""")!.AsObject();
+        var edited = original.DeepClone().AsObject();
+        var updated = original.DeepClone().AsObject();
+        updated["applications"]![0]!["application-path"] = "native.exe";
+        edited["applications"]![0]!["application-path"] = "captured.exe";
+        IOUtils.WriteWorkspaceChange(file, null, null, updated);
+        var savedBytes = File.ReadAllBytes(file);
+
+        Assert.ThrowsExactly<WorkspaceConflictException>(() => IOUtils.WriteWorkspaceChange(file, original, original, edited));
+        CollectionAssert.AreEqual(savedBytes, File.ReadAllBytes(file));
     }
 
     [TestMethod]
@@ -243,6 +310,45 @@ public class WorkspaceWriteTests
         }
 
         Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(updated), JsonNode.Parse(File.ReadAllText(file))));
+    }
+
+    [TestMethod]
+    public void ReadRetriesOnlyAfterAnExclusiveHandleBlocksTheExistingFile()
+    {
+        File.WriteAllText(file, """{ "workspaces": [ { "id":"A" } ] }""");
+        using var owner = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        int waits = 0;
+        var data = IOUtils.ReadWorkspaceFile(file, _ =>
+        {
+            waits++;
+            owner.Dispose();
+        });
+
+        Assert.AreEqual(1, waits);
+        Assert.AreEqual("A", data["workspaces"]![0]!["id"]!.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void ReadPropagatesPersistentContentionAfterTheBoundedRetry()
+    {
+        File.WriteAllText(file, """{ "workspaces":[] }""");
+        using var owner = File.Open(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        int waits = 0;
+
+        var error = Assert.ThrowsExactly<IOException>(() => IOUtils.ReadWorkspaceFile(file, _ => waits++));
+
+        Assert.AreEqual(32, error.HResult & 0xFFFF);
+        Assert.AreEqual(9, waits);
+    }
+
+    [TestMethod]
+    public void ReadDistinguishesMissingFileAndMalformedJsonWithoutWaiting()
+    {
+        int waits = 0;
+        Assert.IsNull(IOUtils.ReadWorkspaceFile(file, _ => waits++));
+        File.WriteAllText(file, "{invalid");
+        Assert.Throws<JsonException>(() => IOUtils.ReadWorkspaceFile(file, _ => waits++));
+        Assert.AreEqual(0, waits);
     }
 
     [TestMethod]

@@ -33,7 +33,7 @@ namespace WorkspacesEditor.Models
 
         public long CreationTime { get; }
 
-        public long LastLaunchedTime { get; }
+        public long LastLaunchedTime { get; private set; }
 
         public bool IsShortcutNeeded { get; set; }
 
@@ -113,8 +113,22 @@ namespace WorkspacesEditor.Models
             Applications.TrueForAll(app => !app.IsIncluded || (app.Position.Width > 0 && app.Position.Height > 0)) &&
             !HasUnresolvedMonitors;
 
-        public bool HasUnresolvedMonitors =>
-            Applications?.Exists(app => app.IsIncluded && !Monitors.Exists(monitor => monitor.MonitorNumber == app.MonitorNumber)) == true;
+        public bool HasUnresolvedMonitors
+        {
+            get
+            {
+                var numbers = new HashSet<int>();
+                foreach (MonitorSetup monitor in Monitors)
+                {
+                    if (monitor.Dpi <= 0 || !numbers.Add(monitor.MonitorNumber))
+                    {
+                        return true;
+                    }
+                }
+
+                return Applications?.Exists(app => app.IsIncluded && !numbers.Contains(app.MonitorNumber)) == true;
+            }
+        }
 
         [ObservableProperty]
         public partial bool IsRevertEnabled { get; set; }
@@ -188,6 +202,16 @@ namespace WorkspacesEditor.Models
         public void NotifyLastLaunchedChanged()
         {
             OnPropertyChanged(nameof(LastLaunched));
+        }
+
+        internal void UpdateLastLaunchedTime(long timestamp)
+        {
+            if (LastLaunchedTime != timestamp)
+            {
+                LastLaunchedTime = timestamp;
+                OnPropertyChanged(nameof(LastLaunchedTime));
+                NotifyLastLaunchedChanged();
+            }
         }
 
         public List<MonitorSetup> Monitors { get; }
@@ -382,10 +406,14 @@ namespace WorkspacesEditor.Models
             var liveRows = ReferenceEquals(beforeCapture, currentDraft) ? null :
                 ApplicationWindowMatcher.Match(beforeCapture.Applications, currentDraft.Applications)
                     .Where(pair => pair.Previous != null).ToDictionary(pair => pair.Previous, pair => pair.Updated);
+            var previousIds = beforeCapture.Applications.Select(app => app.IdWithoutBraces).ToHashSet(StringComparer.OrdinalIgnoreCase);
             var capturedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var (app, previous) in ApplicationWindowMatcher.Match(beforeCapture.Applications, Applications))
             {
-                while (string.IsNullOrEmpty(app.Id) || !capturedIds.Add(app.IdWithoutBraces))
+                // An unmatched window may carry an old stamp shared by multiple windows.
+                // Reusing it would also transfer that old row's stored metadata to this window.
+                while (string.IsNullOrEmpty(app.Id) || (previous == null && previousIds.Contains(app.IdWithoutBraces)) ||
+                    !capturedIds.Add(app.IdWithoutBraces))
                 {
                     app.Id = Guid.NewGuid().ToString("B");
                 }

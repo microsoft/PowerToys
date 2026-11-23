@@ -514,6 +514,7 @@ public class WorkspaceEditSessionTests
         edited.Applications[0].AppName = "Changed application";
         session.ViewModel.SaveOrAddProject(edited);
         Assert.IsTrue(session.ViewModel.SaveFailed);
+        Assert.IsFalse(session.ViewModel.WorkspaceSaveConflict);
         Assert.AreEqual("Original", original.Name);
         Assert.AreEqual("App", original.Applications[0].AppName);
         Assert.AreEqual(0, session.ShortcutChanges);

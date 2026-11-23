@@ -195,6 +195,21 @@
   <data name="WorkspaceSaveError.Message" xml:space="preserve">
     <value>Couldn’t save your workspace changes. Try again.</value>
   </data>
+  <data name="WorkspaceReadFailureBar.Title" xml:space="preserve">
+    <value>Couldn’t load all workspaces</value>
+  </data>
+  <data name="ReloadWorkspacesAction.Content" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="WorkspaceSaveConflictBar.Title" xml:space="preserve">
+    <value>The workspace changed on disk</value>
+  </data>
+  <data name="WorkspaceSaveConflictBar.Message" xml:space="preserve">
+    <value>Reload to use the latest saved workspaces. Reloading discards your unsaved edits.</value>
+  </data>
+  <data name="DiscardAndReloadWorkspaceAction.Content" xml:space="preserve">
+    <value>Discard changes and reload</value>
+  </data>
   <data name="ShortcutNameConflictAfterSave" xml:space="preserve">
     <value>Your workspace was saved, but its desktop shortcut name is already in use. Choose another workspace name or rename the existing desktop item, then select “Create desktop shortcut” and save again.</value>
   </data>
@@ -208,7 +223,7 @@
     <value>PowerToys couldn’t record the existing desktop shortcut, so your workspace change wasn’t saved. Try again.</value>
   </data>
   <data name="WorkspaceMissingMonitor.Message" xml:space="preserve">
-    <value>An app refers to a display missing from this workspace’s saved layout. Arrange your windows and recapture the current desktop, or remove the affected app.</value>
+    <value>The saved display layout is invalid. Arrange your windows and recapture the current desktop to update it.</value>
   </data>
   <data name="RecaptureCurrentLayoutButton.Content" xml:space="preserve">
     <value>Recapture current layout</value>

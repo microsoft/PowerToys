@@ -70,6 +70,32 @@
             Grid.Row="1"
             Margin="24,0">
             <InfoBar
+                x:Uid="WorkspaceReadFailureBar"
+                AutomationProperties.AutomationId="WorkspaceReadFailureBar"
+                IsClosable="False"
+                IsOpen="{Binding WorkspaceReadFailed, Mode=OneWay}"
+                Severity="Error">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="ReloadWorkspacesAction"
+                        AutomationProperties.AutomationId="ReloadWorkspacesAction"
+                        Command="{Binding ReloadWorkspacesCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <InfoBar
+                x:Uid="WorkspaceSaveConflictBar"
+                AutomationProperties.AutomationId="WorkspaceSaveConflictBar"
+                IsClosable="False"
+                IsOpen="{Binding WorkspaceSaveConflict, Mode=OneWay}"
+                Severity="Warning">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="DiscardAndReloadWorkspaceAction"
+                        AutomationProperties.AutomationId="DiscardAndReloadWorkspaceAction"
+                        Command="{Binding DiscardAndReloadWorkspaceCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <InfoBar
                 x:Uid="WorkspaceSaveError"
                 IsClosable="False"
                 IsOpen="{Binding SaveFailed, Mode=OneWay}"

@@ -66,7 +66,6 @@ namespace WorkspacesEditor
 
             WorkspacesEditorIO = new WorkspacesEditorIO();
             MainViewModel = new MainViewModel(WorkspacesEditorIO);
-            WorkspacesEditorIO.ParseWorkspaces(MainViewModel);
             MainViewModel.Initialize();
 
             _mainWindow = new MainWindow(_moduleActivationEvent);

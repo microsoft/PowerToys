@@ -18,6 +18,7 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Telemetry;
 using WorkspacesCsharpLibrary.Data;
+using WorkspacesCsharpLibrary.Utils;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.Messages;
 using WorkspacesEditor.Models;
@@ -73,7 +74,7 @@ namespace WorkspacesEditor.ViewModels
         {
             IEnumerable<Project> workspaces = GetFilteredWorkspaces();
             bool isEmpty = !(workspaces != null && workspaces.Any());
-            IsWorkspacesViewEmpty = isEmpty;
+            IsWorkspacesViewEmpty = isEmpty && !WorkspaceReadFailed;
 
             if (isEmpty)
             {
@@ -188,6 +189,10 @@ namespace WorkspacesEditor.ViewModels
 
         private bool CanStartEditAction => !_isDisposed && _draft != null && _launchingDraft == null && !_snapshotRequested && !IsLoading;
 
+        public bool CanSaveDraft => !WorkspaceSaveConflict && _draft?.CanBeSaved == true;
+
+        public bool CanDeleteDraft => !WorkspaceSaveConflict && _draft != null;
+
         public bool CanLaunchAndEdit => CanStartEditAction && _draft.CanBeSaved;
 
         public bool CanRecaptureCurrentLayout => CanStartEditAction && _draft.HasUnresolvedMonitors;
@@ -260,23 +265,26 @@ namespace WorkspacesEditor.ViewModels
         public void Initialize()
         {
             _workspacesEditorIO.CleanupOrphanedRequests();
+            ReloadWorkspaces();
             RetryPendingShortcutRemovals();
-            foreach (Project project in Workspaces)
-            {
-                project.InitializePreview();
-            }
 
             // Create DispatcherTimer here (requires UI thread / DispatcherQueue to exist)
             _lastUpdatedTimer = new Microsoft.UI.Xaml.DispatcherTimer();
             _lastUpdatedTimer.Interval = TimeSpan.FromSeconds(1);
             _lastUpdatedTimer.Tick += LastUpdatedTimerTick;
             _lastUpdatedTimer.Start();
-
-            RefreshWorkspacesView();
         }
 
         [ObservableProperty]
         public partial bool SaveFailed { get; set; }
+
+        [ObservableProperty]
+        public partial bool WorkspaceReadFailed { get; set; }
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(CanSaveDraft))]
+        [NotifyPropertyChangedFor(nameof(CanDeleteDraft))]
+        public partial bool WorkspaceSaveConflict { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(HasShortcutNotice))]
@@ -298,7 +306,7 @@ namespace WorkspacesEditor.ViewModels
 
         private bool TrySaveProject(Project projectToSave)
         {
-            if (_isDisposed || projectToSave == null || !ReferenceEquals(_draft, projectToSave) || !projectToSave.CanBeSaved)
+            if (_isDisposed || WorkspaceSaveConflict || projectToSave == null || !ReferenceEquals(_draft, projectToSave) || !projectToSave.CanBeSaved)
             {
                 return false;
             }
@@ -306,6 +314,7 @@ namespace WorkspacesEditor.ViewModels
             Project original = Workspaces.FirstOrDefault(project => SameId(project.Id, projectToSave.Id));
             if (original == null)
             {
+                ReportWorkspaceConflict();
                 return false;
             }
 
@@ -331,6 +340,7 @@ namespace WorkspacesEditor.ViewModels
             original.IsShortcutNeeded = saved.IsShortcutNeeded;
             original.IsPositionChangedManually = false;
             original.NeedsApplicationIdRepair = false;
+            original.UpdateLastLaunchedTime(saved.LastLaunchedTime);
             original.MoveExistingWindows = saved.MoveExistingWindows;
             original.Monitors.Clear();
             original.Monitors.AddRange(saved.Monitors);
@@ -368,6 +378,20 @@ namespace WorkspacesEditor.ViewModels
             if (_isDisposed || selectedProject == null)
             {
                 return;
+            }
+
+            if (!isNewlyCreated && _reloadAfterEdit)
+            {
+                if (!ReloadOverview())
+                {
+                    return;
+                }
+
+                selectedProject = Workspaces.FirstOrDefault(project => SameId(project.Id, selectedProject.Id));
+                if (selectedProject == null)
+                {
+                    return;
+                }
             }
 
             EndEditSession();
@@ -418,6 +442,8 @@ namespace WorkspacesEditor.ViewModels
 
         private void NotifyEditActions()
         {
+            OnPropertyChanged(nameof(CanSaveDraft));
+            OnPropertyChanged(nameof(CanDeleteDraft));
             OnPropertyChanged(nameof(CanLaunchAndEdit));
             OnPropertyChanged(nameof(CanRecaptureCurrentLayout));
         }
@@ -453,11 +479,22 @@ namespace WorkspacesEditor.ViewModels
 
         private bool TryPersist(Project original, Project replacement)
         {
+            if (WorkspaceSaveConflict)
+            {
+                return false;
+            }
+
             try
             {
                 _persistChange(original, replacement);
                 SaveFailed = false;
                 return true;
+            }
+            catch (WorkspaceConflictException ex)
+            {
+                Logger.LogError("The workspace changed before it could be saved", ex);
+                ReportWorkspaceConflict();
+                return false;
             }
             catch (Exception ex)
             {
@@ -467,12 +504,26 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
+        private void ReportWorkspaceConflict()
+        {
+            SaveFailed = false;
+            DismissShortcutNotice();
+            WorkspaceSaveConflict = true;
+            _reloadAfterEdit = true;
+        }
+
         public void AddNewProject(Project project) => TryAddNewProject(project);
 
         private bool TryAddNewProject(Project project)
         {
-            if (_isDisposed || project == null || !project.CanBeSaved || Workspaces.Any(existing => SameId(existing.Id, project.Id)))
+            if (_isDisposed || WorkspaceSaveConflict || project == null || !project.CanBeSaved)
             {
+                return false;
+            }
+
+            if (Workspaces.Any(existing => SameId(existing.Id, project.Id)))
+            {
+                ReportWorkspaceConflict();
                 return false;
             }
 
@@ -505,7 +556,7 @@ namespace WorkspacesEditor.ViewModels
 
         private bool TryDeleteProject(Project selectedProject)
         {
-            if (_isDisposed || selectedProject == null)
+            if (_isDisposed || WorkspaceSaveConflict || selectedProject == null)
             {
                 return false;
             }
@@ -553,6 +604,10 @@ namespace WorkspacesEditor.ViewModels
             {
                 SwitchToMainView();
             }
+            else if (existing == null)
+            {
+                ReportWorkspaceConflict();
+            }
         }
 
         public void SwitchToMainView()
@@ -564,6 +619,11 @@ namespace WorkspacesEditor.ViewModels
 
             EndEditSession();
             ResumeOverview();
+            ReturnToOverview();
+        }
+
+        private void ReturnToOverview()
+        {
             StrongReferenceMessenger.Default.Send(new GoBackMessage());
             _lastUpdatedTimer?.Start();
         }
@@ -584,6 +644,7 @@ namespace WorkspacesEditor.ViewModels
             _isNewProject = false;
             IsLoading = false;
             SaveFailed = false;
+            WorkspaceSaveConflict = false;
             NotifyEditActions();
             _workspacesEditorIO.DiscardPublishedCapture();
         }
@@ -595,7 +656,7 @@ namespace WorkspacesEditor.ViewModels
                 return;
             }
 
-            if (_reloadAfterEdit)
+            if (_reloadAfterEdit || WorkspaceReadFailed)
             {
                 ReloadOverview();
             }
@@ -653,17 +714,65 @@ namespace WorkspacesEditor.ViewModels
             }
         }
 
-        private void ReloadOverview()
+        private bool ReloadOverview()
         {
-            _reloadAfterEdit = false;
-            if (_workspacesEditorIO.ParseWorkspaces(this).Result)
+            WorkspaceReadFailed = !_workspacesEditorIO.ParseWorkspaces(this).Result;
+            if (!WorkspaceReadFailed)
             {
-                foreach (Project workspace in Workspaces)
-                {
-                    workspace.InitializePreview();
-                }
+                _reloadAfterEdit = false;
+            }
 
-                RefreshWorkspacesView();
+            foreach (Project workspace in Workspaces)
+            {
+                workspace.InitializePreview();
+            }
+
+            RefreshWorkspacesView();
+            return !WorkspaceReadFailed;
+        }
+
+        [RelayCommand]
+        internal void ReloadWorkspaces()
+        {
+            if (_isDisposed)
+            {
+                return;
+            }
+
+            // A retry for a read failure must never erase an active edit. The conflict
+            // action explicitly discards changes only after the replacement is available.
+            if (_draft != null)
+            {
+                WorkspaceReadFailed = !_workspacesEditorIO.CanReadWorkspaces();
+                _reloadAfterEdit = true;
+                return;
+            }
+
+            if (ReloadOverview())
+            {
+                WorkspaceSaveConflict = false;
+                SaveFailed = false;
+            }
+        }
+
+        [RelayCommand]
+        internal void DiscardAndReloadWorkspace()
+        {
+            if (_isDisposed || !WorkspaceSaveConflict || !ReloadOverview())
+            {
+                return;
+            }
+
+            string editedId = _draft?.Id;
+            EndEditSession();
+            var current = editedId == null ? null : Workspaces.FirstOrDefault(project => SameId(project.Id, editedId));
+            if (current != null)
+            {
+                OpenEditor(current, false);
+            }
+            else if (editedId != null)
+            {
+                ReturnToOverview();
             }
         }
 

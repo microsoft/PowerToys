@@ -311,14 +311,10 @@ namespace WorkspacesEditor.Models
         {
             CommandLineArguments = current.CommandLineArguments;
             IsElevated = current.IsElevated;
+            IsIncluded = current.IsIncluded;
             if (ReferenceEquals(beforeCapture, current))
             {
                 return;
-            }
-
-            if (beforeCapture.IsIncluded != current.IsIncluded)
-            {
-                IsIncluded = current.IsIncluded;
             }
 
             if (beforeCapture.PositionComboboxIndex != current.PositionComboboxIndex)

@@ -40,16 +40,26 @@ public class IOUtils
         Commit(fileName, incoming);
     }
 
-    public static JsonObject ReadWorkspaceFile(string fileName)
+    public static JsonObject ReadWorkspaceFile(string fileName) => ReadWorkspaceFile(fileName, Thread.Sleep);
+
+    internal static JsonObject ReadWorkspaceFile(string fileName, Action<int> waitForRetry)
     {
-        try
+        const int MaxAttempts = 10;
+        for (int attempt = 1; ; attempt++)
         {
-            using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            return JsonNode.Parse(stream)?.AsObject() ?? throw new InvalidDataException("Invalid saved workspace data.");
-        }
-        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
-        {
-            return null;
+            try
+            {
+                using var stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                return JsonNode.Parse(stream)?.AsObject() ?? throw new InvalidDataException("Invalid saved workspace data.");
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                return null;
+            }
+            catch (IOException ex) when (attempt < MaxAttempts && (ex.HResult & 0xFFFF) is 32 or 33)
+            {
+                waitForRetry(20);
+            }
         }
     }
 
@@ -68,7 +78,17 @@ public class IOUtils
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(fileName)));
         }
 
-        using var transaction = AcquireWorkspaceLock(fileName + ".lock");
+        FileStream workspaceLock;
+        try
+        {
+            workspaceLock = AcquireWorkspaceLock(fileName + ".lock");
+        }
+        catch (DirectoryNotFoundException) when (expected != null)
+        {
+            throw new WorkspaceConflictException("The workspace no longer exists.");
+        }
+
+        using var transaction = workspaceLock;
         var document = ReadWorkspaceFile(fileName) ?? new JsonObject { ["workspaces"] = new JsonArray() };
         var rows = document["workspaces"]?.AsArray() ?? throw new InvalidDataException("Missing saved workspace list.");
         int index = -1;
@@ -79,7 +99,7 @@ public class IOUtils
             {
                 if (index >= 0)
                 {
-                    throw new InvalidDataException("Workspace identity is ambiguous.");
+                    throw new WorkspaceConflictException("Workspace identity is ambiguous.");
                 }
 
                 index = i;
@@ -88,12 +108,12 @@ public class IOUtils
 
         if (expected == null && index >= 0)
         {
-            throw new IOException("A workspace with this ID already exists.");
+            throw new WorkspaceConflictException("A workspace with this ID already exists.");
         }
 
         if (expected != null && index < 0)
         {
-            throw new IOException("The workspace no longer exists.");
+            throw new WorkspaceConflictException("The workspace no longer exists.");
         }
 
         JsonObject saved = null;
@@ -160,7 +180,7 @@ public class IOUtils
 
         if (!JsonNode.DeepEquals(expected, comparable))
         {
-            throw new IOException("The workspace changed since it was opened.");
+            throw new WorkspaceConflictException("The workspace changed since it was opened.");
         }
     }
 
@@ -175,10 +195,16 @@ public class IOUtils
             }
         }
 
-        var apps = MergeRows("applications", expected, originalView, edited, current, CanonicalAppId);
-        if (apps.Select(CanonicalAppId).Distinct(StringComparer.OrdinalIgnoreCase).Count() != apps.Count)
+        var editedApps = edited["applications"].AsArray();
+        var apps = MergeApplications(expected, originalView, editedApps, current);
+        if (HasDuplicateApplicationIds(apps))
         {
-            throw new IOException("An application ID now belongs to more than one workspace entry.");
+            if (HasDuplicateApplicationIds(editedApps))
+            {
+                throw new InvalidDataException("The edited workspace has duplicate application IDs.");
+            }
+
+            throw new WorkspaceConflictException("An application ID now belongs to more than one workspace entry.");
         }
 
         result["applications"] = apps;
@@ -188,24 +214,25 @@ public class IOUtils
         {
             // The editor orders monitors by their desktop coordinates. Keep the original raw
             // array on ordinary saves; only a changed topology needs to merge monitor rows.
-            var storedIndices = expected[monitors].AsArray().Select((row, index) => (Number: MonitorNumber(row), Index: index))
-                .ToDictionary(item => item.Number, item => item.Index);
-            result[monitors] = MergeRows(monitors, expected, originalView, edited, current, MonitorIdentity(before, after), storedIndices);
+            result[monitors] = MergeMonitors(before, after, current[monitors].AsArray());
         }
 
         return result;
     }
 
-    private static JsonArray MergeRows(string field, JsonObject expected, JsonObject originalView, JsonObject edited, JsonObject current, Func<JsonNode, string> identity, Dictionary<int, int> storedMonitorIndices = null)
+    private static bool HasDuplicateApplicationIds(JsonArray apps) => apps.Select(CanonicalAppId).Distinct(StringComparer.OrdinalIgnoreCase).Count() != apps.Count;
+
+    private static JsonArray MergeApplications(JsonObject expected, JsonObject originalView, JsonArray editedApps, JsonObject current)
     {
+        const string field = "applications";
         var before = originalView[field].AsArray();
-        var indices = before.Select((row, index) => (Id: identity(row), Index: index))
+        var indices = before.Select((row, index) => (Id: CanonicalAppId(row), Index: index))
             .GroupBy(item => item.Id, StringComparer.OrdinalIgnoreCase)
             .ToDictionary(group => group.Key, group => new Queue<int>(group.Select(item => item.Index)), StringComparer.OrdinalIgnoreCase);
         var rows = new JsonArray();
-        foreach (var row in edited[field].AsArray())
+        foreach (var row in editedApps)
         {
-            if (!indices.TryGetValue(identity(row), out var matches) || !matches.TryDequeue(out int index))
+            if (!indices.TryGetValue(CanonicalAppId(row), out var matches) || !matches.TryDequeue(out int index))
             {
                 rows.Add(row.DeepClone());
                 continue;
@@ -213,13 +240,12 @@ public class IOUtils
 
             var updated = row.AsObject();
             var original = before[index].AsObject();
-            int storedIndex = storedMonitorIndices == null ? index : storedMonitorIndices[MonitorNumber(original)];
-            var stored = expected[field][storedIndex];
-            var latest = current[field][storedIndex].AsObject();
+            var stored = expected[field][index];
+            var latest = current[field][index].AsObject();
             var merged = latest.DeepClone().AsObject();
             foreach (var (key, value) in updated)
             {
-                if (field == "applications" && key == "id")
+                if (key == "id")
                 {
                     if (SameId(stored["id"]?.GetValue<string>(), latest["id"]?.GetValue<string>()))
                     {
@@ -231,7 +257,7 @@ public class IOUtils
                 {
                     if (!JsonNode.DeepEquals(stored[key], latest[key]) && !JsonNode.DeepEquals(value, latest[key]))
                     {
-                        throw new IOException("Application metadata changed since the workspace was opened.");
+                        throw new WorkspaceConflictException("Application metadata changed since the workspace was opened.");
                     }
 
                     CopyEditedProperty(original, updated, merged, key);
@@ -251,6 +277,42 @@ public class IOUtils
     }
 
     private static int MonitorNumber(JsonNode monitor) => monitor["monitor-number"]?.GetValue<int>() ?? 0;
+
+    private static JsonArray MergeMonitors(JsonArray before, JsonArray after, JsonArray stored)
+    {
+        var identity = MonitorIdentity(before, after);
+        var originalRows = before.ToLookup(identity, StringComparer.OrdinalIgnoreCase);
+        var storedRows = stored.ToLookup(identity, StringComparer.OrdinalIgnoreCase);
+        var capturedRows = after.ToLookup(identity, StringComparer.OrdinalIgnoreCase);
+        var result = new JsonArray();
+        foreach (var row in after)
+        {
+            string id = identity(row);
+
+            // A legacy topology can duplicate both the number and the hardware identity. Only
+            // copy opaque properties when a single device can be identified on both sides.
+            if (originalRows[id].Count() != 1 || storedRows[id].Count() != 1 || capturedRows[id].Count() != 1)
+            {
+                result.Add(row.DeepClone());
+                continue;
+            }
+
+            var original = originalRows[id].Single().AsObject();
+            var merged = storedRows[id].Single().DeepClone().AsObject();
+            var captured = row.AsObject();
+            foreach (var (key, value) in captured)
+            {
+                if (!JsonNode.DeepEquals(original[key], value))
+                {
+                    CopyEditedProperty(original, captured, merged, key);
+                }
+            }
+
+            result.Add((JsonNode)merged);
+        }
+
+        return result;
+    }
 
     private static Func<JsonNode, string> MonitorIdentity(JsonArray before, JsonArray after)
     {
@@ -321,8 +383,7 @@ public class IOUtils
             }
 
             ReplaceWorkspaceFile(temporary, fileName);
-            using var verification = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-            if (!JsonNode.DeepEquals(incoming, JsonNode.Parse(verification)))
+            if (!JsonNode.DeepEquals(incoming, ReadWorkspaceFile(fileName)))
             {
                 throw new IOException("Workspace write could not be verified.");
             }

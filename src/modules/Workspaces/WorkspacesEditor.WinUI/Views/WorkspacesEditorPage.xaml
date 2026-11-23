@@ -209,7 +209,7 @@
                     x:Uid="SaveBtn"
                     AutomationProperties.AutomationId="SaveButton"
                     Click="SaveButtonClicked"
-                    IsEnabled="{x:Bind EditedProject.CanBeSaved, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.CanSaveDraft, Mode=OneWay}"
                     Style="{ThemeResource AccentButtonStyle}">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock
@@ -229,6 +229,7 @@
                     x:Uid="DeleteWorkspaceButton"
                     AutomationProperties.AutomationId="DeleteWorkspaceButton"
                     Click="DeleteWorkspaceButtonClicked"
+                    IsEnabled="{x:Bind ViewModel.CanDeleteDraft, Mode=OneWay}"
                     Style="{StaticResource SubtleButtonStyle}">
                     <ToolTipService.ToolTip>
                         <TextBlock x:Uid="DeleteWorkspaceButtonToolTip" />

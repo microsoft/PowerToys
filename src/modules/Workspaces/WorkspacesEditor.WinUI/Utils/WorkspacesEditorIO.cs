@@ -108,20 +108,23 @@ namespace WorkspacesEditor.Utils
             }
         }
 
-        public ParsingResult ParseWorkspaces(MainViewModel mainViewModel)
+        public ParsingResult ParseWorkspaces(MainViewModel mainViewModel) => ParseWorkspaces(mainViewModel.Workspaces);
+
+        internal bool CanReadWorkspaces() => ParseWorkspaces((ICollection<Project>)null).Result;
+
+        private ParsingResult ParseWorkspaces(ICollection<Project> destination)
         {
             try
             {
                 var document = IOUtils.ReadWorkspaceFile(WorkspacePath);
                 if (document == null)
                 {
-                    mainViewModel.Workspaces.Clear();
+                    destination?.Clear();
                     return new ParsingResult(true);
                 }
 
                 var rows = document["workspaces"]?.AsArray() ?? throw new InvalidDataException("Missing workspace list.");
-                SetWorkspaces(mainViewModel, rows);
-                return new ParsingResult(true);
+                return new ParsingResult(SetWorkspaces(destination, rows));
             }
             catch (Exception e)
             {
@@ -300,6 +303,11 @@ namespace WorkspacesEditor.Utils
 
             // The launcher may have assigned IDs or refreshed installation metadata while this
             // draft was open. Carry the committed values into the canonical editor model too.
+            if (saved["last-launched-time"] is JsonValue history && history.TryGetValue<long>(out long timestamp))
+            {
+                replacement.UpdateLastLaunchedTime(timestamp);
+            }
+
             var apps = saved["applications"].AsArray();
             for (int i = 0; i < replacement.Applications.Count; i++)
             {
@@ -413,23 +421,38 @@ namespace WorkspacesEditor.Utils
             return wrapper;
         }
 
-        private void SetWorkspaces(MainViewModel mainViewModel, JsonArray rows)
+        private bool SetWorkspaces(ICollection<Project> destination, JsonArray rows)
         {
             var parser = new ProjectData();
-            mainViewModel.Workspaces.Clear();
+            var projects = new List<Project>(rows.Count);
+            bool complete = true;
             foreach (var row in rows)
             {
                 try
                 {
                     Project newProject = Project.FromStorage(parser.Deserialize(row.ToJsonString()));
                     _storedRows.Add(newProject, row.AsObject());
-                    mainViewModel.Workspaces.Add(newProject);
+                    projects.Add(newProject);
                 }
                 catch (Exception e)
                 {
                     Logger.LogError("Exception while adding a saved workspace.", e);
+                    complete = false;
                 }
             }
+
+            // Preserve the last usable snapshot on a failed refresh. At startup, rows we can
+            // decode are still useful, but callers must present the partial-read warning.
+            if (destination != null && (complete || destination.Count == 0))
+            {
+                destination.Clear();
+                foreach (var project in projects)
+                {
+                    destination.Add(project);
+                }
+            }
+
+            return complete;
         }
     }
 }

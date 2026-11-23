@@ -4,11 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Models;
 using WorkspacesEditor.Telemetry;
+using WorkspacesEditor.Utils;
 
 namespace WorkspacesEditor.UnitTests
 {
@@ -113,7 +115,9 @@ namespace WorkspacesEditor.UnitTests
         }
 
         [TestMethod]
-        public void Recapture_DoesNotGuessWhichDifferentlyTitledWindowShouldRunAsAdmin()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void Recapture_AssignsNewIdentitiesWhenNoWindowMatchesThePreviousStamp(bool reverse)
         {
             Project previous = TestHelpers.CreateProject("Work", 0, 0, "Editor");
             var original = previous.Applications[0];
@@ -129,10 +133,41 @@ namespace WorkspacesEditor.UnitTests
                 app.Position = new Application.WindowPosition { X = i + 100, Width = 1000, Height = 500 };
             }
 
+            if (reverse)
+            {
+                captured.Applications.Reverse();
+            }
+
             captured.UpdateAfterLaunchAndEdit(previous);
 
             Assert.IsTrue(captured.Applications.TrueForAll(app => !app.IsElevated && string.IsNullOrEmpty(app.CommandLineArguments)));
+            Guid reservedId = Guid.Parse(original.Id);
+            foreach (var window in captured.Applications)
+            {
+                Assert.IsTrue(Guid.TryParseExact(window.Id, "B", out var id));
+                Assert.AreNotEqual(reservedId, id);
+            }
+
             Assert.AreNotEqual(captured.Applications[0].Id, captured.Applications[1].Id);
+            var telemetry = EditEventFactory.Create(previous, captured);
+            Assert.AreEqual(2, telemetry.AppsAdded);
+            Assert.AreEqual(1, telemetry.AppsRemoved);
+            Assert.AreEqual(0, telemetry.AdminRemoved);
+            Assert.AreEqual(0, telemetry.CliRemoved);
+        }
+
+        [TestMethod]
+        public void Recapture_NewGroupWithNoPreviousStampKeepsItsFirstIdentity()
+        {
+            Project previous = TestHelpers.CreateProject("Work", 0, 0, "Old app");
+            Project captured = TestHelpers.CreateProject("Capture", 0, 0, "Browser", "Browser");
+            string newStamp = captured.Applications[0].Id;
+            captured.Applications[1].Id = newStamp;
+
+            captured.UpdateAfterLaunchAndEdit(previous);
+
+            Assert.AreEqual(newStamp, captured.Applications[0].Id);
+            Assert.AreNotEqual(newStamp, captured.Applications[1].Id);
         }
 
         [TestMethod]
@@ -219,6 +254,37 @@ namespace WorkspacesEditor.UnitTests
         }
 
         [TestMethod]
+        public void Recapture_AlreadyExcludedWindowStaysOutOfTheSavedWorkspace()
+        {
+            Project original = TestHelpers.CreateProject("Work", 0, 0, "Editor", "Browser");
+            Project draft = new(original);
+            draft.Applications[1].IsIncluded = false;
+            var launched = new Project(draft);
+            Project capture = TestHelpers.CreateProject("Capture", 0, 0, "Editor", "Browser");
+            capture.Applications[0].Id = draft.Applications[0].Id;
+            capture.Applications[1].Id = draft.Applications[1].Id;
+            capture.UpdateAfterLaunchAndEdit(launched, draft);
+            Assert.AreEqual(2, capture.Applications.Count);
+            Assert.IsFalse(capture.Applications[1].IsIncluded);
+
+            var folder = Directory.CreateTempSubdirectory("PowerToys-Recapture-");
+            try
+            {
+                var storage = new WorkspacesEditorIO(Path.Combine(folder.FullName, "temp-workspaces.json"), (_, _) => throw new InvalidOperationException());
+                storage.SerializeWorkspaces([original]);
+                var saved = new Project(capture, original);
+                saved.Applications.RemoveAll(app => !app.IsIncluded);
+                storage.PersistChange(original, saved);
+                var persisted = new WorkspacesData().Read(Path.Combine(folder.FullName, "workspaces.json")).Workspaces.Single();
+                Assert.AreEqual(draft.Applications[0].Id, persisted.Applications.Single().Id);
+            }
+            finally
+            {
+                folder.Delete(recursive: true);
+            }
+        }
+
+        [TestMethod]
         public void RevertCopy_RetainsTitleHistoryAndManualAdjustments()
         {
             Project draft = TestHelpers.CreateProject("Draft", 123, 456, "Browser");
@@ -281,6 +347,39 @@ namespace WorkspacesEditor.UnitTests
             Assert.IsTrue(draft.CanBeSaved);
             CollectionAssert.Contains(notifications, nameof(Project.HasUnresolvedMonitors));
             CollectionAssert.Contains(notifications, nameof(Project.CanBeSaved));
+        }
+
+        [TestMethod]
+        [DataRow(0, 96)]
+        [DataRow(1, 0)]
+        [DataRow(1, -1)]
+        public void InvalidMonitorTableRequiresRecaptureEvenWhenAllIncludedAppsHaveAMonitor(int number, int dpi)
+        {
+            Project draft = TestHelpers.CreateProject("Work", 0, 0, "Editor");
+            draft.Monitors.Add(new MonitorSetup("Second", "Second", number, dpi, default, default));
+
+            Assert.IsTrue(draft.HasUnresolvedMonitors);
+            Assert.IsFalse(draft.CanBeSaved);
+
+            Project captured = TestHelpers.CreateProject("Capture", 0, 0, "Editor");
+            captured.Applications[0].Id = draft.Applications[0].Id;
+            captured.UpdateAfterLaunchAndEdit(draft);
+            Assert.IsFalse(captured.HasUnresolvedMonitors);
+            Assert.IsTrue(captured.CanBeSaved);
+        }
+
+        [TestMethod]
+        public void CommittedLaunchTimeNotifiesSortAndDisplayOnce()
+        {
+            Project project = TestHelpers.CreateProject("Work", 0, 12, "Editor");
+            var notifications = new List<string>();
+            project.PropertyChanged += (_, e) => notifications.Add(e.PropertyName);
+
+            project.UpdateLastLaunchedTime(42);
+            project.UpdateLastLaunchedTime(42);
+
+            Assert.AreEqual(42L, project.LastLaunchedTime);
+            CollectionAssert.AreEqual(new List<string> { nameof(Project.LastLaunchedTime), nameof(Project.LastLaunched) }, notifications);
         }
 
         [TestMethod]
