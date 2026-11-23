@@ -186,6 +186,11 @@ extends:
             parameters:
               pool:
                 name: SHINE-INT-L
+                demands:
+                  - ${{ if eq(parameters.useVSPreview, true) }}:
+                    - ImageOverride -equals SHINE-VS18-Latest-Preview
+                  - ${{ else }}:
+                    - ImageOverride -equals SHINE-VS18-Latest
                 os: windows
               official: true
               codeSign: true

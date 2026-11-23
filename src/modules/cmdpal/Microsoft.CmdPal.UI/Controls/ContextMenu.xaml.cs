@@ -30,8 +30,6 @@ public sealed partial class ContextMenu : UserControl
     private static readonly CompositeFormat _contextMenuBackFormat =
         CompositeFormat.Parse(ResourceLoaderInstance.GetString("ContextMenu_Back"));
 
-    public event EventHandler? CloseRequested;
-
     public event EventHandler? BackRequested;
 
     /// <summary>
@@ -42,6 +40,13 @@ public sealed partial class ContextMenu : UserControl
     private int _openVersion;
     private Func<bool>? _isFlyoutOpen;
 
+    /// <summary>
+    /// Like Windows menus, a newly shown menu level keeps its selection unhighlighted until the user changes it.
+    /// The list has no selection meanwhile; <see cref="_hiddenSelection"/> is the item Enter still invokes.
+    /// </summary>
+    private bool _isSelectionHidden;
+    private IContextItemViewModel? _hiddenSelection;
+
     public bool ShowFilterBox
     {
         get => (bool)GetValue(ShowFilterBoxProperty);
@@ -50,13 +55,18 @@ public sealed partial class ContextMenu : UserControl
 
     public ContextMenuViewModel ViewModel { get; }
 
+    public event EventHandler? CloseRequested;
+
+    private IContextItemViewModel? SelectedMenuItem =>
+        _isSelectionHidden ? _hiddenSelection : CommandsDropdown.SelectedItem as IContextItemViewModel;
+
     public ContextMenu()
     {
         this.InitializeComponent();
 
         ViewModel = new ContextMenuViewModel(App.Current.Services.GetRequiredService<IFuzzyMatcherProvider>());
         ViewModel.PropertyChanged += ViewModel_PropertyChanged;
-    }
+     }
 
     internal void PrepareForOpen(IContextMenuContext context, ContextMenuFilterLocation filterLocation, CommandContextItemViewModel? initialSubmenu = null)
     {
@@ -74,7 +84,7 @@ public sealed partial class ContextMenu : UserControl
         {
             _isPreparing = false;
         }
-    }
+   }
 
     /// <summary>
     /// Fires a single consolidated Narrator announcement.
@@ -97,7 +107,7 @@ public sealed partial class ContextMenu : UserControl
 
             var menuItems = ViewModel.FilteredItems.Where(item => item is not SeparatorViewModel).ToList();
             var itemCount = menuItems.Count;
-            var selectedItem = CommandsDropdown.SelectedItem as IContextItemViewModel;
+            var selectedItem = SelectedMenuItem;
             var selectedName = GetItemTitle(selectedItem);
             var selectedIndex = selectedItem is not null ? menuItems.IndexOf(selectedItem) + 1 : 0;
 
@@ -133,6 +143,11 @@ public sealed partial class ContextMenu : UserControl
 
     private void HandleShortcut(KeyRoutedEventArgs e)
     {
+        if (e.Handled)
+        {
+            return;
+        }
+
         var mods = KeyModifiers.GetCurrent();
         var chord = KeyChordHelpers.FromModifiers(mods.Ctrl, mods.Alt, mods.Shift, mods.Win, e.Key, 0);
         var item = ViewModel.FindKeybinding(chord);
@@ -173,16 +188,17 @@ public sealed partial class ContextMenu : UserControl
             return;
         }
 
-        if (ContextFilterBox.FocusState != FocusState.Unfocused && e.Key is VirtualKey.Up or VirtualKey.Down)
+        // Tab focus enters the list at its selected row, which must be the row Enter invokes.
+        if (e.Key == VirtualKey.Tab)
+        {
+            ShowSelection();
+        }
+
+        // Until the list shows a selection, move from the hidden one rather than from the list's focused row.
+        if ((_isSelectionHidden || ContextFilterBox.FocusState != FocusState.Unfocused) && e.Key is VirtualKey.Up or VirtualKey.Down)
         {
             e.Handled = true;
-            CommandsDropdown.SelectedIndex = ViewModel.GetNextItemIndex(CommandsDropdown.SelectedIndex, e.Key == VirtualKey.Down);
-            if (CommandsDropdown.SelectedItem is { } selected)
-            {
-                (CommandsDropdown.ContainerFromItem(selected) as UIElement)?.StartBringIntoView();
-            }
-
-            AnnounceSelectedItem();
+            MoveSelection(e.Key == VirtualKey.Down);
             return;
         }
 
@@ -199,7 +215,37 @@ public sealed partial class ContextMenu : UserControl
         else if (!e.Handled && e.Key == VirtualKey.Enter)
         {
             e.Handled = true;
-            InvokeItem(CommandsDropdown.SelectedItem);
+            InvokeItem(SelectedMenuItem);
+        }
+    }
+
+    private void MoveSelection(bool forward)
+    {
+        var index = SelectedMenuItem is { } current ? ViewModel.FilteredItems.IndexOf(current) : -1;
+        _isSelectionHidden = false;
+        _hiddenSelection = null;
+        CommandsDropdown.SelectedIndex = ViewModel.GetNextItemIndex(index, forward);
+        if (CommandsDropdown.SelectedItem is { } selected && CommandsDropdown.ContainerFromItem(selected) is Control container)
+        {
+            container.StartBringIntoView();
+
+            // A focused list handles later keys natively from its focused row.
+            if (ContextFilterBox.FocusState == FocusState.Unfocused)
+            {
+                container.Focus(FocusState.Keyboard);
+            }
+        }
+
+        AnnounceSelectedItem();
+    }
+
+    private void CommandsDropdown_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        // A selection made by the list itself, such as Home or End, is highlighted and becomes the Enter target.
+        if (_isSelectionHidden && CommandsDropdown.SelectedItem is not null)
+        {
+            _isSelectionHidden = false;
+            _hiddenSelection = null;
         }
     }
 
@@ -225,6 +271,12 @@ public sealed partial class ContextMenu : UserControl
         ViewModel?.SetSearchText(ContextFilterBox.Text);
 
         ResetSelection();
+
+        // Filtering changes which item Enter invokes, so show it.
+        if (!string.IsNullOrEmpty(ContextFilterBox.Text))
+        {
+            ShowSelection();
+        }
     }
 
     private void NavigateBackOrClose()
@@ -249,7 +301,7 @@ public sealed partial class ContextMenu : UserControl
 
     private void AnnounceSelectedItem()
     {
-        if (_isPreparing || !_hasAnnouncedOpen || _isFlyoutOpen?.Invoke() != true || CommandsDropdown.SelectedItem is not IContextItemViewModel selected)
+        if (_isPreparing || !_hasAnnouncedOpen || _isFlyoutOpen?.Invoke() != true || SelectedMenuItem is not { } selected)
         {
             return;
         }
@@ -297,10 +349,36 @@ public sealed partial class ContextMenu : UserControl
     private void ResetSelection(bool force = false)
     {
         // Selection must stay current independently of deferred Narrator announcements.
-        if (force || CommandsDropdown.SelectedIndex == -1)
+        if (!force && SelectedMenuItem is { } current && ViewModel.FilteredItems.Contains(current))
         {
-            CommandsDropdown.SelectedItem = (IContextItemViewModel?)ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().FirstOrDefault()
-                ?? ViewModel.FilteredItems.OfType<ContextMenuBackItemViewModel>().FirstOrDefault();
+            return;
+        }
+
+        var item = (IContextItemViewModel?)ViewModel.FilteredItems.OfType<CommandContextItemViewModel>().FirstOrDefault()
+            ?? ViewModel.FilteredItems.OfType<ContextMenuBackItemViewModel>().FirstOrDefault();
+        if (force)
+        {
+            _isSelectionHidden = true;
+            CommandsDropdown.SelectedItem = null;
+        }
+
+        if (_isSelectionHidden)
+        {
+            _hiddenSelection = item;
+        }
+        else
+        {
+            CommandsDropdown.SelectedItem = item;
+        }
+    }
+
+    private void ShowSelection()
+    {
+        if (_isSelectionHidden)
+        {
+            _isSelectionHidden = false;
+            CommandsDropdown.SelectedItem = _hiddenSelection;
+            _hiddenSelection = null;
         }
     }
 

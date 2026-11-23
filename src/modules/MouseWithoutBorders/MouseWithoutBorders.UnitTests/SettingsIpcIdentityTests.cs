@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Class;
+using StreamJsonRpc;
 
 namespace MouseWithoutBorders.UnitTests;
 
@@ -93,6 +95,91 @@ public sealed class SettingsIpcIdentityTests
                 identity.User!,
                 null!,
                 CancellationToken.None));
+    }
+
+    [TestMethod]
+    public void DisconnectedPipeDoesNotInspectCallerCapability()
+    {
+        using var server = new NamedPipeServerStream($"PowerToys.MWB.v2.UnitTest.{Guid.NewGuid():N}");
+        var inspectionCalled = false;
+
+        var canManageServicePairing = Program.CanVerifiedClientManageServicePairing(
+            server,
+            _ =>
+            {
+                inspectionCalled = true;
+                return true;
+            });
+
+        Assert.IsFalse(canManageServicePairing);
+        Assert.IsFalse(inspectionCalled);
+    }
+
+    [TestMethod]
+    public void CurrentProcessPrimaryTokenSupportsMembershipCheckWithoutElevation()
+    {
+        var token = Program.OpenProcessTokenForMembership(unchecked((uint)Environment.ProcessId));
+
+        using (token)
+        using (var identity = new WindowsIdentity(token.DangerousGetHandle()))
+        using (var currentIdentity = WindowsIdentity.GetCurrent())
+        {
+            Assert.AreEqual(TokenImpersonationLevel.None, identity.ImpersonationLevel);
+
+            // Do not gate membership on elevation: unelevated test runs must also exercise token duplication.
+            var isAdministrator = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+
+            Assert.AreEqual(
+                new WindowsPrincipal(currentIdentity).IsInRole(WindowsBuiltInRole.Administrator),
+                isAdministrator);
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(5)]
+    [DataRow(87)]
+    public async Task CallerInspectionFailurePreservesVerifiedRpc(int errorCode)
+    {
+        var pipeName = $"PowerToys.MWB.v2.UnitTest.{Environment.ProcessId}.{Guid.NewGuid():N}";
+        using var identity = WindowsIdentity.GetCurrent();
+        using var cancellation = new CancellationTokenSource();
+        var executablePath = GetCurrentExecutablePath();
+        var sessionId = Process.GetCurrentProcess().SessionId;
+        var inspectedProcessId = new TaskCompletionSource<uint>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        IpcChannel<TestRpcTarget>.StartVerifiedIpcServer(
+            pipeName,
+            identity.User!,
+            stream => VerifyCurrentProcessClient(stream, Path.GetFileName(executablePath), identity.User!.Value, sessionId),
+            stream =>
+            {
+                var canManageServicePairing = Program.CanVerifiedClientManageServicePairing(
+                    stream,
+                    processId =>
+                    {
+                        inspectedProcessId.TrySetResult(processId);
+                        throw new Win32Exception(errorCode);
+                    });
+                Assert.IsFalse(canManageServicePairing);
+                return new TestRpcTarget();
+            },
+            cancellation.Token);
+
+        try
+        {
+            await using var client = await ConnectVerifiedClientAsync(
+                pipeName,
+                Path.GetFileName(executablePath),
+                identity.User!.Value,
+                sessionId);
+            using var rpc = JsonRpc.Attach(client);
+            await rpc.InvokeAsync(nameof(TestRpcTarget.Ping)).WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.AreEqual(unchecked((uint)Environment.ProcessId), await inspectedProcessId.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+        }
+        finally
+        {
+            cancellation.Cancel();
+        }
     }
 
     [TestMethod]

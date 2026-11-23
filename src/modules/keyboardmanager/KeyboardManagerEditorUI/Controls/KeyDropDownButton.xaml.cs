@@ -8,6 +8,8 @@ using System.Linq;
 using KeyboardManagerEditorUI.Interop;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 
 namespace KeyboardManagerEditorUI.Controls
 {
@@ -21,7 +23,7 @@ namespace KeyboardManagerEditorUI.Controls
                 nameof(KeyName),
                 typeof(string),
                 typeof(KeyDropDownButton),
-                new PropertyMetadata(string.Empty));
+                new PropertyMetadata(string.Empty, OnKeyNameChanged));
 
         public static readonly DependencyProperty IsShortcutProperty =
             DependencyProperty.Register(
@@ -60,6 +62,11 @@ namespace KeyboardManagerEditorUI.Controls
         public KeyDropDownButton()
         {
             this.InitializeComponent();
+            UpdateKeyVisualState();
+
+            // handledEventsToo: the AutoSuggestBox may already have marked Escape as handled.
+            KeySearchBox.AddHandler(UIElement.KeyDownEvent, new KeyEventHandler(KeySearchBox_KeyDown), handledEventsToo: true);
+
             this.Loaded += (_, _) =>
             {
                 if (UseAccentStyle)
@@ -69,14 +76,34 @@ namespace KeyboardManagerEditorUI.Controls
             };
         }
 
+        private static void OnKeyNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+        {
+            if (d is KeyDropDownButton dropDownButton)
+            {
+                dropDownButton.UpdateKeyVisualState();
+            }
+        }
+
+        private void UpdateKeyVisualState()
+        {
+            bool hasKeyName = !string.IsNullOrEmpty(KeyName);
+            KeyNamePresenter.Visibility = hasKeyName ? Visibility.Visible : Visibility.Collapsed;
+            SelectKeyPlaceholderText.Visibility = hasKeyName ? Visibility.Collapsed : Visibility.Visible;
+        }
+
         private void KeyListView_ItemClick(object sender, ItemClickEventArgs e)
         {
             if (e.ClickedItem is KeyNameEntry entry)
             {
-                string oldKeyName = KeyName;
-                KeyListFlyout.Hide();
-                KeyChanged?.Invoke(this, new KeyChangedEventArgs(oldKeyName, entry.DisplayName, entry.KeyCode));
+                SelectEntry(entry);
             }
+        }
+
+        private void SelectEntry(KeyNameEntry entry)
+        {
+            string oldKeyName = KeyName;
+            KeyListFlyout.Hide();
+            KeyChanged?.Invoke(this, new KeyChangedEventArgs(oldKeyName, entry.DisplayName, entry.KeyCode));
         }
 
         private void KeyListFlyout_Closed(object sender, object e)
@@ -87,7 +114,40 @@ namespace KeyboardManagerEditorUI.Controls
 
         private void KeyListFlyout_Opening(object sender, object e)
         {
+            KeySearchBox.Text = string.Empty;
             RefreshKeyList();
+        }
+
+        private void KeyListFlyout_Opened(object sender, object e)
+        {
+            KeySearchBox.Focus(FocusState.Programmatic);
+        }
+
+        private void KeySearchBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            RefreshKeyList();
+        }
+
+        private void KeySearchBox_QuerySubmitted(AutoSuggestBox sender, AutoSuggestBoxQuerySubmittedEventArgs args)
+        {
+            // TextChanged is deferred, so ItemsSource may still reflect an older query; filter the submitted text directly.
+            var filtered = FilterKeyList(args.QueryText);
+            if (filtered.Count > 0)
+            {
+                SelectEntry(filtered[0]);
+            }
+        }
+
+        private void KeySearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            // AutoSuggestBox consumes Escape for its own suggestion popup, which this picker doesn't use.
+            // Key events consumed by an IME arrive as VirtualKey.ProcessKey, so they never reach this branch.
+            if (e.Key == VirtualKey.Escape && !KeySearchBox.IsSuggestionListOpen)
+            {
+                e.Handled = true;
+                KeyListFlyout.Hide();
+                KeyButton.Focus(FocusState.Keyboard);
+            }
         }
 
         private List<KeyNameEntry> GetKeyList()
@@ -117,12 +177,21 @@ namespace KeyboardManagerEditorUI.Controls
             return cached;
         }
 
+        private List<KeyNameEntry> FilterKeyList(string? query)
+        {
+            query = query?.Trim() ?? string.Empty;
+            return query.Length == 0
+                ? GetKeyList()
+                : GetKeyList().Where(k => k.DisplayName.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         internal void RefreshKeyList()
         {
-            KeyListView.ItemsSource = GetKeyList();
+            var list = FilterKeyList(KeySearchBox.Text);
+            KeyListView.ItemsSource = list;
+            NoResultsText.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
 
             // Scroll to current key if possible
-            var list = GetKeyList();
             for (int i = 0; i < list.Count; i++)
             {
                 if (string.Equals(list[i].DisplayName, KeyName, StringComparison.Ordinal))

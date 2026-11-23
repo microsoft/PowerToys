@@ -23,6 +23,7 @@ public sealed partial class IncrementalAdaptiveCardUpdater
     private readonly Border _host;
     private readonly AdaptiveElementParserRegistration _elementParsers;
     private readonly AdaptiveActionParserRegistration _actionParsers;
+    private readonly IncrementalPatchableElements? _patchableElements;
     private readonly LatestWinsUpdateQueue<UpdateRequest> _updates;
     private Action? _cancelActiveUpdate;
     private IncrementalTreeSnapshot? _snapshot;
@@ -31,7 +32,8 @@ public sealed partial class IncrementalAdaptiveCardUpdater
         AdaptiveCardRenderer renderer,
         Border host,
         AdaptiveElementParserRegistration? elementParsers = null,
-        AdaptiveActionParserRegistration? actionParsers = null)
+        AdaptiveActionParserRegistration? actionParsers = null,
+        IncrementalPatchableElements? patchableElements = null)
     {
         ArgumentNullException.ThrowIfNull(renderer);
         ArgumentNullException.ThrowIfNull(host);
@@ -40,6 +42,7 @@ public sealed partial class IncrementalAdaptiveCardUpdater
         _host = host;
         _elementParsers = elementParsers ?? new AdaptiveElementParserRegistration();
         _actionParsers = actionParsers ?? new AdaptiveActionParserRegistration();
+        _patchableElements = patchableElements;
         _updates = new LatestWinsUpdateQueue<UpdateRequest>(ProcessUpdateAsync);
     }
 
@@ -122,7 +125,8 @@ public sealed partial class IncrementalAdaptiveCardUpdater
 
         var candidateSnapshot = TryCreateSnapshot(() => IncrementalAdaptiveCardVisualTree.Build(
             candidateRoot,
-            card.ToJson().Stringify()));
+            card.ToJson().Stringify(),
+            _patchableElements));
 
         if (RenderedCard?.FrameworkElement is FrameworkElement currentRoot
             && _snapshot is not null
@@ -134,6 +138,7 @@ public sealed partial class IncrementalAdaptiveCardUpdater
                     currentRoot,
                     candidateRoot,
                     plan,
+                    _patchableElements,
                     cancellationToken))
             {
                 _snapshot = candidateSnapshot;

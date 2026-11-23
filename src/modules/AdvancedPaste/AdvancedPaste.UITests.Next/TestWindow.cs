@@ -10,8 +10,16 @@ namespace AdvancedPaste.UITests;
 
 internal static class TestWindow
 {
-    internal static void SelectFromTaskbar(IntPtr handle, string processName)
+    internal static void EnsureForeground(IntPtr handle, string processName)
     {
+        // The target HWND is already known. Avoid introducing a taskbar activation race
+        // when Windows can activate it directly, including restoring a minimized fixture.
+        if (WindowControl.WaitForForeground(handle, timeoutMS: 2_000, requiredConsecutiveMatches: 2))
+        {
+            return;
+        }
+
+        Console.WriteLine($"Direct foreground transfer to {processName} did not settle; trying its taskbar button. Actual: {WindowControl.GetForegroundWindowInfo()}.");
         if (WindowControl.GetForegroundWindowHandle() != handle)
         {
             var taskbar = WindowsFinder.WaitForWindow(window => window.ClassName == "Shell_TrayWnd");
@@ -20,6 +28,7 @@ internal static class TestWindow
             Assert.HasCount(1, buttons, $"{processName} did not expose one taskbar button.");
             var button = buttons[0];
             Assert.IsTrue(button.Width > 0 && button.Height > 0 && !button.IsOffscreen, $"{processName}'s taskbar button is not visible.");
+
             // Clicking an already-active taskbar button minimizes it. Recheck after UIA lookup.
             if (WindowControl.GetForegroundWindowHandle() != handle)
             {
@@ -27,13 +36,8 @@ internal static class TestWindow
             }
         }
 
-        var selected = WaitHelper.WaitForStable(
-            WindowControl.GetForegroundWindowHandle,
-            foreground => foreground == handle,
-            timeoutMS: 10_000,
-            requiredConsecutiveMatches: 2);
         Assert.IsTrue(
-            selected.Succeeded,
-            $"{processName} did not become foreground after taskbar selection. Actual: {WindowControl.GetForegroundWindowInfo()}.");
+            WindowControl.WaitForForeground(handle, timeoutMS: 10_000, requiredConsecutiveMatches: 2),
+            $"{processName} did not become foreground after direct activation and taskbar selection. Actual: {WindowControl.GetForegroundWindowInfo()}.");
     }
 }

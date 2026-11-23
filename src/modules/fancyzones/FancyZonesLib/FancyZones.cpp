@@ -44,7 +44,7 @@ enum class DisplayChangeType
     Initialization
 };
 
-constexpr wchar_t* DisplayChangeTypeName (const DisplayChangeType type){
+constexpr const wchar_t* DisplayChangeTypeName (const DisplayChangeType type){
     switch (type)
     {
     case DisplayChangeType::WorkArea:

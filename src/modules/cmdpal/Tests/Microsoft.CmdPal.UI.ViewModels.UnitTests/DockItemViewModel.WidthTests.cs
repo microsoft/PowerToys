@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -34,7 +35,7 @@ public partial class DockItemViewModelTests
         var item = new WidthTestItem { Title = "Clock" };
         item.GetProperties()[WellKnownExtensionAttributes.DockMinLabelWidth] = "10ch";
         item.GetProperties()[WellKnownExtensionAttributes.DockMaxLabelWidth] = 80d;
-        var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
+        var viewModel = new DockItemViewModel(new(item), new WeakReference<IPageContext>(context), true, true, DefaultContextMenuFactory.Instance);
         try
         {
             viewModel.InitializeProperties();
@@ -47,6 +48,7 @@ public partial class DockItemViewModelTests
         {
             viewModel.SafeCleanup();
             scheduler.ExecuteAllAvailable();
+            GC.KeepAlive(context);
         }
     }
 
@@ -56,7 +58,7 @@ public partial class DockItemViewModelTests
         var scheduler = new QueuedTaskScheduler();
         var context = new TestPageContext(scheduler);
         var item = new WidthTestItem { Title = "Clock" };
-        var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
+        var viewModel = new DockItemViewModel(new(item), new WeakReference<IPageContext>(context), true, true, DefaultContextMenuFactory.Instance);
         try
         {
             viewModel.InitializeProperties();
@@ -85,6 +87,7 @@ public partial class DockItemViewModelTests
         {
             viewModel.SafeCleanup();
             scheduler.ExecuteAllAvailable();
+            GC.KeepAlive(context);
         }
     }
 
@@ -97,7 +100,7 @@ public partial class DockItemViewModelTests
         var scheduler = new QueuedTaskScheduler();
         var context = new TestPageContext(scheduler);
         var item = new ListItem { Title = "CPU" };
-        var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
+        var viewModel = new DockItemViewModel(new(item), new WeakReference<IPageContext>(context), true, true, DefaultContextMenuFactory.Instance);
         try
         {
             viewModel.InitializeProperties();
@@ -120,6 +123,7 @@ public partial class DockItemViewModelTests
         {
             viewModel.SafeCleanup();
             scheduler.ExecuteAllAvailable();
+            GC.KeepAlive(context);
         }
     }
 
@@ -130,7 +134,7 @@ public partial class DockItemViewModelTests
         var context = new TestPageContext(scheduler);
         var item = new WidthTestItem { Title = "Clock" }
             .SetDockLabelReservations(DockLabelWidth.Sample("100%"), DockLabelWidth.Sample("Arbeitsspeicher"));
-        var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
+        var viewModel = new DockItemViewModel(new(item), new WeakReference<IPageContext>(context), true, true, DefaultContextMenuFactory.Instance);
         try
         {
             viewModel.InitializeProperties();
@@ -155,6 +159,7 @@ public partial class DockItemViewModelTests
         {
             viewModel.SafeCleanup();
             scheduler.ExecuteAllAvailable();
+            GC.KeepAlive(context);
         }
     }
 
@@ -164,7 +169,7 @@ public partial class DockItemViewModelTests
         var scheduler = new QueuedTaskScheduler();
         var context = new TestPageContext(scheduler);
         var item = new WidthTestItem { Title = "1.00%" };
-        var viewModel = new DockItemViewModel(new(item), new(context), true, true, DefaultContextMenuFactory.Instance);
+        var viewModel = new DockItemViewModel(new(item), new WeakReference<IPageContext>(context), true, true, DefaultContextMenuFactory.Instance);
         try
         {
             viewModel.InitializeProperties();
@@ -199,6 +204,7 @@ public partial class DockItemViewModelTests
         {
             viewModel.SafeCleanup();
             scheduler.ExecuteAllAvailable();
+            GC.KeepAlive(context);
         }
     }
 

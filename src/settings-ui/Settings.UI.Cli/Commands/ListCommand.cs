@@ -4,7 +4,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using System.Linq;
 using ManagedCommon;
 using PowerToys.Settings.Cli.Helpers;
@@ -16,15 +15,11 @@ internal sealed class ListCommand : Command
     public ListCommand()
         : base("list", "List all PowerToys modules and their enabled status")
     {
-        var jsonOpt = new Option<bool>("--json", "Format output as JSON");
+        var jsonOpt = new Option<bool>("--json") { Description = "Format output as JSON" };
 
-        AddOption(jsonOpt);
+        Options.Add(jsonOpt);
 
-        this.SetHandler(context =>
-        {
-            var json = context.ParseResult.GetValueForOption(jsonOpt);
-            context.ExitCode = Execute(json);
-        });
+        SetAction(parseResult => Execute(parseResult.GetValue(jsonOpt)));
     }
 
     private static int Execute(bool json)

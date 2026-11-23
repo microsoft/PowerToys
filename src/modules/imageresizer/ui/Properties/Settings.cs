@@ -226,6 +226,9 @@ namespace ImageResizer.Properties
         [JsonIgnore]
         public IEnumerable<ResizeSize> AllSizes { get; set; }
 
+        // Derived from FileName; ignored so serialization doesn't compute and cache it.
+        // Older settings.json files may still contain it, and it's skipped on read.
+        [JsonIgnore]
         public string FileNameFormat
             => _fileNameFormat
                 ?? (_fileNameFormat = FileName
@@ -542,6 +545,7 @@ namespace ImageResizer.Properties
                 }
 
                 _fileName = value;
+                _fileNameFormat = null;
                 NotifyPropertyChanged();
             }
         }

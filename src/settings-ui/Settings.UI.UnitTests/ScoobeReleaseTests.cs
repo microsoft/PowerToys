@@ -5,7 +5,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 using Microsoft.PowerToys.Settings.UI;
 using Microsoft.PowerToys.Settings.UI.Helpers;
@@ -43,6 +46,77 @@ namespace Settings.UI.UnitTests
 
             Assert.IsNotNull(settings);
             Assert.IsTrue(settings.IsPrerelease);
+        }
+
+        [TestMethod]
+        public async Task RetryWithBackoffRetriesTransientFailuresWithExponentialDelay()
+        {
+            int calls = 0;
+            var delays = new List<TimeSpan>();
+
+            var result = await ScoobeWindow.RetryWithBackoffAsync(
+                () =>
+                {
+                    calls++;
+                    return calls < ScoobeWindow.MaxReleaseFetchAttempts
+                        ? throw new HttpRequestException("network down")
+                        : Task.FromResult("ok");
+                },
+                delay =>
+                {
+                    delays.Add(delay);
+                    return Task.CompletedTask;
+                });
+
+            Assert.AreEqual("ok", result);
+            Assert.AreEqual(ScoobeWindow.MaxReleaseFetchAttempts, calls);
+            CollectionAssert.AreEqual(
+                new[] { ScoobeWindow.InitialReleaseFetchRetryDelay, ScoobeWindow.InitialReleaseFetchRetryDelay * 2 },
+                delays);
+        }
+
+        [TestMethod]
+        public async Task RetryWithBackoffGivesUpAfterMaxAttempts()
+        {
+            int calls = 0;
+
+            await Assert.ThrowsExceptionAsync<HttpRequestException>(() => ScoobeWindow.RetryWithBackoffAsync<string>(
+                () =>
+                {
+                    calls++;
+                    throw new HttpRequestException("server error", null, HttpStatusCode.ServiceUnavailable);
+                },
+                _ => Task.CompletedTask));
+
+            Assert.AreEqual(ScoobeWindow.MaxReleaseFetchAttempts, calls);
+        }
+
+        [TestMethod]
+        public async Task RetryWithBackoffDoesNotRetryRateLimit()
+        {
+            int calls = 0;
+
+            await Assert.ThrowsExceptionAsync<HttpRequestException>(() => ScoobeWindow.RetryWithBackoffAsync<string>(
+                () =>
+                {
+                    calls++;
+                    throw new HttpRequestException("rate limited", null, HttpStatusCode.Forbidden);
+                },
+                _ => Task.CompletedTask));
+
+            Assert.AreEqual(1, calls);
+        }
+
+        [TestMethod]
+        public void IsTransientFetchFailureClassifiesErrors()
+        {
+            Assert.IsTrue(ScoobeWindow.IsTransientFetchFailure(new HttpRequestException("dns")));
+            Assert.IsTrue(ScoobeWindow.IsTransientFetchFailure(new TaskCanceledException()));
+            Assert.IsTrue(ScoobeWindow.IsTransientFetchFailure(new HttpRequestException(null, null, HttpStatusCode.BadGateway)));
+            Assert.IsTrue(ScoobeWindow.IsTransientFetchFailure(new HttpRequestException(null, null, HttpStatusCode.TooManyRequests)));
+            Assert.IsFalse(ScoobeWindow.IsTransientFetchFailure(new HttpRequestException(null, null, HttpStatusCode.Forbidden)));
+            Assert.IsFalse(ScoobeWindow.IsTransientFetchFailure(new HttpRequestException(null, null, HttpStatusCode.NotFound)));
+            Assert.IsFalse(ScoobeWindow.IsTransientFetchFailure(new JsonException()));
         }
 
         private static IList<PowerToysReleaseInfo> CreateReleases()

@@ -39,9 +39,36 @@ Consumers do not create snapshots or use the diff engine.
 Pass custom parser registrations to the constructor when the card uses custom elements or actions.
 Configure custom element renderers on the supplied `AdaptiveCardRenderer`.
 
+## Patch custom elements
+
+A custom element can update in place instead of replacing the card.
+Register its type with `IncrementalPatchableElements` and pass the registration to the constructor:
+
+```csharp
+var patchable = new IncrementalPatchableElements().Add("Chart.Line");
+var updater = new IncrementalAdaptiveCardUpdater(renderer, cardHost, elementParsers, actionParsers, patchable);
+```
+
+The control that the element renderer returns must implement `IIncrementalAdaptiveElementControl`.
+`IncrementalState` reports a deterministic snapshot of the patchable state.
+The updater calls `CanApplyIncrementalState` for every changed control before it changes anything, then calls `ApplyIncrementalState`.
+
+For a registered element, every property is patchable except the host-owned ones: `type`, `id`, `isVisible`, `separator`, `spacing`, `height`, `fallback`, `requires`, `targetWidth`, `horizontalAlignment`, `grid.area`, `lang`, and the action properties.
+The renderer applies those, so changing them replaces the complete card.
+A registered element draws itself, so its `fallback` is ignored unless the element has `requires`.
+Register only element types that the renderer renders.
+If the element renderer draws the fallback of some elements instead, as Command Palette does for an `Icon` whose name has no glyph, register the type with a check:
+
+```csharp
+patchable.Add("Icon", element => HasGlyph(element));
+```
+
+Elements that fail the check aren't patchable, and a change to their fallback's own text or image replaces the complete card.
+The updater treats the control as a leaf, so the control can change its internal tree freely.
+
 ## Update behavior
 
-The updater changes plain text and inline SVG images in place.
+The updater changes plain text, inline SVG images, and registered custom elements in place.
 Markdown, actions, inputs, layout changes, and unknown changes replace the complete card.
 
 Changed SVG images load concurrently.

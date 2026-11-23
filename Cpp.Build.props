@@ -28,6 +28,14 @@
     </ProjectConfiguration>
   </ItemGroup>
 
+  <!--
+    C++ projects that use NuGet PackageReference set RestoreProjectStyle to PackageReference in their Globals.
+    It can't be set here for every project yet: projects that still use packages.config must keep that style.
+  -->
+  <PropertyGroup Condition="'$(RestoreProjectStyle)' == 'PackageReference'">
+    <NuGetTargetMoniker>native,Version=v0.0</NuGetTargetMoniker>
+  </PropertyGroup>
+
   <!-- Run code analysis locally and in PR CI, but not on release CI -->
   <PropertyGroup Condition="'$(SkipCppCodeAnalysis)' == ''">
     <RunCodeAnalysis>true</RunCodeAnalysis>
@@ -61,7 +69,7 @@
       <DisableSpecificWarnings>4679;4706;4874;5271;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <DisableAnalyzeExternal >true</DisableAnalyzeExternal>
       <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
-      <ConformanceMode>false</ConformanceMode>
+      <ConformanceMode>true</ConformanceMode>
       <TreatWarningAsError>true</TreatWarningAsError>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <BuildStlModules>false</BuildStlModules>

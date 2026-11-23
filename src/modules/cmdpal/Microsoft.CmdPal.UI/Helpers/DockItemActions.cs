@@ -75,11 +75,23 @@ internal static class DockItemActions
         // Primary dock activation has no sender and must not become a home-page history entry.
         var message = item is CommandContextItemViewModel contextItem
             ? new PerformCommandMessage(contextItem)
-            : new PerformCommandMessage(item.Command.Model);
+            : new PerformCommandMessage(item.Command);
+        message = WithOwnerContext(message, item);
         message.WithAnimation = false;
         message.TransientPage = true;
         return message;
     }
+
+    /// <summary>
+    /// Attaches the item's owning provider when the message has no source page, so the
+    /// command runs with that provider's host and context instead of the palette's.
+    /// </summary>
+    public static PerformCommandMessage WithOwnerContext(PerformCommandMessage message, CommandItemViewModel item) =>
+        message.Context is null &&
+        item.PageContext.TryGetTarget(out var pageContext) &&
+        SourceContext.FromPageContext(pageContext) is { } source
+            ? message with { Context = source }
+            : message;
 
     /// <summary>
     /// Returns whether the cached command is set and needs the palette rather than direct invocation.

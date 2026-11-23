@@ -15,7 +15,13 @@ namespace Microsoft.CmdPal.AdaptiveCards.IncrementalRendering;
 /// </summary>
 internal static class AdaptiveCardSemanticFingerprint
 {
-    public static string Create(string cardJson) => Create(cardJson, null, null);
+    private const string TextPlaceholder = "$cmdpal.incremental.text$";
+    private const string InlineSvgPlaceholder = "$cmdpal.incremental.inline-svg$";
+    private const string CustomElementPlaceholder = "$cmdpal.incremental.custom$";
+    private const string UnusedFallbackPlaceholder = "$cmdpal.incremental.unused-fallback$";
+    private const string FallbackProperty = "fallback";
+
+    public static string Create(string cardJson) => Create(cardJson, null, null, null, null);
 
     public static string Create(
         string cardJson,
@@ -27,28 +33,50 @@ internal static class AdaptiveCardSemanticFingerprint
         return Create(
             cardJson,
             (int?)mappedTextBlockCount,
-            (int?)mappedInlineSvgImageCount);
+            (int?)mappedInlineSvgImageCount,
+            null,
+            null);
+    }
+
+    public static string Create(
+        string cardJson,
+        int mappedTextBlockCount,
+        int mappedInlineSvgImageCount,
+        int mappedCustomElementCount,
+        IncrementalPatchableElements? patchableElements)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(mappedTextBlockCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(mappedInlineSvgImageCount);
+        ArgumentOutOfRangeException.ThrowIfNegative(mappedCustomElementCount);
+        return Create(
+            cardJson,
+            (int?)mappedTextBlockCount,
+            (int?)mappedInlineSvgImageCount,
+            mappedCustomElementCount,
+            patchableElements);
     }
 
     private static string Create(
         string cardJson,
         int? mappedTextBlockCount,
-        int? mappedInlineSvgImageCount)
+        int? mappedInlineSvgImageCount,
+        int? mappedCustomElementCount,
+        IncrementalPatchableElements? patchableElements)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(cardJson);
 
         using var document = JsonDocument.Parse(cardJson);
-        var authoredTextBlockCount = 0;
-        var authoredInlineSvgImageCount = 0;
-        CountPatchableElements(
-            document.RootElement,
-            ref authoredTextBlockCount,
-            ref authoredInlineSvgImageCount);
+        PatchableCounts authored = default;
+        CountPatchableElements(document.RootElement, patchableElements, ref authored);
 
-        var allowTextPatch = mappedTextBlockCount is null
-            || mappedTextBlockCount == authoredTextBlockCount;
-        var allowInlineSvgPatch = mappedInlineSvgImageCount is null
-            || mappedInlineSvgImageCount == authoredInlineSvgImageCount;
+        var allowText = mappedTextBlockCount is null
+            || mappedTextBlockCount == authored.TextBlocks;
+        var allowInlineSvg = mappedInlineSvgImageCount is null
+            || mappedInlineSvgImageCount == authored.InlineSvgImages;
+        var allowCustom = patchableElements is { IsEmpty: false }
+            && (mappedCustomElementCount is null
+                || mappedCustomElementCount == authored.CustomElements);
+        var options = new PatchOptions(allowText, allowInlineSvg, allowCustom, patchableElements);
         var buffer = new ArrayBufferWriter<byte>();
         using (var writer = new Utf8JsonWriter(buffer))
         {
@@ -56,8 +84,8 @@ internal static class AdaptiveCardSemanticFingerprint
                 writer,
                 document.RootElement,
                 allowPatch: true,
-                allowTextPatch,
-                allowInlineSvgPatch);
+                options,
+                isDrawnFallback: false);
         }
 
         return Convert.ToHexString(SHA256.HashData(buffer.WrittenSpan));
@@ -67,19 +95,19 @@ internal static class AdaptiveCardSemanticFingerprint
         Utf8JsonWriter writer,
         JsonElement value,
         bool allowPatch,
-        bool allowTextPatch,
-        bool allowInlineSvgPatch)
+        PatchOptions options,
+        bool isDrawnFallback)
     {
         switch (value.ValueKind)
         {
             case JsonValueKind.Object:
-                WriteCanonicalObject(writer, value, allowPatch, allowTextPatch, allowInlineSvgPatch);
+                WriteCanonicalObject(writer, value, allowPatch, options, isDrawnFallback);
                 break;
             case JsonValueKind.Array:
                 writer.WriteStartArray();
                 foreach (var item in value.EnumerateArray())
                 {
-                    WriteCanonicalValue(writer, item, allowPatch, allowTextPatch, allowInlineSvgPatch);
+                    WriteCanonicalValue(writer, item, allowPatch, options, isDrawnFallback: false);
                 }
 
                 writer.WriteEndArray();
@@ -103,12 +131,13 @@ internal static class AdaptiveCardSemanticFingerprint
         }
     }
 
+    // A drawn fallback's control is tagged with the element it replaces, so its own text or image can't be patched.
     private static void WriteCanonicalObject(
         Utf8JsonWriter writer,
         JsonElement value,
         bool allowPatch,
-        bool allowTextPatch,
-        bool allowInlineSvgPatch)
+        PatchOptions options,
+        bool isDrawnFallback)
     {
         var properties = new List<JsonProperty>();
         foreach (var property in value.EnumerateObject())
@@ -118,30 +147,45 @@ internal static class AdaptiveCardSemanticFingerprint
 
         properties.Sort(static (left, right) => string.CompareOrdinal(left.Name, right.Name));
 
-        var typeName = value.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String
-            ? type.GetString()
-            : null;
+        var typeName = GetTypeName(value);
         var isAction = typeName?.StartsWith("Action.", StringComparison.Ordinal) == true;
         var isTextBlock = allowPatch
-            && allowTextPatch
+            && !isDrawnFallback
+            && options.AllowText
             && string.Equals(typeName, "TextBlock", StringComparison.Ordinal);
         var isImage = allowPatch
-            && allowInlineSvgPatch
+            && !isDrawnFallback
+            && options.AllowInlineSvg
             && string.Equals(typeName, "Image", StringComparison.Ordinal);
+        var isPatchableCustomElement = allowPatch
+            && options.AllowCustom
+            && options.PatchableElements!.RendersItself(typeName, value);
+        var hasUnusedFallback = allowPatch
+            && RendersItself(value, typeName, options.PatchableElements);
+        var drawsFallback = DrawsFallback(value, typeName, options.PatchableElements);
 
         writer.WriteStartObject();
         foreach (var property in properties)
         {
             writer.WritePropertyName(property.Name);
-            if (isTextBlock && string.Equals(property.Name, "text", StringComparison.Ordinal))
+            if (hasUnusedFallback && string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal))
             {
-                writer.WriteStringValue("$cmdpal.incremental.text$");
+                writer.WriteStringValue(UnusedFallbackPlaceholder);
+            }
+            else if (isTextBlock && string.Equals(property.Name, "text", StringComparison.Ordinal))
+            {
+                writer.WriteStringValue(TextPlaceholder);
             }
             else if (isImage
                 && string.Equals(property.Name, "url", StringComparison.Ordinal)
                 && IsInlineSvg(property.Value))
             {
-                writer.WriteStringValue("$cmdpal.incremental.inline-svg$");
+                writer.WriteStringValue(InlineSvgPlaceholder);
+            }
+            else if (isPatchableCustomElement
+                && IncrementalPatchableElements.IsPatchableProperty(property.Name))
+            {
+                writer.WriteStringValue(CustomElementPlaceholder);
             }
             else
             {
@@ -152,13 +196,39 @@ internal static class AdaptiveCardSemanticFingerprint
                     writer,
                     property.Value,
                     childAllowsPatch,
-                    allowTextPatch,
-                    allowInlineSvgPatch);
+                    options,
+                    isDrawnFallback: drawsFallback && string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal));
             }
         }
 
         writer.WriteEndObject();
     }
+
+    private static string? GetTypeName(JsonElement value) =>
+        value.TryGetProperty("type", out var type) && type.ValueKind == JsonValueKind.String
+            ? type.GetString()
+            : null;
+
+    /// <summary>Returns whether <paramref name="value"/> draws itself, so its fallback is never drawn.</summary>
+    private static bool RendersItself(
+        JsonElement value,
+        string? typeName,
+        IncrementalPatchableElements? patchableElements) =>
+        patchableElements?.RendersItself(typeName, value) == true
+        && !value.TryGetProperty("requires", out _);
+
+    /// <summary>
+    /// Returns whether <paramref name="value"/> is a registered element that draws its fallback,
+    /// such as an icon without a glyph.
+    /// </summary>
+    private static bool DrawsFallback(
+        JsonElement value,
+        string? typeName,
+        IncrementalPatchableElements? patchableElements) =>
+        patchableElements is not null
+        && patchableElements.Contains(typeName)
+        && !patchableElements.RendersItself(typeName, value)
+        && !value.TryGetProperty("requires", out _);
 
     private static bool IsActionProperty(string propertyName) => propertyName is
         "actions" or
@@ -179,34 +249,50 @@ internal static class AdaptiveCardSemanticFingerprint
 
     private static void CountPatchableElements(
         JsonElement value,
-        ref int textBlockCount,
-        ref int inlineSvgImageCount)
+        IncrementalPatchableElements? patchableElements,
+        ref PatchableCounts counts,
+        bool isDrawnFallback = false)
     {
         switch (value.ValueKind)
         {
             case JsonValueKind.Object:
-                var typeName = value.TryGetProperty("type", out var type)
-                    && type.ValueKind == JsonValueKind.String
-                        ? type.GetString()
-                        : null;
-                if (string.Equals(typeName, "TextBlock", StringComparison.Ordinal)
+                var typeName = GetTypeName(value);
+
+                // A drawn fallback's own text or image is tagged with another element, so it's never mapped.
+                if (!isDrawnFallback
+                    && string.Equals(typeName, "TextBlock", StringComparison.Ordinal)
                     && value.TryGetProperty("text", out _))
                 {
-                    textBlockCount++;
+                    counts.TextBlocks++;
                 }
-                else if (string.Equals(typeName, "Image", StringComparison.Ordinal)
+                else if (!isDrawnFallback
+                    && string.Equals(typeName, "Image", StringComparison.Ordinal)
                     && value.TryGetProperty("url", out var url)
                     && IsInlineSvg(url))
                 {
-                    inlineSvgImageCount++;
+                    counts.InlineSvgImages++;
+                }
+                else if (patchableElements?.RendersItself(typeName, value) == true)
+                {
+                    counts.CustomElements++;
                 }
 
+                // A fallback that's never drawn has no rendered elements to map.
+                var hasUnusedFallback = RendersItself(value, typeName, patchableElements);
+                var drawsFallback = DrawsFallback(value, typeName, patchableElements);
                 foreach (var property in value.EnumerateObject())
                 {
+                    var isFallback = string.Equals(property.Name, FallbackProperty, StringComparison.Ordinal);
+                    if (hasUnusedFallback && isFallback)
+                    {
+                        continue;
+                    }
+
                     CountPatchableElements(
                         property.Value,
-                        ref textBlockCount,
-                        ref inlineSvgImageCount);
+                        patchableElements,
+                        ref counts,
+                        drawsFallback && isFallback);
                 }
 
                 break;
@@ -215,11 +301,24 @@ internal static class AdaptiveCardSemanticFingerprint
                 {
                     CountPatchableElements(
                         item,
-                        ref textBlockCount,
-                        ref inlineSvgImageCount);
+                        patchableElements,
+                        ref counts);
                 }
 
                 break;
         }
     }
+
+    private struct PatchableCounts
+    {
+        public int TextBlocks;
+        public int InlineSvgImages;
+        public int CustomElements;
+    }
+
+    private readonly record struct PatchOptions(
+        bool AllowText,
+        bool AllowInlineSvg,
+        bool AllowCustom,
+        IncrementalPatchableElements? PatchableElements);
 }

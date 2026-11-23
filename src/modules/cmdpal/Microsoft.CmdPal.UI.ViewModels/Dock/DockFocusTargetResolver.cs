@@ -97,7 +97,8 @@ public static class DockFocusTargetResolver
             return orderedIds;
         }
 
-        return [.. orderedIds.Skip(currentIndex), .. orderedIds.Take(currentIndex)];
+        string[] rotated = [.. orderedIds.Skip(currentIndex), .. orderedIds.Take(currentIndex)];
+        return rotated;
     }
 
     private static MonitorInfo? FindMonitorContaining(IReadOnlyList<MonitorInfo> monitors, int x, int y)

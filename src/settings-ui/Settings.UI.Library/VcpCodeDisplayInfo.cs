@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -11,6 +12,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
     /// </summary>
     public class VcpCodeDisplayInfo
     {
+        private readonly List<VcpValueInfo> _valueList = new();
+
         [JsonPropertyName("code")]
         public string Code { get; set; } = string.Empty;
 
@@ -24,6 +27,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool HasValues { get; set; }
 
         [JsonPropertyName("valueList")]
-        public System.Collections.Generic.List<VcpValueInfo> ValueList { get; set; } = new System.Collections.Generic.List<VcpValueInfo>();
+        public List<VcpValueInfo> ValueList
+        {
+            get => _valueList;
+            init => _valueList = value ?? new();
+        }
     }
 }

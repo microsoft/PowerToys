@@ -48,6 +48,34 @@ public class SettingsLinkCoverageTests
     ];
 
     [TestMethod]
+    public void WindowsKeyOptionIsOnlyExposedThroughActivationShortcutDialog()
+    {
+        foreach (var page in SettingsPages)
+        {
+            var document = LoadPage(page);
+            foreach (var control in document.Descendants())
+            {
+                Assert.IsFalse(
+                    control.Name.LocalName == "CheckBoxWithDescriptionControl" &&
+                    control.Attributes().Any(attribute => attribute.Value.Contains("UseWindowsKey", StringComparison.Ordinal)),
+                    $"{page.FileName} must not expose the Windows-key checkbox outside the shortcut dialog.");
+
+                if (control.Attribute("AllowWindowsKey") is { } allowWindowsKey)
+                {
+                    Assert.AreEqual("GeneralPage.xaml", page.FileName);
+                    Assert.AreEqual("ShortcutControl", control.Name.LocalName);
+                    Assert.AreEqual("{x:Bind viewModel.IsWindowsKeyHotkeyAvailable}", allowWindowsKey.Value);
+                    Assert.AreEqual("{x:Bind viewModel.UseWindowsKey, Mode=TwoWay}", (string?)control.Attribute("UseWindowsKey"));
+                    Assert.IsNull(control.Attribute("IsEnabled"), "The picker must stay accessible in Windows-key mode.");
+                }
+            }
+        }
+
+        var generalPage = LoadPage(SettingsPages[0]);
+        Assert.AreEqual(1, generalPage.Descendants().Count(control => control.Attribute("AllowWindowsKey") is not null));
+    }
+
+    [TestMethod]
     public void Catalog_CoversEverySettingsConfigurationContainer()
     {
         var destinations = SettingsLinkResolver.Destinations.ToArray();

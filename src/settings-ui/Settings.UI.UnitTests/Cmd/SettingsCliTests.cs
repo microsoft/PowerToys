@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.CommandLine.Parsing;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 
@@ -168,9 +167,7 @@ public class SettingsCliTests
     [DataRow("status")]
     public void TestCommandParsingReportsMissingArguments(string command)
     {
-        var parser = new Parser(Program.CreateRootCommand());
-
-        var parseResult = parser.Parse([command]);
+        var parseResult = Program.CreateRootCommand().Parse([command]);
 
         Assert.IsTrue(parseResult.Errors.Count > 0);
     }

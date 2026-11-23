@@ -1,7 +1,12 @@
 #include "pch.h"
+#include "Helpers.h"
+#include "MetadataPatternExtractor.h"
+#include "TestFileHelper.h"
 #include "WICMetadataExtractor.h"
 #include <filesystem>
 #include <sstream>
+#include <vector>
+#include <wincodecsdk.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace PowerRenameLib;
@@ -27,6 +32,60 @@ namespace WICMetadataExtractorTests
         std::filesystem::path testDataPath = dllPath.parent_path() / L"testdata";
         
         return testDataPath.wstring();
+    }
+
+    // Generate an original one-pixel image so sequence tests need no new binary fixtures.
+    void WriteJpegWithCreators(const std::wstring& filePath, const std::vector<std::wstring>& creators)
+    {
+        CComPtr<IWICImagingFactory> factory;
+        Assert::IsTrue(SUCCEEDED(factory.CoCreateInstance(CLSID_WICImagingFactory)));
+
+        CComPtr<IWICStream> stream;
+        Assert::IsTrue(SUCCEEDED(factory->CreateStream(&stream)));
+        Assert::IsTrue(SUCCEEDED(stream->InitializeFromFilename(filePath.c_str(), GENERIC_WRITE)));
+
+        CComPtr<IWICBitmapEncoder> encoder;
+        Assert::IsTrue(SUCCEEDED(factory->CreateEncoder(GUID_ContainerFormatJpeg, nullptr, &encoder)));
+        Assert::IsTrue(SUCCEEDED(encoder->Initialize(stream, WICBitmapEncoderNoCache)));
+
+        CComPtr<IWICBitmapFrameEncode> frame;
+        Assert::IsTrue(SUCCEEDED(encoder->CreateNewFrame(&frame, nullptr)));
+        Assert::IsTrue(SUCCEEDED(frame->Initialize(nullptr)));
+        Assert::IsTrue(SUCCEEDED(frame->SetSize(1, 1)));
+        WICPixelFormatGUID pixelFormat = GUID_WICPixelFormat24bppBGR;
+        Assert::IsTrue(SUCCEEDED(frame->SetPixelFormat(&pixelFormat)));
+        Assert::IsTrue(IsEqualGUID(GUID_WICPixelFormat24bppBGR, pixelFormat));
+
+        CComPtr<IWICMetadataQueryWriter> sequenceWriter;
+        Assert::IsTrue(SUCCEEDED(factory->CreateQueryWriter(GUID_MetadataFormatXMPSeq, nullptr, &sequenceWriter)));
+        for (size_t i = 0; i < creators.size(); ++i)
+        {
+            auto creatorText = creators[i];
+            PROPVARIANT creator{};
+            creator.vt = VT_LPWSTR;
+            creator.pwszVal = creatorText.data();
+            const std::wstring path = L"/{ulong=" + std::to_wstring(i) + L"}";
+            Assert::IsTrue(SUCCEEDED(sequenceWriter->SetMetadataByName(path.c_str(), &creator)));
+        }
+
+        CComPtr<IWICMetadataQueryWriter> xmpWriter;
+        Assert::IsTrue(SUCCEEDED(factory->CreateQueryWriter(GUID_MetadataFormatXMP, nullptr, &xmpWriter)));
+        PROPVARIANT sequence{};
+        sequence.vt = VT_UNKNOWN;
+        sequence.punkVal = sequenceWriter;
+        Assert::IsTrue(SUCCEEDED(xmpWriter->SetMetadataByName(L"/dc:creator", &sequence)));
+
+        CComPtr<IWICMetadataQueryWriter> frameWriter;
+        Assert::IsTrue(SUCCEEDED(frame->GetMetadataQueryWriter(&frameWriter)));
+        PROPVARIANT xmp{};
+        xmp.vt = VT_UNKNOWN;
+        xmp.punkVal = xmpWriter;
+        Assert::IsTrue(SUCCEEDED(frameWriter->SetMetadataByName(L"/", &xmp)));
+
+        BYTE pixel[3]{};
+        Assert::IsTrue(SUCCEEDED(frame->WritePixels(1, sizeof(pixel), sizeof(pixel), pixel)));
+        Assert::IsTrue(SUCCEEDED(frame->Commit()));
+        Assert::IsTrue(SUCCEEDED(encoder->Commit()));
     }
 
     TEST_CLASS (FactoryLifetimeTests)
@@ -105,6 +164,32 @@ namespace WICMetadataExtractorTests
             Assert::IsTrue(metadata.copyright.value().find(L"Carl Seibert") != std::wstring::npos, L"Copyright should contain Carl Seibert");
         }
 
+        TEST_METHOD(ExtractEXIF_ExifTest_GPSCoordinates)
+        {
+            WICMetadataExtractor extractor;
+            EXIFMetadata metadata;
+
+            Assert::IsTrue(extractor.ExtractEXIFMetadata(GetTestDataPath() + L"\\exif_test.jpg", metadata));
+            Assert::IsTrue(metadata.latitude.has_value(), L"GPS latitude should be present");
+            Assert::IsTrue(metadata.longitude.has_value(), L"GPS longitude should be present");
+            Assert::AreEqual(26.5825166667, metadata.latitude.value(), 0.0000001);
+            Assert::AreEqual(-80.2002333333, metadata.longitude.value(), 0.0000001);
+            Assert::AreEqual(L"samsung", metadata.cameraMake.value().c_str());
+            Assert::AreEqual(L"SM-G930P", metadata.cameraModel.value().c_str());
+        }
+
+        TEST_METHOD(ExtractEXIFPatterns_GPSAndCameraTokens)
+        {
+            MetadataPatternExtractor extractor;
+            const auto patterns = extractor.ExtractPatterns(GetTestDataPath() + L"\\exif_test.jpg", MetadataType::EXIF);
+
+            wchar_t fileName[MAX_PATH]{};
+            Assert::IsTrue(SUCCEEDED(GetMetadataFileName(fileName, MAX_PATH, L"$LATITUDE-$LONGITUDE.jpg", patterns)));
+            Assert::AreEqual(L"26°34.95'N-80°12.01'W.jpg", fileName);
+            Assert::IsTrue(SUCCEEDED(GetMetadataFileName(fileName, MAX_PATH, L"$CAMERA_MAKE_$CAMERA_MODEL.jpg", patterns)));
+            Assert::AreEqual(L"samsung_SM-G930P.jpg", fileName);
+        }
+
         TEST_METHOD(ExtractEXIF_ExifTest2_WidthHeight)
         {
             // Test exif_test_2.jpg which only contains width and height
@@ -180,6 +265,9 @@ namespace WICMetadataExtractorTests
             // Verify all the fields that are in xmp_test.jpg
             Assert::IsTrue(metadata.title.has_value(), L"Title should be present");
             Assert::AreEqual(L"object name here", metadata.title.value().c_str(), L"Title should match");
+
+            Assert::IsTrue(metadata.creator.has_value(), L"Creator sequence should be present");
+            Assert::AreEqual(L"Carl Seibert (XMP)", metadata.creator.value().c_str(), L"Creator should match");
             
             Assert::IsTrue(metadata.description.has_value(), L"Description should be present");
             Assert::IsTrue(metadata.description.value().find(L"This is a metadata test file") != std::wstring::npos, 
@@ -233,6 +321,59 @@ namespace WICMetadataExtractorTests
             Assert::IsFalse(metadata.description.has_value(), L"Description should not be present in xmp_test_2.jpg");
             Assert::IsFalse(metadata.rights.has_value(), L"Rights should not be present in xmp_test_2.jpg");
             Assert::IsFalse(metadata.creator.has_value(), L"Creator should not be present in xmp_test_2.jpg");
+        }
+
+        TEST_METHOD(ExtractXMPPatterns_CreatorAliasesAndTitle)
+        {
+            MetadataPatternExtractor extractor;
+            const auto patterns = extractor.ExtractPatterns(GetTestDataPath() + L"\\xmp_test.jpg", MetadataType::XMP);
+
+            const auto author = patterns.find(MetadataPatterns::AUTHOR);
+            const auto creator = patterns.find(MetadataPatterns::CREATOR);
+            const auto title = patterns.find(MetadataPatterns::TITLE);
+            Assert::IsTrue(author != patterns.end(), L"AUTHOR should be extracted from the creator sequence");
+            Assert::IsTrue(creator != patterns.end(), L"CREATOR should be extracted from the creator sequence");
+            Assert::IsTrue(title != patterns.end(), L"The same image should retain its XMP title");
+            Assert::AreEqual(L"Carl Seibert (XMP)", author->second.c_str());
+            Assert::AreEqual(author->second.c_str(), creator->second.c_str());
+            Assert::AreEqual(L"object name here", title->second.c_str());
+
+            wchar_t fileName[MAX_PATH]{};
+            Assert::IsTrue(SUCCEEDED(GetMetadataFileName(fileName, MAX_PATH, L"$AUTHOR-$CREATOR", patterns)));
+            Assert::AreEqual(L"Carl Seibert (XMP)-Carl Seibert (XMP)", fileName);
+            Assert::IsTrue(SUCCEEDED(GetMetadataFileName(fileName, MAX_PATH, L"$TITLE", patterns)));
+            Assert::AreEqual(L"object name here", fileName);
+        }
+
+        TEST_METHOD(ExtractXMPPatterns_MissingCreatorDoesNotCreateAliases)
+        {
+            MetadataPatternExtractor extractor;
+            const auto patterns = extractor.ExtractPatterns(GetTestDataPath() + L"\\xmp_test_2.jpg", MetadataType::XMP);
+
+            Assert::IsTrue(patterns.find(MetadataPatterns::AUTHOR) == patterns.end());
+            Assert::IsTrue(patterns.find(MetadataPatterns::CREATOR) == patterns.end());
+        }
+
+        TEST_METHOD(ExtractXMP_CreatorSequence_PreservesOrderAndUnicode)
+        {
+            CTestFileHelper testFiles;
+            const std::wstring testFile = testFiles.GetFullPath(L"creators.jpg").wstring();
+            WriteJpegWithCreators(testFile, { L"\u5F20\u4E09", L" \t ", L" Alice " });
+
+            WICMetadataExtractor extractor;
+            XMPMetadata metadata;
+            Assert::IsTrue(extractor.ExtractXMPMetadata(testFile, metadata));
+            Assert::IsTrue(metadata.creator.has_value());
+            Assert::AreEqual(L"\u5F20\u4E09; Alice", metadata.creator.value().c_str());
+
+            MetadataPatternExtractor patternExtractor;
+            const auto patterns = patternExtractor.ExtractPatterns(testFile, MetadataType::XMP);
+            const auto author = patterns.find(MetadataPatterns::AUTHOR);
+            const auto creator = patterns.find(MetadataPatterns::CREATOR);
+            Assert::IsTrue(author != patterns.end());
+            Assert::IsTrue(creator != patterns.end());
+            Assert::AreEqual(L"\u5F20\u4E09; Alice", author->second.c_str());
+            Assert::AreEqual(author->second.c_str(), creator->second.c_str());
         }
 
         TEST_METHOD(ExtractXMP_ClearCache)

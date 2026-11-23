@@ -135,6 +135,8 @@ Describe 'runUiTestAsUser' {
             TF_BUILD = 'True'
             useInstallerForTest = 'true'
             POWERTOYS_INSTALL_DIR = 'C:\PowerToys'
+            POWERTOYS_MWB_RUN_ROOT = 'C:\Results\mwb-run'
+            POWERTOYS_POWERDISPLAY_IDD_PROBE = 'C:\Fixtures\driver\IddProbe.exe'
         }
         $request | ConvertTo-Json | Set-Content -LiteralPath $requestPath
 
@@ -155,6 +157,38 @@ Describe 'runUiTestAsUser' {
         $status = Get-Content (Join-Path $runDirectory 'status.json') -Raw | ConvertFrom-Json
         $status.Error | Should Be 'Invalid UI-test request: expected a JSON object.'
         Test-Path (Join-Path $runDirectory 'desktop.txt') | Should Be $false
+    }
+
+    It 'rejects malformed MWB recovery <Case> before entering the desktop' -TestCases @(
+        @{ Case = 'non-string'; Value = 1 }
+        @{ Case = 'relative path'; Value = 'cleanup-journal.json' }
+        @{ Case = 'network path'; Value = '\\server\cleanup-journal.json' }
+        @{ Case = 'arbitrary file'; Value = 'C:\Results\run.ps1' }
+    ) {
+        param($Case, $Value)
+        $request.TestExecutable = Join-Path $TestDrive 'MouseWithoutBorders.UITests.exe'
+        $request.MwbRecoveryJournal = $Value
+        $request | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $requestPath
+
+        & $powerShell -NoProfile -NonInteractive -File $scriptPath -RequestPath $requestPath
+
+        $LASTEXITCODE | Should Be 1
+        $status = Get-Content (Join-Path $runDirectory 'status.json') -Raw | ConvertFrom-Json
+        $status.Error | Should Match '^Invalid UI-test request: MwbRecoveryJournal'
+        Test-Path (Join-Path $runDirectory 'desktop.txt') | Should Be $false
+    }
+
+    It 'checks the original Limited identity before running a recovery script' {
+        $request.TestExecutable = Join-Path $TestDrive 'MouseWithoutBorders.UITests.exe'
+        $request.MwbRecoveryJournal = Join-Path $TestDrive 'cleanup-journal.json'
+        $request | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $requestPath
+
+        & $powerShell -NoProfile -NonInteractive -File $scriptPath -RequestPath $requestPath
+
+        $LASTEXITCODE | Should Be 1
+        $status = Get-Content (Join-Path $runDirectory 'status.json') -Raw | ConvertFrom-Json
+        $status.Error | Should Match 'requested non-elevated interactive user'
+        Test-Path (Join-Path $runDirectory 'stdout.log') | Should Be $false
     }
 
     It 'rejects a missing executable before scheduling any desktop work' {
@@ -194,6 +228,8 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
         $state.TaskResult = 0
         $state.TaskResults = @()
         $state.InfoCalls = 0
+        $state.InfoFailures = 0
+        $state.TaskFailures = 0
         $state.StatusFields = @{ ExitCode = 0; Error = $null }
         $state.WriteStatus = $true
         $state.WrapStatusInArray = $false
@@ -240,7 +276,7 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
             $requestFile = Get-ChildItem -LiteralPath $state.ResultsDirectory -Filter request.json -Recurse
             $state.CapturedRequest = Get-Content -LiteralPath $requestFile.FullName -Raw | ConvertFrom-Json
             if ($state.WriteStatus) {
-                $status = @{ RunId = $state.CapturedRequest.RunId }
+                $status = @{ RunId = $state.CapturedRequest.RunId; TestProcessInactive = $true }
                 foreach ($name in $state.StatusFields.Keys) {
                     $status[$name] = $state.StatusFields[$name]
                 }
@@ -257,10 +293,18 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
             }
         }
         Mock Get-ScheduledTask {
+            if ($state.TaskFailures -gt 0) {
+                $state.TaskFailures--
+                throw [ComponentModel.Win32Exception]::new(2)
+            }
             $index = [Math]::Max(0, [Math]::Min($state.PollIndex, $state.TaskStates.Count - 1))
             [pscustomobject]@{ State = $state.TaskStates[$index] }
         }
         Mock Get-ScheduledTaskInfo {
+            if ($state.InfoFailures -gt 0) {
+                $state.InfoFailures--
+                throw [Microsoft.Management.Infrastructure.CimException]::new('transient scheduler query failure')
+            }
             $result = $state.TaskResult
             if ($state.TaskResults.Count -gt 0) {
                 $result = $state.TaskResults[[Math]::Min($state.InfoCalls, $state.TaskResults.Count - 1)]
@@ -287,7 +331,63 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
         Assert-MockCalled New-ScheduledTaskPrincipal -Times 1 -Exactly -Scope It -ParameterFilter {
             $LogonType -eq 'Interactive' -and $RunLevel -eq 'Limited'
         }
+        Assert-MockCalled New-ScheduledTaskSettingsSet -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Priority -eq 4
+        }
         Assert-MockCalled Unregister-ScheduledTask -Times 1 -Exactly -Scope It
+    }
+
+    It 'correlates the MWB task and public results with the supplied run ID' {
+        $taskRunId = [guid]::NewGuid()
+        & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -TaskRunId $taskRunId
+
+        $LASTEXITCODE | Should Be 0
+        $state.CapturedRequest.RunId | Should Be $taskRunId.ToString('N')
+        (Split-Path $state.CapturedRequest.RunDirectory -Leaf) |
+            Should Be "ui-$($taskRunId.ToString('N').Substring(0, 12))"
+        Assert-MockCalled New-ScheduledTaskAction -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Argument -like '-ExecutionPolicy Bypass -NoLogo *'
+        }
+    }
+
+    It 'grants only the public recovery directory and restores both DACLs: <Case>' -TestCases @(
+        @{ Case = 'success'; FailRegistration = $false }
+        @{ Case = 'registration failure'; FailRegistration = $true }
+    ) {
+        param($Case, $FailRegistration)
+        $payload = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path (Join-Path $payload 'Payload') -Force | Out-Null
+        $mwbExecutable = Join-Path $payload 'MouseWithoutBorders.UITests.exe'
+        'not an executable' | Set-Content -LiteralPath $mwbExecutable
+        'throw "must not execute in controller"' | Set-Content -LiteralPath (Join-Path $payload 'Payload\Recover-Host.ps1')
+        $publicRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
+        New-Item -ItemType Directory -Path $publicRoot | Out-Null
+        $journal = Join-Path $publicRoot 'cleanup-journal.json'
+        # Controller must not parse or execute this test-owned content.
+        'not JSON' | Set-Content -LiteralPath $journal
+        $state.FailRegistration = $FailRegistration
+        $invoke = {
+            & $scriptPath -TestExecutable $mwbExecutable -ResultsDirectory $state.ResultsDirectory `
+                -MwbRecoveryJournal $journal -TimeoutMinutes 4
+        }
+        if ($FailRegistration) {
+            $invoke | Should Throw 'registration failed'
+        } else {
+            & $invoke
+            $LASTEXITCODE | Should Be 0
+            $state.CapturedRequest.MwbRecoveryJournal | Should Be $journal
+            Assert-MockCalled New-ScheduledTaskPrincipal -Times 1 -Exactly -Scope It -ParameterFilter {
+                $LogonType -eq 'Interactive' -and $RunLevel -eq 'Limited'
+            }
+            Assert-MockCalled New-ScheduledTaskSettingsSet -Times 1 -Exactly -Scope It -ParameterFilter {
+                $Priority -eq 4
+            }
+        }
+        $state.AclWrites.Count | Should Be 4
+        $state.AclWrites[1].Path | Should Be $publicRoot
+        $state.AclWrites[3].Path | Should Be $publicRoot
+        $state.AclWrites[2].Dacl | Should Be $state.OriginalDacl
+        $state.AclWrites[3].Dacl | Should Be $state.OriginalDacl
     }
 
     It 'waits for a terminal task even when status already exists' {
@@ -308,6 +408,37 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
         $LASTEXITCODE | Should Be 0
         Assert-MockCalled Start-Sleep -Times 3 -Exactly -Scope It
+    }
+
+    It 'retries <Failures> transient <Query> failures before confirming completion' -TestCases @(
+        @{ Query = 'InfoFailures'; Failures = 1 }
+        @{ Query = 'InfoFailures'; Failures = 2 }
+        @{ Query = 'TaskFailures'; Failures = 1 }
+        @{ Query = 'TaskFailures'; Failures = 2 }
+    ) {
+        param($Query, $Failures)
+        $state[$Query] = $Failures
+        $state.TaskStates = @('Ready', 'Ready', 'Ready')
+
+        & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory
+
+        $LASTEXITCODE | Should Be 0
+        Assert-MockCalled Start-Sleep -Times ($Failures + 1) -Exactly -Scope It
+        Assert-MockCalled Stop-ScheduledTask -Times 0 -Exactly -Scope It
+        Assert-MockCalled Unregister-ScheduledTask -Times 1 -Exactly -Scope It
+    }
+
+    It 'stops the worker and fails after three consecutive scheduler query errors' {
+        $state.InfoFailures = 3
+        $state.TaskStates = @('Running', 'Running', 'Running')
+
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory } |
+            Should Throw 'transient scheduler query failure'
+
+        Assert-MockCalled Start-Sleep -Times 3 -Exactly -Scope It
+        Assert-MockCalled Stop-ScheduledTask -Times 1 -Exactly -Scope It
+        Assert-MockCalled Unregister-ScheduledTask -Times 1 -Exactly -Scope It
+        $state.AclWrites[1].Dacl | Should Be $state.OriginalDacl
     }
 
     It 'rejects scheduler and status disagreement after the running task completes' {
@@ -425,10 +556,10 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
     It 'restores the DACL when registration fails' {
         $state.FailRegistration = $true
-
-        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory } |
+        $marker = [ref]$false
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -DesktopWorkerUnconfirmed $marker } |
             Should Throw 'registration failed'
-
+        $marker.Value | Should Be $false
         $state.AclWrites.Count | Should Be 2
         $state.AclWrites[1].Dacl | Should Be $state.OriginalDacl
         Assert-MockCalled Unregister-ScheduledTask -Times 0 -Exactly -Scope It
@@ -436,18 +567,52 @@ Describe 'runUiTestAsUser controller contracts without desktop work' {
 
     It 'restores the DACL even when task cleanup fails' {
         $state.FailCleanup = $true
-
-        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory } |
+        $marker = [ref]$false
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -DesktopWorkerUnconfirmed $marker } |
             Should Throw 'task cleanup failed'
-
+        $marker.Value | Should Be $false
         $state.AclWrites.Count | Should Be 2
         $state.AclWrites[1].Dacl | Should Be $state.OriginalDacl
+    }
+
+    It 'preserves uncertain worker lifetime through task cleanup errors' {
+        $state.FailCleanup = $true
+        $state.StatusFields.TestProcessInactive = $false
+        $marker = [ref]$false
+        { & $scriptPath -TestExecutable $testExecutable -ResultsDirectory $state.ResultsDirectory -DesktopWorkerUnconfirmed $marker } |
+            Should Throw 'task cleanup failed'
+        $marker.Value | Should Be $true
     }
 }
 
 Describe 'UI-test pipeline non-elevated dispatch' {
+    It 'stops dispatch after a launcher exception instead of overlapping desktop suites' {
+        # Assert the expected Azure error command without emitting it into the live build log.
+        Mock Write-Host {}
+        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $handler = [regex]::Match($template,
+            '(?ms)^ {8}\} catch \{\r?\n(?<body> {10}Write-Host "##vso\[task\.logissue type=error\]UI tests failed for \$\{base\}:.*?)(?=^ {8}\} finally \{)').Groups['body'].Value
+        $handler | Should Not BeNullOrEmpty
+        $base = 'MouseUtils.UITests.Next'
+        $desktopWorkerUnconfirmed = $true
+        $suiteFailed = $false
+        $dispatch = [scriptblock]::Create("try { throw 'injected launcher failure' } catch {`n$handler`n}")
+
+        { & $dispatch } | Should Throw 'injected launcher failure'
+        Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
+            $Object -eq '##vso[task.logissue type=error]UI tests failed for MouseUtils.UITests.Next: injected launcher failure'
+        }
+    }
+
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
+        @{ Suite = 'AdvancedPaste.UITests.Next' }
+        @{ Suite = 'AltWindowCycle.UITests' }
         @{ Suite = 'CropAndLock.UITests' }
+        @{ Suite = 'GrabAndMove.UITests' }
+        @{ Suite = 'Microsoft.CmdPal.UITests.Next' }
+        @{ Suite = 'MouseUtils.UITests.Next' }
+        @{ Suite = 'PowerOCR.UITests.Next' }
+        @{ Suite = 'Settings.UITests' }
         @{ Suite = 'Workspaces.UITests.Next' }
     ) {
         param($Suite)
@@ -490,24 +655,4 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         ($requiredAuthenticodeFiles -contains 'PowerToys.QuickAccess.exe') | Should Be $Expected
     }
 
-    It 'scopes Workspaces authenticated Settings IPC signing without changing other families' -TestCases @(
-        @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
-        @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
-        @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @('CropAndLock.UITests'); AllModules = $false; Expected = $true }
-        @{ Modules = @(); AllModules = $true; Expected = $true }
-    ) {
-        param($Modules, $AllModules, $Expected)
-
-        $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $selection = [regex]::Match($template, '(?m)^\s*\$requiresAuthenticatedSettingsIpc = [^\r\n]+').Value
-        $selection | Should Not BeNullOrEmpty
-        $selectedModules = $Modules
-        $allModules = $AllModules
-        . ([scriptblock]::Create($selection))
-
-        $requiresAuthenticatedSettingsIpc | Should Be $Expected
-    }
 }

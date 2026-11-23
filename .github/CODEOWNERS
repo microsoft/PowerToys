@@ -14,3 +14,6 @@ packages.config  @microsoft/powertoys-code-owners
 LICENSE @microsoft/powertoys-code-owners
 SECURITY.md @microsoft/powertoys-code-owners
 CODE_OF_CONDUCT.md @microsoft/powertoys-code-owners
+
+# all the Command Palette files should have Mike review them
+/src/modules/cmdpal @zadjii-msft

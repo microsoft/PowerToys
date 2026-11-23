@@ -18,7 +18,7 @@ if ($mods = Get-Module -ListAvailable -Name Microsoft.WinGet.Client)
   $needsUpdate = $true;
   foreach ($mod in $mods)
   {
-    if ($mod.Version -ge "1.8.1133")
+    if ($mod.Version -ge "1.29.380")
     {
       $needsUpdate = $false;
       break;

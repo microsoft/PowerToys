@@ -52,6 +52,14 @@ namespace MouseWithoutBorders
         {
             InitializeComponent();
 
+            ToolTip groupBoxToolTip = new ToolTip();
+            groupBoxToolTip.SetToolTip(groupBoxShortcuts, "These settings are controlled by the PowerToys.Settings application.");
+
+            foreach (Control control in groupBoxShortcuts.Controls)
+            {
+                control.Enabled = false;
+            }
+
             textBoxEnc.Font = new System.Drawing.Font(Control.DefaultFont.Name, 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, 0);
 
             Text = Application.ProductName + " " + Application.ProductVersion + " - Settings";
@@ -103,7 +111,7 @@ namespace MouseWithoutBorders
             MachineStuff.MachineMatrix = st;
             Setting.Values.MatrixOneRow = matrixOneRow = !checkBoxTwoRow.Checked;
 
-            if (Process.GetCurrentProcess().SessionId != NativeMethods.WTSGetActiveConsoleSessionId())
+            if (!WinAPI.IsCurrentSessionAllowed())
             {
                 Program.StartService();
                 Common.ShowToolTip("New settings applied on the physical console session!", 3000, ToolTipIcon.Warning, false);
@@ -135,7 +143,7 @@ namespace MouseWithoutBorders
         internal void UpdateKeyTextBox()
         {
             _ = Helper.GetUserName();
-            textBoxEnc.Text = Encryption.MyKey;
+            textBoxEnc.Text = Setting.Values.PairingKeyDisplayText;
         }
 
         private void InitAll()
@@ -513,6 +521,7 @@ namespace MouseWithoutBorders
 
             if (!newKey.Equals(Encryption.MyKey, StringComparison.OrdinalIgnoreCase))
             {
+                Setting.Values.MyKey = newKey;
                 Encryption.MyKey = newKey;
                 Encryption.GeneratedKey = false;
             }
@@ -1116,7 +1125,9 @@ namespace MouseWithoutBorders
 
             if (MessageBox.Show(message, Application.ProductName, MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
-                Setting.Values.MyKey = Encryption.MyKey = Encryption.CreateRandomKey();
+                var key = Encryption.CreateRandomKey();
+                Setting.Values.MyKey = key;
+                Encryption.MyKey = key;
                 textBoxEnc.Text = Encryption.MyKey;
                 checkBoxShowKey.Checked = true;
                 Encryption.GeneratedKey = true;

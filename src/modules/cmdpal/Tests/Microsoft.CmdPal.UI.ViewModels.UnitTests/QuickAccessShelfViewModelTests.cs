@@ -143,5 +143,5 @@ public class QuickAccessShelfViewModelTests
     }
 
     private static QuickAccessShelfItem CreateRecentItem() =>
-        QuickAccessShelfItem.CreateOrReuse([], new ListItem { Title = "Recent" }, shortcutIndex: 0, startsNewSection: false);
+        QuickAccessShelfItem.CreateOrReuse([], new(new ListItem { Title = "Recent" }), shortcutIndex: 0, startsNewSection: false);
 }

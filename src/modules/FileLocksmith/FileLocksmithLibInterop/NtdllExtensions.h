@@ -4,6 +4,8 @@
 
 #include "NtdllBase.h"
 
+#include <chrono>
+
 class NtdllExtensions : protected Ntdll
 {
 private:
@@ -22,9 +24,8 @@ private:
     // Calls NtQuerySystemInformation and returns a buffer containing the result.
     MemoryLoopResult NtQuerySystemInformationMemoryLoop(ULONG SystemInformationClass);
 
-    std::wstring file_handle_to_kernel_name(HANDLE file_handle, std::vector<BYTE>& buffer);
-
 public:
+    constexpr static std::chrono::milliseconds DefaultHandleStallTimeout{ 200 };
     struct ProcessInfo
     {
         DWORD pid = 0;
@@ -48,7 +49,9 @@ public:
     // Gives the user name of the account running this process
     std::wstring pid_to_user(DWORD pid);
 
-    std::vector<HandleInfo> handles() noexcept;
+    // Returns all open file handles in the system. A handle whose query makes no progress within
+    // stall_timeout is skipped.
+    std::vector<HandleInfo> handles(std::chrono::milliseconds stall_timeout = DefaultHandleStallTimeout) noexcept;
 
     // Returns the list of all processes.
     // On failure, returns an empty vector.

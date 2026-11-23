@@ -1,0 +1,368 @@
+# Copyright (c) Microsoft Corporation
+# The Microsoft Corporation licenses this file to you under the MIT license.
+# See the LICENSE file in the project root for more information.
+
+#Requires -Version 7.0
+. "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1"
+. "$PSScriptRoot\..\mwb\MwbSandboxClientSetup.Common.ps1"
+
+function Get-UiTestFlowStep {
+    param([string] $Name)
+
+    $yaml = Get-Content "$PSScriptRoot\..\v2\templates\job-test-project.yml" -Raw
+    $steps = [regex]::Matches($yaml, '(?ms)^  - pwsh: \|\r?\n(?<script>.*?)(?=^    displayName:)    displayName: "?(?<name>[^"\r\n]+)"?')
+    $step = @($steps | Where-Object { $_.Groups['name'].Value -eq $Name })
+    if ($step.Count -ne 1) { throw "Expected one pipeline step named $Name." }
+    ([regex]::Replace($step[0].Groups['script'].Value, '(?m)^      ', '')).
+        Replace('${{ parameters.uiTestDiagnosticCohort }}', 'False')
+}
+
+Describe 'Bounded isolated MWB pipeline phases' {
+    It 'forwards both streams without deadlocking on large unterminated output' {
+        $path = Join-Path $TestDrive 'output.ps1'
+        @'
+[Console]::Out.Write('o' * 1MB)
+[Console]::Error.Write('e' * 1MB)
+[Console]::Out.WriteLine('stdout-tail')
+[Console]::Error.WriteLine('stderr-tail')
+'@ | Set-Content $path
+        $output = @(Invoke-MwbCiPhase $path @() 20 6>&1)
+        $output.Count | Should Be 2
+        @($output | Where-Object { $_.ToString().Length -gt 1MB -and $_.ToString().EndsWith('stdout-tail') }).Count | Should Be 1
+        @($output | Where-Object { $_.ToString().Length -gt 1MB -and $_.ToString().EndsWith('stderr-tail') }).Count | Should Be 1
+    }
+
+    It 'isolates environment changes and propagates nonzero exit codes' {
+        $path = Join-Path $TestDrive 'phase.ps1'
+        @'
+param([string] $Value)
+if ($Value -cne 'value with spaces & punctuation') { exit 29 }
+$env:POWERTOYS_INSTALL_DIR = 'must-not-leak'
+exit 23
+'@ | Set-Content $path
+        $original = $env:POWERTOYS_INSTALL_DIR
+        { Invoke-MwbCiPhase $path @('-Value', 'value with spaces & punctuation') 20 } | Should Throw 'exit 23'
+        $env:POWERTOYS_INSTALL_DIR | Should Be $original
+    }
+
+    It 'terminates only the owned phase process tree on timeout' {
+        $path = Join-Path $TestDrive 'timeout.ps1'
+        $pidPath = Join-Path $TestDrive 'child-pid.txt'
+        @'
+param([string] $PidPath)
+$start = [Diagnostics.ProcessStartInfo]::new((Get-Process -Id $PID).Path)
+$start.UseShellExecute = $false
+foreach ($value in @('-NoProfile', '-Command', 'Start-Sleep -Seconds 60')) { $start.ArgumentList.Add($value) }
+$child = [Diagnostics.Process]::Start($start)
+$child.Id | Set-Content $PidPath
+Start-Sleep -Seconds 60
+'@ | Set-Content $path
+        try {
+            { Invoke-MwbCiPhase $path @('-PidPath', $pidPath) 8 } | Should Throw 'exceeded 8 seconds'
+            Test-Path $pidPath | Should Be $true
+            $childId = [int](Get-Content $pidPath)
+            Get-Process -Id $childId -ErrorAction SilentlyContinue | Should BeNullOrEmpty
+        }
+        finally {
+            if (Test-Path $pidPath) {
+                $child = Get-Process -Id ([int](Get-Content $pidPath)) -ErrorAction SilentlyContinue
+                if ($child) { Stop-Process -Id $child.Id -Force }
+            }
+        }
+    }
+
+    It 'preserves setup and suite deadlines on <Platform>' -TestCases @(
+        @{ Platform = 'x64Win10'; Expected = 'Prepare:900,Run:6180' }
+        @{ Platform = 'x64Win11'; Expected = 'Install:720,Prepare:900,Run:6180' }
+    ) {
+        param($Platform, $Expected)
+        $script:phases = @()
+        Mock Invoke-MwbCiPhase {
+            param($ScriptPath, $Arguments, $TimeoutSeconds)
+            $name = if ($Arguments[0] -eq '-Mode') { $Arguments[1] } else { 'Install' }
+            $script:phases += "${name}:$TimeoutSeconds"
+        }
+        Invoke-MwbUiTestSuite -RunId ([guid]::NewGuid()) -ArtifactRoot $TestDrive -ResultsDirectory $TestDrive `
+            -Platform $Platform -SourceRevision 'revision' -CertificateMarkerPath (Join-Path $TestDrive 'marker')
+        ($script:phases -join ',') | Should Be $Expected
+    }
+
+    It 'retains independent recovery, cleanup and export deadlines after a recovery error' {
+        $script:phases = @()
+        Mock Invoke-MwbCiPhase {
+            param($ScriptPath, $Arguments, $TimeoutSeconds)
+            $name = if ($Arguments[0] -eq '-Mode') { $Arguments[1] } else { 'Diagnostics' }
+            $script:phases += "${name}:$TimeoutSeconds"
+            if ($name -eq 'Recover') { throw 'Injected recovery failure.' }
+        }
+        Mock Write-Host {}
+        { Restore-MwbUiTestPrerequisites -RunId ([guid]::NewGuid()) -ResultsDirectory $TestDrive } |
+            Should Throw 'Injected recovery failure'
+        ($script:phases -join ',') | Should Be 'Recover:360,Cleanup:300,Diagnostics:120'
+    }
+}
+
+Describe 'Shared UI pipeline dispatch without host mutation' {
+    BeforeEach {
+        $fixture = (New-Item -ItemType Directory (Join-Path $TestDrive ([guid]::NewGuid().ToString('N')))).FullName
+        $mwb = (New-Item -ItemType Directory "$fixture\.pipelines\mwb" -Force).FullName
+        Copy-Item "$PSScriptRoot\..\mwb\MwbSandboxCi.Common.ps1" $mwb
+        Copy-Item "$PSScriptRoot\..\UiTestShards.Common.ps1", "$PSScriptRoot\..\uiTestDurations.json" "$fixture\.pipelines"
+        $umdf = New-Item -ItemType Directory "$fixture\.pipelines\umdf" -Force
+        Copy-Item "$PSScriptRoot\..\umdf\UmdfCi.Common.ps1" $umdf.FullName
+        $phase = @'
+param($Mode, $RunId, $ArtifactRoot, $ResultsDirectory, $Platform, $SourceRevision, $Configuration, $CertificateMarkerPath)
+if (-not $Mode) {
+    $Mode = if ($PSCommandPath -like '*Install-*') { 'Install' } else { 'Diagnostics' }
+}
+if ($env:POWERTOYS_INSTALL_DIR -cne 'original-product' -or $env:useInstallerForTest -cne 'true') {
+    throw 'Another phase leaked its environment.'
+}
+$Mode | Add-Content $env:MWB_FLOW_LOG
+Write-Host "MWB phase stdout: $Mode"
+[Console]::Error.WriteLine("MWB phase stderr: $Mode")
+if ($env:MWB_FLOW_FAILURE -eq $Mode) { exit 23 }
+$env:POWERTOYS_INSTALL_DIR = 'private-mwb-product'
+$env:useInstallerForTest = 'false'
+exit 0
+'@
+        foreach ($name in @('Install-MwbSandboxClient.ps1', 'mwbSandboxExperiment.ps1', 'Export-MwbSandboxPrerequisites.ps1')) {
+            $phase | Set-Content (Join-Path $mwb $name)
+        }
+        @'
+function Enable-LightSwitchLocation { param($StatePath) }
+function Restore-LightSwitchLocation {
+    param($StatePath)
+    'LightSwitchCleanup' | Add-Content $env:MWB_FLOW_LOG
+    if ($env:MWB_FLOW_FAILURE -eq 'LightSwitchCleanup') { throw 'Injected location cleanup failure.' }
+}
+'@ | Set-Content "$fixture\.pipelines\configureLightSwitchLocation.ps1"
+        $runner = New-Item -ItemType Directory "$fixture\artifact\tests\ColorPicker.UITests" -Force
+        '{}' | Set-Content "$runner\ColorPicker.UITests.runtimeconfig.json"
+        '' | Set-Content "$runner\ColorPicker.UITests.dll"
+        $environment = @{}
+        foreach ($name in @('POWERTOYS_INSTALL_DIR', 'useInstallerForTest', 'MWB_FLOW_LOG', 'MWB_FLOW_FAILURE',
+            'RUN_GENERIC_UI_TESTS', 'RUN_MWB_SANDBOX', 'MWB_SELECTION_BLOCKED', 'AUTO_UI_TEST_MODULES',
+            'TF_BUILD', 'SYSTEM_JOBID', 'POWERTOYS_POWERDISPLAY_IDD_PROBE', 'SELECTED_UI_TEST_MODULES',
+            'UI_TEST_EXECUTION_MODULES', 'SHARD_COUNT', 'SHARD_INDEX')) {
+            $environment[$name] = [Environment]::GetEnvironmentVariable($name)
+        }
+        $env:POWERTOYS_INSTALL_DIR = 'original-product'
+        $env:useInstallerForTest = 'true'
+        $env:MWB_FLOW_LOG = Join-Path $fixture 'phases.log'
+        $env:MWB_FLOW_FAILURE = ''
+        $env:AUTO_UI_TEST_MODULES = ''
+        $env:SELECTED_UI_TEST_MODULES = 'ColorPicker.UITests;MouseWithoutBorders.UITests'
+        $env:UI_TEST_EXECUTION_MODULES = ''
+        $env:SHARD_COUNT = '1'
+        $env:MWB_SELECTION_BLOCKED = 'false'
+        $env:RUN_MWB_SANDBOX = 'true'
+        $env:RUN_GENERIC_UI_TESTS = 'true'
+    }
+
+    AfterEach {
+        foreach ($name in $environment.Keys) {
+            [Environment]::SetEnvironmentVariable($name, $environment[$name])
+        }
+    }
+
+    It 'executes the actual shared step for <Scenario>' -TestCases @(
+        @{ Scenario = 'mixed Win10'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = ''; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 0 }
+        @{ Scenario = 'mixed Win11'; Platform = 'x64Win11'; Generic = $true; Mwb = $true; Failure = ''; Blocked = $false; Expected = 'Generic,Install,Prepare,Run'; ExitCode = 0 }
+        @{ Scenario = 'MWB only'; Platform = 'x64Win10'; Generic = $false; Mwb = $true; Failure = ''; Blocked = $false; Expected = 'Prepare,Run'; ExitCode = 0 }
+        @{ Scenario = 'unrelated selection'; Platform = 'x64Win10'; Generic = $true; Mwb = $false; Failure = ''; Blocked = $false; Expected = 'Generic'; ExitCode = 0 }
+        @{ Scenario = 'ARM64'; Platform = 'arm64'; Generic = $true; Mwb = $false; Failure = ''; Blocked = $false; Expected = 'Generic'; ExitCode = 0 }
+        @{ Scenario = 'generic failure'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'Generic'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
+        @{ Scenario = 'missing non-elevated executable'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'MissingRunner'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
+        @{ Scenario = 'confirmed worker timeout'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'CompletedWorker'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
+        @{ Scenario = 'unconfirmed worker'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'UnconfirmedWorker'; Blocked = $false; Expected = 'Generic'; ExitCode = 1 }
+        @{ Scenario = 'client setup failure'; Platform = 'x64Win11'; Generic = $true; Mwb = $true; Failure = 'Install'; Blocked = $false; Expected = 'Generic,Install'; ExitCode = 1 }
+        @{ Scenario = 'preparation failure'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'Prepare'; Blocked = $false; Expected = 'Generic,Prepare'; ExitCode = 1 }
+        @{ Scenario = 'test failure'; Platform = 'x64Win10'; Generic = $true; Mwb = $true; Failure = 'Run'; Blocked = $false; Expected = 'Generic,Prepare,Run'; ExitCode = 1 }
+        @{ Scenario = 'unsupported mixed source'; Platform = 'x64Win10'; Generic = $true; Mwb = $false; Failure = ''; Blocked = $true; Expected = 'Generic'; ExitCode = 1 }
+        @{ Scenario = 'unsupported MWB-only source'; Platform = 'x64Win10'; Generic = $false; Mwb = $false; Failure = ''; Blocked = $true; Expected = ''; ExitCode = 1 }
+    ) {
+        param($Scenario, $Platform, $Generic, $Mwb, $Failure, $Blocked, $Expected, $ExitCode)
+        $env:RUN_GENERIC_UI_TESTS = $Generic.ToString().ToLowerInvariant()
+        $env:RUN_MWB_SANDBOX = $Mwb.ToString().ToLowerInvariant()
+        $env:MWB_SELECTION_BLOCKED = $Blocked.ToString().ToLowerInvariant()
+        $env:MWB_FLOW_FAILURE = $Failure
+        if ($Failure -in @('MissingRunner','CompletedWorker','UnconfirmedWorker')) {
+            $env:SELECTED_UI_TEST_MODULES += ';MouseUtils.UITests.Next'
+            $suite = 'MouseUtils.UITests.Next'
+            $runner = New-Item -ItemType Directory "$fixture\artifact\tests\$suite" -Force
+            '{}' | Set-Content "$runner\$suite.runtimeconfig.json"
+            if ($Failure -ne 'MissingRunner') {
+                'fixture' | Set-Content "$runner\$suite.exe"
+                @'
+param($TestExecutable, $ResultsDirectory, $Filter, [ref]$DesktopWorkerUnconfirmed)
+$DesktopWorkerUnconfirmed.Value = $env:MWB_FLOW_FAILURE -eq 'UnconfirmedWorker'
+throw 'fixture launcher failure'
+'@ | Set-Content "$fixture\.pipelines\runUiTestAsUser.ps1"
+            }
+        }
+        $step = Get-UiTestFlowStep 'Run UI Tests'
+        $step = $step.Replace('$(Pipeline.Workspace)\$(TestArtifactsName)', "$fixture\artifact").
+            Replace('$(Build.SourcesDirectory)', $fixture).Replace('$(build.sourcesdirectory)', $fixture).
+            Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
+            Replace('$(System.JobId)', [guid]::NewGuid().ToString()).Replace('$(TestPlatform)', $Platform).
+            Replace('$(BuildPlatform)', $(if ($Platform -eq 'arm64') { 'arm64' } else { 'x64' })).
+            Replace('$(Build.SourceVersion)', 'revision').Replace('$(BuildConfiguration)', 'Release')
+        $prefix = @'
+$PSStyle.OutputRendering = 'PlainText'
+function dotnet {
+    'Generic' | Add-Content $env:MWB_FLOW_LOG
+    $global:LASTEXITCODE = if ($env:MWB_FLOW_FAILURE -eq 'Generic') { 23 } else { 0 }
+}
+'@
+        $path = Join-Path $fixture 'dispatch.ps1'
+        ($prefix + [Environment]::NewLine + $step) | Set-Content $path
+        $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @('-NoProfile', '-File', $path) 30
+        $result.TimedOut | Should Be $false
+        $result.ExitCode | Should Be $ExitCode
+        $actual = if (Test-Path $env:MWB_FLOW_LOG) { (Get-Content $env:MWB_FLOW_LOG) -join ',' } else { '' }
+        $actual | Should Be $Expected
+        foreach ($phase in @($Expected -split ',' | Where-Object { $_ -and $_ -ne 'Generic' })) {
+            $result.Output | Should Match ([regex]::Escape("MWB phase stdout: $phase"))
+            $result.Output | Should Match ([regex]::Escape("MWB phase stderr: $phase"))
+        }
+        if ($Mwb -and $Failure -notin @('Install', 'Prepare', 'Run','UnconfirmedWorker')) {
+            $result.Output | Should Match 'variable=MwbUiTestsPassed\]true'
+        } else {
+            $result.Output | Should Not Match 'variable=MwbUiTestsPassed\]true'
+        }
+        if ($ExitCode) { $result.Output | Should Match 'task.logissue type=error' }
+    }
+
+    It 'runs Sandbox before both driver fixtures and preserves <Failure> results without native uninstall' -TestCases @(
+        @{ Failure = ''; ExitCode = 0 }
+        @{ Failure = 'Run'; ExitCode = 1 }
+        @{ Failure = 'PowerDisplay.UITests'; ExitCode = 1 }
+    ) {
+        param($Failure, $ExitCode)
+        $env:TF_BUILD = 'True'
+        $env:SYSTEM_JOBID = [guid]::NewGuid().ToString()
+        $env:MWB_FLOW_FAILURE = $Failure
+        $env:SELECTED_UI_TEST_MODULES = 'ColorPicker.UITests;GrabAndMove.UITests;PowerDisplay.UITests;MouseWithoutBorders.UITests'
+        foreach ($suite in @('GrabAndMove.UITests', 'PowerDisplay.UITests')) {
+            $runner = New-Item -ItemType Directory "$fixture\artifact\tests\$suite" -Force
+            '{}' | Set-Content "$runner\$suite.runtimeconfig.json"
+            'not-executable' | Set-Content "$runner\$suite.exe"
+        }
+        @'
+param($TestExecutable, $ResultsDirectory, $Filter, [ref]$DesktopWorkerUnconfirmed)
+$suite = [IO.Path]::GetFileNameWithoutExtension($TestExecutable)
+$suite | Add-Content $env:MWB_FLOW_LOG
+$global:LASTEXITCODE = if ($env:MWB_FLOW_FAILURE -eq $suite) { 23 } else { 0 }
+'@ | Set-Content "$fixture\.pipelines\runUiTestAsUser.ps1"
+        foreach ($manager in @(
+            @{ Path = 'umdf-hid-smoke\Manage-SmokeDriver.ps1'; Kind = 'Hid' },
+            @{ Path = 'powerdisplay-idd-poc\Manage-Poc.ps1'; Kind = 'Display' }
+        )) {
+            $path = Join-Path "$fixture\.pipelines" $manager.Path
+            New-Item -ItemType Directory (Split-Path $path -Parent) -Force | Out-Null
+            @'
+param($Action, $StatePath, $ResultsDirectory, $ArtifactDirectory, [switch]$IsolatedGuest)
+if ($Action -ne 'Install') { throw 'Native uninstall must not run on the disposable CI worker.' }
+New-Item -ItemType Directory (Split-Path $StatePath -Parent) -Force | Out-Null
+'{"ImportedStores":["Root"]}' | Set-Content $StatePath
+'__KIND__:Install' | Add-Content $env:MWB_FLOW_LOG
+'@.Replace('__KIND__', $manager.Kind) | Set-Content $path
+        }
+        $step = (Get-UiTestFlowStep 'Run UI Tests').
+            Replace('$(Pipeline.Workspace)\$(TestArtifactsName)', "$fixture\artifact").
+            Replace('$(Build.SourcesDirectory)', $fixture).Replace('$(build.sourcesdirectory)', $fixture).
+            Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
+            Replace('$(System.JobId)', $env:SYSTEM_JOBID).Replace('$(TestPlatform)', 'x64Win10').
+            Replace('$(BuildPlatform)', 'x64').Replace('$(Build.SourceVersion)', 'revision').
+            Replace('$(BuildConfiguration)', 'Release')
+        $prefix = @'
+function dotnet {
+    'Generic' | Add-Content $env:MWB_FLOW_LOG
+    $global:LASTEXITCODE = 0
+}
+'@
+        $path = Join-Path $fixture 'driver-last-dispatch.ps1'
+        ($prefix + [Environment]::NewLine + $step) | Set-Content $path
+        $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @('-NoProfile', '-File', $path) 30
+        $result.TimedOut | Should Be $false
+        $result.ExitCode | Should Be $ExitCode
+        ((Get-Content $env:MWB_FLOW_LOG) -join ',') | Should Be `
+            'Generic,Prepare,Run,Hid:Install,GrabAndMove.UITests,Display:Install,PowerDisplay.UITests'
+        foreach ($kind in @('Hid', 'Display')) {
+            $disposal = Get-Content (Join-Path $fixture "results\umdf-$($kind.ToLowerInvariant())\disposal.json") -Raw |
+                ConvertFrom-Json
+            Test-Path $disposal.OwnershipJournal | Should Be $true
+            $disposal.NativeRemovalAttempted | Should Be $false
+        }
+    }
+
+    It 'always attempts all cleanup actions after <Failure>' -TestCases @(
+        @{ Failure = ''; ExitCode = 0 }
+        @{ Failure = 'Recover'; ExitCode = 1 }
+        @{ Failure = 'Cleanup'; ExitCode = 1 }
+        @{ Failure = 'Diagnostics'; ExitCode = 1 }
+        @{ Failure = 'LightSwitchCleanup'; ExitCode = 1 }
+    ) {
+        param($Failure, $ExitCode)
+        $env:MWB_FLOW_FAILURE = $Failure
+        $step = (Get-UiTestFlowStep 'Restore UI-test prerequisites').
+            Replace('$(Build.SourcesDirectory)', $fixture).Replace('$(build.sourcesdirectory)', $fixture).
+            Replace('$(Common.TestResultsDirectory)', "$fixture\results").Replace('$(Agent.WorkFolder)', $fixture).
+            Replace('$(Pipeline.Workspace)\$(TestArtifactsName)', "$fixture\artifact").Replace('$(BuildPlatform)', 'x64').
+            Replace('$(System.JobId)', [guid]::NewGuid().ToString())
+        $path = Join-Path $fixture 'cleanup.ps1'
+        $step | Set-Content $path
+        $result = Invoke-MwbClientCommand (Get-Process -Id $PID).Path @('-NoProfile', '-File', $path) 30
+        $result.TimedOut | Should Be $false
+        $result.ExitCode | Should Be $ExitCode
+        ((Get-Content $env:MWB_FLOW_LOG) -join ',') | Should Be 'Recover,Cleanup,Diagnostics,LightSwitchCleanup'
+        if ($ExitCode) {
+            $result.Output | Should Not Match 'variable=UiTestCleanupComplete\]true'
+            $result.Output | Should Match 'task.logissue type=error'
+        } else {
+            $result.Output | Should Match 'variable=UiTestCleanupComplete\]true'
+        }
+    }
+}
+
+Describe 'Pipeline readiness and failure diagnostic publication' {
+    It 'evaluates the actual artifact condition for <Scenario>' -TestCases @(
+        @{ Scenario = 'green'; Selected = 'true'; Passed = 'true'; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $true }
+        @{ Scenario = 'unselected failure'; Selected = 'false'; Passed = ''; Cleaned = ''; Failed = $true; Canceled = $false; Publish = $false }
+        @{ Scenario = 'missing TRX'; Selected = 'true'; Passed = ''; Cleaned = 'true'; Failed = $false; Canceled = $false; Publish = $true }
+        @{ Scenario = 'interrupted cleanup'; Selected = 'true'; Passed = 'true'; Cleaned = ''; Failed = $false; Canceled = $false; Publish = $true }
+        @{ Scenario = 'test or setup failure'; Selected = 'true'; Passed = ''; Cleaned = 'true'; Failed = $true; Canceled = $false; Publish = $true }
+        @{ Scenario = 'another suite failure'; Selected = 'true'; Passed = 'true'; Cleaned = 'true'; Failed = $true; Canceled = $false; Publish = $true }
+        @{ Scenario = 'cancellation after success'; Selected = 'true'; Passed = 'true'; Cleaned = 'true'; Failed = $false; Canceled = $true; Publish = $true }
+        @{ Scenario = 'cancellation before execution'; Selected = 'true'; Passed = ''; Cleaned = ''; Failed = $false; Canceled = $true; Publish = $true }
+    ) {
+        param($Scenario, $Selected, $Passed, $Cleaned, $Failed, $Canceled, $Publish)
+        $yaml = Get-Content "$PSScriptRoot\..\v2\templates\job-test-project.yml" -Raw
+        $condition = [regex]::Match($yaml, 'displayName: Publish UI-test diagnostics\r?\n\s*condition: ([^\r\n]+)').Groups[1].Value
+        $variables = @{ RunMwbSandbox = $Selected; MwbUiTestsPassed = $Passed; UiTestCleanupComplete = $Cleaned }
+        $condition = [regex]::Replace($condition, "(eq|ne)\(variables\['([^']+)'\], 'true'\)", {
+            param($match)
+            $equal = $variables[$match.Groups[2].Value] -eq 'true'
+            $(if ($match.Groups[1].Value -eq 'eq') { $equal } else { -not $equal }).ToString().ToLowerInvariant()
+        })
+        $condition = $condition.Replace('always()', 'true').Replace('failed()', $Failed.ToString().ToLowerInvariant()).
+            Replace('canceled()', $Canceled.ToString().ToLowerInvariant())
+        $flat = '(and|or)\(((?:true|false)(?:, (?:true|false))*)\)'
+        while ([regex]::IsMatch($condition, $flat)) {
+            $condition = [regex]::Replace($condition, $flat, {
+                param($match)
+                $values = $match.Groups[2].Value -split ', '
+                $(if ($match.Groups[1].Value -eq 'and') { $values -notcontains 'false' } else { $values -contains 'true' }).ToString().ToLowerInvariant()
+            })
+        }
+        $condition | Should Be $Publish.ToString().ToLowerInvariant()
+    }
+
+    It 'exports cancellation evidence before potentially lengthy test attachment publication' {
+        $yaml = Get-Content "$PSScriptRoot\..\v2\templates\job-test-project.yml" -Raw
+        $diagnostics = $yaml.IndexOf('displayName: Publish UI-test diagnostics')
+        $diagnostics | Should BeGreaterThan $yaml.IndexOf('displayName: Restore UI-test prerequisites')
+        $diagnostics | Should BeLessThan $yaml.IndexOf('displayName: "Publish UI Test Results"')
+    }
+}

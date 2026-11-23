@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
@@ -164,8 +165,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var command = model.Command;
-        if (!ReplaceCommand(command))
+        if (!UpdateCommand(model))
         {
             return;
         }
@@ -174,7 +174,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         Subtitle = model.Subtitle;
         _titleCache.Invalidate();
         _subtitleCache.Invalidate();
-        TryCreateDefaultCommandContextItem(command);
+        TryCreateDefaultCommandContextItem(Command.Model.Unsafe);
 
         Initialized |= InitializedState.FastInitialized;
     }
@@ -198,7 +198,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        Command.InitializeProperties();
+        InitializeOwnedCommandProperties();
 
         var icon = model.Icon;
         if (icon is not null)
@@ -206,6 +206,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _icon = new(icon);
             _icon.InitializeProperties();
         }
+
+        // The primary context item can exist before the icons load
+        UpdateDefaultContextItemIcon();
 
         // TODO: Do these need to go into FastInit?
         SubscribeToChanges(model);
@@ -342,6 +345,8 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
+        // A host adapter can report the same borrowed command more than once.
+        command.PropertyChanged -= Command_PropertyChanged;
         command.PropertyChanged += Command_PropertyChanged;
         if (IsCleanedUp || !ReferenceEquals(command, Command))
         {
@@ -377,16 +382,16 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
-                var command = model.Command;
+                var currentIcon = Icon;
 
-                // ReplaceCommand detaches this item's handler from the command it
+                // Updating the command detaches this item's handler from the command it
                 // displaces, so there is no manual unsubscribe to remember here.
-                if (!ReplaceCommand(command))
+                if (!UpdateCommand(model))
                 {
                     return;
                 }
 
-                Command.InitializeProperties();
+                InitializeOwnedCommandProperties();
                 SubscribeToCommand(Command);
 
                 // Extensions based on Command Palette SDK < 0.3 CommandItem class won't notify when Title changes because Command
@@ -401,12 +406,18 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
                 }
                 else
                 {
-                    TryCreateDefaultCommandContextItem(command);
+                    TryCreateDefaultCommandContextItem(Command.Model.Unsafe);
                 }
 
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
-                UpdateProperty(nameof(Icon));
+
+                // A needless notification restarts icon loading
+                if (!ReferenceEquals(currentIcon, Icon))
+                {
+                    UpdateProperty(nameof(Icon));
+                }
+
                 UpdateProperty(nameof(HasText));
                 UpdateProperty(nameof(CanOpenContextMenu));
                 break;
@@ -479,18 +490,24 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 if (_defaultCommandContextItemViewModel is not null)
                 {
-                    _defaultCommandContextItemViewModel.UpdateTitle(model.Command.Name);
+                    _defaultCommandContextItemViewModel.UpdateTitle(Command.Name);
                 }
                 else
                 {
-                    TryCreateDefaultCommandContextItem(model.Command);
+                    TryCreateDefaultCommandContextItem(Command.Model.Unsafe);
                 }
 
                 break;
 
             case nameof(Command.Icon):
                 UpdateDefaultContextItemIcon();
-                UpdateProperty(nameof(Icon));
+
+                // Our own icon have precedence over the command icon
+                if (!_icon.IsSet)
+                {
+                    UpdateProperty(nameof(Icon));
+                }
+
                 break;
         }
     }
@@ -519,7 +536,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             return;
         }
 
-        var defaultContextItem = new CommandContextItemViewModel(new CommandContextItem(commandModel), PageContext)
+        // Set the cached title first so the SDK item does not resolve it through ICommand.Name.
+        var contextItem = new CommandContextItem(command.Name) { Command = commandModel };
+        var defaultContextItem = new CommandContextItemViewModel(contextItem, PageContext)
         {
             _itemTitle = Name,
             Subtitle = Subtitle,
@@ -557,7 +576,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private void UpdateDefaultContextItemIcon() =>
 
         // Command icon takes precedence over our icon on the primary command
-        _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
+        _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.HasAnyIcon ? Command.Icon : _icon);
 
     private void UpdateTitle(string? title)
     {
@@ -596,6 +615,24 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
     public FuzzyTarget GetSubtitleTarget(IPrecomputedFuzzyMatcher matcher)
         => _subtitleCache.GetOrUpdate(matcher, Subtitle);
+
+    private bool UpdateCommand(ICommandItem item)
+    {
+        while (item is RecentCommandListItem recent)
+        {
+            item = recent.Source.Safe;
+        }
+
+        if (item is TopLevelViewModel topLevel)
+        {
+            // Home/search rows wrap a host-owned item whose command metadata is already loaded.
+            // Rebuilding it would synchronously read Id/Name from the extension again.
+            BorrowCommand(topLevel.CommandViewModel);
+            return !IsCleanedUp;
+        }
+
+        return ReplaceCommand(item.Command);
+    }
 
     /// <summary>
     /// Replaces <see cref="Command"/> with a newly built view-model this item owns, cleaning up the one being dropped.
@@ -653,6 +690,14 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         }
 
         ReleaseReplaced(replaced, command);
+    }
+
+    private void InitializeOwnedCommandProperties()
+    {
+        if (_commandState.Owned)
+        {
+            _commandState.Command.InitializeProperties();
+        }
     }
 
     /// <summary>

@@ -40,14 +40,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Bgcode
         /// <param name="reader">The BinaryReader instance for the Binary G-code content.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
         /// <returns>A thumbnail extracted from the Binary G-code content.</returns>
-        public static Bitmap GetThumbnail(BinaryReader reader, uint cx)
+        public static Bitmap? GetThumbnail(BinaryReader? reader, uint cx)
         {
             if (cx > MaxThumbnailSize || reader == null || reader.BaseStream.Length == 0)
             {
                 return null;
             }
 
-            Bitmap thumbnail = null;
+            Bitmap? thumbnail = null;
 
             try
             {
@@ -82,7 +82,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Bgcode
         /// <param name="width">The width to resize to.</param>
         /// <param name="height">The height to resize to.</param>
         /// <returns>The resized image.</returns>
-        public static Bitmap ResizeImage(Image image, int width, int height)
+        public static Bitmap? ResizeImage(Image image, int width, int height)
         {
             if (width <= 0 ||
                 height <= 0 ||
@@ -118,7 +118,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Bgcode
         /// </summary>
         /// <param name="cx">Maximum thumbnail size, in pixels.</param>
         /// <returns>Generated bitmap</returns>
-        public Bitmap GetThumbnail(uint cx)
+        public Bitmap? GetThumbnail(uint cx)
         {
             if (cx == 0 || cx > MaxThumbnailSize)
             {
@@ -133,7 +133,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Bgcode
 
             using (var reader = new BinaryReader(this.Stream))
             {
-                Bitmap thumbnail = GetThumbnail(reader, cx);
+                Bitmap? thumbnail = GetThumbnail(reader, cx);
                 if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
                 {
                     return thumbnail;

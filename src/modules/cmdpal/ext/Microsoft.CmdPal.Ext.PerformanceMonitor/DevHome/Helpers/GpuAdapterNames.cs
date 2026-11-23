@@ -20,7 +20,7 @@ namespace CoreWidgetProvider.Helpers;
 /// </summary>
 internal static class GpuAdapterNames
 {
-    internal readonly record struct AdapterInfo(string Description, bool IsSoftware);
+    internal readonly record struct AdapterInfo(string Description, bool IsSoftware, ulong DedicatedVideoMemory = 0, ulong SharedSystemMemory = 0);
 
     // Driver descriptions have no separate short model field; preserve unrecognized names.
     internal static string GetShortName(string? description)
@@ -36,6 +36,14 @@ internal static class GpuAdapterNames
             .Replace("\u00ae", string.Empty, StringComparison.Ordinal)
             .Replace("\u2122", string.Empty, StringComparison.Ordinal);
         name = string.Join(' ', name.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
+
+        // Some drivers append details in parentheses, such as the core count and architecture,
+        // that make the name too long for a label.
+        if (name.EndsWith(')') && name.LastIndexOf(" (", StringComparison.Ordinal) is > 0 and var detailsStart)
+        {
+            name = name[..detailsStart];
+        }
+
         var original = name;
 
         if (name.StartsWith("NVIDIA ", StringComparison.OrdinalIgnoreCase))
@@ -138,7 +146,7 @@ internal static class GpuAdapterNames
                     // stops at the null terminator and yields the friendly name.
                     var description = desc.Description.ToString();
 
-                    adapters[luidKey] = new AdapterInfo(description, isSoftware);
+                    adapters[luidKey] = new AdapterInfo(description, isSoftware, desc.DedicatedVideoMemory, desc.SharedSystemMemory);
                 }
                 finally
                 {

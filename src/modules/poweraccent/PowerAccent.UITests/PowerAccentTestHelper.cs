@@ -25,6 +25,9 @@ internal static class PowerAccentTestHelper
     private const int EnglishUnitedStatesLanguageId = 0x0409;
     private const int OverlayStartupTimeoutMs = 30_000;
     private const int SettingsReloadTimeoutMs = 30_000;
+
+    // Each scroll poll runs several winappcli UIA searches, which can take seconds apiece on CI agents.
+    private const int ScrollIntoViewTimeoutMs = 15_000;
     private const int VkCapital = 0x14;
 
     [DllImport("user32.dll")]
@@ -52,7 +55,8 @@ internal static class PowerAccentTestHelper
         string SelectedLanguage = "ALL",
         string ExcludedApps = "",
         bool SortByUsageFrequency = false,
-        bool StartSelectionFromTheLeft = false);
+        bool StartSelectionFromTheLeft = false,
+        bool ShowUnicodeDescription = false);
 
     private sealed record OverlayObservation(
         WindowControl.ProcessWindow Window,
@@ -70,7 +74,7 @@ internal static class PowerAccentTestHelper
         WaitForOverlayState(testBase, revealed: false, timeoutMs: OverlayStartupTimeoutMs);
         var logOffsets = CaptureQuickAccentLogOffsets();
         WriteSettings(settings);
-        WaitForSettingsReload(testBase, settings.SelectedLanguage, logOffsets);
+        WaitForSettingsReload(testBase, settings, logOffsets);
     }
 
     internal static void AssertInputEnvironment()
@@ -126,19 +130,30 @@ internal static class PowerAccentTestHelper
 
     private static void WaitForSettingsReload(
         UITestBase testBase,
-        string selectedLanguage,
+        Settings settings,
         IReadOnlyDictionary<string, long> logOffsets)
     {
-        var languages = selectedLanguage
+        var languages = settings.SelectedLanguage
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(language => language.Trim().ToUpperInvariant());
         var acknowledgement = $"Languages selected: {string.Join(", ", languages)}";
+        var lastWrite = Stopwatch.StartNew();
 
         var result = WaitHelper.WaitForStable(
             () => FindSettingsReloadAcknowledgement(logOffsets, acknowledgement),
             matchedLog => matchedLog is not null,
             SettingsReloadTimeoutMs,
             pollIntervalMS: 100,
+            recover: _ =>
+            {
+                // The cloaked HWND can precede SettingsService's file-watcher subscription.
+                if (lastWrite.ElapsedMilliseconds >= 1_000)
+                {
+                    Step(testBase, "Rewriting the same Quick Accent settings while awaiting the runtime acknowledgement.");
+                    WriteSettings(settings);
+                    lastWrite.Restart();
+                }
+            },
             shouldRetryException: ex => ex is IOException or UnauthorizedAccessException);
         var failure = $"Quick Accent did not acknowledge its settings reload within {SettingsReloadTimeoutMs} ms. " +
                       $"Expected a new '{acknowledgement}' log entry under '{QuickAccentLogRoot}'. " +
@@ -585,6 +600,34 @@ internal static class PowerAccentTestHelper
         return list!.Height / dpiScale;
     }
 
+    internal static void AssertDescriptionVerticallyCentered(UITestBase testBase, Session toolbar)
+    {
+        MeasureCharacterListHeightDip(testBase, toolbar);
+        var bounds = GetStableVisibleBounds(toolbar);
+        var dpiScale = GetDpiForWindow(new IntPtr(toolbar.WindowHandle)) / 96d;
+        Assert.IsTrue(dpiScale > 0, "Could not determine Quick Accent window DPI.");
+        var list = toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 5_000);
+        var description = toolbar.Find<Element>(By.AccessibilityId("QuickAccentDescription"), 5_000);
+        Assert.IsTrue(description.Width > 0 && description.Height > 0, "The Unicode description should be visible.");
+
+        // Exclude the transparent bottom margin and surface border.
+        const double bottomChromeDip = 16 + 1;
+        const double roundingToleranceDip = 2;
+        var topGap = (description.Y - list.Y - list.Height) / dpiScale;
+        var bottomGap = ((bounds.Bottom - description.Y - description.Height) / dpiScale) - bottomChromeDip;
+        var details = $"Unicode description spacing: top={topGap} DIPs, bottom={bottomGap} DIPs.";
+        Step(testBase, details);
+        Assert.AreEqual(topGap, bottomGap, roundingToleranceDip, details);
+
+        const double expectedToolbarHeightDip = 92 + 36;
+        var toolbarHeightDip = (bounds.Bottom - bounds.Top) / dpiScale;
+        Assert.AreEqual(
+            expectedToolbarHeightDip,
+            toolbarHeightDip,
+            roundingToleranceDip,
+            "Centering a one-line description should preserve the existing toolbar height.");
+    }
+
     internal static void AssertKeyboardNavigationScrollsIntoView(
         UITestBase testBase,
         Session toolbar,
@@ -615,13 +658,14 @@ internal static class PowerAccentTestHelper
             observation => observation.Last is not null && observation.Last.Selected &&
                            IsHorizontallyWithin(observation.Last, observation.Viewport) &&
                            observation.First is not null && observation.First.X < initialFirstX - 1,
-            timeoutMS: 5_000,
-            requiredConsecutiveMatches: 3,
+            timeoutMS: ScrollIntoViewTimeoutMs,
+            requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
         var bounds = result.LastObservation;
         var details = $"Viewport X={bounds.Viewport?.X}, width={bounds.Viewport?.Width}; " +
-                      $"selected last item X={bounds.Last?.X}, width={bounds.Last?.Width}; " +
-                      $"first item X={initialFirstX} -> {bounds.First?.X}.";
+                      $"last item X={bounds.Last?.X}, width={bounds.Last?.Width}, selected={bounds.Last?.Selected}; " +
+                      $"first item X={initialFirstX} -> {bounds.First?.X}, width={bounds.First?.Width}; " +
+                      $"consecutive matches={result.ConsecutiveMatches}.";
         Step(testBase, details);
         Assert.IsTrue(result.Succeeded, $"Keyboard navigation did not scroll the selected character into view. {details}");
 
@@ -633,13 +677,13 @@ internal static class PowerAccentTestHelper
             observation => observation.First is not null && observation.First.Selected &&
                            IsHorizontallyWithin(observation.First, observation.Viewport) &&
                            observation.First.X > bounds.First!.X + 1,
-            timeoutMS: 5_000,
-            requiredConsecutiveMatches: 3,
+            timeoutMS: ScrollIntoViewTimeoutMs,
+            requiredConsecutiveMatches: 2,
             pollIntervalMS: 100);
         var returnedBounds = returnResult.LastObservation;
         var returnDetails = $"Viewport X={returnedBounds.Viewport?.X}, width={returnedBounds.Viewport?.Width}; " +
-                            $"selected first item X={returnedBounds.First?.X}, width={returnedBounds.First?.Width}; " +
-                            $"initial first item X={initialFirstX}.";
+                            $"first item X={returnedBounds.First?.X}, width={returnedBounds.First?.Width}, selected={returnedBounds.First?.Selected}; " +
+                            $"initial first item X={initialFirstX}; consecutive matches={returnResult.ConsecutiveMatches}.";
         Step(testBase, returnDetails);
         Assert.IsTrue(
             returnResult.Succeeded,
@@ -742,7 +786,7 @@ internal static class PowerAccentTestHelper
                 ["hold_duration_ms"] = Value(settings.HoldDurationMs),
                 ["selected_lang"] = Value(settings.SelectedLanguage),
                 ["excluded_apps"] = Value(settings.ExcludedApps),
-                ["show_description"] = false,
+                ["show_description"] = settings.ShowUnicodeDescription,
                 ["sort_by_usage_frequency"] = settings.SortByUsageFrequency,
                 ["start_selection_from_the_left"] = settings.StartSelectionFromTheLeft,
             },

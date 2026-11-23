@@ -26,7 +26,7 @@ Required plan file (single source of truth):
 For **#{{issue_number}}**:
 - Use implementation-plan.md as the single authority.
 - Apply code and test changes directly in the repository.
-- Produce a PR-ready description.
+- Produce author notes for the PR. The human writes the PR description (see AGENTS.md "Pull request descriptions (hard rule)").
 
 # OUTPUT FILES
 1) Generated Files/issueFix/{{issue_number}}/pr-description.md
@@ -47,15 +47,26 @@ For **#{{issue_number}}**:
 // TODO(Human input needed): <clarification needed>
 5) Verify locally: build & tests run successfully.
 
-# pr-description.md should include:
-- Title: `Fix: <short summary> (#{{issue_number}})`
-- What changed and why the fix works
-- Files or modules touched
-- Risks & mitigations (implemented)
-- Tests added/updated and how to run them
-- Telemetry behavior (if applicable)
-- Validation / reproduction steps
-- `Closes #{{issue_number}}`
+# pr-description.md (author notes, NOT a PR body)
+A human must write the visible PR body in their own words. Do not write a ready-to-paste description. Structure the file as follows:
+1. A short note at the top: "Write the PR summary, description, and validation steps in your own words. Paste only the <details> block below into the PR."
+2. Facts to help the author write it, as terse bullet points:
+   - Suggested title: `Fix: <short summary> (#{{issue_number}})`
+   - Files or modules touched
+   - Risks & mitigations (implemented)
+   - Tests added/updated and how to run them
+   - Telemetry behavior (if applicable)
+   - Validation / reproduction steps performed
+   - `Closes #{{issue_number}}`
+3. Any explanatory prose (what changed and why the fix works) ONLY inside:
+   ```markdown
+   <details>
+   <summary>AI-generated summary</summary>
+
+   ...
+
+   </details>
+   ```
 
 # manual-steps.md (only if needed)
 - List required human actions: secrets, config, approvals, missing info, or code comments requiring human decisions.
@@ -67,6 +78,6 @@ For **#{{issue_number}}**:
 - Use repository conventions and deterministic, minimal changes.
 
 # FINALIZE
-- Write pr-description.md
+- Write pr-description.md (author notes; prose only inside the AI-generated `<details>` block)
 - Write manual-steps.md only if needed
-- Print concise success message or note items requiring human interaction
+- Print concise success message or note items requiring human interaction, and remind the user to write the PR description in their own words

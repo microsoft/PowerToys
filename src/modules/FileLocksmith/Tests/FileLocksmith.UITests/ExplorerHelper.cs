@@ -7,19 +7,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.FileLocksmith.UITests;
 
-/// <summary>Which Explorer context-menu surface a probe should drive.</summary>
-internal enum ContextMenuTier
-{
-    /// <summary>Whatever the OS shows on a plain right-click: tier-1 on Windows 11, classic on Windows 10.</summary>
-    Default,
-
-    /// <summary>The classic <c>#32768</c> menu, reached through "Show more options" on Windows 11.</summary>
-    Classic,
-}
-
-/// <summary>One stable look at an open context menu.</summary>
-internal sealed record MenuObservation(bool IsOpen, bool HasCommand, bool HasSibling);
-
 /// <summary>
 /// Opens Explorer, establishes an exact Shell selection, and drives either context-menu tier. The
 /// selection is re-established on every attempt because a slow agent re-renders the view
@@ -262,11 +249,15 @@ internal static class ExplorerHelper
         }
     }
 
-    private static void EnsureForeground(Session explorer) => Assert.IsTrue(
-        WindowControl.WaitForForeground(
+    private static void EnsureForeground(Session explorer)
+    {
+        bool isForeground = WindowControl.WaitForForeground(
             new IntPtr(explorer.WindowHandle),
             ExplorerTimeoutMS,
-            requiredConsecutiveMatches: 3),
-        $"Explorer HWND {explorer.WindowHandle} was not the stable foreground window. " +
-        $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            requiredConsecutiveMatches: 3);
+        string foregroundMessage =
+            $"Explorer HWND {explorer.WindowHandle} was not the stable foreground window. " +
+            $"Current foreground: {WindowControl.GetForegroundWindowInfo()}.";
+        Assert.IsTrue(isForeground, foregroundMessage);
+    }
 }

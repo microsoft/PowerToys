@@ -65,7 +65,8 @@ public partial class MainViewModel
         try
         {
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);
-            settings.Properties.ExcludedFromSyncMonitorIds = _excludedMonitorIds.ToList();
+            settings.Properties.ExcludedFromSyncMonitorIds.Clear();
+            settings.Properties.ExcludedFromSyncMonitorIds.AddRange(_excludedMonitorIds);
 
             _settingsUtils.SaveSettings(
                 System.Text.Json.JsonSerializer.Serialize(settings, AppJsonContext.Default.PowerDisplaySettings),
@@ -389,12 +390,13 @@ public partial class MainViewModel
                     continue;
                 }
 
-                var (brightness, colorTemp, contrast, volume) = savedState.Value;
+                var (brightness, colorTemp, contrast, volume, refreshRate) = savedState.Value;
 
                 TryRestore(updateTasks, brightness, monitorVm.ShowBrightness, monitorVm.SetBrightnessAsync);
                 TryRestore(updateTasks, colorTemp, monitorVm.ShowColorTemperature, monitorVm.SetColorTemperatureAsync);
                 TryRestore(updateTasks, contrast, monitorVm.ShowContrast, monitorVm.SetContrastAsync);
                 TryRestore(updateTasks, volume, monitorVm.ShowVolume, monitorVm.SetVolumeAsync);
+                TryRestore(updateTasks, refreshRate, monitorVm.ShowRefreshRate, monitorVm.SetRefreshRateAsync);
             }
 
             if (updateTasks.Count > 0)
@@ -428,6 +430,7 @@ public partial class MainViewModel
             monitorVm.ShowVolume = monitorSettings.EnableVolume && monitorVm.SupportsVolume;
             monitorVm.ShowInputSource = monitorSettings.EnableInputSource && monitorVm.SupportsInputSource;
             monitorVm.ShowRotation = monitorSettings.EnableRotation;
+            monitorVm.IsRefreshRateEnabled = monitorSettings.EnableRefreshRate;
             monitorVm.ShowColorTemperature = monitorSettings.EnableColorTemperature && monitorVm.SupportsColorTemperature;
             monitorVm.ShowPowerState = monitorSettings.EnablePowerState && monitorVm.SupportsPowerState;
         }
@@ -536,7 +539,8 @@ public partial class MainViewModel
                 retentionDays: PowerDisplaySettings.MonitorEntryRetentionDays);
 
             // Update monitors list
-            settings.Properties.Monitors = monitors;
+            settings.Properties.Monitors.Clear();
+            settings.Properties.Monitors.AddRange(monitors);
 
             // Save back to settings.json using source-generated context for AOT
             _settingsUtils.SaveSettings(
@@ -582,18 +586,22 @@ public partial class MainViewModel
             SupportsInputSource = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x60) ?? false,
             SupportsVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             SupportsPowerState = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0xD6) ?? false,
+            SupportsRefreshRate = vm.SupportsRefreshRate,
 
             // Default Enable* for new monitors (first-time setup):
             // - Contrast / Volume: enabled if the monitor advertises the VCP code (low-risk features).
             // - InputSource / ColorTemperature / PowerState: always disabled by default. These can leave
             //   the monitor in a state recoverable only via physical buttons; users opt-in via the
             //   Settings UI checkbox, which raises a confirmation dialog (HandleDangerousFeatureClickAsync).
+            // - RefreshRate: always enabled. The flyout hides it unless the current mode offers more
+            //   than one rate, so the preference survives resolution changes.
             // ApplyPreservedUserSettings will override these with saved user preferences if they exist.
             EnableContrast = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x12) ?? false,
             EnableVolume = vm.VcpCapabilitiesInfo?.SupportedVcpCodes.ContainsKey(0x62) ?? false,
             EnableInputSource = false,
             EnableColorTemperature = false,
             EnablePowerState = false,
+            EnableRefreshRate = true,
 
             // Monitor number for display name formatting
             MonitorNumber = vm.MonitorNumber,
@@ -633,6 +641,7 @@ public partial class MainViewModel
         target.EnableRotation = source.EnableRotation;
         target.EnableColorTemperature = source.EnableColorTemperature;
         target.EnablePowerState = source.EnablePowerState;
+        target.EnableRefreshRate = source.EnableRefreshRate;
     }
 
     /// <summary>
@@ -751,13 +760,12 @@ public partial class MainViewModel
 
             // Populate value list for Settings UI ComboBox
             // Store raw name (without formatting) so Settings UI can format it consistently
-            result.ValueList = info.SupportedValues
+            result.ValueList.AddRange(info.SupportedValues
                 .Select(v => new Microsoft.PowerToys.Settings.UI.Library.VcpValueInfo
                 {
                     Value = $"0x{v:X2}",
                     Name = Common.Utils.VcpNames.GetValueName(code, v),
-                })
-                .ToList();
+                }));
         }
         else
         {

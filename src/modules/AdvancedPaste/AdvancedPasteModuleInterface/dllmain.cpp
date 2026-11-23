@@ -18,8 +18,10 @@
 #include <common/utils/EventWaiter.h>
 
 #include <algorithm>
+#include <array>
 #include <cwctype>
 #include <chrono>
+#include <string_view>
 #include <thread>
 #include <vector>
 
@@ -46,6 +48,7 @@ namespace
     const wchar_t JSON_KEY_PROPERTIES[] = L"properties";
     const wchar_t JSON_KEY_CUSTOM_ACTIONS[] = L"custom-actions";
     const wchar_t JSON_KEY_ADDITIONAL_ACTIONS[] = L"additional-actions";
+    const wchar_t JSON_KEY_PASTE_AS_FILE_ACTION[] = L"paste-as-file";
     const wchar_t JSON_KEY_SHORTCUT[] = L"shortcut";
     const wchar_t JSON_KEY_IS_SHOWN[] = L"isShown";
     const wchar_t JSON_KEY_ID[] = L"id";
@@ -270,6 +273,34 @@ private:
                         coachingHotkey
                     };
                     m_additional_actions.push_back(coachingAction);
+                }
+            }
+        }
+        else if (actionName == JSON_KEY_PASTE_AS_FILE_ACTION)
+        {
+            // Hotkey IDs are positional and must match the order of AdvancedPastePasteAsFileAction.SubActions
+            // in Settings, so walk the children in that order instead of the JSON object's iteration order.
+            // Settings files written before the JPEG action existed have no entry for it, while Settings
+            // deserializes a default one; reserve an inactive slot so the following IDs stay aligned.
+            static const std::array<std::wstring_view, 4> pasteAsFileOrder{
+                L"paste-as-txt-file",
+                L"paste-as-png-file",
+                L"paste-as-jpg-file",
+                L"paste-as-html-file"
+            };
+
+            for (const std::wstring_view subActionName : pasteAsFileOrder)
+            {
+                const winrt::hstring subActionKey{ subActionName };
+                if (action.HasKey(subActionKey))
+                {
+                    process_additional_action(subActionKey, action.GetNamedValue(subActionKey), actionIsShown);
+                }
+                else if (subActionName == L"paste-as-jpg-file")
+                {
+                    Hotkey inactiveHotkey{};
+                    inactiveHotkey.isShown = false;
+                    m_additional_actions.push_back({ std::wstring{ subActionName }, inactiveHotkey });
                 }
             }
         }

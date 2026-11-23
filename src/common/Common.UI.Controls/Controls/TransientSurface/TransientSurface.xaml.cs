@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CommunityToolkit.WinUI;
 using CommunityToolkit.WinUI.Animations;
 using Microsoft.PowerToys.Common.UI.Controls.Window;
@@ -162,6 +163,7 @@ public sealed partial class TransientSurface : ContentControl
     /// derived from <see cref="ShowTransition"/>. Assigning a value marks the set
     /// as custom so <see cref="ShowTransition"/> no longer overwrites it.
     /// </summary>
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Callers can replace custom animation sets at runtime; preserving the public setter avoids an API compatibility break.")]
     public ImplicitAnimationSet ShowAnimations
     {
         get => _showAnimations;
@@ -178,6 +180,7 @@ public sealed partial class TransientSurface : ContentControl
     /// derived from <see cref="HideTransition"/>. Assigning a value marks the set
     /// as custom so <see cref="HideTransition"/> no longer overwrites it.
     /// </summary>
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Callers can replace custom animation sets at runtime; preserving the public setter avoids an API compatibility break.")]
     public ImplicitAnimationSet HideAnimations
     {
         get => _hideAnimations;

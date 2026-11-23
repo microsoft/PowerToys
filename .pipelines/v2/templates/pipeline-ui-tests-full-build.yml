@@ -1,5 +1,8 @@
 # Template for full build path: Build PowerToys + Build UI Tests + Run Tests
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: platform
     type: string
   # buildNow = download the whole build artifact and run in place; buildNowSlim = download only the
@@ -19,9 +22,22 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  - name: uiTestDiagnosticCohorts
+    type: object
+    default: []
+  # UI-test shards (parallel agents) per test platform; 1 = one job per platform, as before.
+  - name: uiTestShardsX64Win10
+    type: number
+    default: 1
+  - name: uiTestShardsX64Win11
+    type: number
+    default: 1
+  - name: uiTestShardsArm64
+    type: number
+    default: 1
 
 stages:
-  # Stage 1: Build full PowerToys project
+  # Stage 1: build the product and UI tests from the same source revision.
   - stage: Build_${{ parameters.platform }}
     displayName: Build PowerToys ${{ parameters.platform }}
     dependsOn: []
@@ -44,43 +60,74 @@ stages:
           enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
           runTests: false
           buildTests: true
+          prepareMwbRuntime: ${{ and(eq(parameters.platform, 'x64'), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'MouseWithoutBorders.UITests'))) }}
+          prepareUmdfHid: ${{ and(or(eq(parameters.platform, 'x64'), and(eq(parameters.platform, 'arm64'), ne(parameters.umdfHidArm64Image, ''))), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests'))) }}
+          prepareUmdfDisplay: ${{ and(or(eq(parameters.platform, 'x64'), and(eq(parameters.platform, 'arm64'), ne(parameters.umdfHidArm64Image, ''))), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests'))) }}
           useVSPreview: ${{ parameters.useVSPreview }}
           timeoutInMinutes: 90
 
-  # Stage 2: Run UI Tests
+  # Stage 2: run the selected suites on each applicable Windows test image.
   - ${{ if eq(parameters.platform, 'x64') }}:
     - stage: Test_x64Win10_FullBuild
       displayName: Test x64Win10 (Full Build)
       dependsOn: Build_${{ parameters.platform }}
       jobs:
-        - template: job-test-project.yml
-          parameters:
-            platform: x64Win10
-            configuration: Release
-            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            buildSource: ${{ parameters.buildSource }}
-            uiTestModules: ${{ parameters.uiTestModules }}
+        - ${{ if eq(length(parameters.uiTestDiagnosticCohorts), 0) }}:
+          - template: job-test-project.yml
+            parameters:
+              platform: x64Win10
+              uiTestShardCount: ${{ parameters.uiTestShardsX64Win10 }}
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+              buildSource: ${{ parameters.buildSource }}
+              uiTestModules: ${{ parameters.uiTestModules }}
+        - ${{ each cohort in parameters.uiTestDiagnosticCohorts }}:
+          - template: job-test-project.yml
+            parameters:
+              platform: x64Win10
+              jobSuffix: _${{ cohort.name }}
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+              buildSource: ${{ parameters.buildSource }}
+              uiTestModules: ${{ parameters.uiTestModules }}
+              uiTestDiagnosticCohort: true
+              uiTestExecutionModules: ${{ cohort.modules }}
 
     - stage: Test_x64Win11_FullBuild
       displayName: Test x64Win11 (Full Build)
       dependsOn: Build_${{ parameters.platform }}
       jobs:
-        - template: job-test-project.yml
-          parameters:
-            platform: x64Win11
-            configuration: Release
-            useLatestWebView2: ${{ parameters.useLatestWebView2 }}
-            buildSource: ${{ parameters.buildSource }}
-            uiTestModules: ${{ parameters.uiTestModules }}
+        - ${{ if eq(length(parameters.uiTestDiagnosticCohorts), 0) }}:
+          - template: job-test-project.yml
+            parameters:
+              platform: x64Win11
+              uiTestShardCount: ${{ parameters.uiTestShardsX64Win11 }}
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+              buildSource: ${{ parameters.buildSource }}
+              uiTestModules: ${{ parameters.uiTestModules }}
+        - ${{ each cohort in parameters.uiTestDiagnosticCohorts }}:
+          - template: job-test-project.yml
+            parameters:
+              platform: x64Win11
+              jobSuffix: _${{ cohort.name }}
+              configuration: Release
+              useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+              buildSource: ${{ parameters.buildSource }}
+              uiTestModules: ${{ parameters.uiTestModules }}
+              uiTestDiagnosticCohort: true
+              uiTestExecutionModules: ${{ cohort.modules }}
 
   - ${{ if ne(parameters.platform, 'x64') }}:
     - stage: Test_${{ parameters.platform }}_FullBuild
       displayName: Test ${{ parameters.platform }} (Full Build)
       dependsOn: Build_${{ parameters.platform }}
       jobs:
-        - template: job-test-project.yml
+        - template: job-test-arm64.yml
           parameters:
+            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ parameters.platform }}
+            uiTestShardCount: ${{ parameters.uiTestShardsArm64 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}

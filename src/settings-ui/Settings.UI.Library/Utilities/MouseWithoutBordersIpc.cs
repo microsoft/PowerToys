@@ -4,9 +4,11 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
+using System.Threading.Tasks;
 
 using Microsoft.Win32.SafeHandles;
 
@@ -19,12 +21,55 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
         public const string SettingsSyncProtocol = "PowerToys.MouseWithoutBorders.v2.SettingsSync";
         public const string SettingsExecutableFileName = "PowerToys.Settings.exe";
         public const string MouseWithoutBordersExecutableFileName = "PowerToys.MouseWithoutBorders.exe";
+        public const string PairingConfiguredIndicator = "********";
 
         public static string GetSettingsSyncPipeName(int sessionId)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(sessionId);
 
             return $"{SettingsSyncProtocol}.Session.{sessionId}";
+        }
+
+        public static async Task ShutdownAndWaitForServerExitAsync(NamedPipeClientStream stream, Action requestShutdown, TimeSpan timeout)
+        {
+            ArgumentNullException.ThrowIfNull(stream);
+            ArgumentNullException.ThrowIfNull(requestShutdown);
+            ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(timeout, TimeSpan.Zero);
+
+            if (!MouseWithoutBordersIpcNativeMethods.GetNamedPipeServerProcessId(stream.SafePipeHandle, out var processId))
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            // SYSTEM workers grant query access, not synchronization or termination rights.
+            using var process = MouseWithoutBordersIpcNativeMethods.OpenProcess(
+                MouseWithoutBordersIpcNativeMethods.ProcessQueryLimitedInformation,
+                false,
+                processId);
+            if (process.IsInvalid)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error());
+            }
+
+            requestShutdown();
+            var started = Stopwatch.GetTimestamp();
+            do
+            {
+                if (!MouseWithoutBordersIpcNativeMethods.GetExitCodeProcess(process, out var exitCode))
+                {
+                    throw new Win32Exception(Marshal.GetLastWin32Error());
+                }
+
+                if (exitCode != MouseWithoutBordersIpcNativeMethods.StillActive)
+                {
+                    return;
+                }
+
+                await Task.Delay(50);
+            }
+            while (Stopwatch.GetElapsedTime(started) < timeout);
+
+            throw new TimeoutException("Mouse Without Borders did not exit after the shutdown request.");
         }
 
         public static void GrantCurrentProcessQueryAccess(SecurityIdentifier allowedUser)
@@ -142,6 +187,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
     internal static class MouseWithoutBordersIpcNativeMethods
     {
         internal const uint ProcessQueryLimitedInformation = 0x1000;
+        internal const uint StillActive = 259;
         internal const uint TokenQuery = 0x0008;
         internal const uint ReadControl = 0x00020000;
         internal const uint WriteDac = 0x00040000;
@@ -189,6 +235,17 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 
         [DllImport("kernel32.dll")]
         internal static extern IntPtr GetCurrentProcess();
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetNamedPipeServerProcessId(SafePipeHandle pipe, out uint processId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        internal static extern SafeProcessHandle OpenProcess(uint desiredAccess, [MarshalAs(UnmanagedType.Bool)] bool inheritHandle, uint processId);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GetExitCodeProcess(SafeProcessHandle process, out uint exitCode);
 
         [DllImport("advapi32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]

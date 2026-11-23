@@ -28,11 +28,17 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\;$(RepoRoot)src\;$(RepoRoot)src\common;$(RepoRoot)src\common\Telemetry;..\..\;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\;..\WorkspacesLauncher;$(RepoRoot)src\;$(RepoRoot)src\common;$(RepoRoot)src\common\Telemetry;..\..\;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AppUtils.h" />
+    <ClInclude Include="CliCommands.h" />
+    <ClInclude Include="LaunchSession.h" />
+    <ClInclude Include="SessionHandoff.h" />
+    <ClInclude Include="SessionLogging.h" />
+    <ClInclude Include="OperationLifetime.h" />
+    <ClInclude Include="WorkspaceStore.h" />
     <ClInclude Include="CommandLineArgsHelper.h" />
     <ClInclude Include="IPCHelper.h" />
     <ClInclude Include="JsonUtils.h" />
@@ -55,6 +61,28 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AppUtils.cpp" />
+    <ClCompile Include="CliCommands.cpp" />
+    <ClCompile Include="LaunchSession.cpp" />
+    <ClCompile Include="LaunchExecution.cpp" />
+    <ClCompile Include="..\WorkspacesLauncher\AppLauncher.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\Launcher.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\LauncherUIHelper.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\WorkspacesLauncher\WindowArrangerHelper.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="SessionHandoff.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="WorkspaceStore.cpp" />
     <ClCompile Include="CommandLineArgsHelper.cpp" />
     <ClCompile Include="IPCHelper.cpp" />
     <ClCompile Include="JsonUtils.cpp" />
@@ -67,12 +95,21 @@
     <ClCompile Include="SteamGameHelper.cpp" />
     <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="two_way_pipe_message_ipc.cpp" />
+    <ClCompile Include="$(RepoRoot)src\common\interop\pipe_caller_auth.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="WbemHelper.cpp" />
     <ClCompile Include="WindowUtils.cpp" />
     <ClCompile Include="WorkspacesData.cpp" />
     <ClCompile Include="trace.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\common\Display\Display.vcxproj">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\common\Telemetry\EtwTrace\EtwTrace.vcxproj">
+      <Project>{8f021b46-362b-485c-bfba-ccf83e820cbd}</Project>
+    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\interop\PowerToys.Interop.vcxproj">
       <Project>{f055103b-f80b-4d0c-bf48-057c55620033}</Project>
     </ProjectReference>

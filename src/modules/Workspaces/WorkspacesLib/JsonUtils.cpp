@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "JsonUtils.h"
+#include "WorkspaceStore.h"
 
 #include <filesystem>
 
@@ -76,31 +77,11 @@ namespace JsonUtils
 
     bool Write(const std::wstring& fileName, const std::vector<WorkspacesData::WorkspacesProject>& projects)
     {
-        try
-        {
-            json::to_file(fileName, WorkspacesData::WorkspacesListJSON::ToJson(projects));
-        }
-        catch (std::exception ex)
-        {
-            Logger::error("Error writing workspaces file. {}", ex.what());
-            return false;
-        }
-
-        return true;
+        return WorkspaceStore::Write(fileName, WorkspacesData::WorkspacesListJSON::ToJson(projects));
     }
 
     bool Write(const std::wstring& fileName, const WorkspacesData::WorkspacesProject& project)
     {
-        try
-        {
-            json::to_file(fileName, WorkspacesData::WorkspacesProjectJSON::ToJson(project));
-        }
-        catch (std::exception ex)
-        {
-            Logger::error("Error writing workspaces file. {}", ex.what());
-            return false;
-        }
-
-        return true;
+        return WorkspaceStore::Write(fileName, WorkspacesData::WorkspacesProjectJSON::ToJson(project));
     }
 }

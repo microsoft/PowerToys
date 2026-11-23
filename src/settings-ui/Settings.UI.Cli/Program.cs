@@ -4,7 +4,6 @@
 
 using System;
 using System.CommandLine;
-using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.Telemetry;
@@ -19,10 +18,10 @@ internal static class Program
     {
         var rootCommand = new RootCommand("PowerToys Settings CLI - Command line interface for PowerToys Settings");
 
-        rootCommand.AddCommand(new ListCommand());
-        rootCommand.AddCommand(new StatusCommand());
-        rootCommand.AddCommand(new EnableCommand());
-        rootCommand.AddCommand(new DisableCommand());
+        rootCommand.Subcommands.Add(new ListCommand());
+        rootCommand.Subcommands.Add(new StatusCommand());
+        rootCommand.Subcommands.Add(new EnableCommand());
+        rootCommand.Subcommands.Add(new DisableCommand());
 
         return rootCommand;
     }
@@ -41,9 +40,8 @@ internal static class Program
             }
 
             var rootCommand = CreateRootCommand();
-            var parser = new Parser(rootCommand);
-            var parseResult = parser.Parse(args);
-            var exitCode = await rootCommand.InvokeAsync(args);
+            var parseResult = rootCommand.Parse(args);
+            var exitCode = await parseResult.InvokeAsync();
 
             if (parseResult.Errors.Count > 0 || exitCode != 0)
             {

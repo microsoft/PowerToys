@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class ProgressLinesOption : Option<bool>
     {
-        private static readonly string[] _aliases = ["--progress-lines", "--accessible"];
-
         public ProgressLinesOption()
-            : base(_aliases, "Use line-based progress output for screen reader accessibility (milestones: 0%, 25%, 50%, 75%, 100%)")
+            : base("--progress-lines", "--accessible")
         {
+            Description = "Use line-based progress output for screen reader accessibility (milestones: 0%, 25%, 50%, 75%, 100%)";
         }
     }
 }

@@ -2,7 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Linq;
 using ManagedCommon;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.Helpers;
@@ -64,7 +63,7 @@ internal static class WindowsSettingsPathHelper
         }
 
         // Generating path values.
-        if (!(setting.Areas is null) && setting.Areas.Any())
+        if (!(setting.Areas is null) && setting.Areas.Count > 0)
         {
             var areaValue = string.Join(_pathDelimiterSequence, setting.Areas);
             setting.JoinedAreaPath = areaValue;

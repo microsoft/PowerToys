@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class DestinationOption : Option<string>
     {
-        private static readonly string[] _aliases = ["--destination", "-d", "/d"];
-
         public DestinationOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Destination)
+            : base("--destination", "-d", "/d")
         {
+            Description = Properties.Resources.CLI_Option_Destination;
         }
     }
 }

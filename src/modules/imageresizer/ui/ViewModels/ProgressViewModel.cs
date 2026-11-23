@@ -31,11 +31,11 @@ namespace ImageResizer.ViewModels
         private bool _disposedValue;
 
         [ObservableProperty]
-        private double _progress;
+        public partial double Progress { get; set; }
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TimeRemainingDisplay))]
-        private TimeSpan _timeRemaining;
+        public partial TimeSpan TimeRemaining { get; set; }
 
         private static CompositeFormat _progressTimeRemainingFormat;
 

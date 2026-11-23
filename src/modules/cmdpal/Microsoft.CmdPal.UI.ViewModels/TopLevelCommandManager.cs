@@ -72,9 +72,9 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
     public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
 
-    // DockBands uses a custom collection so that bulk rewrites (see
-    // UpdateCommandsForProvider) raise a single Reset notification instead of
-    // one event per inserted/removed/moved item. The dock subscribes to this
+    // DockBands uses a custom collection so that bulk changes (see
+    // UpdateCommandsForProvider, RegisterAndLoadCommandsAsync) raise a single
+    // Reset notification instead of one event per inserted/removed/moved item. The dock subscribes to this
     // collection and does a full rebuild per event, so collapsing the burst
     // here avoids dozens of redundant rebuilds for one provider reload.
     public DockBandsCollection DockBands { get; } = new();
@@ -393,10 +393,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
                 lock (_dockBandsLock)
                 {
                     dockBandsToRemove = DockBands.Where(b => b.CommandProviderId == providerId).ToList();
-                    foreach (var band in dockBandsToRemove)
-                    {
-                        DockBands.Remove(band);
-                    }
+                    DockBands.RemoveRange(dockBandsToRemove);
                 }
 
                 // Re-enabling the provider reloads its commands, which builds
@@ -445,13 +442,8 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
                     lock (_dockBandsLock)
                     {
-                        foreach (var band in provider.DockBandItems)
-                        {
-                            if (!DockBands.Any(a => a.Id == band.Id))
-                            {
-                                DockBands.Add(band);
-                            }
-                        }
+                        var existingIds = DockBands.Select(b => b.Id).ToHashSet();
+                        DockBands.AddRange(provider.DockBandItems.Where(band => existingIds.Add(band.Id)));
                     }
                 }
                 else
@@ -522,12 +514,11 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             }
         }
 
+        // One notification for the whole batch; the dock rebuilds once per
+        // DockBands change, so per-item adds would rebuild it once per band.
         lock (_dockBandsLock)
         {
-            foreach (var b in dockBandsToAdd)
-            {
-                DockBands.Add(b);
-            }
+            DockBands.AddRange(dockBandsToAdd);
         }
 
         // Fire background continuations for timed-out loads outside the lock
@@ -598,10 +589,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
             {
                 lock (_dockBandsLock)
                 {
-                    foreach (var band in dockBands)
-                    {
-                        DockBands.Add(band);
-                    }
+                    DockBands.AddRange(dockBands);
                 }
             }
 
@@ -683,13 +671,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
 
                     lock (_dockBandsLock)
                     {
-                        if (bandsToRemove.Count != 0)
-                        {
-                            foreach (var deleted in bandsToRemove)
-                            {
-                                DockBands.Remove(deleted);
-                            }
-                        }
+                        DockBands.RemoveRange(bandsToRemove);
                     }
 
                     foreach (var deleted in commandsToRemove)

@@ -7,12 +7,15 @@ using Microsoft.CmdPal.UI.ViewModels.Commands;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 public partial class ListItemViewModel : CommandItemViewModel
 {
     private const int MaxVisibleTags = 3;
+
+    private Stretch _layoutImageStretch = Stretch.UniformToFill;
 
     public new ExtensionObject<IListItem> Model { get; }
 
@@ -69,6 +72,19 @@ public partial class ListItemViewModel : CommandItemViewModel
                 field = value;
                 UpdateProperty(nameof(LayoutShowsSubtitle));
                 UpdateShowsSubtitle();
+            }
+        }
+    }
+
+    public Stretch LayoutImageStretch
+    {
+        get => _layoutImageStretch;
+        set
+        {
+            if (_layoutImageStretch != value)
+            {
+                _layoutImageStretch = value;
+                UpdateProperty(nameof(LayoutImageStretch));
             }
         }
     }
@@ -213,7 +229,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                 if (!UnsafeContextItems.Any(cmd => cmd is CommandContextItemViewModel contextItemViewModel &&
                                                   contextItemViewModel.Command.Id == ShowDetailsCommand.ShowDetailsCommandId))
                 {
-                    var showDetailsCommand = new ShowDetailsCommand(Details);
+                    var showDetailsCommand = new ShowDetailsCommand(Details, listViewModel.SetDetails);
                     var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
                     {
                         Icon = showDetailsCommand.Icon,
@@ -256,7 +272,7 @@ public partial class ListItemViewModel : CommandItemViewModel
                     UnsafeContextItems.Remove(oldCommand);
                 }
 
-                var showDetailsCommand = new ShowDetailsCommand(Details);
+                var showDetailsCommand = new ShowDetailsCommand(Details, listViewModel.SetDetails);
                 var showDetailsContextItem = new CommandContextItem(showDetailsCommand)
                 {
                     Icon = showDetailsCommand.Icon,

@@ -172,7 +172,7 @@ internal static class FancyZonesDataService
             return (false, "Monitor not found.");
         }
 
-        return ApplyLayoutToMonitors(layout, [monitorData.Value]);
+        return ApplyLayoutToMonitors(layout, new[] { monitorData.Value });
     }
 
     private static (bool Success, string Message) ApplyLayoutToMonitors(FancyZonesLayoutDescriptor layout, IEnumerable<EditorParameters.NativeMonitorDataWrapper> monitors)

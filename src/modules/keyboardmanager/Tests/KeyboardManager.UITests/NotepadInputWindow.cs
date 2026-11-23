@@ -62,7 +62,7 @@ internal sealed class NotepadInputWindow : IKeyboardInputWindow, IDisposable
 
         window = launchedWindow ?? throw new AssertFailedException($"Notepad did not open '{fileName}' after two attempts.");
 
-        Assert.IsTrue(FocusInput(), "Notepad did not own foreground after opening the test file.");
+        FocusInitialDocument();
     }
 
     public string FilePath { get; }
@@ -80,46 +80,7 @@ internal sealed class NotepadInputWindow : IKeyboardInputWindow, IDisposable
 
     public bool IsOpen => WindowsFinder.ListByApp(ProcessName).Any(IsDocumentWindow);
 
-    public bool FocusInput(int timeoutMS = 10_000)
-    {
-        ShowWindow(Handle, SwRestore);
-        SetTopmost(topmost: true);
-        try
-        {
-            window.EnsureForeground();
-            var editor = FindEditorWindow();
-            if (editor != IntPtr.Zero && GetWindowRect(editor, out var editorBounds))
-            {
-                MouseHelper.LeftClickAt(
-                    editorBounds.Left + ((editorBounds.Right - editorBounds.Left) / 2),
-                    editorBounds.Top + ((editorBounds.Bottom - editorBounds.Top) / 2));
-            }
-            else if (GetWindowRect(Handle, out var windowBounds))
-            {
-                MouseHelper.LeftClickAt(
-                    windowBounds.Left + ((windowBounds.Right - windowBounds.Left) / 2),
-                    windowBounds.Top + ((windowBounds.Bottom - windowBounds.Top) / 2));
-            }
-
-            if (!WindowControl.WaitForForeground(Handle, timeoutMS, requiredConsecutiveMatches: 2))
-            {
-                return false;
-            }
-
-            if (!IsBoundDocumentActive())
-            {
-                return false;
-            }
-        }
-        finally
-        {
-            SetTopmost(topmost: false);
-        }
-
-        SendControlChord(Key.End);
-        return WindowControl.WaitForForeground(Handle, timeoutMS: 2_000, requiredConsecutiveMatches: 2) &&
-            IsBoundDocumentActive();
-    }
+    public bool FocusInput(int timeoutMS = 10_000) => TryFocusInput(timeoutMS, out _);
 
     public bool WaitForText(string expected, int timeoutMS)
     {
@@ -198,6 +159,114 @@ internal sealed class NotepadInputWindow : IKeyboardInputWindow, IDisposable
         Assert.IsTrue(FocusInput(), "Notepad did not own foreground before saving the test file.");
         SendControlChord(Key.S);
         Thread.Sleep(300);
+    }
+
+    private void FocusInitialDocument()
+    {
+        const int maxAttempts = 3;
+        var failure = string.Empty;
+        for (var attempt = 1; attempt <= maxAttempts; attempt++)
+        {
+            if (TryFocusInput(10_000, out failure))
+            {
+                return;
+            }
+
+            if (attempt < maxAttempts)
+            {
+                ReactivateBoundDocument();
+            }
+        }
+
+        Assert.Fail(
+            $"Notepad did not own foreground after opening the test file ({maxAttempts} attempts). " +
+            $"Last failure: {failure}. Bound HWND: 0x{Handle:X}. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+    }
+
+    // Modern Notepad can restore previous tabs, so another document may be active in the bound window.
+    // Re-opening the file path switches the existing window back to the test document's tab.
+    private void ReactivateBoundDocument()
+    {
+        if (IsModernNotepad && !IsBoundDocumentActive())
+        {
+            try
+            {
+                using var process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "notepad.exe",
+                    Arguments = $"\"{FilePath}\"",
+                    UseShellExecute = true,
+                });
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+            }
+
+            var deadline = DateTime.UtcNow.AddMilliseconds(5_000);
+            while (!IsBoundDocumentActive() && DateTime.UtcNow < deadline)
+            {
+                Thread.Sleep(100);
+            }
+        }
+        else
+        {
+            Thread.Sleep(500);
+        }
+    }
+
+    private bool TryFocusInput(int timeoutMS, out string failure)
+    {
+        failure = string.Empty;
+        ShowWindow(Handle, SwRestore);
+        SetTopmost(topmost: true);
+        try
+        {
+            window.EnsureForeground();
+            var editor = FindEditorWindow();
+            if (editor != IntPtr.Zero && GetWindowRect(editor, out var editorBounds))
+            {
+                MouseHelper.LeftClickAt(
+                    editorBounds.Left + ((editorBounds.Right - editorBounds.Left) / 2),
+                    editorBounds.Top + ((editorBounds.Bottom - editorBounds.Top) / 2));
+            }
+            else if (GetWindowRect(Handle, out var windowBounds))
+            {
+                MouseHelper.LeftClickAt(
+                    windowBounds.Left + ((windowBounds.Right - windowBounds.Left) / 2),
+                    windowBounds.Top + ((windowBounds.Bottom - windowBounds.Top) / 2));
+            }
+
+            if (!WindowControl.WaitForForeground(Handle, timeoutMS, requiredConsecutiveMatches: 2))
+            {
+                failure = "bound Notepad window did not become foreground";
+                return false;
+            }
+
+            if (!IsBoundDocumentActive())
+            {
+                failure = "Notepad owned foreground but the test document tab was not active";
+                return false;
+            }
+        }
+        finally
+        {
+            SetTopmost(topmost: false);
+        }
+
+        SendControlChord(Key.End);
+        if (!WindowControl.WaitForForeground(Handle, timeoutMS: 2_000, requiredConsecutiveMatches: 2))
+        {
+            failure = "Notepad lost foreground after moving the caret to the end";
+            return false;
+        }
+
+        if (!IsBoundDocumentActive())
+        {
+            failure = "the test document tab was no longer active after moving the caret to the end";
+            return false;
+        }
+
+        return true;
     }
 
     private string ReadFile()

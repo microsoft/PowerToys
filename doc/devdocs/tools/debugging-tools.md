@@ -52,15 +52,6 @@ PowerToys includes several specialized tools to help with debugging and troubles
   - Shows window class information
   - Helps debug window-related issues in modules like FancyZones
 
-### Build Process
-
-The Styles Report Tool is built separately from the main PowerToys solution:
-
-```
-nuget restore .\tools\StylesReportTool\StylesReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\StylesReportTool\StylesReportTool.sln
-```
-
 ## Shell-Related Debugging Tools
 
 ### PowerRenameContextMenu Test

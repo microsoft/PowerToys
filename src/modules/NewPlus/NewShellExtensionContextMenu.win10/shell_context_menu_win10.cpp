@@ -70,7 +70,7 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
         utilities::create_folder_if_not_exist(template_folder_root);
 
         // Scan the folder for any files and folders (the templates)
-        templates = new template_folder(template_folder_root);
+        templates = std::make_unique<template_folder>(template_folder_root);
         templates->rescan_template_folder();
         const auto number_of_templates = templates->list_of_templates.size();
 
@@ -114,7 +114,7 @@ IFACEMETHODIMP shell_context_menu_win10::QueryContextMenu(HMENU menu_handle, UIN
         for (; index < number_of_templates; index++)
         {
             const auto template_item = templates->get_template_item(index);
-            add_template_item_to_context_menu(sub_menu_of_templates, sub_menu_index, template_item, menu_id, index);
+            add_template_item_to_context_menu(sub_menu_of_templates, sub_menu_index, template_item.get(), menu_id, index);
             menu_id++;
             sub_menu_index++;
         }
@@ -263,7 +263,7 @@ IFACEMETHODIMP shell_context_menu_win10::InvokeCommand(CMINVOKECOMMANDINFO* para
 
         // It's a template menu item
         const auto template_entry = templates->get_template_item(selected_menu_item_index);
-        return newplus::utilities::copy_template(template_entry, site_of_folder, mouse_position_at_time_of_invoke, activity);
+        return newplus::utilities::copy_template(template_entry.get(), site_of_folder, mouse_position_at_time_of_invoke, activity);
     }
     else
     {

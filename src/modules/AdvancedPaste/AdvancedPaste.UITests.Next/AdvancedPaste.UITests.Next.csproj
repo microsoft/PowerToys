@@ -3,12 +3,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>AdvancedPaste.UITests</RootNamespace>
     <AssemblyName>AdvancedPaste.UITests.Next</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -25,8 +24,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
-    <Content Include="..\UITest-AdvancedPaste\TestFiles\*">
-      <Link>TestFiles\%(Filename)%(Extension)</Link>
+    <Content Include="TestFiles\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

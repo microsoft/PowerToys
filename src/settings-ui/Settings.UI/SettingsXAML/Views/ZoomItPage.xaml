@@ -442,6 +442,12 @@
                         <controls:ShortcutControl MinWidth="{StaticResource SettingActionControlMinWidth}" HotkeySettings="{x:Bind ViewModel.SnipOcrToggleKey, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
                     <tkcontrols:SettingsCard
+                        Name="ZoomItSnipDictate"
+                        x:Uid="ZoomIt_SnipDictate"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE720;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.SnipDictateEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="ZoomItPanoramaShortcut"
                         x:Uid="ZoomIt_Panorama_Shortcut"
                         HeaderIcon="{ui:FontIcon Glyph=&#xE7C5;}">

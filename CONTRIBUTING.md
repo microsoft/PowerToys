@@ -55,6 +55,25 @@ Once the team has approved an issue/spec approach, development can proceed. If n
 
 Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/readme.md).
 
+### Pull request descriptions must be written by a human
+
+A PR does more than change code. It also passes what you learned to the maintainers. To do that, you must explain the change in your own words. If you cannot explain a change, you do not understand what it does to the code base. If you do not understand it, a maintainer cannot be expected to understand it either.
+
+- **You must write the PR body in your own words.** This includes the summary, the detailed description, and the validation steps. Do not let an AI tool, agent, or bot write them.
+- **AI-generated text is allowed only inside a collapsed `<details>` section.** Label it clearly as AI-generated, for example:
+
+  ```markdown
+  <details>
+  <summary>AI-generated summary</summary>
+
+  ...text written by an AI tool...
+
+  </details>
+  ```
+
+- **If maintainers think a PR body was not written by a human, they can close the PR without further review.**
+- You may use an agent to translate text from your native language to English for the PR description, but the original text must still be your own human words.
+
 ### Naming features and functionality
 
 Names should be descriptive and straightforward, clearly reflecting functionality and usefulness.

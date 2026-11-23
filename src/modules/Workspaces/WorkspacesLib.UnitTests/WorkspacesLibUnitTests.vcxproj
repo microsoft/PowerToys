@@ -34,7 +34,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\\lib;$(RepoRoot)$(Platform)\\$(Configuration)\\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>propsys.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>shcore.lib;propsys.lib;comctl32.lib;pathcch.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Pathcch.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -46,21 +46,37 @@
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="WorkspacesDataTests.cpp" />
+    <ClCompile Include="CliContractTests.cpp" />
+    <ClCompile Include="CliJsonOutputTests.cpp" />
+    <ClCompile Include="WorkspaceStoreTests.cpp" />
+    <ClCompile Include="CliWorkerTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
+    <ClCompile Include="CliRuntimeTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
+    <ClCompile Include="CliHandoffTests.cpp" Condition="'$(WorkspacesCliLiveTests)' == 'true'" />
     <ClCompile Include="StringUtilsTests.cpp" />
     <ClCompile Include="JsonUtilsTests.cpp" />
     <ClCompile Include="AppUtilsTests.cpp" />
     <ClCompile Include="PwaHelperTests.cpp" />
     <ClCompile Include="SignatureVerificationTests.cpp" />
-    <ClCompile Include="..\WorkspacesLauncher\RegistryUtils.cpp">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\WorkspacesCLI\Tests\RuntimeFixture\RuntimeFixture.vcxproj" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
+      <Project>{122d79ac-38e7-4549-935e-8b5b58e683e4}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\WorkspacesCLI\Tests\HandoffFixture\HandoffFixture.vcxproj" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
+      <Project>{4cee1f66-be0d-4f04-bcf5-d7dae282ed42}</Project>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
     <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
       <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(RepoRoot)src\common\Display\Display.vcxproj" Condition="'$(WorkspacesCliLiveTests)' == 'true'">
+      <Project>{caba8dfb-823b-4bf2-93ac-3f31984150d9}</Project>
     </ProjectReference>
     <ProjectReference Include="..\WorkspacesLib\WorkspacesLib.vcxproj">
       <Project>{b31fcc55-b5a4-4ea7-b414-2dceae6af332}</Project>

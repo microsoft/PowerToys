@@ -66,7 +66,7 @@ internal sealed class PasteTarget : IDisposable
     internal void Focus()
     {
         var handle = Handle;
-        TestWindow.SelectFromTaskbar(handle, "AdvancedPaste.UITests.Next");
+        TestWindow.EnsureForeground(handle, "AdvancedPaste.UITests.Next");
 
         Invoke(() =>
         {
@@ -96,6 +96,17 @@ internal sealed class PasteTarget : IDisposable
         Invoke(() =>
         {
             editor!.Rtf = rtf;
+            editor.SelectAll();
+            KeyboardHelper.SendChord(Key.Ctrl, Key.C);
+        });
+    }
+
+    internal void CopyText(string text)
+    {
+        Focus();
+        Invoke(() =>
+        {
+            editor!.Text = text;
             editor.SelectAll();
             KeyboardHelper.SendChord(Key.Ctrl, Key.C);
         });

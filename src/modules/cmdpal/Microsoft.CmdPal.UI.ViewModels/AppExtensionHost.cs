@@ -4,9 +4,9 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using Microsoft.CmdPal.Common;
 using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -17,8 +17,6 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     private static ulong _hostingHwnd;
 
-    public static ObservableCollection<LogMessageViewModel> LogMessages { get; } = [];
-
     public ulong HostingHwnd => _hostingHwnd;
 
     public string LanguageOverride => string.Empty;
@@ -27,10 +25,14 @@ public abstract partial class AppExtensionHost : IExtensionHost
 
     public static void SetHostHwnd(ulong hostHwnd) => _hostingHwnd = hostHwnd;
 
-    public void DebugLog(string message)
+    public void DebugLog(
+        string message,
+        [CallerMemberName] string memberName = "",
+        [CallerFilePath] string sourceFilePath = "",
+        [CallerLineNumber] int sourceLineNumber = 0)
     {
 #if DEBUG
-        this.ProcessLogMessage(new LogMessage(message));
+        CoreLogger.LogDebug($"[Host message] {message}", memberName, sourceFilePath, sourceLineNumber);
 #endif
     }
 
@@ -46,11 +48,6 @@ public abstract partial class AppExtensionHost : IExtensionHost
             ProcessHideStatusMessage(message);
         });
         return Task.CompletedTask.AsAsyncAction();
-    }
-
-    public void Log(string message)
-    {
-        this.ProcessLogMessage(new LogMessage(message));
     }
 
     public IAsyncAction LogMessage(ILogMessage? message)
@@ -74,13 +71,6 @@ public abstract partial class AppExtensionHost : IExtensionHost
                 break;
         }
 
-        _ = Task.Run(() =>
-        {
-            ProcessLogMessage(message);
-        });
-
-        // We can't just make a LogMessageViewModel : ExtensionObjectViewModel
-        // because we don't necessarily know the page context. Butts.
         return Task.CompletedTask.AsAsyncAction();
     }
 
@@ -100,21 +90,6 @@ public abstract partial class AppExtensionHost : IExtensionHost
                 catch
                 {
                 }
-            },
-            CancellationToken.None,
-            TaskCreationOptions.None,
-            _globalLogPageContext.Scheduler);
-    }
-
-    public void ProcessLogMessage(ILogMessage message)
-    {
-        var vm = new LogMessageViewModel(message, _globalLogPageContext);
-        vm.SafeInitializePropertiesSynchronous();
-
-        Task.Factory.StartNew(
-            () =>
-            {
-                LogMessages.Add(vm);
             },
             CancellationToken.None,
             TaskCreationOptions.None,

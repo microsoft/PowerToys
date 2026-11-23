@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.UI.ViewModels.Commands;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -88,8 +89,8 @@ public partial class QuickAccessShelfResolverTests
     {
         var item = new ListItem { Title = "Recent" };
 
-        var first = QuickAccessShelfItem.CreateOrReuse([], item, shortcutIndex: 0, startsNewSection: true);
-        var third = QuickAccessShelfItem.CreateOrReuse([], item, shortcutIndex: 2, startsNewSection: false);
+        var first = QuickAccessShelfItem.CreateOrReuse([], new(item), shortcutIndex: 0, startsNewSection: true);
+        var third = QuickAccessShelfItem.CreateOrReuse([], new(item), shortcutIndex: 2, startsNewSection: false);
 
         Assert.AreEqual("1", first.ShortcutDigit);
         Assert.AreEqual("3", third.ShortcutDigit);
@@ -101,9 +102,9 @@ public partial class QuickAccessShelfResolverTests
         var icon = new CountingIconInfo();
         var item = new ListItem { Title = "Recent", Icon = icon };
 
-        var original = QuickAccessShelfItem.CreateOrReuse([], item, shortcutIndex: -1, startsNewSection: false);
+        var original = QuickAccessShelfItem.CreateOrReuse([], new(item), shortcutIndex: -1, startsNewSection: false);
         var iconReadCount = icon.ReadCount;
-        var reused = QuickAccessShelfItem.CreateOrReuse([original], item, shortcutIndex: -1, startsNewSection: false);
+        var reused = QuickAccessShelfItem.CreateOrReuse([original], new(item), shortcutIndex: -1, startsNewSection: false);
 
         Assert.IsTrue(iconReadCount > 0);
         Assert.AreSame(original, reused);
@@ -116,7 +117,7 @@ public partial class QuickAccessShelfResolverTests
         var item = new ListItem { Title = "Recent" };
         var recent = QuickAccessShelfItem.CreateOrReuse(
             [],
-            item,
+            new(item),
             shortcutIndex: 0,
             startsNewSection: false,
             isPinned: false,
@@ -124,7 +125,7 @@ public partial class QuickAccessShelfResolverTests
 
         var pinned = QuickAccessShelfItem.CreateOrReuse(
             [recent],
-            item,
+            new(item),
             shortcutIndex: 0,
             startsNewSection: false,
             isPinned: true,
@@ -138,17 +139,35 @@ public partial class QuickAccessShelfResolverTests
     }
 
     [TestMethod]
+    public void ShelfInvocation_InitializesCommandMetadataAndPreservesItemContext()
+    {
+        var command = new NoOpCommand { Id = "app", Name = "Open app" };
+        var item = new ListItem(command) { Title = "App" };
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse([], new(item), shortcutIndex: 0, startsNewSection: false);
+        var sourcePage = new PageViewModel(null, TaskScheduler.Default, new TestAppExtensionHost(), CommandProviderContext.Empty);
+
+        var message = shelfItem.GetPerformCommandMessage(sourcePage);
+
+        Assert.AreSame(command, message.Command.Model.Unsafe);
+        Assert.AreEqual("app", message.Command.Id);
+        Assert.AreEqual("Open app", message.Command.Name);
+        Assert.IsTrue(message.Command.IsInvokableCommand);
+        Assert.AreSame(item, message.CommandContext);
+        Assert.IsNull(message.Context);
+    }
+
+    [TestMethod]
     public void GetContextMenuItem_PinnedItemUsesOriginalPresentation()
     {
         var item = new ListItem { Title = "Pinned" };
         var shelfItem = QuickAccessShelfItem.CreateOrReuse(
             [],
-            item,
+            new(item),
             shortcutIndex: 0,
             startsNewSection: false,
             isPinned: true);
 
-        Assert.AreSame(item, shelfItem.GetContextMenuItem());
+        Assert.AreSame(item, shelfItem.GetContextMenuItem().Safe);
     }
 
     [TestMethod]
@@ -157,16 +176,16 @@ public partial class QuickAccessShelfResolverTests
         var item = new ListItem { Title = "Recent" };
         var shelfItem = QuickAccessShelfItem.CreateOrReuse(
             [],
-            item,
+            new(item),
             shortcutIndex: 0,
             startsNewSection: false,
             isPinned: false);
 
-        var contextItem = shelfItem.GetContextMenuItem();
+        var contextItem = shelfItem.GetContextMenuItem().Safe;
 
         Assert.IsInstanceOfType<RecentCommandListItem>(contextItem);
         var recentItem = (RecentCommandListItem)contextItem;
-        Assert.AreSame(item, recentItem.Source);
+        Assert.AreSame(item, recentItem.Source.Safe);
         Assert.AreEqual(shelfItem.CommandId, recentItem.CommandId);
     }
 
@@ -177,7 +196,7 @@ public partial class QuickAccessShelfResolverTests
         source.Properties["TestProperty"] = "TestValue";
         source.SetText("Test payload");
         var item = new ListItem { Title = "Recent", DataPackageView = source.GetView() };
-        var shelfItem = QuickAccessShelfItem.CreateOrReuse([], item, shortcutIndex: 0, startsNewSection: false);
+        var shelfItem = QuickAccessShelfItem.CreateOrReuse([], new(item), shortcutIndex: 0, startsNewSection: false);
         var destination = new DataPackage();
 
         DataPackageTransfer.Copy(shelfItem.DataPackage!, destination);
@@ -275,6 +294,11 @@ public partial class QuickAccessShelfResolverTests
 
     private static KeyChord Chord(VirtualKey key, VirtualKeyModifiers modifiers) =>
         new(modifiers, (int)key, 0);
+
+    private sealed partial class TestAppExtensionHost : AppExtensionHost
+    {
+        public override string? GetExtensionDisplayName() => "Test Host";
+    }
 
     private sealed partial class CountingIconInfo : IconInfo
     {

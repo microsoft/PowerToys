@@ -180,7 +180,7 @@ with the repository build wrapper, using the same configuration and platform:
 
 ```powershell
 # Run from the project directory; $repo is the repository root.
-& "$repo\tools\build\build.ps1" -Platform x64 -Configuration Debug -ExtraArgs "/p:SolutionDir=$repo\"
+& "$repo\tools\build\build.ps1" -Platform x64 -Configuration Debug
 ```
 
 After a successful build, use Visual Studio Test Explorer or
