@@ -26,7 +26,7 @@ public sealed partial class WindowsPalettesProviderTests
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public async Task BitmapPaddingIsTrimmedForProviderIconsOnly(bool providerIcon)
+    public async Task BitmapPaddingIsTrimmedOnlyWhenRequested(bool trimTransparentPadding)
     {
         var pixels = new byte[12 * 10 * 4];
         for (var y = 1; y < 6; y++)
@@ -40,20 +40,18 @@ public sealed partial class WindowsPalettesProviderTests
         }
 
         using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(pixels.AsBuffer(), BitmapPixelFormat.Bgra8, 12, 10, BitmapAlphaMode.Premultiplied);
-        var icon = PaletteIconData.FromBitmap(bitmap);
-        var result = providerIcon
-            ? WupSourceDescriptor.Create(new TestDefinition("source") { Icon = icon }).Icon
-            : WupIconAdapter.Create(icon);
+        var result = WupIconAdapter.FromBitmap(bitmap, trimTransparentPadding);
+        Assert.IsNotNull(result);
         Assert.IsNotNull(result.Light.Data);
         using var stream = await result.Light.Data.OpenReadAsync();
         var decoder = await BitmapDecoder.CreateAsync(stream);
-        Assert.AreEqual(providerIcon ? 3u : 12u, decoder.PixelWidth);
-        Assert.AreEqual(providerIcon ? 5u : 10u, decoder.PixelHeight);
+        Assert.AreEqual(trimTransparentPadding ? 3u : 12u, decoder.PixelWidth);
+        Assert.AreEqual(trimTransparentPadding ? 5u : 10u, decoder.PixelHeight);
         using var decoded = await decoder.GetSoftwareBitmapAsync(BitmapPixelFormat.Bgra8, BitmapAlphaMode.Premultiplied);
         var actual = new byte[decoded.PixelWidth * decoded.PixelHeight * 4];
         decoded.CopyToBuffer(actual.AsBuffer());
 
-        if (providerIcon)
+        if (trimTransparentPadding)
         {
             for (var index = 0; index < actual.Length; index += 4)
             {
@@ -79,7 +77,8 @@ public sealed partial class WindowsPalettesProviderTests
         }
 
         using var bitmap = SoftwareBitmap.CreateCopyFromBuffer(pixels.AsBuffer(), BitmapPixelFormat.Bgra8, 4, 3, BitmapAlphaMode.Premultiplied);
-        var result = WupIconAdapter.Create(PaletteIconData.FromBitmap(bitmap), trimTransparentPadding: true);
+        var result = WupIconAdapter.FromBitmap(bitmap, trimTransparentPadding: true);
+        Assert.IsNotNull(result);
         Assert.IsNotNull(result.Light.Data);
         using var stream = await result.Light.Data.OpenReadAsync();
         var decoder = await BitmapDecoder.CreateAsync(stream);
@@ -91,13 +90,7 @@ public sealed partial class WindowsPalettesProviderTests
     [TestCategory("WindowsPalettesIntegration")]
     public void NativeCatalogDefinitionsPopulateThePalettesPage()
     {
-        if (!ApiInformation.IsApiContractPresent("Windows.UI.Palettes.PalettesContract", 2, 0) ||
-            !VersionInfo.IsEligible(2, 0))
-        {
-            Assert.Inconclusive("Windows Palettes contract v2 is not available.");
-        }
-
-        var catalog = PaletteCatalog.Open(new PaletteKinds(WindowsPalettesCommandsProvider.SourceKindSpecs), string.Empty);
+        var catalog = PaletteCatalog.Open(CreateKinds(WindowsPalettesCommandsProvider.SourceKindSpecs), string.Empty);
         var definitions = catalog.GetPalettes() ?? [];
         if (definitions.Length == 0)
         {
@@ -404,7 +397,7 @@ public sealed partial class WindowsPalettesProviderTests
     {
         var settings = new TestSettings { ShowInstalledPalettes = true };
         using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
-        var definition = new TestDefinition("source") { Kinds = new PaletteKinds(new[] { kind }) };
+        var definition = new TestDefinition("source") { Kinds = CreateKinds(kind) };
         var itemCount = -1;
         page.ItemsChanged += (_, args) => itemCount = args.TotalItems;
 
@@ -422,7 +415,7 @@ public sealed partial class WindowsPalettesProviderTests
         using var page = new WindowsPalettesPage(Array.Empty<PaletteExtensionDefinition>(), settings);
         page.UpdateSources(new IPaletteExtensionDefinition[]
         {
-            new TestDefinition("source") { Kinds = new PaletteKinds(["ZeroState.*", "QueryResult.*"]) },
+            new TestDefinition("source") { Kinds = CreateKinds("ZeroState.*", "QueryResult.*") },
         });
 
         Assert.HasCount(2, page.GetItems());
@@ -513,7 +506,7 @@ public sealed partial class WindowsPalettesProviderTests
         var definition = new TestDefinition("null-source")
         {
             ReturnNullExtension = true,
-            Kinds = new PaletteKinds(["ZeroState.*", "QueryResult.*"]),
+            Kinds = CreateKinds("ZeroState.*", "QueryResult.*"),
         };
         using var source = new WupSourcePage(definition);
         using var writer = new StringWriter();
@@ -631,11 +624,11 @@ public sealed partial class WindowsPalettesProviderTests
     }
 
     [TestMethod]
-    public void InstalledPalettesSettingDefaultsToEnabled()
+    public void InstalledPalettesSettingDefaultsToDisabled()
     {
         var settings = new WindowsPalettesSettings(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
 
-        Assert.IsTrue(settings.ShowInstalledPalettes);
+        Assert.IsFalse(settings.ShowInstalledPalettes);
     }
 
     [TestMethod]
@@ -661,6 +654,18 @@ public sealed partial class WindowsPalettesProviderTests
         var identity = new WupCommandIdentity(definition.ExtensionId, "missing", WupCommandKind.Invoke);
         var commandId = WupCommandId.Create(identity.ExtensionId, identity.ItemId, identity.Kind);
         Assert.IsNull(source.TryRehydrateCommandItem(identity, commandId));
+    }
+
+    private static PaletteKinds CreateKinds(params string[] values)
+    {
+        // Even mock definitions use native PaletteKinds and PaletteExtensionHost runtime classes.
+        if (!ApiInformation.IsApiContractPresent("Windows.UI.Palettes.PalettesContract", 2, 0) ||
+            !VersionInfo.IsEligible(2, 0))
+        {
+            Assert.Inconclusive("Windows Palettes contract v2 is not available.");
+        }
+
+        return new PaletteKinds(values);
     }
 
     private sealed partial class TestDefinition(string extensionId) : IPaletteExtensionDefinition
@@ -695,7 +700,7 @@ public sealed partial class WindowsPalettesProviderTests
 
         public IDictionary<string, object> Properties => throw new NotSupportedException();
 
-        public PaletteKinds Kinds { get; init; } = new(["QueryResult.*"]);
+        public PaletteKinds Kinds { get; init; } = CreateKinds("QueryResult.*");
 
         public PaletteKinds ContainedKinds => throw new NotSupportedException();
 

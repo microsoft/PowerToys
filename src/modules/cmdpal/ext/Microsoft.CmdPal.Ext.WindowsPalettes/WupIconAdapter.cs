@@ -59,7 +59,7 @@ internal static class WupIconAdapter
         }
     }
 
-    private static IconInfo? FromBitmap(SoftwareBitmap bitmap, bool trimTransparentPadding)
+    internal static IconInfo? FromBitmap(SoftwareBitmap bitmap, bool trimTransparentPadding)
     {
         try
         {
