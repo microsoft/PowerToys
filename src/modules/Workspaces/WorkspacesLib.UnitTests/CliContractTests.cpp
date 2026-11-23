@@ -3,6 +3,7 @@
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LaunchingStatus.h>
 #include <fstream>
+#include <wil/resource.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -124,6 +125,63 @@ namespace WorkspacesLibUnitTests
             // Older session hosts supplied only the terminal window state.
             wire.Remove(L"launchedAnyApplication");
             Assert::IsFalse(WorkspacesSession::DeserializeResult(wire, result.operationId).CanRecapture());
+        }
+
+        TEST_METHOD (FailedMoveCanRecaptureOnlyItsLiveExistingWindow)
+        {
+            wil::unique_hwnd window{ CreateWindowExW(WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW, L"STATIC", nullptr, WS_POPUP,
+                                                     -32000, -32000, 1, 1, nullptr, nullptr, nullptr, nullptr) };
+            Assert::IsTrue(window.get() != nullptr);
+            ShowWindow(window.get(), SW_SHOWNOACTIVATE);
+
+            WorkspacesSession::Result session;
+            session.operationId = L"existing-window-recapture";
+            session.project = Project();
+            session.project.moveExistingWindows = true;
+            session.project.apps.resize(1);
+            session.project.monitors.push_back({ .number = 1, .dpi = 96 });
+            auto& app = session.project.apps.front();
+            app.monitor = 1;
+            app.position = { 10, 20, 640, 400 };
+
+            const WorkspacesData::LaunchingAppState failedMove{ app, window.get(), LaunchingState::Failed, GetCurrentProcessId() };
+            auto arranger = FinalResult(session.project, { LaunchingState::Failed });
+            arranger.SetNamedValue(L"operationId", json::value(session.operationId));
+            arranger.GetNamedArray(L"applications").SetAt(0, WorkspacesData::AppLaunchInfoJSON::ToResultJson(failedMove));
+            LaunchingStatus expected(session.project);
+            session.applications = WorkspacesCli::ParseArrangerResult(arranger, expected.Get(), session.operationId);
+            const auto decoded = WorkspacesSession::DeserializeResult(WorkspacesSession::SerializeResult(session), session.operationId);
+            Assert::IsTrue(decoded.CanRecapture());
+            Assert::IsFalse(decoded.launchedAnyApplication);
+            Assert::IsTrue(decoded.applications.at(app).state == LaunchingState::Failed);
+            Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::ToJson(failedMove).HasKey(L"existingWindow"));
+
+            session.project.moveExistingWindows = false;
+            Assert::IsFalse(session.CanRecapture());
+            session.project.moveExistingWindows = true;
+            session.applications.at(app).existingWindowProcessId = GetCurrentProcessId() + 1;
+            Assert::IsFalse(session.CanRecapture());
+            ShowWindow(window.get(), SW_HIDE);
+            Assert::IsFalse(decoded.CanRecapture());
+            window.reset();
+            Assert::IsFalse(decoded.CanRecapture());
+        }
+
+        TEST_METHOD (RejectsIncompleteOrInvalidExistingWindowReferences)
+        {
+            const auto project = Project();
+            const auto wire = WorkspacesData::AppLaunchInfoJSON::ToJson({ project.apps.front(), nullptr, LaunchingState::Failed });
+            Assert::IsTrue(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
+            wire.SetNamedValue(L"existingWindow", json::value(123));
+            Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
+            for (double invalid : { 0., -1., 1.5, 4294967296. })
+            {
+                wire.SetNamedValue(L"existingWindowProcessId", json::value(invalid));
+                Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
+            }
+            wire.SetNamedValue(L"existingWindowProcessId", json::value(123));
+            wire.SetNamedValue(L"state", json::value(static_cast<int>(LaunchingState::Skipped)));
+            Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
         }
 
         TEST_METHOD (CliAdapterPreservesSessionPersistenceAndProgress)

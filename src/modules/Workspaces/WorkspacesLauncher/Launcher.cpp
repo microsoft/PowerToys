@@ -254,7 +254,7 @@ void Launcher::handleWindowArrangerMessage(const std::wstring& msg) // Workspace
                 const auto result = WorkspacesCli::ParseArrangerResult(object, m_launchingStatus.Get(), m_options.operationId);
                 for (const auto& [application, outcome] : result)
                 {
-                    m_launchingStatus.Update(application, outcome.state);
+                    m_launchingStatus.Update(application, outcome.window, outcome.state, outcome.existingWindowProcessId);
                 }
                 m_windowArrangerHelper->AcknowledgeResult();
                 m_arrangerCompleted = true;

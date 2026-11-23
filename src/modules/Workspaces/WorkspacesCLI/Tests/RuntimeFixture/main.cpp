@@ -139,6 +139,7 @@ namespace GuiErrorProbe
     std::wstring commandLine;
     std::wstring message;
     unsigned int dialogs{};
+    std::vector<WorkspacesSession::Request> requests;
 
     namespace Session
     {
@@ -151,6 +152,9 @@ namespace GuiErrorProbe
 
         WorkspacesSession::Result Start(const Request& request)
         {
+            requests.push_back(request);
+            if (folder.empty())
+                return {};
             WorkspacesCli::ReadJson(folder / (request.invokePoint == InvokePoint::LaunchAndEdit ? L"temp-workspaces.json" : L"workspaces.json"));
             throw std::runtime_error("Expected a fixture file read error.");
         }
@@ -205,6 +209,8 @@ std::wstring GuiErrorProbe::Resource(UINT id)
         return L"Localized invalid file: {}";
     case IDS_WORKSPACES:
         return L"Workspaces";
+    case IDS_INCORRECT_ARGS:
+        return L"Incorrect arguments";
     default:
         throw std::runtime_error("Unexpected GUI error resource.");
     }
@@ -248,6 +254,46 @@ namespace
                 const auto resource = malformed ? IDS_INCORRECT_FILE_ERROR : IDS_FILE_READING_ERROR;
                 Check(GuiErrorProbe::message == fmt::format(GuiErrorProbe::Resource(resource), file.wstring()));
             }
+        }
+    }
+
+    void CheckGuiSelectors()
+    {
+        const std::wstring id = L"01234567-89ab-cdef-0123-456789abcdef";
+        const std::wstring braced = L"{" + id + L"}";
+        // A path component that looks like another workspace ID must never become a selector.
+        const std::wstring executable = L"\"C:\\Tools {DEADBEEF-1234-5678-9ABC-DEF012345678} 2 Bin\\Launcher.exe\"";
+        struct Case
+        {
+            std::wstring arguments;
+            std::wstring expectedId;
+            InvokePoint invoke;
+        };
+        const Case cases[] = {
+            { id, id, InvokePoint::EditorButton },
+            { braced + L" 1", braced, InvokePoint::Shortcut },
+            { L"restarted\t\"1\"\t\"" + id + L"\"", id, InvokePoint::Shortcut },
+            { L"\"" + braced + L"\" restarted 2", braced, InvokePoint::LaunchAndEdit },
+            { L"2 " + id + L" restarted", id, InvokePoint::LaunchAndEdit },
+        };
+        for (const auto& test : cases)
+        {
+            GuiErrorProbe::commandLine = executable + L" " + test.arguments;
+            GuiErrorProbe::requests.clear();
+            GuiErrorProbe::dialogs = 0;
+            // The empty result from the fixture also exercises LaunchAndEdit's no-progress return.
+            Check(GuiMainForReadErrorTest(nullptr, nullptr, nullptr, 0) == (test.invoke == InvokePoint::LaunchAndEdit ? 1 : 0));
+            Check(GuiErrorProbe::dialogs == 0 && GuiErrorProbe::requests.size() == 1);
+            Check(GuiErrorProbe::requests.front().id == test.expectedId);
+            Check(GuiErrorProbe::requests.front().invokePoint == test.invoke);
+        }
+        for (const auto* invalid : { L"", L"restarted 1", L"01234567-89ab-cdef-0123-456789abcdef0", L"{01234567-89ab-cdef-0123-456789abcdeZ}" })
+        {
+            GuiErrorProbe::commandLine = executable + L" " + invalid;
+            GuiErrorProbe::requests.clear();
+            GuiErrorProbe::dialogs = 0;
+            Check(GuiMainForReadErrorTest(nullptr, nullptr, nullptr, 0) == 1);
+            Check(GuiErrorProbe::requests.empty() && GuiErrorProbe::dialogs == 1);
         }
     }
 
@@ -788,6 +834,12 @@ int wmain(int argc, wchar_t** argv)
         if (std::wstring_view(argv[1]) == L"gui-file-errors")
         {
             CheckGuiFileErrors();
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
+        if (std::wstring_view(argv[1]) == L"gui-selectors")
+        {
+            CheckGuiSelectors();
             std::cout << "{\"passed\":true}\n";
             return 0;
         }

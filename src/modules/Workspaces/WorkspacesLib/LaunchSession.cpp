@@ -144,9 +144,10 @@ namespace WorkspacesSession
     bool Result::CanRecapture() const
     {
         // A placement failure can replace a confirmed launch in the final window states.
-        return launchedAnyApplication || std::ranges::any_of(applications, [](const auto& entry) {
-            const auto state = entry.second.state;
-            return state == LaunchingState::Launched || state == LaunchingState::LaunchedAndMoved;
+        return launchedAnyApplication || std::ranges::any_of(applications, [this](const auto& entry) {
+            const auto& outcome = entry.second;
+            return outcome.state == LaunchingState::Launched || outcome.state == LaunchingState::LaunchedAndMoved ||
+                   (project.moveExistingWindows && outcome.HasLiveExistingWindow());
         });
     }
 
@@ -160,7 +161,7 @@ namespace WorkspacesSession
         json::JsonArray applications;
         for (const auto& [app, state] : result.applications)
         {
-            auto item = WorkspacesData::AppLaunchInfoJSON::ToJson(state);
+            auto item = WorkspacesData::AppLaunchInfoJSON::ToResultJson(state);
             if (const auto error = result.applicationErrors.find(app.id); error != result.applicationErrors.end())
                 item.SetNamedValue(L"nativeError", json::value(error->second));
             if (const auto approval = result.approvals.find(app.id); approval != result.approvals.end())

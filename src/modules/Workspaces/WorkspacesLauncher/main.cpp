@@ -11,7 +11,7 @@
 #include <common/utils/resources.h>
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LaunchSession.h>
-#include <WorkspacesLib/utils.h>
+#include <workspaces-common/GuidUtils.h>
 #include <Generated Files/resource.h>
 
 namespace
@@ -51,7 +51,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         return *worker;
     LoggerHelpers::init_logger(L"Workspaces\\WorkspacesLauncher", L"", LogSettings::workspacesLauncherLoggerName);
     const auto draftOption = std::ranges::find_if(arguments, [](const auto& arg) { return arg.starts_with(L"--editor-draft"); });
-    CommandLineArgs command{};
+    WorkspacesSession::Request request;
     if (draftOption != arguments.end())
     {
         if (arguments.size() != 3 || draftOption != arguments.begin() + 2 || !draftOption->starts_with(EditorDraftPrefix) ||
@@ -60,13 +60,27 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
             Logger::error("Invalid editor draft launch arguments.");
             return 1;
         }
-        command.workspaceId = arguments[0];
-        command.invokePoint = InvokePoint::LaunchAndEdit;
+        request.id = arguments[0];
+        request.invokePoint = InvokePoint::LaunchAndEdit;
     }
     else
     {
-        command = split(std::wstring(GetCommandLineW()), L" ");
-        if (command.workspaceId.empty())
+        // Older callers can place the optional invocation point and "restarted" marker on either side of the ID.
+        for (const auto& argument : arguments)
+        {
+            if (argument.size() == 36 || (argument.size() == 38 && argument.front() == L'{' && argument.back() == L'}'))
+            {
+                if (GuidFromString(argument.size() == 36 ? L"{" + argument + L"}" : argument))
+                    request.id = argument;
+            }
+            else if (argument == L"0")
+                request.invokePoint = InvokePoint::EditorButton;
+            else if (argument == L"1")
+                request.invokePoint = InvokePoint::Shortcut;
+            else if (argument == L"2")
+                request.invokePoint = InvokePoint::LaunchAndEdit;
+        }
+        if (request.id.empty())
         {
             MessageBoxW(nullptr, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
             return 1;
@@ -74,9 +88,6 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     }
     try
     {
-        WorkspacesSession::Request request;
-        request.id = command.workspaceId;
-        request.invokePoint = command.invokePoint;
         std::optional<WorkspacesData::WorkspacesProject> draft;
         if (draftOption != arguments.end())
         {
@@ -98,7 +109,7 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         const auto result = draft ? WorkspacesSession::StartSnapshot(request, *draft, true) : WorkspacesSession::Start(request);
         if (result.persistence && *result.persistence != WorkspaceStore::UpdateResult::Updated)
             Logger::warn("Workspace launch history could not be saved.");
-        if (command.invokePoint == InvokePoint::LaunchAndEdit)
+        if (request.invokePoint == InvokePoint::LaunchAndEdit)
         {
             return result.CanRecapture() ? 0 : 1;
         }
@@ -112,11 +123,11 @@ int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
         if (error.code == L"busy" || error.code == L"disabledByPolicy" || error.code == L"canceled")
         {
             // The editor only starts recapture after a successful Launch and edit.
-            return command.invokePoint == InvokePoint::LaunchAndEdit ? error.exitCode : 0;
+            return request.invokePoint == InvokePoint::LaunchAndEdit ? error.exitCode : 0;
         }
         std::wstring message;
         if (error.code == L"workspaceNotFound")
-            message = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), command.workspaceId);
+            message = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), request.id);
         else if (error.code == L"invalidArguments")
             message = GET_RESOURCE_STRING(IDS_INCORRECT_ARGS);
         else if (error.code == L"storageError" || error.code == L"invalidData")
