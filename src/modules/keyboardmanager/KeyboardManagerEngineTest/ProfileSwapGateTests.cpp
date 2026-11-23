@@ -577,7 +577,7 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
-        // moooyo N3: a forced swap releases only what the old profile left down. A pending "Alone" key
+        // Review: a forced swap releases only what the old profile left down. A pending "Alone" key
         // (its key-up lost) must not be resolved as a tap: its action never fires, neither at the swap
         // nor when the real key-up finally arrives.
         TEST_METHOD (ForcedSwap_PendingAloneKey_DoesNotFireTap)
@@ -600,7 +600,7 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
-        // moooyo N3: Ctrl+Shift+C -> Alt+V, C released (V released, Alt still down), and both source
+        // Review: Ctrl+Shift+C -> Alt+V, C released (V released, Alt still down), and both source
         // modifiers' key-ups lost. The forced swap releases Alt and must not restore a source modifier
         // (replaying Shift-up through the shortcut handler injected Ctrl-down, left down for good).
         TEST_METHOD (ForcedSwap_TwoModifierShortcut_LeavesNoModifierDown)
@@ -747,7 +747,7 @@ namespace RemappingLogicTests
             Release('Z');
         }
 
-        // moooyo N4: another program injects a chord with an odd dwExtraInfo that is not KBM's (here
+        // Review: another program injects a chord with an odd dwExtraInfo that is not KBM's (here
         // AutoHotkey's default tag). A's shortcut handler remaps it (it skips only KBM's exact shortcut
         // tag), so the chord must be tracked like any foreign input: held across a switch to an empty
         // profile, it blocks the swap and its key-ups are resolved under A, releasing A's targets.
@@ -1071,7 +1071,7 @@ namespace RemappingLogicTests
             Assert::AreEqual(std::wstring{}, pending);
         }
 
-        // moooyo N1: saving the keyboard assignments (or anything else that reloads the live profile without
+        // Review: saving the keyboard assignments (or anything else that reloads the live profile without
         // changing its remaps) must not drop a held shortcut's runtime state. Ctrl+A -> Shift+B is held,
         // the reload runs, then the chord is released: Shift and B must be released too.
         TEST_METHOD (SameProfileReload_UnchangedBindings_KeepsHeldShortcutState)
@@ -1247,7 +1247,7 @@ namespace RemappingLogicTests
             gate->ReconcileHooks(HookControlFor(hooks), [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); });
         }
 
-        // moooyo N2: after a switch to an empty profile the hook thread decides to unhook; before the
+        // Review: after a switch to an empty profile the hook thread decides to unhook; before the
         // removal, the settings thread applies the profile's first mapping in place (and, seeing the hook
         // still installed, does not ask for it). The reconciliation must not end with the mapping live
         // and no hook.
