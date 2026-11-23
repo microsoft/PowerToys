@@ -11,7 +11,7 @@ namespace PowerDisplay.Helpers;
 
 /// <summary>
 /// Raises <see cref="BrightnessChanged"/> when Windows changes the built-in display
-/// brightness setting (<see cref="PowerSettingsNative.GuidVideoCurrentMonitorBrightness"/>).
+/// brightness setting (<see cref="PowerSettingsNative.GuidDevicePowerPolicyVideoBrightness"/>).
 /// </summary>
 /// <remarks>
 /// Laptop brightness keys are usually HID consumer-control usages (0x6F/0x70) that
@@ -60,7 +60,7 @@ internal sealed partial class BuiltInBrightnessWatcher : IDisposable
             Context = IntPtr.Zero,
         };
 
-        var guid = PowerSettingsNative.GuidVideoCurrentMonitorBrightness;
+        var guid = PowerSettingsNative.GuidDevicePowerPolicyVideoBrightness;
         uint result = PowerSettingsNative.PowerSettingRegisterNotification(
             ref guid,
             PowerSettingsNative.DeviceNotifyCallback,
@@ -74,7 +74,7 @@ internal sealed partial class BuiltInBrightnessWatcher : IDisposable
         }
         else
         {
-            Logger.LogInfo("[BuiltInBrightnessWatcher] Subscribed to GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS");
+            Logger.LogInfo("[BuiltInBrightnessWatcher] Subscribed to GUID_DEVICE_POWER_POLICY_VIDEO_BRIGHTNESS");
         }
     }
 

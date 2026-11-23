@@ -24,13 +24,13 @@ internal static partial class PowerSettingsNative
         new("6fe69556-704a-47a0-8f24-c28d936fda47");
 
     /// <summary>
-    /// GUID_VIDEO_CURRENT_MONITOR_BRIGHTNESS: the active power scheme's display
-    /// brightness (0-100). Windows updates it whenever the user changes the
+    /// GUID_DEVICE_POWER_POLICY_VIDEO_BRIGHTNESS (Windows SDK winnt.h): the active
+    /// power scheme's display brightness (0-100). Windows updates it whenever the user changes the
     /// built-in panel brightness (hardware brightness keys, Quick Settings slider,
     /// Settings app), including while that panel is inactive (e.g. "Second screen
     /// only" projection). Data is a DWORD.
     /// </summary>
-    internal static readonly Guid GuidVideoCurrentMonitorBrightness =
+    internal static readonly Guid GuidDevicePowerPolicyVideoBrightness =
         new("aded5e82-b909-4619-9949-f5d71dac0bcb");
 
     internal const uint DisplayStateOff = 0;
