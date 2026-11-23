@@ -10,6 +10,8 @@
 #include "PasteChaperone.h"
 #include "ClipboardPayload.h"
 
+#include <common/utils/input_injection.h>
+
 #include <memory>
 #include <new>
 
@@ -49,9 +51,10 @@ namespace
     // installed its hook.
     constexpr DWORD STARTUP_TIMEOUT = 5 * 1000;
 
-    // Longest we wait for the user to release Ctrl before synthesizing the
-    // second paste, in 10ms steps.
-    constexpr int CTRL_RELEASE_POLLS = 100;
+    // Longest we wait for the user to release the modifiers of their paste
+    // before synthesizing the second one.
+    constexpr std::chrono::milliseconds MODIFIER_RELEASE_TIMEOUT{ 1000 };
+    constexpr std::chrono::milliseconds MODIFIER_RELEASE_POLL{ 10 };
 
     struct ChaperoneStartup
     {
@@ -233,6 +236,17 @@ namespace
     }
 
 
+    // Built here rather than taking the helper's defaults so that the unit
+    // tests' SendInput / GetAsyncKeyState substitutes always apply.
+    input_injection::system_api InputApi()
+    {
+        input_injection::system_api api;
+        api.send_input = []( UINT count, INPUT* inputs ) { return SendInput( count, inputs, sizeof( INPUT ) ); };
+        api.is_key_down = []( WORD vk ) { return ( GetAsyncKeyState( vk ) & 0x8000 ) != 0; };
+        api.sleep = []( std::chrono::milliseconds duration ) { Sleep( static_cast<DWORD>( duration.count() ) ); };
+        return api;
+    }
+
     //----------------------------------------------------------------------
     //
     // SendPaste
@@ -240,36 +254,30 @@ namespace
     //----------------------------------------------------------------------
     bool SendPaste()
     {
-        // Waiting for the physical Ctrl to come up keeps the synthesized key
-        // events from interleaving with the user's own.
-        for( int i = 0; i < CTRL_RELEASE_POLLS && ( GetAsyncKeyState( VK_CONTROL ) & 0x8000 ) != 0; i++ )
-        {
-            Sleep( 10 );
-        }
+        const auto api = InputApi();
+
+        // Waiting for the physical modifiers to come up keeps the synthesized
+        // key events from interleaving with the user's own. Runs after the
+        // keyboard hook has been removed, so the key-ups can be observed.
+        const bool released = input_injection::wait_for_modifiers_release( MODIFIER_RELEASE_TIMEOUT, MODIFIER_RELEASE_POLL, api );
 
         if( !PasteTargetStillActive() )
         {
             return false;
         }
 
-        INPUT inputs[4] = {};
-
-        inputs[0].type = INPUT_KEYBOARD;
-        inputs[0].ki.wVk = VK_CONTROL;
-        inputs[1].type = INPUT_KEYBOARD;
-        inputs[1].ki.wVk = 'V';
-        inputs[2].type = INPUT_KEYBOARD;
-        inputs[2].ki.wVk = 'V';
-        inputs[2].ki.dwFlags = KEYEVENTF_KEYUP;
-        inputs[3].type = INPUT_KEYBOARD;
-        inputs[3].ki.wVk = VK_CONTROL;
-        inputs[3].ki.dwFlags = KEYEVENTF_KEYUP;
-
-        const UINT sent = SendInput( ARRAYSIZE( inputs ), inputs, sizeof( INPUT ) );
-        if( sent != ARRAYSIZE( inputs ) )
+        // Any modifier still held is released in the same batch so the target
+        // sees exactly Ctrl+V.
+        const auto result = input_injection::send_chord( { VK_CONTROL, 'V' }, {}, api );
+        if( !released )
         {
-            OutputDebug( L"[Snip/PasteChaperone] SendInput sent=%u expected=%zu err=%lu\n",
-                         sent, ARRAYSIZE( inputs ), GetLastError() );
+            OutputDebug( L"[Snip/PasteChaperone] Modifiers still held after %lldms; released them\n",
+                         static_cast<long long>( MODIFIER_RELEASE_TIMEOUT.count() ) );
+        }
+        if( !result.succeeded() )
+        {
+            OutputDebug( L"[Snip/PasteChaperone] SendInput sent=%u expected=%u err=%lu cleanup=%u/%u\n",
+                         result.sent, result.requested, result.error, result.cleanup_sent, result.cleanup_requested );
             return false;
         }
 
