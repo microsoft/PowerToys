@@ -118,6 +118,47 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual("{}", File.ReadAllText(path));
         }
 
+        // E1: a fresh setup can register "default" without a default.json yet. Switching back to it
+        // must work and must create it empty.
+        [TestMethod]
+        public void SetActiveProfile_SwitchesToDefaultWhoseFileDoesNotExistYet()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+            string defaultPath = Path.Combine(_directory, "default.json");
+            Assert.IsFalse(File.Exists(defaultPath));
+
+            Assert.IsTrue(ProfileManager.SetActiveProfile("default"));
+            Assert.AreEqual("default", ProfileManager.GetActiveProfile());
+            Assert.IsTrue(File.Exists(defaultPath));
+            Assert.AreEqual(File.ReadAllText(Path.Combine(_directory, "Work.json")), File.ReadAllText(defaultPath));
+        }
+
+        [TestMethod]
+        public void SetActiveProfile_KeepsAnExistingDefaultFile()
+        {
+            string defaultPath = Path.Combine(_directory, "default.json");
+            File.WriteAllText(defaultPath, "default mappings");
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+
+            Assert.IsTrue(ProfileManager.SetActiveProfile("default"));
+            Assert.AreEqual("default mappings", File.ReadAllText(defaultPath));
+        }
+
+        // Only "default" is created on demand; any other profile without a file is still refused and
+        // the active profile is left as it was.
+        [TestMethod]
+        public void SetActiveProfile_RefusesAMissingNonDefaultProfile()
+        {
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
+
+            Assert.IsFalse(ProfileManager.SetActiveProfile("Home"));
+            Assert.AreEqual("Work", ProfileManager.GetActiveProfile());
+            Assert.IsFalse(File.Exists(Path.Combine(_directory, "Home.json")));
+        }
+
         [TestMethod]
         public void CreateProfile_DoesNotOverwriteAnExistingProfileFile()
         {

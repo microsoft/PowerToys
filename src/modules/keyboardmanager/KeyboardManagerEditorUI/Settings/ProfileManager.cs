@@ -220,7 +220,8 @@ namespace KeyboardManagerEditorUI.Settings
 
         /// <summary>
         /// Makes <paramref name="profile"/> the active profile and signals the engine to reload.
-        /// Returns false if the profile's config file does not exist.
+        /// Returns false if the profile's config file does not exist (an empty one is created for
+        /// the built-in "default" profile).
         /// </summary>
         public static bool SetActiveProfile(string profile)
         {
@@ -231,6 +232,14 @@ namespace KeyboardManagerEditorUI.Settings
 
             try
             {
+                // The picker always lists "default", but a fresh setup need not have default.json
+                // yet (e.g. a profile was created before any default mapping was saved). Create it
+                // empty so switching back to the built-in profile works.
+                if (profile.Equals(DefaultProfile, StringComparison.OrdinalIgnoreCase))
+                {
+                    EnsureDefaultProfileExists();
+                }
+
                 if (!File.Exists(ConfigPath(profile)))
                 {
                     Logger.LogWarning($"ProfileManager.SetActiveProfile: '{profile}.json' does not exist");

@@ -938,6 +938,14 @@
                     </StackPanel>
                 </ContentDialog>
 
+                <!--  Message shown when a profile could not be created, switched to or deleted  -->
+                <ContentDialog
+                    x:Name="ProfileErrorDialog"
+                    x:Uid="ProfileErrorDialog"
+                    DefaultButton="Close">
+                    <TextBlock x:Name="ProfileErrorDialogText" TextWrapping="Wrap" />
+                </ContentDialog>
+
                 <!--  Dialog for per-keyboard auto-switch settings  -->
                 <ContentDialog
                     x:Name="AutoSwitchDialog"

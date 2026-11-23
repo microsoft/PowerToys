@@ -358,18 +358,50 @@ namespace KeyboardManagerEditorUI.Pages
         {
             try
             {
-                if (!ProfileManager.SetActiveProfile(profile))
+                if (ProfileManager.SetActiveProfile(profile))
                 {
-                    Logger.LogWarning($"Failed to switch to profile '{profile}'");
+                    RebuildForActiveProfile();
+                    UpdateDeleteProfileButtonState();
                     return;
                 }
 
-                RebuildForActiveProfile();
-                UpdateDeleteProfileButtonState();
+                Logger.LogWarning($"Failed to switch to profile '{profile}'");
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error switching profile: " + ex.Message);
+            }
+
+            // The switch did not happen, so the picker must not keep showing the requested profile:
+            // every later edit goes to the profile that is actually active. Move the picker back to
+            // it and tell the user which profile could not be activated. Deferred so the picker is
+            // not reset from inside its own SelectionChanged handler.
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                LoadProfiles();
+                _ = ShowProfileErrorAsync(
+                    ResourceHelper.GetString("ProfileSwitchFailed_Title"),
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        CompositeFormat.Parse(ResourceHelper.GetString("ProfileSwitchFailed_Format")),
+                        profile,
+                        ProfileManager.GetActiveProfile()));
+            });
+        }
+
+        // Shows a profile operation failure. Only one ContentDialog can be open at a time; if another
+        // one is already showing, the message is logged instead of throwing.
+        private async System.Threading.Tasks.Task ShowProfileErrorAsync(string title, string message)
+        {
+            ProfileErrorDialog.Title = title;
+            ProfileErrorDialogText.Text = message;
+            try
+            {
+                await ProfileErrorDialog.ShowAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"Could not show profile error '{message}': {ex.Message}");
             }
         }
 
@@ -494,6 +526,9 @@ namespace KeyboardManagerEditorUI.Pages
             else
             {
                 Logger.LogWarning($"Could not create profile '{name}' (invalid name or already exists)");
+                await ShowProfileErrorAsync(
+                    ResourceHelper.GetString("ProfileCreateFailed_Title"),
+                    string.Format(CultureInfo.CurrentCulture, CompositeFormat.Parse(ResourceHelper.GetString("ProfileCreateFailed_Format")), name));
             }
         }
 

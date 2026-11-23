@@ -667,6 +667,23 @@
   <data name="DeleteProfileDialogContent.Text" xml:space="preserve">
     <value>This profile and all of its mappings will be permanently deleted. This cannot be undone:</value>
   </data>
+  <data name="ProfileErrorDialog.CloseButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ProfileSwitchFailed_Title" xml:space="preserve">
+    <value>Couldn't switch profiles</value>
+  </data>
+  <data name="ProfileSwitchFailed_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be activated. "{1}" is still the active profile, and your changes will be saved to it.</value>
+    <comment>{0} is the profile that could not be activated; {1} is the profile that is still active.</comment>
+  </data>
+  <data name="ProfileCreateFailed_Title" xml:space="preserve">
+    <value>Couldn't create profile</value>
+  </data>
+  <data name="ProfileCreateFailed_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be created. The name might not be allowed, or a profile with this name might already exist.</value>
+    <comment>{0} is the profile name the user entered.</comment>
+  </data>
   <data name="AutoSwitchBtn_Text.Text" xml:space="preserve">
     <value>Auto-switch</value>
   </data>
