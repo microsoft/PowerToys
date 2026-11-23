@@ -623,6 +623,10 @@ namespace KeyboardManagerEditorUI.Pages
             KeyboardAssignmentsList.ItemsSource = _keyboardRows;
             AutoSwitchToggle.IsOn = DeviceProfileManager.GetAutoSwitchEnabled();
 
+            // What the dialog shows now. On save only the user's changes from it are applied to the
+            // file as it is then, so a dialog left open cannot undo another editor's newer save.
+            var baseline = new DeviceProfileManager.DeviceAssignmentsBaseline(AutoSwitchToggle.IsOn, SnapshotKeyboardRows(_keyboardRows));
+
             // Watch live keystrokes so the user can identify a keyboard by typing on it (and so a
             // keyboard that only shows up at typing time — not in enumeration — still gets a row).
             _autoSwitchWatcher = new RawInputWatcher(OnKeyboardTyped);
@@ -644,12 +648,23 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            var toSave = _keyboardRows
-                .Where(r => r.SelectedProfileId != null)
-                .Select(r => new DeviceAssignment { Device = r.DevicePath, Profile = r.SelectedProfileId!, Name = r.DisplayName });
-
-            DeviceProfileManager.Save(AutoSwitchToggle.IsOn, toSave);
+            DeviceProfileManager.DeviceAssignmentsSaveResult saveResult =
+                DeviceProfileManager.SaveChanges(baseline, AutoSwitchToggle.IsOn, SnapshotKeyboardRows(_keyboardRows));
+            if (saveResult != DeviceProfileManager.DeviceAssignmentsSaveResult.Saved)
+            {
+                string messageKey = saveResult switch
+                {
+                    DeviceProfileManager.DeviceAssignmentsSaveResult.Busy => "AutoSwitchSaveFailed_Busy",
+                    DeviceProfileManager.DeviceAssignmentsSaveResult.Unreadable => "AutoSwitchSaveFailed_Unreadable",
+                    _ => "AutoSwitchSaveFailed_Message",
+                };
+                await ShowProfileErrorAsync(ResourceHelper.GetString("AutoSwitchSaveFailed_Title"), ResourceHelper.GetString(messageKey));
+            }
         }
+
+        // One entry per keyboard row; an empty profile stands for "not assigned".
+        private static List<DeviceAssignment> SnapshotKeyboardRows(IEnumerable<KeyboardAssignmentRow> rows) =>
+            rows.Select(r => new DeviceAssignment { Device = r.DevicePath, Profile = r.SelectedProfileId ?? string.Empty, Name = r.DisplayName }).ToList();
 
         // Runs on the Raw Input watcher thread; marshal to the UI thread before touching rows.
         private void OnKeyboardTyped(DetectedKeyboard keyboard)

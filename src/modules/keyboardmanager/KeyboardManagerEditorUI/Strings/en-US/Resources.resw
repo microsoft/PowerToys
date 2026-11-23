@@ -731,6 +731,18 @@
   <data name="AutoSwitch_NotAssigned" xml:space="preserve">
     <value>(not assigned)</value>
   </data>
+  <data name="AutoSwitchSaveFailed_Title" xml:space="preserve">
+    <value>Keyboard assignments not saved</value>
+  </data>
+  <data name="AutoSwitchSaveFailed_Busy" xml:space="preserve">
+    <value>Another Keyboard Manager window is saving changes. Open the keyboard assignments again and retry.</value>
+  </data>
+  <data name="AutoSwitchSaveFailed_Unreadable" xml:space="preserve">
+    <value>The saved keyboard assignments couldn't be read, so they were left as they are. Open the keyboard assignments again and retry.</value>
+  </data>
+  <data name="AutoSwitchSaveFailed_Message" xml:space="preserve">
+    <value>The keyboard assignments couldn't be saved. Open them again and retry.</value>
+  </data>
   <data name="AutoSwitchIdentifyHint.Title" xml:space="preserve">
     <value>Press a key on a keyboard to highlight its row (and add it if it isn't listed).</value>
   </data>

@@ -1,0 +1,180 @@
+// Copyright (c) Microsoft Corporation
+// The Microsoft Corporation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json.Nodes;
+using KeyboardManagerEditorUI.Settings;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+namespace KeyboardManagerEditorUI.UnitTests
+{
+    /// <summary>
+    /// The keyboard assignment dialog can stay open for minutes, and the Settings page and the
+    /// runner can each start an editor. Saving applies only what this dialog changed to the file
+    /// as it is now, so a dialog opened earlier cannot overwrite a newer save. Every test runs in
+    /// its own folder under the test root, never in the live Keyboard Manager folder.
+    /// </summary>
+    [TestClass]
+    [DoNotParallelize]
+    public class DeviceAssignmentSaveTests
+    {
+        private string _directory = string.Empty;
+
+        private string DeviceProfilesPath => Path.Combine(_directory, "deviceProfiles.json");
+
+        [TestInitialize]
+        public void SetUp()
+        {
+            _directory = Path.Combine(UnitTestModuleInitializer.TestRoot, Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(_directory);
+            KeyboardManagerPaths.RedirectForTests(_directory);
+            Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
+            Assert.IsTrue(ProfileManager.CreateProfile("Home", copyFromActive: false));
+        }
+
+        [TestCleanup]
+        public void TearDown()
+        {
+            KeyboardManagerPaths.RedirectForTests(UnitTestModuleInitializer.TestRoot);
+            try
+            {
+                Directory.Delete(_directory, recursive: true);
+            }
+            catch (IOException)
+            {
+            }
+        }
+
+        // The reviewer's scenario: two dialogs open on the same file. A assigns a new keyboard and
+        // saves; B changes only the auto-switch toggle and saves. A's assignment must survive.
+        [TestMethod]
+        public void SecondDialog_ChangingOnlyTheToggle_KeepsTheFirstDialogsNewAssignment()
+        {
+            WriteFile(autoSwitch: false, ("k1", "Work"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.Saved,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: false, Rows(("k1", "Work"), ("k2", "Home"))));
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.Saved,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Work"))));
+
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Work", "k2=Home" }, SavedMap());
+            Assert.IsTrue(DeviceProfileManager.GetAutoSwitchEnabled());
+        }
+
+        // A turned auto-switch on; B, opened before that, changes only an assignment. B must not
+        // turn auto-switch back off.
+        [TestMethod]
+        public void SecondDialog_ChangingOnlyAnAssignment_KeepsTheFirstDialogsToggle()
+        {
+            WriteFile(autoSwitch: false, ("k1", "Work"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+
+            DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Work")));
+            DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: false, Rows(("k1", "Home")));
+
+            Assert.IsTrue(DeviceProfileManager.GetAutoSwitchEnabled());
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Home" }, SavedMap());
+        }
+
+        // Clearing a keyboard's assignment removes only that keyboard; another dialog's change to a different
+        // keyboard stays.
+        [TestMethod]
+        public void ClearingAKeyboard_RemovesOnlyThatKeyboard()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Work"), ("k2", "Home"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+
+            DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Work"), ("k2", "Work")));
+            DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", string.Empty), ("k2", "Home")));
+
+            CollectionAssert.AreEquivalent(new List<string> { "k2=Work" }, SavedMap());
+        }
+
+        // A profile deleted while the dialog was open: its assignment is not written back, neither
+        // the one the dialog shows nor one left in the file.
+        [TestMethod]
+        public void AssignmentsToProfilesThatNoLongerExist_AreDropped()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Work"), ("k3", "Gone"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+            Assert.IsTrue(ProfileManager.DeleteProfile("Home"));
+
+            DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Work"), ("k2", "Home")));
+
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Work" }, SavedMap());
+        }
+
+        [TestMethod]
+        public void UnreadableFile_IsNotOverwritten()
+        {
+            File.WriteAllText(DeviceProfilesPath, "{ \"map\": [ ");
+            var baseline = new DeviceProfileManager.DeviceAssignmentsBaseline(false, Array.Empty<DeviceAssignment>());
+
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.Unreadable,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Work"))));
+            Assert.AreEqual("{ \"map\": [ ", File.ReadAllText(DeviceProfilesPath));
+        }
+
+        // Saved under the editor transaction lock, which profile delete and create hold while they
+        // prune assignments.
+        [TestMethod]
+        public void Save_WaitsForTheEditorTransactionLock_AndWritesNothingWithoutIt()
+        {
+            WriteFile(autoSwitch: false, ("k1", "Work"));
+            string before = File.ReadAllText(DeviceProfilesPath);
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+
+            using (FileStream held = SettingsManager.TryAcquireMappingTransactionLock())
+            {
+                Assert.IsNotNull(held);
+                Assert.AreEqual(
+                    DeviceProfileManager.DeviceAssignmentsSaveResult.Busy,
+                    DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Home")), lockTimeoutMS: 0));
+            }
+
+            Assert.AreEqual(before, File.ReadAllText(DeviceProfilesPath));
+        }
+
+        // The engine's cycle hotkey is kept, and no temporary file is left behind.
+        [TestMethod]
+        public void Save_KeepsTheCycleHotkey_AndLeavesNoTemporaryFile()
+        {
+            File.WriteAllText(
+                DeviceProfilesPath,
+                "{ \"autoSwitchEnabled\": false, \"map\": [], \"cycleHotkey\": { \"key\": 112, \"ctrl\": true } }");
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.Saved,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: false, Rows(("k1", "Work"))));
+
+            JsonNode root = JsonNode.Parse(File.ReadAllText(DeviceProfilesPath));
+            Assert.AreEqual(112, root?["cycleHotkey"]?["key"]?.GetValue<int>());
+            Assert.AreEqual(1, Directory.EnumerateFiles(_directory, "deviceProfiles*").Count());
+        }
+
+        private static List<DeviceAssignment> Rows(params (string Device, string Profile)[] rows) =>
+            rows.Select(r => new DeviceAssignment { Device = r.Device, Profile = r.Profile, Name = r.Device }).ToList();
+
+        private static List<string> SavedMap() =>
+            DeviceProfileManager.GetSavedAssignments().Select(a => $"{a.Device}={a.Profile}").ToList();
+
+        private void WriteFile(bool autoSwitch, params (string Device, string Profile)[] map)
+        {
+            var root = new JsonObject
+            {
+                ["autoSwitchEnabled"] = autoSwitch,
+                ["map"] = new JsonArray(map.Select(m => (JsonNode)new JsonObject { ["device"] = m.Device, ["profile"] = m.Profile, ["name"] = m.Device }).ToArray()),
+            };
+            File.WriteAllText(DeviceProfilesPath, root.ToJsonString());
+        }
+    }
+}

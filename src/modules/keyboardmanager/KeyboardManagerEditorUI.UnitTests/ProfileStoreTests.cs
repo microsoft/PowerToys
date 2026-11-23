@@ -231,7 +231,7 @@ namespace KeyboardManagerEditorUI.UnitTests
         public void DeleteProfile_RemovesTheFileMembershipAndRegistration()
         {
             CreateWorkWithTaggedRows();
-            DeviceProfileManager.Save(true, new[] { new DeviceAssignment { Device = "keyboard-1", Profile = "Work", Name = "Keyboard" } });
+            WriteDeviceProfiles("{ \"autoSwitchEnabled\": true, \"map\": [ { \"device\": \"keyboard-1\", \"profile\": \"Work\", \"name\": \"Keyboard\" } ] }");
             ProfileManager.RenameProfile("Work", "Office");
 
             Assert.IsTrue(ProfileManager.DeleteProfile("Work"));
@@ -267,7 +267,7 @@ namespace KeyboardManagerEditorUI.UnitTests
         public void CreateProfile_PurgesLeftoversOfAReusedProfileId()
         {
             WriteEditorSettings();
-            DeviceProfileManager.Save(true, new[] { new DeviceAssignment { Device = "keyboard-1", Profile = "Work", Name = "Keyboard" } });
+            WriteDeviceProfiles("{ \"autoSwitchEnabled\": true, \"map\": [ { \"device\": \"keyboard-1\", \"profile\": \"Work\", \"name\": \"Keyboard\" } ] }");
             ProfileMetadataManager.SetDisplayName("Work", "Office");
 
             Assert.IsTrue(ProfileManager.CreateProfile("Work", copyFromActive: false));
@@ -616,6 +616,8 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsTrue(ProfileManager.SetActiveProfile("Work"));
             WriteEditorSettings();
         }
+
+        private void WriteDeviceProfiles(string json) => File.WriteAllText(Path.Combine(_directory, "deviceProfiles.json"), json);
 
         private EditorSettings ReadEditorSettings() =>
             System.Text.Json.JsonSerializer.Deserialize<EditorSettings>(File.ReadAllText(EditorSettingsPath)) ?? new EditorSettings();
