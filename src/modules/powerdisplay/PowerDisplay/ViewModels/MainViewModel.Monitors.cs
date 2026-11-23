@@ -118,6 +118,7 @@ public partial class MainViewModel
         try
         {
             CancelPendingLinkedBrightnessCommit();
+            CancelPendingFollowBrightness();
             IsScanning = true;
 
             var settings = _settingsUtils.GetSettingsOrDefault<PowerDisplaySettings>(PowerDisplaySettings.ModuleName);

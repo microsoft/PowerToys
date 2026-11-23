@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Threading;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
 
@@ -39,6 +40,11 @@ internal sealed partial class BuiltInBrightnessWatcher : IDisposable
     /// each time the setting actually changes.
     /// </summary>
     public event EventHandler<int>? BrightnessChanged;
+
+    /// <summary>
+    /// Gets the last brightness percentage Windows reported, or -1 before the initial notification.
+    /// </summary>
+    public int LastBrightness => Volatile.Read(ref _lastBrightness);
 
     public BuiltInBrightnessWatcher(DispatcherQueue dispatcherQueue)
     {

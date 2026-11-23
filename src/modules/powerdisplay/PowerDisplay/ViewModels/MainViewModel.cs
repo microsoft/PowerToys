@@ -410,7 +410,6 @@ public partial class MainViewModel : ObservableObject, IDisposable
         // Dispose each resource independently to ensure all get cleaned up
         try
         {
-            _followBrightnessCommitTimer?.Stop();
             if (_builtInBrightnessWatcher is not null)
             {
                 _builtInBrightnessWatcher.BrightnessChanged -= OnBuiltInBrightnessChanged;
@@ -586,7 +585,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private void OnDisplayChanging(object? sender, EventArgs e)
     {
         CancelPendingLinkedBrightnessCommit();
-        _followBrightnessCommitTimer?.Stop();
+        CancelPendingFollowBrightness();
 
         if (!IsScanning)
         {
