@@ -1,12 +1,45 @@
 ﻿#include "pch.h"
 #include "hotkey_conflict_detector.h"
 #include <common/SettingsAPI/settings_helpers.h>
+#include <common/sysinternals/WindowsVersions.h>
 #include <windows.h>
 #include <unordered_map>
 #include <cwchar>
 
 namespace HotkeyConflictDetector
 {
+    namespace
+    {
+        bool IsLegacyWinShiftCShortcut(const Hotkey& hotkey)
+        {
+            return hotkey.win && hotkey.shift && !hotkey.ctrl && !hotkey.alt && hotkey.key == 'C';
+        }
+    }
+
+    bool IsWindows11OrGreater()
+    {
+        static const bool isWindows11OrGreater = [] {
+            using RtlGetVersionType = NTSTATUS(NTAPI*)(PRTL_OSVERSIONINFOW);
+
+            const auto ntdll = GetModuleHandleW(L"ntdll.dll");
+            RtlGetVersionType rtlGetVersion = nullptr;
+            if (ntdll)
+            {
+                rtlGetVersion = reinterpret_cast<RtlGetVersionType>(GetProcAddress(ntdll, "RtlGetVersion"));
+            }
+            if (!rtlGetVersion)
+            {
+                return false;
+            }
+
+            RTL_OSVERSIONINFOW version = {};
+            version.dwOSVersionInfoSize = sizeof(version);
+            return rtlGetVersion(&version) == 0 && version.dwBuildNumber >= BUILD_WINDOWS_11_21H2;
+        }();
+
+        return isWindows11OrGreater;
+    }
+
     Hotkey ShortcutToHotkey(const CentralizedHotkeys::Shortcut& shortcut)
     {
         Hotkey hotkey;
@@ -333,6 +366,15 @@ namespace HotkeyConflictDetector
 
     bool HotkeyConflictManager::HasConflictWithSystemHotkey(const Hotkey& hotkey)
     {
+        // Windows 11 still reports the legacy Windows+Shift+C shortcut as registered,
+        // even though the Charms/Cortana action it was originally reserved for no
+        // longer exists. PowerToys handles this shortcut through its keyboard hook, so
+        // reporting it as a system conflict is a false positive on Windows 11.
+        if (IsWindows11OrGreater() && IsLegacyWinShiftCShortcut(hotkey))
+        {
+            return false;
+        }
+
         // Convert PowerToys Hotkey format to Win32 RegisterHotKey format
         UINT modifiers = 0;
         if (hotkey.win)

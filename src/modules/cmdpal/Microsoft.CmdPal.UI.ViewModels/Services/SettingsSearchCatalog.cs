@@ -28,6 +28,7 @@ public sealed class SettingsSearchCatalog(IEnumerable<SettingsSearchResult> entr
         [SettingsLinkIds.Appearance.ClearRecentCommands] = ("Settings_GeneralPage_ClearRecentCommands_SettingsCard.Header", null, Glyphs.Delete, "ClearHistory", SettingsLinkIds.General.RecentItems),
         [SettingsLinkIds.General.AppBehavior] = ("Settings_GeneralPage_AppBehaviorSettingsHeader.Text", null, Glyphs.Settings, null, null),
         [SettingsLinkIds.General.SystemTrayIcon] = ("Settings_GeneralPage_ShowSystemTrayIcon_SettingsCard.Header", null, Glyphs.SystemTray, "TrayIcon", SettingsLinkIds.General.AppBehavior),
+        [SettingsLinkIds.General.TrayIconClickAction] = ("Settings_GeneralPage_TrayIconClickAction.Header", "Settings_GeneralPage_TrayIconClickAction.Description", Glyphs.SystemTray, "TrayIcon", SettingsLinkIds.General.AppBehavior),
         [SettingsLinkIds.General.AltF4] = ("Settings_GeneralPage_AllowAltF4_SettingsCard.Header", null, Glyphs.Power, "Quit", SettingsLinkIds.General.AppBehavior),
         [SettingsLinkIds.General.Language] = ("Settings_GeneralPage_Language_SettingsCard.Header", "Settings_GeneralPage_Language_SettingsCard.Description", Glyphs.Language, "Language", SettingsLinkIds.General.AppBehavior),
         [SettingsLinkIds.General.ExternalLinks] = ("ExternalLinksSettingsHeader.Text", null, Glyphs.Link, "Links", null),

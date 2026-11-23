@@ -75,6 +75,12 @@ namespace PowerDisplay.Common.Drivers
         public const uint QdcOnlyActivePaths = 0x00000002;
 
         /// <summary>
+        /// Win32 ERROR_INSUFFICIENT_BUFFER: the display topology changed between sizing the
+        /// buffers and querying them.
+        /// </summary>
+        public const int ErrorInsufficientBuffer = 122;
+
+        /// <summary>
         /// Get source name (GDI device name like "\\.\DISPLAY1")
         /// </summary>
         public const uint DisplayconfigDeviceInfoGetSourceName = 1;
@@ -115,6 +121,16 @@ namespace PowerDisplay.Common.Drivers
         /// DmPelsHeight field is valid.
         /// </summary>
         public const int DmPelsHeight = 0x00100000;
+
+        /// <summary>
+        /// DmDisplayFrequency field is valid.
+        /// </summary>
+        public const int DmDisplayFrequency = 0x00400000;
+
+        /// <summary>
+        /// DmDisplayFixedOutput field is valid.
+        /// </summary>
+        public const int DmDisplayFixedOutput = 0x20000000;
 
         // ==================== ChangeDisplaySettings flags ====================
 

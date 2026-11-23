@@ -1,7 +1,7 @@
 <Project DefaultTargets="Publish">
   <PropertyGroup>
     <PowerToysRoot Condition="'$(PowerToysRoot)' == ''">$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\..'))</PowerToysRoot>
-    <PublishForPackagingProperties>PowerToysRoot=$(PowerToysRoot);AppxBundle=Never;VCRTForwarders-IncludeDebugCRT=false;PublishProfile=InstallationPublishProfile.pubxml;TargetFramework=net10.0-windows10.0.26100.0</PublishForPackagingProperties>
+    <PublishForPackagingProperties>PowerToysRoot=$(PowerToysRoot);AppxBundle=Never;VCRTForwarders-IncludeDebugCRT=false;PublishProfile=InstallationPublishProfile.pubxml;TargetFramework=net11.0-windows10.0.26100.0</PublishForPackagingProperties>
   </PropertyGroup>
 
   <ItemGroup>

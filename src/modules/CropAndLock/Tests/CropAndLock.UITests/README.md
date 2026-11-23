@@ -40,7 +40,7 @@ converted into skips.
 ## Fixtures and prerequisites
 
 - Run in an unlocked, English-language standard-user desktop with PowerToys,
-  winappcli and the architecture-matched .NET 10 Desktop Runtime. No Store,
+  winappcli and the architecture-matched .NET 11 Desktop Runtime. No Store,
   elevated test process or additional third-party dependencies are required.
 - The Win32 fixture is an owned WinForms window on a dedicated STA thread. Its
   editable text and colored panels provide deterministic, visibly changing content.
@@ -49,7 +49,7 @@ converted into skips.
   WinForms executable in a **full MSIX**, not a sparse identity or an unpackaged
   substitute. The same `CropSourceForm.cs` supplies both fixtures' editable text,
   colored panels and physical-pixel geometry.
-- The fixture includes its architecture-matched .NET 10 Windows Desktop runtime.
+- The fixture includes its architecture-matched .NET 11 Windows Desktop runtime.
   Windows activates the app through its registered app entry, so the test
   process's private `DOTNET_ROOT` is not an inherited runtime contract.
   Neither a machine-wide .NET installation nor a VM/pipeline environment change
@@ -149,7 +149,7 @@ After building the product runtime and tests, run the existing signer on the
 output layout; use the corresponding ARM64 paths for an ARM64 guest.
 
 ```powershell
-$tests = (Resolve-Path .\x64\Release\tests\CropAndLock.UITests\net10.0-windows10.0.26100.0).Path
+$tests = (Resolve-Path .\x64\Release\tests\CropAndLock.UITests\net11.0-windows10.0.26100.0).Path
 $runtime = (Resolve-Path .\x64\Release).Path
 $certificate = 'C:\PowerToysUiTestVm\shared\PowerToysUiTests\CropAndLock\test-signing.cer'
 

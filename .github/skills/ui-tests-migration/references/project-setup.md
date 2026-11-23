@@ -39,7 +39,7 @@ ProjectReference. For a project folder that sits 3 levels under `src/`, the scaf
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -84,7 +84,10 @@ Critical, non-negotiable bits (CI audits or the build will fail without them):
   physical mouse coordinates match winappcli's UIA bounds on every monitor.
 4. **`<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\<Name>\</OutputPath>`** — stages the
    build output where the UI-tests pipeline globs (`**/<plat>/<config>/tests/**`). Without it the app
-   builds to `bin\` and is never picked up by the test job.
+   builds to `bin\` and is never picked up by the test job. `<Name>` must exactly match the `.csproj`
+   file stem and `AssemblyName` (including case). For each staged MSIX fixture, declare
+   `<FileWrites Include="$(TargetDir)FixtureName.msix" />` so CI verifies that it reached the worker.
+   See the **Repository UI-test artifact contract** in `.pipelines/tests/uiTestArtifacts.Tests.ps1`.
 5. **`RunVSTest=false`** — UI tests must not run during MSBuild.
 6. **ProjectReference to `UITestAutomation.Next.csproj` only** — never the legacy
    `UITestAutomation.csproj`. Fix the `..\` depth to match the folder nesting:
@@ -212,7 +215,7 @@ tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests.Next -Pl
 
 # 2. Run (needs a live desktop + winapp.exe). A .Next project is a Microsoft.Testing.Platform Exe,
 #    so run the produced exe directly (Test Explorer also works). Filter + TRX report for a tight loop:
-$exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
+$exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
 & $exe --filter "TestCategory=<Cat>" --report-trx --report-trx-filename run.trx --results-directory .\TestResults\<Module>
 #    --filter accepts "TestCategory=X" or "FullyQualifiedName~Y"; omit it to run everything. Exit 0 = all passed.
 ```
