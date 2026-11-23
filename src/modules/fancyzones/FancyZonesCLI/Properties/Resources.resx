@@ -98,7 +98,7 @@
     <value>Open FancyZones Editor for precise zone boundaries.</value>
   </data>
   <data name="get_layouts_usage" xml:space="preserve">
-    <value>Use 'FancyZonesCLI.exe set-layout &lt;UUID&gt;' to apply a layout.</value>
+    <value>Use 'PowerToys.FancyZones.CLI.exe set-layout &lt;UUID&gt;' to apply a layout.</value>
   </data>
 
   <!-- GetMonitorsCommand -->
@@ -245,13 +245,13 @@ Tip: For templates, use the type name (e.g., 'focus', 'columns', 'rows', 'grid',
     <value>Option 1 - Quote the GUID:</value>
   </data>
   <data name="error_powershell_scriptblock_option1_example" xml:space="preserve">
-    <value>FancyZonesCLI shk 1 '{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}'</value>
+    <value>PowerToys.FancyZones.CLI.exe shk 1 '{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}'</value>
   </data>
   <data name="error_powershell_scriptblock_option2" xml:space="preserve">
     <value>Option 2 - Omit the braces (recommended):</value>
   </data>
   <data name="error_powershell_scriptblock_option2_example" xml:space="preserve">
-    <value>FancyZonesCLI shk 1 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</value>
+    <value>PowerToys.FancyZones.CLI.exe shk 1 xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx</value>
   </data>
 
   <!-- CLI Usage -->
@@ -259,7 +259,7 @@ Tip: For templates, use the type name (e.g., 'focus', 'columns', 'rows', 'grid',
     <value>FancyZones CLI - Command line interface for FancyZones</value>
   </data>
   <data name="usage_syntax" xml:space="preserve">
-    <value>Usage: FancyZonesCLI [command] [options]</value>
+    <value>Usage: PowerToys.FancyZones.CLI.exe [command] [options]</value>
   </data>
   <data name="usage_options" xml:space="preserve">
     <value>Options:</value>
@@ -286,6 +286,6 @@ Tip: For templates, use the type name (e.g., 'focus', 'columns', 'rows', 'grid',
     <value>Unknown command: {0}</value>
   </data>
   <data name="usage_run_help" xml:space="preserve">
-    <value>Run 'FancyZonesCLI --help' to see available commands.</value>
+    <value>Run 'PowerToys.FancyZones.CLI.exe --help' to see available commands.</value>
   </data>
 </root>
