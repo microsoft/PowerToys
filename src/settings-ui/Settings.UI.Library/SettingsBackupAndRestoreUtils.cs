@@ -299,70 +299,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 // get data needed for process
                 var backupRestoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
-                var currentSettingsFiles = GetSettingsFiles(backupRestoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
-                var backupSettingsFiles = GetSettingsFiles(backupRestoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
+                bool? filesUpdated = RestoreSettingsFiles(backupRestoreSettings, appBasePath, latestSettingsFolder);
 
-                if (backupSettingsFiles.Count == 0)
+                if (filesUpdated == null)
                 {
                     return (false, $"General_SettingsBackupAndRestore_NoBackupsFound", "Warning");
                 }
 
-                var anyFilesUpdated = false;
-
-                // Keyboard Manager profiles that exist only here are left in place by the loop below;
-                // their entries in the shared Keyboard Manager stores must survive the restore too.
-                var retainedKeyboardManagerProfiles = GetRetainedKeyboardManagerProfiles(currentSettingsFiles.Keys, backupSettingsFiles.Keys);
-
-                foreach (var currentFile in backupSettingsFiles)
-                {
-                    var relativePath = currentFile.Value.Substring(latestSettingsFolder.Length + 1);
-                    var restoreFullPath = Path.Combine(appBasePath, relativePath);
-                    var settingsToRestoreJson = GetExportVersion(backupRestoreSettings, currentFile.Key, currentFile.Value);
-
-                    if (currentSettingsFiles.TryGetValue(currentFile.Key, out string value))
-                    {
-                        // we have a setting file to restore to
-                        if (retainedKeyboardManagerProfiles.Count > 0 && IsKeyboardManagerSharedStore(currentFile.Key))
-                        {
-                            settingsToRestoreJson = PreserveRetainedKeyboardManagerProfiles(currentFile.Key, settingsToRestoreJson, File.ReadAllText(value), retainedKeyboardManagerProfiles);
-                        }
-
-                        var currentSettingsFileJson = GetExportVersion(backupRestoreSettings, currentFile.Key, value);
-
-                        if (JsonNormalizer.Normalize(settingsToRestoreJson) != JsonNormalizer.Normalize(currentSettingsFileJson))
-                        {
-                            // the settings file needs to be updated, update the real one with non-excluded stuff...
-                            Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
-
-                            // we needed a new "CustomRestoreSettings" for now, to overwrite because some settings don't merge well (like KBM shortcuts)
-                            var overwrite = ShouldOverwriteOnRestore(backupRestoreSettings["CustomRestoreSettings"], currentFile.Key);
-
-                            if (overwrite)
-                            {
-                                File.WriteAllText(currentSettingsFiles[currentFile.Key], settingsToRestoreJson);
-                            }
-                            else
-                            {
-                                var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), settingsToRestoreJson);
-                                File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile);
-                            }
-
-                            anyFilesUpdated = true;
-                        }
-                    }
-                    else
-                    {
-                        // we don't have anything to merge this into, we need to use it as is
-                        Logger.LogInfo($"Settings file {currentFile.Key} is in the backup but does not exist for restore");
-
-                        var thisPathToRestore = Path.Combine(appBasePath, currentFile.Key.Substring(1));
-                        TryCreateDirectory(Path.GetDirectoryName(thisPathToRestore));
-                        File.WriteAllText(thisPathToRestore, settingsToRestoreJson);
-                        anyFilesUpdated = true;
-                    }
-                }
-
-                if (anyFilesUpdated)
+                if (filesUpdated.Value)
                 {
                     // something was changed do we need to return true to indicate a restart is needed.
                     var restartAfterRestore = (bool?)backupRestoreSettings!["RestartAfterRestore"];
@@ -385,6 +329,81 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 Logger.LogError("Error in RestoreSettings, " + ex2.ToString());
                 return (false, $"General_SettingsBackupAndRestore_BackupError", "Error");
             }
+        }
+
+        /// <summary>
+        /// Restores the settings files of the backup in <paramref name="latestSettingsFolder"/> into
+        /// <paramref name="appBasePath"/>, following <paramref name="backupRestoreSettings"/>
+        /// (the content of backup_restore_settings.json).
+        /// </summary>
+        /// <returns>Null when the backup has no settings files; otherwise whether any file was
+        /// updated.</returns>
+        public static bool? RestoreSettingsFiles(JsonNode backupRestoreSettings, string appBasePath, string latestSettingsFolder)
+        {
+            var currentSettingsFiles = GetSettingsFiles(backupRestoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
+            var backupSettingsFiles = GetSettingsFiles(backupRestoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
+
+            if (backupSettingsFiles.Count == 0)
+            {
+                return null;
+            }
+
+            var anyFilesUpdated = false;
+
+            // Keyboard Manager profiles that exist only here are left in place by the loop below;
+            // their entries in the shared Keyboard Manager stores must survive the restore too.
+            var retainedKeyboardManagerProfiles = GetRetainedKeyboardManagerProfiles(currentSettingsFiles.Keys, backupSettingsFiles.Keys);
+
+            foreach (var currentFile in backupSettingsFiles)
+            {
+                var relativePath = currentFile.Value.Substring(latestSettingsFolder.Length + 1);
+                var restoreFullPath = Path.Combine(appBasePath, relativePath);
+                var settingsToRestoreJson = GetExportVersion(backupRestoreSettings, currentFile.Key, currentFile.Value);
+
+                if (currentSettingsFiles.TryGetValue(currentFile.Key, out string value))
+                {
+                    // we have a setting file to restore to
+                    if (retainedKeyboardManagerProfiles.Count > 0 && IsKeyboardManagerSharedStore(currentFile.Key))
+                    {
+                        settingsToRestoreJson = PreserveRetainedKeyboardManagerProfiles(currentFile.Key, settingsToRestoreJson, File.ReadAllText(value), retainedKeyboardManagerProfiles);
+                    }
+
+                    var currentSettingsFileJson = GetExportVersion(backupRestoreSettings, currentFile.Key, value);
+
+                    if (JsonNormalizer.Normalize(settingsToRestoreJson) != JsonNormalizer.Normalize(currentSettingsFileJson))
+                    {
+                        // the settings file needs to be updated, update the real one with non-excluded stuff...
+                        Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
+
+                        // we needed a new "CustomRestoreSettings" for now, to overwrite because some settings don't merge well (like KBM shortcuts)
+                        var overwrite = ShouldOverwriteOnRestore(backupRestoreSettings["CustomRestoreSettings"], currentFile.Key);
+
+                        if (overwrite)
+                        {
+                            File.WriteAllText(currentSettingsFiles[currentFile.Key], settingsToRestoreJson);
+                        }
+                        else
+                        {
+                            var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), settingsToRestoreJson);
+                            File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile);
+                        }
+
+                        anyFilesUpdated = true;
+                    }
+                }
+                else
+                {
+                    // we don't have anything to merge this into, we need to use it as is
+                    Logger.LogInfo($"Settings file {currentFile.Key} is in the backup but does not exist for restore");
+
+                    var thisPathToRestore = Path.Combine(appBasePath, currentFile.Key.Substring(1));
+                    TryCreateDirectory(Path.GetDirectoryName(thisPathToRestore));
+                    File.WriteAllText(thisPathToRestore, settingsToRestoreJson);
+                    anyFilesUpdated = true;
+                }
+            }
+
+            return anyFilesUpdated;
         }
 
         /// <summary>
@@ -960,9 +979,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         // editorSettings.json: rows of a retained profile that the backup lacks are added (tagged
-        // with the retained profiles only, since the other profiles come from the backup); a row the
-        // backup also has gets the retained profiles added to its membership. The operation index and
-        // the retained profiles' entries in the profile index are updated to match.
+        // with the retained profiles only, since the other profiles come from the backup). A row the
+        // backup also has (an older backup of this machine) gets the retained profiles added to its
+        // membership when its content is the same. When the row was edited after the backup, the
+        // backup's row stays as it is for its own profiles, and the current row is added under a new
+        // id for the retained profiles: a turned-off row exists only here, so the retained profile's
+        // reconcile could not bring its content back. The operation index and the retained
+        // profiles' entries in the profile index are updated to match.
         private static bool KeepRetainedEditorRows(JsonObject backup, JsonObject current, HashSet<string> retained)
         {
             if (current["ShortcutSettingsDictionary"] is not JsonObject currentRows)
@@ -986,29 +1009,36 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     continue;
                 }
 
+                string id = entry.Key;
                 if (backupRows[entry.Key] is JsonObject backupRow)
                 {
-                    // A row without profiles predates profiles and already belongs to every profile.
-                    if (backupRow["Profiles"] is not JsonArray backupProfiles || backupProfiles.Count == 0)
+                    if (HasSameEditorRowContent(backupRow, currentRow))
                     {
+                        // A row without profiles predates profiles and already belongs to every profile.
+                        if (backupRow["Profiles"] is not JsonArray backupProfiles || backupProfiles.Count == 0)
+                        {
+                            continue;
+                        }
+
+                        foreach (string profile in keptProfiles)
+                        {
+                            if (!GetStrings(backupProfiles).Contains(profile, StringComparer.OrdinalIgnoreCase))
+                            {
+                                backupProfiles.Add(profile);
+                                changed = true;
+                            }
+                        }
+
                         continue;
                     }
 
-                    foreach (string profile in keptProfiles)
-                    {
-                        if (!GetStrings(backupProfiles).Contains(profile, StringComparer.OrdinalIgnoreCase))
-                        {
-                            backupProfiles.Add(profile);
-                            changed = true;
-                        }
-                    }
-
-                    continue;
+                    id = Guid.NewGuid().ToString();
                 }
 
                 var copy = (JsonObject)currentRow.DeepClone();
+                copy["Id"] = id;
                 copy["Profiles"] = new JsonArray(keptProfiles.Select(profile => (JsonNode)profile).ToArray());
-                backupRows[entry.Key] = copy;
+                backupRows[id] = copy;
 
                 string operationType = currentOperationIndex?
                     .FirstOrDefault(index => GetStrings(index.Value).Contains(entry.Key, StringComparer.Ordinal))
@@ -1022,7 +1052,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         backupOperationIndex[operationType] = ids;
                     }
 
-                    ids.Add(entry.Key);
+                    if (!GetStrings(ids).Contains(id, StringComparer.Ordinal))
+                    {
+                        ids.Add(id);
+                    }
                 }
 
                 changed = true;
@@ -1053,6 +1086,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
             return true;
         }
+
+        // Whether two editorSettings.json rows hold the same remapping in the same state: the
+        // mapping itself and whether it is turned on. The id and the memberships are not compared.
+        private static bool HasSameEditorRowContent(JsonObject first, JsonObject second) =>
+            JsonNode.DeepEquals(first["Shortcut"], second["Shortcut"]) &&
+            JsonNode.DeepEquals(first["IsActive"], second["IsActive"]);
 
         // deviceProfiles.json: keyboard assignments to a retained profile are kept unless the backup
         // assigns the same keyboard. The backup's auto-switch flag and hotkey are kept as they are.

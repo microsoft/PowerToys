@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
 
@@ -192,7 +194,182 @@ namespace CommonLibTest
             Assert.AreEqual(backup, SettingsBackupAndRestoreUtils.PreserveRetainedKeyboardManagerProfiles("\\Keyboard Manager\\editorSettings.json", backup, "{ not json", RetainedWork));
         }
 
+        // An older backup of this machine has the same row id. After the backup, the row was split
+        // off to Work, edited there and turned off. The backup's row keeps default's content, and
+        // Work's edited, turned-off row is kept under a new id for Work only.
+        [TestMethod]
+        public void PreserveRetained_EditorSettings_KeepsTheRetainedContentOfARowEditedAfterTheBackup()
+        {
+            const string backup = """
+                {
+                  "ShortcutSettingsDictionary": {
+                    "g": { "Id": "g", "Shortcut": { "OriginalKeys": "162;65", "TargetKeys": "162;66", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true }
+                  },
+                  "ProfileDictionary": { "default": [ "g" ] },
+                  "ShortcutsByOperationType": { "RemapShortcut": [ "g" ] },
+                  "ActiveProfile": "default",
+                  "SchemaVersion": 1
+                }
+                """;
+            const string current = """
+                {
+                  "ShortcutSettingsDictionary": {
+                    "g": { "Id": "g", "Shortcut": { "OriginalKeys": "162;65", "TargetKeys": "162;67", "OperationType": 0 }, "Profiles": [ "Work" ], "IsActive": false },
+                    "n": { "Id": "n", "Shortcut": { "OriginalKeys": "162;65", "TargetKeys": "162;66", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true }
+                  },
+                  "ProfileDictionary": { "default": [ "n" ], "Work": [ "g" ] },
+                  "ShortcutsByOperationType": { "RemapShortcut": [ "g", "n" ] },
+                  "ActiveProfile": "Work",
+                  "SchemaVersion": 1
+                }
+                """;
+
+            JsonNode result = JsonNode.Parse(SettingsBackupAndRestoreUtils.PreserveRetainedKeyboardManagerProfiles(
+                "\\Keyboard Manager\\editorSettings.json", backup, current, RetainedWork));
+
+            JsonObject rows = result["ShortcutSettingsDictionary"].AsObject();
+            Assert.AreEqual(2, rows.Count);
+            Assert.AreEqual("162;66", rows["g"]["Shortcut"]["TargetKeys"].GetValue<string>());
+            Assert.IsTrue(rows["g"]["IsActive"].GetValue<bool>());
+            CollectionAssert.AreEqual(new List<string> { "default" }, Strings(rows["g"]["Profiles"]));
+
+            string workId = rows.Single(p => p.Key != "g").Key;
+            JsonNode workRow = rows[workId];
+            Assert.AreEqual(workId, workRow["Id"].GetValue<string>());
+            Assert.AreEqual("162;67", workRow["Shortcut"]["TargetKeys"].GetValue<string>());
+            Assert.IsFalse(workRow["IsActive"].GetValue<bool>());
+            CollectionAssert.AreEqual(new List<string> { "Work" }, Strings(workRow["Profiles"]));
+            CollectionAssert.AreEqual(new List<string> { workId }, Strings(result["ProfileDictionary"]["Work"]));
+            CollectionAssert.AreEqual(new List<string> { "g" }, Strings(result["ProfileDictionary"]["default"]));
+            CollectionAssert.AreEqual(new List<string> { "g", workId }, Strings(result["ShortcutsByOperationType"]["RemapShortcut"]));
+        }
+
+        // Same id, same mapping, but turned off in Work after the backup: that is a content change
+        // too, so Work's row is kept separately and the backup's row stays on.
+        [TestMethod]
+        public void PreserveRetained_EditorSettings_TreatsAChangedOnOffStateAsEdited()
+        {
+            const string backup = """
+                {
+                  "ShortcutSettingsDictionary": {
+                    "g": { "Id": "g", "Shortcut": { "OriginalKeys": "66", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true }
+                  },
+                  "ShortcutsByOperationType": { "RemapShortcut": [ "g" ] }
+                }
+                """;
+            const string current = """
+                {
+                  "ShortcutSettingsDictionary": {
+                    "g": { "Id": "g", "Shortcut": { "OriginalKeys": "66", "OperationType": 0 }, "Profiles": [ "Work" ], "IsActive": false }
+                  },
+                  "ShortcutsByOperationType": { "RemapShortcut": [ "g" ] }
+                }
+                """;
+
+            JsonNode result = JsonNode.Parse(SettingsBackupAndRestoreUtils.PreserveRetainedKeyboardManagerProfiles(
+                "\\Keyboard Manager\\editorSettings.json", backup, current, RetainedWork));
+
+            JsonObject rows = result["ShortcutSettingsDictionary"].AsObject();
+            Assert.AreEqual(2, rows.Count);
+            Assert.IsTrue(rows["g"]["IsActive"].GetValue<bool>());
+            CollectionAssert.AreEqual(new List<string> { "default" }, Strings(rows["g"]["Profiles"]));
+            Assert.IsFalse(rows.Single(p => p.Key != "g").Value["IsActive"].GetValue<bool>());
+        }
+
+        // The whole restore of two folders: the backup has only default, this machine also has Work
+        // with a turned-off row, a keyboard assignment and a display name. The retained profile's
+        // file stays, and its entries in the shared stores survive; default's come from the backup.
+        [TestMethod]
+        public void RestoreSettingsFiles_KeepsTheSharedStoreEntriesOfARetainedProfile()
+        {
+            string root = Path.Combine(Path.GetTempPath(), "PowerToysRestoreTest-" + Guid.NewGuid().ToString("N"));
+            string current = Path.Combine(root, "current");
+            string backupFolder = Path.Combine(root, "backup");
+            try
+            {
+                WriteKeyboardManagerFile(backupFolder, "default.json", """{ "remapKeys": { "inProcess": [] } }""");
+                const string backupEditorSettings = """
+                    {
+                      "ShortcutSettingsDictionary": {
+                        "d": { "Id": "d", "Shortcut": { "OriginalKeys": "66", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true }
+                      },
+                      "ProfileDictionary": { "default": [ "d" ] },
+                      "ShortcutsByOperationType": { "RemapShortcut": [ "d" ] },
+                      "ActiveProfile": "default",
+                      "SchemaVersion": 1
+                    }
+                    """;
+                WriteKeyboardManagerFile(backupFolder, "editorSettings.json", backupEditorSettings);
+                WriteKeyboardManagerFile(backupFolder, "deviceProfiles.json", """{ "autoSwitchEnabled": false, "map": [] }""");
+                WriteKeyboardManagerFile(backupFolder, "profileMetadata.json", """{ "profiles": {} }""");
+
+                WriteKeyboardManagerFile(current, "default.json", """{ "remapKeys": { "inProcess": [ { "originalKeys": "65", "newRemapKeys": "66" } ] } }""");
+                WriteKeyboardManagerFile(current, "Work.json", """{ "remapKeys": { "inProcess": [] } }""");
+                const string currentEditorSettings = """
+                    {
+                      "ShortcutSettingsDictionary": {
+                        "w": { "Id": "w", "Shortcut": { "OriginalKeys": "67", "OperationType": 3, "TargetText": "hi" }, "Profiles": [ "Work" ], "IsActive": false },
+                        "x": { "Id": "x", "Shortcut": { "OriginalKeys": "68", "OperationType": 0 }, "Profiles": [ "default" ], "IsActive": true }
+                      },
+                      "ProfileDictionary": { "default": [ "x" ], "Work": [ "w" ] },
+                      "ShortcutsByOperationType": { "RemapShortcut": [ "x" ], "RemapText": [ "w" ] },
+                      "ActiveProfile": "Work",
+                      "SchemaVersion": 1
+                    }
+                    """;
+                WriteKeyboardManagerFile(current, "editorSettings.json", currentEditorSettings);
+                WriteKeyboardManagerFile(current, "deviceProfiles.json", """{ "autoSwitchEnabled": true, "map": [ { "device": "k1", "profile": "Work", "name": "K1" } ] }""");
+                WriteKeyboardManagerFile(current, "profileMetadata.json", """{ "profiles": { "Work": { "name": "Office" } } }""");
+
+                Assert.AreEqual(true, SettingsBackupAndRestoreUtils.RestoreSettingsFiles(RestoreConfiguration(), current, backupFolder));
+
+                string folder = Path.Combine(current, "Keyboard Manager");
+                Assert.IsTrue(File.Exists(Path.Combine(folder, "Work.json")));
+                JsonNode editor = JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "editorSettings.json")));
+                CollectionAssert.AreEquivalent(new List<string> { "d", "w" }, editor["ShortcutSettingsDictionary"].AsObject().Select(p => p.Key).ToList());
+                Assert.IsFalse(editor["ShortcutSettingsDictionary"]["w"]["IsActive"].GetValue<bool>());
+                CollectionAssert.AreEqual(new List<string> { "w" }, Strings(editor["ProfileDictionary"]["Work"]));
+                JsonNode devices = JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "deviceProfiles.json")));
+                CollectionAssert.AreEqual(new List<string> { "k1=Work" }, devices["map"].AsArray().Select(e => $"{e["device"]}={e["profile"]}").ToList());
+                JsonNode metadata = JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "profileMetadata.json")));
+                Assert.AreEqual("Office", metadata["profiles"]["Work"]["name"].GetValue<string>());
+                JsonNode defaultConfig = JsonNode.Parse(File.ReadAllText(Path.Combine(folder, "default.json")));
+                Assert.AreEqual(0, defaultConfig["remapKeys"]["inProcess"].AsArray().Count);
+            }
+            finally
+            {
+                try
+                {
+                    Directory.Delete(root, recursive: true);
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
         private static List<string> Strings(JsonNode array) =>
             array.AsArray().Select(n => n.GetValue<string>()).ToList();
+
+        // The Keyboard Manager part of backup_restore_settings.json.
+        private static JsonNode RestoreConfiguration() => JsonNode.Parse(
+            "{" +
+            "\"RestartAfterRestore\": true," +
+            "\"IncludeFiles\": [ \"*Keyboard Manager\\\\*.json\" ]," +
+            "\"IgnoreFiles\": []," +
+            "\"CustomRestoreSettings\": {" +
+            "\"\\\\Keyboard Manager\\\\default.json\": { \"overwrite\": true }," +
+            "\"\\\\Keyboard Manager\\\\editorSettings.json\": { \"overwrite\": true }," +
+            "\"\\\\Keyboard Manager\\\\settings.json\": { \"overwrite\": false }," +
+            "\"\\\\Keyboard Manager\\\\*.json\": { \"overwrite\": true }" +
+            "}" +
+            "}");
+
+        private static void WriteKeyboardManagerFile(string baseFolder, string name, string json)
+        {
+            string folder = Path.Combine(baseFolder, "Keyboard Manager");
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder, name), json);
+        }
     }
 }
