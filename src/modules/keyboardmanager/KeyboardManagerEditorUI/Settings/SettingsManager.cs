@@ -382,9 +382,11 @@ namespace KeyboardManagerEditorUI.Settings
 
         private static EditorSettings CreateSettingsFromKeyboardManagerService(KeyboardMappingService service)
         {
+            // Every row created here is tagged with the active profile, so there is nothing to migrate.
             EditorSettings settings = new EditorSettings
             {
                 ActiveProfile = service.ConfigurationName,
+                SchemaVersion = string.IsNullOrWhiteSpace(service.ConfigurationName) ? 0 : EditorSettings.CurrentSchemaVersion,
             };
 
             // Process all shortcut mappings (RunProgram, OpenUri, RemapShortcut, RemapText)
@@ -432,8 +434,13 @@ namespace KeyboardManagerEditorUI.Settings
         /// Whether to rebuild unreadable metadata from the active native mappings. Pass false when the file
         /// may be mid-write (e.g. during a Settings restore) so a failed read does not drop disabled rows.
         /// </param>
+        /// <param name="migrateLegacyRows">
+        /// Whether to assign rows that name no profile (written by the single-profile editor) to the
+        /// active profile, once per file. Pass true only from the editor's start-up reconcile, before
+        /// anything can have switched profiles; see <see cref="ReconcileMappings"/>.
+        /// </param>
         /// <returns>Whether the loaded metadata is now current.</returns>
-        public static bool CorrelateServiceAndEditorMappings(bool regenerateUnreadableSettings = true)
+        public static bool CorrelateServiceAndEditorMappings(bool regenerateUnreadableSettings = true, bool migrateLegacyRows = false)
         {
             if (_mappingService is null)
             {
@@ -483,7 +490,7 @@ namespace KeyboardManagerEditorUI.Settings
                 }));
 
                 EditorSettings updatedSettings = CloneSettings(EditorSettings);
-                if (!ReconcileMappings(updatedSettings, activeMappings, service.ConfigurationName))
+                if (!ReconcileMappings(updatedSettings, activeMappings, service.ConfigurationName, migrateLegacyRows))
                 {
                     return true;
                 }
@@ -506,13 +513,35 @@ namespace KeyboardManagerEditorUI.Settings
         internal static bool ReconcileMappings(
             EditorSettings settings,
             IEnumerable<ShortcutKeyMapping> activeMappings,
-            string? profileName = null)
+            string? profileName = null,
+            bool migrateLegacyRows = false)
         {
             bool profileAware = !string.IsNullOrWhiteSpace(profileName);
             bool shortcutSettingsChanged = NormalizeSettings(settings);
             if (profileAware && !string.Equals(settings.ActiveProfile, profileName, StringComparison.OrdinalIgnoreCase))
             {
                 settings.ActiveProfile = profileName!;
+                shortcutSettingsChanged = true;
+            }
+
+            if (migrateLegacyRows && profileAware && settings.SchemaVersion < EditorSettings.CurrentSchemaVersion)
+            {
+                // One-time upgrade from the single-profile editor (v0.100 / v0.101). It stored
+                // turned-off rows without a profile and deleted their native mappings, so nothing
+                // below would ever tag them. Untagged rows are treated as belonging to every
+                // profile, so once profiles can be created such a row would show up in a new empty
+                // profile and could be deleted or claimed from there, taking it away from the
+                // profile it came from. Only the start-up reconcile passes migrateLegacyRows: the
+                // profile active then is the one the single-profile editor was working on.
+                foreach (ShortcutSettings shortcutSettings in settings.ShortcutSettingsDictionary.Values)
+                {
+                    if (GetProfiles(shortcutSettings).Count == 0)
+                    {
+                        AddProfile(shortcutSettings, profileName!);
+                    }
+                }
+
+                settings.SchemaVersion = EditorSettings.CurrentSchemaVersion;
                 shortcutSettingsChanged = true;
             }
 
