@@ -2,6 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Text;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,6 +25,7 @@ public class IndexerTests : CommandPaletteTestBase
     private static string testFilePath = string.Empty;
     private static string browseFolderPath = string.Empty;
     private static string browseChildFileName = string.Empty;
+    private static long fixtureCreatedTimestamp;
     private long containingFolderWindowHandle;
     private long openedFolderWindowHandle;
     private long propertiesWindowHandle;
@@ -42,6 +47,7 @@ public class IndexerTests : CommandPaletteTestBase
             File.WriteAllText(testFilePath, TestFileContent, Encoding.UTF8);
             Directory.CreateDirectory(browseFolderPath);
             File.WriteAllText(browseChildPath, TestFileContent, Encoding.UTF8);
+            fixtureCreatedTimestamp = Stopwatch.GetTimestamp();
             created = true;
             context.WriteLine($"Created indexed fixtures '{testFilePath}' and '{browseChildPath}' before any UI-test workload.");
         }
@@ -70,6 +76,7 @@ public class IndexerTests : CommandPaletteTestBase
                 FolderDepth = FolderDepth.Deep,
                 ApplicationSearchFilter = $"System.FileName:=\"{testFileName}\" OR System.FileName:=\"{browseChildFileName}\"",
             };
+            var waitStarted = Stopwatch.GetTimestamp();
             var readiness = WaitHelper.WaitForStable(
                 observe: () => folder.CreateFileQueryWithOptions(options).GetFilesAsync()
                     .AsTask().GetAwaiter().GetResult()
@@ -79,6 +86,7 @@ public class IndexerTests : CommandPaletteTestBase
                 requiredConsecutiveMatches: 1,
                 pollIntervalMS: 1_000);
             indexed = readiness.Succeeded;
+            WriteSearchDiagnostics(context, folder, waitStarted, readiness.LastObservation?.Count ?? 0);
             Assert.IsTrue(
                 indexed,
                 $"Windows Search did not index fixtures '{testFilePath}' and '{browseChildPath}' before UI-test startup. Observed {readiness.LastObservation?.Count ?? 0} indexed text files under '{documentsPath}'.");
@@ -89,6 +97,36 @@ public class IndexerTests : CommandPaletteTestBase
             {
                 RemoveIndexedFixture();
             }
+        }
+    }
+
+    private static void WriteSearchDiagnostics(TestContext context, StorageFolder documents, long waitStarted, int indexedMatches)
+    {
+        context.WriteLine(FormattableString.Invariant(
+            $"Windows Search readiness: indexedMatches={indexedMatches}/2; waitMs={Stopwatch.GetElapsedTime(waitStarted).TotalMilliseconds:F0}; fixtureAgeMs={Stopwatch.GetElapsedTime(fixtureCreatedTimestamp).TotalMilliseconds:F0}; osUptimeMs={Environment.TickCount64}."));
+
+        try
+        {
+            using var search = new ServiceController("WSearch");
+            context.WriteLine($"Windows Search service: status={search.Status}; startType={search.StartType}.");
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or Win32Exception)
+        {
+            context.WriteLine($"Windows Search service query unavailable: {ex.GetType().Name} (0x{ex.HResult:X8}).");
+        }
+
+        try
+        {
+            using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var documentsState = documents.GetIndexedStateAsync().AsTask(deadline.Token).GetAwaiter().GetResult();
+            context.WriteLine($"Windows Search scope: documents={documentsState}.");
+            var fixtureFolder = StorageFolder.GetFolderFromPathAsync(browseFolderPath).AsTask(deadline.Token).GetAwaiter().GetResult();
+            var fixtureState = fixtureFolder.GetIndexedStateAsync().AsTask(deadline.Token).GetAwaiter().GetResult();
+            context.WriteLine($"Windows Search scope: fixtureFolder={fixtureState}.");
+        }
+        catch (Exception ex) when (ex is OperationCanceledException or COMException or UnauthorizedAccessException or IOException)
+        {
+            context.WriteLine($"Windows Search scope query unavailable: {ex.GetType().Name} (0x{ex.HResult:X8}).");
         }
     }
 
