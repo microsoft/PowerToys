@@ -107,18 +107,21 @@
             <Button
                 x:Name="ShortcutButton"
                 VerticalAlignment="Center"
+                AutomationProperties.Name="{x:Bind ShortcutButtonText}"
                 Command="{x:Bind ShortcutButtonCommand, Mode=OneWay}"
                 Style="{StaticResource SubtleButtonStyle}"
                 ToolTipService.ToolTip="{x:Bind ShortcutButtonToolTip, Mode=OneWay}"
                 Visibility="{x:Bind ShortcutButtonVisibility, Mode=OneWay}">
                 <Button.Content>
-                    <StackPanel Orientation="Horizontal" Spacing="4">
+                    <StackPanel Orientation="Horizontal">
                         <FontIcon
                             x:Name="ShortcutButton_Icon"
                             FontSize="14"
-                            Glyph="&#xE71B;" />
+                            Glyph="&#xE72B;"
+                            MirroredWhenRightToLeft="True" />
                         <TextBlock
                             x:Name="ShortcutButton_Text"
+                            Margin="4,0,0,0"
                             Style="{StaticResource CaptionTextBlockStyle}"
                             Text="{x:Bind ShortcutButtonText}" />
                     </StackPanel>
@@ -167,6 +170,7 @@
                     <VisualState.Setters>
                         <Setter Target="LaunchAppButton_Text.Visibility" Value="Collapsed" />
                         <Setter Target="LaunchAppButton.Visibility" Value="Collapsed" />
+                        <Setter Target="ShortcutButton_Text.Visibility" Value="Collapsed" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
