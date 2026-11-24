@@ -301,69 +301,10 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    if (loadingSettings)
-    {
-        return 0;
-    }
+    // Remapping is suspended while the settings are being loaded, and while the remap key/shortcut
+    // window is opened.
+    const bool remappingSuspended = loadingSettings || (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0);
 
-    // Suspend remapping if remap key/shortcut window is opened
-    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
-    {
-        return 0;
-    }
-
-    // If key has suppress flag, then suppress it
-    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-    {
-        return 1;
-    }
-
-    // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
-    // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
-    intptr_t SingleKeyAloneRemapResult = KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(inputHandler, data, state);
-    if (SingleKeyAloneRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Remap a key to an ordered sequence of taps (#5679). Runs before the regular single-key remap;
-    // if it handles the event it fully replaces the source key, so suppress the original.
-    intptr_t SingleKeyToSequenceRemapResult = KeyboardEventHandlers::HandleSingleKeyToSequenceRemapEvent(inputHandler, data, state);
-    if (SingleKeyToSequenceRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
-
-    // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
-    if (SingleKeyRemapResult == 1)
-    {
-        return 1;
-    }
-
-    /* This feature has not been enabled (code from proof of concept stage)
-        // Remap a key to behave like a modifier instead of a toggle
-        intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
-    */
-
-    // Handle an app-specific shortcut remapping
-    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, state);
-
-    // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-    if (AppSpecificShortcutRemapResult == 1)
-    {
-        return 1;
-    }
-
-    intptr_t SingleKeyToTextRemapResult = KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent(inputHandler, data, state);
-
-    if (SingleKeyToTextRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Handle an os-level shortcut remapping
-    return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, state);
+    // The handler chain lives in KeyboardEventHandlers so the unit tests can run it as a whole.
+    return KeyboardEventHandlers::DispatchKeyboardEvent(inputHandler, data, state, remappingSuspended);
 }

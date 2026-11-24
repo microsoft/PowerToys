@@ -2393,4 +2393,68 @@ namespace KeyboardEventHandlers
 
         return 1;
     }
+
+    // See header.
+    intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const bool remappingSuspended) noexcept
+    {
+        if (remappingSuspended)
+        {
+            return 0;
+        }
+
+        // If key has suppress flag, then suppress it
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+        {
+            return 1;
+        }
+
+        // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
+        // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
+        intptr_t SingleKeyAloneRemapResult = HandleSingleKeyAloneRemapEvent(ii, data, state);
+        if (SingleKeyAloneRemapResult == 1)
+        {
+            return 1;
+        }
+
+        // Remap a key to an ordered sequence of taps (#5679). Runs before the regular single-key remap;
+        // if it handles the event it fully replaces the source key, so suppress the original.
+        intptr_t SingleKeyToSequenceRemapResult = HandleSingleKeyToSequenceRemapEvent(ii, data, state);
+        if (SingleKeyToSequenceRemapResult == 1)
+        {
+            return 1;
+        }
+
+        // Remap a key
+        intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(ii, data, state);
+
+        // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
+        if (SingleKeyRemapResult == 1)
+        {
+            return 1;
+        }
+
+        /* This feature has not been enabled (code from proof of concept stage)
+            // Remap a key to behave like a modifier instead of a toggle
+            intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(ii, data, keyboardManagerState);
+        */
+
+        // Handle an app-specific shortcut remapping
+        intptr_t AppSpecificShortcutRemapResult = HandleAppSpecificShortcutRemapEvent(ii, data, state);
+
+        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
+        if (AppSpecificShortcutRemapResult == 1)
+        {
+            return 1;
+        }
+
+        intptr_t SingleKeyToTextRemapResult = HandleSingleKeyToTextRemapEvent(ii, data, state);
+
+        if (SingleKeyToTextRemapResult == 1)
+        {
+            return 1;
+        }
+
+        // Handle an os-level shortcut remapping
+        return HandleOSLevelShortcutRemapEvent(ii, data, state);
+    }
 }

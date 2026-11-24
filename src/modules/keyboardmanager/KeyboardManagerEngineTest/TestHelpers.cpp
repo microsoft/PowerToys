@@ -12,6 +12,9 @@ namespace TestHelpers
         input.SetHookProc(nullptr);
         input.SetSendVirtualInputTestHandler(nullptr);
         input.SetSendVirtualInputShouldFail(nullptr);
+        input.SetQueuedDelivery(false);
+        input.SetEncodeNumpadOrigin(false);
+        input.ClearDeliveredEvents();
         input.SetForegroundProcess(L"");
         state.ClearSingleKeyRemaps();
         state.ClearSingleKeyAloneRemaps();

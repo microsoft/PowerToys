@@ -145,4 +145,11 @@ namespace KeyboardEventHandlers
 
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
     void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);
+
+    // Runs one low-level keyboard event through the remap handlers, in their fixed order. Returns 1
+    // to suppress the event and 0 to pass it on. remappingSuspended is true while remapping is
+    // bypassed for a moment (settings are being loaded, or the editor window is open). This is the
+    // whole body of the hook callback, kept apart from KeyboardManager so the unit tests can drive
+    // the handler chain as a whole.
+    intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool remappingSuspended) noexcept;
 };

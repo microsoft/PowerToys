@@ -1,5 +1,6 @@
 #pragma once
 #include <keyboardmanager/common/InputInterface.h>
+#include <deque>
 #include <vector>
 #include <functional>
 
@@ -7,6 +8,15 @@
 
 namespace KeyboardManagerInput
 {
+    // A key event that reached the mocked system, i.e. one the hook did not suppress
+    struct DeliveredKeyEvent
+    {
+        DWORD vkCode;
+        bool isKeyUp;
+        ULONG_PTR dwExtraInfo;
+        DWORD scanCode;
+    };
+
     // Class for mocked keyboard input
     class MockedInput :
         public InputInterface
@@ -27,6 +37,23 @@ namespace KeyboardManagerInput
         std::function<bool(const std::vector<INPUT>&)> sendVirtualInputShouldFail;
 
         std::wstring currentProcess;
+
+        // When true, SendVirtualInput calls made from inside the hook are put in a queue and go
+        // through the hook after the event being handled, the way SendInput behaves. When false
+        // (the default) they go through the hook at once, nested inside the caller.
+        bool queuedDelivery = false;
+        bool deliveringQueue = false;
+        std::deque<INPUT> queuedInputs;
+
+        // When true, the virtual key the hook sees carries the numpad-origin marker, the way
+        // KeyboardManager::HookProc sets it from the extended-key flag.
+        bool encodeNumpadOrigin = false;
+
+        // The events that reached the system (the hook returned 0), in order
+        std::vector<DeliveredKeyEvent> deliveredEvents;
+
+        // Sends one event through the hook and, if it is not suppressed, to the keyboard state
+        void DeliverInput(const INPUT& input);
 
     public:
         MockedInput()
@@ -60,6 +87,18 @@ namespace KeyboardManagerInput
 
         // Function to get SendVirtualInput call count
         int GetSendVirtualInputCallCount();
+
+        // Function to choose between queued and nested delivery of input sent from inside the hook
+        void SetQueuedDelivery(bool queued);
+
+        // Function to make the hook see numpad-origin encoded virtual keys, as the real hook procedure does
+        void SetEncodeNumpadOrigin(bool encode);
+
+        // Function to get the events that reached the system (were not suppressed by the hook), in order
+        const std::vector<DeliveredKeyEvent>& GetDeliveredEvents() const;
+
+        // Function to forget the events that reached the system so far
+        void ClearDeliveredEvents();
 
         // Function to get the foreground process name
         void SetForegroundProcess(std::wstring process);
