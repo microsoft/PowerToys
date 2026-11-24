@@ -183,15 +183,16 @@ bool DeleteFolder(wstring path)
     return true;
 }
 
-// A profile that cannot be parsed cannot be searched for private data either, so its content must not stay
-// in the report. Leave a short note in its place: that the profile was unreadable is useful for diagnosis.
+// A profile whose private data could not be hidden must not stay in the report as it is: either it could not
+// be parsed, so it cannot be searched for private data, or the result could not be written back. Leave a short
+// note in its place, worded for both cases: that the profile could not be processed is useful for diagnosis.
 void RemoveKeyboardManagerProfileContent(const path& profilePath)
 {
     bool replaced = false;
     try
     {
         ofstream note{ profilePath, ios::binary | ios::trunc };
-        note << R"({"bugReportToolNote":"This Keyboard Manager profile could not be read as JSON. Its content was removed from the report."})";
+        note << R"({"bugReportToolNote":"The private data in this Keyboard Manager profile could not be hidden: the file could not be read as JSON, or it could not be rewritten. Its content was removed from the report."})";
         note.flush();
         replaced = note.good();
     }
