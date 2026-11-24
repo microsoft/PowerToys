@@ -310,9 +310,21 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
     try
     {
         auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+        json::IJsonValue sequenceValue{ nullptr };
         if (remapKeysData && remapKeysData.HasKey(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName))
         {
-            auto sequenceRemapKeys = remapKeysData.GetNamedArray(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+            sequenceValue = remapKeysData.GetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+        }
+
+        // The array is optional, so a value of the wrong type (null, an object, ...) is ignored with a
+        // warning instead of failing the load, which would also hide the valid ordinary remaps above.
+        if (sequenceValue && sequenceValue.ValueType() != json::JsonValueType::Array)
+        {
+            Logger::warn(L"Ignored the key sequence remaps: {} is not an array.", KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+        }
+        else if (sequenceValue)
+        {
+            auto sequenceRemapKeys = sequenceValue.GetArray();
             for (const auto& it : sequenceRemapKeys)
             {
                 std::wstring originalKey;

@@ -644,6 +644,40 @@ namespace RemappingUITests
             Assert::AreEqual(static_cast<size_t>(1), config.singleKeyToSequenceReMap.size());
         }
 
+        // The key-sequence array is optional: when it has the wrong JSON type (null, an object, a string
+        // or a number), it is ignored with a warning, and the ordinary remaps still load without failing
+        // the load (a failed load stops the editor from opening the profile).
+        TEST_METHOD (LoadSingleKeyRemaps_IgnoresSequenceField_WhenItIsNotAnArray)
+        {
+            const json::IJsonValue wrongTypes[] = {
+                json::JsonValue::CreateNullValue(),
+                json::JsonObject(),
+                json::JsonValue::CreateStringValue(L"27;26"),
+                json::JsonValue::CreateNumberValue(27),
+            };
+
+            for (const auto& wrongType : wrongTypes)
+            {
+                json::JsonObject remap;
+                remap.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(L"65"));
+                remap.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(L"66"));
+                json::JsonArray inProcess;
+                inProcess.Append(remap);
+
+                json::JsonObject remapKeys;
+                remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcess);
+                remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, wrongType);
+                json::JsonObject root;
+                root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+                MappingConfiguration config;
+                Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+                Assert::AreEqual(static_cast<size_t>(1), config.singleKeyReMap.size());
+                Assert::IsTrue(std::get<DWORD>(config.singleKeyReMap[0x41]) == 0x42);
+                Assert::IsTrue(config.singleKeyToSequenceReMap.empty());
+            }
+        }
+
         // Test if the ApplyShortcutRemappings method resets the keyboard manager state's os level and app specific shortcut remappings on passing an empty buffer
         TEST_METHOD (ApplyShortcutRemappings_ShouldResetShortcutRemappings_OnPassingEmptyBuffer)
         {
