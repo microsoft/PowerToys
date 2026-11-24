@@ -233,27 +233,25 @@ FancyZones is divided into several projects:
 
 ## FancyZones UI Testing
 
-UI tests are implemented using [Windows Application Driver](https://github.com/microsoft/WinAppDriver).
+UI tests use `Microsoft.PowerToys.UITest.Next` and winappcli in
+`FancyZones.UITests.Next` and `FancyZonesEditor.UITests.Next`.
 
 ### Before running tests
 
-  - Install Windows Application Driver v1.2.1 from https://github.com/microsoft/WinAppDriver/releases/tag/v1.2.1. 
-  - Enable Developer Mode in Windows settings
+  - Install winappcli or set `WINAPP_CLI_PATH`.
+  - Use a live interactive desktop.
 
 ### Running tests
   
   - Exit PowerToys if it's running
-  - Run WinAppDriver.exe from the installation directory. Skip this step if installed in the default directory (`C:\Program Files (x86)\Windows Application Driver`); in this case, it'll be launched automatically during tests.
-  - Open `PowerToys.slnx` in Visual Studio and build the solution.
+  - Build the focused `.Next` test project with the repository build script.
   - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`). 
 
 >Note: notifications or other application windows, that are shown above the window under test, can disrupt the testing process.
 
 ### UI Test Automation
 
-FancyZones is currently undergoing a UI Test migration process to improve automated testing coverage. You can track the progress of this migration at:
-
-[FancyZones UI Test Migration Progress](https://github.com/microsoft/PowerToys/blob/feature/UITestAutomation/src/modules/fancyzones/UITests-FancyZonesEditor/release-test-checklist.md)
+See the [UI-test guide](../development/ui-tests.md) for build, local VM, and pipeline execution.
 
 ### Testing Strategy
 
@@ -329,7 +327,6 @@ All test cases require pre-configured user data and must reset this data before 
 
 While working on tests, you may need tools to view element accessibility data:
 - [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview)
-- [WinAppDriver UI Recorder](https://github.com/microsoft/WinAppDriver/wiki/WinAppDriver-UI-Recorder)
 
 >Note: Close helper tools while running tests. Overlapping windows can affect test results.
 2. FancyZones might have implemented certain screen resolution limits in the code that do not support such wide screens
@@ -481,9 +478,8 @@ In "FancyZones::MoveSizeUpdate" function.
 
 ### Extra tools and information
 
-**Test samples**: https://github.com/microsoft/WinAppDriver/tree/master/Samples
+**Test samples**: see the [UI-tests migration skill](../../../.github/skills/ui-tests-migration/SKILL.md).
 
-While working on tests, you may need a tool that helps you to view the element's accessibility data, e.g. for finding the button to click. For this purpose, you could use [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview) or [WinAppDriver UI Recorder](https://github.com/microsoft/WinAppDriver/wiki/WinAppDriver-UI-Recorder).
+While working on tests, you may need a tool that helps you to view the element's accessibility data, e.g. for finding the button to click. For this purpose, you could use [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview).
 
 >Note: close helper tools while running tests. Overlapping windows can affect test results.
-

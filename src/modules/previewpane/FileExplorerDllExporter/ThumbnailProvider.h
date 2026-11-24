@@ -13,8 +13,10 @@ class ThumbnailProvider :
 public:
     // IUnknown
     IFACEMETHODIMP QueryInterface(REFIID riid, void** ppv);
-    IFACEMETHODIMP_(ULONG) AddRef();
-    IFACEMETHODIMP_(ULONG) Release();
+    IFACEMETHODIMP_(ULONG)
+    AddRef();
+    IFACEMETHODIMP_(ULONG)
+    Release();
 
     // IInitializeWithStream
     IFACEMETHODIMP Initialize(IStream* pstream, DWORD grfMode);
@@ -23,6 +25,7 @@ public:
     IFACEMETHODIMP GetThumbnail(UINT cx, HBITMAP* phbmp, WTS_ALPHATYPE* pdwAlpha);
 
     ThumbnailProvider(std::string name, std::wstring logFilePath, std::wstring exeName, std::wstring tempFolderName, std::wstring extension);
+
 protected:
     ~ThumbnailProvider();
 
@@ -32,8 +35,6 @@ private:
 
     // Provided during initialization.
     IStream* m_pStream;
-
-    HANDLE m_process;
 
     std::wstring m_exeName;
     std::wstring m_tempFolderName;

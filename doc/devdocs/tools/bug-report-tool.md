@@ -96,24 +96,3 @@ When adding new PowerToys features, the Bug Report Tool may need to be updated t
 3. New GPO values to report
 4. Process names to include in Event Viewer data collection
 5. New configuration files to include
-
-## Build Process
-
-The Bug Report Tool is built separately from the main PowerToys solution:
-
-1. Path from root: `tools\BugReportTool\BugReportTool.sln`
-2. Must be built before building the installer
-3. Built version is included in the PowerToys installer
-
-### Building from the Command Line
-
-```
-nuget restore .\tools\BugReportTool\BugReportTool.sln
-msbuild -p:Platform=x64 -p:Configuration=Release .\tools\BugReportTool\BugReportTool.sln
-```
-
-### Building from Visual Studio
-
-1. Open `tools\BugReportTool\BugReportTool.sln`
-2. Set the Solution Configuration to `Release`
-3. Build the solution

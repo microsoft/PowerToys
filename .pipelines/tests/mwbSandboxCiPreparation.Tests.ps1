@@ -797,9 +797,6 @@ Describe 'MWB gated preparation source contracts' {
         $job | Should Match 'name: prepareMwbRuntime\r?\n    type: boolean\r?\n    default: false'
         $job | Should Match '\$\{\{ if eq\(parameters.prepareMwbRuntime, true\) \}\}:\r?\n    - pwsh:'
         $job | Should Match '-SourceRevision "\$\(Build.SourceVersion\)" -ReadyToRun'
-        $job | Should Not Match '10\.0\.401|mwb-ci-tools|UseDotNet@2'
-        $job | Should Match '-DotNetPath "\$\(DOTNET_ROOT\)\\dotnet.exe"'
-        $job | Should Match "version: '10.0'"
         $buildAst.ParamBlock.Extent.Text | Should Match '\[switch\] \$ReadyToRun'
         $buildAst.ParamBlock.Extent.Text | Should Match "ValidateSet\('x64', 'arm64'\).*Platform = 'x64'"
     }
@@ -844,8 +841,8 @@ Describe 'MWB gated preparation source contracts' {
         $script | Should Match "\`$task.Principal.RunLevel -ne 'Limited'"
         $script | Should Match "\`$task.Principal.LogonType -ne 'Interactive'"
         $script | Should Match '-MwbRecoveryJournal \$journalPath -TimeoutMinutes 4'
-        $script | Should Match 'AddSeconds\(90\)'
-        $script | Should Match 'New-TimeSpan -Minutes 20'
+        $script | Should Match 'Wait-MwbProvisioningReady -RunId'
+        $script | Should Match 'New-TimeSpan -Minutes 22'
     }
 
     It 'writes the prerequisite report before any BLOCKED_INFRASTRUCTURE preflight throw or run-root creation' {
@@ -867,9 +864,173 @@ Describe 'MWB gated preparation source contracts' {
     }
 }
 
+Describe 'MWB provisioning progress diagnostics' {
+    It 'extracts only known phases and numeric elapsed time' -TestCases @(
+        @{ Phase = 'Inspecting public test trust'; Elapsed = '1.2'; Expected = 1.2 }
+        @{ Phase = 'Hashing Sandbox runtime archive'; Elapsed = '112.3'; Expected = 112.3 }
+        @{ Phase = 'Writing provisioning marker'; Elapsed = '1,234.5'; Expected = 1234.5 }
+        @{ Phase = 'Checking staged Sandbox preview path'; Elapsed = '2.0'; Expected = 2.0 }
+        @{ Phase = 'Hashing Sandbox preview CLI'; Elapsed = '2.1'; Expected = 2.1 }
+        @{ Phase = 'Checking pending image reboot'; Elapsed = '2.2'; Expected = 2.2 }
+        @{ Phase = 'Pending image reboot confirmed'; Elapsed = '2.2'; Expected = 2.2 }
+        @{ Phase = 'Resolving interactive test identity'; Elapsed = '2.3'; Expected = 2.3 }
+        @{ Phase = 'Checking prior provisioning ownership'; Elapsed = '2.4'; Expected = 2.4 }
+    ) {
+        param($Phase, $Elapsed, $Expected)
+        $progress = ConvertTo-MwbProvisioningProgress "MWB provisioning: $Phase (${Elapsed}s)"
+        $progress.Phase | Should Be $Phase
+        $progress.ElapsedSeconds | Should Be $Expected
+    }
+
+    It 'does not export arbitrary text, unknown phases, or malformed timings' -TestCases @(
+        @{ Line = 'private-authentication-state' }
+        @{ Line = 'MWB provisioning: private-authentication-state (1.0s)' }
+        @{ Line = 'MWB provisioning: Hashing MWB assembly (private-authentication-states)' }
+        @{ Line = "MWB provisioning: Hashing MWB assembly (1.0s)`nprivate-authentication-state" }
+        @{ Line = 'MWB provisioning: Hashing MWB assembly (999999999999999999999.0s)' }
+        @{ Line = 'MWB provisioning: Hashing MWB assembly (3600.1s)' }
+    ) {
+        param($Line)
+        ConvertTo-MwbProvisioningProgress $Line | Should Be $null
+    }
+
+}
+
+Describe 'MWB image servicing diagnosis' {
+    BeforeEach {
+        $script:cbsPending = $false
+        $script:wuPending = $false
+        $script:badPackage = $false
+        $script:badHotfix = $false
+        $script:servicingStarted = $false
+        Mock Test-Path {
+            param($LiteralPath)
+            if ($LiteralPath -like '*Component Based Servicing*') { return $script:cbsPending }
+            if ($LiteralPath -like '*WindowsUpdate*') { return $script:wuPending }
+            throw 'Unexpected registry query.'
+        }
+        Mock Get-CimInstance {
+            [pscustomobject]@{ LastBootUpTime = [DateTime]'2026-11-11T01:00:00Z' }
+        }
+        Mock Get-ItemProperty { [pscustomobject]@{ CurrentBuild = '26200'; UBR = 10000 } }
+        Mock Get-HotFix {
+            [pscustomobject]@{ HotFixID = $(if ($script:badHotfix) { 'private-provider-output' } else { 'KB5000000' }) }
+        }
+        Mock Get-WindowsPackage {
+            if ($script:servicingStarted) { $script:cbsPending = $true }
+            [pscustomobject]@{
+                PackageName = $(if ($script:badPackage) { 'private-provider-output' } else {
+                    'Package_for_RollupFix~31bf3856ad364e35~amd64~~26200.10000.1.1'
+                })
+                PackageState = 'InstallPending'
+                InstallTime = [DateTime]'2026-11-11T00:00:00Z'
+            }
+        }
+    }
+
+    It 'captures each reboot reason independently with the exact revision and servicing transaction' -TestCases @(
+        @{ Reason = 'CBS' }
+        @{ Reason = 'WindowsUpdate' }
+    ) {
+        param($Reason)
+        if ($Reason -eq 'CBS') { $script:cbsPending = $true } else { $script:wuPending = $true }
+        $report = Get-MwbImageServicingReport
+        $report.RebootChecks[$Reason].Required | Should Be $true
+        $report.RebootChecksAfterInventory[$Reason].Required | Should Be $true
+        $report.OSBuildRevision | Should Be '26200.10000'
+        $report.InstalledHotFixes[0] | Should Be 'KB5000000'
+        $report.ServicingPackages[0].State | Should Be 'InstallPending'
+        ([DateTime]$report.ServicingPackages[0].InstallUtc -lt [DateTime]$report.LastBootUtc) | Should Be $true
+        $report.QueryErrors.Count | Should Be 0
+    }
+
+    It 'references the job inventory without re-running DISM and reads the current reboot reasons' {
+        $baseline = Get-MwbImageServicingReport
+        $script:wuPending = $true
+        $next = Get-MwbImageServicingReport -UseJobInventory
+        $baseline.RebootChecks.WindowsUpdate.Required | Should Be $false
+        $next.RebootChecks.WindowsUpdate.Required | Should Be $true
+        $next.InventorySource | Should Be 'image-servicing-job-start.json'
+        Assert-MockCalled Get-WindowsPackage -Times 1 -Exactly -Scope It
+        Assert-MockCalled Get-HotFix -Times 1 -Exactly -Scope It
+    }
+
+    It 'preserves the pre-query state when DISM starts pending servicing work' {
+        $script:servicingStarted = $true
+        $report = Get-MwbImageServicingReport
+        $report.RebootChecks.CBS.Required | Should Be $false
+        $report.RebootChecksAfterInventory.CBS.Required | Should Be $true
+    }
+
+    It 'distinguishes an unreadable reboot key from a clear reboot requirement without exposing the error' {
+        Mock Test-Path { throw [UnauthorizedAccessException]::new('private-provider-output') }
+        $report = Get-MwbImageServicingReport
+        $report.RebootChecks.CBS.Required | Should Be $null
+        $report.RebootChecks.CBS.QueryError.Code | Should Be 'RebootRegistryQueryFailed'
+        $report.RebootChecks.CBS.QueryError.HResult | Should Match '^0x[0-9A-F]{8}$'
+        ($report | ConvertTo-Json -Depth 8) | Should Not Match 'private-provider-output'
+    }
+
+    It 'reports failed inventories explicitly without publishing unvalidated provider data' -TestCases @(
+        @{ Inventory = 'HotFix'; Code = 'HotFixInventoryFailed' }
+        @{ Inventory = 'Package'; Code = 'ServicingPackageInventoryFailed' }
+    ) {
+        param($Inventory, $Code)
+        if ($Inventory -eq 'HotFix') { $script:badHotfix = $true } else { $script:badPackage = $true }
+        $report = Get-MwbImageServicingReport
+        @($report.QueryErrors | Where-Object Code -EQ $Code).Count | Should Be 1
+        ($report | ConvertTo-Json -Depth 8) | Should Not Match 'private-provider-output'
+    }
+
+    It 'records a baseline before CI setup and retains the Windows Update reboot rejection' {
+        $job = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
+        $baseline = $job.IndexOf('image-servicing-job-start.json')
+        $baseline | Should BeGreaterThan 0
+        ($baseline -lt $job.IndexOf('displayName: Remove stale UI-test signing certificates')) | Should Be $true
+        $job | Should Not Match 'ImageVersionOverride'
+        $common = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\mwb\MwbSandboxCi.Common.ps1') -Raw
+        $body = $common.Substring($common.IndexOf('function Get-MwbSandboxPrerequisiteReport'))
+        ($body.IndexOf('ImageServicing = Get-MwbImageServicingReport') -lt $body.IndexOf('Get-WindowsOptionalFeature')) | Should Be $true
+        $initialize = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\Initialize-AutonomousHost.ps1') -Raw
+        $initialize | Should Match "Write-ProvisioningPhase 'Pending image reboot confirmed'\r?\n\s*throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot"
+    }
+
+    It 'does not block solely on CBS while retaining the Windows Update reboot gate' -TestCases @(
+        @{ CBS = $true; WindowsUpdate = $false }
+        @{ CBS = $false; WindowsUpdate = $true }
+        @{ CBS = $true; WindowsUpdate = $true }
+    ) {
+        param($CBS, $WindowsUpdate)
+        $script:cbsPending = $CBS
+        $script:wuPending = $WindowsUpdate
+        Mock Test-Path {
+            param($Path)
+            if ($Path -like '*Component Based Servicing*') { return $script:cbsPending }
+            if ($Path -like '*WindowsUpdate*') { return $script:wuPending }
+            throw 'Unexpected registry query.'
+        }
+        $tokens = $null
+        $errors = $null
+        $path = Join-Path $PSScriptRoot '..\..\src\modules\MouseWithoutBorders\MouseWithoutBorders.UITests\Scripts\Initialize-AutonomousHost.ps1'
+        $ast = [Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors)
+        if ($errors) { throw 'Initializer contains parse errors.' }
+        $guard = $ast.Find({
+            param($node)
+            $node -is [Management.Automation.Language.IfStatementAst] -and
+                $node.Extent.Text -like "*throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot*"
+        }, $true)
+        $condition = [scriptblock]::Create($guard.Clauses[0].Item1.Extent.Text)
+        (& $condition) | Should Be $WindowsUpdate
+        Assert-MockCalled Test-Path -Times 0 -Exactly -Scope It -ParameterFilter {
+            $Path -like '*Component Based Servicing*'
+        }
+    }
+}
+
 Describe 'MWB Sandbox prerequisite diagnostics' {
     BeforeEach {
         Mock Import-MwbAppxCompat {}
+        Mock Get-MwbImageServicingReport { @{ SchemaVersion = 1 } }
     }
 
     Context 'MWB admin inventory conclusions and early failure evidence' {

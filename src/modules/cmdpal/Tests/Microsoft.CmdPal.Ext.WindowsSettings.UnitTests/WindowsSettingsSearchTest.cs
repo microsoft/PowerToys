@@ -2,10 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.WindowsSettings.Classes;
 using Microsoft.CmdPal.Ext.WindowsSettings.Pages;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.CmdPal.Ext.WindowsSettings.UnitTests;
@@ -31,6 +34,15 @@ public class WindowsSettingsSearchTest
         JoinedFullSettingsPath = "Settings > System",
         IsPreferredForNameSearch = true,
     };
+
+    [TestMethod]
+    public void SettingsCommandsHaveStableDestinationIds()
+    {
+        var page = CreatePage(_accessibilityDisplay, _systemDisplay);
+        var results = page.Query("Display");
+        Assert.AreEqual(_systemDisplay.Command, results[0].Command.Id);
+        Assert.AreEqual(_accessibilityDisplay.Command, results[1].Command.Id);
+    }
 
     [TestMethod]
     public void QueryKeepsDistinctDestinationsWithTheSameTitle()
@@ -99,14 +111,16 @@ public class WindowsSettingsSearchTest
     }
 
     [TestMethod]
-    public void FallbackOpensSearchPageForMultipleExactMatches()
+    public async Task FallbackReturnsSeparateResultsForMultipleExactMatches()
     {
         var settings = CreateSettings(_accessibilityDisplay, _systemDisplay);
         var fallback = new FallbackWindowsSettingsItem(settings);
 
-        fallback.UpdateQuery("Display");
+        var result = await ((IFallbackCommandItem3)fallback).QueryHandler.QueryAsync(new FallbackQueryArgs("Display", "query-id", 10));
 
-        Assert.IsInstanceOfType<WindowsSettingsListPage>(fallback.Command);
+        Assert.HasCount(2, result.Items);
+        Assert.AreEqual("Settings > System", result.Items[0].Subtitle);
+        Assert.AreEqual("Settings > Accessibility", result.Items[1].Subtitle);
     }
 
     private static WindowsSettingsListPage CreatePage(params WindowsSetting[] settings)

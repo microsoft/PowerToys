@@ -89,6 +89,15 @@ internal sealed class LeasePublisher : IDisposable
             var diagnostic = File.Exists(outputPath + ".ready") ? RunFiles.Read(outputPath).ToJsonString() : "No publisher state.";
             throw new InvalidOperationException($"Endpoint lease publisher exited ({process.ExitCode}): {diagnostic}");
         }
+
+        if (!stopped && File.Exists(outputPath + ".ready"))
+        {
+            var state = RunFiles.Read(outputPath);
+            if (state["RunId"]?.GetValue<string>() == runId && state["Stage"]?.GetValue<string>() == "Failed")
+            {
+                throw new InvalidOperationException($"Endpoint lease publisher reported failure: {state.ToJsonString()}");
+            }
+        }
     }
 
     public void Stop()

@@ -9,6 +9,7 @@ using System.Linq;
 
 using ManagedCommon;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Media;
 using PowerOCR.Core.Models;
 using PowerOCR.Helpers;
 using PowerOCR.ViewModels;
@@ -25,6 +26,7 @@ public sealed partial class OverlayPage
     private Microsoft.UI.Dispatching.DispatcherQueue? _nativeDispatcher;
     private PixelRect[] _nativeExclusions = Array.Empty<PixelRect>();
     private bool _nativeStarted;
+    private bool _nativeFrameRendered;
     private bool _nativeClosing;
     private bool _nativeLanguagePopupOpen;
     private bool _nativeContextPopupOpen;
@@ -56,6 +58,7 @@ public sealed partial class OverlayPage
             ContextMenuFlyout.Closed += OnNativeContextPopupClosed;
             _parentWindow.Closed += OnNativeParentClosed;
             _parentWindow.Activated += OnNativeParentActivated;
+            CompositionTarget.Rendered += OnNativeFrameRendered;
         }
         catch (Exception exception)
         {
@@ -67,7 +70,8 @@ public sealed partial class OverlayPage
 
     private void StartNativeSelection()
     {
-        if (_nativeSelectionWindow is null || _nativeStarted || _nativeClosing || !IsLoaded || Toolbar.ActualWidth <= 0 || Toolbar.ActualHeight <= 0)
+        if (_nativeSelectionWindow is null || _nativeStarted || _nativeClosing || !_nativeFrameRendered ||
+            !IsLoaded || Toolbar.ActualWidth <= 0 || Toolbar.ActualHeight <= 0)
         {
             return;
         }
@@ -78,6 +82,7 @@ public sealed partial class OverlayPage
             _nativeStarted = true;
             UpdateNativeSelectionVisibility();
             _nativeSelectionWindow.Start();
+            Logger.LogInfo("Native selection started after the WinUI frame was rendered.");
         }
         catch (Exception exception)
         {
@@ -85,6 +90,21 @@ public sealed partial class OverlayPage
             Logger.LogError("Could not start the native selection window.", exception);
             _manager?.CloseAll(cancelled: true);
         }
+    }
+
+    private void OnNativeFrameRendered(object? sender, RenderedEventArgs args)
+    {
+        if (_nativeClosing || !IsLoaded || _parentWindow?.AppWindow.IsVisible != true ||
+            Toolbar.ActualWidth <= 0 || Toolbar.ActualHeight <= 0)
+        {
+            return;
+        }
+
+        // Loaded/layout readiness precedes the first rendered frame. Showing the opaque native
+        // surface earlier can occlude the transparent WinUI host before its toolbar is rendered.
+        _nativeFrameRendered = true;
+        CompositionTarget.Rendered -= OnNativeFrameRendered;
+        StartNativeSelection();
     }
 
     internal void PrepareForWindowClose()
@@ -98,8 +118,10 @@ public sealed partial class OverlayPage
         NativeSelectionWindow? nativeWindow = _nativeSelectionWindow;
         _nativeSelectionWindow = null;
         _nativeStarted = false;
+        _nativeFrameRendered = false;
         _nativeVisible = null;
 
+        CompositionTarget.Rendered -= OnNativeFrameRendered;
         LayoutUpdated -= OnNativeLayoutUpdated;
         if (ViewModel is not null)
         {

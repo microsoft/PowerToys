@@ -15,6 +15,7 @@ using AdvancedPaste.Settings;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
+using Windows.Storage.Streams;
 
 namespace AdvancedPaste.Cli.UnitTests;
 
@@ -137,6 +138,23 @@ public class AdvancedPasteRuntimeTests
         await runtime.ExecuteAsync(new CliActionRequest(action, null, "prompt", null), package.GetView(), CancellationToken.None);
 
         Assert.IsTrue(executor.WasCalled);
+        Assert.IsTrue(executor.LastPasteFormat?.IsEnabled);
+    }
+
+    [DataTestMethod]
+    [DataRow("paste-as-png-file", PasteFormats.PasteAsPngFile)]
+    [DataRow("paste-as-jpg-file", PasteFormats.PasteAsJpgFile)]
+    public async Task ImageFileActions_WithImageInput_ReachExecutor(string action, PasteFormats expectedFormat)
+    {
+        var package = new DataPackage();
+        package.SetBitmap(RandomAccessStreamReference.CreateFromStream(new InMemoryRandomAccessStream()));
+        var executor = new TestPasteFormatExecutor();
+        var runtime = new AdvancedPasteRuntime(executor, new TestUserSettings(isAIEnabled: false), isAdvancedPasteEnabled: () => true);
+
+        await runtime.ExecuteAsync(new CliActionRequest(action, null, null, null), package.GetView(), CancellationToken.None);
+
+        Assert.IsTrue(executor.WasCalled);
+        Assert.AreEqual(expectedFormat, executor.LastPasteFormat?.Format);
         Assert.IsTrue(executor.LastPasteFormat?.IsEnabled);
     }
 
@@ -274,6 +292,8 @@ public class AdvancedPasteRuntimeTests
         public IReadOnlyList<AdvancedPasteCustomAction> CustomActions => customActions ?? Array.Empty<AdvancedPasteCustomAction>();
 
         public IReadOnlyList<PasteFormats> AdditionalActions => Array.Empty<PasteFormats>();
+
+        public int PasteAsJpgQuality => AdvancedPasteProperties.DefaultPasteAsJpgQuality;
 
         public string FixSpellingAndGrammarPrompt => string.Empty;
 

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -54,6 +55,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             "image-to-text",
             "paste-as-file.paste-as-txt-file",
             "paste-as-file.paste-as-png-file",
+            "paste-as-file.paste-as-jpg-file",
             "paste-as-file.paste-as-html-file",
             "transcode.transcode-to-mp3",
             "transcode.transcode-to-mp4",
@@ -290,6 +292,31 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    public void PasteDestinationRegainsForegroundAfterSettingsActivation()
+    {
+        NavigateToSettings();
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            if (attempt % 2 == 1)
+            {
+                WindowHelper.MinimizeWindow(Target.Handle);
+                Assert.AreEqual(System.Windows.Forms.FormWindowState.Minimized, Target.State.WindowState);
+            }
+
+            RequireForeground(SettingsWindow());
+            Step($"Reacquiring the paste destination after Settings activation, attempt {attempt + 1}");
+            Target.Focus();
+            var state = Target.State;
+            Assert.AreEqual(Target.Handle, state.Foreground);
+            Assert.IsTrue(state.EditorFocused, "Foreground recovery must preserve the real editor as the paste destination.");
+        }
+
+        SetClipboardText(ShortcutFixtureText);
+        SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsPlainText);
+        Target.AssertText(ShortcutFixtureText);
+    }
+
+    [TestMethod]
     public Task AIInputVisibilityIsIndependentOfProviderAvailability()
     {
         NavigateToSettings();
@@ -400,6 +427,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     [DataRow("ImageToText", "image-to-text", "image", ProductStrings.ImageToText)]
     [DataRow("PasteAsTxtFile", "paste-as-file.paste-as-txt-file", "text", ProductStrings.PasteAsTxtFile)]
     [DataRow("PasteAsPngFile", "paste-as-file.paste-as-png-file", "image", ProductStrings.PasteAsPngFile)]
+    [DataRow("PasteAsJpgFile", "paste-as-file.paste-as-jpg-file", "image", ProductStrings.PasteAsJpgFile)]
     [DataRow("PasteAsHtmlFile", "paste-as-file.paste-as-html-file", "html", ProductStrings.PasteAsHtmlFile)]
     [DataRow("TranscodeToMp3", "transcode.transcode-to-mp3", "video", ProductStrings.TranscodeToMp3)]
     [DataRow("TranscodeToMp4", "transcode.transcode-to-mp4", "video", ProductStrings.TranscodeToMp4)]
@@ -433,7 +461,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         NavigateToSettings();
         var original = AdditionalAction(ReadProperties(), propertyPath)["isShown"]!.GetValue<bool>();
         string[] actions = card == "PasteAsFile"
-            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsHtmlFile]
+            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsJpgFile, ProductStrings.PasteAsHtmlFile]
             : [ProductStrings.TranscodeToMp3, ProductStrings.TranscodeToMp4];
         var originalChildren = AdditionalAction(ReadProperties(), propertyPath).DeepClone();
 
@@ -523,14 +551,14 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
     }
 
-    private static int WaitForStableModuleProcess()
+    private static (int Id, DateTime StartTimeUtc) WaitForStableModuleProcess()
     {
-        int? previous = null;
+        // Windows can reuse a PID after the module has exited.
+        (int Id, DateTime StartTimeUtc)? previous = null;
         var result = WaitHelper.WaitForStable(
-            GetModuleProcessIds,
-            ids =>
+            GetRunningModuleProcess,
+            current =>
             {
-                var current = ids is { Length: 1 } ? ids[0] : (int?)null;
                 var stable = current.HasValue && current == previous;
                 previous = current;
                 return stable;
@@ -538,8 +566,38 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 250);
-        Assert.IsTrue(result.Succeeded, $"Advanced Paste did not reach one stable running process. Last process IDs: {string.Join(", ", result.LastObservation ?? [])}.");
-        return result.LastObservation![0];
+        Assert.IsTrue(result.Succeeded, $"Advanced Paste did not reach one stable running process. Last process identity: {result.LastObservation}.");
+        return result.LastObservation!.Value;
+    }
+
+    private static (int Id, DateTime StartTimeUtc)? GetRunningModuleProcess()
+    {
+        var processes = Process.GetProcessesByName(ProcessName);
+        try
+        {
+            if (processes.Length != 1)
+            {
+                return null;
+            }
+
+            var process = processes[0];
+            try
+            {
+                var startTimeUtc = process.StartTime.ToUniversalTime();
+                return process.HasExited ? null : (process.Id, startTimeUtc);
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+                return null;
+            }
+        }
+        finally
+        {
+            foreach (var process in processes)
+            {
+                process.Dispose();
+            }
+        }
     }
 
     private void SetPreference(string card, string property, bool value)
@@ -759,10 +817,10 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         string.Join("\n", text.ReplaceLineEndings("\n").Split('\n').Select(line => string.IsNullOrWhiteSpace(line) ? string.Empty : line)).TrimEnd();
 
     private static void RequireForeground(Session window) =>
-        TestWindow.SelectFromTaskbar(new IntPtr(window.WindowHandle), window.ProcessName);
+        TestWindow.EnsureForeground(new IntPtr(window.WindowHandle), window.ProcessName);
 
     private static bool HasText(Session window, string text) =>
-        window.FindAll<TextBlock>(By.Name(text), 0).Any(element => element.Name == text);
+        window.FindAll<TextBlock>(By.AccessibilityId("ClipboardPreviewText"), 0).Any(element => element.Name == text);
 
     private static bool HasAction(Session window, string name) =>
         window.FindAll<Element>(By.Name(name), 0).Any(element =>

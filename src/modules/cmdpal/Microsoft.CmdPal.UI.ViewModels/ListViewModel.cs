@@ -14,6 +14,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -426,17 +427,17 @@ public partial class ListViewModel : PageViewModel, IDisposable
         // Declared outside try so catch blocks can reference them
         List<ListItemViewModel> createdViewModels = [];
         var itemsTransferredToList = false;
+        IListItem[]? fetchedItems = null;
 
         try
         {
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
             UpdateEmptyContent();
 
-            IListItem[] newItems;
             try
             {
                 EnterGetItemsScope();
-                newItems = _model.Unsafe!.GetItems();
+                fetchedItems = _model.Unsafe!.GetItems();
             }
             finally
             {
@@ -450,11 +451,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
             ThrowIfFetchCanceledOrStale(fetchGeneration, cancellationToken);
 
             // Collect all the items into new viewmodels
+            var newItems = fetchedItems;
             List<ListItemViewModel> newViewModels = new(newItems.Length);
             var currentCache = ReadVmCache();
             var nextCache = new Dictionary<IListItem, ListItemViewModel>(newItems.Length, VmCacheComparer);
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+            var imageStretch = (GridProperties as GalleryGridPropertiesViewModel)?.ImageStretch ?? Stretch.UniformToFill;
             var created = 0;
             var reused = 0;
             foreach (var item in newItems)
@@ -472,24 +475,30 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         existing.LayoutShowsTitle = showsTitle;
                         existing.LayoutShowsSubtitle = showsSubtitle;
+                        existing.LayoutImageStretch = imageStretch;
                         newViewModels.Add(existing);
                         nextCache[item] = existing;
                         reused++;
                         continue;
                     }
 
-                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory);
+                    var viewModel = new ListItemViewModel(item, new(this), _contextMenuFactory, FallbackContext);
 
                     // If an item fails to load, silently ignore it.
                     if (viewModel.SafeFastInit())
                     {
                         viewModel.LayoutShowsTitle = showsTitle;
                         viewModel.LayoutShowsSubtitle = showsSubtitle;
+                        viewModel.LayoutImageStretch = imageStretch;
 
                         newViewModels.Add(viewModel);
                         createdViewModels.Add(viewModel);
                         nextCache[item] = viewModel;
                         created++;
+                    }
+                    else
+                    {
+                        viewModel.SafeCleanup();
                     }
                 }
                 catch (OperationCanceledException)
@@ -586,6 +595,14 @@ public partial class ListViewModel : PageViewModel, IDisposable
         }
         finally
         {
+            if (fetchedItems is not null)
+            {
+                foreach (var item in fetchedItems)
+                {
+                    (item as FallbackResultListItem)?.ReleaseMaterializationLease();
+                }
+            }
+
             // A canceled extension call may return after another fetch has taken ownership.
             if (Interlocked.CompareExchange(ref _activeFetchGeneration, long.MinValue, fetchGeneration) == fetchGeneration && IsCurrentFetch(fetchGeneration))
             {
@@ -931,7 +948,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         if (item is not null)
         {
-            var message = new PerformCommandMessage(item.Command, item.Model, this);
+            var message = new PerformCommandMessage(item, item.Model.Unsafe, this);
             WeakReferenceMessenger.Default.Send(message);
         }
         else if (ShowEmptyContent && EmptyContent.PrimaryCommand?.Model.Unsafe is not null)
@@ -952,7 +969,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             if (item.SecondaryCommand is not null)
             {
-                var message = new PerformCommandMessage(item.SecondaryCommand.Command, item.Model, this);
+                var message = new PerformCommandMessage(item.SecondaryCommand, item.Model.Unsafe, this);
                 WeakReferenceMessenger.Default.Send(message);
             }
         }
@@ -1153,7 +1170,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        SetCommandBarContext(null);
+        SetCommandBarContext(ShowEmptyContent && EmptyContent.Model.Unsafe is not null ? EmptyContent : null);
         SetDetails(null);
         SetSearchSuggestion(string.Empty);
         TextToSuggest = string.Empty;
@@ -1464,11 +1481,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+            var imageStretch = (GridProperties as GalleryGridPropertiesViewModel)?.ImageStretch ?? Stretch.UniformToFill;
 
             foreach (var item in Items)
             {
                 item.LayoutShowsTitle = showsTitle;
                 item.LayoutShowsSubtitle = showsSubtitle;
+                item.LayoutImageStretch = imageStretch;
             }
         }
     }

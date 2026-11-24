@@ -3,33 +3,27 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Drawing2D;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
-using System.Windows.Media.Imaging;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Windows.Management.Deployment;
 
 namespace WorkspacesCsharpLibrary.Models
 {
-    public partial class BaseApplication : INotifyPropertyChanged, IDisposable
+    public partial class BaseApplication : ObservableObject, IDisposable
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        public void OnPropertyChanged(PropertyChangedEventArgs e)
-        {
-            PropertyChanged?.Invoke(this, e);
-        }
-
         public string PwaAppId { get; set; }
 
         public string AppPath { get; set; }
 
-        private bool _isNotFound;
+        public string AppUserModelId { get; set; }
+
+        public string PackageFullName { get; set; }
+
+        public string Version { get; set; }
 
         public string PackagedId { get; set; }
 
@@ -39,118 +33,78 @@ namespace WorkspacesCsharpLibrary.Models
 
         public string Aumid { get; set; }
 
+        [ObservableProperty]
         [JsonIgnore]
-        public bool IsNotFound
-        {
-            get
-            {
-                return _isNotFound;
-            }
-
-            set
-            {
-                if (_isNotFound != value)
-                {
-                    _isNotFound = value;
-                    OnPropertyChanged(new PropertyChangedEventArgs(nameof(IsNotFound)));
-                }
-            }
-        }
+        public partial bool IsNotFound { get; set; }
 
         private Icon _icon;
 
-        public Icon Icon
+        public Icon Icon => _icon ??= LoadIcon(PwaHelper.GetPwaIconFilename(PwaAppId, AppPath, AppUserModelId));
+
+        internal Icon LoadIcon(string pwaIconPath, Func<string, (bool Installed, Uri Logo)> findPackage = null)
         {
-            get
+            (bool Installed, Uri Logo) package = default;
+            if (IsPackagedApp)
             {
-                if (_icon == null)
-                {
-                    try
-                    {
-                        if (IsPackagedApp)
-                        {
-                            Uri uri = GetAppLogoByPackageFamilyName();
-                            var bitmap = new Bitmap(uri.LocalPath);
-                            var iconHandle = bitmap.GetHicon();
-                            _icon = Icon.FromHandle(iconHandle);
-                        }
-                        else if (IsEdge || IsChrome)
-                        {
-                            string iconFilename = PwaHelper.GetPwaIconFilename(PwaAppId);
-                            if (!string.IsNullOrEmpty(iconFilename))
-                            {
-                                Bitmap bitmap;
-                                if (iconFilename.EndsWith("ico", StringComparison.InvariantCultureIgnoreCase))
-                                {
-                                    bitmap = new Bitmap(iconFilename);
-                                }
-                                else
-                                {
-                                    bitmap = (Bitmap)Image.FromFile(iconFilename);
-                                }
+                package = (findPackage ?? FindPackageLogo)(PackagedId);
+            }
 
-                                var iconHandle = bitmap.GetHicon();
-                                _icon = Icon.FromHandle(iconHandle);
-                            }
-                        }
+            bool isPwa = !string.IsNullOrEmpty(PwaAppId);
 
-                        if (_icon == null)
-                        {
-                            _icon = Icon.ExtractAssociatedIcon(AppPath);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        IsNotFound = true;
-                        _icon = new Icon(@"Assets\Workspaces\DefaultIcon.ico");
-                    }
-                }
+            // Native package activation and versioned path repair both require a captured full name.
+            // A family inferred from a legacy path or AUMID can still supply the icon.
+            bool launchTargetExists = (package.Installed && !string.IsNullOrEmpty(PackageFullName)) || (isPwa
+                ? PwaHelper.HasLaunchTarget(AppPath, AppUserModelId, Version)
+                : File.Exists(AppPath));
+            IsNotFound = !launchTargetExists;
 
-                return _icon;
+            return TryReadIcon(isPwa ? pwaIconPath : null, LoadImageIcon) ??
+                   TryReadIcon(package.Logo?.LocalPath, LoadImageIcon) ??
+                   TryReadIcon(AppPath, Icon.ExtractAssociatedIcon) ??
+                   new Icon(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "DefaultIcon.ico"));
+        }
+
+        private static Icon TryReadIcon(string path, Func<string, Icon> readIcon)
+        {
+            if (!File.Exists(path))
+            {
+                return null;
+            }
+
+            try
+            {
+                return readIcon(path);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException or
+                ExternalException or OutOfMemoryException or NotSupportedException or InvalidOperationException)
+            {
+                // GDI+ can also report an invalid image as OutOfMemoryException.
+                return null;
             }
         }
 
-        private BitmapImage _iconBitmapImage;
-
-        public BitmapImage IconBitmapImage
+        private static Icon LoadImageIcon(string path)
         {
-            get
+            if (string.Equals(Path.GetExtension(path), ".ico", StringComparison.OrdinalIgnoreCase))
             {
-                if (_iconBitmapImage == null)
-                {
-                    try
-                    {
-                        Bitmap previewBitmap = new Bitmap(32, 32);
-                        using (Graphics graphics = Graphics.FromImage(previewBitmap))
-                        {
-                            graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                            graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                return new Icon(path);
+            }
 
-                            graphics.DrawIcon(Icon, new Rectangle(0, 0, 32, 32));
-                        }
+            using var bitmap = new Bitmap(path);
+            return CopyAndReleaseIconHandle(bitmap.GetHicon());
+        }
 
-                        using (var memory = new MemoryStream())
-                        {
-                            DrawHelper.SaveBitmap(previewBitmap, memory);
-                            memory.Position = 0;
-
-                            BitmapImage bitmapImage = new BitmapImage();
-                            bitmapImage.BeginInit();
-                            bitmapImage.StreamSource = memory;
-                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
-                            bitmapImage.EndInit();
-                            bitmapImage.Freeze();
-
-                            _iconBitmapImage = bitmapImage;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-                }
-
-                return _iconBitmapImage;
+        internal static Icon CopyAndReleaseIconHandle(IntPtr handle)
+        {
+            try
+            {
+                // FromHandle borrows the HICON. Give the cached Icon its own copy.
+                using var borrowedIcon = Icon.FromHandle(handle);
+                return (Icon)borrowedIcon.Clone();
+            }
+            finally
+            {
+                _ = DestroyIcon(handle);
             }
         }
 
@@ -164,17 +118,23 @@ namespace WorkspacesCsharpLibrary.Models
             get => AppPath.EndsWith("chrome.exe", StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public Uri GetAppLogoByPackageFamilyName()
+        public Uri GetAppLogoByPackageFamilyName() => !string.IsNullOrEmpty(PackagedId) || IsPackagedApp ? FindPackageLogo(PackagedId).Logo : null;
+
+        private (bool Installed, Uri Logo) FindPackageLogo(string familyName)
         {
-            var pkgManager = new PackageManager();
-            var pkg = pkgManager.FindPackagesForUser(string.Empty, PackagedId).FirstOrDefault();
-
-            if (pkg == null)
+            Windows.ApplicationModel.Package package = null;
+            try
             {
-                return null;
+                var packages = new PackageManager().FindPackagesForUser(string.Empty, familyName);
+                package = packages.Where(candidate => !candidate.IsResourcePackage && !candidate.IsFramework && !candidate.IsBundle)
+                    .OrderByDescending(candidate => string.Equals(candidate.Id.FullName, PackageFullName, StringComparison.OrdinalIgnoreCase))
+                    .FirstOrDefault();
+                return (package != null, package?.Logo);
             }
-
-            return pkg.Logo;
+            catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException or ExternalException or InvalidOperationException)
+            {
+                return (package != null, null);
+            }
         }
 
         private bool? _isPackagedApp;
@@ -185,23 +145,39 @@ namespace WorkspacesCsharpLibrary.Models
             {
                 if (_isPackagedApp == null)
                 {
-                    if (!AppPath.StartsWith("C:\\Program Files\\WindowsApps\\", StringComparison.InvariantCultureIgnoreCase))
+                    var family = FamilyFromFullName(PackageFullName);
+                    int appSeparator = AppUserModelId?.IndexOf('!') ?? -1;
+                    if (family == null && appSeparator > 0 && AppUserModelId.AsSpan(0, appSeparator).Contains('_'))
                     {
-                        _isPackagedApp = false;
+                        family = AppUserModelId[..appSeparator];
                     }
-                    else
+
+                    // Snapshots without package identity can still identify the package folder on any volume.
+                    if (family == null && !string.IsNullOrEmpty(AppPath))
                     {
-                        string appPath = AppPath.Replace("C:\\Program Files\\WindowsApps\\", string.Empty);
-                        Regex packagedAppPathRegex = new Regex(@"(?<APPID>[^_]*)_\d+.\d+.\d+.\d+_(:?x64|arm64)__(?<PublisherID>[^\\]*)", RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-                        Match match = packagedAppPathRegex.Match(appPath);
-                        _isPackagedApp = match.Success;
-                        if (match.Success)
+                        const string WindowsApps = @"\WindowsApps\";
+                        string path = AppPath.Replace('/', '\\');
+                        int marker = path.IndexOf(WindowsApps, StringComparison.OrdinalIgnoreCase);
+                        if (marker >= 0)
                         {
-                            PackagedName = match.Groups["APPID"].Value;
-                            PackagedPublisherID = match.Groups["PublisherID"].Value;
-                            PackagedId = $"{PackagedName}_{PackagedPublisherID}";
-                            Aumid = $"{PackagedId}!App";
+                            int start = marker + WindowsApps.Length;
+                            int end = path.IndexOf('\\', start);
+                            if (end > start)
+                            {
+                                family = FamilyFromFullName(path[start..end]);
+                            }
                         }
+                    }
+
+                    family ??= PackagedId;
+                    int publisher = family?.LastIndexOf('_') ?? -1;
+                    _isPackagedApp = publisher > 0 && publisher < family.Length - 1;
+                    if (_isPackagedApp.Value)
+                    {
+                        PackagedId = family;
+                        PackagedName = family[..publisher];
+                        PackagedPublisherID = family[(publisher + 1)..];
+                        Aumid = string.IsNullOrEmpty(AppUserModelId) ? family + "!App" : AppUserModelId;
                     }
                 }
 
@@ -209,9 +185,31 @@ namespace WorkspacesCsharpLibrary.Models
             }
         }
 
+        private static string FamilyFromFullName(string fullName)
+        {
+            const int ErrorInsufficientBuffer = 122;
+            uint length = 0;
+            if (string.IsNullOrEmpty(fullName) || PackageFamilyNameFromFullName(fullName, ref length, null) != ErrorInsufficientBuffer)
+            {
+                return null;
+            }
+
+            var buffer = new char[length];
+            return PackageFamilyNameFromFullName(fullName, ref length, buffer) == 0 ? new string(buffer, 0, (int)length - 1) : null;
+        }
+
         public void Dispose()
         {
+            _icon?.Dispose();
+            _icon = null;
             GC.SuppressFinalize(this);
         }
+
+        [DllImport("user32.dll", ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DestroyIcon(IntPtr icon);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+        private static extern int PackageFamilyNameFromFullName(string fullName, ref uint length, [Out] char[] familyName);
     }
 }
