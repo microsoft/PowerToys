@@ -594,6 +594,7 @@ namespace RemappingUITests
 
         // The loader validates the complete JSON strings: a NUL inside the source or the target makes the
         // entry invalid instead of cutting the string there. A source of 260 (Win) loads for both Win keys.
+        // The key-code boundaries: source 1-254 and the numpad-origin encodings, target 1-254 and the aliases.
         TEST_METHOD (LoadSingleKeyRemaps_ValidatesCompleteStrings_AndExpandsWinSource)
         {
             auto entry = [](const std::wstring& original, const std::wstring& sequence) {
@@ -611,6 +612,11 @@ namespace RemappingUITests
             inProcessSequence.Append(entry(L"999999", L"65"));                      // source out of range
             inProcessSequence.Append(entry(L"260", L"27;26"));                      // Win: both Win keys
             inProcessSequence.Append(entry(L"27", L"27;254;256;260"));              // valid, with the aliases
+            inProcessSequence.Append(entry(L"254", L"65"));                         // highest source key
+            inProcessSequence.Append(entry(L"255", L"65"));                         // source out of range (Keyboard Manager's dummy key)
+            inProcessSequence.Append(entry(L"116", L"65;0"));                       // target out of range
+            const DWORD numpadEnd = Helpers::EncodeKeyNumpadOrigin(VK_END, false);
+            inProcessSequence.Append(entry(std::to_wstring(numpadEnd), L"66"));     // numpad-origin encoding of the source
 
             json::JsonObject remapKeys;
             remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray());
@@ -620,7 +626,10 @@ namespace RemappingUITests
 
             MappingConfiguration config;
             Assert::IsTrue(config.LoadSingleKeyRemaps(root));
-            Assert::AreEqual(static_cast<size_t>(3), config.singleKeyToSequenceReMap.size());
+            Assert::AreEqual(static_cast<size_t>(5), config.singleKeyToSequenceReMap.size());
+            Assert::IsTrue(config.singleKeyToSequenceReMap[254] == std::vector<DWORD>{ 65 });
+            Assert::IsTrue(numpadEnd != VK_END);
+            Assert::IsTrue(config.singleKeyToSequenceReMap[numpadEnd] == std::vector<DWORD>{ 66 });
             Assert::IsTrue(config.singleKeyToSequenceReMap[VK_LWIN] == std::vector<DWORD>{ 27, 26 });
             Assert::IsTrue(config.singleKeyToSequenceReMap[VK_RWIN] == std::vector<DWORD>{ 27, 26 });
             Assert::IsTrue(config.singleKeyToSequenceReMap[27] == std::vector<DWORD>{ 27, 254, CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH });

@@ -253,8 +253,10 @@ std::vector<DWORD> MappingConfiguration::ParseSequenceSourceKeys(const std::wstr
         break;
     }
 
-    // The hook reports 1-254, and marks a numpad key that shares its VK code with another key (e.g.
-    // NumPad End) with the numpad-origin bit; accept exactly those encodings.
+    // The hook reports 1-254 for the keys that have a virtual-key code, and marks a numpad key that shares
+    // its VK code with another key (e.g. NumPad End) with the numpad-origin bit; accept exactly those
+    // encodings. 255 (0xFF) is rejected although the hook can report it for a key without a VK code: it is
+    // the dummy key Keyboard Manager itself injects (KeyboardManagerConstants::DUMMY_KEY).
     if (key >= 1 && key <= 0xFE)
     {
         return { key };
