@@ -211,7 +211,11 @@ namespace
 
     // True if the key will be down once the given key events (not sent yet) have been delivered: the
     // last event of the key decides, and the current key state if there is none.
-    bool IsKeyDownAfter(KeyboardManagerInput::InputInterface& ii, const std::vector<INPUT>& pendingEvents, const DWORD key)
+    // A key that the "Alone" (dual-key) remap holds down counts as down whatever the key state says.
+    // That remap runs before the key sequence in the same hook call, and a key-down it injected
+    // there (Right Ctrl held, now used as a real Ctrl because the source key of the sequence went
+    // down) is ahead of the sequence in the input queue, but may not have been processed yet.
+    bool IsKeyDownAfter(KeyboardManagerInput::InputInterface& ii, const State& state, const std::vector<INPUT>& pendingEvents, const DWORD key)
     {
         const DWORD withoutSide = ModifierWithoutSide(key);
         for (auto pending = pendingEvents.rbegin(); pending != pendingEvents.rend(); ++pending)
@@ -222,7 +226,7 @@ namespace
             }
         }
 
-        return ii.GetVirtualKeyState(static_cast<int>(key));
+        return state.IsKeyHeldDownByAloneCombination(key) || ii.GetVirtualKeyState(static_cast<int>(key));
     }
 
     // The key of a key-sequence target that is down already, if there is one. A target code that
@@ -749,10 +753,11 @@ namespace KeyboardEventHandlers
         // repeats, so that a character key still types its character: with S still down from the
         // letter typed before, "T, E, S, T" must not lose its S. Each occurrence of such a target
         // sends one key-down. "Down" is judged as it will be after the events above: a modifier
-        // that is down only through the shortcut remap is not down then.
+        // that is down only through the shortcut remap is not down then. A key that the "Alone"
+        // remap has just pressed in this same hook call is down (see IsKeyDownAfter).
         const std::vector<INPUT> revertEvents = keyEventList;
-        const auto isKeyDown = [&ii, &revertEvents](const DWORD key) {
-            return IsKeyDownAfter(ii, revertEvents, key);
+        const auto isKeyDown = [&ii, &state, &revertEvents](const DWORD key) {
+            return IsKeyDownAfter(ii, state, revertEvents, key);
         };
 
         for (const DWORD targetKey : sequenceRemap->second)

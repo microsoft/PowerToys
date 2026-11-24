@@ -318,6 +318,19 @@ bool State::HasOtherHeldAloneKey(const DWORD except) const
     return false;
 }
 
+bool State::IsKeyHeldDownByAloneCombination(const DWORD key) const
+{
+    for (const DWORD combinationKey : aloneCombinationKeys)
+    {
+        if (Helpers::ClearKeyNumpadOrigin(combinationKey) == key)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bool State::CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName)
 {
     // Assumes appName exists in the app-specific remap table

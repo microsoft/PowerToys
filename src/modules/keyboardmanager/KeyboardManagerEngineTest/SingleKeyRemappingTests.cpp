@@ -2198,6 +2198,43 @@ namespace RemappingLogicTests
             AssertDeliveredFrom(first, { { VK_LCONTROL, false }, { 0x41, false }, { 0x41, true }, { VK_LCONTROL, true } });
         }
 
+        // Right Ctrl has an "Alone" (dual-key) remap and is held. Pressing the source key of
+        // F1 -> Right Ctrl, A makes it a real Right Ctrl: its key-down is sent in the same hook call,
+        // just before the sequence is put together. With queued injection (as SendInput from inside
+        // the hook) the key state does not show that key-down yet, but it will have arrived before
+        // the sequence does, so Right Ctrl counts as down already: A arrives with Ctrl down, and
+        // Ctrl is not released by the sequence but by the key-up of the real key.
+        void TargetJustPressedByTheAloneRemap(const bool queuedDelivery)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, static_cast<DWORD>(VK_ESCAPE));
+            ReloadSequenceRemaps({ { VK_F1, { VK_RCONTROL, 0x41 } } });
+            mockedInputHandler.SetQueuedDelivery(queuedDelivery);
+
+            SendKey(VK_RCONTROL, false); // held back: it may still be a tap
+            Assert::AreEqual((size_t)0, mockedInputHandler.GetDeliveredEvents().size());
+
+            SendKey(VK_F1, false);
+            AssertDeliveredFrom(0, { { VK_RCONTROL, false }, { VK_RCONTROL, false }, { 0x41, false }, { 0x41, true } });
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+
+            SendKey(VK_RCONTROL, true);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+            AssertDeliveredFrom(0, { { VK_RCONTROL, false }, { VK_RCONTROL, false }, { 0x41, false }, { 0x41, true }, { VK_RCONTROL, true } });
+        }
+
+        TEST_METHOD (SequenceRemap_TargetJustPressedByTheAloneRemap_IsNotReleased_QueuedInjection)
+        {
+            TargetJustPressedByTheAloneRemap(true);
+        }
+
+        TEST_METHOD (SequenceRemap_TargetJustPressedByTheAloneRemap_IsNotReleased_NestedInjection)
+        {
+            TargetJustPressedByTheAloneRemap(false);
+        }
+
         // The same target is tapped as before when it is not down.
         TEST_METHOD (SequenceRemap_TargetNotHeld_IsTapped)
         {
