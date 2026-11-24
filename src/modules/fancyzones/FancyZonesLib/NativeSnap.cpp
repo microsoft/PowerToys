@@ -2,9 +2,13 @@
 #include "NativeSnap.h"
 
 #include <cstdlib>
+#include <chrono>
+#include <condition_variable>
+#include <mutex>
 #include <roapi.h>
 #include <winstring.h>
 #include <dwmapi.h>
+#include <thread>
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -18,6 +22,76 @@ namespace
     //   DllPath = %SystemRoot%\system32\windowsudk.shellcommon.dll
     constexpr wchar_t SnapLayoutManagerClassName[] = L"WindowsUdk.UI.Shell.SnapLayoutManager";
     constexpr UINT32 SnapLayoutManagerClassNameLength = ARRAYSIZE(SnapLayoutManagerClassName) - 1;
+
+    // The Shell flyout that offers a window for the space next to a snap. Identified by class and
+    // title together, because the class is also used by other Shell surfaces (Start, Task View).
+    constexpr wchar_t SnapAssistWindowClass[] = L"XamlExplorerHostIslandWindow";
+    constexpr wchar_t SnapAssistWindowTitle[] = L"Snap Assist";
+
+    // Finds the Snap Assist flyout, whether or not it has been shown yet. The Shell creates the
+    // window before it makes it visible, so this returns it during that gap as well.
+    HWND FindSnapAssistFlyout() noexcept
+    {
+        struct Context
+        {
+            HWND found = nullptr;
+        } context;
+
+        ::EnumWindows(
+            [](HWND candidate, LPARAM parameter) noexcept -> BOOL {
+                wchar_t className[64]{};
+                if (!::GetClassNameW(candidate, className, ARRAYSIZE(className)) ||
+                    wcscmp(className, SnapAssistWindowClass) != 0)
+                {
+                    return TRUE;
+                }
+
+                wchar_t title[64]{};
+                if (!::GetWindowTextW(candidate, title, ARRAYSIZE(title)) ||
+                    wcscmp(title, SnapAssistWindowTitle) != 0)
+                {
+                    return TRUE;
+                }
+
+                reinterpret_cast<Context*>(parameter)->found = candidate;
+                return FALSE;
+            },
+            reinterpret_cast<LPARAM>(&context));
+
+        return context.found;
+    }
+
+    // Makes `window` the foreground window from a process that does not own the foreground.
+    // SetForegroundWindow alone is silently refused in that case (measured: it returns true and
+    // nothing happens), so the input state is shared with the thread that currently owns the
+    // foreground, which is the documented way to move focus deliberately.
+    bool BringToForeground(HWND window) noexcept
+    {
+        const HWND foreground = ::GetForegroundWindow();
+        if (foreground == window)
+        {
+            return true;
+        }
+
+        const DWORD foregroundThread = foreground ? ::GetWindowThreadProcessId(foreground, nullptr) : 0;
+        const DWORD thisThread = ::GetCurrentThreadId();
+
+        bool attached = false;
+        if (foregroundThread && foregroundThread != thisThread)
+        {
+            attached = ::AttachThreadInput(thisThread, foregroundThread, TRUE) != FALSE;
+        }
+
+        ::SetForegroundWindow(window);
+        const bool moved = ::GetForegroundWindow() == window;
+
+        if (attached)
+        {
+            ::AttachThreadInput(thisThread, foregroundThread, FALSE);
+        }
+
+        return moved;
+    }
 
     // ISnapLayoutManagerStatics, retrieved with RoGetActivationFactory.
     constexpr GUID IID_SnapLayoutManagerStatics{
@@ -256,6 +330,123 @@ bool NativeSnap::SnapWindowToRect(HWND window, const RECT& snapRect) noexcept
     ReleaseInterface(manager);
 
     return SUCCEEDED(snapResult);
+}
+
+void NativeSnap::DismissSnapAssist(HWND window, DWORD timeoutMs) noexcept
+{
+    if (!window)
+    {
+        return;
+    }
+
+    // Snap Assist is the Shell flyout that offers a window for the space next to a snap. FancyZones
+    // places windows on its own, so the offer is not meant for this workflow, and the flyout takes
+    // the foreground away from the window the user just dropped.
+    //
+    // It cannot be kept from being created, and it ignores every closing message: WM_CLOSE,
+    // SC_CLOSE and SW_HIDE all leave it on screen (measured). What dismisses it is taking the
+    // foreground back, which is what clicking outside of it does.
+    //
+    // The trigger is the flyout holding the foreground. Dismissing it earlier does not work:
+    // before it exists the Shell shows it anyway, and while it exists but has not been shown yet,
+    // taking the foreground only postpones it by about half a second. Dismissing it the moment it
+    // holds the foreground closes it within ~30 ms, so what remains is the flyout's own opening
+    // animation, which is the best available outcome through the supported means.
+    //
+    // Running this on the caller's thread would block it for up to a second, and the caller handles
+    // the end of the user's drag, so callers normally use DismissSnapAssistInBackground instead.
+    const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeoutMs);
+    bool dismissed = false;
+
+    while (std::chrono::steady_clock::now() < deadline)
+    {
+        const HWND flyout = FindSnapAssistFlyout();
+        if (!flyout)
+        {
+            if (dismissed)
+            {
+                // Gone after a dismissal: the flyout was closed, nothing left to wait for.
+                return;
+            }
+        }
+        else if (::GetForegroundWindow() == flyout)
+        {
+            // Dismissal fails while the Shell is still busy with the snap, so it is retried until
+            // the flyout gives up the foreground or the budget runs out.
+            BringToForeground(window);
+            dismissed = true;
+        }
+
+        ::Sleep(5);
+    }
+}
+
+void NativeSnap::DismissSnapAssistInBackground(HWND window, DWORD timeoutMs) noexcept
+{
+    if (!window)
+    {
+        return;
+    }
+
+    // The flyout can be created a long time after the snap and only takes the foreground after
+    // that, which is up to a second. The caller is in the middle of handling the end of a drag, so
+    // waiting there would freeze the window the user just dropped. The wait is therefore moved off
+    // the caller's thread.
+    //
+    // One worker serves every snap: it is started on the first request, picks up the newest window
+    // on each pass, and exits once it has been idle, so dragging several windows into zones in
+    // quick succession does not pile up one thread per snap.
+    static std::mutex mutex;
+    static std::condition_variable wake;
+    static HWND pendingWindow = nullptr;
+    static DWORD pendingTimeout = 0;
+    static bool workerRunning = false;
+
+    {
+        std::lock_guard lock(mutex);
+        // The newest snap wins: the older one's flyout, if any, belongs to a window the user has
+        // already moved on from, and BringToForeground would take the foreground from the new one.
+        pendingWindow = window;
+        pendingTimeout = timeoutMs;
+
+        if (workerRunning)
+        {
+            // An idle worker is waiting for this; a busy one picks it up when it comes around.
+            wake.notify_one();
+            return;
+        }
+        workerRunning = true;
+    }
+
+    std::thread([]() noexcept {
+        for (;;)
+        {
+            HWND target = nullptr;
+            DWORD budget = 0;
+            {
+                std::unique_lock lock(mutex);
+                if (!pendingWindow)
+                {
+                    // Idle: give a following snap a chance to reuse this thread, then stop.
+                    wake.wait_for(lock, std::chrono::seconds(1), [] {
+                        return pendingWindow != nullptr;
+                    });
+                }
+
+                target = pendingWindow;
+                budget = pendingTimeout;
+                pendingWindow = nullptr;
+
+                if (!target)
+                {
+                    workerRunning = false;
+                    return;
+                }
+            }
+
+            DismissSnapAssist(target, budget);
+        }
+    }).detach();
 }
 
 bool NativeSnap::WaitForSnapApplied(HWND window, const RECT& snapRect, DWORD timeoutMs) noexcept

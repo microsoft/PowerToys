@@ -164,6 +164,11 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
         // join snap groups. If anything about it is unsupported, the original
         // SetWindowPlacement path below runs instead and the behavior stays as before.
         bool snappedNatively = false;
+
+        // Read before anything can run code outside this object: the wait below services the
+        // Shell's sent messages, and handling one of those can tear down this WorkArea.
+        const HWND workAreaWindow = m_window;
+
         if (FancyZonesSettings::settings().nativeSnap)
         {
             // The Shell only snaps rectangles that touch two work area edges. Zones are inset from
@@ -175,10 +180,6 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
 
             if (NativeSnap::SnapWindowToRect(window, snapScreenRect))
             {
-                // Capture everything this function still needs before the wait: it runs code
-                // outside this object (see WaitForSnapApplied), so no member may be read after it.
-                const HWND workAreaWindow = m_window;
-
                 // The Shell applies a snap asynchronously and occasionally drops the request
                 // without reporting an error, so a successful call proves nothing by itself.
                 // Measured on Windows 11 26H1: a snap that is applied at all lands within 63 ms,
@@ -193,12 +194,23 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
                     const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workAreaWindow);
                     ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
                 }
+
+                if (snappedNatively)
+                {
+                    // The Shell offers a window for the space next to the snap through the Snap
+                    // Assist flyout, which also takes the foreground away from the window the user
+                    // just dropped. FancyZones has already decided where the window goes, so the
+                    // offer is dismissed. Measured: the Shell can create and show the flyout up to
+                    // a second after the snap, so the wait happens off this thread, and this call
+                    // returns immediately.
+                    NativeSnap::DismissSnapAssistInBackground(window, 1500);
+                }
             }
         }
 
         if (!snappedNatively)
         {
-            const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, m_window);
+            const auto adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workAreaWindow);
             FancyZonesWindowUtils::SizeWindowToRect(window, adjustedRect);
         }
     }
