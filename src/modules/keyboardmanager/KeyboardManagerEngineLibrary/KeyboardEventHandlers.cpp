@@ -807,9 +807,16 @@ namespace KeyboardEventHandlers
         }
 
         // The shortcut remaps were put back: reset their state, as the shortcut handler does. Each
-        // one is looked up again, because the tables may have been rebuilt while the events were
-        // being sent; a remap that is gone has no state to reset, and one that was loaded anew is
-        // not invoked.
+        // one is named by its key and looked up again here, not kept as a pointer across the send.
+        // Two different things are involved:
+        // - This thread: the events sent above can go through the hook nested inside this call,
+        //   and those calls run the handlers, which can change the shortcut state. So the state is
+        //   taken from the tables as they are now; a remap that is not there has nothing to reset.
+        // - The loading thread: a settings reload rebuilds the shortcut and Alone tables in place
+        //   while the hook may be reading them. That race is older than the key-sequence remap,
+        //   the shortcut handlers have it on every event, and this lookup does not close it (it
+        //   only avoids keeping a pointer over the send). It is out of scope here: only the
+        //   key-sequence table and the press records are published on the hook thread.
         for (const RevertedShortcutRemap& reverted : revertedShortcutRemaps)
         {
             if (!isAltRightKeyInvoked)
