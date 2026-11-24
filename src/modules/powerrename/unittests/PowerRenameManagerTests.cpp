@@ -6,6 +6,8 @@
 #include "MockPowerRenameManagerEvents.h"
 #include "TestFileHelper.h"
 #include "Helpers.h"
+#include "Renaming.h"
+#include <icu.h>
 
 #define DEFAULT_FLAGS 0
 
@@ -388,13 +390,98 @@ namespace PowerRenameManagerTests
             Assert::AreEqual(L"\U00010400 test.folder", result);
 
             Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\u00DF TEST.txt", SentenceCase, false)));
-            Assert::AreEqual(L"SS test.txt", result);
+            Assert::AreEqual(L"Ss test.txt", result);
 
             Assert::IsTrue(SUCCEEDED(GetTransformedFileName(result, ARRAYSIZE(result), L"\U00010428 TEST.TXT", SentenceCase | ExtensionOnly, false)));
             Assert::AreEqual(L"\U00010428 TEST.TXT", result);
 
             wchar_t smallResult[4] = { 0 };
             Assert::AreEqual(STRSAFE_E_INSUFFICIENT_BUFFER, GetTransformedFileName(smallResult, ARRAYSIZE(smallResult), L"\u00DF AB", SentenceCase, false));
+        }
+
+        TEST_METHOD (VerifySentenceCaseRepeatedTransform)
+        {
+            // ICU's default locale is process-wide; restore it even if an assertion throws.
+            struct LocaleRestorer
+            {
+                std::string original = uloc_getDefault();
+
+                ~LocaleRestorer()
+                {
+                    UErrorCode status = U_ZERO_ERROR;
+                    uloc_setDefault(original.c_str(), &status);
+                }
+            } restoreLocale;
+
+            // Lithuanian lowercasing inserts a dot before accents on I; contextual
+            // titlecasing must preserve the original sequence without accumulating dots.
+            for (const char* locale : { "en-US", "lt-LT" })
+            {
+                UErrorCode status = U_ZERO_ERROR;
+                uloc_setDefault(locale, &status);
+                Assert::IsTrue(U_SUCCESS(status));
+                for (const auto& names : {
+                         std::pair{ L"\u00DF TEST.txt", L"Ss test.txt" },
+                         std::pair{ L"I\u0301 TEST.txt", L"I\u0301 test.txt" },
+                         std::pair{ L"01 - I\u0301 TEST.TXT", L"01 - I\u0301 test.TXT" },
+                         std::pair{ L"\u4E2D TEST.txt", L"\u4E2D test.txt" } })
+                {
+                    wchar_t first[MAX_PATH] = { 0 };
+                    wchar_t second[MAX_PATH] = { 0 };
+                    Assert::IsTrue(SUCCEEDED(GetTransformedFileName(first, ARRAYSIZE(first), names.first, SentenceCase, false)));
+                    Assert::AreEqual(names.second, first);
+                    Assert::IsTrue(SUCCEEDED(GetTransformedFileName(second, ARRAYSIZE(second), first, SentenceCase, false)));
+                    Assert::IsTrue(wcscmp(first, second) == 0, L"Sentence Case must be stable on the second transformation.");
+                }
+            }
+        }
+
+        TEST_METHOD (VerifyCaseExpansionComponentLength)
+        {
+            wchar_t currentDirectory[MAX_PATH] = { 0 };
+            Assert::IsTrue(GetCurrentDirectoryW(ARRAYSIZE(currentDirectory), currentDirectory) != 0);
+            wchar_t volumePath[MAX_PATH] = { 0 };
+            Assert::IsTrue(GetVolumePathNameW(currentDirectory, volumePath, ARRAYSIZE(volumePath)) != 0);
+            DWORD maximumComponentLength = 0;
+            Assert::IsTrue(GetVolumeInformationW(volumePath, nullptr, 0, nullptr, &maximumComponentLength, nullptr, nullptr, 0) != 0);
+            Assert::IsTrue(maximumComponentLength >= 5 && maximumComponentLength < MAX_PATH);
+
+            // Sharp s expands by one UTF-16 unit. Exercise exactly the component limit
+            // and one unit beyond it, using root-level mock paths so MAX_PATH cannot mask it.
+            // No files are created at the volume root.
+            for (const size_t originalLength : { static_cast<size_t>(maximumComponentLength) - 1, static_cast<size_t>(maximumComponentLength) })
+            {
+                const std::wstring original = L"\u00DF" + std::wstring(originalLength - 5, L'A') + L".txt";
+                const std::wstring path = std::wstring(volumePath) + original;
+                Assert::IsTrue(path.size() + 1 <= MAX_PATH, L"The expanded target path must fit so component validation is exercised.");
+
+                CComPtr<IPowerRenameManager> manager;
+                Assert::IsTrue(SUCCEEDED(CPowerRenameManager::s_CreateInstance(&manager)));
+                CComPtr<IPowerRenameRegEx> regex;
+                Assert::IsTrue(SUCCEEDED(manager->GetRenameRegEx(&regex)));
+                Assert::IsTrue(SUCCEEDED(regex->PutFlags(SentenceCase)));
+                Assert::IsTrue(SUCCEEDED(regex->PutSearchTerm(L"")));
+                Assert::IsTrue(SUCCEEDED(regex->PutReplaceTerm(L"")));
+
+                CComPtr<IPowerRenameItem> item;
+                Assert::IsTrue(SUCCEEDED(CMockPowerRenameItem::CreateInstance(path.c_str(), original.c_str(), 0, false, SYSTEMTIME{}, &item)));
+                unsigned long index = 0;
+                const bool expectedRename = originalLength < maximumComponentLength;
+                Assert::AreEqual(expectedRename, DoRename(regex, index, item));
+                PowerRenameItemRenameStatus status;
+                Assert::IsTrue(SUCCEEDED(item->GetStatus(&status)));
+                Assert::IsTrue(status == (expectedRename ? PowerRenameItemRenameStatus::ShouldRename : PowerRenameItemRenameStatus::ItemNameTooLong));
+                bool shouldRename = false;
+                Assert::IsTrue(SUCCEEDED(item->ShouldRenameItem(SentenceCase, &shouldRename)));
+                Assert::AreEqual(expectedRename, shouldRename);
+                PWSTR proposed = nullptr;
+                Assert::IsTrue(SUCCEEDED(item->GetNewName(&proposed)));
+                const std::wstring proposedName(proposed);
+                CoTaskMemFree(proposed);
+                Assert::IsTrue(proposedName.size() == originalLength + 1);
+                Assert::IsTrue(proposedName == L"Ss" + std::wstring(originalLength - 5, L'a') + L".txt");
+                Assert::IsTrue(SUCCEEDED(manager->Shutdown()));
+            }
         }
 
         TEST_METHOD (VerifyNameOnlyTransform)
