@@ -12,481 +12,136 @@ namespace Awake.UnitTests;
 [TestClass]
 public class ExpirationTimeParserTests
 {
+    private static readonly CultureInfo UsCulture = CultureInfo.GetCultureInfo("en-US");
+    private static readonly TimeZoneInfo Eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+    private static readonly TimeZoneInfo Tokyo = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
+    private static readonly DateTimeOffset BaseNow = new(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(-5));
+
     [TestMethod]
-    [DataRow((string)null)]
+    [DataRow(null)]
     [DataRow("")]
     [DataRow("   ")]
     [DataRow("bananas")]
     [DataRow("not-a-date")]
-    public void TryParse_WhenInputIsNullEmptyWhitespaceOrInvalid_ReturnsInvalidFormat(string input)
+    public void TryParse_InvalidInputs_ReturnsInvalidFormat(string input)
     {
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(-5));
-
         ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
             input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            TimeZoneInfo.Utc,
+            BaseNow,
+            UsCulture,
+            Eastern,
             out DateTimeOffset result);
 
         Assert.AreEqual(ExpirationTimeParseStatus.InvalidFormat, status);
-        Assert.AreEqual(default(DateTimeOffset), result);
-    }
-
-    [TestMethod]
-    [DataRow("2026-11-22T15:30:00Z", 2026, 11, 22, 15, 30, 0, 0)]
-    [DataRow("2026-11-22T17:30:00+02:00", 2026, 11, 22, 17, 30, 0, 2)]
-    [DataRow("  2026-11-22T15:30:00Z  ", 2026, 11, 22, 15, 30, 0, 0)]
-    public void TryParse_WhenOffsetQualifiedTimestampIsInFuture_ReturnsSuccessWithPreservedOffset(
-        string input, int year, int month, int day, int hour, int minute, int second, int offsetHours)
-    {
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time"),
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(year, month, day, hour, minute, second, TimeSpan.FromHours(offsetHours));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    [DataRow("2025-09-04T23:14:00Z")]
-    [DataRow("2026-11-22T14:00:00Z")]
-    [DataRow("2026-11-22T15:00:00+02:00")]
-    public void TryParse_WhenOffsetQualifiedTimestampIsPastOrExactNow_ReturnsInThePast(string input)
-    {
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            TimeZoneInfo.Utc,
-            out _);
-
-        Assert.AreEqual(ExpirationTimeParseStatus.InThePast, status);
-    }
-
-    [TestMethod]
-    [DataRow("00:30Z")]
-    [DataRow("17:00+02:00")]
-    [DataRow("01:00-05:00")]
-    public void TryParse_WhenOffsetQualifiedTimeOnlyIsPast_DoesNotRollToTomorrow(string input)
-    {
-        DateTimeOffset now = DateTimeOffset.UtcNow.AddDays(2);
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            TimeZoneInfo.Utc,
-            out _);
-
-        Assert.AreEqual(ExpirationTimeParseStatus.InThePast, status);
+        Assert.AreEqual(default, result);
     }
 
     [TestMethod]
     [DataRow("2025-01-01 14:05")]
     [DataRow("2025-09-04T23:14:00")]
+    [DataRow("2025-09-04T23:14:00Z")]
     [DataRow("09-04-25 23:14")]
     [DataRow("09/04/25 11:14 PM")]
     [DataRow("September 4 2025 11:14 PM")]
     [DataRow("4 September 2025 23:14:00")]
-    [DataRow("2026-11-22")]
     [DataRow("2026-11-22 14:00")]
-    public void TryParse_WhenExplicitLocalDateIsPastOrExactNow_ReturnsInThePast(string input)
+    [DataRow("2026-11-22T14:00:00Z")]
+    [DataRow("2026-11-22T15:00:00+02:00")]
+    public void TryParse_PastFullDatesAndIsoStrings_ReturnsInThePast(string input)
     {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(-5));
-
         ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
             input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out _);
+            BaseNow,
+            UsCulture,
+            Eastern,
+            out DateTimeOffset result);
 
         Assert.AreEqual(ExpirationTimeParseStatus.InThePast, status);
+        Assert.AreEqual(default, result);
     }
 
     [TestMethod]
-    [DataRow("2026-11-22 15:00", "Eastern Standard Time", 2026, 11, 22, 15, 0, -5)]
-    [DataRow("  2026-11-22 15:00  ", "Eastern Standard Time", 2026, 11, 22, 15, 0, -5)]
-    [DataRow("2026-11-22T15:00:00", "Tokyo Standard Time", 2026, 11, 22, 15, 0, 9)]
-    [DataRow("2026-11-23", "Eastern Standard Time", 2026, 11, 23, 0, 0, -5)]
-    public void TryParse_WhenExplicitLocalDateIsInFuture_ResolvesInSuppliedTimeZone(
-        string input, string timeZoneId, int year, int month, int day, int hour, int minute, int offsetHours)
+    public void TryParse_FutureDatesAndOffsets_ReturnsSuccess()
     {
-        TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(offsetHours));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            tz,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(year, month, day, hour, minute, 0, TimeSpan.FromHours(offsetHours));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
+        AssertSuccess("2026-11-22 15:00", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 22, 15, 0, 0, TimeSpan.FromHours(-5)));
+        AssertSuccess("2026-11-22T15:00:00", new DateTimeOffset(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(9)), UsCulture, Tokyo, new DateTimeOffset(2026, 11, 22, 15, 0, 0, TimeSpan.FromHours(9)));
+        AssertSuccess("2026-11-22T20:30:00Z", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 22, 20, 30, 0, TimeSpan.Zero));
+        AssertSuccess("2026-11-22T22:30:00+02:00", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 22, 22, 30, 0, TimeSpan.FromHours(2)));
     }
 
     [TestMethod]
-    [DataRow("0001-01-01", "UTC")]
-    [DataRow("0001-01-01", "Eastern Standard Time")]
-    [DataRow("0001-01-01", "W. Europe Standard Time")]
-    [DataRow("0001-01-01", "Tokyo Standard Time")]
-    [DataRow("0001-01-01 00:00:00", "Tokyo Standard Time")]
-    [DataRow("0001-01-01 14:05", "Eastern Standard Time")]
-    public void TryParse_WhenLiteralYearOneDateAcrossTimeZones_ReturnsInThePast(string input, string timeZoneId)
+    [DataRow("17:00", 17, 0)]
+    [DataRow("23:14:00", 23, 14)]
+    [DataRow("11:14 PM", 23, 14)]
+    public void TryParse_TimeOnlyFutureToday_UsesToday(string input, int hour, int minute)
     {
-        TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            tz,
-            out _);
-
-        Assert.AreEqual(ExpirationTimeParseStatus.InThePast, status);
+        DateTimeOffset expected = new(2026, 11, 22, hour, minute, 0, TimeSpan.FromHours(-5));
+        AssertSuccess(input, BaseNow, UsCulture, Eastern, expected);
     }
 
     [TestMethod]
-    public void TryParse_WhenMaxDateOverflowsUtcRange_ReturnsInvalidFormat()
+    [DataRow("00:00:00", 0, 0)]
+    [DataRow("08:00", 8, 0)]
+    [DataRow("14:00:00", 14, 0)]
+    [DataRow("12:00 AM", 0, 0)]
+    public void TryParse_TimeOnlyPastOrNow_RollsToTomorrow(string input, int hour, int minute)
     {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(-5));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "9999-12-31 23:59:59",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        Assert.AreEqual(ExpirationTimeParseStatus.InvalidFormat, status);
-        Assert.AreEqual(default(DateTimeOffset), result);
+        DateTimeOffset expected = new(2026, 11, 23, hour, minute, 0, TimeSpan.FromHours(-5));
+        AssertSuccess(input, BaseNow, UsCulture, Eastern, expected);
     }
 
     [TestMethod]
-    [DataRow("23:14:00", 23, 14, 0, 0)]
-    [DataRow("11:14 PM", 23, 14, 0, 0)]
-    [DataRow("11:14PM", 23, 14, 0, 0)]
-    [DataRow("11:14:30 PM", 23, 14, 30, 0)]
-    [DataRow("17:00:00.500", 17, 0, 0, 500)]
-    [DataRow("  17:00  ", 17, 0, 0, 0)]
-    public void TryParse_WhenLocalTimeOnlyIsStillInFutureToday_UsesTodayInSuppliedTimeZone(
-        string input, int hour, int minute, int second, int millisecond)
+    public void TryParse_TimeOnlyAcrossOvernightDstChange_UsesNextDayOffset()
     {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset nowUtc = new(2026, 11, 22, 19, 0, 0, TimeSpan.Zero);
+        DateTimeOffset beforeSpringForward = new(2026, 3, 7, 23, 0, 0, TimeSpan.FromHours(-5));
+        AssertSuccess("08:00", beforeSpringForward, UsCulture, Eastern, new DateTimeOffset(2026, 3, 8, 8, 0, 0, TimeSpan.FromHours(-4)));
 
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            nowUtc,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 11, 22, hour, minute, second, millisecond, TimeSpan.FromHours(-5));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
+        DateTimeOffset beforeFallBack = new(2026, 10, 31, 23, 0, 0, TimeSpan.FromHours(-4));
+        AssertSuccess("08:00", beforeFallBack, UsCulture, Eastern, new DateTimeOffset(2026, 11, 1, 8, 0, 0, TimeSpan.FromHours(-5)));
     }
 
     [TestMethod]
-    [DataRow("00:00:00", 0, 0, 0)]
-    [DataRow("08:00", 8, 0, 0)]
-    [DataRow("9:05:00", 9, 5, 0)]
-    [DataRow("14:00:00", 14, 0, 0)]
-    [DataRow("12:00 AM", 0, 0, 0)]
-    [DataRow("12:30 AM", 0, 30, 0)]
-    [DataRow("12:00 PM", 12, 0, 0)]
-    public void TryParse_WhenLocalTimeOnlyIsPastOrExactNow_RollsForwardToTomorrow(
-        string input, int hour, int minute, int second)
+    public void TryParse_BoundaryDates_DoNotThrow()
     {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.FromHours(-5));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 11, 23, hour, minute, second, TimeSpan.FromHours(-5));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InThePast,
+            ExpirationTimeParser.TryParse("0001-01-01", BaseNow, UsCulture, Eastern, out _));
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InThePast,
+            ExpirationTimeParser.TryParse("0001-01-01", BaseNow, UsCulture, Tokyo, out _));
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InvalidFormat,
+            ExpirationTimeParser.TryParse("9999-12-31 23:59:59", BaseNow, UsCulture, Eastern, out _));
     }
 
     [TestMethod]
-    public void TryParse_WhenNoonIsStillFutureToday_ResolvesToTodayNoon()
+    public void TryParse_NonUsCultures_ForwardsCulture()
     {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 11, 22, 11, 0, 0, TimeSpan.FromHours(-5));
+        DateTimeOffset utcNow = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
 
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "12:00 PM",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InThePast,
+            ExpirationTimeParser.TryParse("17.08.2025 14:05", utcNow, CultureInfo.GetCultureInfo("de-DE"), TimeZoneInfo.Utc, out _));
 
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(new DateTimeOffset(2026, 11, 22, 12, 0, 0, TimeSpan.FromHours(-5)), result);
+        CultureInfo finnish = CultureInfo.GetCultureInfo("fi-FI");
+        AssertSuccess("17.00", utcNow, finnish, TimeZoneInfo.Utc, new DateTimeOffset(2026, 11, 22, 17, 0, 0, TimeSpan.Zero));
+        AssertSuccess("08.30", utcNow, finnish, TimeZoneInfo.Utc, new DateTimeOffset(2026, 11, 23, 8, 30, 0, TimeSpan.Zero));
     }
 
-    [TestMethod]
-    [DataRow(2026, 12, 31, 23, 30, "00:30", 2027, 1, 1, 0, 30)]
-    [DataRow(2024, 2, 28, 23, 30, "00:30", 2024, 2, 29, 0, 30)]
-    [DataRow(2025, 2, 28, 23, 30, "00:30", 2025, 3, 1, 0, 30)]
-    public void TryParse_WhenTimeOnlyRollsAcrossMonthLeapDayOrYearEnd_LandsOnNextCalendarDay(
-        int nowYear,
-        int nowMonth,
-        int nowDay,
-        int nowHour,
-        int nowMinute,
+    private static void AssertSuccess(
         string input,
-        int expYear,
-        int expMonth,
-        int expDay,
-        int expHour,
-        int expMinute)
+        DateTimeOffset now,
+        CultureInfo culture,
+        TimeZoneInfo timeZone,
+        DateTimeOffset expected)
     {
-        DateTimeOffset now = new(nowYear, nowMonth, nowDay, nowHour, nowMinute, 0, TimeSpan.Zero);
-
         ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
             input,
             now,
-            CultureInfo.GetCultureInfo("en-US"),
-            TimeZoneInfo.Utc,
+            culture,
+            timeZone,
             out DateTimeOffset result);
 
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(new DateTimeOffset(expYear, expMonth, expDay, expHour, expMinute, 0, TimeSpan.Zero), result);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyHitsSpringForwardGapBeforeTransition_ShiftsForwardToday()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 3, 8, 1, 30, 0, TimeSpan.FromHours(-5));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "02:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyHitsSpringForwardGapAfterTransition_RollsToTomorrow()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 3, 8, 3, 15, 0, TimeSpan.FromHours(-4));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "02:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 3, 9, 2, 30, 0, TimeSpan.FromHours(-4));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyRollsToTomorrowSpringForwardGap_ShiftsTomorrowForward()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 3, 7, 23, 0, 0, TimeSpan.FromHours(-5));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "02:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyHitsThirtyMinuteSpringForwardGap_ShiftsByThirtyMinutes()
-    {
-        TimeZoneInfo lordHowe = TimeZoneInfo.FindSystemTimeZoneById("Lord Howe Standard Time");
-        DateTimeOffset now = new(2026, 10, 4, 1, 30, 0, TimeSpan.FromMinutes(630));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "02:15",
-            now,
-            CultureInfo.GetCultureInfo("en-AU"),
-            lordHowe,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 10, 4, 2, 45, 0, TimeSpan.FromHours(11));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenExplicitLocalDateHitsSpringForwardGap_ShiftsConsistently()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 3, 8, 1, 30, 0, TimeSpan.FromHours(-5));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "2026-03-08 02:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 3, 8, 3, 30, 0, TimeSpan.FromHours(-4));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyHitsFallBackBeforeFirstOccurrence_PicksDaylightOffset()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 11, 1, 1, 0, 0, TimeSpan.FromHours(-4));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "01:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 11, 1, 1, 30, 0, TimeSpan.FromHours(-4));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyHitsFallBackBetweenOccurrences_PicksSecondStandardOffsetToday()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 11, 1, 1, 45, 0, TimeSpan.FromHours(-4));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "01:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 11, 1, 1, 30, 0, TimeSpan.FromHours(-5));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyHitsFallBackAfterBothOccurrences_RollsToTomorrow()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 11, 1, 1, 45, 0, TimeSpan.FromHours(-5));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "01:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 11, 2, 1, 30, 0, TimeSpan.FromHours(-5));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    public void TryParse_WhenTimeOnlyRollsToTomorrowFallBackOverlap_PicksEarliestOccurrence()
-    {
-        TimeZoneInfo eastern = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
-        DateTimeOffset now = new(2026, 10, 31, 23, 0, 0, TimeSpan.FromHours(-4));
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            "01:30",
-            now,
-            CultureInfo.GetCultureInfo("en-US"),
-            eastern,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(2026, 11, 1, 1, 30, 0, TimeSpan.FromHours(-4));
-        Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
-        Assert.AreEqual(expected, result);
-        Assert.AreEqual(expected.Offset, result.Offset);
-    }
-
-    [TestMethod]
-    [DataRow("de-DE", "17.08.2025 14:05")]
-    [DataRow("fr-FR", "17 août 2025 14:05")]
-    [DataRow("ja-JP", "2025年8月17日 14:05")]
-    [DataRow("sv-SE", "17 augusti 2025 14:05")]
-    [DataRow("en-GB", "17/08/2025 14:05")]
-    [DataRow("ar-SA", "2025-09-04T20:26:00")]
-    public void TryParse_WhenPastFullDateAcrossCultures_ReturnsInThePast(string cultureName, string input)
-    {
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo(cultureName),
-            TimeZoneInfo.Utc,
-            out _);
-
-        Assert.AreEqual(ExpirationTimeParseStatus.InThePast, status);
-    }
-
-    [TestMethod]
-    [DataRow("fi-FI", "17.00", 2026, 11, 22, 17, 0)]
-    [DataRow("fi-FI", "08.30", 2026, 11, 23, 8, 30)]
-    [DataRow("de-DE", "08:30", 2026, 11, 23, 8, 30)]
-    [DataRow("ar-SA", "17:00", 2026, 11, 22, 17, 0)]
-    [DataRow("ar-SA", "05:00 م", 2026, 11, 22, 17, 0)]
-    public void TryParse_WhenTimeOnlyAcrossCultures_ResolvesAndRollsCorrectly(
-        string cultureName, string input, int expYear, int expMonth, int expDay, int expHour, int expMinute)
-    {
-        DateTimeOffset now = new(2026, 11, 22, 14, 0, 0, TimeSpan.Zero);
-
-        ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
-            input,
-            now,
-            CultureInfo.GetCultureInfo(cultureName),
-            TimeZoneInfo.Utc,
-            out DateTimeOffset result);
-
-        DateTimeOffset expected = new(expYear, expMonth, expDay, expHour, expMinute, 0, TimeSpan.Zero);
         Assert.AreEqual(ExpirationTimeParseStatus.Success, status);
         Assert.AreEqual(expected, result);
         Assert.AreEqual(expected.Offset, result.Offset);

@@ -37,25 +37,41 @@ internal static class ExpirationTimeParser
             if (isTimeOnly)
             {
                 DateTimeOffset localNow = TimeZoneInfo.ConvertTime(now, timeZone);
-                DateTime todayCandidate = DateTime.SpecifyKind(localNow.Date + parsedNoDefault.TimeOfDay, DateTimeKind.Unspecified);
+                DateTime todayLocal = localNow.Date + parsedNoDefault.TimeOfDay;
+                DateTimeOffset candidate = new(todayLocal, timeZone.GetUtcOffset(todayLocal));
 
-                // Skip today when wall-clock time is already past a nonexistent spring-forward gap.
-                bool skipToday = timeZone.IsInvalidTime(todayCandidate) && localNow.DateTime >= todayCandidate;
-                if (!skipToday && TryResolveLocalDateTime(todayCandidate, now, timeZone, out expirationDateTime) == ExpirationTimeParseStatus.Success)
+                if (candidate <= now)
                 {
-                    return ExpirationTimeParseStatus.Success;
+                    if (localNow.Date >= DateTime.MaxValue.Date)
+                    {
+                        return ExpirationTimeParseStatus.InvalidFormat;
+                    }
+
+                    DateTime tomorrowLocal = localNow.Date.AddDays(1) + parsedNoDefault.TimeOfDay;
+                    candidate = new DateTimeOffset(tomorrowLocal, timeZone.GetUtcOffset(tomorrowLocal));
                 }
 
-                if (localNow.Date >= DateTime.MaxValue.Date)
-                {
-                    return ExpirationTimeParseStatus.InvalidFormat;
-                }
-
-                DateTime tomorrowCandidate = DateTime.SpecifyKind(localNow.Date.AddDays(1) + parsedNoDefault.TimeOfDay, DateTimeKind.Unspecified);
-                return TryResolveLocalDateTime(tomorrowCandidate, now, timeZone, out expirationDateTime);
+                expirationDateTime = candidate;
+                return ExpirationTimeParseStatus.Success;
             }
 
-            return TryResolveLocalDateTime(parsedNoDefault, now, timeZone, out expirationDateTime);
+            try
+            {
+                DateTimeOffset localCandidate = new(parsedNoDefault, timeZone.GetUtcOffset(parsedNoDefault));
+                if (localCandidate <= now)
+                {
+                    return ExpirationTimeParseStatus.InThePast;
+                }
+
+                expirationDateTime = localCandidate;
+                return ExpirationTimeParseStatus.Success;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                return parsedNoDefault.Year == 1
+                    ? ExpirationTimeParseStatus.InThePast
+                    : ExpirationTimeParseStatus.InvalidFormat;
+            }
         }
 
         if (!DateTimeOffset.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTimeOffset parsedOffset))
@@ -65,86 +81,10 @@ internal static class ExpirationTimeParser
 
         if (parsedOffset <= now)
         {
-            expirationDateTime = default;
             return ExpirationTimeParseStatus.InThePast;
         }
 
         expirationDateTime = parsedOffset;
-        return ExpirationTimeParseStatus.Success;
-    }
-
-    private static ExpirationTimeParseStatus TryResolveLocalDateTime(
-        DateTime localDateTime,
-        DateTimeOffset now,
-        TimeZoneInfo timeZone,
-        out DateTimeOffset expirationDateTime)
-    {
-        expirationDateTime = default;
-
-        if (timeZone.IsAmbiguousTime(localDateTime))
-        {
-            TimeSpan[] offsets = timeZone.GetAmbiguousTimeOffsets(localDateTime);
-
-            // Larger offsets map to earlier UTC instants, so descending order checks occurrences chronologically.
-            Array.Sort(offsets, static (left, right) => right.CompareTo(left));
-
-            foreach (TimeSpan candidateOffset in offsets)
-            {
-                ExpirationTimeParseStatus candidateStatus = TryCreateDateTimeOffset(localDateTime, candidateOffset, out DateTimeOffset candidate);
-                if (candidateStatus != ExpirationTimeParseStatus.Success)
-                {
-                    return candidateStatus;
-                }
-
-                if (candidate > now)
-                {
-                    expirationDateTime = candidate;
-                    return ExpirationTimeParseStatus.Success;
-                }
-            }
-
-            return ExpirationTimeParseStatus.InThePast;
-        }
-
-        TimeSpan offset = timeZone.GetUtcOffset(localDateTime);
-        ExpirationTimeParseStatus status = TryCreateDateTimeOffset(localDateTime, offset, out DateTimeOffset resolved);
-        if (status != ExpirationTimeParseStatus.Success)
-        {
-            return status;
-        }
-
-        if (timeZone.IsInvalidTime(localDateTime))
-        {
-            resolved = TimeZoneInfo.ConvertTime(resolved, timeZone);
-        }
-
-        if (resolved <= now)
-        {
-            return ExpirationTimeParseStatus.InThePast;
-        }
-
-        expirationDateTime = resolved;
-        return ExpirationTimeParseStatus.Success;
-    }
-
-    private static ExpirationTimeParseStatus TryCreateDateTimeOffset(
-        DateTime localDateTime,
-        TimeSpan offset,
-        out DateTimeOffset resolved)
-    {
-        resolved = default;
-        long utcTicks = localDateTime.Ticks - offset.Ticks;
-        if (utcTicks < DateTimeOffset.MinValue.Ticks)
-        {
-            return ExpirationTimeParseStatus.InThePast;
-        }
-
-        if (utcTicks > DateTimeOffset.MaxValue.Ticks)
-        {
-            return ExpirationTimeParseStatus.InvalidFormat;
-        }
-
-        resolved = new DateTimeOffset(localDateTime, offset);
         return ExpirationTimeParseStatus.Success;
     }
 }
