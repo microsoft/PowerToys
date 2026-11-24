@@ -1331,10 +1331,10 @@ namespace RemappingLogicTests
             testState.StartSequencePressTracking(mockedInputHandler);
         }
 
-        void SendKey(WORD vk, bool keyUp, WORD scanCode = 0)
+        void SendKey(WORD vk, bool keyUp, WORD scanCode = 0, bool extended = false)
         {
             std::vector<INPUT> inputs{
-                { .type = INPUT_KEYBOARD, .ki = { .wVk = vk, .wScan = scanCode, .dwFlags = static_cast<DWORD>(keyUp ? KEYEVENTF_KEYUP : 0) } },
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = vk, .wScan = scanCode, .dwFlags = static_cast<DWORD>((keyUp ? KEYEVENTF_KEYUP : 0) | (extended ? KEYEVENTF_EXTENDEDKEY : 0)) } },
             };
             mockedInputHandler.SendVirtualInput(inputs);
         }
@@ -1719,6 +1719,92 @@ namespace RemappingLogicTests
             Assert::AreEqual((size_t)0, SequenceEvents());
             Assert::AreEqual((size_t)1, Delivered(VK_NUMPAD1, false));
             Assert::AreEqual((size_t)1, Delivered(VK_NUMPAD1, true));
+        }
+
+        // Text that another program sends as Unicode input arrives as VK_PACKET events whose scan
+        // code field holds a character, not a scan code. 'O' is 0x4F, the scan code of keypad 1.
+        // Such an event is not a press of that key: it is not tracked, and it leaves the press of
+        // the real key alone.
+        TEST_METHOD (SequenceRemap_UnicodeInputOfAnotherProgram_IsNotTakenForAPhysicalKey)
+        {
+            constexpr WORD keypad1ScanCode = 0x4F;
+            mockedInputHandler.SetEncodeNumpadOrigin(true);
+            ReloadSequenceRemaps({ { VK_NUMPAD1, { 0x41, 0x42 } } });
+
+            // Nothing is recorded for the Unicode input itself
+            SendKey(VK_PACKET, false, L'O');
+            Assert::IsTrue(testState.SequencePresses().Empty());
+            SendKey(VK_PACKET, true, L'O');
+            Assert::AreEqual((size_t)1, Delivered(VK_PACKET, false));
+            Assert::AreEqual((size_t)1, Delivered(VK_PACKET, true));
+
+            SendKey(VK_NUMPAD1, false, keypad1ScanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            // The Unicode input arrives while keypad 1 is held: it reaches the system
+            SendKey(VK_PACKET, false, L'O');
+            SendKey(VK_PACKET, true, L'O');
+            Assert::AreEqual((size_t)2, Delivered(VK_PACKET, false));
+            Assert::AreEqual((size_t)2, Delivered(VK_PACKET, true));
+
+            // Keypad 1 is still the same press: no second sequence, and its key-up is suppressed
+            SendKey(VK_NUMPAD1, false, keypad1ScanCode); // auto-repeat
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            SendKey(VK_NUMPAD1, true, keypad1ScanCode);
+            Assert::AreEqual((size_t)0, Delivered(VK_NUMPAD1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_NUMPAD1, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+        }
+
+        // A key can be released under another scan code than it was pressed with: Print Screen has
+        // a different scan code while Alt is down. A key-up that matches no press by scan code ends
+        // the press that began with the same virtual key.
+        TEST_METHOD (SequenceRemap_KeyReleasedUnderAnotherScanCode_IsPairedByItsVirtualKey)
+        {
+            constexpr WORD printScreenScanCode = 0x37; // with the extended-key flag
+            constexpr WORD printScreenWithAltScanCode = 0x54;
+            ReloadSequenceRemaps({ { VK_SNAPSHOT, { 0x41, 0x42 } } });
+
+            SendKey(VK_SNAPSHOT, false, printScreenScanCode, true);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            SendKey(VK_SNAPSHOT, true, printScreenWithAltScanCode);
+            Assert::AreEqual((size_t)0, Delivered(VK_SNAPSHOT, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+
+            // The next press sends the sequence again
+            SendKey(VK_SNAPSHOT, false, printScreenScanCode, true);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+
+            // The same goes for a key-up without any scan code
+            SendKey(VK_SNAPSHOT, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_SNAPSHOT, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+            Assert::AreEqual((size_t)0, Delivered(VK_SNAPSHOT, false));
+        }
+
+        // The virtual key is only the fallback. A key-up that matches a press by scan code ends
+        // that press, even when another key with the same virtual key is down as well (the same
+        // key of a second keyboard with other scan codes).
+        TEST_METHOD (SequenceRemap_KeyUpThatMatchesAPressByScanCode_EndsThatPressOnly)
+        {
+            constexpr WORD firstScanCode = 0x3B;
+            constexpr WORD secondScanCode = 0x7B;
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false, firstScanCode);
+            SendKey(VK_F1, false, secondScanCode);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+
+            SendKey(VK_F1, true, firstScanCode);
+            Assert::IsFalse(testState.SequencePresses().Empty());
+            SendKey(VK_F1, false, secondScanCode); // auto-repeat of the key that is still down
+            Assert::AreEqual((size_t)8, SequenceEvents());
+
+            SendKey(VK_F1, true, secondScanCode);
+            Assert::IsTrue(testState.SequencePresses().Empty());
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
         }
 
         // Events without a scan code are paired by virtual key, and the two kinds of identity are kept apart.

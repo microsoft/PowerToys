@@ -608,6 +608,13 @@ namespace KeyboardEventHandlers
             return SequencePressStep::NotTracked;
         }
 
+        // Neither is text that another program sends as Unicode input. The scan code field of such
+        // an event holds a character, which must not be taken for the scan code of a key.
+        if (data->lParam->vkCode == VK_PACKET)
+        {
+            return SequencePressStep::NotTracked;
+        }
+
         // No key-sequence remap and no press on record: nothing to pair (the common case for users
         // without key sequences).
         if (state.IsSequenceRemapIdle())

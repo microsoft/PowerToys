@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "State.h"
+#include <algorithm>
+#include <climits>
 #include <optional>
 #include <keyboardmanager/common/Helpers.h>
 
@@ -176,7 +178,7 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress
         {
             // First event of a key that was down when tracking started: from here on it is known by
             // its own identity.
-            m_presses.insert_or_assign(id, Press{ Disposition::Forwarded, key.time });
+            m_presses.insert_or_assign(id, Press{ Disposition::Forwarded, key.time, key.vkCode });
             return Disposition::Forwarded;
         }
     }
@@ -186,7 +188,7 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress
 
 void SequencePressTracker::RecordPress(const KBDLLHOOKSTRUCT& key, const Disposition disposition)
 {
-    m_presses.insert_or_assign(KeyIdOf(key), Press{ disposition, key.time });
+    m_presses.insert_or_assign(KeyIdOf(key), Press{ disposition, key.time, key.vkCode });
 }
 
 std::optional<SequencePressTracker::Disposition> SequencePressTracker::ReleasePress(const KBDLLHOOKSTRUCT& key)
@@ -203,6 +205,19 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::ReleasePr
     if (seeded)
     {
         return Disposition::Forwarded;
+    }
+
+    // No press with this scan code. The key may have been pressed under another one (Print Screen
+    // changes its scan code while Alt is down), or this key-up has none: end the press that began
+    // with the same virtual key.
+    const auto sameVirtualKey = std::find_if(m_presses.begin(), m_presses.end(), [&key](const auto& press) {
+        return press.second.virtualKey == key.vkCode;
+    });
+    if (sameVirtualKey != m_presses.end())
+    {
+        const Disposition disposition = sameVirtualKey->second.disposition;
+        m_presses.erase(sameVirtualKey);
+        return disposition;
     }
 
     return std::nullopt;

@@ -18,7 +18,13 @@
 // A key is identified by its scan code and extended-key flag, not by its virtual key: the virtual
 // key of a keypad key can change between its key-down and its key-up (NumPad1 goes down, Shift
 // changes the state, and the key comes up as End). An event without a scan code (some injected
-// input) is identified by its virtual key instead.
+// input) is identified by its virtual key instead. A few keys change their scan code instead
+// (Print Screen has another one while Alt is down), so a key-up that matches no press this way
+// ends the press that began with the same virtual key.
+//
+// VK_PACKET events (text another program sends as Unicode input) are not presses of a key and are
+// not tracked at all: their scan code field holds a character, which can equal the scan code of a
+// real key.
 //
 // Used on the low-level keyboard hook thread only (the thread that installs the hook and runs its
 // message loop). Nothing here is cleared by a settings reload.
@@ -43,6 +49,9 @@
 //    program's injected input) shares one record, and the first key-up ends it.
 //  - A press without a scan code is paired by virtual key, so the keypad case above is not paired
 //    for such input.
+//  - A key-up whose scan code and virtual key both differ from those of its key-down is not
+//    paired. A key-up that matches no press by scan code ends a press that began with the same
+//    virtual key, even if it comes from another key with that virtual key.
 //  - Keys that are already down when tracking starts are only known by virtual key, taken from the
 //    key state the system reports (see SeedForwardedPresses). That misses a key whose key-down an
 //    earlier remap suppressed, and it cannot tell apart two keys with the same virtual key (for
@@ -93,7 +102,8 @@ public:
     void RecordPress(const KBDLLHOOKSTRUCT& key, Disposition disposition);
 
     // For a key-up: ends the press of the key and returns its disposition, or nullopt if no press
-    // of the key was recorded.
+    // of the key was recorded. If no press has the identity of the key-up, a press whose key-down
+    // had the same virtual key is taken instead.
     std::optional<Disposition> ReleasePress(const KBDLLHOOKSTRUCT& key);
 
     // Records every key the system reports as down as a forwarded press. Called when tracking
@@ -114,6 +124,9 @@ private:
 
         // KBDLLHOOKSTRUCT.time of the last event of the press (its key-down or its latest auto-repeat)
         DWORD lastEventTime;
+
+        // The virtual key of the first event of the press, as the hook reports it
+        DWORD virtualKey;
     };
 
     std::unordered_map<uint64_t, Press> m_presses;
