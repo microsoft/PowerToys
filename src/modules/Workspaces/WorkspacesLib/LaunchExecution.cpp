@@ -78,6 +78,7 @@ namespace WorkspacesSession
                 if (!launcher.HasArrangerResult())
                     throw Error(9, L"outcomeUnknown", "Arranger exited without a conclusive result.");
                 result.applications = launcher.GetResult();
+                result.launchedAnyApplication = launcher.LaunchedAnyApplication();
                 result.applicationErrors = launcher.GetApplicationErrors();
                 result.approvals = launcher.GetApprovalDecisions();
             }

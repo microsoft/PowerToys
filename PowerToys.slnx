@@ -1276,6 +1276,7 @@
     <Project Path="src/modules/Workspaces/WorkspacesWindowArranger/WorkspacesWindowArranger.vcxproj" Id="37d07516-4185-43a4-924f-3c7a5d95ecf6" />
   </Folder>
   <Folder Name="/modules/Workspaces/Tests/">
+    <Project Path="src/modules/Workspaces/WorkspacesCLI/Tests/RuntimeFixture/RuntimeFixture.vcxproj" Id="122d79ac-38e7-4549-935e-8b5b58e683e4" />
     <Project Path="src/modules/Workspaces/Tests/Workspaces.TestApp/Workspaces.TestApp.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
@@ -1285,6 +1286,10 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/Workspaces/WorkspacesCsharpLibrary.UnitTests/WorkspacesCsharpLibrary.UnitTests.csproj">
+      <Platform Solution="*|ARM64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+    </Project>
+    <Project Path="src/modules/Workspaces/WorkspacesEditor.UnitTests/WorkspacesEditor.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

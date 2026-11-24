@@ -2,6 +2,8 @@
 #include "WorkspacesData.h"
 #include <common/SettingsAPI/settings_helpers.h>
 
+#include <cmath>
+#include <limits>
 #include <workspaces-common/GuidUtils.h>
 
 namespace NonLocalizable
@@ -434,12 +436,21 @@ namespace WorkspacesData
         }
     }
 
+    bool LaunchingAppState::HasLiveExistingWindow() const
+    {
+        DWORD owner{};
+        return state == LaunchingState::Failed && window && existingWindowProcessId && IsWindowVisible(window) &&
+               GetWindowThreadProcessId(window, &owner) && owner == existingWindowProcessId;
+    }
+
     namespace AppLaunchInfoJSON
     {
         namespace NonLocalizable
         {
             const static wchar_t* ApplicationID = L"application";
             const static wchar_t* StateID = L"state";
+            const static wchar_t* ExistingWindowID = L"existingWindow";
+            const static wchar_t* ExistingWindowProcessID = L"existingWindowProcessId";
         }
 
         json::JsonObject ToJson(const LaunchingAppState& data)
@@ -448,6 +459,22 @@ namespace WorkspacesData
             json.SetNamedValue(NonLocalizable::ApplicationID, WorkspacesProjectJSON::ApplicationJSON::ToJson(data.application));
             json.SetNamedValue(NonLocalizable::StateID, json::value(static_cast<int>(data.state)));
             return json;
+        }
+
+        json::JsonObject ToResultJson(const LaunchingAppState& data)
+        {
+            auto json = ToJson(data);
+            if (data.HasLiveExistingWindow())
+            {
+                json.SetNamedValue(NonLocalizable::ExistingWindowID, json::value(HandleToULong(data.window)));
+                json.SetNamedValue(NonLocalizable::ExistingWindowProcessID, json::value(data.existingWindowProcessId));
+            }
+            return json;
+        }
+
+        static bool IsWindowReferenceValue(double value)
+        {
+            return value >= 1 && value <= (std::numeric_limits<DWORD>::max)() && std::trunc(value) == value;
         }
 
         std::optional<LaunchingAppState> FromJson(const json::JsonObject& json)
@@ -464,6 +491,15 @@ namespace WorkspacesData
 
                 result.application = app.value();
                 result.state = static_cast<LaunchingState>(json.GetNamedNumber(NonLocalizable::StateID));
+                if (json.HasKey(NonLocalizable::ExistingWindowID) || json.HasKey(NonLocalizable::ExistingWindowProcessID))
+                {
+                    const auto handle = json.GetNamedNumber(NonLocalizable::ExistingWindowID);
+                    const auto processId = json.GetNamedNumber(NonLocalizable::ExistingWindowProcessID);
+                    if (result.state != LaunchingState::Failed || !IsWindowReferenceValue(handle) || !IsWindowReferenceValue(processId))
+                        return std::nullopt;
+                    result.window = static_cast<HWND>(ULongToHandle(static_cast<ULONG>(handle)));
+                    result.existingWindowProcessId = static_cast<DWORD>(processId);
+                }
             }
             catch (const winrt::hresult_error&)
             {

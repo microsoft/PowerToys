@@ -122,7 +122,7 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
     }
 }
 
-void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Application& app, HWND window, LaunchingState state)
+void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Application& app, HWND window, LaunchingState state, DWORD existingWindowProcessId)
 {
     std::unique_lock lock(m_mutex);
     if (!m_appsState.contains(app))
@@ -135,6 +135,7 @@ void LaunchingStatus::Update(const WorkspacesData::WorkspacesProject::Applicatio
     {
         m_appsState[app].state = state;
         m_appsState[app].window = window;
+        m_appsState[app].existingWindowProcessId = existingWindowProcessId;
     }
 }
 
