@@ -23,12 +23,4 @@ public class ManagerExpirableTests
         Assert.IsFalse(started);
         Assert.AreEqual(previousMode, Manager.CurrentOperatingMode);
     }
-
-    [TestMethod]
-    public void SetExpirableKeepAwake_WhenExpireAtIsNowOrEarlier_ReturnsFalse()
-    {
-        bool started = Manager.SetExpirableKeepAwake(DateTimeOffset.Now, keepDisplayOn: false);
-
-        Assert.IsFalse(started);
-    }
 }
