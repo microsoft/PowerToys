@@ -209,6 +209,11 @@ namespace
     // and the key returned is the one that is down: it is the key that gets pressed again, and
     // pressing the other one instead would leave that one down. isKeyDown answers for one virtual
     // key.
+    // Ctrl/Shift/Alt without a side are judged from their left and right keys only. The state of
+    // the code without a side is that of the two keys together, so it adds nothing, and it is not
+    // what the caller needs: the key events the caller is about to send (see IsKeyDownAfter) name
+    // the left or the right key, and one that releases Left Shift would not be seen in a question
+    // about "Shift".
     template<typename IsKeyDown>
     std::optional<DWORD> HeldKeyOfSequenceTarget(const DWORD targetKey, const IsKeyDown& isKeyDown)
     {
@@ -228,11 +233,11 @@ namespace
         case CommonSharedConstants::VK_WIN_BOTH:
             return firstKeyDown({ VK_LWIN, VK_RWIN });
         case VK_CONTROL:
-            return firstKeyDown({ VK_LCONTROL, VK_RCONTROL, VK_CONTROL });
+            return firstKeyDown({ VK_LCONTROL, VK_RCONTROL });
         case VK_SHIFT:
-            return firstKeyDown({ VK_LSHIFT, VK_RSHIFT, VK_SHIFT });
+            return firstKeyDown({ VK_LSHIFT, VK_RSHIFT });
         case VK_MENU:
-            return firstKeyDown({ VK_LMENU, VK_RMENU, VK_MENU });
+            return firstKeyDown({ VK_LMENU, VK_RMENU });
         default:
             return firstKeyDown({ targetKey });
         }

@@ -2576,6 +2576,26 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT));
         }
 
+        // The same for a target without a side: Shift (either) is down only through the remap, as
+        // Left Shift, and putting the shortcut back releases it. It is not down any more when the
+        // taps arrive, so it is tapped.
+        TEST_METHOD (SequenceRemap_WhileShortcutRemapIsActive_TargetWithoutASideIsJudgedAfterTheShortcutIsPutBack)
+        {
+            AddCtrlXToShiftY();
+            ReloadSequenceRemaps({ { VK_F1, { VK_SHIFT, 0x41 } } });
+            mockedInputHandler.SetQueuedDelivery(true);
+
+            SendKey(VK_LCONTROL, false);
+            SendKey(0x58, false);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_SHIFT));
+            const size_t first = mockedInputHandler.GetDeliveredEvents().size();
+
+            SendKey(VK_F1, false);
+            Assert::IsTrue(DeliveredFrom(first, { VK_SHIFT, VK_LSHIFT, VK_RSHIFT, 0x41 }) == KeyTrace{ { VK_LSHIFT, true }, { VK_SHIFT, false }, { VK_SHIFT, true }, { 0x41, false }, { 0x41, true } }, ToText(DeliveredFrom(first)).c_str());
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_SHIFT));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT));
+        }
+
         // If the sequence cannot be injected, nothing was put back either: the shortcut remap stays
         // active, and the source key is passed through.
         TEST_METHOD (SequenceRemap_WhileShortcutRemapIsActive_InjectionFailed_LeavesTheShortcutRemapActive)
