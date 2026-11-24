@@ -334,10 +334,10 @@ explicit tool/runtime paths and are excluded from this fast gate.
    - Runs UI tests against freshly built PowerToys
    - Uses artifacts from current pipeline build
 
-> **Note**: All modes support `uiTestModules`, which takes exact project stems (for example,
-> `Peek.UITests`). For `specificBuildId`, use source and test artifacts that agree on the suite
-> names. Both machine-level and per-user installation modes are tested automatically when using
-> official builds.
+> **Note**: All modes support `uiTestModules`, which takes exact project stems. Update saved
+> selections and scripts to drop the retired `.Next` suffix (for example, change
+> `Peek.UITests.Next` to `Peek.UITests`). With `specificBuildId`, only the PowerToys installer
+> comes from the selected build; the pipeline builds the UI tests from the queued source.
 
 For automated queueing and monitoring, use the [UI-test pipeline CI skill](../../../.github/skills/ui-tests-pipeline-ci/SKILL.md).
 
