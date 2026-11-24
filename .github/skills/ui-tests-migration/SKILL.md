@@ -52,7 +52,7 @@ Respect an explicit local-only/no-push/no-CI request. A read-only investigation,
 to run an existing suite locally does not authorize publishing changes. CI remains Microsoft
 FTE-only and requires the pipeline skill's successful access preflight; report an exact blocker
 when unavailable, never call local-only evidence CI-validated. The pipeline skill owns publication,
-queueing, synchronous waiting, and the three-run stabilization limit.
+queueing, completion watching, and the three-run stabilization limit.
 
 > **Reference implementation — read these working examples before porting anything.** They are
 > the ground truth for "what good looks like" with each harness:
@@ -189,7 +189,7 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
    architecture builds/guests; preserve counts, payload hashes, and evidence
 - [ ] 13. Invoke ui-tests-pipeline-ci, pass its access preflight, commit only task-owned changes,
    and push the feature branch; record the exact SHA
-- [ ] 14. Preview and queue scoped CI, persist its build ID, wait synchronously, and diagnose/retry
+- [ ] 14. Preview and queue scoped CI, persist its build ID, watch through completion, and diagnose/retry
    within the three-run ceiling; finish only on verified terminal success or an explicit blocker
 ```
 
