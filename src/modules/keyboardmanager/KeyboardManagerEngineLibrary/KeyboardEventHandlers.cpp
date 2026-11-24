@@ -419,6 +419,13 @@ namespace KeyboardEventHandlers
             return SequencePressStep::NotTracked;
         }
 
+        // No key-sequence remap and no press on record: nothing to pair (the common case for users
+        // without key sequences).
+        if (state.IsSequenceRemapIdle())
+        {
+            return SequencePressStep::NotTracked;
+        }
+
         const auto toStep = [](const SequencePressTracker::Disposition disposition) {
             switch (disposition)
             {
@@ -447,7 +454,14 @@ namespace KeyboardEventHandlers
         {
             // A key that is already down is repeating: same answer as its first key-down.
             const auto disposition = state.SequencePresses().FindPress(*data->lParam, ii);
-            return disposition ? toStep(*disposition) : SequencePressStep::NewPress;
+            if (disposition)
+            {
+                return toStep(*disposition);
+            }
+
+            // New presses are only tracked while there are key-sequence remaps. (Without remaps we
+            // get here only while presses from before the remaps were removed are still on record.)
+            return state.HasLiveSequenceRemaps() ? SequencePressStep::NewPress : SequencePressStep::NotTracked;
         }
 
         return SequencePressStep::NotTracked;
@@ -457,8 +471,10 @@ namespace KeyboardEventHandlers
     // chosen by the virtual key of this key-down (numpad-origin encoded, as the hook reports it).
     SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {
-        const auto sequenceRemap = state.GetSingleKeyToSequenceRemap(data->lParam->vkCode);
-        if (!sequenceRemap)
+        // Keep the table alive until this function is done with it, whatever is published meanwhile.
+        const std::shared_ptr<const SingleKeyToSequenceRemapTable> sequenceTable = state.GetLiveSequenceTable();
+        const auto sequenceRemap = sequenceTable->find(data->lParam->vkCode);
+        if (sequenceRemap == sequenceTable->end())
         {
             // Not a sequence key now. If a sequence remap for it is loaded while it is held, that
             // remap waits for the next press.
@@ -474,7 +490,7 @@ namespace KeyboardEventHandlers
         // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
         // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
         std::vector<INPUT> keyEventList;
-        for (const DWORD targetKey : sequenceRemap.value()->second)
+        for (const DWORD targetKey : sequenceRemap->second)
         {
             if (targetKey == CommonSharedConstants::VK_DISABLED)
             {

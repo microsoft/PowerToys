@@ -23,6 +23,11 @@ namespace TestHelpers
         state.ClearAppSpecificShortcuts();
         state.ClearSingleKeyToTextRemaps();
 
+        // Make the (now empty) key-sequence table the live one, and forget the press records
+        state.StageSequenceTable();
+        state.PublishStagedSequenceTable(input);
+        state.SequencePresses().Reset();
+
         // Allocate memory for the keyboardManagerState activatedApp member to avoid CRT assert errors
         std::wstring maxLengthString;
         maxLengthString.resize(MAX_PATH);

@@ -2,6 +2,8 @@
 #include <keyboardmanager/common/MappingConfiguration.h>
 #include <keyboardmanager/common/InputInterface.h>
 #include <cstdint>
+#include <memory>
+#include <mutex>
 #include <optional>
 #include <unordered_map>
 #include <unordered_set>
@@ -111,6 +113,17 @@ private:
     // Only accessed from the low-level keyboard hook thread; a settings reload does not touch it.
     SequencePressTracker sequencePresses;
 
+    // The key-sequence table the hook uses: a finished table that is never changed, only replaced
+    // as a whole by PublishStagedSequenceTable. Only accessed from the low-level keyboard hook
+    // thread. The table the loader fills, MappingConfiguration::singleKeyToSequenceReMap, is never
+    // read by the hook.
+    std::shared_ptr<const SingleKeyToSequenceRemapTable> liveSequenceTable = std::make_shared<const SingleKeyToSequenceRemapTable>();
+
+    // A finished table on its way from the thread that loaded the settings to the hook thread
+    // (null when there is none). The only key-sequence data the two threads share.
+    std::mutex stagedSequenceTableMutex;
+    std::shared_ptr<const SingleKeyToSequenceRemapTable> stagedSequenceTable;
+
 public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
@@ -121,8 +134,32 @@ public:
     // Function to get the iterator of an "Alone" single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyAloneRemap(const DWORD& originalKey);
 
-    // Function to get the iterator of a single-key-to-sequence remap. Returns nullopt if not remapped.
-    std::optional<SingleKeyToSequenceRemapTable::iterator> GetSingleKeyToSequenceRemap(const DWORD& originalKey);
+    // Hands the key-sequence remaps that were just loaded (singleKeyToSequenceReMap) over to the
+    // hook thread: copies them into a finished table and stages it, replacing a staged table that
+    // was not published yet. Called by the thread that loaded the settings; the hook keeps using
+    // the table it has until PublishStagedSequenceTable runs.
+    void StageSequenceTable();
+
+    // Makes the staged key-sequence table the one the hook uses. Low-level keyboard hook thread
+    // only (run from its message loop, or before the hook is installed), so it never runs in the
+    // middle of a hook call. Press records are kept: a press that began under the old table ends
+    // the way it began. Returns false if nothing was staged.
+    bool PublishStagedSequenceTable(KeyboardManagerInput::InputInterface& ii);
+
+    // The key-sequence table the hook uses. Low-level keyboard hook thread only. The caller keeps
+    // the returned pointer for as long as it uses the table, so the table stays alive even if
+    // another one is published in the meantime.
+    std::shared_ptr<const SingleKeyToSequenceRemapTable> GetLiveSequenceTable() const;
+
+    // True if the hook has key-sequence remaps to apply. Low-level keyboard hook thread only.
+    bool HasLiveSequenceRemaps() const noexcept;
+
+    // True if the key-sequence remap has nothing to do for any event: no live remap and no press
+    // on record. Presses are not tracked then, so users without key sequences pay two empty()
+    // checks per event. Tracking starts when a table with remaps is published; the keys that are
+    // down at that moment are seeded as forwarded presses (see PublishStagedSequenceTable).
+    // Low-level keyboard hook thread only.
+    bool IsSequenceRemapIdle() const noexcept;
 
     // The press records of the key-sequence remap. Low-level keyboard hook thread only.
     SequencePressTracker& SequencePresses() noexcept;

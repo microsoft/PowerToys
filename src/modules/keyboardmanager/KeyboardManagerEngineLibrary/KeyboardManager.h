@@ -9,6 +9,9 @@ class KeyboardManager
 public:
     static const inline DWORD StartHookMessageID = WM_APP + 1;
 
+    // Posted to the hook thread after a settings reload; its message loop then calls PublishPendingSettings.
+    static const inline DWORD PublishSettingsMessageID = WM_APP + 2;
+
     // Constructor
     KeyboardManager();
 
@@ -22,6 +25,11 @@ public:
 
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
+
+    // Makes the key-sequence table staged by the last settings load the one the hook uses. Must run
+    // on the hook thread (the thread that installs the hook and runs its message loop), outside a
+    // hook call.
+    void PublishPendingSettings();
 
     bool HasRegisteredRemappings() const;
 

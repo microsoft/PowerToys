@@ -944,6 +944,16 @@ namespace RemappingLogicTests
         // the alone tests count only their injected target). Returns false so it never affects the
         // SendVirtualInput call counter.
         std::vector<DWORD> injected;
+
+        // Adds a key-sequence remap and makes it the one the hook uses, as a settings load does
+        // (load into the table, stage a finished copy, publish it on the hook thread).
+        void AddSequenceRemap(DWORD key, const std::vector<DWORD>& sequence)
+        {
+            testState.AddSingleKeyToSequenceRemap(key, sequence);
+            testState.StageSequenceTable();
+            testState.PublishStagedSequenceTable(mockedInputHandler);
+        }
+
         void RecordInjected()
         {
             injected.clear();
@@ -968,7 +978,7 @@ namespace RemappingLogicTests
         // that order, and the physical Esc down is suppressed. This is the motivating case for #5679.
         TEST_METHOD (SequenceRemap_ShouldInjectEachTargetAsTap_InOrder_OnKeyDown)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
             RecordInjected();
 
             std::vector<INPUT> escDown{
@@ -988,7 +998,7 @@ namespace RemappingLogicTests
         // so the original key never reaches the app on its own.
         TEST_METHOD (SequenceRemap_ShouldSuppressOriginalKeyUp_WithNoFurtherInjection)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
 
             std::vector<INPUT> escDown{
                 { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
@@ -1007,7 +1017,7 @@ namespace RemappingLogicTests
         // A key with no sequence remap is passed through untouched (handler returns 0 -> not suppressed).
         TEST_METHOD (SequenceRemap_ShouldIgnoreUnmappedKey)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
 
             std::vector<INPUT> aDown{
                 { .type = INPUT_KEYBOARD, .ki = { .wVk = 'A' } },
@@ -1022,7 +1032,7 @@ namespace RemappingLogicTests
         // injecting again. After the key-up, the next press sends the sequence again.
         TEST_METHOD (SequenceRemap_ShouldSendOncePerPress_IgnoringAutoRepeat)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
             RecordInjected();
 
             std::vector<INPUT> escDown{
@@ -1053,7 +1063,7 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(escDown); // no remap yet: Esc goes down normally
             Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_ESCAPE));
 
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
             RecordInjected();
 
             std::vector<INPUT> escUp{
@@ -1069,7 +1079,7 @@ namespace RemappingLogicTests
         // is not itself in the sequence, its own key state was never set.
         TEST_METHOD (SequenceRemap_SourceKeyStateIsNeverSet)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+            AddSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
 
             std::vector<INPUT> f1Down{
                 { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1 } },
@@ -1089,7 +1099,7 @@ namespace RemappingLogicTests
         // A Disabled element is skipped, and the KBM "Win (either)" code is sent as Left Win.
         TEST_METHOD (SequenceRemap_ShouldSkipDisabled_AndFilterWinBoth)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH, 0x41 });
+            AddSequenceRemap(VK_F1, std::vector<DWORD>{ CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH, 0x41 });
             RecordInjected();
 
             std::vector<INPUT> f1Down{
@@ -1108,7 +1118,7 @@ namespace RemappingLogicTests
         // key-down and its key-up -- instead of becoming a dead key or being stranded down.
         TEST_METHOD (SequenceRemap_ShouldPassThroughOriginalKey_WhenInjectionFails)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
             mockedInputHandler.SetSendVirtualInputShouldFail([](const std::vector<INPUT>& inputs) {
                 for (const auto& input : inputs)
                 {
@@ -1138,7 +1148,7 @@ namespace RemappingLogicTests
         // its key-up must reach the app too.
         TEST_METHOD (SequenceRemap_KeepsPassingThroughPress_WhenInjectionRecoversWhileHeld)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+            AddSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
             bool blocked = true;
             mockedInputHandler.SetSendVirtualInputShouldFail([&blocked](const std::vector<INPUT>& inputs) {
                 // Block only KBM's own injection, not the simulated physical key events.
@@ -1172,7 +1182,7 @@ namespace RemappingLogicTests
         // key-up would then be swallowed.
         TEST_METHOD (SequenceRemap_PassedThroughPress_SurvivesReload)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+            AddSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
             bool blocked = true;
             mockedInputHandler.SetSendVirtualInputShouldFail([&blocked](const std::vector<INPUT>& inputs) {
                 return blocked && !inputs.empty() && inputs[0].ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
@@ -1186,7 +1196,8 @@ namespace RemappingLogicTests
 
             // settings reload while held
             testState.ClearSingleKeyToSequenceRemaps();
-            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+            AddSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
+            Assert::IsFalse(testState.SequencePresses().Empty());
             blocked = false;
             mockedInputHandler.SendVirtualInput(f1Down); // auto-repeat
             Assert::AreEqual((size_t)0, injected.size());
@@ -1203,8 +1214,8 @@ namespace RemappingLogicTests
         // WM_SYSKEYDOWN. A non-modifier source key sends no such key-up.
         TEST_METHOD (SequenceRemap_ModifierSource_ResetsModifierBeforeTaps)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_LMENU, std::vector<DWORD>{ 0x46 });
-            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x46 });
+            AddSequenceRemap(VK_LMENU, std::vector<DWORD>{ 0x46 });
+            AddSequenceRemap(VK_F1, std::vector<DWORD>{ 0x46 });
             std::vector<std::pair<DWORD, ULONG_PTR>> events;
             mockedInputHandler.SetSendVirtualInputTestHandler([&events](LowlevelKeyboardEvent* data) {
                 if (data->lParam->dwExtraInfo != 0)
@@ -1239,7 +1250,7 @@ namespace RemappingLogicTests
         // limitation, see SequencePressTracker.)
         TEST_METHOD (SequenceRemap_LostKeyUp_IgnoresOnePress_ThenRecovers)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
             RecordInjected();
 
             std::vector<INPUT> escDown{
@@ -1261,7 +1272,7 @@ namespace RemappingLogicTests
         // doesn't make the next press be treated as an auto-repeat and ignored.
         TEST_METHOD (SequenceRemap_ResetOfPressRecords_ForgetsHeldKey)
         {
-            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
             RecordInjected();
 
             std::vector<INPUT> escDown{
@@ -1272,6 +1283,7 @@ namespace RemappingLogicTests
             // What KeyboardManager::StartLowlevelKeyboardHook does before it installs the hook
             testState.SequencePresses().Reset();
             testState.SequencePresses().SeedForwardedPresses(mockedInputHandler);
+            Assert::IsTrue(testState.SequencePresses().Empty());
             mockedInputHandler.SendVirtualInput(escDown);
 
             Assert::AreEqual((size_t)8, injected.size());
@@ -1292,14 +1304,23 @@ namespace RemappingLogicTests
 
         using SequenceRemaps = std::vector<std::pair<DWORD, std::vector<DWORD>>>;
 
-        // Replaces the key-sequence remaps the way a settings reload does.
-        void ReloadSequenceRemaps(const SequenceRemaps& remaps)
+        // Loads key-sequence remaps into the loader's table, without making them live.
+        void LoadSequenceRemaps(const SequenceRemaps& remaps)
         {
             testState.ClearSingleKeyToSequenceRemaps();
             for (const auto& [key, sequence] : remaps)
             {
                 testState.AddSingleKeyToSequenceRemap(key, sequence);
             }
+        }
+
+        // Replaces the key-sequence remaps the way a settings reload does: load, stage a finished
+        // copy, and publish it on the hook thread.
+        void ReloadSequenceRemaps(const SequenceRemaps& remaps)
+        {
+            LoadSequenceRemaps(remaps);
+            testState.StageSequenceTable();
+            testState.PublishStagedSequenceTable(mockedInputHandler);
         }
 
         // What KeyboardManager::StartLowlevelKeyboardHook does to the press records before it installs the hook
@@ -1642,6 +1663,121 @@ namespace RemappingLogicTests
 
             SendKey(VK_F1, false); // auto-repeat
             Assert::AreEqual((size_t)0, SequenceEvents());
+        }
+
+        // Loading key-sequence remaps does not change what the hook does. Only publishing the staged
+        // table does, and that happens on the hook thread, between two hook calls.
+        TEST_METHOD (SequenceTable_LoadedRemaps_AreNotUsed_UntilPublished)
+        {
+            LoadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            testState.StageSequenceTable();
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            Assert::IsTrue(testState.PublishStagedSequenceTable(mockedInputHandler));
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            // The same goes for removing them: the loader clearing its table changes nothing for the hook
+            LoadSequenceRemaps({});
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+
+            testState.StageSequenceTable();
+            Assert::IsTrue(testState.PublishStagedSequenceTable(mockedInputHandler));
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+            Assert::AreEqual((size_t)3, Delivered(VK_F1, false));
+        }
+
+        // Publishing a new table keeps the press records: a press that began under the old table
+        // ends the way it began, and the new table applies from the next press.
+        TEST_METHOD (SequenceTable_Publish_KeepsPressRecords_AndAppliesFromTheNextPress)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            ReloadSequenceRemaps({ { VK_F1, { 0x43 } } });
+            Assert::IsFalse(testState.SequencePresses().Empty());
+
+            SendKey(VK_F1, false); // auto-repeat
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)6, SequenceEvents());
+            Assert::AreEqual((DWORD)0x43, mockedInputHandler.GetDeliveredEvents().back().vkCode);
+        }
+
+        // Only the newest staged table is published, and each staged table is published once.
+        TEST_METHOD (SequenceTable_Publish_TakesTheNewestStagedTable_Once)
+        {
+            Assert::IsFalse(testState.PublishStagedSequenceTable(mockedInputHandler));
+
+            LoadSequenceRemaps({ { VK_F1, { 0x41 } } });
+            testState.StageSequenceTable();
+            LoadSequenceRemaps({ { VK_F2, { 0x42 } } });
+            testState.StageSequenceTable();
+
+            Assert::IsTrue(testState.PublishStagedSequenceTable(mockedInputHandler));
+            Assert::IsFalse(testState.PublishStagedSequenceTable(mockedInputHandler));
+
+            const auto live = testState.GetLiveSequenceTable();
+            Assert::AreEqual((size_t)1, live->size());
+            Assert::IsTrue(live->contains(VK_F2));
+        }
+
+        // A table that is still in use stays valid when another one is published.
+        TEST_METHOD (SequenceTable_SnapshotInUse_StaysValid_AfterPublish)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            const auto inUse = testState.GetLiveSequenceTable();
+
+            ReloadSequenceRemaps({});
+
+            Assert::IsTrue(inUse != testState.GetLiveSequenceTable());
+            Assert::IsTrue(testState.GetLiveSequenceTable()->empty());
+            Assert::AreEqual((size_t)1, inUse->size());
+            Assert::AreEqual((size_t)2, inUse->at(VK_F1).size());
+        }
+
+        // Without key-sequence remaps nothing is tracked. Tracking starts when a table with remaps is
+        // published, and stops for new presses when the remaps are gone.
+        TEST_METHOD (SequenceTable_PressesAreTrackedOnlyWhileThereAreSequenceRemaps)
+        {
+            Assert::IsTrue(testState.IsSequenceRemapIdle());
+            SendKey(0x43, false);
+            Assert::IsTrue(testState.SequencePresses().Empty());
+            SendKey(0x43, true);
+
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            Assert::IsFalse(testState.IsSequenceRemapIdle());
+            SendKey(0x43, false);
+            Assert::IsFalse(testState.SequencePresses().Empty());
+
+            // The remaps are removed while C is held: its record stays until its key-up, and new presses are not recorded
+            ReloadSequenceRemaps({});
+            Assert::IsFalse(testState.IsSequenceRemapIdle());
+            SendKey(0x44, false);
+            SendKey(0x44, true);
+            SendKey(0x43, true);
+            Assert::IsTrue(testState.IsSequenceRemapIdle());
+            Assert::AreEqual((size_t)2, Delivered(0x43, false));
+            Assert::AreEqual((size_t)2, Delivered(0x43, true));
         }
     };
 }

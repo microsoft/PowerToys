@@ -53,7 +53,8 @@ namespace KeyboardEventHandlers
     // What the key-sequence remap says about an event.
     enum class SequencePressStep
     {
-        // Sent by Keyboard Manager itself, or neither a key-down nor a key-up: not part of a physical press.
+        // Not part of a tracked physical press: sent by Keyboard Manager itself, neither a key-down
+        // nor a key-up, or there is no key-sequence remap at all.
         NotTracked,
 
         // First key-down of a press. Nothing is recorded for it yet.

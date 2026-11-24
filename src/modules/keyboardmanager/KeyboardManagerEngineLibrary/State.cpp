@@ -39,15 +39,59 @@ std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyAloneRemap(const
     return std::nullopt;
 }
 
-std::optional<SingleKeyToSequenceRemapTable::iterator> State::GetSingleKeyToSequenceRemap(const DWORD& originalKey)
+void State::StageSequenceTable()
 {
-    auto it = singleKeyToSequenceReMap.find(originalKey);
-    if (it != singleKeyToSequenceReMap.end())
+    // Build the finished table before taking the lock, and free a table that was staged but never
+    // published after releasing it.
+    std::shared_ptr<const SingleKeyToSequenceRemapTable> staged = std::make_shared<const SingleKeyToSequenceRemapTable>(singleKeyToSequenceReMap);
     {
-        return it;
+        std::lock_guard lock{ stagedSequenceTableMutex };
+        stagedSequenceTable.swap(staged);
+    }
+}
+
+bool State::PublishStagedSequenceTable(KeyboardManagerInput::InputInterface& ii)
+{
+    std::shared_ptr<const SingleKeyToSequenceRemapTable> staged;
+    {
+        std::lock_guard lock{ stagedSequenceTableMutex };
+        staged.swap(stagedSequenceTable);
     }
 
-    return std::nullopt;
+    if (!staged)
+    {
+        return false;
+    }
+
+    const bool trackingStarts = liveSequenceTable->empty() && !staged->empty();
+
+    // The previous table is freed here (outside any hook call), or by a caller that still holds it.
+    liveSequenceTable = std::move(staged);
+
+    if (trackingStarts)
+    {
+        // Presses were not tracked while there was no key-sequence remap. Keys that are down now
+        // already reached the system, so record them as forwarded: a remap for one of them waits
+        // for its next press. Press records that exist (from before the remaps were removed) are kept.
+        sequencePresses.SeedForwardedPresses(ii);
+    }
+
+    return true;
+}
+
+std::shared_ptr<const SingleKeyToSequenceRemapTable> State::GetLiveSequenceTable() const
+{
+    return liveSequenceTable;
+}
+
+bool State::HasLiveSequenceRemaps() const noexcept
+{
+    return !liveSequenceTable->empty();
+}
+
+bool State::IsSequenceRemapIdle() const noexcept
+{
+    return liveSequenceTable->empty() && sequencePresses.Empty();
 }
 
 SequencePressTracker& State::SequencePresses() noexcept
