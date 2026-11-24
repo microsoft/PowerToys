@@ -378,11 +378,6 @@ try {
         Write-Warning "[DSC] DSC manifest generator script not found at: $dscScriptPath"
     }
 
-    if (-not $SkipBuild) {
-        RestoreThenBuild 'tools\BugReportTool\BugReportTool.sln' $commonArgs $Platform $Configuration
-        RestoreThenBuild 'tools\StylesReportTool\StylesReportTool.sln' $commonArgs $Platform $Configuration
-    }
-
     $cliShimPath = Join-Path $buildOutputPath 'CliShim\PowerToys.CliShim.exe'
     if (-not (Test-Path -LiteralPath $cliShimPath -PathType Leaf)) {
         Write-Error "CLI shim not found at '$cliShimPath'. Build PowerToys.slnx (tools\CliShim\CliShim.vcxproj) before building the installer."
@@ -406,7 +401,7 @@ try {
         }
     }
 
-    # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe
+    # Set NUGET_PACKAGES environment variable if not set; the custom actions project links WiX native libs from it
     if (-not $env:NUGET_PACKAGES) {
         $env:NUGET_PACKAGES = Join-Path $env:USERPROFILE ".nuget\packages"
         Write-Host "[ENV] Set NUGET_PACKAGES to $env:NUGET_PACKAGES"

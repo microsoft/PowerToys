@@ -25,9 +25,11 @@ internal sealed partial class OpenSettingsCommand : InvokableCommand
 
     internal OpenSettingsCommand(WindowsSetting entry)
     {
+        Id = $"com.microsoft.cmdpal.builtin.windowssettings.open:{entry.Command}";
         Name = Resources.OpenSettings;
         Icon = Icons.CopyIcon;
         _entry = entry;
+        Id = entry.Command;
     }
 
     private static bool DoOpenSettingsAction(WindowsSetting entry)

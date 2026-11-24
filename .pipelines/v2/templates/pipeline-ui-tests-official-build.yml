@@ -1,5 +1,8 @@
 # Template for official build path: Download Official Build + Build UI Tests Only + Run Tests
 parameters:
+  - name: umdfHidArm64Image
+    type: string
+    default: ''
   - name: platform
     type: string
   - name: buildSource
@@ -13,6 +16,16 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
+  # UI-test shards (parallel agents) per test platform; 1 = one job per platform, as before.
+  - name: uiTestShardsX64Win10
+    type: number
+    default: 1
+  - name: uiTestShardsX64Win11
+    type: number
+    default: 1
+  - name: uiTestShardsArm64
+    type: number
+    default: 1
 
 stages:
   # Stage 1: Build UI Tests Only
@@ -22,6 +35,7 @@ stages:
     jobs:
       - template: job-build-ui-tests.yml
         parameters:
+          umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
           pool:
             ${{ if eq(variables['System.CollectionId'], 'cb55739e-4afe-46a3-970f-1b49d8ee7564') }}:
               name: SHINE-INT-L
@@ -41,6 +55,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win10
+            uiTestShardCount: ${{ parameters.uiTestShardsX64Win10 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
@@ -51,6 +66,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win10
+            uiTestShardCount: ${{ parameters.uiTestShardsX64Win10 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
@@ -66,6 +82,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win11
+            uiTestShardCount: ${{ parameters.uiTestShardsX64Win11 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
@@ -76,6 +93,7 @@ stages:
         - template: job-test-project.yml
           parameters:
             platform: x64Win11
+            uiTestShardCount: ${{ parameters.uiTestShardsX64Win11 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
@@ -89,9 +107,11 @@ stages:
       displayName: Test ${{ parameters.platform }} (Official Build)
       dependsOn: BuildUITests_${{ parameters.platform }}
       jobs:
-        - template: job-test-project.yml
+        - template: job-test-arm64.yml
           parameters:
+            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ parameters.platform }}
+            uiTestShardCount: ${{ parameters.uiTestShardsArm64 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}
@@ -99,9 +119,11 @@ stages:
             uiTestModules: ${{ parameters.uiTestModules }}
 
         # Additional per-user installation test
-        - template: job-test-project.yml
+        - template: job-test-arm64.yml
           parameters:
+            umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ parameters.platform }}
+            uiTestShardCount: ${{ parameters.uiTestShardsArm64 }}
             configuration: Release
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
             buildSource: ${{ parameters.buildSource }}

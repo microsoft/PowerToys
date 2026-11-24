@@ -5,12 +5,14 @@
 // Compiled by Windows PowerShell 5.1. The request channel cannot write text or mouse counters.
 using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Microsoft.MouseWithoutBorders.UITests
@@ -23,11 +25,15 @@ namespace Microsoft.MouseWithoutBorders.UITests
             ErrorHResult = errorHResult;
         }
 
+        // Empty when the clipboard is unavailable; check Available before using it.
         public string Digest { get; private set; }
 
         public int? ErrorHResult { get; private set; }
 
-        public bool Available { get { return !ErrorHResult.HasValue; } }
+        public bool Available
+        {
+            get { return !ErrorHResult.HasValue; }
+        }
 
         internal static ClipboardObservation Read(Func<string> readDigest)
         {
@@ -42,7 +48,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
                     throw;
                 }
 
-                return new ClipboardObservation(null, error.ErrorCode);
+                return new ClipboardObservation(string.Empty, error.ErrorCode);
             }
         }
     }
@@ -52,87 +58,161 @@ namespace Microsoft.MouseWithoutBorders.UITests
     public sealed class ReceiverController : IDisposable
     {
         private readonly Thread thread;
-        private readonly ManualResetEvent ready = new ManualResetEvent(false);
-        private Receiver receiver;
+        private readonly Receiver receiver;
         private IntPtr handle;
-        private Exception startupError;
         private volatile string startupStage = "Thread not scheduled";
 
         public ReceiverController(string role, string runId)
         {
-            thread = new Thread(delegate()
+            var started = new TaskCompletionSource<Receiver>();
+            thread = new Thread(() =>
             {
                 try
                 {
                     startupStage = "Enabling visual styles";
                     Application.EnableVisualStyles();
                     startupStage = "Constructing receiver";
-                    receiver = new Receiver(role, runId);
+                    var created = new Receiver(role, runId);
                     startupStage = "Creating native window";
-                    handle = receiver.Handle;
+                    handle = created.Handle;
                     startupStage = "Running message pump";
-                    ready.Set();
-                    Application.Run(receiver);
+                    started.TrySetResult(created);
+                    Application.Run(created);
                 }
                 catch (Exception error)
                 {
-                    startupError = error;
-                    ready.Set();
+                    started.TrySetException(error);
                 }
             });
             thread.SetApartmentState(ApartmentState.STA);
             thread.IsBackground = true;
             thread.Name = "MWB receiver UI";
             thread.Start();
-            if (!ready.WaitOne(TimeSpan.FromSeconds(60)))
+            try
             {
-                throw new TimeoutException("The receiver UI thread did not initialize: " + startupStage + "; " + thread.ThreadState);
+                if (!started.Task.Wait(TimeSpan.FromSeconds(60)))
+                {
+                    throw new TimeoutException("The receiver UI thread did not initialize: " + startupStage + "; " + thread.ThreadState);
+                }
             }
-            if (startupError != null)
+            catch (AggregateException error)
             {
-                throw new InvalidOperationException("Receiver initialization failed.", startupError);
+                throw new InvalidOperationException("Receiver initialization failed.", error.InnerException);
             }
+
+            receiver = started.Task.Result;
         }
 
-        public IntPtr Handle { get { return handle; } }
+        public IntPtr Handle
+        {
+            get { return handle; }
+        }
 
-        public string ReceivedText { get { return Invoke(delegate { return receiver.ReceivedText; }); } }
+        public string ReceivedText
+        {
+            get { return Invoke(() => receiver.ReceivedText); }
+        }
 
-        public bool InputFocused { get { return Invoke(delegate { return receiver.InputFocused; }); } }
+        public bool InputFocused
+        {
+            get { return Invoke(() => receiver.InputFocused); }
+        }
 
-        public int Clicks { get { return Invoke(delegate { return receiver.Clicks; }); } }
+        public int Clicks
+        {
+            get { return Invoke(() => receiver.Clicks); }
+        }
 
-        public int StartMenuDismissals { get { return Invoke(delegate { return receiver.StartMenuDismissals; }); } }
+        public int StartMenuDismissals
+        {
+            get { return Invoke(() => receiver.StartMenuDismissals); }
+        }
 
-        public Rectangle ClickBounds { get { return Invoke(delegate { return receiver.ClickBounds; }); } }
+        public Rectangle ClickBounds
+        {
+            get { return Invoke(() => receiver.ClickBounds); }
+        }
 
-        public long ClickTargetHandle { get { return Invoke(delegate { return receiver.ClickTargetHandle; }); } }
+        public long ClickTargetHandle
+        {
+            get { return Invoke(() => receiver.ClickTargetHandle); }
+        }
 
-        public int MouseDownMessages { get { return Invoke(delegate { return receiver.MouseDownMessages; }); } }
+        public int MouseDownMessages
+        {
+            get { return Invoke(() => receiver.MouseDownMessages); }
+        }
 
-        public int MouseUpMessages { get { return Invoke(delegate { return receiver.MouseUpMessages; }); } }
+        public int MouseUpMessages
+        {
+            get { return Invoke(() => receiver.MouseUpMessages); }
+        }
 
-        public void FocusInput() { Invoke(delegate { receiver.FocusInput(); return true; }); }
+        public void FocusInput()
+        {
+            Invoke(() =>
+            {
+                receiver.FocusInput();
+                return true;
+            });
+        }
 
-        public void ClearInput() { Invoke(delegate { receiver.ClearInput(); return true; }); }
+        public void ClearInput()
+        {
+            Invoke(() =>
+            {
+                receiver.ClearInput();
+                return true;
+            });
+        }
 
-        public string PublishClipboard() { return Invoke(delegate { return receiver.PublishClipboard(); }); }
+        public string PublishClipboard()
+        {
+            return Invoke(() => receiver.PublishClipboard());
+        }
 
-        public string ClipboardDigest() { return Invoke(delegate { return receiver.ClipboardDigest(); }); }
+        public string ClipboardDigest()
+        {
+            return Invoke(() => receiver.ClipboardDigest());
+        }
 
-        public ClipboardObservation ObserveClipboard() { return Invoke(delegate { return receiver.ObserveClipboard(); }); }
+        public ClipboardObservation ObserveClipboard()
+        {
+            return Invoke(() => receiver.ObserveClipboard());
+        }
 
-        public void RestoreClipboard() { Invoke(delegate { receiver.RestoreClipboard(); return true; }); }
+        public void RestoreClipboard()
+        {
+            Invoke(() =>
+            {
+                receiver.RestoreClipboard();
+                return true;
+            });
+        }
 
-        public void CaptureDesktop(string path) { Invoke(delegate { receiver.CaptureDesktop(path); return true; }); }
+        public void CaptureDesktop(string path)
+        {
+            Invoke(() =>
+            {
+                receiver.CaptureDesktop(path);
+                return true;
+            });
+        }
 
-        public void CaptureFailureDesktop(string path) { Receiver.CaptureFailureDesktop(path); }
+        public void CaptureFailureDesktop(string path)
+        {
+            Receiver.CaptureFailureDesktop(path);
+        }
 
         public void Close()
         {
-            if (thread.IsAlive && receiver != null && !receiver.IsDisposed)
+            if (thread.IsAlive && !receiver.IsDisposed)
             {
-                Invoke(delegate { receiver.Close(); return true; });
+                Invoke(() =>
+                {
+                    receiver.Close();
+                    return true;
+                });
             }
         }
 
@@ -143,15 +223,15 @@ namespace Microsoft.MouseWithoutBorders.UITests
             {
                 throw new TimeoutException("Receiver UI thread did not stop.");
             }
-            ready.Dispose();
         }
 
         private T Invoke<T>(Func<T> action)
         {
-            if (receiver == null || receiver.IsDisposed || !thread.IsAlive)
+            if (receiver.IsDisposed || !thread.IsAlive)
             {
                 throw new InvalidOperationException("Receiver UI is no longer available.");
             }
+
             return (T)receiver.Invoke(action);
         }
     }
@@ -166,15 +246,24 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
             protected override void WndProc(ref Message message)
             {
-                if (message.Msg == 0x0201) { MouseDownMessages++; }
-                if (message.Msg == 0x0202) { MouseUpMessages++; }
+                if (message.Msg == 0x0201)
+                {
+                    MouseDownMessages++;
+                }
+
+                if (message.Msg == 0x0202)
+                {
+                    MouseUpMessages++;
+                }
+
                 base.WndProc(ref message);
             }
         }
 
         private readonly TextBox input;
         private readonly ClickPanel clickTarget;
-        private readonly DataObject originalClipboard;
+        private readonly DataObject originalClipboard = new DataObject();
+        private readonly bool restoresClipboard;
         private readonly string role;
         private readonly string runId;
         private bool clipboardChanged;
@@ -203,8 +292,9 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 Dock = DockStyle.Fill,
                 BackColor = Color.LightSteelBlue,
             };
+
             // A MouseDown is physical input. Unlike Button.Click, Space/Invoke cannot increment it.
-            clickTarget.MouseDown += delegate(object sender, MouseEventArgs args)
+            clickTarget.MouseDown += (sender, args) =>
             {
                 if (args.Button == MouseButtons.Left)
                 {
@@ -213,17 +303,17 @@ namespace Microsoft.MouseWithoutBorders.UITests
             };
             Controls.Add(clickTarget);
             Controls.Add(input);
-            Shown += delegate { input.Focus(); };
-            if (role == "Host")
+            Shown += (sender, args) => input.Focus();
+            restoresClipboard = role == "Host";
+            if (restoresClipboard)
             {
-                originalClipboard = new DataObject();
-                IDataObject source = Clipboard.GetDataObject();
+                var source = Clipboard.GetDataObject();
                 if (source != null)
                 {
                     foreach (string format in source.GetFormats(false))
                     {
-                        object value = source.GetData(format, false);
-                        MemoryStream memory = value as MemoryStream;
+                        var value = source.GetData(format, false);
+                        var memory = value as MemoryStream;
                         if (memory != null)
                         {
                             value = new MemoryStream(memory.ToArray());
@@ -240,11 +330,20 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public int Clicks { get; private set; }
 
-        public long ClickTargetHandle { get { return clickTarget.Handle.ToInt64(); } }
+        public long ClickTargetHandle
+        {
+            get { return clickTarget.Handle.ToInt64(); }
+        }
 
-        public int MouseDownMessages { get { return clickTarget.MouseDownMessages; } }
+        public int MouseDownMessages
+        {
+            get { return clickTarget.MouseDownMessages; }
+        }
 
-        public int MouseUpMessages { get { return clickTarget.MouseUpMessages; } }
+        public int MouseUpMessages
+        {
+            get { return clickTarget.MouseUpMessages; }
+        }
 
         public string ReceivedText
         {
@@ -265,7 +364,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public void FocusInput()
         {
-            if (NativeSupport.DismissForegroundStartMenu(delegate { SendKeys.SendWait("{ESC}"); }))
+            if (NativeSupport.DismissForegroundStartMenu(() => SendKeys.SendWait("{ESC}")))
             {
                 StartMenuDismissals++;
             }
@@ -288,8 +387,10 @@ namespace Microsoft.MouseWithoutBorders.UITests
             DataObject data = new DataObject();
             data.SetText(token, TextDataFormat.UnicodeText);
             clipboardChanged = true;
+
             // Keep the same token while bounded OLE retries cover slow clipboard owners.
             Clipboard.SetDataObject(data, true, 150, 100);
+
             // An immediate OLE clipboard read can still be empty on a cold desktop.
             // Acknowledge the generated value; the controller verifies its publication.
             return Digest(token);
@@ -320,65 +421,90 @@ namespace Microsoft.MouseWithoutBorders.UITests
                 int error = Marshal.GetLastWin32Error();
                 if (error == 5)
                 {
-                    throw new ExternalException("The clipboard is currently owned.", unchecked((int)0x800401D0));
+                    // Report contention as CLIPBRD_E_CANT_OPEN, like the WinForms clipboard APIs.
+                    Marshal.ThrowExceptionForHR(unchecked((int)0x800401D0), new IntPtr(-1));
                 }
 
                 throw new Win32Exception(error, "OpenClipboard failed.");
             }
 
+            string text;
+            bool closed;
+            int closeError = 0;
             try
             {
-                const uint unicodeText = 13;
-                if (!IsClipboardFormatAvailable(unicodeText))
-                {
-                    return string.Empty;
-                }
-
-                IntPtr data = GetClipboardData(unicodeText);
-                if (data == IntPtr.Zero)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "GetClipboardData failed.");
-                }
-
-                ulong bytes = GlobalSize(data).ToUInt64();
-                if (bytes == 0 || bytes % 2 != 0 || bytes / 2 > int.MaxValue)
-                {
-                    throw new InvalidOperationException("The Unicode clipboard allocation has an invalid size.");
-                }
-
-                IntPtr memory = GlobalLock(data);
-                if (memory == IntPtr.Zero)
-                {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalLock failed for clipboard data.");
-                }
-
-                try
-                {
-                    string text = Marshal.PtrToStringUni(memory, (int)(bytes / 2));
-                    int terminator = text.IndexOf('\0');
-                    if (terminator < 0)
-                    {
-                        throw new InvalidOperationException("The Unicode clipboard data is not terminated.");
-                    }
-
-                    return text.Substring(0, terminator);
-                }
-                finally
-                {
-                    SetNativeLastError(0);
-                    if (!GlobalUnlock(data) && Marshal.GetLastWin32Error() != 0)
-                    {
-                        throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalUnlock failed for clipboard data.");
-                    }
-                }
+                text = ReadOpenClipboardText();
             }
             finally
             {
-                if (!CloseClipboard())
+                closed = CloseClipboard();
+                if (!closed)
                 {
-                    throw new Win32Exception(Marshal.GetLastWin32Error(), "CloseClipboard failed.");
+                    closeError = Marshal.GetLastWin32Error();
                 }
             }
+
+            if (!closed)
+            {
+                throw new Win32Exception(closeError, "CloseClipboard failed.");
+            }
+
+            return text;
+        }
+
+        private static string ReadOpenClipboardText()
+        {
+            const uint unicodeText = 13;
+            if (!IsClipboardFormatAvailable(unicodeText))
+            {
+                return string.Empty;
+            }
+
+            IntPtr data = GetClipboardData(unicodeText);
+            if (data == IntPtr.Zero)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "GetClipboardData failed.");
+            }
+
+            ulong bytes = GlobalSize(data).ToUInt64();
+            if (bytes == 0 || bytes % 2 != 0 || bytes / 2 > int.MaxValue)
+            {
+                throw new InvalidOperationException("The Unicode clipboard allocation has an invalid size.");
+            }
+
+            IntPtr memory = GlobalLock(data);
+            if (memory == IntPtr.Zero)
+            {
+                throw new Win32Exception(Marshal.GetLastWin32Error(), "GlobalLock failed for clipboard data.");
+            }
+
+            string text;
+            int unlockError = 0;
+            try
+            {
+                text = Marshal.PtrToStringUni(memory, (int)(bytes / 2));
+            }
+            finally
+            {
+                SetNativeLastError(0);
+                if (!GlobalUnlock(data))
+                {
+                    unlockError = Marshal.GetLastWin32Error();
+                }
+            }
+
+            if (unlockError != 0)
+            {
+                throw new Win32Exception(unlockError, "GlobalUnlock failed for clipboard data.");
+            }
+
+            int terminator = text.IndexOf('\0');
+            if (terminator < 0)
+            {
+                throw new InvalidOperationException("The Unicode clipboard data is not terminated.");
+            }
+
+            return text.Substring(0, terminator);
         }
 
         [DllImport("user32.dll", SetLastError = true)]
@@ -409,6 +535,8 @@ namespace Microsoft.MouseWithoutBorders.UITests
         [DllImport("kernel32.dll", EntryPoint = "SetLastError")]
         private static extern void SetNativeLastError(uint error);
 
+        [SuppressMessage("Performance", "CA1850", Justification = "Windows PowerShell 5.1 uses .NET Framework without SHA256.HashData.")]
+        [SuppressMessage("Performance", "CA1872", Justification = "Windows PowerShell 5.1 uses .NET Framework without Convert.ToHexString.")]
         private static string Digest(string text)
         {
             using (SHA256 hash = SHA256.Create())
@@ -419,7 +547,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
 
         public void RestoreClipboard()
         {
-            if (originalClipboard != null && clipboardChanged)
+            if (restoresClipboard && clipboardChanged)
             {
                 Clipboard.SetDataObject(originalClipboard, true);
                 clipboardChanged = false;
@@ -429,6 +557,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
         public void CaptureDesktop(string path)
         {
             Refresh();
+
             // Diagnostic snapshot of this test-owned control only. Never include
             // another window's generated pairing key or original clipboard.
             using (Bitmap bitmap = new Bitmap(Width, Height))
@@ -444,6 +573,7 @@ namespace Microsoft.MouseWithoutBorders.UITests
             {
                 throw new InvalidOperationException("Failure capture requires the active test desktop.");
             }
+
             Rectangle bounds = SystemInformation.VirtualScreen;
             using (Bitmap bitmap = new Bitmap(bounds.Width, bounds.Height))
             using (Graphics graphics = Graphics.FromImage(bitmap))

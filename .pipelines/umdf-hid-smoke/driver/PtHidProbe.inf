@@ -1,0 +1,70 @@
+[Version]
+Signature="$WINDOWS NT$"
+Class=HIDClass
+ClassGuid={745A17A0-74D3-11D0-B6FE-00A0C90F57DA}
+Provider=%Provider%
+DriverVer=10/26/2026,1.0.0.3
+CatalogFile=PtHidProbe.cat
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir=13
+
+[SourceDisksNames]
+1=%Disk%,,,
+
+[SourceDisksFiles]
+VhidminiUm.dll=1
+
+[Manufacturer]
+%Provider%=Models,NTamd64.10.0...19041
+
+[Models.NTamd64.10.0...19041]
+%Device%=Install,ROOT\PtUmdfHidPrototype
+
+[Install.NT]
+CopyFiles=DriverFiles
+
+[Install.NT.hw]
+AddReg=ReflectorLowerFilter
+
+[Install.NT.Services]
+AddService=mshidumdf,0x000001fa,HidService
+AddService=WUDFRd,0x000001f8,ReflectorService
+
+[HidService]
+DisplayName="Microsoft HID User-mode Driver Framework"
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary="%12%\MsHidUmdf.sys"
+
+[ReflectorLowerFilter]
+HKR,,"LowerFilters",0x00010008,"WUDFRd"
+
+[ReflectorService]
+DisplayName="Windows Driver Foundation - User-mode Driver Framework Reflector"
+ServiceType=1
+StartType=3
+ErrorControl=1
+ServiceBinary="%12%\WUDFRd.sys"
+
+[Install.NT.Wdf]
+UmdfService=PtUmdfHidPrototype,DriverService
+UmdfServiceOrder=PtUmdfHidPrototype
+UmdfKernelModeClientPolicy=AllowKernelModeClients
+UmdfFileObjectPolicy=AllowNullAndUnknownFileObjects
+UmdfMethodNeitherAction=Copy
+UmdfFsContextUsePolicy=CanUseFsContext2
+
+[DriverService]
+UmdfLibraryVersion=2.31.0
+ServiceBinary="%13%\VhidminiUm.dll"
+
+[DriverFiles]
+VhidminiUm.dll
+
+[Strings]
+Provider="PowerToys UI Test Prototype"
+Disk="Isolated UMDF HID Prototype"
+Device="PowerToys UMDF HID Prototype"

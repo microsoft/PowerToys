@@ -667,6 +667,7 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_DO_NOTHING)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE)));
     runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_TERMINATE)));
+    runProgramAlreadyRunningAction.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_ALREADY_RUNNING_CLOSE_AND_TERMINATE)));
 
     runProgramAlreadyRunningAction.SelectedIndex(0);
 
@@ -678,6 +679,8 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramStartWindow.Width(EditorConstants::TableDropDownHeight);
     runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_NORMAL)));
     runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_HIDDEN)));
+    runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_MINIMIZED)));
+    runProgramStartWindow.Items().Append(winrt::box_value(GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_VISIBILITY_MAXIMIZED)));
     runProgramStartWindow.SelectedIndex(0);
     controlStackPanel.Children().Append(UIHelpers::GetLabelWrapped(runProgramStartWindow, GET_RESOURCE_STRING(IDS_EDITSHORTCUTS_LABEL_START_AS), runProgramLabelWidth).as<StackPanel>());
 
@@ -861,9 +864,14 @@ StackPanel SetupRunProgramControls(StackPanel& parent, StackPanel& row, Shortcut
     runProgramArgsForProgramInput.Text(shortCut.runProgramArgs);
     runProgramStartInDirInput.Text(shortCut.runProgramStartInDir);
 
-    runProgramElevationTypeCombo.SelectedIndex(shortCut.elevationLevel);
-    runProgramAlreadyRunningAction.SelectedIndex(shortCut.alreadyRunningAction);
-    runProgramStartWindow.SelectedIndex(shortCut.startWindowType);
+    // The config may come from the new editor, which can write enum values this editor has no item for.
+    // ComboBox::SelectedIndex throws on an out-of-range index, which would crash the whole window, so fall back to the first item.
+    auto selectIndexOrDefault = [](ComboBox& combo, int index) {
+        combo.SelectedIndex(index >= 0 && static_cast<uint32_t>(index) < combo.Items().Size() ? index : 0);
+    };
+    selectIndexOrDefault(runProgramElevationTypeCombo, shortCut.elevationLevel);
+    selectIndexOrDefault(runProgramAlreadyRunningAction, shortCut.alreadyRunningAction);
+    selectIndexOrDefault(runProgramStartWindow, shortCut.startWindowType);
 
     return controlStackPanel;
 }

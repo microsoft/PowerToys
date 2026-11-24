@@ -43,6 +43,7 @@ Only restores packages for local projects; ExtraArgs still forwarded to msbuild'
 .NOTES
 - This file expects `build-common.ps1` to be located in the same folder and dot-sources it to load helper functions.
 - ExtraArgs are captured using PowerShell's ValueFromRemainingArguments and joined before being passed to the helpers.
+- When building a single .csproj/.vcxproj, `/p:SolutionDir=` is set to the folder of the solution that lists the project (usually the repo/worktree root), matching a solution build. A `/p:SolutionDir=` in ExtraArgs overrides it.
 #>
 
 param (

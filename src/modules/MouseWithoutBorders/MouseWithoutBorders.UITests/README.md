@@ -223,7 +223,7 @@ intermediates. Pass that directory's `PowerToys.MouseWithoutBorders.dll` to
 binaries and fingerprints the replacement before optional ReadyToRun compilation.
 Record any uncommitted source diff alongside local payload hashes.
 Use the repository build tools; do not use `dotnet test`. The UI executable is
-under `x64\Release\tests\MouseWithoutBorders.UITests\net10.0-windows10.0.26100.0`.
+under `x64\Release\tests\MouseWithoutBorders.UITests\net11.0-windows10.0.26100.0`.
 Preserve its `Payload` subdirectory. The following non-launch check works in
 Windows PowerShell 5.1 and never starts PowerToys/Sandbox or changes live settings:
 
@@ -339,6 +339,15 @@ marker. That marker may be `PreparingTrust`, then `WaitingForSandbox` until the
 actual inner Default Switch appears; MWB starts only after `Ready`. The guest
 address must belong to that subnet and its gateway must exactly match the
 provisioned host address. Network changes fail before product startup.
+
+The trusted provisioning launcher has 90 seconds to acknowledge startup in its
+protected run directory. Payload validation, fingerprinting and trust preparation
+then have a separate, non-renewable 300-second deadline. The startup acknowledgement
+is not an ownership or readiness marker: CI and local VM dispatch still require the
+complete verified provisioning marker before starting the suite. All payload hashes,
+signature checks and exact cleanup remain required. The worker's 22-minute execution
+limit accommodates this preparation plus the unchanged 15-minute inner-network
+deadline; UI-test deadlines are unchanged.
 
 Guest bootstrap preserves its normal elevated `WDAGUtilityAccount` user desktop,
 not service mode. Its firewall rule is exact-program/ports/host-address scoped.

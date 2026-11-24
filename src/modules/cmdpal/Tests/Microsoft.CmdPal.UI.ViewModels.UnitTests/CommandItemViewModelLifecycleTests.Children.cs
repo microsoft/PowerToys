@@ -14,9 +14,13 @@ public partial class CommandItemViewModelLifecycleTests
 {
     private sealed partial class TestCommand : TestObservable, ICommand
     {
+        private string _name = string.Empty;
+
         public Action? ReadIcon { get; set; }
 
         public Action? ReadId { get; set; }
+
+        public Action? ReadName { get; set; }
 
         public string Id
         {
@@ -27,7 +31,16 @@ public partial class CommandItemViewModelLifecycleTests
             }
         }
 
-        public string Name { get; set; } = string.Empty;
+        public string Name
+        {
+            get
+            {
+                ReadName?.Invoke();
+                return _name;
+            }
+
+            set => _name = value;
+        }
 
         public IIconInfo? Icon
         {

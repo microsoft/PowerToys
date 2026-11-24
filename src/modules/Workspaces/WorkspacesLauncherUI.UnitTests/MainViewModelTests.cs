@@ -5,19 +5,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Threading;
-using System.Windows;
-using System.Windows.Automation.Peers;
-using System.Windows.Automation.Provider;
-using System.Windows.Controls;
-using System.Windows.Threading;
 using ManagedCommon;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Models;
-using WorkspacesLauncherUI.Properties;
 using WorkspacesLauncherUI.ViewModels;
 
 namespace WorkspacesLauncherUI.UnitTests
@@ -27,6 +20,9 @@ namespace WorkspacesLauncherUI.UnitTests
     {
         private const string FirstId = "{A1111111-B111-C111-D111-E11111111111}";
         private const string SecondId = "{A2222222-B222-C222-D222-E22222222222}";
+        private const string CancelAccepted = "{\"type\":\"cancel-accepted\"}";
+        private static readonly string[] ExpectedCancelCloseActions = { "cancel", "close" };
+        private static readonly string[] ExpectedCancelMessages = { "cancel" };
 
         [TestMethod]
         public void MissingConfirmationOwnerCannotBeWatched()
@@ -39,360 +35,393 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataTestMethod]
         [DataRow(true)]
         [DataRow(false)]
-        public void ConfirmationOnlyUsesExistingDialogWithoutShowingStatusWindow(bool allow)
+        public void ConfirmationOnlyDoesNotNeedAStatusWindow(bool allow)
         {
-            Run(
-                session =>
-                {
-                    Assert.IsFalse(session.Owner.IsVisible);
-                    session.OnLoaded = window =>
-                    {
-                        Assert.IsNull(window.Owner);
-                        Assert.IsTrue(window.ShowInTaskbar);
-                        Assert.IsTrue(window.Topmost);
-                        Assert.AreEqual(WindowStartupLocation.CenterScreen, window.WindowStartupLocation);
-                        Assert.IsFalse(window.RunButton.IsEnabled);
-                        window.Render();
-                        Assert.IsTrue(window.RunButton.IsEnabled);
-                        if (allow)
-                        {
-                            window.ClickRun();
-                        }
-                        else
-                        {
-                            window.Close();
-                        }
-                    };
-                    session.Receive(Warning(FirstId));
-                    session.Drain();
-                    Assert.AreEqual(1, session.Windows.Count);
-                    Assert.IsFalse(session.Owner.IsVisible);
-                    CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, allow ? "run" : "skip") }, session.Messages);
-                },
-                confirmationOnly: true);
-        }
-
-        [TestMethod]
-        public void ConfirmationOnlyDismissUsesExistingRequestLifecycle()
-        {
-            Run(
-                session =>
-                {
-                    session.OnLoaded = window =>
-                    {
-                        window.Render();
-                        session.Receive(Dismiss(FirstId));
-                        session.Drain();
-                        Assert.IsFalse(window.IsVisible);
-                        window.ClickRun();
-                    };
-                    session.Receive(Warning(FirstId));
-                    session.Drain();
-                    session.Receive(Warning(FirstId));
-                    session.Drain();
-                    Assert.AreEqual(1, session.Windows.Count);
-                    CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
-                },
-                confirmationOnly: true);
+            using var session = new WarningSession(confirmationOnly: true);
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            var window = session.Windows.Single();
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsFalse(window.RunEnabled);
+            window.Render();
+            window.Choose(allow);
+            CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, allow ? "run" : "skip") }, session.Messages);
         }
 
         [TestMethod]
         public void OriginalLaunchStatusNeedsNoMessageEnvelope()
         {
-            Run(session =>
+            using var session = new WarningSession();
+            var appsListed = session.ViewModel.AppsListed;
+            session.Receive(JsonSerializer.Serialize(new
             {
-                var changed = false;
-                var appsListed = session.ViewModel.AppsListed;
-                session.ViewModel.PropertyChanged += (_, e) => changed |= e.PropertyName == nameof(MainViewModel.AppsListed);
-                session.Receive(JsonSerializer.Serialize(new
+                processId = 1234,
+                apps = new
                 {
-                    processId = 1234,
-                    apps = new
+                    appLaunchInfos = Enumerable.Range(0, 6).Select(state => new
                     {
-                        appLaunchInfos = Enumerable.Range(0, 6).Select(state => new
+                        state,
+                        application = new Dictionary<string, string>
                         {
-                            state,
-                            application = new Dictionary<string, string>
-                            {
-                                ["application"] = "Example",
-                                ["application-path"] = @"C:\Apps\Example.exe",
-                            },
-                        }),
-                    },
-                }));
-                session.Drain();
-
-                Assert.IsTrue(changed);
-                Assert.AreSame(appsListed, session.ViewModel.AppsListed);
-                CollectionAssert.AreEqual(Enumerable.Range(0, 6).ToArray(), session.ViewModel.AppsListed.Select(app => (int)app.LaunchState).ToArray());
-                Assert.IsTrue(session.ViewModel.AppsListed.All(app => app.Name == "Example" && app.AppPath == @"C:\Apps\Example.exe"));
-                var skipped = session.ViewModel.AppsListed.Single(app => app.LaunchState == LaunchingState.Skipped);
-                Assert.IsTrue(skipped.IsSkipped);
-                Assert.IsFalse(skipped.Loading);
-                Assert.IsFalse(skipped.ShowStateGlyph);
-                Assert.AreEqual(Resources.LaunchStateSkipped, skipped.StateDescription);
-                Assert.AreEqual(0, session.Windows.Count);
-                Assert.AreEqual(0, session.Messages.Count);
-            });
+                            ["application"] = "Example",
+                            ["application-path"] = @"C:\Apps\Example.exe",
+                        },
+                    }),
+                },
+            }));
+            session.Drain();
+            Assert.AreSame(appsListed, session.ViewModel.AppsListed);
+            CollectionAssert.AreEqual(Enumerable.Range(0, 6).ToArray(), appsListed.Select(app => (int)app.LaunchState).ToArray());
+            var skipped = appsListed.Single(app => app.LaunchState == LaunchingState.Skipped);
+            Assert.IsTrue(skipped.IsSkipped);
+            Assert.IsFalse(skipped.Loading);
+            Assert.IsFalse(skipped.ShowStateGlyph);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(skipped.StateDescription));
         }
 
         [TestMethod]
-        public void PipeCallbackReturnsAndRunRequiresOneQueuedDisplayAcknowledgement()
+        public void PipeCallbackReturnsAndRunRequiresOneDisplayAcknowledgement()
         {
-            Run(session =>
-            {
-                session.OnLoaded = window =>
-                {
-                    Assert.IsFalse(window.RunButton.IsEnabled);
-                    window.ClickRun();
-                    Assert.IsTrue(window.IsVisible);
-                    Assert.AreEqual(0, session.Messages.Count);
-
-                    window.Render();
-                    window.Render();
-                    Assert.IsTrue(window.RunButton.IsEnabled);
-                    CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
-                    window.ClickRun();
-                };
-                ExceptionDispatchInfo failure = null;
-                var receive = App.IPCMessageReceivedCallback;
-                var pipeThread = new Thread(() =>
-                {
-                    try
-                    {
-                        receive(Warning(FirstId));
-                    }
-                    catch (Exception exception)
-                    {
-                        failure = ExceptionDispatchInfo.Capture(exception);
-                    }
-                })
-                {
-                    IsBackground = true,
-                };
-                pipeThread.Start();
-                Assert.IsTrue(pipeThread.Join(TimeSpan.FromSeconds(2)), "The pipe callback must not wait for the UI dispatcher or modal dialog.");
-                failure?.Throw();
-                Assert.AreEqual(0, session.Windows.Count);
-                session.Drain();
-
-                CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
-            });
-        }
-
-        [DataTestMethod]
-        [DataRow("close")]
-        [DataRow("cancel")]
-        [DataRow("unrendered-result")]
-        public void EarlyCloseOrCancelSkipsWithoutADisplayAcknowledgement(string action)
-        {
-            Run(session =>
-            {
-                session.OnLoaded = window =>
-                {
-                    Assert.IsFalse(window.RunButton.IsEnabled);
-                    switch (action)
-                    {
-                        case "cancel":
-                            var skip = (Button)window.FindName("SkipButton");
-                            Assert.IsTrue(skip.IsCancel, "Escape uses the same WPF dialog-cancel action as Skip.");
-                            Assert.IsTrue(skip.IsDefault);
-                            var peer = new ButtonAutomationPeer(skip);
-                            ((IInvokeProvider)peer.GetPattern(PatternInterface.Invoke)).Invoke();
-                            session.Drain();
-                            Assert.IsFalse(window.IsVisible);
-                            break;
-                        case "unrendered-result":
-                            window.DialogResult = true;
-                            break;
-                        default:
-                            window.Close();
-                            break;
-                    }
-                };
-                session.Receive(Warning(FirstId));
-                session.Drain();
-
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
-            });
+            using var session = new WarningSession();
+            var receive = App.IPCMessageReceivedCallback;
+            var pipeThread = new Thread(() => receive(Warning(FirstId))) { IsBackground = true };
+            pipeThread.Start();
+            Assert.IsTrue(pipeThread.Join(TimeSpan.FromSeconds(2)));
+            Assert.AreEqual(0, session.Windows.Count);
+            session.Drain();
+            var window = session.Windows.Single();
+            Assert.IsFalse(window.RunEnabled);
+            window.Render();
+            window.Render();
+            Assert.IsTrue(window.RunEnabled);
+            window.Choose(true);
+            window.Choose(true);
+            CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
         }
 
         [TestMethod]
-        public void DismissBeforeScheduledShowSuppressesTheRequestAndItsReplay()
+        public void UnrenderedResultFailsClosed()
         {
-            Run(session =>
-            {
-                session.Receive(Warning(FirstId));
-                session.Receive(Dismiss(FirstId));
-                session.Drain();
-                session.Receive(Warning(Guid.Parse(FirstId).ToString("D")));
-                session.Drain();
-
-                Assert.AreEqual(0, session.Windows.Count);
-                Assert.AreEqual(0, session.Messages.Count);
-                session.Receive(Warning(SecondId));
-                session.Drain();
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(SecondId, "skip") }, session.Messages);
-            });
+            using var session = new WarningSession();
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            session.Windows.Single().Choose(true);
+            CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
         }
 
         [DataTestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void DismissClosesTheWarningEvenInsideAnotherModalDispatcher(bool nestedDialog)
+        public void DismissSuppressesPendingOrRenderedRequestAndReplay(bool rendered)
         {
-            Run(session =>
+            using var session = new WarningSession();
+            session.Receive(Warning(FirstId));
+            if (rendered)
             {
-                session.OnLoaded = window =>
-                {
-                    window.Render();
-                    void DismissCurrent()
-                    {
-                        session.Receive(Dismiss(FirstId));
-                        session.Drain();
-                        Assert.IsFalse(window.IsVisible);
-                        Assert.IsFalse(window.RunButton.IsEnabled);
-                        window.ClickRun();
-                    }
-
-                    if (nestedDialog)
-                    {
-                        // Copy-details errors likewise enter another modal loop with the warning disabled.
-                        var detailsError = new Window
-                        {
-                            Owner = window,
-                            ShowInTaskbar = false,
-                            ShowActivated = false,
-                            Left = -32000,
-                            Top = -32000,
-                            Width = 300,
-                            Height = 120,
-                            Content = new TextBlock { Text = "Test copy-details error." },
-                        };
-                        detailsError.Loaded += (_, _) => detailsError.Dispatcher.BeginInvoke(
-                            DispatcherPriority.Normal,
-                            new Action(() => session.InvokeAndClose(detailsError, DismissCurrent)));
-                        detailsError.ShowDialog();
-                        Assert.IsFalse(detailsError.IsVisible);
-                    }
-                    else
-                    {
-                        DismissCurrent();
-                    }
-                };
-                session.Receive(Warning(FirstId));
                 session.Drain();
-                session.Receive(Dismiss(FirstId));
-                session.Receive(Warning(FirstId));
-                session.Drain();
+                session.Windows.Single().Render();
+            }
 
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
-            });
+            session.Receive(Dismiss(FirstId));
+            session.Drain();
+            session.Receive(Warning(Guid.Parse(FirstId).ToString("D")));
+            session.Drain();
+            Assert.IsTrue(session.Windows.All(window => !window.IsVisible && !window.RunEnabled));
+            CollectionAssert.AreEqual(rendered ? new[] { Shown(FirstId) } : Array.Empty<string>(), session.Messages);
         }
 
         [TestMethod]
-        public void DismissClosesTheActualCopyDetailsErrorDialog()
+        public void OverlappingRequestsAreSkippedOnceWithoutReplacingCurrentWarning()
         {
-            Run(session =>
-            {
-                session.OnLoaded = window =>
-                {
-                    window.Render();
-                    window.Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() => session.Receive(Dismiss(FirstId))));
-                    window.ShowCopyDetailsError();
-                    Assert.IsFalse(window.IsVisible);
-                    Assert.IsFalse(window.RunButton.IsEnabled);
-                    window.ClickRun();
-                };
-                session.Receive(Warning(FirstId));
-                session.Drain();
-
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Shown(FirstId) }, session.Messages);
-            });
+            using var session = new WarningSession();
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            var window = session.Windows.Single();
+            session.Receive(Warning(FirstId));
+            session.Receive(Warning(SecondId));
+            session.Receive(Warning(SecondId));
+            session.Drain();
+            Assert.IsTrue(window.IsVisible);
+            window.Render();
+            window.Choose(true);
+            CollectionAssert.AreEqual(new[] { Response(SecondId, "skip"), Shown(FirstId), Response(FirstId, "run") }, session.Messages);
         }
 
         [TestMethod]
-        public void OverlappingRequestsAreSkippedOnceWithoutReplacingTheCurrentWarning()
+        public void UnmatchedDismissDoesNotCloseCurrentWarningOrAllowReplay()
         {
-            Run(session =>
+            using var session = new WarningSession();
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            session.Receive(Dismiss(SecondId));
+            session.Drain();
+            var window = session.Windows.Single();
+            Assert.IsTrue(window.IsVisible);
+            window.Render();
+            window.Choose(true);
+            session.Receive(Warning(SecondId));
+            session.Drain();
+            Assert.AreEqual(1, session.Windows.Count);
+            CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
+        }
+
+        [TestMethod]
+        public void ResponseIsTerminalBeforeReentrantNextRequest()
+        {
+            using var session = new WarningSession();
+            session.OnSend = message =>
             {
-                session.OnLoaded = window =>
+                if (message == Response(FirstId, "run"))
                 {
-                    session.Receive(Warning(FirstId));
-                    session.Receive(Warning(SecondId));
                     session.Receive(Warning(SecondId));
                     session.Drain();
-                    Assert.IsTrue(window.IsVisible);
-                    CollectionAssert.AreEqual(new[] { Response(SecondId, "skip") }, session.Messages);
-                    window.Render();
-                    window.ClickRun();
-                };
-                session.Receive(Warning(FirstId));
-                session.Drain();
-                session.Receive(Warning(FirstId));
-                session.Receive(Warning(SecondId));
-                session.Drain();
-
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(SecondId, "skip"), Shown(FirstId), Response(FirstId, "run") }, session.Messages);
-            });
+                }
+            };
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            session.Windows[0].Render();
+            session.Windows[0].Choose(true);
+            Assert.IsTrue(session.Windows[1].IsVisible);
+            session.Windows[1].Render();
+            session.Windows[1].Choose(true);
+            CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run"), Shown(SecondId), Response(SecondId, "run") }, session.Messages);
         }
 
         [TestMethod]
-        public void UnmatchedDismissDoesNotCloseTheCurrentWarningOrAllowLaterReplay()
+        public void CancelCommandWaitsForAcknowledgementBeforeClosingOwner()
         {
-            Run(session =>
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            var pendingStates = new List<bool>();
+            var interactionChanged = false;
+            session.ViewModel.PropertyChanged += (_, args) =>
             {
-                session.OnLoaded = window =>
+                if (args.PropertyName == nameof(MainViewModel.IsCancellationPending))
                 {
-                    window.Render();
-                    session.Receive(Dismiss(SecondId));
-                    session.Drain();
-                    Assert.IsTrue(window.IsVisible);
-                    window.ClickRun();
-                };
-                session.Receive(Warning(FirstId));
-                session.Drain();
-                session.Receive(Warning(SecondId));
-                session.Drain();
+                    pendingStates.Add(session.ViewModel.IsCancellationPending);
+                }
 
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, "run") }, session.Messages);
-            });
+                if (args.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
+                {
+                    interactionChanged = true;
+                }
+            };
+            session.OnSend = actions.Add;
+            session.OnClose = () =>
+            {
+                actions.Add("close");
+                session.ViewModel.Dispose();
+            };
+            var receive = App.IPCMessageReceivedCallback;
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelMessages, actions);
+            Assert.IsTrue(session.OwnerVisible);
+            Assert.IsTrue(session.ViewModel.IsCancellationPending);
+            Assert.IsFalse(session.ViewModel.IsInteractionEnabled);
+            Assert.IsTrue(interactionChanged);
+            Assert.IsFalse(session.CancellationTimer.IsDisposed);
+            Assert.IsNotNull(App.IPCMessageReceivedCallback);
+
+            session.Receive(CancelAccepted);
+            session.Drain();
+            receive(CancelAccepted);
+            session.Drain();
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            Assert.AreEqual(2, pendingStates.Count);
+            Assert.IsTrue(pendingStates[0]);
+            Assert.IsFalse(pendingStates[1]);
         }
 
         [TestMethod]
-        public void ResponseIsTerminalBeforeSendingAndCannotClearTheNextRequest()
+        public void CancellationAcknowledgementIsIgnoredBeforeCancelRequest()
         {
-            Run(session =>
-            {
-                session.OnLoaded = window =>
-                {
-                    window.Render();
-                    window.ClickRun();
-                };
-                session.OnSend = message =>
-                {
-                    if (message == Response(FirstId, "run"))
-                    {
-                        session.Receive(Warning(SecondId));
-                        session.Drain();
-                    }
-                };
-                session.Receive(Warning(FirstId));
-                session.Drain();
-                session.Receive(Warning(FirstId));
-                session.Receive(Warning(SecondId));
-                session.Drain();
+            using var session = new WarningSession();
 
-                Assert.AreEqual(2, session.Windows.Count);
-                CollectionAssert.AreEqual(
-                    new[] { Shown(FirstId), Response(FirstId, "run"), Shown(SecondId), Response(SecondId, "run") },
-                    session.Messages);
-            });
+            session.Receive(CancelAccepted);
+            session.Drain();
+
+            Assert.IsTrue(session.OwnerVisible);
+            Assert.IsTrue(session.ViewModel.IsInteractionEnabled);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsNull(session.CancellationTimer);
+            Assert.AreEqual(0, session.Messages.Count);
+        }
+
+        [DataTestMethod]
+        [DataRow("not-json")]
+        [DataRow("{}")]
+        [DataRow("{\"type\":null}")]
+        [DataRow("{\"type\":\"dismiss-warning\",\"requestId\":\"wrong\"}")]
+        public void OtherMessagesCannotCompletePendingCancellation(string message)
+        {
+            using var session = new WarningSession();
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            session.Receive(message);
+            session.Drain();
+
+            Assert.IsTrue(session.OwnerVisible);
+            Assert.IsTrue(session.ViewModel.IsCancellationPending);
+            Assert.IsFalse(session.CancellationTimer.IsDisposed);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+        }
+
+        [TestMethod]
+        public void CancelSendFailureClosesOwnerWithoutWaitingForAcknowledgement()
+        {
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            session.OnSend = message =>
+            {
+                actions.Add(message);
+                throw new InvalidOperationException("Test cancellation send failure.");
+            };
+            session.OnClose = () =>
+            {
+                actions.Add("close");
+                session.ViewModel.Dispose();
+            };
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+        }
+
+        [TestMethod]
+        public void CancellationTimeoutClosesOwnerOnceWithoutAcknowledgement()
+        {
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            session.OnSend = actions.Add;
+            session.OnClose = () => actions.Add("close");
+            var receive = App.IPCMessageReceivedCallback;
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            session.CancellationTimer.Fire();
+            session.Drain();
+            receive(CancelAccepted);
+            session.CancellationTimer.Fire();
+            session.Drain();
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+        }
+
+        [TestMethod]
+        public void DisposePendingCancellationIgnoresQueuedTimeoutAndAcknowledgement()
+        {
+            using var session = new WarningSession();
+            var closeRequested = false;
+            session.OnClose = () => closeRequested = true;
+            var receive = App.IPCMessageReceivedCallback;
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            session.CancellationTimer.Fire();
+
+            session.ViewModel.Dispose();
+            receive(CancelAccepted);
+            session.Drain();
+
+            Assert.IsFalse(closeRequested);
+            Assert.IsFalse(session.ViewModel.IsCancellationPending);
+            Assert.IsTrue(session.CancellationTimer.IsDisposed);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+        }
+
+        [TestMethod]
+        public void DisposingAsInteractionIsDisabledClearsPendingCancellationWithoutSending()
+        {
+            using var session = new WarningSession();
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            var window = session.Windows.Single();
+            var pendingStates = new List<bool>();
+            session.ViewModel.PropertyChanged += (_, args) =>
+            {
+                if (args.PropertyName == nameof(MainViewModel.IsCancellationPending))
+                {
+                    pendingStates.Add(session.ViewModel.IsCancellationPending);
+                }
+                else if (args.PropertyName == nameof(MainViewModel.IsInteractionEnabled))
+                {
+                    Assert.IsTrue(session.ViewModel.IsCancellationPending);
+                    session.ViewModel.Dispose();
+                }
+            };
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            Assert.AreEqual(2, pendingStates.Count);
+            Assert.IsTrue(pendingStates[0]);
+            Assert.IsFalse(pendingStates[1]);
+            Assert.IsFalse(window.IsVisible);
+            Assert.IsNull(session.CancellationTimer);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            Assert.AreEqual(0, session.Messages.Count);
+        }
+
+        [TestMethod]
+        public void ReentrantCancelCommandRequestsCancellationAndOwnerCloseOnlyOnce()
+        {
+            using var session = new WarningSession();
+            var actions = new List<string>();
+            session.OnSend = message =>
+            {
+                actions.Add(message);
+                session.ViewModel.CancelLaunchCommand.Execute(null);
+            };
+            session.OnClose = () =>
+            {
+                actions.Add("close");
+                session.ViewModel.Dispose();
+                session.ViewModel.CancelLaunchCommand.Execute(null);
+            };
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, actions);
+            Assert.IsTrue(session.ViewModel.IsCancellationPending);
+            session.Receive(CancelAccepted);
+            session.Drain();
+
+            CollectionAssert.AreEqual(ExpectedCancelCloseActions, actions);
+            CollectionAssert.AreEqual(ExpectedCancelMessages, session.Messages);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+        }
+
+        [TestMethod]
+        public void CancelCommandDoesNothingAfterOwnerDisposesViewModel()
+        {
+            using var session = new WarningSession();
+            var closeRequested = false;
+            session.OnClose = () => closeRequested = true;
+            session.ViewModel.Dispose();
+
+            session.ViewModel.CancelLaunchCommand.Execute(null);
+
+            Assert.AreEqual(0, session.Messages.Count);
+            Assert.IsFalse(closeRequested);
         }
 
         [DataTestMethod]
@@ -402,51 +431,42 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataRow(true, true)]
         public void CancelOrDisposeStopsPendingAndRenderedWarningsOnce(bool cancel, bool rendered)
         {
-            Run(session =>
+            using var session = new WarningSession();
+            var receive = App.IPCMessageReceivedCallback;
+            session.Receive(Warning(FirstId));
+            if (rendered)
             {
-                var receive = App.IPCMessageReceivedCallback;
-                void Stop()
-                {
-                    if (cancel)
-                    {
-                        session.ViewModel.CancelLaunch();
-                        session.ViewModel.CancelLaunch();
-                    }
-                    else
-                    {
-                        session.ViewModel.Dispose();
-                    }
-
-                    session.ViewModel.Dispose();
-                    receive(Warning(SecondId));
-                }
-
-                session.OnLoaded = window =>
-                {
-                    window.Render();
-                    Stop();
-                    Assert.IsFalse(window.IsVisible);
-                    Assert.IsFalse(window.RunButton.IsEnabled);
-                    window.ClickRun();
-                };
-                session.Receive(Warning(FirstId));
-                if (!rendered)
-                {
-                    session.Drain(DispatcherPriority.Send);
-                    Stop();
-                }
-
                 session.Drain();
-                Assert.AreEqual(rendered ? 1 : 0, session.Windows.Count);
-                var expected = new List<string>();
-                if (rendered)
-                {
-                    expected.Add(Shown(FirstId));
-                }
+                session.Windows.Single().Render();
+            }
+            else
+            {
+                session.Drain(highOnly: true);
+            }
 
-                expected.Add(cancel ? "cancel" : Response(FirstId, "skip"));
-                CollectionAssert.AreEqual(expected, session.Messages);
-            });
+            if (cancel)
+            {
+                session.ViewModel.CancelLaunch();
+                session.ViewModel.CancelLaunch();
+            }
+            else
+            {
+                session.ViewModel.Dispose();
+            }
+
+            session.ViewModel.Dispose();
+            receive(Warning(SecondId));
+            session.Drain();
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            Assert.IsTrue(session.Windows.All(window => !window.IsVisible && !window.RunEnabled));
+            var expected = new List<string>();
+            if (rendered)
+            {
+                expected.Add(Shown(FirstId));
+            }
+
+            expected.Add(cancel ? "cancel" : Response(FirstId, "skip"));
+            CollectionAssert.AreEqual(expected, session.Messages);
         }
 
         [DataTestMethod]
@@ -454,55 +474,50 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataRow(false, true)]
         [DataRow(true, false)]
         [DataRow(true, true)]
-        public void OwnerVisibilityAndDisposalAreRecheckedImmediatelyBeforeShow(bool duringCreation, bool dispose)
+        public void OwnerAvailabilityIsRecheckedBeforeShow(bool duringCreation, bool dispose)
         {
-            Run(session =>
+            using var session = new WarningSession();
+            void MakeUnavailable()
             {
-                void MakeUnavailable()
+                if (dispose)
                 {
-                    if (dispose)
-                    {
-                        session.ViewModel.Dispose();
-                    }
-                    else
-                    {
-                        session.Owner.Hide();
-                    }
+                    session.ViewModel.Dispose();
                 }
-
-                if (duringCreation)
+                else
                 {
-                    session.OnCreate = MakeUnavailable;
+                    session.OwnerVisible = false;
                 }
+            }
 
-                session.Receive(Warning(FirstId));
-                if (!duringCreation)
-                {
-                    session.Drain(DispatcherPriority.Send);
-                    MakeUnavailable();
-                }
+            if (duringCreation)
+            {
+                session.OnCreate = MakeUnavailable;
+            }
 
-                session.Drain();
-                Assert.IsTrue(session.Windows.All(window => !window.WasLoaded));
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
-            });
+            session.Receive(Warning(FirstId));
+            if (!duringCreation)
+            {
+                session.Drain(highOnly: true);
+                MakeUnavailable();
+            }
+
+            session.Drain();
+            Assert.IsTrue(session.Windows.All(window => !window.IsVisible));
+            CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
         }
 
         [TestMethod]
-        public void WarningCreationFailureSkipsAndDoesNotLeaveAPendingRequest()
+        public void WarningCreationFailureSkipsAndDoesNotLeavePendingRequest()
         {
-            Run(session =>
-            {
-                session.OnCreate = () => throw new InvalidOperationException("Test window creation failure.");
-                session.Receive(Warning(FirstId));
-                session.Drain();
-                session.OnCreate = null;
-                session.Receive(Warning(SecondId));
-                session.Drain();
-
-                Assert.AreEqual(1, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip"), Response(SecondId, "skip") }, session.Messages);
-            });
+            using var session = new WarningSession();
+            session.OnCreate = () => throw new InvalidOperationException("Test window creation failure.");
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            session.OnCreate = null;
+            session.Receive(Warning(SecondId));
+            session.Drain();
+            session.Windows.Single().Choose(false);
+            CollectionAssert.AreEqual(new[] { Response(FirstId, "skip"), Response(SecondId, "skip") }, session.Messages);
         }
 
         [DataTestMethod]
@@ -516,68 +531,49 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataRow("{\"type\":\"dismiss-warning\",\"requestId\":\"00000000-0000-0000-0000-000000000000\"}")]
         [DataRow("{\"type\":\"elevation-warning\",\"requestId\":\"22222222-2222-2222-2222-222222222222\",\"appName\":5}")]
         [DataRow("{\"type\":\"elevation-warning\",\"requestId\":\"22222222-2222-2222-2222-222222222222\",\"appName\":\"Example\",\"path\":\"example.exe\",\"arguments\":\"\",\"reason\":\"unsigned\"}")]
-        public void InvalidMessagesFailThePendingWarningClosed(string message)
+        public void InvalidMessagesFailPendingWarningClosed(string message)
         {
-            Run(session =>
-            {
-                session.Receive(Warning(FirstId));
-                session.Receive(message);
-                session.Drain();
-
-                Assert.AreEqual(0, session.Windows.Count);
-                CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
-            });
+            using var session = new WarningSession();
+            session.Receive(Warning(FirstId));
+            session.Receive(message);
+            session.Drain();
+            Assert.AreEqual(0, session.Windows.Count);
+            CollectionAssert.AreEqual(new[] { Response(FirstId, "skip") }, session.Messages);
         }
 
         [DataTestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void SendFailureClosesTheOwnerInsteadOfLeavingTheParentWaiting(bool responseFails)
+        public void SendFailureClosesOwnerInsteadOfLeavingParentWaiting(bool responseFails)
         {
-            Run(session =>
+            using var session = new WarningSession();
+            session.OnSend = message =>
             {
-                session.OnSend = message =>
+                if (message == (responseFails ? Response(FirstId, "run") : Shown(FirstId)))
                 {
-                    if (message == (responseFails ? Response(FirstId, "run") : Shown(FirstId)))
-                    {
-                        throw new InvalidOperationException("Test send failure.");
-                    }
-                };
-                session.OnLoaded = window =>
-                {
-                    window.Render();
-                    if (!responseFails)
-                    {
-                        Assert.IsFalse(window.RunButton.IsEnabled);
-                    }
-
-                    window.ClickRun();
-                };
-                session.Receive(Warning(FirstId));
-                session.Drain();
-
-                Assert.IsFalse(session.Owner.IsVisible, "The owned UI must exit if its response cannot be queued.");
-                Assert.IsNull(App.IPCMessageReceivedCallback);
-                CollectionAssert.AreEqual(
-                    new[] { Shown(FirstId), Response(FirstId, responseFails ? "run" : "skip") },
-                    session.Messages,
-                    "These are send attempts, including the injected failure; there must be no retry or stale response.");
-            });
+                    throw new InvalidOperationException("Test send failure.");
+                }
+            };
+            session.Receive(Warning(FirstId));
+            session.Drain();
+            var window = session.Windows.Single();
+            window.Render();
+            window.Choose(true);
+            Assert.IsFalse(session.OwnerVisible);
+            Assert.IsNull(App.IPCMessageReceivedCallback);
+            CollectionAssert.AreEqual(new[] { Shown(FirstId), Response(FirstId, responseFails ? "run" : "skip") }, session.Messages);
         }
 
-        private static string Warning(string requestId)
+        private static string Warning(string requestId) => JsonSerializer.Serialize(new
         {
-            return JsonSerializer.Serialize(new
-            {
-                type = "elevation-warning",
-                requestId,
-                appName = "Example",
-                path = @"C:\Apps\Example.exe",
-                arguments = "--test",
-                reason = "unsigned",
-                status = "0x800B0100",
-            });
-        }
+            type = "elevation-warning",
+            requestId,
+            appName = "Example",
+            path = @"C:\Apps\Example.exe",
+            arguments = "--test",
+            reason = "unsigned",
+            status = "0x800B0100",
+        });
 
         private static string Dismiss(string requestId) => JsonSerializer.Serialize(new { type = "dismiss-warning", requestId });
 
@@ -585,134 +581,115 @@ namespace WorkspacesLauncherUI.UnitTests
 
         private static string Response(string requestId, string choice) => JsonSerializer.Serialize(new { type = "elevation-response", requestId, choice });
 
-        private static void Run(Action<WarningSession> test, bool confirmationOnly = false)
-        {
-            SignatureWarningLayoutTests.RunOnSta(() =>
-            {
-                using var session = new WarningSession(confirmationOnly);
-                test(session);
-            });
-        }
-
         private sealed class WarningSession : IDisposable
         {
-            private ExceptionDispatchInfo _failure;
+            private readonly Queue<Action> _high = new Queue<Action>();
+            private readonly Queue<Action> _normal = new Queue<Action>();
 
-            internal WarningSession(bool confirmationOnly)
+            internal WarningSession(bool confirmationOnly = false)
             {
+                OwnerVisible = !confirmationOnly;
                 ViewModel = new MainViewModel(
                     message =>
                     {
                         Messages.Add(message);
                         OnSend?.Invoke(message);
                     },
-                    request =>
+                    _ =>
                     {
                         OnCreate?.Invoke();
-                        var window = new TestWarningWindow(request);
+                        var window = new TestWarningWindow();
                         Windows.Add(window);
-
-                        // Let WPF finish Loaded before a test opens another modal window.
-                        window.Loaded += (_, _) => window.Dispatcher.BeginInvoke(
-                            DispatcherPriority.Normal,
-                            new Action(() => InvokeAndClose(window, () => OnLoaded?.Invoke(window))));
                         return window;
                     },
-                    confirmationOnly);
-                Owner = new Window
-                {
-                    ShowInTaskbar = false,
-                    ShowActivated = false,
-                    Left = -32000,
-                    Top = -32000,
-                    Width = 1,
-                    Height = 1,
-                };
-                ViewModel.SetSnapshotWindow(Owner);
-                Owner.Closing += (_, _) => ViewModel.Dispose();
-                if (!confirmationOnly)
-                {
-                    Owner.Show();
-                }
+                    (action, high) => (high ? _high : _normal).Enqueue(action),
+                    () => confirmationOnly || OwnerVisible,
+                    () =>
+                    {
+                        OwnerVisible = false;
+                        OnClose?.Invoke();
+                    },
+                    createCancellationTimer: callback =>
+                    {
+                        CancellationTimer = new TestCancellationTimer(callback);
+                        return CancellationTimer;
+                    });
             }
 
             internal MainViewModel ViewModel { get; }
 
-            internal Window Owner { get; }
+            internal bool OwnerVisible { get; set; }
 
             internal List<string> Messages { get; } = new List<string>();
 
             internal List<TestWarningWindow> Windows { get; } = new List<TestWarningWindow>();
 
-            internal Action<TestWarningWindow> OnLoaded { get; set; }
+            internal TestCancellationTimer CancellationTimer { get; private set; }
 
             internal Action OnCreate { get; set; }
+
+            internal Action OnClose { get; set; }
 
             internal Action<string> OnSend { get; set; }
 
             internal void Receive(string message) => App.IPCMessageReceivedCallback(message);
 
-            internal void Drain(DispatcherPriority priority = DispatcherPriority.ApplicationIdle)
+            internal void Drain(bool highOnly = false)
             {
-                var frame = new DispatcherFrame();
-                Dispatcher.CurrentDispatcher.BeginInvoke(priority, new Action(() => frame.Continue = false));
-                Dispatcher.PushFrame(frame);
-                _failure?.Throw();
-            }
-
-            internal void InvokeAndClose(Window window, Action action)
-            {
-                try
+                while (_high.Count != 0 || (!highOnly && _normal.Count != 0))
                 {
-                    action();
-                }
-                catch (Exception exception)
-                {
-                    // Do not let the production error boundary turn a callback assertion into a passing test.
-                    _failure ??= ExceptionDispatchInfo.Capture(exception);
-                }
-                finally
-                {
-                    window.Close();
+                    (_high.Count != 0 ? _high : _normal).Dequeue()();
                 }
             }
 
-            public void Dispose()
-            {
-                ViewModel.Dispose();
-                foreach (var window in Windows)
-                {
-                    window.Close();
-                }
-
-                Owner.Close();
-            }
+            public void Dispose() => ViewModel.Dispose();
         }
 
-        private sealed class TestWarningWindow : SignatureWarningWindow
+        private sealed class TestCancellationTimer : IDisposable
         {
-            internal TestWarningWindow(SignatureWarningRequest request)
-                : base(request)
+            private readonly Action _callback;
+
+            internal TestCancellationTimer(Action callback)
             {
-                ShowActivated = false;
-                WindowStartupLocation = WindowStartupLocation.Manual;
-                Left = -32000;
-                Top = -32000;
-                Loaded += (_, _) => WasLoaded = true;
+                _callback = callback;
             }
 
-            internal bool WasLoaded { get; private set; }
+            internal bool IsDisposed { get; private set; }
 
-            internal Button RunButton => (Button)FindName("RunAnywayButton");
-
-            internal void ClickRun() => RunButton.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-
-            internal void Render() => base.OnContentRendered(EventArgs.Empty);
-
-            protected override void OnContentRendered(EventArgs e)
+            internal void Fire()
             {
-                // Tests explicitly raise the rendering event instead of depending on compositor timing.
+                if (!IsDisposed)
+                {
+                    _callback();
+                }
             }
+
+            public void Dispose() => IsDisposed = true;
+        }
+
+        private sealed class TestWarningWindow : ISignatureWarningWindow
+        {
+            public event EventHandler Rendered;
+
+            public event EventHandler<bool> ChoiceMade;
+
+            public bool IsVisible { get; private set; }
+
+            internal bool RunEnabled { get; private set; }
+
+            public void Show() => IsVisible = true;
+
+            public void EnableRunChoice() => RunEnabled = true;
+
+            public void DismissWithoutResponse()
+            {
+                IsVisible = false;
+                RunEnabled = false;
+            }
+
+            internal void Choose(bool run) => ChoiceMade?.Invoke(this, run);
+
+            internal void Render() => Rendered?.Invoke(this, EventArgs.Empty);
         }
     }
 }

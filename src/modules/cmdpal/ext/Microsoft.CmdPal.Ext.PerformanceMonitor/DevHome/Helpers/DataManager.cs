@@ -4,6 +4,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
 using Timer = System.Timers.Timer;
 
@@ -80,13 +81,13 @@ internal sealed partial class DataManager : IDisposable
         }
     }
 
-    private void GetCPUData(bool includeTopProcesses)
+    private void GetCPUData()
     {
         lock (_systemData.CpuStats)
         {
             if (ShouldSample(_systemData.CpuStats))
             {
-                _systemData.CpuStats.GetData(includeTopProcesses);
+                _systemData.CpuStats.GetData();
             }
         }
     }
@@ -130,10 +131,9 @@ internal sealed partial class DataManager : IDisposable
             switch (_dataType)
             {
                 case DataType.CPU:
-                case DataType.CpuWithTopProcesses:
                     {
                         // CPU
-                        GetCPUData(_dataType == DataType.CpuWithTopProcesses);
+                        GetCPUData();
                         break;
                     }
 
@@ -200,7 +200,6 @@ internal sealed partial class DataManager : IDisposable
         return _dataType switch
         {
             DataType.CPU => "CPU.FirstUpdate",
-            DataType.CpuWithTopProcesses => "CPU.FirstUpdate",
             DataType.GPU => "GPU.FirstUpdate",
             DataType.Memory => "Memory.FirstUpdate",
             DataType.Network => "Network.FirstUpdate",
@@ -261,6 +260,9 @@ internal sealed partial class DataManager : IDisposable
     public void Start()
     {
         _updateTimer.Start();
+
+        // Show current values as soon as the page opens, instead of after the first interval.
+        ThreadPool.QueueUserWorkItem(static manager => manager.UpdateTimer_Elapsed(null, null!), this, preferLocal: false);
     }
 
     public void Stop()

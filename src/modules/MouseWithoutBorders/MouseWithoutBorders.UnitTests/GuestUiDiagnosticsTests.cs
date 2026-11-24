@@ -58,12 +58,13 @@ public sealed class GuestUiDiagnosticsTests
                 $statePath=Join-Path $stateRoot "interactive-desktop-$($process.SessionId).state.json"
                 $state|ConvertTo-Json -Depth 5|Set-Content $statePath
                 $writer=[IO.File]::Open($statePath,'Open','ReadWrite',([IO.FileShare]::ReadWrite -bor [IO.FileShare]::Delete))
-                try{Get-GuestUiWaitSnapshot $process|ConvertTo-Json -Compress}finally{$writer.Dispose()}
                 """;
             script = $"$Root='{root.Replace("'", "''")}';$Support='{support.Replace("'", "''")}';" +
                 $"$OwnsTurn=${ownsTurn};$Matches=${matchingWorkflow};" + script;
-            var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
-            using var command = WinAppSandboxCommand.Start(executable, ["-NoProfile", "-NonInteractive", "-Command", script], root, root);
+            using var command = PowerShellFixture.StartCommand(
+                "try{Get-GuestUiWaitSnapshot $process|ConvertTo-Json -Compress}finally{$writer.Dispose()}",
+                root,
+                initialize: script);
             var output = command.CompleteAndDispose(TimeSpan.FromSeconds(15)).RequireSuccess();
             using var document = JsonDocument.Parse(output);
             var snapshot = document.RootElement;

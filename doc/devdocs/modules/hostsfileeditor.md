@@ -101,9 +101,8 @@ The module is loaded by the PowerToys runner from:
 
 ## UI Test Automation
 
-Hosts File Editor is currently undergoing a UI Test migration process to improve automated testing coverage. You can track the progress of this migration at:
-
-[Hosts File Editor UI Test Migration Progress](https://github.com/microsoft/PowerToys/blob/feature/UITestAutomation/src/modules/Hosts/Hosts.UITests/Release-Test-Checklist-Migration-Progress.md)
+Hosts File Editor UI tests use `Microsoft.PowerToys.UITest.Next` in
+`src\modules\Hosts\Hosts.UITests.Next`. See the [UI-test guide](../development/ui-tests.md).
 
 ## How to Build and Debug
 

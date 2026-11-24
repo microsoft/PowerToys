@@ -8,6 +8,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CmdPal.Ext.Bookmarks.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Windows.Storage;
 
 namespace Microsoft.CmdPal.Ext.Bookmarks.UnitTests;
 
@@ -71,6 +72,9 @@ public partial class BookmarkResolverTests
 
     public static class QuotedClassificationData
     {
+        // The Downloads known folder is commonly redirected (e.g. to OneDrive), so it can't be assumed to be %USERPROFILE%\Downloads.
+        private static readonly string DownloadsFolder = UserDataPaths.GetDefault().Downloads;
+
         public static IEnumerable<object[]> MixedQuotesScenarios() =>
         [
             [
@@ -242,7 +246,7 @@ public partial class BookmarkResolverTests
                     Input: "\"shell:Downloads\"",
                     ExpectSuccess: true,
                     ExpectedKind: CommandKind.Directory,
-                    ExpectedTarget: Path.Combine(path1: Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
+                    ExpectedTarget: DownloadsFolder,
                     ExpectedLaunch: LaunchMethod.ExplorerOpen,
                     ExpectedIsPlaceholder: false)
             ],
@@ -252,7 +256,7 @@ public partial class BookmarkResolverTests
                     Input: "\"shell:Downloads\\file.txt\"",
                     ExpectSuccess: true,
                     ExpectedKind: CommandKind.FileDocument,
-                    ExpectedTarget: Path.Combine(path1: Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads", "file.txt"),
+                    ExpectedTarget: Path.Combine(DownloadsFolder, "file.txt"),
                     ExpectedLaunch: LaunchMethod.ShellExecute,
                     ExpectedIsPlaceholder: false)
             ],

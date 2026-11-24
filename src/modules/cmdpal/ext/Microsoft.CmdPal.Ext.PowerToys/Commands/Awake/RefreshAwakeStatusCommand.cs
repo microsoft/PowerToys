@@ -21,6 +21,6 @@ internal sealed partial class RefreshAwakeStatusCommand : InvokableCommand
     public override CommandResult Invoke()
     {
         _refreshAction();
-        return CommandResult.KeepOpen();
+        return CommandResult.Dismiss();
     }
 }
