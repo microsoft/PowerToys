@@ -137,7 +137,7 @@ namespace WorkspacesEditor.Models
         [JsonIgnore]
         public partial bool IsPopupVisible { get; set; }
 
-        public List<Application> Applications { get; set; }
+        public List<Application> Applications { get; internal set; }
 
         public List<object> ApplicationsListed
         {

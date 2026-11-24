@@ -54,7 +54,7 @@ namespace WorkspacesEditor.ViewModels
         private WorkspacesSettings _settings;
         private bool _isDisposed;
 
-        public ObservableCollection<Project> Workspaces { get; set; } = new ObservableCollection<Project>();
+        public ObservableCollection<Project> Workspaces { get; internal set; } = new ObservableCollection<Project>();
 
         private List<Project> _workspacesView = new();
 
