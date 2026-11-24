@@ -45,9 +45,10 @@ namespace KeyboardEventHandlers
     // Function to handle a single-key-to-sequence remap (#5679): pressing the source key sends an
     // ordered list of key taps (down+up each), in order, once per press. The source key's own key-down
     // (including auto-repeats) and key-up are suppressed; the whole sequence is injected on the first
-    // key-down. A target key that is already down is not tapped, so the sequence only releases keys
-    // it pressed. A shortcut remap that is invoked at that moment is put back to the physically held
-    // keys first, and the taps do not trigger shortcut remaps (see KEYBOARDMANAGER_SEQUENCE_FLAG).
+    // key-down. A target key that is already down gets its key-down only, without the key-up, so the
+    // sequence only releases keys it pressed (and a character key that is still down still types
+    // its character). A shortcut remap that is invoked at that moment is put back to the physically
+    // held keys first, and the taps do not trigger shortcut remaps (see KEYBOARDMANAGER_SEQUENCE_FLAG).
     // This is ResolveSequencePress followed, for a new press, by StartSequencePress; the
     // hook's handler chain (DispatchKeyboardEvent) calls those two itself, because other steps of
     // the chain come in between.

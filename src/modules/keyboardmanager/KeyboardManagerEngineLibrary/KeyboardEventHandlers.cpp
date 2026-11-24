@@ -204,24 +204,37 @@ namespace
         return ii.GetVirtualKeyState(static_cast<int>(key));
     }
 
-    // True if a key-sequence target is down already. A target code that stands for two keys (Win, or
-    // Ctrl/Shift/Alt without a side) is down when either of them is. isKeyDown answers for one
-    // virtual key.
+    // The key of a key-sequence target that is down already, if there is one. A target code that
+    // stands for two keys (Win, or Ctrl/Shift/Alt without a side) is down when either of them is,
+    // and the key returned is the one that is down: it is the key that gets pressed again, and
+    // pressing the other one instead would leave that one down. isKeyDown answers for one virtual
+    // key.
     template<typename IsKeyDown>
-    bool IsSequenceTargetDown(const DWORD targetKey, const IsKeyDown& isKeyDown)
+    std::optional<DWORD> HeldKeyOfSequenceTarget(const DWORD targetKey, const IsKeyDown& isKeyDown)
     {
+        const auto firstKeyDown = [&isKeyDown](const std::initializer_list<DWORD> keys) -> std::optional<DWORD> {
+            for (const DWORD key : keys)
+            {
+                if (isKeyDown(key))
+                {
+                    return key;
+                }
+            }
+            return std::nullopt;
+        };
+
         switch (targetKey)
         {
         case CommonSharedConstants::VK_WIN_BOTH:
-            return isKeyDown(VK_LWIN) || isKeyDown(VK_RWIN);
+            return firstKeyDown({ VK_LWIN, VK_RWIN });
         case VK_CONTROL:
-            return isKeyDown(VK_CONTROL) || isKeyDown(VK_LCONTROL) || isKeyDown(VK_RCONTROL);
+            return firstKeyDown({ VK_LCONTROL, VK_RCONTROL, VK_CONTROL });
         case VK_SHIFT:
-            return isKeyDown(VK_SHIFT) || isKeyDown(VK_LSHIFT) || isKeyDown(VK_RSHIFT);
+            return firstKeyDown({ VK_LSHIFT, VK_RSHIFT, VK_SHIFT });
         case VK_MENU:
-            return isKeyDown(VK_MENU) || isKeyDown(VK_LMENU) || isKeyDown(VK_RMENU);
+            return firstKeyDown({ VK_LMENU, VK_RMENU, VK_MENU });
         default:
-            return isKeyDown(targetKey);
+            return firstKeyDown({ targetKey });
         }
     }
 
@@ -702,11 +715,15 @@ namespace KeyboardEventHandlers
         // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
         // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
         //
-        // A target that is down already is skipped as well: the key-up of its tap would release a
-        // key the sequence did not press (with Left Ctrl held, "Left Ctrl, A" would send A without
-        // Ctrl). The sequence only releases what it pressed; the key that is down stays down for
-        // the following taps and until its own key-up. "Down" is judged as it will be after the
-        // events above: a modifier that is down only through the shortcut remap is not down then.
+        // A target that is down already gets its key-down only, without the key-up: the key-up
+        // would release a key the sequence did not press (with Left Ctrl held, "Left Ctrl, A"
+        // would send A without Ctrl). The sequence only releases what it pressed; the key that is
+        // down stays down for the following taps and until its own key-up, whoever holds it (the
+        // user, or Keyboard Manager for another remap). Its key-down is still sent, as when the key
+        // repeats, so that a character key still types its character: with S still down from the
+        // letter typed before, "T, E, S, T" must not lose its S. Each occurrence of such a target
+        // sends one key-down. "Down" is judged as it will be after the events above: a modifier
+        // that is down only through the shortcut remap is not down then.
         const std::vector<INPUT> revertEvents = keyEventList;
         const auto isKeyDown = [&ii, &revertEvents](const DWORD key) {
             return IsKeyDownAfter(ii, revertEvents, key);
@@ -714,16 +731,24 @@ namespace KeyboardEventHandlers
 
         for (const DWORD targetKey : sequenceRemap->second)
         {
-            if (targetKey == CommonSharedConstants::VK_DISABLED || IsSequenceTargetDown(targetKey, isKeyDown))
+            if (targetKey == CommonSharedConstants::VK_DISABLED)
             {
                 continue;
             }
+
+            if (const std::optional<DWORD> heldKey = HeldKeyOfSequenceTarget(targetKey, isKeyDown))
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(*heldKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
+                continue;
+            }
+
             const DWORD filtered = Helpers::FilterArtificialKeys(targetKey);
             Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
             Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
         }
 
-        // No tap to send: nothing reaches the system, so the shortcut remap is left as it is too.
+        // Nothing to send (every element is VK_DISABLED): nothing reaches the system, so the
+        // shortcut remap is left as it is too.
         if (keyEventList.size() == revertEventCount)
         {
             return SequencePressStep::Suppress;
