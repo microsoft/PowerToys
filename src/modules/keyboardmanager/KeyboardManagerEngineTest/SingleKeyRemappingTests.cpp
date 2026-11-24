@@ -1375,6 +1375,10 @@ namespace RemappingLogicTests
             return count;
         }
 
+        // The scan code of F1. Events without a scan code are identified by their virtual key
+        // instead; a real keyboard always sends one.
+        static constexpr WORD f1ScanCode = 0x3B;
+
         // Makes Keyboard Manager's own injection fail while blocked is true
         void BlockInjectionWhile(const bool& blocked)
         {
@@ -1535,79 +1539,155 @@ namespace RemappingLogicTests
         // A remap that starts to apply while its key is held (the key-down already reached the app)
         // waits for the next press: the auto-repeat must not send the sequence, and the key-up must
         // reach the app.
-        TEST_METHOD (SequenceRemap_EnabledWhileKeyIsHeld_WaitsForTheNextPress)
+        void EnabledWhileKeyIsHeld_WaitsForTheNextPress(WORD scanCode)
         {
-            SendKey(VK_F1, false);
+            SendKey(VK_F1, false, scanCode);
             Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
 
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
 
-            SendKey(VK_F1, false); // auto-repeat
+            SendKey(VK_F1, false, scanCode); // auto-repeat
             Assert::AreEqual((size_t)0, SequenceEvents());
             Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
 
-            SendKey(VK_F1, true);
+            SendKey(VK_F1, true, scanCode);
             Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
 
             // The next press is replaced by the sequence
-            SendKey(VK_F1, false);
-            SendKey(VK_F1, true);
+            SendKey(VK_F1, false, scanCode);
+            SendKey(VK_F1, true, scanCode);
             Assert::AreEqual((size_t)4, SequenceEvents());
             Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
             Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
         }
 
+        TEST_METHOD (SequenceRemap_EnabledWhileKeyIsHeld_WaitsForTheNextPress)
+        {
+            EnabledWhileKeyIsHeld_WaitsForTheNextPress(0);
+        }
+
+        // The same with the scan code a real keyboard sends, so the press is identified by it
+        TEST_METHOD (SequenceRemap_EnabledWhileKeyIsHeld_WaitsForTheNextPress_WithScanCode)
+        {
+            EnabledWhileKeyIsHeld_WaitsForTheNextPress(f1ScanCode);
+        }
+
         // Reloading the settings while the key is held must not send the sequence again on the next
         // auto-repeat, and the key-up of that press stays suppressed.
-        TEST_METHOD (SequenceRemap_ReloadedWhileKeyIsHeld_DoesNotSendTheSequenceAgain)
+        void ReloadedWhileKeyIsHeld_DoesNotSendTheSequenceAgain(WORD scanCode)
         {
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
 
-            SendKey(VK_F1, false);
+            SendKey(VK_F1, false, scanCode);
             Assert::AreEqual((size_t)4, SequenceEvents());
 
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
 
-            SendKey(VK_F1, false); // auto-repeat
+            SendKey(VK_F1, false, scanCode); // auto-repeat
             Assert::AreEqual((size_t)4, SequenceEvents());
 
-            SendKey(VK_F1, true);
+            SendKey(VK_F1, true, scanCode);
             Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
             Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
 
             // The next press sends the sequence again
-            SendKey(VK_F1, false);
+            SendKey(VK_F1, false, scanCode);
             Assert::AreEqual((size_t)8, SequenceEvents());
+        }
+
+        TEST_METHOD (SequenceRemap_ReloadedWhileKeyIsHeld_DoesNotSendTheSequenceAgain)
+        {
+            ReloadedWhileKeyIsHeld_DoesNotSendTheSequenceAgain(0);
+        }
+
+        // The same with the scan code a real keyboard sends, so the press is identified by it
+        TEST_METHOD (SequenceRemap_ReloadedWhileKeyIsHeld_DoesNotSendTheSequenceAgain_WithScanCode)
+        {
+            ReloadedWhileKeyIsHeld_DoesNotSendTheSequenceAgain(f1ScanCode);
         }
 
         // Removing the remap while the key is held keeps the rest of that press suppressed: the app
         // never saw the key-down, so it must not get auto-repeats or a key-up for it.
-        TEST_METHOD (SequenceRemap_RemovedWhileKeyIsHeld_KeepsThatPressSuppressed)
+        void RemovedWhileKeyIsHeld_KeepsThatPressSuppressed(WORD scanCode)
         {
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
 
-            SendKey(VK_F1, false);
+            SendKey(VK_F1, false, scanCode);
             Assert::AreEqual((size_t)4, SequenceEvents());
 
             ReloadSequenceRemaps({});
 
-            SendKey(VK_F1, false); // auto-repeat
-            SendKey(VK_F1, true);
+            SendKey(VK_F1, false, scanCode); // auto-repeat
+            SendKey(VK_F1, true, scanCode);
             Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
             Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
 
             // The next press is an ordinary F1
-            SendKey(VK_F1, false);
-            SendKey(VK_F1, true);
+            SendKey(VK_F1, false, scanCode);
+            SendKey(VK_F1, true, scanCode);
             Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
             Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
 
             // And once the remap is back, a press sends the sequence
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
-            SendKey(VK_F1, false);
+            SendKey(VK_F1, false, scanCode);
             Assert::AreEqual((size_t)8, SequenceEvents());
             Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+        }
+
+        TEST_METHOD (SequenceRemap_RemovedWhileKeyIsHeld_KeepsThatPressSuppressed)
+        {
+            RemovedWhileKeyIsHeld_KeepsThatPressSuppressed(0);
+        }
+
+        // The same with the scan code a real keyboard sends, so the press is identified by it
+        TEST_METHOD (SequenceRemap_RemovedWhileKeyIsHeld_KeepsThatPressSuppressed_WithScanCode)
+        {
+            RemovedWhileKeyIsHeld_KeepsThatPressSuppressed(f1ScanCode);
+        }
+
+        // The same as SequenceRemap_EnabledWhileKeyIsHeld_WaitsForTheNextPress, but presses are
+        // already tracked when the key goes down, because another key has a sequence remap. The
+        // press is then on record from its own key-down as one that reached the system (it is not
+        // taken from the key state when tracking starts), and the remap added for the key while it
+        // is held waits for the next press.
+        void EnabledWhileKeyIsHeld_WithAnotherSequenceRemapPresent_WaitsForTheNextPress(WORD scanCode)
+        {
+            ReloadSequenceRemaps({ { VK_F2, { 0x43 } } });
+
+            SendKey(VK_F1, false, scanCode);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+            Assert::IsFalse(testState.SequencePresses().Empty());
+
+            // The key state must not matter here: the record of the press does
+            mockedInputHandler.SetKeyboardState(VK_F1, false);
+            ReloadSequenceRemaps({ { VK_F2, { 0x43 } }, { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false, scanCode); // auto-repeat
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            SendKey(VK_F1, true, scanCode);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+
+            // The next press is replaced by the sequence
+            SendKey(VK_F1, false, scanCode);
+            SendKey(VK_F1, true, scanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+        }
+
+        TEST_METHOD (SequenceRemap_EnabledWhileKeyIsHeld_WithAnotherSequenceRemapPresent_WaitsForTheNextPress)
+        {
+            EnabledWhileKeyIsHeld_WithAnotherSequenceRemapPresent_WaitsForTheNextPress(0);
+        }
+
+        TEST_METHOD (SequenceRemap_EnabledWhileKeyIsHeld_WithAnotherSequenceRemapPresent_WaitsForTheNextPress_WithScanCode)
+        {
+            EnabledWhileKeyIsHeld_WithAnotherSequenceRemapPresent_WaitsForTheNextPress(f1ScanCode);
         }
 
         // A press that was passed through because the injection failed leaves nothing behind when

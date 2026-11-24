@@ -218,8 +218,9 @@ public:
 
     // True if the key-sequence remap has nothing to do for any event: no live remap and no press
     // on record. Presses are not tracked then, so users without key sequences pay two empty()
-    // checks per event. Tracking starts when a table with remaps is published; the keys that are
-    // down at that moment are seeded as forwarded presses (see PublishStagedSequenceTable).
+    // checks per event (and the atomic read of PublishStagedSequenceTable). Tracking starts when a
+    // table with remaps is published; the keys that are down at that moment are seeded as
+    // forwarded presses (see PublishStagedSequenceTable).
     // Low-level keyboard hook thread only.
     bool IsSequenceRemapIdle() const noexcept;
 
