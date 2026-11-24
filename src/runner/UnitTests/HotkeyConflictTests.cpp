@@ -83,20 +83,8 @@ namespace RunnerUnitTests
             using namespace HotkeyConflictDetector;
 
             constexpr int testHotkeyId = 0x0FFE;
-            struct HotkeyRegistrationGuard
-            {
-                bool registered = false;
-                ~HotkeyRegistrationGuard()
-                {
-                    if (registered)
-                    {
-                        UnregisterHotKey(nullptr, testHotkeyId);
-                    }
-                }
-            } guard;
-
-            guard.registered = RegisterHotKey(nullptr, testHotkeyId, MOD_CONTROL | MOD_ALT | MOD_SHIFT | MOD_NOREPEAT, VK_F24) != FALSE;
-            Assert::IsTrue(guard.registered);
+            Assert::IsTrue(RegisterHotKey(nullptr, testHotkeyId, MOD_CONTROL | MOD_ALT | MOD_SHIFT, VK_F24) != FALSE);
+            auto unregisterHotkey = wil::scope_exit([&] { UnregisterHotKey(nullptr, testHotkeyId); });
 
             auto& manager = HotkeyConflictManager::GetInstance();
             const Hotkey hotkey{ .win = false, .ctrl = true, .shift = true, .alt = true, .key = VK_F24 };
