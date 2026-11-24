@@ -30,23 +30,29 @@ map<wstring, vector<wstring>> escapeInfo = {
     { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } },
     { L"FancyZones\\settings.json", { L"properties/fancyzones_excluded_apps" } },
     { L"MouseWithoutBorders\\settings.json", { L"properties/SecurityKey" } }, // avoid leaking connection key
-    { L"Keyboard Manager\\default.json", {
-        L"remapKeysToText",
-        L"remapShortcutsToText",
-        L"remapShortcuts/global/runProgramFilePath",
-        L"remapShortcuts/global/runProgramArgs",
-        L"remapShortcuts/global/runProgramStartInDir",
-        L"remapShortcuts/global/openUri",
-        L"remapShortcuts/appSpecific/runProgramFilePath",
-        L"remapShortcuts/appSpecific/runProgramArgs",
-        L"remapShortcuts/appSpecific/runProgramStartInDir",
-        L"remapShortcuts/appSpecific/openUri",
-        } }, // avoid leaking personal information from text, URI or application mappings
     { L"Workspaces/workspaces.json", { L"workspaces/applications/command-line-arguments" } },
     { L"AdvancedPaste/settings.json", {
         L"properties/custom-actions/value/name",
         L"properties/custom-actions/value/prompt"
         } },
+};
+
+// Applied to every Keyboard Manager profile (Keyboard Manager\*.json except settings.json), not only
+// default.json: avoid leaking personal information from text, URI or application mappings, and from key
+// sequences (a sequence of letter keys can spell out text).
+const wstring keyboardManagerFolder = L"Keyboard Manager";
+const vector<wstring> keyboardManagerProfileEscapeInfo = {
+    L"remapKeysToText",
+    L"remapShortcutsToText",
+    L"remapKeys/inProcessSequence/newRemapKeys",
+    L"remapShortcuts/global/runProgramFilePath",
+    L"remapShortcuts/global/runProgramArgs",
+    L"remapShortcuts/global/runProgramStartInDir",
+    L"remapShortcuts/global/openUri",
+    L"remapShortcuts/appSpecific/runProgramFilePath",
+    L"remapShortcuts/appSpecific/runProgramArgs",
+    L"remapShortcuts/appSpecific/runProgramStartInDir",
+    L"remapShortcuts/appSpecific/openUri",
 };
 
 vector<wstring> filesToDelete = {
@@ -128,7 +134,7 @@ void HideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
     }
 }
 
-void HideForFile(const path& dir, const wstring& relativePath)
+void HideForFile(const path& dir, const wstring& relativePath, const vector<wstring>& xpaths)
 {
     path jsonPath = dir;
     jsonPath.append(relativePath);
@@ -140,7 +146,7 @@ void HideForFile(const path& dir, const wstring& relativePath)
     }
 
     JsonValue jValue = json::value(jObject.value());
-    for (auto xpath : escapeInfo[relativePath])
+    for (auto xpath : xpaths)
     {
         vector<wstring> xpathArray = GetXpathArray(xpath);
         HideByXPath(jValue, xpathArray, 0);
@@ -167,7 +173,25 @@ void HideUserPrivateInfo(const filesystem::path& dir)
     // Replace data in json files
     for (auto& it : escapeInfo)
     {
-        HideForFile(dir, it.first);
+        HideForFile(dir, it.first, it.second);
+    }
+
+    // Keyboard Manager keeps one file per profile, named by the user.
+    try
+    {
+        error_code err;
+        for (const auto& entry : directory_iterator(dir / keyboardManagerFolder, err))
+        {
+            const auto filename = entry.path().filename();
+            if (entry.is_regular_file() && _wcsicmp(entry.path().extension().c_str(), L".json") == 0 && _wcsicmp(filename.c_str(), L"settings.json") != 0)
+            {
+                HideForFile(dir, (path(keyboardManagerFolder) / filename).wstring(), keyboardManagerProfileEscapeInfo);
+            }
+        }
+    }
+    catch (...)
+    {
+        wprintf(L"Failed to hide private data in the Keyboard Manager profiles\n");
     }
 
     // Delete files
