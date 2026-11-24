@@ -3,10 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using Microsoft.PowerToys.Settings.UI.Library;
 using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Models;
+using WorkspacesEditor.Services;
 using WorkspacesEditor.ViewModels;
 
 namespace WorkspacesEditor.UnitTests
@@ -20,7 +21,13 @@ namespace WorkspacesEditor.UnitTests
     {
         internal static MainViewModel CreateViewModel()
         {
-            return new MainViewModel(new Utils.WorkspacesEditorIO());
+            return new MainViewModel(
+                new Utils.WorkspacesEditorIO(),
+                new WorkspacesSettings(),
+                _ => { },
+                new NoOpShortcutService(),
+                _ => { },
+                _ => { });
         }
 
         internal static Project CreateProject(string name, long creationTime = 0, long lastLaunchedTime = 0, params string[] appNames)
@@ -38,7 +45,7 @@ namespace WorkspacesEditor.UnitTests
                 CanLaunchElevated = false,
                 Minimized = false,
                 Maximized = false,
-                Position = default,
+                Position = new ApplicationWrapper.WindowPositionWrapper { Width = 640, Height = 480 },
                 Monitor = 0,
             }).ToList();
 
@@ -51,10 +58,23 @@ namespace WorkspacesEditor.UnitTests
                 IsShortcutNeeded = false,
                 MoveExistingWindows = false,
                 Applications = appWrappers,
-                MonitorConfiguration = new List<MonitorConfigurationWrapper>(),
+                MonitorConfiguration = [new MonitorConfigurationWrapper { MonitorNumber = 0, Dpi = 96 }],
             };
 
             return new Project(projectWrapper);
+        }
+
+        private sealed class NoOpShortcutService : IWorkspaceShortcutService
+        {
+            public bool Exists(Project project) => false;
+
+            public void Apply(Project project, string previousName = null)
+            {
+            }
+
+            public void Remove(Project project)
+            {
+            }
         }
     }
 }

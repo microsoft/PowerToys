@@ -137,8 +137,19 @@ public sealed class RegistryPreviewIntegrationTests : RegistryPreviewTestBase
             "Settings");
 
         Step("Opening a registry file with the Ctrl+O keyboard shortcut");
-        TryBringRegistryPreviewForward();
-        KeyboardHelper.SendKeys(Key.Ctrl, Key.O);
+        var editorHandle = new IntPtr(registryPreview.WindowHandle);
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(editorHandle, ActionTimeoutMS, requiredConsecutiveMatches: 2),
+            $"Registry Preview did not take foreground for Ctrl+O: {WindowControl.GetForegroundWindowInfo()}.");
+
+        // Keep the accelerator on WinUI's command bar rather than sending it into Monaco's WebView.
+        var openButton = registryPreview.Find<Button>(By.AccessibilityId("openButton"), ActionTimeoutMS);
+        openButton.Focus();
+        Assert.IsTrue(
+            openButton.WaitForProperty("HasKeyboardFocus", "true", ActionTimeoutMS) &&
+            WindowControl.GetForegroundWindowHandle() == editorHandle,
+            $"Registry Preview's Open button did not own keyboard focus for Ctrl+O: {WindowControl.GetForegroundWindowInfo()}.");
+        KeyboardHelper.SendChord(Key.Ctrl, Key.O);
         CompleteFileDialogWithPath(fixture);
         AssertExactElement(registryPreview, Path.GetFileName(keyPath), "Ctrl+O-opened visual-tree key");
     }

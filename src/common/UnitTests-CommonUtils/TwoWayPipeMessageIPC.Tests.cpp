@@ -2,6 +2,7 @@
 
 #include <interop/two_way_pipe_message_ipc.h>
 #include <aclapi.h>
+#include <elevation.h>
 #include "..\..\modules\Workspaces\WorkspacesLib\IPCHelper.h"
 
 #include <memory>
@@ -58,6 +59,20 @@ namespace UnitTestsCommonUtils
             policy.allowedBasenames = { BaseNameOf(executable) };
             policy.requireMicrosoftSignature = false;
             return policy;
+        }
+
+        // The Administrators-owned pipe security boundary only exists for an elevated server: a
+        // non-elevated server has no identity distinct from its same-user clients.
+        bool ElevatedServerBoundaryApplies()
+        {
+            if (is_process_elevated(false))
+            {
+                return true;
+            }
+
+            Microsoft::VisualStudio::CppUnitTestFramework::Logger::WriteMessage(
+                L"The test process is not elevated, so a same-user client cannot be distinguished from the server, skipping test");
+            return false;
         }
 
         bool WriteTestMessage(HANDLE pipe)
@@ -663,6 +678,11 @@ namespace UnitTestsCommonUtils
 
         TEST_METHOD(NormalSameUserCannotModifyProtectedDaclOrCreateAnotherServerInstance)
         {
+            if (!ElevatedServerBoundaryApplies())
+            {
+                return;
+            }
+
             HANDLE token = nullptr;
             Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) == TRUE);
 
@@ -739,6 +759,11 @@ namespace UnitTestsCommonUtils
 
         TEST_METHOD(RejectedClientRapidCloseNeverReleasesPipeName)
         {
+            if (!ElevatedServerBoundaryApplies())
+            {
+                return;
+            }
+
             HANDLE token = nullptr;
             Assert::IsTrue(OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token) == TRUE);
 
@@ -791,6 +816,11 @@ namespace UnitTestsCommonUtils
 
         TEST_METHOD(ReplacementListenerIsReservedBeforeRejectedHandlerStarts)
         {
+            if (!ElevatedServerBoundaryApplies())
+            {
+                return;
+            }
+
             FaultInjectionReset reset;
             HANDLE before_replacement = CreateEventW(nullptr, TRUE, FALSE, nullptr);
             HANDLE allow_replacement = CreateEventW(nullptr, TRUE, FALSE, nullptr);

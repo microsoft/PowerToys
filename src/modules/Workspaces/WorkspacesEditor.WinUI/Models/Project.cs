@@ -4,7 +4,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
@@ -26,13 +25,15 @@ namespace WorkspacesEditor.Models
 
         public string Id { get; private set; }
 
+        internal bool NeedsApplicationIdRepair { get; set; }
+
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(CanBeSaved))]
         public partial string Name { get; set; }
 
         public long CreationTime { get; }
 
-        public long LastLaunchedTime { get; }
+        public long LastLaunchedTime { get; private set; }
 
         public bool IsShortcutNeeded { get; set; }
 
@@ -107,7 +108,27 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public bool CanBeSaved => !string.IsNullOrEmpty(Name) && Applications.Count > 0;
+        public bool CanBeSaved => !string.IsNullOrEmpty(Name) &&
+            Applications?.Exists(app => app.IsIncluded) == true &&
+            Applications.TrueForAll(app => !app.IsIncluded || (app.Position.Width > 0 && app.Position.Height > 0)) &&
+            !HasUnresolvedMonitors;
+
+        public bool HasUnresolvedMonitors
+        {
+            get
+            {
+                var numbers = new HashSet<int>();
+                foreach (MonitorSetup monitor in Monitors)
+                {
+                    if (monitor.Dpi <= 0 || !numbers.Add(monitor.MonitorNumber))
+                    {
+                        return true;
+                    }
+                }
+
+                return Applications?.Exists(app => app.IsIncluded && !numbers.Contains(app.MonitorNumber)) == true;
+            }
+        }
 
         [ObservableProperty]
         public partial bool IsRevertEnabled { get; set; }
@@ -123,15 +144,13 @@ namespace WorkspacesEditor.Models
             get
             {
                 List<object> applicationsListed = [];
-                ILookup<MonitorSetup, Application> apps = Applications.Where(x => !x.Minimized).ToLookup(x => x.MonitorSetup);
-                foreach (IGrouping<MonitorSetup, Application> appItem in apps.OrderBy(x => x.Key.MonitorDpiUnawareBounds.X).ThenBy(x => x.Key.MonitorDpiUnawareBounds.Y))
+                var apps = Applications.Where(app => !app.Minimized).GroupBy(app => app.MonitorNumber)
+                    .Select(group => (Apps: group, Monitor: group.First().MonitorSetup));
+                foreach (var (group, monitor) in apps.OrderBy(item => item.Monitor.MonitorDpiUnawareBounds.X).ThenBy(item => item.Monitor.MonitorDpiUnawareBounds.Y))
                 {
-                    MonitorHeaderRow headerRow = new() { MonitorName = GetString("Screen") + " " + appItem.Key.MonitorNumber, SelectString = GetString("SelectAllAppsOnMonitor") + " " + appItem.Key.MonitorInfo };
+                    MonitorHeaderRow headerRow = new() { MonitorName = GetString("Screen") + " " + monitor.MonitorNumber, SelectString = GetString("SelectAllAppsOnMonitor") + " " + monitor.MonitorInfo };
                     applicationsListed.Add(headerRow);
-                    foreach (Application app in appItem)
-                    {
-                        applicationsListed.Add(app);
-                    }
+                    applicationsListed.AddRange(group);
                 }
 
                 IEnumerable<Application> minimizedApps = Applications.Where(x => x.Minimized);
@@ -165,8 +184,16 @@ namespace WorkspacesEditor.Models
         public void NotifyApplicationsChanged()
         {
             OnPropertyChanged(nameof(AppsCountString));
-            OnPropertyChanged(nameof(CanBeSaved));
+            NotifyMonitorReferencesChanged();
             OnPropertyChanged(nameof(ApplicationsListed));
+        }
+
+        internal void NotifyCanBeSavedChanged() => OnPropertyChanged(nameof(CanBeSaved));
+
+        internal void NotifyMonitorReferencesChanged()
+        {
+            NotifyCanBeSavedChanged();
+            OnPropertyChanged(nameof(HasUnresolvedMonitors));
         }
 
         /// <summary>
@@ -175,6 +202,16 @@ namespace WorkspacesEditor.Models
         public void NotifyLastLaunchedChanged()
         {
             OnPropertyChanged(nameof(LastLaunched));
+        }
+
+        internal void UpdateLastLaunchedTime(long timestamp)
+        {
+            if (LastLaunchedTime != timestamp)
+            {
+                LastLaunchedTime = timestamp;
+                OnPropertyChanged(nameof(LastLaunchedTime));
+                NotifyLastLaunchedChanged();
+            }
         }
 
         public List<MonitorSetup> Monitors { get; }
@@ -200,25 +237,29 @@ namespace WorkspacesEditor.Models
         }
 
         public Project(Project selectedProject)
+            : this(selectedProject, selectedProject)
         {
-            Id = selectedProject.Id;
-            Name = selectedProject.Name;
-            PreviewIcons = selectedProject.PreviewIcons;
-            PreviewImage = selectedProject.PreviewImage;
-            IsShortcutNeeded = selectedProject.IsShortcutNeeded;
-            MoveExistingWindows = selectedProject.MoveExistingWindows;
+            IsPositionChangedManually = selectedProject.IsPositionChangedManually;
+        }
 
-            Monitors = [];
-            foreach (MonitorSetup item in selectedProject.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.X).ThenBy(x => x.MonitorDpiAwareBounds.Y))
-            {
-                Monitors.Add(item);
-            }
+        internal Project(Project draft, Project previous)
+        {
+            Id = previous.Id;
+            CreationTime = previous.CreationTime;
+            LastLaunchedTime = previous.LastLaunchedTime;
+            Name = draft.Name;
+            EditorWindowTitle = draft.EditorWindowTitle;
+            PreviewIcons = draft.PreviewIcons;
+            PreviewImage = draft.PreviewImage;
+            PreviewImageWidth = draft.PreviewImageWidth;
+            IsShortcutNeeded = draft.IsShortcutNeeded;
+            MoveExistingWindows = draft.MoveExistingWindows;
+            Monitors = draft.Monitors.OrderBy(x => x.MonitorDpiAwareBounds.X).ThenBy(x => x.MonitorDpiAwareBounds.Y).ToList();
 
             Applications = [];
-            foreach (Application item in selectedProject.Applications)
+            foreach (Application item in draft.Applications)
             {
-                Application newApp = new(item);
-                newApp.Parent = this;
+                Application newApp = new(item) { Parent = this };
                 newApp.InitializationFinished();
                 Applications.Add(newApp);
             }
@@ -247,7 +288,6 @@ namespace WorkspacesEditor.Models
                     Version = string.IsNullOrEmpty(app.Version) ? string.Empty : app.Version,
                     PackageFullName = app.PackageFullName,
                     AppUserModelId = app.AppUserModelId,
-                    Parent = this,
                     CommandLineArguments = app.CommandLineArguments,
                     IsElevated = app.IsElevated,
                     CanLaunchElevated = app.CanLaunchElevated,
@@ -262,6 +302,7 @@ namespace WorkspacesEditor.Models
                         Y = app.Position.Y,
                     },
                     MonitorNumber = app.Monitor,
+                    Parent = this,
                 };
                 newApp.InitializationFinished();
                 Applications.Add(newApp);
@@ -275,12 +316,41 @@ namespace WorkspacesEditor.Models
             }
         }
 
+        internal static Project FromStorage(ProjectWrapper wrapper)
+        {
+            var project = new Project(wrapper);
+            var usedIds = new HashSet<Guid>();
+            for (int i = 0; i < project.Applications.Count; i++)
+            {
+                var app = project.Applications[i];
+                if (!Guid.TryParse(app.Id, out var guid) || !usedIds.Add(guid))
+                {
+                    do
+                    {
+                        guid = Guid.NewGuid();
+                    }
+                    while (!usedIds.Add(guid));
+                    app.Id = guid.ToString("B");
+                }
+                else if (!Guid.TryParseExact(app.Id, "B", out _) && !Guid.TryParseExact(app.Id, "D", out _))
+                {
+                    app.Id = guid.ToString("B");
+                }
+
+                project.NeedsApplicationIdRepair |= app.Id != wrapper.Applications[i].Id;
+            }
+
+            return project;
+        }
+
         public void InitializePreview()
         {
             try
             {
-                if (Applications == null || Applications.Count == 0 || Monitors == null || Monitors.Count == 0)
+                if (Applications == null || Applications.Count == 0 || Monitors == null || Monitors.Count == 0 || HasUnresolvedMonitors)
                 {
+                    PreviewImage = null;
+                    PreviewImageWidth = 0;
                     return;
                 }
 
@@ -289,6 +359,10 @@ namespace WorkspacesEditor.Models
                 double top = Monitors.Min(m => m.MonitorDpiAwareBounds.Y);
                 double right = Monitors.Max(m => m.MonitorDpiAwareBounds.X + m.MonitorDpiAwareBounds.Width);
                 double bottom = Monitors.Max(m => m.MonitorDpiAwareBounds.Y + m.MonitorDpiAwareBounds.Height);
+                if (right <= left || bottom <= top)
+                {
+                    return;
+                }
 
                 var bounds = new System.Drawing.Rectangle((int)left, (int)top, (int)(right - left), (int)(bottom - top));
 
@@ -306,13 +380,8 @@ namespace WorkspacesEditor.Models
 
         public MonitorSetup GetMonitorForApp(Application app)
         {
-            if (Monitors == null || Monitors.Count == 0)
-            {
-                return new MonitorSetup("Unknown", string.Empty, app.MonitorNumber, 96, default, default);
-            }
-
             return Monitors.FirstOrDefault(m => m.MonitorNumber == app.MonitorNumber)
-                ?? Monitors[0];
+                ?? new MonitorSetup(string.Empty, string.Empty, app.MonitorNumber, 96, default, default);
         }
 
         public void CloseExpanders()
@@ -323,10 +392,38 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public void UpdateAfterLaunchAndEdit(Project projectBefore)
+        public void UpdateAfterLaunchAndEdit(Project projectBefore) => UpdateAfterLaunchAndEdit(projectBefore, projectBefore);
+
+        internal void UpdateAfterLaunchAndEdit(Project beforeCapture, Project currentDraft)
         {
-            Id = projectBefore.Id;
+            Id = currentDraft.Id;
+            Name = currentDraft.Name;
             IsRevertEnabled = true;
+            IsShortcutNeeded = currentDraft.IsShortcutNeeded;
+            MoveExistingWindows = currentDraft.MoveExistingWindows;
+            IsPositionChangedManually = currentDraft.IsPositionChangedManually;
+
+            var liveRows = ReferenceEquals(beforeCapture, currentDraft) ? null :
+                ApplicationWindowMatcher.Match(beforeCapture.Applications, currentDraft.Applications)
+                    .Where(pair => pair.Previous != null).ToDictionary(pair => pair.Previous, pair => pair.Updated);
+            var previousIds = beforeCapture.Applications.Select(app => app.IdWithoutBraces).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            var capturedIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var (app, previous) in ApplicationWindowMatcher.Match(beforeCapture.Applications, Applications))
+            {
+                // An unmatched window may carry an old stamp shared by multiple windows.
+                // Reusing it would also transfer that old row's stored metadata to this window.
+                while (string.IsNullOrEmpty(app.Id) || (previous == null && previousIds.Contains(app.IdWithoutBraces)) ||
+                    !capturedIds.Add(app.IdWithoutBraces))
+                {
+                    app.Id = Guid.NewGuid().ToString("B");
+                }
+
+                if (previous != null)
+                {
+                    var current = liveRows?.GetValueOrDefault(previous) ?? previous;
+                    app.ApplyDraftSettings(previous, current);
+                }
+            }
         }
 
         private static string GetString(string key)

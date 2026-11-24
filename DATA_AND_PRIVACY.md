@@ -145,6 +145,7 @@ Thank you for using PowerToys!
 | Microsoft.PowerToys.CmdPal_ColdLaunch | Occurs when Command Palette starts for the first time (cold start). |
 | Microsoft.PowerToys.CmdPal_DockConfiguration | Tracks dock configuration at startup including whether the dock is enabled, dock side (top, bottom, left, or right), and the list of extension commands pinned to the start, center, and end sections of the dock. |
 | Microsoft.PowerToys.CmdPal_ExtensionInvoked | Tracks extension usage including extension ID, command details, success status, and execution time. |
+| Microsoft.PowerToys.CmdPal_Heartbeat | Records process health and performance metrics when built-in extensions load, external extensions load, and every 30 minutes. Includes the trigger, process uptime, loaded extension count, working set size, private memory size, and managed heap size. |
 | Microsoft.PowerToys.CmdPal_OpenPage | Triggered when a page is opened within the Command Palette, tracking navigation depth. |
 | Microsoft.PowerToys.CmdPal_OpenUri | Occurs when a URI is opened through the Command Palette, including whether it's a web URL. |
 | Microsoft.PowerToys.CmdPal_ReactivateInstance | Triggered when an existing Command Palette instance is reactivated. |

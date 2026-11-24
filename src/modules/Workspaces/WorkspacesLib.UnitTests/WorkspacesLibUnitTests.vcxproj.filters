@@ -29,6 +29,9 @@
     <ClCompile Include="WorkspacesDataTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="WindowPropertyTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="CliContractTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

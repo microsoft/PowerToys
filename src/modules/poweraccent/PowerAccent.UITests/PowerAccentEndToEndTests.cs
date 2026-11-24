@@ -32,6 +32,38 @@ public sealed class PowerAccentEndToEndTests : UITestBase
     [ClassCleanup]
     public static void RestoreClassState() => DisposeAll(ModuleSettings, UsageInfo);
 
+    [DataTestMethod]
+    [DataRow("SP", "A")]
+    [DataRow("ALL", "E")]
+    [TestCategory("PowerAccent")]
+    public void UnicodeDescriptionHasBalancedVerticalSpacing(string language, string letterName)
+    {
+        ReplaceSettings(this, new Settings(
+            Activation: ActivationKey.Space,
+            InputTimeMs: 200,
+            SelectedLanguage: language,
+            ShowUnicodeDescription: true));
+
+        using var clipboard = PreserveClipboardText();
+        using var notepad = NotepadFixture.Start(this);
+        var letter = Enum.Parse<Key>(letterName);
+        var letterKey = Enum.Parse<LetterKey>($"VK_{letterName}");
+        var languages = language == "ALL" ? CharacterMappings.All.Select(item => item.Id) : [Enum.Parse<Language>(language)];
+        var characters = CharacterMappings.GetCharacters(letterKey, [.. languages]);
+
+        var result = RunTriggeredGesture(
+            this,
+            notepad,
+            letter,
+            Key.Space,
+            toolbar => AssertDescriptionVerticallyCentered(this, toolbar));
+
+        Assert.AreEqual(
+            characters[0],
+            result,
+            "Showing the description should preserve character selection and insertion.");
+    }
+
     [TestMethod]
     [TestCategory("PowerAccent")]
     public void ScrollbarSpacingAppearsOnlyForOverflowingCharacterLists()

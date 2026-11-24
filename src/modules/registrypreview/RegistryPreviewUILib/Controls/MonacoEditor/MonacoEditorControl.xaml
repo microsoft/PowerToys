@@ -6,29 +6,20 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:RegistryPreviewUILib"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     mc:Ignorable="d">
 
-    <UserControl.Resources>
-        <tkconverters:BoolToVisibilityConverter
-            x:Key="BoolToInvertedVisibilityConverter"
-            FalseValue="Visible"
-            TrueValue="Collapsed" />
-    </UserControl.Resources>
-
     <Grid>
+        <controls:WebView2
+            x:Name="Browser"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            AutomationProperties.AutomationId="MonacoEditorLoading"
+            Loaded="Browser_Loaded" />
         <ProgressRing
             Width="48"
             Height="48"
+            IsHitTestVisible="False"
             Visibility="{x:Bind IsLoading, Mode=OneWay}" />
-        <Border
-            Visibility="{x:Bind IsLoading, Mode=OneWay, Converter={StaticResource BoolToInvertedVisibilityConverter}}">
-            <controls:WebView2
-                x:Name="Browser"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Stretch"
-                Loaded="Browser_Loaded" />
-        </Border>
         <ContentDialog
             x:Name="OpenUriDialog"
             x:Uid="OpenUriDialog"
