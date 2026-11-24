@@ -12,13 +12,15 @@ internal sealed class PageNavigationService(
     IAppHostService appHostService)
 {
     public AppExtensionHost ResolveHost(PerformCommandMessage message, PageViewModel? currentPage) =>
-        (message.Command as FallbackInvocationViewModel)?.QueryContext.ExtensionHost
+        message.FallbackContext?.ExtensionHost
+        ?? (message.Command as FallbackInvocationViewModel)?.QueryContext.ExtensionHost
         ?? appHostService.GetHostForCommand(
             message.CommandContext,
             message.Context?.ExtensionHost ?? currentPage?.ExtensionHost);
 
     public ICommandProviderContext ResolveProviderContext(PerformCommandMessage message, PageViewModel? currentPage) =>
-        (message.Command as FallbackInvocationViewModel)?.QueryContext.ProviderContext
+        message.FallbackContext?.ProviderContext
+        ?? (message.Command as FallbackInvocationViewModel)?.QueryContext.ProviderContext
         ?? appHostService.GetProviderContextForCommand(
             message.CommandContext,
             message.Context?.ProviderContext ?? currentPage?.ProviderContext);
@@ -28,14 +30,15 @@ internal sealed class PageNavigationService(
         bool nested,
         AppExtensionHost host,
         ICommandProviderContext providerContext,
-        ListPageLaunchOptions? launchOptions)
+        ListPageLaunchOptions? launchOptions,
+        FallbackQueryContext? fallbackContext = null)
     {
         if (launchOptions is { } options && (options.IsEmpty || page is not IListPage))
         {
             throw new NotSupportedException("List page launch options can only be applied to list pages and must contain a query or filter.");
         }
 
-        var viewModel = pageFactory.TryCreatePageViewModel(page, nested, host, providerContext);
+        var viewModel = pageFactory.TryCreatePageViewModel(page, nested, host, providerContext, fallbackContext);
         if (viewModel is null)
         {
             return null;

@@ -25,11 +25,17 @@ public partial class FallbackSettingsViewModel : ObservableObject
 
     public bool HasQuerySettings { get; private set; }
 
+    public bool HasResultSettings { get; private set; }
+
     //// Limits for the number boxes, so the view and the model clamp to the same values.
 
     public double QueryDelayUpperBound => FallbackSettings.MaximumQueryDelayMilliseconds;
 
     public double MinimumQueryLengthUpperBound => FallbackSettings.MaximumMinimumQueryLength;
+
+    public double ItemCountLowerBound => FallbackSettings.MinimumItemCount;
+
+    public double ItemCountUpperBound => FallbackSettings.MaximumItemCount;
 
     public bool IsEnabled
     {
@@ -87,6 +93,19 @@ public partial class FallbackSettingsViewModel : ObservableObject
             _fallbackSettings with { MinimumQueryLength = ToUInt32(value, FallbackSettings.MaximumMinimumQueryLength) });
     }
 
+    public double MaximumVisibleItemCount
+    {
+        get => _fallbackSettings.MaximumVisibleItemCount ?? FallbackResultQueryManager.InitialRequestedItemCount;
+        set => Update(
+            nameof(MaximumVisibleItemCount),
+            _fallbackSettings with
+            {
+                MaximumVisibleItemCount = Math.Max(
+                    FallbackSettings.MinimumItemCount,
+                    ToUInt32(value, FallbackSettings.MaximumItemCount)),
+            });
+    }
+
     public FallbackSettingsViewModel(
         TopLevelViewModel fallback,
         FallbackSettings fallbackSettings,
@@ -98,6 +117,7 @@ public partial class FallbackSettingsViewModel : ObservableObject
         Id = fallback.Id;
         RankId = fallback.FallbackKey;
         HasQuerySettings = fallback.HasFallbackQueryHandler;
+        HasResultSettings = HasQuerySettings;
         DisplayName = string.IsNullOrWhiteSpace(fallback.DisplayTitle)
             ? (string.IsNullOrWhiteSpace(fallback.Title) ? providerSettings.DisplayName : fallback.Title)
             : fallback.DisplayTitle;

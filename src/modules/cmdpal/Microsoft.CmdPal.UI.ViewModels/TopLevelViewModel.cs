@@ -114,6 +114,11 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
     internal uint EffectiveMinimumQueryLength => GetFallbackSettings()?.MinimumQueryLength
         ?? 0;
 
+    internal uint EffectiveMaximumVisibleItemCount => Math.Clamp(
+        GetFallbackSettings()?.MaximumVisibleItemCount ?? FallbackResultQueryManager.InitialRequestedItemCount,
+        FallbackSettings.MinimumItemCount,
+        FallbackSettings.MaximumItemCount);
+
     public HotkeySettings? Hotkey
     {
         get => _hotkey;

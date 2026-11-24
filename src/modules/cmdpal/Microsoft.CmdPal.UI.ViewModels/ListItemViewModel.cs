@@ -14,6 +14,7 @@ namespace Microsoft.CmdPal.UI.ViewModels;
 public partial class ListItemViewModel : CommandItemViewModel
 {
     private const int MaxVisibleTags = 3;
+    private readonly IDisposable? _fallbackSnapshotLease;
 
     private Stretch _layoutImageStretch = Stretch.UniformToFill;
 
@@ -90,9 +91,33 @@ public partial class ListItemViewModel : CommandItemViewModel
     }
 
     public ListItemViewModel(IListItem model, WeakReference<IPageContext> context, IContextMenuFactory contextMenuFactory)
-        : base(new(model), context, contextMenuFactory)
+        : this(model, context, contextMenuFactory, null)
+    {
+    }
+
+    internal ListItemViewModel(
+        IListItem model,
+        WeakReference<IPageContext> context,
+        IContextMenuFactory contextMenuFactory,
+        FallbackQueryContext? fallbackContext)
+        : base(
+            new(model),
+            context,
+            contextMenuFactory,
+            ResolveFallbackContext(model, fallbackContext))
     {
         Model = new ExtensionObject<IListItem>(model);
+        _fallbackSnapshotLease = FallbackContext?.AcquireSnapshotLease();
+        (model as FallbackResultListItem)?.ReleaseMaterializationLease();
+    }
+
+    private static FallbackQueryContext? ResolveFallbackContext(
+        IListItem model,
+        FallbackQueryContext? fallbackContext)
+    {
+        return model is FallbackResultListItem fallbackResult
+            ? fallbackResult.QueryContext
+            : fallbackContext?.WithInvocationContext(model);
     }
 
     public override void InitializeProperties()
@@ -138,7 +163,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
-            Details = new(extensionDetails, PageContext);
+            Details = ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext));
             Details.InitializeProperties();
             UpdateProperty(nameof(Details), nameof(HasDetails));
         }
@@ -180,7 +205,7 @@ public partial class ListItemViewModel : CommandItemViewModel
             case nameof(Details):
                 var existingReference = Details;
                 var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
+                Details = extensionDetails is not null ? ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext)) : null;
                 Details?.InitializeProperties();
                 UpdateProperty(nameof(Details), nameof(HasDetails));
                 UpdateShowDetailsCommand();
@@ -374,6 +399,7 @@ public partial class ListItemViewModel : CommandItemViewModel
         Tags?.ForEach(t => t.SafeCleanup());
         _overflowTag?.SafeCleanup();
         Details?.SafeCleanup();
+        _fallbackSnapshotLease?.Dispose();
 
         var model = Model.Unsafe;
         if (model is not null)
