@@ -76,6 +76,7 @@ namespace WorkspacesLauncherUI.UnitTests
         [DataRow(nameof(SignatureWarningRequest.RunAnywayText), nameof(Resources.SignatureWarningRunAnyway))]
         [DataRow(nameof(SignatureWarningRequest.RunAnywayHelp), nameof(Resources.SignatureWarningRunAnywayHelp))]
         [DataRow(nameof(SignatureWarningRequest.CopyDetailsButtonText), nameof(Resources.SignatureWarningCopyDetails))]
+        [DataRow(nameof(SignatureWarningRequest.CopyDetailsAcknowledgementText), nameof(Resources.SignatureWarningCopyDetailsAcknowledgement))]
         [DataRow(nameof(SignatureWarningRequest.CopyDetailsErrorText), nameof(Resources.SignatureWarningCopyDetailsError))]
         public void LabelAndActionUseExpectedNonemptyResource(string propertyName, string resourceKey)
         {
@@ -94,7 +95,7 @@ namespace WorkspacesLauncherUI.UnitTests
         public void SatelliteUsesExactMarkerAndOmittedKeysFallBackToEnglish(string cultureName, string expectedTitle)
         {
             using var culture = new CultureScope(cultureName);
-            var satellite = typeof(Resources).Assembly.GetSatelliteAssembly(CultureInfo.CurrentUICulture);
+            var satellite = typeof(LocalizationTests).Assembly.GetSatelliteAssembly(CultureInfo.CurrentUICulture);
             CollectionAssert.Contains(satellite.GetManifestResourceNames(), $"WorkspacesLauncherUI.Properties.Resources.{cultureName}.resources");
             var request = new SignatureWarningRequest { Reason = "unsigned" };
             var neutral = ReadNeutralResources();

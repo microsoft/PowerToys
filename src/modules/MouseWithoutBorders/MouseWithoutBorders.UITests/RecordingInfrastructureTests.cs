@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 
 using Microsoft.PowerToys.UITest.Next;
@@ -20,10 +21,11 @@ public sealed class RecordingInfrastructureTests
     [TestCategory("MwbInfrastructure")]
     public void DesktopAndWindowVideosSurviveAnEarlyFailure()
     {
-        var directory = Path.Combine(RunFiles.PersistentResultsRoot(TestContext.TestRunDirectory),
+        var directory = Path.Combine(
+            RunFiles.PersistentResultsRoot(TestContext.TestRunDirectory),
             "mwb-recording-probe-" + Guid.NewGuid().ToString("N"));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new ScreenRecording(directory, IntPtr.Zero, 0, 960, 540));
-        Assert.ThrowsExactly<ArgumentException>(() => new ScreenRecording(directory, IntPtr.Zero, 5, 959, 540));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => _ = new ScreenRecording(directory, IntPtr.Zero, 0, 960, 540));
+        Assert.ThrowsExactly<ArgumentException>(() => _ = new ScreenRecording(directory, IntPtr.Zero, 5, 959, 540));
         using (var defaults = new ScreenRecording(directory))
         {
             Assert.AreEqual(15, defaults.FrameRate);
@@ -33,7 +35,7 @@ public sealed class RecordingInfrastructureTests
 
         using var subject = new ReceiverController("Recorded window", Guid.NewGuid().ToString());
         subject.FocusInput();
-        var session = Session.FromProcess(Environment.ProcessId.ToString(), timeoutMS: 10_000);
+        var session = Session.FromProcess(Environment.ProcessId.ToString(CultureInfo.InvariantCulture), timeoutMS: 10_000);
         session.Find<UiTextBox>(By.Id("InputReceiver")).SetText("recorded window");
 
         using var recordings = new TestRecordings(TestContext, directory);
@@ -58,6 +60,7 @@ public sealed class RecordingInfrastructureTests
                     Assert.AreEqual(SystemInformation.VirtualScreen.Width, image.Width);
                     Assert.AreEqual(SystemInformation.VirtualScreen.Height, image.Height);
                 }
+
                 TestContext.AddResultFile(screenshot);
                 throw expected;
             }

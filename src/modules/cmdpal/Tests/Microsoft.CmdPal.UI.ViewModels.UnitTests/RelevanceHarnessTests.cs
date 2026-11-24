@@ -9,6 +9,7 @@ using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.Ext.UnitTestBase;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -90,14 +91,14 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         string query,
         IEnumerable<ListItemMock> items,
         IRecentCommandsManager? history = null,
-        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null)
+        Func<InProcObject<IListItem>, ProviderSearchWeight>? providerWeightLookup = null)
     {
         var matcher = CreateMatcher();
         var q = matcher.PrecomputeQuery(query);
         history ??= EmptyHistory();
 
         return items
-            .Select(item => (item.Title, Score: MainListPage.ScoreTopLevelItem(q, item, history, matcher, providerWeightLookup)))
+            .Select(item => (item.Title, Score: MainListPage.ScoreTopLevelItem(q, new(item), history, matcher, providerWeightLookup)))
             .Where(x => x.Score > 0)
             .OrderByDescending(x => x.Score)
             .Select(x => x.Title)
@@ -108,7 +109,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         string query,
         string expectedTitle,
         IRecentCommandsManager? history = null,
-        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null)
+        Func<InProcObject<IListItem>, ProviderSearchWeight>? providerWeightLookup = null)
     {
         var ranked = Rank(query, Fixture(), history, providerWeightLookup);
         Assert.IsTrue(ranked.Count > 0, $"Query '{query}' should return at least one match");
@@ -123,7 +124,7 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         string higher,
         string lower,
         IRecentCommandsManager? history = null,
-        Func<IListItem, ProviderSearchWeight>? providerWeightLookup = null)
+        Func<InProcObject<IListItem>, ProviderSearchWeight>? providerWeightLookup = null)
     {
         var ranked = Rank(query, Fixture(), history, providerWeightLookup);
         var higherIndex = ranked.IndexOf(higher);
@@ -251,17 +252,17 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
         var history = EmptyHistory();
 
         // Baseline: with no provider weighting the two tie exactly.
-        var baseAlpha = MainListPage.ScoreTopLevelItem(q, alpha, history, matcher);
-        var baseBravo = MainListPage.ScoreTopLevelItem(q, bravo, history, matcher);
+        var baseAlpha = MainListPage.ScoreTopLevelItem(q, new(alpha), history, matcher);
+        var baseBravo = MainListPage.ScoreTopLevelItem(q, new(bravo), history, matcher);
         Assert.AreEqual(baseAlpha, baseBravo, "The two identically-titled items should tie before provider weighting");
 
-        Func<IListItem, ProviderSearchWeight> lookup = item =>
-            item is ListItemMock m && m.ProviderId == "bravo"
+        Func<InProcObject<IListItem>, ProviderSearchWeight> lookup = item =>
+            item.Safe is ListItemMock m && m.ProviderId == "bravo"
                 ? ProviderSearchWeight.Higher
                 : ProviderSearchWeight.Normal;
 
         var ranked = items
-            .Select(item => (item.ProviderId, Score: MainListPage.ScoreTopLevelItem(q, item, history, matcher, lookup)))
+            .Select(item => (item.ProviderId, Score: MainListPage.ScoreTopLevelItem(q, new(item), history, matcher, lookup)))
             .OrderByDescending(x => x.Score)
             .Select(x => x.ProviderId)
             .ToList();
@@ -274,8 +275,8 @@ public partial class RelevanceHarnessTests : CommandPaletteUnitTestBase
     {
         // Even marked Higher, a word-boundary match (Visual Studio Code for "co") must stay
         // below a prefix match (Command Prompt). Provider weight is clamped within a tier.
-        Func<IListItem, ProviderSearchWeight> boostVsCode = item =>
-            item is ListItemMock m && m.Title == "Visual Studio Code"
+        Func<InProcObject<IListItem>, ProviderSearchWeight> boostVsCode = item =>
+            item.Safe is ListItemMock m && m.Title == "Visual Studio Code"
                 ? ProviderSearchWeight.Higher
                 : ProviderSearchWeight.Normal;
 

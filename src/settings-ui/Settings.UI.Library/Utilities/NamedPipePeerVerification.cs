@@ -4,6 +4,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
 using System.Reflection.PortableExecutable;
@@ -184,6 +185,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
                     return false;
                 }
 
+                if (!MeetsComponentIdentityPolicy(ownImagePath, actualFullPath, expectedExeName))
+                {
+                    rejectionReason = "wrong-image";
+                    return false;
+                }
+
                 rejectionReason = string.Empty;
                 return true;
             }
@@ -264,12 +271,64 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
 
         private static bool MeetsSigningPolicy(string ownImagePath, string peerImagePath)
         {
+            return EvaluateSigningPolicy(
+                ownImagePath,
+                peerImagePath,
+                imagePath => TryHasEmbeddedAuthenticodeSignature(imagePath, out var hasEmbeddedSignature) ? hasEmbeddedSignature : null,
+                HasTrustedMicrosoftSignature);
+        }
+
+        // The signature probes are passed in so the policy can be tested with controlled signer fixtures.
+        // hasEmbeddedSignature returns null when the image cannot be read.
+        private static bool EvaluateSigningPolicy(
+            string ownImagePath,
+            string peerImagePath,
+            Func<string, bool?> hasEmbeddedSignature,
+            Func<string, bool> hasTrustedMicrosoftSignature)
+        {
+            var ownHasEmbeddedSignature = hasEmbeddedSignature(ownImagePath);
+            if (ownHasEmbeddedSignature is null)
+            {
+                return false;
+            }
+
+            // Signed product components are signed separately and carry their own leaf certificates.
+            return ownHasEmbeddedSignature == false ||
+                (hasTrustedMicrosoftSignature(ownImagePath) && hasTrustedMicrosoftSignature(peerImagePath));
+        }
+
+        private static bool MeetsComponentIdentityPolicy(string ownImagePath, string peerImagePath, string expectedExeName)
+        {
             if (!TryHasEmbeddedAuthenticodeSignature(ownImagePath, out var ownHasEmbeddedSignature))
             {
                 return false;
             }
 
-            return !ownHasEmbeddedSignature || HaveSameTrustedMicrosoftSigner(ownImagePath, peerImagePath);
+            return !ownHasEmbeddedSignature || HasExpectedProductIdentity(ownImagePath, peerImagePath, expectedExeName);
+        }
+
+        // A Microsoft signature alone does not make the peer a PowerToys component. The version
+        // resource is covered by the verified signature, so it must name our product and the
+        // expected executable; a renamed copy of another Microsoft binary fails here.
+        private static bool HasExpectedProductIdentity(string ownImagePath, string peerImagePath, string expectedExeName)
+        {
+            try
+            {
+                var ownVersion = FileVersionInfo.GetVersionInfo(ownImagePath);
+                var peerVersion = FileVersionInfo.GetVersionInfo(peerImagePath);
+
+                return !string.IsNullOrEmpty(ownVersion.ProductName) &&
+                    string.Equals(ownVersion.ProductName, peerVersion.ProductName, StringComparison.Ordinal) &&
+                    !string.IsNullOrEmpty(peerVersion.OriginalFilename) &&
+                    string.Equals(
+                        Path.GetFileNameWithoutExtension(peerVersion.OriginalFilename),
+                        Path.GetFileNameWithoutExtension(expectedExeName),
+                        StringComparison.OrdinalIgnoreCase);
+            }
+            catch (IOException)
+            {
+                return false;
+            }
         }
 
         private static bool TryHasEmbeddedAuthenticodeSignature(string imagePath, out bool hasEmbeddedSignature)
@@ -302,36 +361,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.Utilities
             {
                 return false;
             }
-        }
-
-        private static bool HaveSameTrustedMicrosoftSigner(string firstImagePath, string secondImagePath)
-        {
-            X509Certificate2 firstSigner = null;
-            X509Certificate2 secondSigner = null;
-
-            try
-            {
-                if (!TryGetTrustedMicrosoftSignerCertificate(firstImagePath, out firstSigner) ||
-                    !TryGetTrustedMicrosoftSignerCertificate(secondImagePath, out secondSigner))
-                {
-                    return false;
-                }
-
-                return HaveMatchingSignerCertificate(firstSigner, secondSigner);
-            }
-            finally
-            {
-                firstSigner?.Dispose();
-                secondSigner?.Dispose();
-            }
-        }
-
-        private static bool HaveMatchingSignerCertificate(X509Certificate2 firstSigner, X509Certificate2 secondSigner)
-        {
-            ArgumentNullException.ThrowIfNull(firstSigner);
-            ArgumentNullException.ThrowIfNull(secondSigner);
-
-            return CryptographicOperations.FixedTimeEquals(firstSigner.RawData, secondSigner.RawData);
         }
 
         private static bool HasTrustedMicrosoftSignature(string imagePath)

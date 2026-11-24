@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Ext.Apps;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -14,22 +15,22 @@ internal static class TopLevelCommandResolver
         IReadOnlyList<TCommand> Recent,
         IReadOnlyList<TCommand> Regular);
 
-    internal static Sections<IListItem> Resolve(
+    internal static Sections<InProcObject<IListItem>> Resolve(
         IEnumerable<PinnedCommandSettings> pinnedCommands,
         IEnumerable<string> recentCommandIds,
         IEnumerable<TopLevelViewModel> availableCommands,
-        IListPage allAppsPage,
+        InProcObject<IListPage> allAppsPage,
         bool includeApps,
         int pinnedCommandLimit = int.MaxValue,
         int recentCommandLimit = SettingsModel.DefaultRecentCommandsDisplayLimit,
         bool includeRegular = true,
         bool recentCommandsFirst = false)
     {
-        Func<string, IListItem?>? additionalRecentResolver = includeApps ? ResolveRecentApp : null;
-        return Resolve<IListItem>(
+        Func<string, InProcObject<IListItem>?>? additionalRecentResolver = includeApps ? ResolveRecentApp : null;
+        return Resolve<InProcObject<IListItem>>(
             pinnedCommands,
             recentCommandIds,
-            availableCommands,
+            availableCommands.Select(command => new InProcObject<IListItem>(command)),
             GetProviderId,
             GetCommandId,
             IsEligibleForHome,
@@ -39,27 +40,28 @@ internal static class TopLevelCommandResolver
             includeRegular,
             recentCommandsFirst);
 
-        IListItem? ResolveRecentApp(string commandId)
+        InProcObject<IListItem>? ResolveRecentApp(string commandId)
         {
-            if (allAppsPage is AllAppsPage appsPage)
+            if (allAppsPage.Safe is AllAppsPage appsPage)
             {
-                return appsPage.TryGetCurrentItem(commandId, out var item) ? item : null;
+                return appsPage.TryGetCurrentItem(commandId, out var item) && item is not null ? new(item) : null;
             }
 
-            return allAppsPage.GetItems().FirstOrDefault(item => item.Command?.Id == commandId);
+            var match = allAppsPage.Safe.GetItems().FirstOrDefault(item => item.Command?.Id == commandId);
+            return match is not null ? new(match) : null;
         }
     }
 
-    internal static string GetProviderId(IListItem command) =>
-        command is TopLevelViewModel topLevel ? topLevel.CommandProviderId : AllAppsCommandProvider.WellKnownId;
+    internal static string GetProviderId(InProcObject<IListItem> command) =>
+        command.Safe is TopLevelViewModel topLevel ? topLevel.CommandProviderId : AllAppsCommandProvider.WellKnownId;
 
-    internal static string GetCommandId(IListItem command) =>
-        command is TopLevelViewModel topLevel ? topLevel.Id : command.Command?.Id ?? string.Empty;
+    internal static string GetCommandId(InProcObject<IListItem> command) =>
+        command.Safe is TopLevelViewModel topLevel ? topLevel.Id : command.Safe.Command?.Id ?? string.Empty;
 
-    internal static bool IsEligibleForHome(IListItem command) =>
-        command is TopLevelViewModel topLevel
+    internal static bool IsEligibleForHome(InProcObject<IListItem> command) =>
+        command.Safe is TopLevelViewModel topLevel
             ? TopLevelCommandEligibility.IsEligibleForHome(topLevel)
-            : command.Command is not null && !string.IsNullOrEmpty(command.Title);
+            : command.Safe.Command is not null && !string.IsNullOrEmpty(command.Safe.Title);
 
     internal static Sections<TCommand> Resolve<TCommand>(
         IEnumerable<PinnedCommandSettings> pinnedCommands,

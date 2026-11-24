@@ -19,10 +19,14 @@ internal static class ClipboardHelper
     {
         Logger.LogTrace();
 
-        if (await dataPackage.GetView().HasUsableDataAsync())
+        bool hasUsableData = await dataPackage.GetView().HasUsableDataAsync();
+        Logger.LogInfo($"Clipboard output validation completed: usable={hasUsableData}.");
+        if (hasUsableData)
         {
             Clipboard.SetContent(dataPackage);
-            await FlushAsync();
+            Logger.LogInfo("Clipboard output assigned; flushing.");
+            bool flushed = await FlushAsync();
+            Logger.LogInfo($"Clipboard output flush completed: flushed={flushed}.");
             onCopied();
             SendPasteKeyCombination();
         }

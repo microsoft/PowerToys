@@ -33,7 +33,7 @@ The shim returns the target CLI's exit code unchanged. It substitutes one of its
 Use the **System.CommandLine** library for CLI argument parsing. The version is already defined in `Directory.Packages.props`:
 
 ```xml
-<PackageVersion Include="System.CommandLine" Version="2.0.1" />
+<PackageVersion Include="System.CommandLine" Version="2.0.12" />
 ```
 
 Add the reference to your project:

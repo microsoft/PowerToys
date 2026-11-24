@@ -30,6 +30,7 @@ public class GpuAdapterNamesTests
     [DataRow("Intel(R) Arc(TM) A770 Graphics", "Arc A770")]
     [DataRow("Intel Arc\u2122 A770 Graphics", "Arc A770")]
     [DataRow("  NVIDIA   GeForce RTX 3050 Ti Laptop GPU  ", "RTX 3050 Ti")]
+    [DataRow("NVIDIA RTX Spark N1X (6144-core Blackwell RTX GPU)", "RTX Spark N1X")]
     public void GetShortName_RemovesKnownBrandingAndKeepsModelVariants(string description, string expected)
     {
         Assert.AreEqual(expected, GpuAdapterNames.GetShortName(description));

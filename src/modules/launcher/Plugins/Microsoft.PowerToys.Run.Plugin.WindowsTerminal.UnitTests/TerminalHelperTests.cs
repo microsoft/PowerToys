@@ -53,7 +53,7 @@ namespace Microsoft.Plugin.WindowsTerminal.UnitTests
             false)]
         public void ParseProfilesTest(string json, string identifier, string name, bool hidden)
         {
-            var profileElement = JsonDocument.Parse(json).RootElement;
+            var profileElement = JsonElement.Parse(json);
             var terminal = new TerminalPackage(string.Empty, new Version(), string.Empty, string.Empty, string.Empty);
             var profile = TerminalHelper.ParseProfile(terminal, profileElement);
 

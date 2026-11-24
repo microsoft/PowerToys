@@ -88,6 +88,20 @@ function Get-MwbModernInstanceIds {
     $ids
 }
 
+function Assert-MwbHostOnlyModernSandboxIdle {
+    param($Journal, $Provision)
+    if ($Provision.SandboxBackend -cne 'WinApp' -or
+        $Journal.SandboxProcesses -isnot [array] -or $Journal.SandboxProcesses.Count -ne 0 -or
+        -not $Journal.PSObject.Properties['ViewerHwnd'] -or [long]$Journal.ViewerHwnd -ne 0) {
+        throw 'Host-only modern recovery cannot contain legacy Sandbox ownership records.'
+    }
+    $wsb = Get-MwbTrustedSandboxCli
+    $ids = @(Get-MwbModernInstanceIds (Invoke-MwbSandboxControl $wsb 'List' ([guid]::Empty)))
+    if ($ids.Count -gt 0) {
+        throw 'Modern Sandbox instances remain; no unrecorded instance will be stopped.'
+    }
+}
+
 function Remove-MwbPrivateTargetState {
     param([string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { return }

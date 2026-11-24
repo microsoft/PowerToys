@@ -16,6 +16,10 @@ namespace Microsoft.Workspaces.UITests
     [DoNotParallelize]
     public sealed partial class WorkspacesTests : UITestBase
     {
+        // Re-enable these scenarios after the WinUI automation contracts and end-to-end behavior are validated.
+        private const string WinUiMigrationIgnoreReason =
+            "Temporarily disabled pending Workspaces WinUI migration validation: https://github.com/microsoft/PowerToys/pull/49077";
+
         private const string EditorProcess = "PowerToys.WorkspacesEditor";
         private const string LauncherProcess = "PowerToys.WorkspacesLauncher";
         private const string LauncherUiProcess = "PowerToys.WorkspacesLauncherUI";
@@ -29,7 +33,9 @@ namespace Microsoft.Workspaces.UITests
             EditorProcess,
         ];
 
+        private static WorkspaceProfileSnapshot? profileLease;
         private static WorkspaceTestState? state;
+        private static WorkspaceShortcutJournalGuard? existingShortcutJournals;
         private Session? editor;
         private Session? settingsUi;
 
@@ -53,21 +59,47 @@ namespace Microsoft.Workspaces.UITests
         // window-scoped session pinned to the original HWND then fails every lookup with "Window HWND ...
         // not found". Route Settings UIA reads through a process-scoped session (-a) so navigation and
         // toggles survive the swap — winappcli re-resolves the live window on every call.
-        private Session SettingsUi => settingsUi ??= Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
+        private Session SettingsUi => settingsUi ??= OpenWorkspacesSettings();
 
         [ClassInitialize]
-        public static void ValidateDesktop(TestContext context)
+        public static void InitializeWorkspaceSuite(TestContext context)
+        {
+            ValidateDesktop(context);
+            try
+            {
+                existingShortcutJournals = WorkspaceShortcutJournalGuard.AcquireForProfile(WorkspaceTestState.DirectoryPath);
+            }
+            catch
+            {
+                profileLease!.Dispose();
+                profileLease = null;
+                throw;
+            }
+        }
+
+        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
+        public static void CleanUpWorkspaceSuite()
+        {
+            using var journals = Interlocked.Exchange(ref existingShortcutJournals, null);
+            RestoreWorkspaceState();
+        }
+
+        private static void ValidateDesktop(TestContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
             Assert.IsFalse(ElevationHelper.IsProcessElevated(Environment.ProcessId), "Run Test Explorer and the Workspaces UI tests without elevation.");
             var target = WorkspacesDisplay.GetPrimaryTarget();
-            context.WriteLine($"Workspaces placement target: {target.DeviceName}, monitor {target.Number}, DPI {target.Dpi}.");
+            context.WriteLine($"Workspaces placement target: {target.DeviceName}, monitor {target.Number}, DPI {target.Dpi}, physical size {target.MonitorWidth}x{target.MonitorHeight}, logical width {target.LogicalMonitorRight - target.LogicalMonitorLeft}.");
+
+            // Hold the profile before inherited initialization can close another testhost's windows.
+            profileLease = new WorkspaceProfileSnapshot(WorkspaceTestState.DirectoryPath);
         }
 
         protected override void PrepareTestState()
         {
             StopModuleProcesses();
-            state ??= new WorkspaceTestState();
+            AssertSettingsProcessesStopped();
+            state ??= new WorkspaceTestState(profileLease ?? throw new InvalidOperationException("The Workspaces profile has not been reserved."));
             State.PrepareSettings();
         }
 
@@ -82,12 +114,17 @@ namespace Microsoft.Workspaces.UITests
             State.Fixture.CloseAll();
             State.Reset();
             settingsUi = null;
-            NavigateToSettings();
         }
 
         [TestCleanup]
         public async Task CleanUpWorkspace()
         {
+            if (state is null)
+            {
+                // Initialization failed before the user's files were isolated.
+                return;
+            }
+
             // MSTest appends cleanup errors to the original failure and fails passing tests on leaks.
             // Capture evidence first; fixture cleanup must still run if stopping module processes fails.
             try
@@ -111,11 +148,15 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        [ClassCleanup(ClassCleanupBehavior.EndOfClass)]
         public static void RestoreWorkspaceState()
         {
-            if (state is null)
+            var completedState = state;
+            var lease = profileLease;
+            state = null;
+            profileLease = null;
+            if (completedState is null)
             {
+                lease?.Dispose();
                 return;
             }
 
@@ -125,29 +166,42 @@ namespace Microsoft.Workspaces.UITests
 
                 // Defensive and idempotent: stop before file restoration even if inherited cleanup already ran.
                 StopSharedScope();
+                AssertSettingsProcessesStopped();
+            }
+            catch
+            {
+                lease!.LeaveForRecovery();
+                throw;
             }
             finally
             {
-                state?.Dispose();
-                state = null;
+                completedState.Dispose();
             }
         }
 
-        private void NavigateToSettings()
+        private static void AssertSettingsProcessesStopped()
+        {
+            Assert.IsTrue(WaitForProcess(SettingsProcess, false), "PowerToys Settings still has access to the Workspaces profile.");
+            Assert.IsTrue(WaitForProcess("PowerToys", false), "PowerToys Runner still has access to the Workspaces profile.");
+        }
+
+        private Session OpenWorkspacesSettings()
         {
             Step("Navigating to Workspaces Settings.");
 
             // Wait out any startup window replacement before driving the UI, so navigation runs against the
             // window Settings actually settles on rather than the transient handle it was launched with.
             _ = SettingsWindow();
+            var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
 
-            if (!SettingsUi.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
+            if (!settings.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
             {
-                SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
+                settings.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
             }
 
-            SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(SettingsUi.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+            settings.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
+            Assert.IsTrue(settings.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+            return settings;
         }
 
         // Freshly resolve the current PowerToys.Settings main window for the few physical operations that
@@ -476,7 +530,9 @@ namespace Microsoft.Workspaces.UITests
                     "The editor did not finish applying the recaptured workspace.");
             }
 
-            return result.LastObservation!;
+            var snapshot = result.LastObservation!;
+            State.TrackProjectShortcutFiles(WorkspaceTestState.Text(snapshot, "id"));
+            return snapshot;
         }
 
         private static bool WaitForProcess(string name, bool expected, int timeoutMS = 20_000)

@@ -8,6 +8,13 @@
 
 namespace
 {
+    interop_auth::CallerPolicy LauncherUIPeer()
+    {
+        auto policy = IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncherUI.exe");
+        policy.expectedDirectory = (std::filesystem::path(policy.expectedDirectory) / L"WinUI3Apps").wstring();
+        return policy;
+    }
+
     json::JsonObject Message(const wchar_t* type)
     {
         json::JsonObject message;
@@ -16,13 +23,26 @@ namespace
     }
 }
 
-LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcCallback) :
+LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcCallback, std::wstring operationId, bool confirmationOnly) :
     m_processId{},
-    m_ipcHelper(IPCHelperStrings::LauncherUIPipeName, IPCHelperStrings::UIPipeName, ipcCallback)
+    m_operationId(std::move(operationId)),
+    m_confirmationOnly(confirmationOnly),
+    m_ipcHelper(IPCHelperStrings::LauncherUIPipeName + m_operationId, IPCHelperStrings::UIPipeName + m_operationId, ipcCallback,
+                m_operationId.empty() ? interop_auth::CallerPolicy{} : LauncherUIPeer())
 {
 }
 
 LauncherUIHelper::~LauncherUIHelper()
+{
+    Close();
+}
+
+void LauncherUIHelper::SetCallback(std::function<void(const std::wstring&)> callback)
+{
+    m_ipcHelper.SetCallback(std::move(callback));
+}
+
+void LauncherUIHelper::Close()
 {
     if (m_process && WaitForSingleObject(m_process.get(), 1000) == WAIT_TIMEOUT)
     {
@@ -32,16 +52,25 @@ LauncherUIHelper::~LauncherUIHelper()
             Logger::error(L"Unable to stop the Workspaces UI process: {}", GetLastError());
         }
     }
+    m_ipcHelper.Stop();
+    m_process.reset();
 }
 
-bool LauncherUIHelper::LaunchUI()
+bool LauncherUIHelper::LaunchUI(const std::function<bool()>& isCanceled)
 {
+    if (isCanceled && isCanceled())
+        return false;
+    if (m_launchAttempted)
+        return m_ready && IsRunning();
+    m_launchAttempted = true;
     Logger::trace(L"Starting WorkspacesLauncherUI");
 
     TCHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, buffer, MAX_PATH);
-    const auto path = std::filesystem::path(buffer).parent_path() / L"PowerToys.WorkspacesLauncherUI.exe";
-    auto result = AppLauncher::LaunchApp(path.wstring(), L"", false);
+    const auto path = std::filesystem::path(buffer).parent_path() / L"WinUI3Apps" / L"PowerToys.WorkspacesLauncherUI.exe";
+    const auto arguments = m_operationId.empty() ? L"" :
+        std::wstring(m_confirmationOnly ? L"--confirmation-only " : L"--launch-ui ") + m_operationId + L" " + std::to_wstring(GetCurrentProcessId());
+    auto result = AppLauncher::LaunchApp(path.wstring(), arguments, false);
     if (result.isError())
     {
         Logger::error(L"Failed to launch PowerToys.WorkspacesLauncherUI: {}", result.error().message);
@@ -50,7 +79,9 @@ bool LauncherUIHelper::LaunchUI()
     m_process.reset(result.value().hProcess);
     m_processId = GetProcessId(m_process.get());
     Logger::info(L"WorkspacesLauncherUI started with pid {}", m_processId);
-    return IsRunning();
+    // Process creation precedes the managed IPC server. Do not enqueue a first message into that gap.
+    m_ready = m_ipcHelper.WaitForReady(10000, [&] { return !IsRunning() || (isCanceled && isCanceled()); });
+    return m_ready;
 }
 
 bool LauncherUIHelper::IsRunning() const
@@ -61,7 +92,7 @@ bool LauncherUIHelper::IsRunning() const
 bool LauncherUIHelper::RequestApproval(const std::wstring& requestId, const std::wstring& name, const std::wstring& path,
                                       const std::wstring& arguments, const SignatureVerification::Result& result) const
 {
-    if (!IsRunning())
+    if (!m_ready || !IsRunning())
     {
         return false;
     }
@@ -86,8 +117,15 @@ void LauncherUIHelper::DismissApproval(const std::wstring& requestId) const
     }
 }
 
+void LauncherUIHelper::AcknowledgeCancellation() const
+{
+    m_ipcHelper.send(Message(L"cancel-accepted").Stringify().c_str());
+}
+
 void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const
 {
+    if (m_confirmationOnly)
+        return;
     WorkspacesData::AppLaunchData appData;
     appData.launcherProcessID = GetCurrentProcessId();
     for (auto& [app, data] : launchedApps)

@@ -99,11 +99,6 @@ namespace Microsoft.PowerToys.Settings.UI.Views
             }
         }
 
-        private void UpdateStatusCard_Click(object sender, RoutedEventArgs e)
-        {
-            ShellPage.ShellHandler?.OpenUpdateActivity();
-        }
-
         private void OpenColorsSettings_Click(object sender, RoutedEventArgs e)
         {
             try

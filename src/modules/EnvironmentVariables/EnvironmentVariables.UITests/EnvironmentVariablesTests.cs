@@ -308,7 +308,7 @@ public sealed class EnvironmentVariablesTests : UITestBase
 
         editor.Step("Closing and reopening the editor to read persisted profile state");
         WindowControl.TryCloseByApp(TestState.ProcessName);
-        EditorUi.Wait(() => !WindowsFinder.ListByApp(TestState.ProcessName).Any(), "The editor window did not close.");
+        EditorUi.Wait(() => WindowsFinder.ListByApp(TestState.ProcessName).Count == 0, "The editor window did not close.");
         LaunchEditor();
         editor.AssertProfile(profile, true, ("PATH", "path1;path2;path3"));
         Assert.IsTrue(editor.Child<ToggleSwitch>(editor.Expander(profile), "ToggleSwitch").IsOn);

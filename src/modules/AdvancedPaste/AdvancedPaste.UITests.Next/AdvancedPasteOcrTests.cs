@@ -50,7 +50,7 @@ public sealed class AdvancedPasteOcrTests : AdvancedPasteTestBase
                 window => window.ClassName == "WinUIDesktopWin32WindowClass" && window.Width > 100 && window.Height > 100,
                 timeoutMS: 15_000);
             Assert.IsNotNull(keyboardWindow, "The OCR preview's top-level WinUI window was not discoverable.");
-            TestWindow.SelectFromTaskbar(new IntPtr(keyboardWindow.WindowHandle), keyboardWindow.ProcessName);
+            TestWindow.EnsureForeground(new IntPtr(keyboardWindow.WindowHandle), keyboardWindow.ProcessName);
             SendShortcut(Key.Enter);
         }
         else

@@ -179,8 +179,8 @@ HRESULT PowerDisplayProcessManager::start_named_pipe_server(const std::wstring& 
         }
     }
 
-    // Wait for client.
-    const constexpr DWORD client_timeout_millis = 5000;
+    // WinAppSDK cold startup can exceed five seconds before the client connects.
+    const constexpr DWORD client_timeout_millis = 15000;
     switch (WaitForSingleObject(overlapped.hEvent, client_timeout_millis))
     {
         case WAIT_OBJECT_0:

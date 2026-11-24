@@ -724,8 +724,8 @@
                                                 <NumberBox
                                                     MinWidth="{StaticResource SettingActionControlMinWidth}"
                                                     LargeChange="50"
-                                                    Maximum="1000"
-                                                    Minimum="-1000"
+                                                    Maximum="20000"
+                                                    Minimum="-20000"
                                                     SmallChange="10"
                                                     SpinButtonPlacementMode="Compact"
                                                     Value="{x:Bind WeightBoost, Mode=TwoWay}" />

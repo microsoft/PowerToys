@@ -17,6 +17,7 @@ public record SettingsModel
 
     ///////////////////////////////////////////////////////////////////////////
     // SETTINGS HERE
+    // WARNING: IF YOU ADD A SETTING, MAKE SURE YOU UPDATE SettingsSearchCatalog.
     public const int DefaultCompactCenterHeightPercentage = 75;
 
     internal const int MinQuickAccessShelfPinnedCommandLimit = 0;
@@ -25,6 +26,8 @@ public record SettingsModel
     internal const int MinRecentCommandsDisplayLimit = 1;
     internal const int MaxRecentCommandsDisplayLimit = 10;
     internal const int DefaultRecentCommandsDisplayLimit = 5;
+
+    public static readonly bool IsWindowsKeyHotkeyFeatureEnabled = GetWindowsKeyHotkeyFeatureFlag();
 
     public static HotkeySettings DefaultActivationShortcut { get; } = new HotkeySettings(true, false, true, false, 0x20); // win+alt+space
 
@@ -64,6 +67,11 @@ public record SettingsModel
 
     public bool UseLowLevelGlobalHotkey { get; init; }
 
+    public bool UseWindowsKey { get; init; }
+
+    [JsonIgnore]
+    public bool IsWindowsKeyHotkeyActive => IsWindowsKeyHotkeyFeatureEnabled && UseWindowsKey;
+
     public bool ShowAppDetails { get; init; }
 
     public bool BackspaceGoesBack { get; init; }
@@ -77,6 +85,16 @@ public record SettingsModel
     public bool ShowSystemTrayIcon { get; init; } = true;
 
     public string Language { get; init; } = string.Empty;
+
+    public TrayIconClickAction TrayIconClickAction { get; init; } = TrayIconClickAction.OpenQuickActions;
+
+    private TrayPaletteSettings? _trayPalette = new();
+
+    public TrayPaletteSettings TrayPalette
+    {
+        get => _trayPalette ?? new();
+        init => _trayPalette = value;
+    }
 
     public bool IgnoreShortcutWhenFullscreen { get; init; } = true;
 
@@ -271,6 +289,9 @@ public record SettingsModel
     public SettingsModel()
     {
     }
+
+    private static bool GetWindowsKeyHotkeyFeatureFlag() =>
+        Environment.GetEnvironmentVariable("CMDPAL_ENABLE_WIN_HOTKEY") == "1";
 
     public (SettingsModel Model, ProviderSettings Settings) GetProviderSettings(CommandProviderWrapper provider)
     {

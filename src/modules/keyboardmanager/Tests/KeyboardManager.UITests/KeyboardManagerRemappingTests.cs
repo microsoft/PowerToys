@@ -16,7 +16,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     private const int B = 0x42;
     private const int D = 0x44;
     private const int E = 0x45;
-    private const int F = 0x46;
+    private const int F12 = 0x7B;
     private const int Q = 0x51;
     private const int U = 0x55;
     private const int V = 0x56;
@@ -25,6 +25,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     private const int LeftAlt = 0xA4;
     private const int LeftWindows = 0x5B;
     private const int Tab = 0x09;
+    private const Key ShellNeutralKey = (Key)0xFF;
 
     private static KeyboardInputFixtureLock? inputFixtureLock;
     private static int profileGeneration;
@@ -84,6 +85,10 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
             Assert.IsTrue(
                 WaitForKeyState(targetKey, expected: true, timeoutMS: 1_000),
                 $"{targetName} was not held while {sourceName} remained down.");
+            if (targetKey == LeftWindows)
+            {
+                SuppressBareWindowsKeyShellAction($"{sourceName} to {targetName}");
+            }
         }
         finally
         {
@@ -213,6 +218,7 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         }
     }
 
+    // Win+F opens Feedback Hub and can leave a sign-in dialog blocking subsequent suites.
     [TestMethod("KeyboardManager.Remapping.ShortcutToShortcut")]
     [TestCategory("Keyboard Manager")]
     [DataRow("Ctrl+A to Ctrl+V", LeftControl, A, LeftControl, V, false)]
@@ -221,8 +227,8 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
     [DataRow("Win+A to Ctrl+V, modifier first", LeftWindows, A, LeftControl, V, true)]
     [DataRow("Ctrl+V to Win+A", LeftControl, V, LeftWindows, A, false)]
     [DataRow("Ctrl+V to Win+A, modifier first", LeftControl, V, LeftWindows, A, true)]
-    [DataRow("Win+A to Win+F", LeftWindows, A, LeftWindows, F, false)]
-    [DataRow("Win+A to Win+F, modifier first", LeftWindows, A, LeftWindows, F, true)]
+    [DataRow("Win+A to Win+F12", LeftWindows, A, LeftWindows, F12, false)]
+    [DataRow("Win+A to Win+F12, modifier first", LeftWindows, A, LeftWindows, F12, true)]
     public void ShortcutToShortcutReleasesTargetsForEitherSourceReleaseOrder(
         string scenario,
         int sourceModifier,
@@ -332,6 +338,10 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
                     timeoutMS: 3_000,
                     new ExpectedKeyboardEvent(targetKey, true)),
                 $"{scenario} did not generate its target key. Events: {recorder.DescribeGeneratedEvents()}.");
+            if (targetKey == LeftWindows)
+            {
+                SuppressBareWindowsKeyShellAction(scenario);
+            }
         });
 
         Assert.IsTrue(
@@ -648,13 +658,39 @@ public sealed class KeyboardManagerRemappingTests : KeyboardManagerTestBase
         return KeyboardHelper.IsKeyDown(ToKey(virtualKey)) == expected;
     }
 
+    private static void SuppressBareWindowsKeyShellAction(string scenario)
+    {
+        Assert.IsTrue(
+            WaitForKeyState(LeftWindows, expected: true, timeoutMS: 1_000),
+            $"{scenario}: the Windows target was not held before shell-neutral input.");
+
+        // KBM uses this inert key to prevent a bare Windows-key release from opening Start.
+        KeyboardHelper.SendKey(ShellNeutralKey);
+        Assert.IsTrue(
+            WaitForKeyState(LeftWindows, expected: true, timeoutMS: 1_000),
+            $"{scenario}: the Windows target was released before its source after shell-neutral input.");
+    }
+
     private static void DismissShellAndRefocus(NotepadInputWindow input, string scenario)
     {
-        KeyboardHelper.SendKey(Key.Esc);
-        if (!input.FocusInput(timeoutMS: 5_000))
-        {
-            Console.WriteLine($"{scenario}: Shell dismissal succeeded, but the disposable input fixture did not regain foreground.");
-        }
+        var result = WaitHelper.WaitForStable(
+            observe: WindowControl.GetForegroundWindowInfo,
+            isMatch: foreground => foreground.Hwnd == input.Handle,
+            recover: foreground =>
+            {
+                if (foreground.ProcessName is "SearchHost" or "StartMenuExperienceHost" or "ShellExperienceHost")
+                {
+                    KeyboardHelper.SendKey(Key.Esc);
+                }
+
+                input.FocusInput(timeoutMS: 1_000);
+            },
+            timeoutMS: 10_000,
+            pollIntervalMS: 250,
+            requiredConsecutiveMatches: 3);
+        Assert.IsTrue(
+            result.Succeeded,
+            $"{scenario}: the input fixture did not regain stable foreground after Windows-key input. Last foreground: {result.LastObservation}.");
     }
 
     private static void SendHeldAction(int action) => KeyboardHelper.SendKey(ToKey(action));

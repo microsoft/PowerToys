@@ -3,11 +3,17 @@
 Param(
     [Parameter(Mandatory = $True, Position = 1)]
     [AllowEmptyString()]
-    [string]$targetDir = $PSScriptRoot + '/../extractedMsi/File'
+    [string]$targetDir = $PSScriptRoot + '/../extractedMsi/File',
+    [switch]$WinmdOnly
 )
 
 $DirPath = $targetDir; #this file is in pipeline, we need root.
-$items = Get-ChildItem -Path $DirPath -File -Include *.exe, *.dll, *.ttf, PTCustomActions -Recurse -Force -ErrorAction SilentlyContinue
+$filePatterns = @('*.exe', '*.dll', '*.winmd', '*.ttf', 'PTCustomActions')
+if ($WinmdOnly) {
+    # MSIX payloads need the same metadata signature check without MSI version rules.
+    $filePatterns = @('*.winmd')
+}
+$items = Get-ChildItem -Path $DirPath -File -Include $filePatterns -Recurse -Force -ErrorAction SilentlyContinue
 $versionExceptions = @(
     "AdaptiveCards.Templating.dll",
     "Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll",
@@ -71,27 +77,29 @@ if ($items.Count -eq 0) {
 }
 
 $items | ForEach-Object {
-    if ($_.VersionInfo.FileVersion -eq "0.0.0.0" -and $_.Name -notmatch $versionExceptions) {
-        # These items are exceptions that actually have the 0.0.0.0 version.
-        Write-Host "Version set to 0.0.0.0: " + $_.FullName
-        $totalFailure++;
-    }
-    if ($_.VersionInfo.FileVersion -eq "1.0.0.0" -and $_.Name -notmatch $versionExceptions) {
-        # These items are exceptions that actually have the 1.0.0.0 version.
-        Write-Host "Version set to 1.0.0.0: " + $_.FullName
-        $totalFailure++;
-    }
-    elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) {
-        # These items are exceptions that actually a version not set.
-        Write-Host "Version not set: " + $_.FullName
-        $totalFailure++;
-    }
-    else {
-        $auth = Get-AuthenticodeSignature $_.FullName
-        if ($auth.SignerCertificate -eq $null) {
-            Write-Host "Not Signed: " + $_.FullName
+    # WinRT metadata does not require a FileVersion resource, but still needs a valid signature.
+    if ($_.Extension -ne '.winmd') {
+        if ($_.VersionInfo.FileVersion -eq "0.0.0.0" -and $_.Name -notmatch $versionExceptions) {
+            # These items are exceptions that actually have the 0.0.0.0 version.
+            Write-Host "Version set to 0.0.0.0: " + $_.FullName
             $totalFailure++;
         }
+        if ($_.VersionInfo.FileVersion -eq "1.0.0.0" -and $_.Name -notmatch $versionExceptions) {
+            # These items are exceptions that actually have the 1.0.0.0 version.
+            Write-Host "Version set to 1.0.0.0: " + $_.FullName
+            $totalFailure++;
+        }
+        elseif ($_.VersionInfo.FileVersion -eq $null -and $_.Name -notmatch $nullVersionExceptions) {
+            # These items are exceptions that actually a version not set.
+            Write-Host "Version not set: " + $_.FullName
+            $totalFailure++;
+        }
+    }
+
+    $auth = Get-AuthenticodeSignature -LiteralPath $_.FullName
+    if ($null -eq $auth.SignerCertificate -or $auth.Status -ne 'Valid') {
+        Write-Host "Invalid signature ($($auth.Status)): $($_.FullName)"
+        $totalFailure++;
     }
 }
 

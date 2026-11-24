@@ -7,6 +7,9 @@
     <CliShim Include="PowerToys.FancyZones.CLI">
       <RelativeTarget>../FancyZonesCLI.exe</RelativeTarget>
     </CliShim>
+    <CliShim Include="PowerToys.Workspaces.CLI">
+      <RelativeTarget>../PowerToys.WorkspacesCLI.exe</RelativeTarget>
+    </CliShim>
     <CliShim Include="PowerToys.ImageResizer.CLI">
       <RelativeTarget>../WinUI3Apps/PowerToys.ImageResizerCLI.exe</RelativeTarget>
     </CliShim>

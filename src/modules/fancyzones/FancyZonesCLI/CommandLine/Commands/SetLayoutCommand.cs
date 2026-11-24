@@ -32,13 +32,11 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
         _monitor = new Option<int?>("--monitor", "-m") { Description = Properties.Resources.set_layout_opt_monitor };
         _monitor.Validators.Add(result =>
         {
-            if (result.Tokens.Count == 0)
-            {
-                return;
-            }
-
-            int? monitor = result.GetValueOrDefault<int?>();
-            if (monitor.HasValue && monitor.Value < 1)
+            // Reading the value of an unparsable token throws inside a validator, so parse it the
+            // same way System.CommandLine does and let it report its own error for invalid input.
+            if (result.Tokens.Count == 1
+                && int.TryParse(result.Tokens[0].Value, NumberStyles.Integer, CultureInfo.CurrentCulture, out int monitor)
+                && monitor < 1)
             {
                 result.AddError(Properties.Resources.set_layout_error_monitor_index);
             }
@@ -51,10 +49,11 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
 
         Validators.Add(commandResult =>
         {
-            int? monitor = commandResult.GetValue(_monitor);
+            // Check for --monitor by presence; GetValue throws when its token failed to parse.
+            bool hasMonitor = commandResult.GetResult(_monitor) is not null;
             bool all = commandResult.GetValue(_all);
 
-            if (monitor.HasValue && all)
+            if (hasMonitor && all)
             {
                 commandResult.AddError(Properties.Resources.set_layout_error_both_options);
             }

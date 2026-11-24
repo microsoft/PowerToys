@@ -23,6 +23,7 @@ using Microsoft.CmdPal.Ext.Shell;
 using Microsoft.CmdPal.Ext.System;
 using Microsoft.CmdPal.Ext.TimeDate;
 using Microsoft.CmdPal.Ext.WebSearch;
+using Microsoft.CmdPal.Ext.WindowsPalettes;
 using Microsoft.CmdPal.Ext.WindowsServices;
 using Microsoft.CmdPal.Ext.WindowsSettings;
 using Microsoft.CmdPal.Ext.WindowsTerminal;
@@ -101,6 +102,7 @@ public partial class App : Application, IDisposable
         NativeEventWaiter.WaitForEventLoop(
             "Local\\PowerToysCmdPal-ExitEvent-eb73f6be-3f22-4b36-aee3-62924ba40bfd", () =>
             {
+                Logger.LogInfo("Command Palette exit requested: PowerToys exit event.");
                 EtwTrace?.Dispose();
                 AppWindow?.Close();
                 Environment.Exit(0);
@@ -111,8 +113,11 @@ public partial class App : Application, IDisposable
         var logWrapper = new LogWrapper();
         CoreLogger.InitializeLogger(logWrapper);
 
-        // Now that CoreLogger is initialized, initialize the logger delegate in ApplicationInfoService
+        // Now that CoreLogger is initialized, initialize the logger delegates in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
+        appInfoService.SetLogFile(() => Logger.CurrentLogFile);
+
+        _ = Services.GetRequiredService<HeartbeatTelemetry>();
     }
 
     /// <summary>
@@ -219,6 +224,11 @@ public partial class App : Application, IDisposable
 
         services.AddSingleton<ICommandProvider, WindowsTerminalCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsSettingsCommandsProvider>();
+        if (WindowsPalettesCommandsProvider.TryCreate() is { } windowsPalettes)
+        {
+            services.AddSingleton<ICommandProvider>(windowsPalettes);
+        }
+
         services.AddSingleton<ICommandProvider, RegistryCommandsProvider>();
         services.AddSingleton<ICommandProvider, WindowsServicesCommandsProvider>();
         services.AddSingleton<ICommandProvider, BuiltInsCommandProvider>();
@@ -316,6 +326,9 @@ public partial class App : Application, IDisposable
 
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
+        services.AddSingleton(sp => new HeartbeatTelemetry(
+            () => sp.GetRequiredService<TopLevelCommandManager>().CommandProviders.Count(),
+            heartbeat => PowerToysTelemetry.Log.WriteEvent(heartbeat)));
 
         services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
             _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));

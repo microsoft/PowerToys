@@ -1,0 +1,105 @@
+diff --git a/hid/vhidmini2/driver/vhidmini.c b/hid/vhidmini2/driver/vhidmini.c
+index 7d01840..d58b7ce 100644
+--- a/hid/vhidmini2/driver/vhidmini.c
++++ b/hid/vhidmini2/driver/vhidmini.c
+@@ -26,19 +26,17 @@ HID_REPORT_DESCRIPTOR       G_DefaultReportDescriptor[] = {
+-    0x06,0x00, 0xFF,                // USAGE_PAGE (Vender Defined Usage Page)
+-    0x09,0x01,                      // USAGE (Vendor Usage 0x01)
+-    0xA1,0x01,                      // COLLECTION (Application)
+-    0x85,CONTROL_FEATURE_REPORT_ID,    // REPORT_ID (1)
+-    0x09,0x01,                         // USAGE (Vendor Usage 0x01)
+-    0x15,0x00,                         // LOGICAL_MINIMUM(0)
+-    0x26,0xff, 0x00,                   // LOGICAL_MAXIMUM(255)
+-    0x75,0x08,                         // REPORT_SIZE (0x08)
+-    0x96,(FEATURE_REPORT_SIZE_CB & 0xff), (FEATURE_REPORT_SIZE_CB >> 8), // REPORT_COUNT
+-    0xB1,0x00,                         // FEATURE (Data,Ary,Abs)
+-    0x09,0x01,                         // USAGE (Vendor Usage 0x01)
+-    0x75,0x08,                         // REPORT_SIZE (0x08)
+-    0x96,(INPUT_REPORT_SIZE_CB & 0xff), (INPUT_REPORT_SIZE_CB >> 8), // REPORT_COUNT
+-    0x81,0x00,                         // INPUT (Data,Ary,Abs)
+-    0x09,0x01,                         // USAGE (Vendor Usage 0x01)
+-    0x75,0x08,                         // REPORT_SIZE (0x08)
+-    0x96,(OUTPUT_REPORT_SIZE_CB & 0xff), (OUTPUT_REPORT_SIZE_CB >> 8), // REPORT_COUNT
+-    0x91,0x00,                         // OUTPUT (Data,Ary,Abs)
+-    0xC0,                           // END_COLLECTION
++    // Vendor-defined control collection: one 16-byte feature report.
++    0x06,0x00,0xFF, 0x09,0x01, 0xA1,0x01, 0x85,0x01, 0x09,0x01,
++    0x15,0x00, 0x26,0xFF,0x00, 0x75,0x08, 0x95,0x0F, 0xB1,0x02, 0xC0,
++    // Standard keyboard: modifier byte, reserved byte, six keyboard usages.
++    0x05,0x01, 0x09,0x06, 0xA1,0x01, 0x85,0x02,
++    0x05,0x07, 0x19,0xE0, 0x29,0xE7, 0x15,0x00, 0x25,0x01,
++    0x75,0x01, 0x95,0x08, 0x81,0x02, 0x95,0x01, 0x75,0x08, 0x81,0x03,
++    0x95,0x06, 0x75,0x08, 0x15,0x00, 0x25,0x65, 0x19,0x00, 0x29,0x65,
++    0x81,0x00, 0xC0,
++    // Absolute mouse: five buttons, X/Y in 0..32767, signed wheel.
++    0x05,0x01, 0x09,0x02, 0xA1,0x01, 0x85,0x03, 0x09,0x01, 0xA1,0x00,
++    0x05,0x09, 0x19,0x01, 0x29,0x05, 0x15,0x00, 0x25,0x01,
++    0x95,0x05, 0x75,0x01, 0x81,0x02, 0x95,0x01, 0x75,0x03, 0x81,0x03,
++    0x05,0x01, 0x09,0x30, 0x09,0x31, 0x15,0x00, 0x26,0xFF,0x7F,
++    0x75,0x10, 0x95,0x02, 0x81,0x02,
++    0x09,0x38, 0x15,0x81, 0x25,0x7F, 0x75,0x08, 0x95,0x01, 0x81,0x06,
++    0xC0, 0xC0
+@@ -849,0 +848,30 @@ Return Value:
++    case HIDMINI_CONTROL_CODE_INJECT_INPUT:
++    {
++        UCHAR* input = controlInfo->u.InputReport;
++        ULONG inputSize = input[0] == 2 ? 9 : input[0] == 3 ? 7 : 0;
++        WDFREQUEST pending;
++        ULONG i;
++        if (inputSize == 0) {
++            return STATUS_INVALID_PARAMETER;
++        }
++        for (i = inputSize; i < sizeof(controlInfo->u.InputReport); ++i) {
++            if (input[i] != 0) {
++                return STATUS_INVALID_PARAMETER;
++            }
++        }
++        status = WdfIoQueueRetrieveNextRequest(
++            QueueContext->DeviceContext->ManualQueue, &pending);
++        if (status == STATUS_NO_MORE_ENTRIES) {
++            return STATUS_DEVICE_NOT_READY;
++        }
++        if (!NT_SUCCESS(status)) {
++            return status;
++        }
++        status = RequestCopyFromBuffer(pending, input, inputSize);
++        WdfRequestComplete(pending, status);
++        if (NT_SUCCESS(status)) {
++            WdfRequestSetInformation(Request, reportSize);
++        }
++        break;
++    }
++
+@@ -1280,3 +1307,0 @@ Return Value:
+-    WDF_TIMER_CONFIG        timerConfig;
+-    WDF_OBJECT_ATTRIBUTES   timerAttributes;
+-    ULONG                   timerPeriodInSeconds = 5;
+@@ -1307,18 +1331,0 @@ Return Value:
+-    WDF_TIMER_CONFIG_INIT_PERIODIC(
+-                            &timerConfig,
+-                            EvtTimerFunc,
+-                            timerPeriodInSeconds * 1000);
+-
+-    WDF_OBJECT_ATTRIBUTES_INIT(&timerAttributes);
+-    timerAttributes.ParentObject = queue;
+-    status = WdfTimerCreate(&timerConfig,
+-                            &timerAttributes,
+-                            &queueContext->Timer);
+-
+-    if( !NT_SUCCESS(status) ) {
+-        KdPrint(("WdfTimerCreate failed 0x%x\n",status));
+-        return status;
+-    }
+-
+-    WdfTimerStart(queueContext->Timer, WDF_REL_TIMEOUT_IN_SEC(1));
+-
+@@ -1502 +1508,0 @@ Return Value:
+-
+diff --git a/hid/vhidmini2/inc/common.h b/hid/vhidmini2/inc/common.h
+index 9b14cc6..2984a44 100644
+--- a/hid/vhidmini2/inc/common.h
++++ b/hid/vhidmini2/inc/common.h
+@@ -31,0 +32 @@ Environment:
++#define  HIDMINI_CONTROL_CODE_INJECT_INPUT                0x10
+@@ -72,0 +74 @@ typedef struct _HIDMINI_CONTROL_INFO {
++        UCHAR InputReport[14];

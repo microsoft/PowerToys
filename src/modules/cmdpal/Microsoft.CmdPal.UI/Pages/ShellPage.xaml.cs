@@ -20,6 +20,7 @@ using Microsoft.CmdPal.UI.Services;
 using Microsoft.CmdPal.UI.Settings;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -1729,12 +1730,12 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         return completionTask;
     }
 
-    private ListItemViewModel? BuildQuickAccessShelfContext(IListItem item, IPageContext pageContext)
+    private ListItemViewModel? BuildQuickAccessShelfContext(InProcObject<IListItem> item, IPageContext pageContext)
     {
         ListItemViewModel? context = null;
         try
         {
-            context = new ListItemViewModel(item, new WeakReference<IPageContext>(pageContext), _contextMenuFactory);
+            context = new ListItemViewModel(item.Safe, new WeakReference<IPageContext>(pageContext), _contextMenuFactory);
             if (context.SafeFastInit() && context.SafeInitializeProperties() && context.SafeSlowInit())
             {
                 return context;

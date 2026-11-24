@@ -79,11 +79,18 @@ public class NetworkStatsTests
         stats.ApplySnapshots([new(2, WifiGuid, "VPN", 0, 0, 10_000_000_000, false)], 0);
         stats.ApplySnapshots([new(2, WifiGuid, "VPN", 100_000, 25_000, 10_000_000_000, false)], 1);
 
-        var total = stats.GetNetworkAdapter(NetworkStats.AllPhysicalAdaptersId).Usage;
-        Assert.AreEqual(0f, total.Sent);
-        Assert.AreEqual(0f, total.Received);
-        Assert.AreEqual(0f, total.Usage);
-        Assert.AreEqual(100_000f, stats.GetNetworkAdapter(WifiId).Usage.Received);
+        var aggregate = stats.GetNetworkAdapter(NetworkStats.AllPhysicalAdaptersId);
+        Assert.AreEqual(0f, aggregate.Usage.Sent);
+        Assert.AreEqual(0f, aggregate.Usage.Received);
+        Assert.AreEqual(0f, aggregate.Usage.Usage);
+        Assert.AreEqual(0d, aggregate.LinkSpeed);
+        Assert.AreEqual(0f, aggregate.History.Received.Snapshot()[^1]);
+
+        var adapter = stats.GetNetworkAdapter(WifiId);
+        Assert.AreEqual(100_000f, adapter.Usage.Received);
+        Assert.AreEqual(10_000_000_000d, adapter.LinkSpeed);
+        Assert.AreEqual(100_000f, adapter.History.Received.Snapshot()[^1]);
+        Assert.AreEqual(25_000f, adapter.History.Sent.Snapshot()[^1]);
     }
 
     [TestMethod]
@@ -151,6 +158,17 @@ public class NetworkStatsTests
         Assert.AreEqual(1_000_000UL, NetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(IF_OPER_STATUS.IfOperStatusUp, ulong.MaxValue, 1_000_000));
         Assert.AreEqual(2_000_000UL, NetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(IF_OPER_STATUS.IfOperStatusUp, 2_000_000, ulong.MaxValue));
         Assert.AreEqual(0UL, NetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(IF_OPER_STATUS.IfOperStatusUp, ulong.MaxValue, ulong.MaxValue));
+    }
+
+    [TestMethod]
+    public void GetKnownLinkSpeed_IsZeroUnlessTheInterfaceIsUp()
+    {
+        // A disconnected adapter can still report a speed, such as an unplugged dock's Ethernet.
+        foreach (var status in Enum.GetValues<IF_OPER_STATUS>())
+        {
+            var expected = status == IF_OPER_STATUS.IfOperStatusUp ? 1_000_000_000UL : 0UL;
+            Assert.AreEqual(expected, NetworkInterfaceSnapshotProvider.GetKnownLinkSpeed(status, 1_000_000_000, 1_000_000_000), status.ToString());
+        }
     }
 
     private static NetworkStats CreateNetworkStats() => new(new UnusedSnapshotProvider(), "All physical network adapters");

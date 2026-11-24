@@ -906,7 +906,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             if (editedTheMatrix)
             {
                 // Set the property directly to save the new matrix right away with the new available machines.
-                MachineMatrixString = machineMatrixString;
+                ReplaceMachineMatrix(machineMatrixString);
             }
         }
 
@@ -1488,17 +1488,28 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     return machineMatrixString;
                 }
             }
+        }
 
-            set
+        private void ReplaceMachineMatrix(IndexedObservableCollection<DeviceViewModel> value)
+        {
+            lock (_machineMatrixStringLock)
             {
-                lock (_machineMatrixStringLock)
-                {
-                    machineMatrixString = value;
-                }
-
-                Settings.Properties.ReplaceMachineMatrixString(value.ToEnumerable().Select(d => d.Name));
-                NotifyPropertyChanged();
+                machineMatrixString = value;
             }
+
+            SaveMachineMatrix();
+        }
+
+        internal void SaveMachineMatrix()
+        {
+            List<DeviceViewModel> machines;
+            lock (_machineMatrixStringLock)
+            {
+                machines = machineMatrixString.ToEnumerable().ToList();
+            }
+
+            MouseWithoutBordersMachineMatrixPersistence.Save(SettingsUtils, Settings, machines, static machine => machine.Name);
+            OnPropertyChanged(nameof(MachineMatrixString));
         }
 
         public bool ShowClipboardAndNetworkStatusMessages

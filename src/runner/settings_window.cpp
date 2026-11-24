@@ -365,15 +365,17 @@ void dispatch_received_json(const std::wstring& json_to_parse)
 
 void dispatch_received_json_callback(PVOID data)
 {
-    std::wstring* msg = static_cast<std::wstring*>(data);
+    const std::unique_ptr<std::wstring> msg{ static_cast<std::wstring*>(data) };
     dispatch_received_json(*msg);
-    delete msg;
 }
 
 void receive_json_send_to_main_thread(const std::wstring& msg)
 {
-    std::wstring* copy = new std::wstring(msg);
-    dispatch_run_on_main_ui_thread(dispatch_received_json_callback, copy);
+    auto copy = std::make_unique<std::wstring>(msg);
+    if (dispatch_run_on_main_ui_thread(dispatch_received_json_callback, copy.get()))
+    {
+        copy.release();
+    }
 }
 
 // Try to run the Settings process with non-elevated privileges.
@@ -438,8 +440,8 @@ BOOL run_settings_non_elevated(LPCWSTR executable_path, LPWSTR executable_args, 
 
 void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::optional<std::wstring> settings_window)
 {
-    PROCESS_INFORMATION process_info = { 0 };
-    HANDLE hToken = nullptr;
+    wil::unique_process_information process_info;
+    wil::unique_handle hToken;
 
     // Arguments for calling the settings executable:
     // "C:\powertoys_path\PowerToysSettings.exe" powertoys_pipe settings_pipe powertoys_pid settings_theme
@@ -556,7 +558,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
     //    }
     //}
 
-    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, hToken.put()))
     {
         Logger::error(L"Failed to open Runner token before launching Settings: {}", GetLastError());
         goto LExit;
@@ -613,7 +615,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
                          r.imagePath,
                          r.reasonCode);
         };
-        current_settings_ipc->start(hToken, settings_caller_policy);
+        current_settings_ipc->start(hToken.get(), settings_caller_policy);
 
         // Register callback for bug report status changes
         BugReportManager::instance().register_callback([](bool isRunning) {
@@ -644,15 +646,7 @@ void run_settings_window(bool show_oobe_window, bool show_scoobe_window, std::op
 
 LExit:
 
-    if (process_info.hProcess)
-    {
-        CloseHandle(process_info.hProcess);
-    }
-
-    if (process_info.hThread)
-    {
-        CloseHandle(process_info.hThread);
-    }
+    process_info.reset();
     {
         std::unique_lock lock{ ipc_mutex };
         if (current_settings_ipc)
@@ -663,11 +657,6 @@ LExit:
         }
         g_settings_process_id = 0;
         g_isLaunchInProgress = false;
-    }
-
-    if (hToken)
-    {
-        CloseHandle(hToken);
     }
 }
 

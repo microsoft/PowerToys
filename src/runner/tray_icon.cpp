@@ -109,12 +109,16 @@ bool dispatch_run_on_main_ui_thread(main_loop_callback_function _callback, PVOID
     {
         return false;
     }
-    struct run_on_main_ui_thread_msg* wnd_msg = new struct run_on_main_ui_thread_msg();
+    auto wnd_msg = std::make_unique<run_on_main_ui_thread_msg>();
     wnd_msg->_callback = _callback;
     wnd_msg->data = data;
 
-    PostMessage(tray_icon_hwnd, wm_run_on_main_ui_thread, 0, reinterpret_cast<LPARAM>(wnd_msg));
+    if (!PostMessage(tray_icon_hwnd, wm_run_on_main_ui_thread, 0, reinterpret_cast<LPARAM>(wnd_msg.get())))
+    {
+        return false;
+    }
 
+    wnd_msg.release();
     return true;
 }
 
@@ -391,9 +395,8 @@ LRESULT __stdcall tray_icon_window_proc(HWND window, UINT message, WPARAM wparam
         {
             if (lparam != NULL)
             {
-                struct run_on_main_ui_thread_msg* msg = reinterpret_cast<struct run_on_main_ui_thread_msg*>(lparam);
+                const std::unique_ptr<run_on_main_ui_thread_msg> msg{ reinterpret_cast<run_on_main_ui_thread_msg*>(lparam) };
                 msg->_callback(msg->data);
-                delete msg;
                 lparam = NULL;
             }
             break;
@@ -513,12 +516,15 @@ void start_tray_icon(bool isProcessElevated, bool theme_adaptive)
 
         // Register callback to update bug report menu item status
         BugReportManager::instance().register_callback([](bool isRunning) {
-            dispatch_run_on_main_ui_thread([](PVOID data) {
-                bool* running = static_cast<bool*>(data);
+            const auto callback = [](PVOID data) {
+                const std::unique_ptr<bool> running{ static_cast<bool*>(data) };
                 update_bug_report_menu_status(*running);
-                delete running;
-            },
-                                           new bool(isRunning));
+            };
+            auto running = std::make_unique<bool>(isRunning);
+            if (dispatch_run_on_main_ui_thread(callback, running.get()))
+            {
+                running.release();
+            }
         });
     }
 }

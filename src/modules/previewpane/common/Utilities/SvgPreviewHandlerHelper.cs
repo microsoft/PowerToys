@@ -132,9 +132,9 @@ namespace Common.Utilities
 
         private static int FindFirstXmlCloseTagIndex(string s, int openTagIndex)
         {
-            int index = 1;
+            int index = openTagIndex + 1;
 
-            while ((index = s.IndexOf('>', openTagIndex)) != -1)
+            while ((index = s.IndexOf('>', index)) != -1)
             {
                 if (index > 0 && s[index - 1] != '?')
                 {

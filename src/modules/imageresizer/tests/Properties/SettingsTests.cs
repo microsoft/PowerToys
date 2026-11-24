@@ -140,6 +140,60 @@ namespace ImageResizer.Properties
             Assert.AreEqual("{{T}}{0}e{1}s{2}t{3}{4}{5}%7", result);
         }
 
+        [TestMethod]
+        public void FileNameFormatUpdatesWhenFileNameChangesAfterRead()
+        {
+            var settings = new Settings { FileName = "%1 (%2)" };
+            Assert.AreEqual("{0} ({1})", settings.FileNameFormat);
+
+            settings.FileName = "%1_custom";
+
+            Assert.AreEqual("{0}_custom", settings.FileNameFormat);
+        }
+
+        [TestMethod]
+        public void SaveDoesNotWriteFileNameFormat()
+        {
+            var settings = new Settings();
+
+            settings.Save();
+
+            var json = System.IO.File.ReadAllText(Settings.SettingsPath);
+            StringAssert.Contains(json, "\"imageresizer_fileName\"");
+            Assert.IsFalse(json.Contains("FileNameFormat", System.StringComparison.Ordinal), json);
+        }
+
+        [TestMethod]
+        public void ReloadWithoutSettingsFileHonorsFileNameSetAfterwards()
+        {
+            // Mirrors the CLI first run: Reload() saves defaults because settings.json is missing,
+            // then the --filename option is applied.
+            var settings = new Settings();
+            Assert.IsFalse(System.IO.File.Exists(Settings.SettingsPath));
+
+            settings.Reload();
+            settings.FileName = "%1_custom";
+
+            Assert.IsTrue(System.IO.File.Exists(Settings.SettingsPath));
+            Assert.AreEqual("{0}_custom", settings.FileNameFormat);
+        }
+
+        [TestMethod]
+        public void ReloadIgnoresFileNameFormatFromOlderSettingsFile()
+        {
+            // Older builds wrote a computed "FileNameFormat" value into settings.json.
+            var json = "{\"name\":\"Image Resizer\",\"version\":\"1\",\"properties\":{"
+                + "\"FileNameFormat\":\"{0} ({1})\","
+                + "\"imageresizer_fileName\":{\"value\":\"%1_old\"}}}";
+            System.IO.File.WriteAllText(Settings.SettingsPath, json);
+            var settings = new Settings();
+
+            settings.Reload();
+
+            Assert.AreEqual("%1_old", settings.FileName);
+            Assert.AreEqual("{0}_old", settings.FileNameFormat);
+        }
+
         [DataTestMethod]
         [DataRow(0)]
         [DataRow(1)]

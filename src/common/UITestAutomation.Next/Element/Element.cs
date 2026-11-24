@@ -455,6 +455,14 @@ public class Element
     public T Find<T>(string name, int timeoutMS = 5000)
         where T : Element, new() => Find<T>(By.Name(name), timeoutMS);
 
+    internal string[] BuildSetValueArguments(string value)
+    {
+        EnsureBound();
+
+        // Keep target options before -- so selectors and values beginning with '-' stay literal.
+        return ["ui", "set-value", Owner!.TargetFlag, Owner!.TargetValue, "--", Selector, value];
+    }
+
     protected void EnsureBound()
     {
         Assert.IsNotNull(Owner, "Element is not bound to a Session.");

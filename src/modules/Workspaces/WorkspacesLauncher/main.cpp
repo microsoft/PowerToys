@@ -1,220 +1,152 @@
 #include "pch.h"
+#include "LaunchSessionHost.h"
 
-#include <common/utils/elevation.h>
-#include <common/utils/gpo.h>
-#include <common/utils/logger_helper.h>
-#include <common/utils/process_path.h>
+#include <algorithm>
+#include <shellapi.h>
+#include <string_view>
+#include <spdlog/sinks/null_sink.h>
+#include <wil/resource.h>
 #include <common/utils/UnhandledExceptionHandler.h>
+#include <common/utils/logger_helper.h>
 #include <common/utils/resources.h>
-
-#include <common/Telemetry/EtwTrace/EtwTrace.h>
-
-#include <WorkspacesLib/JsonUtils.h>
-#include <WorkspacesLib/utils.h>
-
-#include <Launcher.h>
-
+#include <WorkspacesLib/CliCommands.h>
+#include <WorkspacesLib/LaunchSession.h>
+#include <workspaces-common/GuidUtils.h>
 #include <Generated Files/resource.h>
-#include <WorkspacesLib/AppUtils.h>
-#include <WorkspacesLib/trace.h>
 
-const std::wstring moduleName = L"Workspaces\\WorkspacesLauncher";
-const std::wstring internalPath = L"";
-const std::wstring instanceMutexName = L"Local\\PowerToys_WorkspacesLauncher_InstanceMutex";
-
-int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdline, int cmdShow)
+namespace
 {
-    LoggerHelpers::init_logger(moduleName, internalPath, LogSettings::workspacesLauncherLoggerName);
+    constexpr std::wstring_view EditorDraftPrefix = L"--editor-draft=";
+
+    std::optional<WorkspacesData::WorkspacesProject> ReadEditorDraft(const std::wstring& workspaceId, const std::wstring& token)
+    {
+        if (token.size() != 38 || token.front() != L'{' || token.back() != L'}')
+            return std::nullopt;
+        const auto guid = GuidFromString(token);
+        if (!guid)
+            return std::nullopt;
+        const auto canonicalToken = GuidToString(*guid);
+        if (CompareStringOrdinal(token.c_str(), -1, canonicalToken.c_str(), -1, TRUE) != CSTR_EQUAL)
+            return std::nullopt;
+
+        const auto contents = WorkspacesCli::ReadJson(WorkspacesData::TempWorkspacesFile() + L"." + canonicalToken);
+        auto project = contents ? WorkspacesData::WorkspacesProjectJSON::FromJson(*contents) : std::nullopt;
+        if (!project || WorkspacesCli::NormalizeId(project->id) != WorkspacesCli::NormalizeId(workspaceId))
+            return std::nullopt;
+        return project;
+    }
+}
+
+int APIENTRY WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
+    Logger::init(std::vector<spdlog::sink_ptr>{ std::make_shared<spdlog::sinks::null_sink_mt>() });
     InitUnhandledExceptionHandler();
-
-    Trace::Workspaces::RegisterProvider();
-
-    Shared::Trace::ETWTrace trace{};
-    trace.UpdateState(true);
-
-    if (powertoys_gpo::getConfiguredWorkspacesEnabledValue() == powertoys_gpo::gpo_rule_configured_disabled)
+    winrt::init_apartment();
+    int count{};
+    wil::unique_hlocal_ptr<wchar_t*> argv(CommandLineToArgvW(GetCommandLineW(), &count));
+    if (!argv || !count)
+        return 1;
+    const std::vector<std::wstring> arguments(argv.get() + 1, argv.get() + count);
+    if (const auto worker = WorkspacesSession::TryRunHost(arguments))
+        return *worker;
+    LoggerHelpers::init_logger(L"Workspaces\\WorkspacesLauncher", L"", LogSettings::workspacesLauncherLoggerName);
+    const auto draftOption = std::ranges::find_if(arguments, [](const auto& arg) { return arg.starts_with(L"--editor-draft"); });
+    WorkspacesSession::Request request;
+    if (draftOption != arguments.end())
     {
-        Logger::warn(L"Tried to start with a GPO policy setting the utility to always be disabled. Please contact your systems administrator.");
+        if (arguments.size() != 3 || draftOption != arguments.begin() + 2 || !draftOption->starts_with(EditorDraftPrefix) ||
+            arguments[0].empty() || arguments[1] != std::to_wstring(static_cast<int>(InvokePoint::LaunchAndEdit)))
+        {
+            Logger::error("Invalid editor draft launch arguments.");
+            return 1;
+        }
+        request.id = arguments[0];
+        request.invokePoint = InvokePoint::LaunchAndEdit;
+    }
+    else
+    {
+        // Older callers can place the optional invocation point and "restarted" marker on either side of the ID.
+        for (const auto& argument : arguments)
+        {
+            if (argument.size() == 36 || (argument.size() == 38 && argument.front() == L'{' && argument.back() == L'}'))
+            {
+                if (GuidFromString(argument.size() == 36 ? L"{" + argument + L"}" : argument))
+                    request.id = argument;
+            }
+            else if (argument == L"0")
+                request.invokePoint = InvokePoint::EditorButton;
+            else if (argument == L"1")
+                request.invokePoint = InvokePoint::Shortcut;
+            else if (argument == L"2")
+                request.invokePoint = InvokePoint::LaunchAndEdit;
+        }
+        if (request.id.empty())
+        {
+            MessageBoxW(nullptr, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+            return 1;
+        }
+    }
+    try
+    {
+        std::optional<WorkspacesData::WorkspacesProject> draft;
+        if (draftOption != arguments.end())
+        {
+            try
+            {
+                draft = ReadEditorDraft(request.id, draftOption->substr(EditorDraftPrefix.size()));
+            }
+            catch (const WorkspacesSession::Error& error)
+            {
+                Logger::error("Cannot read the requested editor draft: {}", error.what());
+                return error.exitCode;
+            }
+            if (!draft)
+            {
+                Logger::error("The requested editor draft is missing, invalid, or belongs to another workspace.");
+                return 1;
+            }
+        }
+        const auto result = draft ? WorkspacesSession::StartSnapshot(request, *draft, true) : WorkspacesSession::Start(request);
+        if (result.persistence && *result.persistence != WorkspaceStore::UpdateResult::Updated)
+            Logger::warn("Workspace launch history could not be saved.");
+        if (request.invokePoint == InvokePoint::LaunchAndEdit)
+        {
+            return result.CanRecapture() ? 0 : 1;
+        }
         return 0;
     }
-
-    std::wstring cmdLineStr{ GetCommandLineW() };
-    auto cmdArgs = split(cmdLineStr, L" ");
-    if (cmdArgs.workspaceId.empty())
+    catch (const WorkspacesSession::Error& error)
     {
-        Logger::warn("Incorrect command line arguments: no workspace id");
-        MessageBox(NULL, GET_RESOURCE_STRING(IDS_INCORRECT_ARGS).c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+        Logger::error("Workspace session failed: {}", error.what());
+        Logger::flush();
+        WorkspacesSession::ExitIfExecutionUnresponsive(error);
+        if (error.code == L"busy" || error.code == L"disabledByPolicy" || error.code == L"canceled")
+        {
+            // The editor only starts recapture after a successful Launch and edit.
+            return request.invokePoint == InvokePoint::LaunchAndEdit ? error.exitCode : 0;
+        }
+        std::wstring message;
+        if (error.code == L"workspaceNotFound")
+            message = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), request.id);
+        else if (error.code == L"invalidArguments")
+            message = GET_RESOURCE_STRING(IDS_INCORRECT_ARGS);
+        else if (error.code == L"storageError" || error.code == L"invalidData")
+        {
+            const auto resource = error.code == L"storageError" ? IDS_FILE_READING_ERROR : IDS_INCORRECT_FILE_ERROR;
+            message = fmt::format(GET_RESOURCE_STRING(resource), error.fileName.empty() ? WorkspacesData::WorkspacesFile() : error.fileName);
+        }
+        if (!message.empty())
+            MessageBoxW(nullptr, message.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
         return 1;
     }
-
-    if (!cmdArgs.isRestarted)
+    catch (const winrt::hresult_error& error)
     {
-        // check if restart is needed. Only check it if not yet restarted to avoid endless restarting. Restart is needed if the process is elevated.
-        if (is_process_elevated())
-        {
-            Logger::warn("Workspaces Launcher is elevated, restart");
-
-            constexpr DWORD exe_path_size = 0xFFFF;
-            auto exe_path = std::make_unique<wchar_t[]>(exe_path_size);
-            GetModuleFileNameW(nullptr, exe_path.get(), exe_path_size);
-
-            const auto modulePath = get_module_folderpath();
-
-            std::string cmdLineStr(cmdline);
-            std::wstring cmdLineWStr(cmdLineStr.begin(), cmdLineStr.end());
-
-            std::wstring cmd = cmdArgs.workspaceId + L" " + std::to_wstring(cmdArgs.invokePoint) + L" " + NonLocalizable::restartedString;
-
-            RunNonElevatedEx(exe_path.get(), cmd, modulePath);
-            return 1;
-        }
-    }
-
-    auto mutex = CreateMutex(nullptr, true, instanceMutexName.c_str());
-    if (mutex == nullptr)
-    {
-        Logger::error(L"Failed to create mutex. {}", get_last_error_or_default(GetLastError()));
-    }
-
-    if (GetLastError() == ERROR_ALREADY_EXISTS)
-    {
-        Logger::warn(L"WorkspacesLauncher instance is already running");
-        return 0;
-    }
-
-    // COM should be initialized before ShellExecuteEx is called.
-    if (FAILED(CoInitializeEx(NULL, COINIT_MULTITHREADED)))
-    {
-        Logger::error("CoInitializeEx failed");
+        Logger::error(L"Workspace session Windows error: {}", error.message());
         return 1;
     }
-
-    SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-
-    Logger::trace(L"Invoke point: {}", cmdArgs.invokePoint);
-
-    // read workspaces
-    std::vector<WorkspacesData::WorkspacesProject> workspaces;
-    WorkspacesData::WorkspacesProject projectToLaunch{};
-    if (cmdArgs.invokePoint == InvokePoint::LaunchAndEdit)
+    catch (const std::exception& error)
     {
-        // check the temp file in case the project is just created and not saved to the workspaces.json yet
-        auto file = WorkspacesData::TempWorkspacesFile();
-        auto res = JsonUtils::ReadSingleWorkspace(file);
-        if (res.isOk() && projectToLaunch.id == cmdArgs.workspaceId)
-        {
-            projectToLaunch = res.getValue();
-        }
-        else if (res.isError())
-        {
-            std::wstring formattedMessage{};
-            switch (res.error())
-            {
-            case JsonUtils::WorkspacesFileError::FileReadingError:
-                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), file);
-                break;
-            case JsonUtils::WorkspacesFileError::IncorrectFileError:
-                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
-                break;
-            }
-
-            MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-            return 1;
-        }
-    }
-
-    if (projectToLaunch.id.empty())
-    {
-        auto file = WorkspacesData::WorkspacesFile();
-        auto res = JsonUtils::ReadWorkspaces(file);
-        if (res.isOk())
-        {
-            workspaces = res.getValue();
-        }
-        else
-        {
-            std::wstring formattedMessage{};
-            switch (res.error())
-            {
-            case JsonUtils::WorkspacesFileError::FileReadingError:
-                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_FILE_READING_ERROR), file);
-                break;
-            case JsonUtils::WorkspacesFileError::IncorrectFileError:
-                formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_INCORRECT_FILE_ERROR), file);
-                break;
-            }
-
-            MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-            return 1;
-        }
-
-        if (workspaces.empty())
-        {
-            Logger::warn("Workspaces file is empty");
-            std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_EMPTY_FILE), file);
-            MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
-            return 1;
-        }
-
-        for (const auto& proj : workspaces)
-        {
-            if (proj.id == cmdArgs.workspaceId)
-            {
-                projectToLaunch = proj;
-                break;
-            }
-        }
-    }
-
-    if (projectToLaunch.id.empty())
-    {
-        Logger::critical(L"Workspace {} not found", cmdArgs.workspaceId);
-        std::wstring formattedMessage = fmt::format(GET_RESOURCE_STRING(IDS_PROJECT_NOT_FOUND), cmdArgs.workspaceId);
-        MessageBox(NULL, formattedMessage.c_str(), GET_RESOURCE_STRING(IDS_WORKSPACES).c_str(), MB_ICONERROR | MB_OK);
+        Logger::error("Workspace session error: {}", error.what());
         return 1;
     }
-
-    // prepare project in advance
-    auto installedApps = Utils::Apps::GetAppsList();
-    bool updatedApps = Utils::Apps::UpdateWorkspacesApps(projectToLaunch, installedApps);
-    bool updatedIds = false;
-
-    // verify apps have ids
-    for (auto& app : projectToLaunch.apps)
-    {
-        if (app.id.empty())
-        {
-            app.id = CreateGuidString();
-            updatedIds = true;
-        }
-    }
-
-    // update the file before launching, so WorkspacesWindowArranger and WorkspacesLauncherUI could get updated app paths
-    if (updatedApps || updatedIds)
-    {
-        for (int i = 0; i < workspaces.size(); i++)
-        {
-            if (workspaces[i].id == projectToLaunch.id)
-            {
-                workspaces[i] = projectToLaunch;
-                break;
-            }
-        }
-
-        json::to_file(WorkspacesData::WorkspacesFile(), WorkspacesData::WorkspacesListJSON::ToJson(workspaces));
-    }
-
-    // launch
-    {
-        Launcher launcher(projectToLaunch, workspaces, cmdArgs.invokePoint);
-    }
-
-    trace.Flush();
-    trace.UpdateState(false);
-
-    Trace::Workspaces::UnregisterProvider();
-
-    Logger::trace("Finished");
-    CoUninitialize();
-    return 0;
 }

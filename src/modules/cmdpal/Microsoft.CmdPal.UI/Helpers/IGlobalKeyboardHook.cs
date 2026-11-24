@@ -16,5 +16,7 @@ internal interface IGlobalKeyboardHook
 
     void SendDummyKeyUp();
 
+    void SendWindowsKeyUp(VIRTUAL_KEY key);
+
     LRESULT CallNext(int code, WPARAM wParam, LPARAM lParam);
 }
