@@ -1248,4 +1248,255 @@ namespace RemappingLogicTests
             Assert::AreEqual((size_t)8, injected.size());
         }
     };
+
+    // Tests for how a key-sequence remap pairs each physical press with its release (#5679). They
+    // run the whole handler chain (DispatchKeyboardEvent), as the hook does, and look at the events
+    // that reached the system.
+    TEST_CLASS (SequencePressPairingTests)
+    {
+    private:
+        KeyboardManagerInput::MockedInput mockedInputHandler;
+        State testState;
+
+        // True while remapping is bypassed (settings loading, or the editor window open)
+        bool remappingSuspended = false;
+
+        using SequenceRemaps = std::vector<std::pair<DWORD, std::vector<DWORD>>>;
+
+        // Replaces the key-sequence remaps the way a settings reload does.
+        void ReloadSequenceRemaps(const SequenceRemaps& remaps)
+        {
+            testState.ClearSingleKeyToSequenceRemaps();
+            for (const auto& [key, sequence] : remaps)
+            {
+                testState.AddSingleKeyToSequenceRemap(key, sequence);
+            }
+
+            // KeyboardManager::LoadSettings does this after loading the tables
+            testState.ClearAllSequenceKeyState();
+        }
+
+        void SendKey(WORD vk, bool keyUp, WORD scanCode = 0)
+        {
+            std::vector<INPUT> inputs{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = vk, .wScan = scanCode, .dwFlags = static_cast<DWORD>(keyUp ? KEYEVENTF_KEYUP : 0) } },
+            };
+            mockedInputHandler.SendVirtualInput(inputs);
+        }
+
+        // Number of events of the key itself (not sent by Keyboard Manager) that reached the system
+        size_t Delivered(DWORD vk, bool keyUp)
+        {
+            size_t count = 0;
+            for (const auto& keyEvent : mockedInputHandler.GetDeliveredEvents())
+            {
+                if (keyEvent.vkCode == vk && keyEvent.isKeyUp == keyUp && keyEvent.dwExtraInfo == 0)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        // Number of key-sequence events (key downs and key ups of the taps) that reached the system
+        size_t SequenceEvents()
+        {
+            size_t count = 0;
+            for (const auto& keyEvent : mockedInputHandler.GetDeliveredEvents())
+            {
+                if (keyEvent.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG)
+                {
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        // Makes Keyboard Manager's own injection fail while blocked is true
+        void BlockInjectionWhile(const bool& blocked)
+        {
+            mockedInputHandler.SetSendVirtualInputShouldFail([&blocked](const std::vector<INPUT>& inputs) {
+                return blocked && !inputs.empty() && inputs[0].ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG;
+            });
+        }
+
+    public:
+        TEST_METHOD_INITIALIZE(InitializeTestEnv)
+        {
+            TestHelpers::ResetTestEnv(mockedInputHandler, testState);
+            remappingSuspended = false;
+            mockedInputHandler.SetHookProc([this](LowlevelKeyboardEvent* data) {
+                return KeyboardEventHandlers::DispatchKeyboardEvent(mockedInputHandler, data, testState, remappingSuspended);
+            });
+        }
+
+        // A remap that starts to apply while its key is held (the key-down already reached the app)
+        // waits for the next press: the auto-repeat must not send the sequence, and the key-up must
+        // reach the app.
+        TEST_METHOD (SequenceRemap_EnabledWhileKeyIsHeld_WaitsForTheNextPress)
+        {
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false); // auto-repeat
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
+
+            // The next press is replaced by the sequence
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+        }
+
+        // Reloading the settings while the key is held must not send the sequence again on the next
+        // auto-repeat, and the key-up of that press stays suppressed.
+        TEST_METHOD (SequenceRemap_ReloadedWhileKeyIsHeld_DoesNotSendTheSequenceAgain)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false); // auto-repeat
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+
+            // The next press sends the sequence again
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+        }
+
+        // Removing the remap while the key is held keeps the rest of that press suppressed: the app
+        // never saw the key-down, so it must not get auto-repeats or a key-up for it.
+        TEST_METHOD (SequenceRemap_RemovedWhileKeyIsHeld_KeepsThatPressSuppressed)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            ReloadSequenceRemaps({});
+
+            SendKey(VK_F1, false); // auto-repeat
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+
+            // The next press is an ordinary F1
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+
+            // And once the remap is back, a press sends the sequence
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+        }
+
+        // A press that was passed through because the injection failed leaves nothing behind when
+        // the remap is removed before the key is released.
+        TEST_METHOD (SequenceRemap_InjectionFailed_ThenRemapRemovedBeforeRelease_LeavesNoStaleState)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            bool blocked = true;
+            BlockInjectionWhile(blocked);
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            ReloadSequenceRemaps({});
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+
+            // With the remap back and the injection working, the next press sends the sequence
+            blocked = false;
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+        }
+
+        // When the injection fails the original press is passed through as it is. A later handler in
+        // the chain (here a Disabled remap of the same key) must not consume it.
+        TEST_METHOD (SequenceRemap_InjectionFailed_PressIsNotConsumedByADisabledRemap)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            testState.AddSingleKeyRemap(VK_F1, static_cast<DWORD>(CommonSharedConstants::VK_DISABLED));
+            bool blocked = true;
+            BlockInjectionWhile(blocked);
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            SendKey(VK_F1, false); // auto-repeat
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
+            Assert::AreEqual((size_t)0, SequenceEvents());
+        }
+
+        // A key pressed while remapping is suspended reaches the app. When remapping resumes while
+        // the key is still held, the rest of that press reaches the app too.
+        TEST_METHOD (SequenceRemap_KeyPressedWhileRemappingIsSuspended_IsForwardedUntilItsKeyUp)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            remappingSuspended = true;
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            remappingSuspended = false;
+            SendKey(VK_F1, false); // auto-repeat
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_F1));
+
+            // The next press is replaced by the sequence
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+        }
+
+        // A keypad key can be released under another virtual key than it was pressed with (NumPad1
+        // goes down, Shift changes the state, and the key comes up as End). Both events carry the
+        // same scan code, so the release must end the press and the next press must send the
+        // sequence again.
+        TEST_METHOD (SequenceRemap_KeypadKeyReleasedUnderAnotherVirtualKey_IsPairedByScanCode)
+        {
+            constexpr WORD keypad1ScanCode = 0x4F;
+            mockedInputHandler.SetEncodeNumpadOrigin(true);
+            ReloadSequenceRemaps({ { VK_NUMPAD1, { 0x41, 0x42 } } });
+
+            SendKey(VK_NUMPAD1, false, keypad1ScanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            // The release arrives as End, without the extended-key flag (a keypad key)
+            SendKey(VK_END, true, keypad1ScanCode);
+            Assert::AreEqual((size_t)0, Delivered(Helpers::EncodeKeyNumpadOrigin(VK_END, false), true));
+
+            SendKey(VK_NUMPAD1, false, keypad1ScanCode);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+            Assert::AreEqual((size_t)0, Delivered(VK_NUMPAD1, false));
+        }
+    };
 }
