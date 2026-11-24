@@ -718,16 +718,6 @@ namespace MouseWithoutBorders
             this.groupBoxShortcuts.TabIndex = 200;
             this.groupBoxShortcuts.TabStop = false;
             this.groupBoxShortcuts.Text = " &Keyboard Shortcuts ";
-
-
-            ToolTip groupBoxToolTip = new ToolTip();
-            groupBoxToolTip.SetToolTip(this.groupBoxShortcuts, "These settings are controlled by the PowerToys.Settings application.");
-
-            foreach (Control control in this.groupBoxShortcuts.Controls)
-            {
-                control.Enabled = false;
-            }
-
             // 
             // labelScreenCapture
             // 

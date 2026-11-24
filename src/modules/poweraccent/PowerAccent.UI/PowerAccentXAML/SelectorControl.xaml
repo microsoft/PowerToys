@@ -119,7 +119,7 @@
         <Grid x:Name="RootContent">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
             <Grid Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}">
@@ -239,6 +239,7 @@
                     x:Name="CharacterName"
                     MaxHeight="36"
                     Margin="8"
+                    VerticalAlignment="Center"
                     AutomationProperties.AutomationId="QuickAccentDescription"
                     FontSize="12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"

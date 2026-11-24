@@ -304,8 +304,69 @@ namespace Peek.UI
                 this.CenterOnMonitor(foregroundWindowHandle, desiredWindowWidth, desiredWindowHeight);
             }
 
+            // A hidden WinUI window has no frame yet; showing it directly flashes black. Keep it cloaked until XAML has rendered.
+            bool wasHidden = !AppWindow.IsVisible;
+            if (wasHidden)
+            {
+                SetCloaked(true);
+            }
+
             this.Show();
             WindowHelpers.BringToForeground(this.GetWindowHandle());
+
+            if (wasHidden)
+            {
+                UncloakAfterFirstFrames();
+            }
+        }
+
+        private EventHandler<object>? _uncloakOnRendering;
+
+        private void SetCloaked(bool cloaked)
+        {
+            int value = cloaked ? 1 : 0;
+            int hr = NativeMethods.DwmSetWindowAttribute(this.GetWindowHandle(), NativeMethods.DWMWA_CLOAK, ref value, sizeof(int));
+            if (hr != 0)
+            {
+                Logger.LogWarning($"DwmSetWindowAttribute(DWMWA_CLOAK={value}) failed: 0x{hr:X8}");
+            }
+        }
+
+        private void UncloakAfterFirstFrames()
+        {
+            if (_uncloakOnRendering != null)
+            {
+                Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= _uncloakOnRendering;
+            }
+
+            int frames = 0;
+            void Uncloak()
+            {
+                Microsoft.UI.Xaml.Media.CompositionTarget.Rendering -= _uncloakOnRendering;
+                _uncloakOnRendering = null;
+                SetCloaked(false);
+            }
+
+            // Rendering fires before a frame is drawn; the second one means the first frame is on its way to DWM.
+            _uncloakOnRendering = (_, _) =>
+            {
+                if (++frames >= 2)
+                {
+                    Uncloak();
+                }
+            };
+            Microsoft.UI.Xaml.Media.CompositionTarget.Rendering += _uncloakOnRendering;
+
+            // Fallback so the window can never stay invisible if XAML stops rendering.
+            var pending = _uncloakOnRendering;
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await Task.Delay(250);
+                if (_uncloakOnRendering == pending)
+                {
+                    Uncloak();
+                }
+            });
         }
 
         private Size GetMonitorMaxContentSize(Size monitorSize, double scaling)

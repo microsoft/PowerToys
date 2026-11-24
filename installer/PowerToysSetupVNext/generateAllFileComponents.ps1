@@ -460,8 +460,9 @@ Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath 
 Generate-FileComponents -fileListName "SettingsV2AssetsCmdPalFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
-Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"
-Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
+$workspacesAssetsOutputPath = Join-Path $PSScriptRoot "..\..\$platform\Release\WinUI3Apps\Assets\Workspaces"
+Generate-FileList -fileDepsJson "" -fileListName WorkspacesWinUIImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath $workspacesAssetsOutputPath
+Generate-FileComponents -fileListName "WorkspacesWinUIImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
 
 #DSC Resources - JSON manifest files in DSCModules subfolder
 Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCModules\"
