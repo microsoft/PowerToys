@@ -201,7 +201,7 @@ namespace Awake
 
                         case ExpirationTimeParseStatus.InThePast:
                             {
-                                string errorMessage = $"Date and time value in --expire-at must be in the future. Value used: {rawValue}.";
+                                string errorMessage = FormatPastExpirationError(rawValue);
                                 Logger.LogError(errorMessage);
                                 result.AddError(errorMessage);
                                 return null;
@@ -263,10 +263,14 @@ namespace Awake
                 parseResult.GetValue(timeOption),
                 parseResult.GetValue(pidOption),
                 parseResult.GetValue(expireAtOption),
-                parseResult.GetValue(parentPidOption),
-                clock));
+                parseResult.GetValue(parentPidOption)));
 
             return rootCommand;
+        }
+
+        private static string FormatPastExpirationError(string value)
+        {
+            return $"Date and time value in --expire-at must be in the future. Value used: {value}.";
         }
 
         private static void LogCLITelemetry(bool successful)
@@ -347,18 +351,11 @@ namespace Awake
             }
         }
 
-        internal static bool IsStandaloneExpirationExpired(bool usePtConfig, int pid, bool useParentPid, DateTimeOffset? expireAt, DateTimeOffset now)
+        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, DateTimeOffset? expireAt, bool useParentPid)
         {
-            return !usePtConfig && pid == 0 && !useParentPid && expireAt.HasValue && expireAt.Value <= now;
-        }
-
-        private static void HandleCommandLineArguments(bool usePtConfig, bool displayOn, uint timeLimit, int pid, DateTimeOffset? expireAt, bool useParentPid, TimeProvider clock)
-        {
-            ArgumentNullException.ThrowIfNull(clock);
-
-            if (IsStandaloneExpirationExpired(usePtConfig, pid, useParentPid, expireAt, clock.GetLocalNow()))
+            if (!usePtConfig && pid == 0 && !useParentPid && expireAt.HasValue && expireAt.Value <= DateTimeOffset.Now)
             {
-                string errorMessage = $"Date and time value in --expire-at must be in the future. Value used: {expireAt!.Value.ToString("O", CultureInfo.InvariantCulture)}.";
+                string errorMessage = FormatPastExpirationError(expireAt.Value.ToString("O", CultureInfo.InvariantCulture));
                 Console.Error.WriteLine(errorMessage);
                 Logger.LogError(errorMessage);
                 LogCLITelemetry(successful: false);
@@ -454,7 +451,7 @@ namespace Awake
                     Logger.LogInfo($"Operating in thread ID {Environment.CurrentManagedThreadId}.");
                     if (!Manager.SetExpirableKeepAwake(expireAt.Value, displayOn))
                     {
-                        string errorMessage = $"Date and time value in --expire-at must be in the future. Value used: {expireAt.Value.ToString("O", CultureInfo.InvariantCulture)}.";
+                        string errorMessage = FormatPastExpirationError(expireAt.Value.ToString("O", CultureInfo.InvariantCulture));
                         Logger.LogError(errorMessage);
                         LogCLITelemetry(successful: false);
                         Exit(errorMessage, 1);
@@ -631,7 +628,8 @@ namespace Awake
                     case AwakeMode.EXPIRABLE:
                         // When we are loading from the settings file, let's make sure that we never
                         // get users in a state where the expirable keep-awake is in the past.
-                        if (settings.Properties.ExpirationDateTime <= DateTimeOffset.Now)
+                        if (settings.Properties.ExpirationDateTime <= DateTimeOffset.Now
+                            || !Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn))
                         {
                             settings.Properties.ExpirationDateTime = DateTimeOffset.Now.AddMinutes(5);
                             _settingsUtils.SaveSettings(JsonSerializer.Serialize(settings), Core.Constants.AppName);
@@ -642,7 +640,6 @@ namespace Awake
                             return;
                         }
 
-                        Manager.SetExpirableKeepAwake(settings.Properties.ExpirationDateTime, settings.Properties.KeepDisplayOn);
                         break;
 
                     default:
