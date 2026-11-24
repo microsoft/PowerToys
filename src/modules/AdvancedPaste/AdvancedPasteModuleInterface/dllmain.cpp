@@ -16,6 +16,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
 #include <common/utils/EventWaiter.h>
+#include <common/utils/input_injection.h>
 
 #include <algorithm>
 #include <array>
@@ -516,50 +517,32 @@ private:
         }
     }
 
-    static constexpr std::array<short, 8> modifier_keys = { VK_LCONTROL, VK_RCONTROL, VK_LWIN, VK_RWIN, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU };
-
-    static bool is_key_down(short vk)
+    // Sends Ctrl+<key> to the foreground app once the user lets go of the hotkey modifiers.
+    // Must not be called on the low-level keyboard hook thread: the physical key-ups it waits
+    // for are queued behind that hook and would never be observed. Held modifiers are released,
+    // never re-pressed afterwards, so none can be left logically stuck (#27612).
+    static bool send_ctrl_chord(WORD key, const wchar_t* chord_name)
     {
-        // Most significant bit is set if key is down
-        return (GetAsyncKeyState(static_cast<int>(vk)) & 0x8000) != 0;
-    }
+        input_injection::chord_options options;
+        // Keeps the centralized keyboard hook from treating the chord as a hotkey, e.g. Ctrl+V as activation.
+        options.extra_info = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
+        options.modifier_release_timeout = std::chrono::milliseconds(1000);
 
-    // Must not be called on the low-level keyboard hook thread: the physical key-ups
-    // we wait for are queued behind that hook and would never be observed.
-    static void wait_for_modifiers_release()
-    {
-        constexpr auto timeout = std::chrono::milliseconds(1000);
-        constexpr auto poll_delay = std::chrono::milliseconds(10);
-
-        const auto deadline = std::chrono::steady_clock::now() + timeout;
-        while (std::any_of(modifier_keys.begin(), modifier_keys.end(), is_key_down))
+        const auto result = input_injection::send_chord({ VK_CONTROL, key }, options);
+        if (result.modifier_wait_timed_out)
         {
-            if (std::chrono::steady_clock::now() >= deadline)
-            {
-                Logger::warn(L"Modifier keys still held after {}ms; releasing them before injecting input", timeout.count());
-                return;
-            }
-            std::this_thread::sleep_for(poll_delay);
+            Logger::warn(L"Modifier keys still held after {}ms; released them before sending {}", options.modifier_release_timeout.count(), chord_name);
         }
-    }
 
-    // Injects key-ups for any modifiers that are still held so the target app sees a clean
-    // Ctrl+<key>. Modifiers are intentionally never re-pressed afterwards: a synthetic key-down
-    // based on a stale GetAsyncKeyState snapshot can land after the user's physical key-up and
-    // leave the modifier logically stuck system-wide (#27612).
-    static void inject_held_modifier_key_ups(std::vector<INPUT>& inputs)
-    {
-        for (const auto vk : modifier_keys)
+        if (!result.succeeded())
         {
-            if (is_key_down(vk))
-            {
-                INPUT input_event = {};
-                input_event.type = INPUT_KEYBOARD;
-                input_event.ki.wVk = vk;
-                input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-                inputs.push_back(input_event);
-            }
+            auto errorMessage = get_last_error_message(result.error);
+            Logger::error(L"SendInput failed for {}. Expected to send {} inputs and sent only {}; released {} of {} pressed keys. {}", chord_name, result.requested, result.sent, result.cleanup_sent, result.cleanup_requested, errorMessage.has_value() ? errorMessage.value() : L"");
+            Trace::AdvancedPaste_Error(result.error, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
+            return false;
         }
+
+        return true;
     }
 
     bool try_send_copy_message()
@@ -600,73 +583,11 @@ private:
         return false;
     }
 
-    // Helper: send Ctrl+C via SendInput, releasing any held modifier keys first
-    // (the hotkey combination may still have modifiers physically pressed).
+    // Helper: send Ctrl+C via SendInput. The hotkey combination may still have modifiers
+    // physically pressed; without releasing them the target app would see e.g. Win+Shift+Ctrl+C.
     bool send_ctrl_c_input()
     {
-        wait_for_modifiers_release();
-
-        std::vector<INPUT> inputs;
-
-        // Release all modifier keys that are still held down from the hotkey.
-        // Without this, the target app sees e.g. Win+Shift+Ctrl+C instead of just Ctrl+C.
-        inject_held_modifier_key_ups(inputs);
-
-        // Ctrl down
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = VK_CONTROL;
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
-
-        // C down
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = 0x43; // C
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
-
-        // C up
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = 0x43; // C
-            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
-
-        // Ctrl up
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = VK_CONTROL;
-            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-            input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-            inputs.push_back(input_event);
-        }
-
-        // Prevent Start Menu from activating after Win key release
-        INPUT dummyEvent = {};
-        dummyEvent.type = INPUT_KEYBOARD;
-        dummyEvent.ki.wVk = 0xFF;
-        dummyEvent.ki.dwFlags = KEYEVENTF_KEYUP;
-        inputs.push_back(dummyEvent);
-
-        auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
-        if (uSent != inputs.size())
-        {
-            DWORD errorCode = GetLastError();
-            auto errorMessage = get_last_error_message(errorCode);
-            Logger::error(L"SendInput failed for Ctrl+C. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
-            Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
-            return false;
-        }
-        return true;
+        return send_ctrl_chord('C', L"Ctrl+C");
     }
 
     bool send_copy_selection()
@@ -849,62 +770,7 @@ private:
             //  (2) marked as handled (so it never gets a key down input event).
             // So, wait for the user to let go of the hotkey modifiers, and inject a key up event
             // for any that are still pressed after the timeout.
-            wait_for_modifiers_release();
-
-            std::vector<INPUT> inputs;
-            inject_held_modifier_key_ups(inputs);
-
-            // send Ctrl+V (key downs and key ups)
-            {
-                INPUT input_event = {};
-                input_event.type = INPUT_KEYBOARD;
-                input_event.ki.wVk = VK_CONTROL;
-                inputs.push_back(input_event);
-            }
-
-            {
-                INPUT input_event = {};
-                input_event.type = INPUT_KEYBOARD;
-                input_event.ki.wVk = 0x56; // V
-                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
-                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-                inputs.push_back(input_event);
-            }
-
-            {
-                INPUT input_event = {};
-                input_event.type = INPUT_KEYBOARD;
-                input_event.ki.wVk = 0x56; // V
-                input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-                // Avoid triggering detection by the centralized keyboard hook. Allows using Control+V as activation.
-                input_event.ki.dwExtraInfo = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
-                inputs.push_back(input_event);
-            }
-
-            {
-                INPUT input_event = {};
-                input_event.type = INPUT_KEYBOARD;
-                input_event.ki.wVk = VK_CONTROL;
-                input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-                inputs.push_back(input_event);
-            }
-
-            // Send a dummy key to prevent Start Menu from activating after the Win key release
-            INPUT dummyEvent = {};
-            dummyEvent.type = INPUT_KEYBOARD;
-            dummyEvent.ki.wVk = 0xFF;
-            dummyEvent.ki.dwFlags = KEYEVENTF_KEYUP;
-            inputs.push_back(dummyEvent);
-
-            auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
-            if (uSent != inputs.size())
-            {
-                DWORD errorCode = GetLastError();
-                auto errorMessage = get_last_error_message(errorCode);
-                Logger::error(L"SendInput failed. Expected to send {} inputs and sent only {}. {}", inputs.size(), uSent, errorMessage.has_value() ? errorMessage.value() : L"");
-                Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
-                return;
-            }
+            send_ctrl_chord('V', L"Ctrl+V");
 
             // Clear kb state and send Ctrl+V end
         }
