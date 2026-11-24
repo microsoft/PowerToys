@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+  <Import Project="$(RepoRoot)src\Common.Dotnet.AotCompatibility.props" />
+  <Import Project="..\Common.ExtDependencies.props" />
+
+  <PropertyGroup>
+    <RootNamespace>Microsoft.CmdPal.Ext.WindowsPalettes</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Preserve the source organization and callback signatures of the WUP bridge while it tracks the Windows contract. -->
+    <NoWarn>$(NoWarn);SA1300;SA1402;SA1515;SA1518;SA1633;SA1649;CA1068;CA1863</NoWarn>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <CsWinRTAotOptimizerEnabled>Auto</CsWinRTAotOptimizerEnabled>
+    <CsWinRTAotExportsEnabled>true</CsWinRTAotExportsEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\common\ManagedCommon\ManagedCommon.csproj" />
+    <ProjectReference Include="..\..\Windows.UI.Palettes.Projection\Windows.UI.Palettes.Projection.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Update="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+</Project>
