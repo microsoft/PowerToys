@@ -143,6 +143,9 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             // Null-safe access in case property wasn't upgraded yet - default to false
             _cursorWrapDisableOnSingleMonitor = CursorWrapSettingsConfig.Properties.DisableCursorWrapOnSingleMonitor?.Value ?? false;
 
+            // Null-safe access in case property wasn't upgraded yet - default to false
+            _cursorWrapDisableInGameMode = CursorWrapSettingsConfig.Properties.DisableCursorWrapInGameMode?.Value ?? false;
+
             ArgumentNullException.ThrowIfNull(mouseButtonLockSettingsRepository);
 
             MouseButtonLockSettingsConfig = mouseButtonLockSettingsRepository.SettingsConfig;
@@ -1453,6 +1456,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool CursorWrapDisableInGameMode
+        {
+            get
+            {
+                return _cursorWrapDisableInGameMode;
+            }
+
+            set
+            {
+                if (value != _cursorWrapDisableInGameMode)
+                {
+                    _cursorWrapDisableInGameMode = value;
+
+                    // Ensure the property exists before setting value
+                    if (CursorWrapSettingsConfig.Properties.DisableCursorWrapInGameMode == null)
+                    {
+                        CursorWrapSettingsConfig.Properties.DisableCursorWrapInGameMode = new BoolProperty(value);
+                    }
+                    else
+                    {
+                        CursorWrapSettingsConfig.Properties.DisableCursorWrapInGameMode.Value = value;
+                    }
+
+                    NotifyCursorWrapPropertyChanged();
+                }
+            }
+        }
+
         public void NotifyCursorWrapPropertyChanged([CallerMemberName] string propertyName = null)
         {
             OnPropertyChanged(propertyName);
@@ -1655,6 +1686,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private int _cursorWrapWrapMode; // 0=Both, 1=VerticalOnly, 2=HorizontalOnly
         private int _cursorWrapActivationMode; // 0=Always, 1=HoldingCtrl (wraps only while held), 2=HoldingShift (wraps only while held)
         private bool _cursorWrapDisableOnSingleMonitor; // Disable cursor wrap when only one monitor is connected
+        private bool _cursorWrapDisableInGameMode; // Disable cursor wrap while a fullscreen game is running
 
         private GpoRuleConfigured _mouseButtonLockEnabledGpoRuleConfiguration;
         private bool _mouseButtonLockEnabledStateIsGPOConfigured;

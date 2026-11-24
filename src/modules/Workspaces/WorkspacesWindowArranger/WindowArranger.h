@@ -14,6 +14,7 @@ struct WindowWithDistance
 {
     int distance;
     HWND window;
+    DWORD processId;
 };
 
 class WindowArranger
@@ -34,7 +35,7 @@ private:
     LaunchingStatus m_launchingStatus;
     std::atomic<bool> m_resultAcknowledged{};
     std::optional<WindowWithDistance> GetNearestWindow(const WorkspacesData::WorkspacesProject::Application& app, const std::vector<HWND>& movedWindows, Utils::PwaHelper& pwaHelper);
-    bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove);
+    bool TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, const WindowWithDistance& target);
 
     //void onWindowCreated(HWND window);
     bool processWindows(bool processAll);

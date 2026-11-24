@@ -29,7 +29,7 @@ stages:
           - template: steps-ensure-dotnet-version.yml
             parameters:
               sdk: true
-              version: '10.0'
+              version: '11.0'
           - pwsh: |
               if ($env:SELECTED_MODULES -ne 'GrabAndMove.HidSmoke.Probe') {
                 throw 'The smoke path requires exactly [GrabAndMove.HidSmoke.Probe].'
@@ -90,7 +90,7 @@ stages:
             - template: steps-ensure-dotnet-version.yml
               parameters:
                 sdk: false
-                version: '10.0'
+                version: '11.0'
             - pwsh: |
                 if ('${{ platform }}' -eq 'arm64') {
                   . "$(Build.SourcesDirectory)\.pipelines\umdf-hid-smoke\UmdfHidCi.Common.ps1"
