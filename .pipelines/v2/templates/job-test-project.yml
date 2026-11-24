@@ -342,7 +342,7 @@ jobs:
 
   - template: steps-ensure-dotnet-version.yml
 
-  # winappcli (winapp.exe) powers the Microsoft.PowerToys.UITest.Next harness and isn't baked
+  # winappcli (winapp.exe) powers the Microsoft.PowerToys.UITest harness and isn't baked
   # into the agent image yet. winget / App Installer isn't available on these agents, so download
   # the pinned standalone CLI from its GitHub release. Drop this step once the CLI is pre-staged.
   - pwsh: |-
@@ -418,42 +418,37 @@ jobs:
       }
       $selectedModules = @($modulesRaw -split ';' | Where-Object { $_ })
       $allModules = [string]::IsNullOrWhiteSpace($modulesRaw)
-      $newPlusModules = @(
-        'NewPlus.UITests',
-        'NewPlus.UITests.Next'
-      )
       # Match exact project stems so unrelated names cannot opt into companion signing.
       $authenticatedSettingsIpcModules = @(
-        'AdvancedPaste.UITests.Next',
+        'AdvancedPaste.UITests',
         'AltWindowCycle.UITests',
         'Awake.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
         'GrabAndMove.UITests',
-        'Hosts.UITests.Next',
+        'Hosts.UITests',
         'ImageResizer.UITests',
-        'LightSwitch.UITests.Next',
-        'Microsoft.CmdPal.UITests.Next',
+        'LightSwitch.UITests',
+        'Microsoft.CmdPal.UITests',
         'MouseWithoutBorders.UITests',
-        'MouseUtils.UITests.Next',
+        'MouseUtils.UITests',
+        'NewPlus.UITests',
         'PowerAccent.UITests',
         'PowerDisplay.UITests',
-        'PowerOCR.UITests.Next',
-        'PowerRename.UITests.Next',
+        'PowerOCR.UITests',
+        'PowerRename.UITests',
         'RegistryPreview.UITests',
-        'ScreenRuler.UITests.Next',
+        'ScreenRuler.UITests',
         'Settings.UITests',
         'ShortcutGuide.UITests',
-        'Workspaces.UITests.Next',
+        'Workspaces.UITests',
         'ZoomIt.UITests'
-      ) + $newPlusModules
+      )
 
       $requiresModernContextMenu = '$(TestPlatform)' -ne 'x64Win10'
       $requiresPowerRename = $allModules -or @($selectedModules | Where-Object { $_ -match 'PowerRename' }).Count -gt 0
-      $requiresNewPlus = $allModules -or @(
-        $selectedModules | Where-Object { $_ -in $newPlusModules }
-      ).Count -gt 0
+      $requiresNewPlus = $allModules -or $selectedModules -contains 'NewPlus.UITests'
       $requiresAuthenticatedSettingsIpc = $allModules -or @(
         $selectedModules | Where-Object { $_ -in $authenticatedSettingsIpcModules }
       ).Count -gt 0
@@ -477,14 +472,14 @@ jobs:
         $requiredPackages += 'CropAndLock.TestApp.msix'
       }
 
-      if ($allModules -or $selectedModules -contains 'Workspaces.UITests.Next') {
+      if ($allModules -or $selectedModules -contains 'Workspaces.UITests') {
         $requiredPackages += 'Workspaces.TestApp.msix'
         $requiredAuthenticodeFiles += 'PowerToys.QuickAccess.exe', 'PowerToys.WorkspacesCLI.exe',
           'PowerToys.WorkspacesLauncher.exe', 'PowerToys.WorkspacesWindowArranger.exe',
           'PowerToys.WorkspacesLauncherUI.exe'
       }
 
-      if ($allModules -or $selectedModules -contains 'Microsoft.CmdPal.UITests.Next') {
+      if ($allModules -or $selectedModules -contains 'Microsoft.CmdPal.UITests') {
         $requiredPackages += 'SamplePagesExtension.msix'
       }
 
@@ -532,7 +527,7 @@ jobs:
         $modulesRaw = $env:AUTO_UI_TEST_MODULES
       }
       $modules = @($modulesRaw -split ';' | Where-Object { $_ })
-      if ($modules.Count -gt 0 -and $modules -notcontains 'PowerOCR.UITests.Next') {
+      if ($modules.Count -gt 0 -and $modules -notcontains 'PowerOCR.UITests') {
         Write-Host 'The migrated PowerOCR suite is not selected; OCR provisioning is unnecessary.'
         return
       }
@@ -634,7 +629,7 @@ jobs:
       New-Item -ItemType Directory -Path $resultsDir -Force | Out-Null
       . "$(Build.SourcesDirectory)\.pipelines\umdf\UmdfCi.Common.ps1"
 
-      $nonElevatedSuites = @('AdvancedPaste.UITests.Next', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'Microsoft.CmdPal.UITests.Next', 'MouseUtils.UITests.Next', 'PowerDisplay.UITests', 'PowerOCR.UITests.Next', 'Settings.UITests', 'Workspaces.UITests.Next')
+      $nonElevatedSuites = @('AdvancedPaste.UITests', 'AltWindowCycle.UITests', 'CropAndLock.UITests', 'GrabAndMove.UITests', 'Microsoft.CmdPal.UITests', 'MouseUtils.UITests', 'PowerDisplay.UITests', 'PowerOCR.UITests', 'Settings.UITests', 'Workspaces.UITests')
       . "$(build.sourcesdirectory)\.pipelines\configureLightSwitchLocation.ps1"
       $locationStatePath = "$(Agent.WorkFolder)\PowerToysUiTestState\LightSwitchLocation.json"
       $failed = 0
@@ -678,7 +673,7 @@ jobs:
         Write-Host "##[group]Run UI tests: $base"
         Push-Location $dir
         try {
-          if ($base -eq 'PowerOCR.UITests.Next' -and $env:POWER_OCR_LANGUAGES_READY -ne 'true') {
+          if ($base -eq 'PowerOCR.UITests' -and $env:POWER_OCR_LANGUAGES_READY -ne 'true') {
             Write-Host '##vso[task.logissue type=error]BLOCKED_INFRASTRUCTURE: PowerOCR language provisioning did not complete; other selected suites run independently.'
             $suiteFailed = $true
             continue
@@ -689,7 +684,7 @@ jobs:
               -StateDirectory "$(Agent.WorkFolder)\PowerToysUiTestState" -ResultsDirectory $resultsDir
             Start-UmdfFixture -Context $fixtureContext -RequireFreshGuest
           }
-          if ($base -eq 'LightSwitch.UITests.Next') {
+          if ($base -eq 'LightSwitch.UITests') {
             try {
               Enable-LightSwitchLocation -StatePath $locationStatePath
             } catch {
@@ -731,7 +726,7 @@ jobs:
                 $suiteFailed = $true
               }
             }
-            if ($base -eq 'LightSwitch.UITests.Next') {
+            if ($base -eq 'LightSwitch.UITests') {
               try {
                 Restore-LightSwitchLocation -StatePath $locationStatePath
               } catch {

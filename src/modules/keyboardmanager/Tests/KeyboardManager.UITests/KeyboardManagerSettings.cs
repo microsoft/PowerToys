@@ -5,7 +5,7 @@
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 
 namespace Microsoft.PowerToys.KeyboardManager.UITests;
 

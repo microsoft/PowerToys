@@ -1,6 +1,6 @@
 # Agentic local-VM UI-test loop
 
-This loop assumes the test project follows `Microsoft.PowerToys.UITest.Next`, builds as a
+This loop assumes the test project follows `Microsoft.PowerToys.UITest`, builds as a
 Microsoft.Testing.Platform executable, and has already passed the `ui-tests-migration` design and
 CI-stability checks.
 
@@ -14,7 +14,7 @@ Build only; do not launch PowerToys or tests on the host when the task forbids i
 
 ```pwsh
 tools\build\build.cmd `
-  -Path src\modules\<Module>\Tests\<Module>.UITests.Next `
+  -Path src\modules\<Module>\Tests\<Module>.UITests `
   -Platform x64 -Configuration Debug
 
 git rev-parse HEAD
@@ -75,7 +75,7 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -VmName PowerToysUiTest-Win10 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\<Module> `
-  -TestExecutable <Module>.UITests.Next.exe `
+  -TestExecutable <Module>.UITests.exe `
   -Filter 'Name=<focused-test>' `
   -BuildLabel (git rev-parse HEAD) `
   -PlanOnly
@@ -104,7 +104,7 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -VmName PowerToysUiTest-Win10 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\<Module> `
-  -TestExecutable <Module>.UITests.Next.exe `
+  -TestExecutable <Module>.UITests.exe `
   -Filter 'Name=<focused-test>' `
   -Platform x64Win10 `
   -BuildLabel (git rev-parse HEAD) `

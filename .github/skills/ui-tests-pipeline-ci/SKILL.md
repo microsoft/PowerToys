@@ -66,7 +66,7 @@ verified terminal success or a documented blocker/three-run escalation.
    or cancel a relevant superseded run on the target branch; runs on other branches may continue in
    parallel. Never cancel another branch's unrelated run.
 5. **Always scope modules.** `uiTestModules` must be non-empty and contain the exact current UITest
-   project stem, for example `[FancyZonesEditor.UITests.Next]`.
+   project stem, for example `[FancyZonesEditor.UITests]`.
 6. **Three-run ceiling.** A CI stabilization sequence may queue at most three runs total. Keep an
    attempt ledger. If run 3 is not green, stop and ask the user for assistance. Also stop when three
    consecutive runs show no stabilization progress.

@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Reflection;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.Settings.UITests;
@@ -15,7 +15,7 @@ namespace Microsoft.Settings.UITests;
 /// <remarks>
 /// <para>
 /// Inspired by <see href="https://github.com/microsoft/PowerToys/pull/48414"/>. Uses our
-/// <see cref="UITestAutomation.Next"/> harness instead of the PR's bare wrapper so the same
+/// <see cref="UITestAutomation"/> harness instead of the PR's bare wrapper so the same
 /// surface (Find/Click/By/Element) works across all module tests.
 /// </para>
 /// <para>

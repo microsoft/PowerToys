@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using System.Text.Json.Nodes;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 

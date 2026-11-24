@@ -25,6 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
   </ItemGroup>
 </Project>

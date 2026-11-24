@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.ColorPicker.UITests;
@@ -622,7 +622,7 @@ public class ColorPickerEndToEndTests : UITestBase
     /// <summary>
     /// Parse a UI-rendered shortcut string like <c>"Win + Shift + C"</c> into the
     /// <see cref="Key"/> sequence the harness's keyboard helper expects. Matches the parser
-    /// pattern used by <c>ScreenRuler.UITests.Next/TestHelper.cs</c>.
+    /// pattern used by <c>ScreenRuler.UITests/TestHelper.cs</c>.
     /// </summary>
     private static Key[] ParseShortcutText(string shortcutText)
     {

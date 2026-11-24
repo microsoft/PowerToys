@@ -2,12 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// TEMPLATE — a starting scaffold for a `.Next` UI-test class. Replace __MODULE__ / __MODULEUI__ /
+// TEMPLATE — a starting scaffold for a UI-test class. Replace __MODULE__ / __MODULEUI__ /
 // selectors with the real values for your module, delete what you don't need, and add test methods.
 // See the skill's references/patterns-and-pitfalls.md for the full recipe catalog and
 // ColorPickerEndToEndTests.cs for a complete worked example.
 using System.Diagnostics;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.__MODULE__.UITests;

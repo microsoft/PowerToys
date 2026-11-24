@@ -144,7 +144,7 @@ Note: The DllHost process loads the DLL only when the context menu is triggered 
 
 ## Automated UI tests
 
-`src\modules\NewPlus\Tests\NewPlus.UITests` uses `Microsoft.PowerToys.UITest.Next` and winappcli.
+`src\modules\NewPlus\Tests\NewPlus.UITests` uses `Microsoft.PowerToys.UITest` and winappcli.
 The suite automates [the New+ checklist](https://github.com/microsoft/PowerToys/issues/40683):
 
 | Checklist | Test |
@@ -185,7 +185,7 @@ cover exact submenu inventories and recursive file contents. Supplementary menu 
 best-effort and limited to two per test; failure capture remains handled by the framework.
 
 Explorer lifecycle and menu mechanics come from the shared `ExplorerControl` and `ShellMenu`
-helpers in `UITestAutomation.Next`; file and directory comparisons use `FileSystemAssert`.
+helpers in `UITestAutomation`; file and directory comparisons use `FileSystemAssert`.
 The New+ fixture retains only its Settings flow, registration policy, template expectations, and
 fixture-specific folder-background gesture. Other Explorer-driven suites use the same primitives,
 with framework regression coverage for popup readiness, selection of replacement windows,

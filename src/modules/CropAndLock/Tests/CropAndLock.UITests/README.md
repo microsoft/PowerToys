@@ -1,7 +1,7 @@
 # Crop And Lock UI tests
 
 Greenfield coverage for [#40679](https://github.com/microsoft/PowerToys/issues/40679),
-using `Microsoft.PowerToys.UITest.Next` and the real Runner hotkeys.
+using `Microsoft.PowerToys.UITest` and the real Runner hotkeys.
 
 | Checklist | Test |
 | --- | --- |

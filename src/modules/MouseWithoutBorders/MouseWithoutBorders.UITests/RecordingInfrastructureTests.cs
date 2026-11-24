@@ -6,9 +6,9 @@ using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
 
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UiTextBox = Microsoft.PowerToys.UITest.Next.TextBox;
+using UiTextBox = Microsoft.PowerToys.UITest.TextBox;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 

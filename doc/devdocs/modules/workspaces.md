@@ -19,8 +19,8 @@ Workspaces is a PowerToys module that allows users to save and restore window la
 
 ## UI tests
 
-`src\modules\Workspaces\Tests\Workspaces.UITests.Next` uses the winappcli-based
-`UITestAutomation.Next` harness. It runs through Visual Studio Test Explorer or
+`src\modules\Workspaces\Tests\Workspaces.UITests` uses the winappcli-based
+`UITestAutomation` harness. It runs through Visual Studio Test Explorer or
 the built Microsoft.Testing.Platform executable. Build the product runtime from
 the same branch as the tests, use an English-language, connected and unlocked
 desktop, and run Visual Studio/testhost **without elevation**. Keep an RDP
@@ -28,7 +28,7 @@ connection open and avoid mouse/keyboard input while the UI cases execute.
 
 ```powershell
 # Run from the repository root; use ARM64 instead of x64 when appropriate.
-tools\build\build.cmd -Path src\modules\Workspaces\Tests\Workspaces.UITests.Next -Platform x64 -Configuration Debug
+tools\build\build.cmd -Path src\modules\Workspaces\Tests\Workspaces.UITests -Platform x64 -Configuration Debug
 ```
 
 The test-project reference builds `Workspaces.TestApp` and stages both an
@@ -103,7 +103,7 @@ authentication.
 
 The suite README documents the full checklist mapping, fixture ownership, and
 evidence/cleanup behavior:
-`src\modules\Workspaces\Tests\Workspaces.UITests.Next\README.md`.
+`src\modules\Workspaces\Tests\Workspaces.UITests\README.md`.
 
 ## Implementation Details
 

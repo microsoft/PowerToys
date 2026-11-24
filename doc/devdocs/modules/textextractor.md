@@ -13,9 +13,9 @@ Text Extractor is a PowerToys utility that enables users to extract and copy tex
 
 ## UI tests
 
-The winappcli suite lives in [PowerOCR.UITests.Next](../../../src/modules/PowerOCR/PowerOCR.UITests.Next) and replaces the legacy suite. It covers all 10 existing tests, including the toolbar, failed-capture keyboard, and cross-cursor regressions; it does not add multi-monitor coverage.
+The winappcli suite lives in [PowerOCR.UITests](../../../src/modules/PowerOCR/PowerOCR.UITests) and replaces the legacy suite. It covers all 10 existing tests, including the toolbar, failed-capture keyboard, and cross-cursor regressions; it does not add multi-monitor coverage.
 
-Build with `tools\build\build.cmd -Path src\modules\PowerOCR\PowerOCR.UITests.Next -Platform x64 -Configuration Debug` (use `ARM64` for the ARM64 build). Run the resulting `PowerOCR.UITests.Next.exe` on an interactive standard-user desktop with `--report-trx --results-directory <directory>`. See the [UI test guide](../development/ui-tests.md) for framework setup.
+Build with `tools\build\build.cmd -Path src\modules\PowerOCR\PowerOCR.UITests -Platform x64 -Configuration Debug` (use `ARM64` for the ARM64 build). Run the resulting `PowerOCR.UITests.exe` on an interactive standard-user desktop with `--report-trx --results-directory <directory>`. See the [UI test guide](../development/ui-tests.md) for framework setup.
 
 The language-change tests require at least two installed Windows OCR language capabilities, including English (`en-US`) for the deterministic text fixture. The suite seeds the English language's native name in module settings and checks the captured fixture text. It restores module settings, clipboard text (including an initially empty clipboard), and pointer position after each test.
 

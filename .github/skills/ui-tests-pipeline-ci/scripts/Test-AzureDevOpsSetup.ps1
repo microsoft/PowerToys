@@ -50,7 +50,7 @@ param(
 
     [string] $ProbeBranch = 'refs/heads/main',
 
-    [string] $ProbeModule = 'FancyZones.UITests.Next',
+    [string] $ProbeModule = 'FancyZones.UITests',
 
     [long] $ProbeBuildId = 0
 )

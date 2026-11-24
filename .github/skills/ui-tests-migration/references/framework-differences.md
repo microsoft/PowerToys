@@ -1,15 +1,13 @@
-# Framework differences: legacy vs `.Next`
+# Framework guide: winappcli vs the retired WinAppDriver harness
 
-The conceptual deltas you must internalize before porting. Read this once, end-to-end, then keep
-[api-mapping.md](api-mapping.md) open for the mechanical lookups.
+Use the winappcli framework for current tests. The legacy column describes older branches only.
+See [api-mapping.md](api-mapping.md) for the corresponding APIs.
 
 ## At a glance
 
-| Aspect | Legacy `Microsoft.PowerToys.UITest` | New `Microsoft.PowerToys.UITest.Next` |
+| Aspect | Retired WinAppDriver harness | Current `Microsoft.PowerToys.UITest` |
 |---|---|---|
-| Folder | `src/common/UITestAutomation/` | `src/common/UITestAutomation.Next/` |
-| Namespace | `Microsoft.PowerToys.UITest` | `Microsoft.PowerToys.UITest.Next` |
-| Assembly | `Microsoft.PowerToys.UITest` | `Microsoft.PowerToys.UITest.Next` |
+| Source | Older branches only | `src/common/UITestAutomation/` |
 | Engine | WinAppDriver server on `http://127.0.0.1:4723` + Selenium/Appium | `winapp.exe` CLI (shell out, parse `--json`) |
 | Driver object | `WindowsDriver<WindowsElement>`, `WindowsElement` | none — every call is a `winapp ui …` subprocess |
 | 3rd-party deps | `Appium.WebDriver`, `Selenium.WebDriver`, … | none (MSTest only) |
@@ -23,7 +21,7 @@ The conceptual deltas you must internalize before porting. Read this once, end-t
 
 ## 1. The engine: winappcli, not WinAppDriver
 
-The legacy harness spins up a WinAppDriver server and talks Selenium WebDriver to it. The `.Next`
+The legacy harness spun up a WinAppDriver server and talked Selenium WebDriver to it. The winappcli
 harness has **no server and no session protocol** — `WinappCli.Invoke(...)` starts `winapp.exe`,
 captures stdout/stderr/exit-code, and (for `--json` verbs) parses the envelope. Every `Find`,
 property read, click, and key press is an independent process invocation.
@@ -41,7 +39,7 @@ Consequences you'll feel while porting:
 ## 2. Elements are stateless
 
 Legacy `Element` wraps a live `WindowsElement`; properties like `Enabled`, `Text`, `Rect` read the
-cached Selenium object. `.Next` `Element` wraps **only a selector** (a winappcli slug or text query)
+cached Selenium object. The current `Element` wraps **only a selector** (a winappcli slug or text query)
 plus the owning `Session`. The `ControlType`, `ClassName`, `Name`, `X/Y/Width/Height` fields are the
 values captured **at `Find` time**; every *fresh* read (`IsEnabled`, `GetProperty(...)`, `GetValue()`)
 shells out again via `winapp ui get-property`/`get-value`.
@@ -59,7 +57,7 @@ Porting implications:
 
 The new `By` (in `By.cs`) is **not** Selenium's `By`. It has three kinds:
 
-| `.Next` factory | Meaning | winappcli mechanic |
+| Factory | Meaning | winappcli mechanic |
 |---|---|---|
 | `By.Name(text)` | case-insensitive substring search over Name/AutomationId | `winapp ui search "<text>"` |
 | `By.AccessibilityId(id)` / `By.Id(id)` | stable `AutomationId` | search by id |
@@ -86,7 +84,7 @@ the module's XAML for an `x:Name`/`AutomationProperties.AutomationId` and switch
 ## 4. No `global` parameter — session scope decides reach
 
 Legacy `Find<T>(by, timeoutMS, global)` had a `global` bool to widen the search beyond the current
-window. `.Next` `Find<T>(by, timeoutMS)` has **no** `global` param. Instead, the **session scope**
+window. The current `Find<T>(by, timeoutMS)` has **no** `global` param. Instead, the **session scope**
 governs reach:
 
 - **Window scope** (`-w <hwnd>`, the default from `UITestBase`/`SessionHelper.Init`): searches within
@@ -101,7 +99,7 @@ discover it with `WindowsFinder`/`WindowControl` (see §6) and get a new `Sessio
 
 ## 5. Lifecycle, hygiene, and module pre-enablement (`UITestBase`)
 
-Both bases run `[TestInitialize]`/`[TestCleanup]`, but the `.Next` base centralizes things the legacy
+Both bases run `[TestInitialize]`/`[TestCleanup]`, but the current base centralizes things the legacy
 tests often did by hand:
 
 - **Constructor:** `UITestBase(PowerToysModule scope = PowerToysSettings, WindowSize size = UnSpecified, string[]? enableModules = null)`.
@@ -137,7 +135,7 @@ tests often did by hand:
 ## 6. Multi-window discovery
 
 The legacy harness used `Session.Attach(module|windowName)` to switch the driver to another window.
-`.Next` discovers windows with two static helpers:
+The framework discovers windows with two static helpers:
 
 - **`WindowsFinder`** (read/wait): `ListByApp(appNameOrPid)`, `ListAll()`,
   `WaitForWindowByApp(app, predicate, timeoutMS)`, `WaitForWindowByTitle(...)`,
@@ -154,14 +152,14 @@ Note: unfiltered `WindowsFinder.ListAll()` drops windows with no Win32 title (e.
 editor exposes its name only via UIA). **Use `ListByApp`/`WaitForWindowByApp` with a process filter**
 for those.
 
-## 7. What `.Next` does NOT (yet) provide
+## 7. API limits
 
 When a legacy test relies on one of these, adapt rather than expecting a drop-in:
 
 - **`By.XPath` / `By.CssSelector` / `By.ClassName`** — none exist (see §3).
 - **`FindByPattern` / regex Name matching** as a base helper — re-express with `FindAll<T>(By.Name(...))`
   + a C# `Regex`/`Where` on the cached `Name` (the legacy base's `FindByNamePattern` shows the shape).
-- **`Group`, `HyperlinkButton` wrappers** — the legacy `Element/` set has them; `.Next` doesn't.
+- **`Group`, `HyperlinkButton` wrappers** — the current framework does not provide them.
   Use `Find<Element>` (or `Find<Button>` for a hyperlink button, which is a Button under UIA), or add a
   tiny wrapper subclass mirroring `Button.cs`/`NavigationViewItem.cs` if you need the type.
 - **`element.Text` / `element.Rect` / `element.Enabled`** (legacy names) — use `GetValue()` /
@@ -169,6 +167,6 @@ When a legacy test relies on one of these, adapt rather than expecting a drop-in
 - **Instance `Session.SendKeys`/`MoveMouseTo`/`PerformMouseAction`** — exist as a thin `Session.SendKeys`
   passthrough, but prefer the static `KeyboardHelper`/`MouseHelper`.
 
-If a genuinely missing capability blocks a port, add it to the `.Next` harness in a small, focused way
+If a genuinely missing capability blocks a test, add it to the framework in a small, focused way
 that mirrors the existing file style (one wrapper class, or one static helper method) — and call it out
 to the user. Don't pull in a NuGet package.

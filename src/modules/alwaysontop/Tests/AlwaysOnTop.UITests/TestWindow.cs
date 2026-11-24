@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Runtime.InteropServices;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 
 namespace Microsoft.AlwaysOnTop.UITests;
 

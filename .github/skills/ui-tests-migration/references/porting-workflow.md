@@ -1,16 +1,16 @@
 # Porting workflow
 
-Two end-to-end playbooks. Pick the one matching your scenario (see SKILL.md "Pick your scenario").
-Both assume you've read [framework-differences.md](framework-differences.md) and have
-[api-mapping.md](api-mapping.md) open.
+Use [Scenario B](#scenario-b--greenfield-from-a-human-sign-off-markdown) for a new suite on `main`.
+Scenario A documents how the retired WinAppDriver suites were ported and applies only to older branches.
+See [framework-differences.md](framework-differences.md) and [api-mapping.md](api-mapping.md).
 
 ---
 
 ## Scenario A — Port existing legacy tests
 
-Re-implement an existing `[Module].UITests` project (which references `UITestAutomation.csproj`) as a
-new `[Module].UITests.Next` project (referencing `UITestAutomation.Next.csproj`), preserving every
-test's **intent and assertions**.
+When working from a branch that still uses WinAppDriver, preserve each test's **intent and
+assertions** while moving it to the winappcli framework. Follow the project names on that branch;
+do not scaffold a second suite under the same name or restore the legacy harness on `main`.
 
 ### A0. Baseline the legacy suite first — ELEVATED (recommended)
 
@@ -37,7 +37,7 @@ Start-Process pwsh -Verb RunAs -ArgumentList "-NoProfile","-ExecutionPolicy","By
 Knowing the baseline tells you which failures are pre-existing product/environment issues you should
 NOT expect the port to fix. A measurement failure on a scaled (non-100%) display is usually DPI (see
 [patterns-and-pitfalls.md](patterns-and-pitfalls.md) Pitfall 12): the ScreenRuler legacy suite scores
-**4/5** elevated here (Bounds fails at 150% scale), while the `.Next` port scores **5/5** — its Exe
+**4/5** elevated here (Bounds fails at 150% scale), while the winappcli port scores **5/5** — its Exe
 `app.manifest` makes it DPI-aware where the legacy `Library` project's manifest is silently ignored.
 
 ### A1. Inventory the source
@@ -52,9 +52,9 @@ NOT expect the port to fix. A measurement failure on a scaled (non-100%) display
 
 ### A2. Map the structure
 
-| Legacy piece | `.Next` target |
+| Legacy piece | winappcli target |
 |---|---|
-| `[TestClass] FooTests : UITestBase` | same shape, `using Microsoft.PowerToys.UITest.Next;` |
+| `[TestClass] FooTests : UITestBase` | same shape, `using Microsoft.PowerToys.UITest;` |
 | ctor `: base(PowerToysSettings, WindowSize.Large)` | `: base(PowerToysModule.PowerToysSettings, WindowSize.Large)` |
 | ctor `commandLineArgs: new[]{ "--enable", "Foo" }` | `enableModules: new[]{ "Foo" }` (deterministic module baseline) |
 | `TestHelper.InitializeTest(this, …)` | a private setup method, or rely on `UITestBase` hygiene + an explicit nav helper |
@@ -69,7 +69,7 @@ For each legacy method:
    module's XAML and find the `x:Name`/`AutomationProperties.AutomationId` the control exposes.
 2. **Translate the actions** with [api-mapping.md](api-mapping.md). The frequent ones:
    - `element.Click(msPreAction: N, …)` → if you relied on the pre-delay, add `Thread.Sleep(N)` then
-     `element.Click(msPostAction: …)` (`.Next` `Click` has no `msPreAction`).
+     `element.Click(msPostAction: …)` (the current `Click` has no `msPreAction`).
    - A click on a non-invokable element (TextBlock/ListItem whose ancestor handles it) →
      `element.MouseClick(...)`.
    - Selenium `Actions` drags → `element.Drag(...)` / `MouseHelper.Drag(...)`.
@@ -89,7 +89,7 @@ For each legacy method:
 
 - Start from [../templates/TestHelper.cs](../templates/TestHelper.cs) — it already implements the
   common building blocks (navigate, toggle + verify process, read shortcut, discover/activate/close
-  the module window, clipboard, screen-center) with the right `.Next` idioms; map your legacy helper's
+  the module window, clipboard, screen-center) with the current APIs; map your legacy helper's
   module-specific bits onto it rather than translating Selenium scaffolding line-by-line.
 - A static `TestHelper` is fine to keep, but re-point it at the new APIs. Drop members that only
   existed to work around Selenium (manual `Session.Attach` dances, STA-clipboard wrappers → use
@@ -112,7 +112,7 @@ for a different result.
 
 ## Scenario B — Greenfield from a human sign-off markdown
 
-The module has **no** automated UI tests. Build a new `[Module].UITests` project (no `.Next` suffix)
+The module has **no** automated UI tests. Build a new `[Module].UITests` project
 whose tests come from the module's **manual test sign-off** document — the human checklist QA runs
 before a release. `ColorPickerUITest.md` is the archetype:
 
@@ -181,10 +181,10 @@ that covers it, and explicitly call out any items left as manual-only (e.g. "che
 
 ## Both scenarios — definition of done
 
-- [ ] New project builds to **exit code 0**, referencing `UITestAutomation.Next.csproj` only.
+- [ ] New project builds to **exit code 0**, referencing `UITestAutomation.csproj` only.
 - [ ] No Selenium/Appium/`WindowsDriver`/`By.XPath`/`:4723` left anywhere.
 - [ ] Registered in `PowerToys.slnx` with the `*|ARM64`/`*|x64` platform block.
-- [ ] (A) Every legacy `[TestMethod]` has a `.Next` counterpart; the legacy project is untouched.
+- [ ] (A, historical) Every legacy `[TestMethod]` has a counterpart in the winappcli suite.
 - [ ] (B) Every actionable sign-off item maps to a test or is explicitly noted as manual-only.
 - [ ] Toggles/settings the test changes are restored in a `finally`; spawned windows are closed.
 - [ ] No product-code edits beyond `AutomationProperties.AutomationId` hooks; anything larger was

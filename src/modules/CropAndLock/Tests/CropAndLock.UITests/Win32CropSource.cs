@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CropAndLock.TestApp;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Forms = System.Windows.Forms;
 

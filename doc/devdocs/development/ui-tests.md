@@ -1,7 +1,7 @@
 # UI tests framework
 
 PowerToys provides a UI-test framework for modules and Settings. Tests use
-`Microsoft.PowerToys.UITest.Next`, which drives Windows UI Automation through `winappcli` and runs as
+`Microsoft.PowerToys.UITest`, which drives Windows UI Automation through `winappcli` and runs as
 a Microsoft.Testing.Platform executable. The legacy WinAppDriver/Selenium framework and its test
 projects have been removed.
 
@@ -9,14 +9,14 @@ projects have been removed.
 
 Two repository skills cover the complete implementation and validation loop:
 
-- [UI-tests migration skill](../../../.github/skills/ui-tests-migration/SKILL.md): create new
-  `.Next` test projects, port legacy WinAppDriver tests, design stable selectors/waits/lifecycle, and
+- [UI-test development skill](../../../.github/skills/ui-tests-migration/SKILL.md): create or
+  extend UI-test projects, design stable selectors, waits, and lifecycle, and
   prepare tests for CI.
 - [Local-VM UI-tests skill](../../../.github/skills/ui-tests-local-vm/SKILL.md): create persistent
   Windows 10 and Windows 11 Hyper-V guests, stage current build/test artifacts, execute tests in a
   standard-user interactive desktop, and collect durable TRX/log/screenshot/video evidence.
 
-For new or migrated tests, use both skills. Build first, then use the local VMs as the default live
+For new or updated tests, use both skills. Build first, then use the local VMs as the default live
 agentic loop: run one deterministic test, diagnose and fix it, and finally widen to the complete
 module suite on both supported Windows versions.
 
@@ -31,9 +31,7 @@ not on a working machine.
 
 ## Before running tests
 
-### `.Next` tests
-
-- Build the PowerToys runtime and `.UITests.Next` test executable.
+- Build the PowerToys runtime and the module's `.UITests` executable.
 - Install the pinned `winappcli` runtime or set `WINAPP_CLI_PATH`. The pipeline helper is
   `.pipelines/InstallWinAppCli.ps1`.
 - Use a live interactive desktop. UIA, foreground input, Explorer, hotkeys, and rendering do not work
@@ -41,24 +39,22 @@ not on a working machine.
 - Exit an existing PowerToys instance before a host-desktop run. The harness owns the runner and
   module lifecycle.
 
-The `.Next` value-setting wrappers pass target options before `--`, followed by the literal
+The framework's value-setting wrappers pass target options before `--`, followed by the literal
 selector and value. Keep this boundary when adding wrappers: application arguments such as
 `--payload "text"` and negative numeric values must not be parsed as winapp options.
 
 ## Running tests
-
-### `.Next` tests
 
 Build the focused project with the repository script, then run the produced Microsoft.Testing.Platform
 executable directly:
 
 ```pwsh
 tools\build\build.cmd `
-  -Path src\modules\<Module>\Tests\<Module>.UITests.Next `
+  -Path src\modules\<Module>\Tests\<Module>.UITests `
   -Platform x64 `
   -Configuration Debug
 
-$exe = 'x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0\<Module>.UITests.Next.exe'
+$exe = 'x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Module>.UITests.exe'
 & $exe `
   --filter 'TestCategory=<Module>' `
   --report-trx `
@@ -195,7 +191,7 @@ Official/specific-build runs retain both machine-level and per-user jobs.
 Native ARM64 driver artifacts are built on the ordinary build agents, never installed there.
 The experimental ARM64 transport-smoke path also explicitly selects the TESTSIGNING image.
 
-## Running `.Next` tests in persistent local VMs
+## Running UI tests in persistent local VMs
 
 The supported local backend is a pair of persistent Hyper-V guests driven through PowerShell Direct:
 Windows 10 and Windows 11, each with an already logged-on standard-user desktop. The VMs reveal
@@ -237,7 +233,7 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -ConfigurationPath "$vmRoot\vm.config.psd1" `
   -VmRoot $vmRoot `
   -ExchangeRoot $exchange `
-  -TestExecutable '<Module>.UITests.Next.exe' `
+  -TestExecutable '<Module>.UITests.exe' `
   -Filter 'Name=<Module>.FocusedTest' `
   -Platform x64Win11 `
   -BuildLabel (git rev-parse HEAD) `
@@ -293,9 +289,9 @@ explicit tool/runtime paths and are excluded from this fast gate.
   **Usage**: Enter the build ID number (e.g., `12345`) to download that specific build. Only used when `buildSource` is set to `specificBuildId`.
 
 - **uiTestModules**: Specify which UI test modules to build and run. This parameter controls both the `.csproj` projects to build and the `.dll` test assemblies to execute. Examples:
-  - `['FancyZones.UITests.Next']` - Only FancyZones UI tests
-  - `['MouseUtils.UITests.Next']` - Only MouseUtils UI tests
-  - `['FancyZones.UITests.Next', 'MouseUtils.UITests.Next']` - Multiple specific modules
+  - `['FancyZones.UITests']` - Only FancyZones UI tests
+  - `['MouseUtils.UITests']` - Only MouseUtils UI tests
+  - `['FancyZones.UITests', 'MouseUtils.UITests']` - Multiple specific modules
   - Leave empty to build and run all UI test modules
 
   **Important**: The project file stem, assembly name and `tests/<stem>/` output folder must match, including case. Declare staged MSIX fixtures as `FileWrites Include="$(TargetDir)FixtureName.msix"`; the repository contract is tested in `.pipelines/tests/uiTestArtifacts.Tests.ps1`.
@@ -322,7 +318,7 @@ explicit tool/runtime paths and are excluded from this fast gate.
 
 - **uiTestShardsX64Win10**, **uiTestShardsX64Win11**, **uiTestShardsArm64**: Number of workers per platform for fresh full builds, from 1 (default) to 6. Each worker uses the same [duration estimates](../../../.pipelines/uiTestDurations.json) to assign the longest remaining suite to the lightest shard. Unlisted suites use `defaultMinutes` (5); platform multipliers scale the printed estimates, not the assignments. Shared prerequisites (artifact selection/download, installer and signing where applicable) repeat per worker. Only the owning shard takes the full MWB servicing inventory, provisions Sandbox, or installs a suite's driver fixture.
 
-- **uiTestDiagnosticCohorts**: Optional execution-only groups, for example `[{"name":"Desktop","modules":["AdvancedPaste.UITests.Next","PreviewPane.UITests"]},{"name":"Sandbox","modules":["MouseWithoutBorders.UITests"]}]`. Include these suites in `uiTestModules` for shared prerequisites. Each cohort runs unsharded on a fresh x64 worker per selected x64 OS; use `buildPlatforms: [x64]` and `buildNow` or `buildNowSlim`, without smoke-only mode. Leave cohorts empty for normal CI.
+- **uiTestDiagnosticCohorts**: Optional execution-only groups, for example `[{"name":"Desktop","modules":["AdvancedPaste.UITests","PreviewPane.UITests"]},{"name":"Sandbox","modules":["MouseWithoutBorders.UITests"]}]`. Include these suites in `uiTestModules` for shared prerequisites. Each cohort runs unsharded on a fresh x64 worker per selected x64 OS; use `buildPlatforms: [x64]` and `buildNow` or `buildNowSlim`, without smoke-only mode. Leave cohorts empty for normal CI.
 
 ### Build Modes
 
@@ -338,7 +334,10 @@ explicit tool/runtime paths and are excluded from this fast gate.
    - Runs UI tests against freshly built PowerToys
    - Uses artifacts from current pipeline build
 
-> **Note**: All modes support the `uiTestModules` parameter to control which specific UI test modules to build and run. Both machine-level and per-user installation modes are tested automatically when using official builds.
+> **Note**: All modes support `uiTestModules`, which takes exact project stems (for example,
+> `Peek.UITests`). For `specificBuildId`, use source and test artifacts that agree on the suite
+> names. Both machine-level and per-user installation modes are tested automatically when using
+> official builds.
 
 For automated queueing and monitoring, use the [UI-test pipeline CI skill](../../../.github/skills/ui-tests-pipeline-ci/SKILL.md).
 
@@ -358,18 +357,18 @@ settings above; automatic sharding does not change them.
 
 ## How to add the first UI tests for your modules
 
-Use the [UI-tests migration skill](../../../.github/skills/ui-tests-migration/SKILL.md) for new
-`.Next` projects and ports. It contains the current executable project scaffold, API mapping, naming,
+Use the [UI-test development skill](../../../.github/skills/ui-tests-migration/SKILL.md) for new
+or updated suites. It contains the executable project scaffold, naming rules,
 CI-stability checklist, and validated examples.
 
-Reference `src\common\UITestAutomation.Next\UITestAutomation.Next.csproj`, embed a per-monitor-DPI
+Reference `src\common\UITestAutomation\UITestAutomation.csproj`, embed a per-monitor-DPI
 manifest, and stage the executable under the repository's `tests` output directory. Follow the
 skill's [project setup guide](../../../.github/skills/ui-tests-migration/references/project-setup.md)
-and [template](../../../.github/skills/ui-tests-migration/templates/Module.UITests.Next.csproj).
+and [template](../../../.github/skills/ui-tests-migration/templates/Module.UITests.csproj).
 
-### Visual assertions in UITestAutomation.Next
+### Visual assertions in UITestAutomation
 
-The `.Next` harness compares complete, equal-sized window captures using local
+The framework compares complete, equal-sized window captures using local
 structural similarity (SSIM), with a default threshold of **95%**. It does not
 resize images, crop their frames, or mask pixels. The existing embedded baseline
 images are used unchanged, and capture retries remain bounded to 15 seconds.
@@ -382,7 +381,7 @@ scores is used, so an opaque capture cannot pass by becoming transparent.
 Dimension mismatches are retried during settling and reported explicitly if they
 persist.
 
-This replaces the `.Next` harness's former 64-bit average hash. That hash's
+This replaces the framework's former 64-bit average hash. That hash's
 1.5625-percentage-point steps were not percentages of matching pixels: a small
 frame-color change could alter the global average and flip unrelated hash bits,
 while uniform black and white images could have identical hashes. Local SSIM

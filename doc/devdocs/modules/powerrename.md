@@ -89,8 +89,8 @@ PowerRename uses WinUI 3 for its user interface. The UI allows users to:
 
 ## UI tests
 
-The migrated `PowerRename.UITests.Next` project drives the module through
-`Microsoft.PowerToys.UITest.Next` and `winappcli`. Keep these module-specific constraints in mind:
+The migrated `PowerRename.UITests` project drives the module through
+`Microsoft.PowerToys.UITest` and `winappcli`. Keep these module-specific constraints in mind:
 
 - The PowerRename UI receives its selected files on the command line. Tests launch
 	`PowerToys.PowerRename.exe` directly with an argument per path, while retaining the runner/Settings

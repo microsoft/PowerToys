@@ -8,7 +8,7 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Automation;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerDisplay.UITests;

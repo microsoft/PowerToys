@@ -1,33 +1,23 @@
 # Project setup & scaffolding
 
-How to create, place, name, register, and build the new `.Next` test project. The starter files live
+How to create, place, name, register, and build a UI-test project. The starter files live
 in [../templates/](../templates/).
 
 ## 1. Decide the name and location
 
-| Scenario | Project name | Folder |
-|---|---|---|
-| **A — Port** (legacy UI tests exist) | `[Module].UITests.Next` | `src/modules/[Module]/Tests/[Module].UITests.Next/` |
-| **B — Greenfield** (no UI tests) | `[Module].UITests` | `src/modules/[Module]/Tests/[Module].UITests/` |
-
-Rules and judgment:
-
-- **The `.Next` suffix exists only to avoid colliding with an existing legacy project.** If there is
-  nothing to live alongside (Scenario B), drop it.
+- If the module does not have a suite, create `[Module].UITests.csproj` under
+  `src/modules/[Module]/Tests/[Module].UITests/`.
 - **Match the module's existing test layout.** Many modules already nest tests under a `Tests/`
   folder (`MeasureTool/Tests/ScreenRuler.UITests`, `LightSwitch/Tests/LightSwitch.UITests`); others
   put the UI-tests project directly under the module root (`colorPicker/ColorPicker.UITests`,
   `fancyzones/FancyZones.UITests`). **Mirror whatever the module already does** — don't invent a new
   structure. The path-segment count only changes the relative `..\` depth to `common\` in the csproj.
-- Keep the **`AssemblyName`** matching the project name (`[Module].UITests.Next`) so logs and build
-  artifacts are unambiguous; there's no need to strip the `.Next` from the assembly name.
-- If the legacy project has an unusual file name (e.g. `HostsEditor.UITests.csproj` inside a
-  `Hosts.UITests/` folder), prefer a clean `[Module].UITests.Next.csproj`; consistency with the new
-  examples (`ColorPicker.UITests.csproj`, `Settings.UITests.csproj`) wins.
+- Match the **`AssemblyName`**, test output folder, and project stem (`[Module].UITests`).
+  CI uses that exact stem to select and validate the test artifact.
 
 ## 2. Scaffold the project and DPI manifest
 
-Copy [../templates/Module.UITests.Next.csproj](../templates/Module.UITests.Next.csproj) and
+Copy [../templates/Module.UITests.csproj](../templates/Module.UITests.csproj) and
 [../templates/app.manifest](../templates/app.manifest). Replace `__MODULE__` in the csproj and
 `__ASSEMBLY_NAME__` in the manifest with the final `AssemblyName`, then fix the `..\` depth on the
 ProjectReference. For a project folder that sits 3 levels under `src/`, the scaffold is:
@@ -44,7 +34,7 @@ ProjectReference. For a project folder that sits 3 levels under `src/`, the scaf
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <RootNamespace>Microsoft.__MODULE__.UITests</RootNamespace>
-    <AssemblyName>__MODULE__.UITests.Next</AssemblyName>
+    <AssemblyName>__MODULE__.UITests</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
 
     <!-- Microsoft.Testing.Platform: appears in Test Explorer AND runs via dotnet test / vstest. -->
@@ -59,7 +49,7 @@ ProjectReference. For a project folder that sits 3 levels under `src/`, the scaf
   <!-- Stage the built test app under <Platform>\<Configuration>\tests\ so the UI-tests build
        pipeline (CopyFiles glob **/<plat>/<config>/tests/**) picks it up. -->
   <PropertyGroup>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\__MODULE__.UITests.Next\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\__MODULE__.UITests\</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -68,7 +58,7 @@ ProjectReference. For a project folder that sits 3 levels under `src/`, the scaf
 
   <ItemGroup>
     <!-- Adjust the ..\ depth to reach src\common from THIS project's folder. -->
-    <ProjectReference Include="..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <ProjectReference Include="..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
   </ItemGroup>
 </Project>
 ```
@@ -89,14 +79,14 @@ Critical, non-negotiable bits (CI audits or the build will fail without them):
    `<FileWrites Include="$(TargetDir)FixtureName.msix" />` so CI verifies that it reached the worker.
    See the **Repository UI-test artifact contract** in `.pipelines/tests/uiTestArtifacts.Tests.ps1`.
 5. **`RunVSTest=false`** — UI tests must not run during MSBuild.
-6. **ProjectReference to `UITestAutomation.Next.csproj` only** — never the legacy
-   `UITestAutomation.csproj`. Fix the `..\` depth to match the folder nesting:
-   - `src/modules/<M>/Tests/<M>.UITests.Next/` (4 levels under `src`) → `..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
-   - `src/modules/<M>/<M>.UITests/` (3 levels under `src`) → `..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
-   - `src/settings-ui/<M>.UITests/` (2 levels under `src`) → `..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
+6. **ProjectReference to the shared `UITestAutomation.csproj`**. Fix the `..\` depth to match the
+   folder nesting:
+   - `src/modules/<M>/Tests/<M>.UITests/` (4 levels under `src`) → `..\..\..\..\common\UITestAutomation\UITestAutomation.csproj`
+   - `src/modules/<M>/<M>.UITests/` (3 levels under `src`) → `..\..\..\common\UITestAutomation\UITestAutomation.csproj`
+   - `src/settings-ui/<M>.UITests/` (2 levels under `src`) → `..\..\common\UITestAutomation\UITestAutomation.csproj`
 7. **No `<TreatWarningsAsErrors>false</TreatWarningsAsErrors>` override** — UI-test projects inherit the
    repo default (warnings are errors), so StyleCop/analyzer/nullable warnings must be fixed, not
-   hidden. If a rule genuinely does not apply (e.g. CA1716 for a `*.UITests.Next` namespace), add a
+   hidden. If a rule genuinely does not apply, add a
    scoped `[assembly: SuppressMessage(..., Scope = "namespace", Target = "~N:...", Justification = "...")]`
    in a project-local file such as `ProjectSuppressions.cs` (`src\codeAnalysis\GlobalSuppressions.cs`
    is already linked into every project by `Directory.Build.props`, so don't add it again).
@@ -107,10 +97,10 @@ Critical, non-negotiable bits (CI audits or the build will fail without them):
 ## 3. Register in `PowerToys.slnx`
 
 Add the project to [../../../../PowerToys.slnx](../../../../PowerToys.slnx) inside the module's
-`<Folder>`, right next to the legacy project (Scenario A) so they're visually paired:
+`<Folder>`:
 
 ```xml
-<Project Path="src/modules/<Module>/Tests/<Module>.UITests.Next/<Module>.UITests.Next.csproj">
+<Project Path="src/modules/<Module>/Tests/<Module>.UITests/<Module>.UITests.csproj">
   <Platform Solution="*|ARM64" Project="ARM64" />
   <Platform Solution="*|x64" Project="x64" />
 </Project>
@@ -122,8 +112,7 @@ uses the `*|ARM64 → ARM64` / `*|x64 → x64` pair shown above).
 ## 4. Add the test class(es) and shared helper
 
 Copy [../templates/ModuleEndToEndTests.cs](../templates/ModuleEndToEndTests.cs) into the project,
-rename it to `[Module]EndToEndTests.cs` (or keep the legacy test-class names in Scenario A), and start
-filling in test methods.
+rename it to `[Module]EndToEndTests.cs`, and start filling in test methods.
 
 For anything beyond a single trivial test, also copy
 [../templates/TestHelper.cs](../templates/TestHelper.cs) — a static helper with the reusable building
@@ -143,9 +132,8 @@ The standard file header is required on every `.cs`:
 
 ## 4b. Keep every test host per-monitor DPI aware
 
-Every UI-test executable that references `UITestAutomation.Next` MUST embed
-[../templates/app.manifest](../templates/app.manifest) with `PerMonitorV2`, including greenfield
-projects whose names intentionally omit the `.Next` suffix. `Element.Click()` resolves a
+Every UI-test executable that references `UITestAutomation` MUST embed
+[../templates/app.manifest](../templates/app.manifest) with `PerMonitorV2`. `Element.Click()` resolves a
 physical-pixel rectangle through winappcli and clicks its centre through `MouseHelper`, so even tests
 that never mention raw coordinates depend on matching DPI coordinate spaces. Without the manifest,
 `SetCursorPos`/`GetCursorPos` can be virtualized by the display scale and the cursor can miss the
@@ -197,7 +185,7 @@ is set). Set `TF_BUILD=true` and a representative `platform` locally when debugg
 
 ## 4d. Explorer-driven tests need no project COM references
 
-Use `ExplorerShell` from `UITestAutomation.Next`. The framework embeds Shell32/SHDocVw interop and
+Use `ExplorerShell` from `UITestAutomation`. The framework embeds Shell32/SHDocVw interop and
 does not expose COM types in its public API, so consuming test projects should not add their own
 `COMReference` items. Use `SetSelectionAndWaitForStable` for selected/focused paths and
 `SetViewModeAndIconSizeAndWait` for deterministic icon/list layout; do not duplicate Shell COM
@@ -207,15 +195,15 @@ interop in the test project.
 
 ```pwsh
 # 0. FIRST build of a new project: restore so project.assets.json exists (else NETSDK1004).
-dotnet restore src\modules\<Module>\Tests\<Module>.UITests.Next\<Module>.UITests.Next.csproj -p:Platform=x64
+dotnet restore src\modules\<Module>\Tests\<Module>.UITests\<Module>.UITests.csproj -p:Platform=x64
 #    (or run tools\build\build-essentials.cmd once at the start of the session.)
 
 # 1. Build only this project (fast). Exit code 0 = success.
-tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests.Next -Platform x64 -Configuration Debug
+tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests -Platform x64 -Configuration Debug
 
-# 2. Run (needs a live desktop + winapp.exe). A .Next project is a Microsoft.Testing.Platform Exe,
+# 2. Run (needs a live desktop + winapp.exe). A UI-test project is a Microsoft.Testing.Platform Exe,
 #    so run the produced exe directly (Test Explorer also works). Filter + TRX report for a tight loop:
-$exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
+$exe = "$PWD\x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Module>.UITests.exe"
 & $exe --filter "TestCategory=<Cat>" --report-trx --report-trx-filename run.trx --results-directory .\TestResults\<Module>
 #    --filter accepts "TestCategory=X" or "FullyQualifiedName~Y"; omit it to run everything. Exit 0 = all passed.
 ```

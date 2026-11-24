@@ -233,8 +233,8 @@ FancyZones is divided into several projects:
 
 ## FancyZones UI Testing
 
-UI tests use `Microsoft.PowerToys.UITest.Next` and winappcli in
-`FancyZones.UITests.Next` and `FancyZonesEditor.UITests.Next`.
+UI tests use `Microsoft.PowerToys.UITest` and winappcli in
+`FancyZones.UITests` and `FancyZonesEditor.UITests`.
 
 ### Before running tests
 
@@ -244,7 +244,7 @@ UI tests use `Microsoft.PowerToys.UITest.Next` and winappcli in
 ### Running tests
   
   - Exit PowerToys if it's running
-  - Build the focused `.Next` test project with the repository build script.
+  - Build the focused UI-test project with the repository build script.
   - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`). 
 
 >Note: notifications or other application windows, that are shown above the window under test, can disrupt the testing process.

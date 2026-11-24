@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using System.Drawing;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.AltWindowCycle.UITests;

@@ -4,7 +4,7 @@
 
 using System.Drawing;
 using System.Drawing.Imaging;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Forms = System.Windows.Forms;
 

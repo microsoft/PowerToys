@@ -54,11 +54,11 @@
     </Project>
     <Project Path="src/common/SettingsAPI/SettingsAPI.vcxproj" Id="6955446d-23f7-4023-9bb3-8657f904af99" />
     <Project Path="src/common/Themes/Themes.vcxproj" Id="98537082-0fdb-40de-abd8-0dc5a4269bab" />
-    <Project Path="src/common/UITestAutomation.Next/UITestAutomation.Next.csproj">
+    <Project Path="src/common/UITestAutomation/UITestAutomation.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/common/UITestAutomation.Next.UnitTests/UITestAutomation.Next.UnitTests.csproj">
+    <Project Path="src/common/UITestAutomation.UnitTests/UITestAutomation.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -174,7 +174,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.UITests.Next/AdvancedPaste.UITests.Next.csproj">
+    <Project Path="src/modules/AdvancedPaste/AdvancedPaste.UITests/AdvancedPaste.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -472,7 +472,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests.Next/Microsoft.CmdPal.UITests.Next.csproj">
+    <Project Path="src/modules/cmdpal/Tests/Microsoft.CmdPal.UITests/Microsoft.CmdPal.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -554,11 +554,11 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/fancyzones/FancyZones.UITests.Next/FancyZones.UITests.Next.csproj">
+    <Project Path="src/modules/fancyzones/FancyZones.UITests/FancyZones.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/fancyzones/FancyZonesEditor.UITests.Next/FancyZonesEditor.UITests.Next.csproj">
+    <Project Path="src/modules/fancyzones/FancyZonesEditor.UITests/FancyZonesEditor.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -725,7 +725,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/Hosts/Hosts.UITests.Next/Hosts.UITests.Next.csproj">
+    <Project Path="src/modules/Hosts/Hosts.UITests/Hosts.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -813,7 +813,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/MouseUtils/MouseUtils.UITests.Next/MouseUtils.UITests.Next.csproj">
+    <Project Path="src/modules/MouseUtils/MouseUtils.UITests/MouseUtils.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1018,7 +1018,7 @@
       <Platform Solution="*|x64" Project="x64" />
     </Project>
     <Project Path="src/modules/LightSwitch/Tests/LightSwitchService.UnitTests/LightSwitchService.UnitTests.vcxproj" Id="6b4bc04d-59a7-44b2-9ab5-4ed9a5607ab9" />
-    <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests.Next/LightSwitch.UITests.Next.csproj">
+    <Project Path="src/modules/LightSwitch/Tests/LightSwitch.UITests/LightSwitch.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1086,7 +1086,7 @@
   </Folder>
   <Folder Name="/modules/MeasureTool/Tests/">
     <Project Path="src/modules/MeasureTool/Tests/MeasureToolCore.UnitTests/MeasureToolCore.UnitTests.vcxproj" Id="1b76e770-b56f-486f-89d9-9dfe7c5289e8" />
-    <Project Path="src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next/ScreenRuler.UITests.Next.csproj">
+    <Project Path="src/modules/MeasureTool/Tests/ScreenRuler.UITests/ScreenRuler.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1150,7 +1150,7 @@
       <Platform Solution="*|x64" Project="x64" />
       <Deploy />
     </Project>
-    <Project Path="src/modules/peek/Peek.UITests.Next/Peek.UITests.Next.csproj">
+    <Project Path="src/modules/peek/Peek.UITests/Peek.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1196,7 +1196,7 @@
     <Project Path="src/modules/PowerOCR/PowerOCRModuleInterface/PowerOCRModuleInterface.vcxproj" Id="6ab6a2d6-f859-4a82-9184-0bd29c9f07d1" />
   </Folder>
   <Folder Name="/modules/PowerOCR/Tests/">
-    <Project Path="src/modules/PowerOCR/PowerOCR.UITests.Next/PowerOCR.UITests.Next.csproj">
+    <Project Path="src/modules/PowerOCR/PowerOCR.UITests/PowerOCR.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1218,7 +1218,7 @@
     <Project Path="src/modules/powerrename/PowerRename.FuzzingTest/PowerRename.FuzzingTest.vcxproj" Id="2694e2fb-dcd5-4bff-a418-b6c3c7ce3b8e">
       <Build Solution="*|ARM64" Project="false" />
     </Project>
-    <Project Path="src/modules/powerrename/PowerRename.UITests.Next/PowerRename.UITests.Next.csproj">
+    <Project Path="src/modules/powerrename/PowerRename.UITests/PowerRename.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1294,7 +1294,7 @@
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
-    <Project Path="src/modules/Workspaces/Tests/Workspaces.UITests.Next/Workspaces.UITests.Next.csproj">
+    <Project Path="src/modules/Workspaces/Tests/Workspaces.UITests/Workspaces.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>
@@ -1373,7 +1373,7 @@
     </Project>
   </Folder>
   <Folder Name="/settings-ui/Tests/">
-    <Project Path="src/settings-ui/OOBE.UITests.Next/OOBE.UITests.Next.csproj">
+    <Project Path="src/settings-ui/OOBE.UITests/OOBE.UITests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
     </Project>

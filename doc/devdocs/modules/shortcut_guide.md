@@ -48,7 +48,7 @@ The hold duration accepts values from 100 through 5,000 milliseconds and default
 ### Automated UI tests
 
 `src\modules\ShortcutGuide\Tests\ShortcutGuide.UITests` uses the winappcli-based
-`UITestAutomation.Next` framework. Build it with:
+`UITestAutomation` framework. Build it with:
 
 ```powershell
 tools\build\build.cmd -Path src\modules\ShortcutGuide\Tests\ShortcutGuide.UITests -Platform x64 -Configuration Release

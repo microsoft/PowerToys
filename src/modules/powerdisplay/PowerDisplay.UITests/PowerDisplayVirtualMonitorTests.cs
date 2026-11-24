@@ -4,7 +4,7 @@
 
 using System.IO;
 using System.Text.Json;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerDisplay.UITests;

@@ -6,7 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.Devices.Enumeration;
 using Windows.Graphics.Capture;

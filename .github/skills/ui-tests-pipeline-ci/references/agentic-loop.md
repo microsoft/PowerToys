@@ -22,7 +22,7 @@ pwsh -NoLogo -NoProfile -File `
 ```
 
 Do not proceed unless it exits `0`, reports `Ready: true`, and every required check is `PASS`. The
-default probe uses `refs/heads/main`, module `FancyZones.UITests.Next`, and dynamically selects one
+default probe uses `refs/heads/main`, module `FancyZones.UITests`, and dynamically selects one
 of the ten newest completed pipeline builds for build/log/artifact checks plus the first test-bearing
 build in that set for Azure Test checks. The JSON reports these separately as `ProbeBuildId` and
 `ProbeTestBuildId`. It creates no build and changes no Azure or repository state. The setup preview
@@ -104,7 +104,7 @@ stop and ask the user before consuming CI.
 Derive `uiTestModules` from the exact `.csproj` filename without `.csproj`, for example:
 
 ```text
-FancyZonesEditor.UITests.Next
+FancyZonesEditor.UITests
 ```
 
 The list must be non-empty and contain only the projects currently being changed.

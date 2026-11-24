@@ -593,27 +593,27 @@ Describe 'UI-test pipeline non-elevated dispatch' {
         $handler = [regex]::Match($template,
             '(?ms)^ {8}\} catch \{\r?\n(?<body> {10}Write-Host "##vso\[task\.logissue type=error\]UI tests failed for \$\{base\}:.*?)(?=^ {8}\} finally \{)').Groups['body'].Value
         $handler | Should Not BeNullOrEmpty
-        $base = 'MouseUtils.UITests.Next'
+        $base = 'MouseUtils.UITests'
         $desktopWorkerUnconfirmed = $true
         $suiteFailed = $false
         $dispatch = [scriptblock]::Create("try { throw 'injected launcher failure' } catch {`n$handler`n}")
 
         { & $dispatch } | Should Throw 'injected launcher failure'
         Assert-MockCalled Write-Host -Times 1 -Exactly -Scope It -ParameterFilter {
-            $Object -eq '##vso[task.logissue type=error]UI tests failed for MouseUtils.UITests.Next: injected launcher failure'
+            $Object -eq '##vso[task.logissue type=error]UI tests failed for MouseUtils.UITests: injected launcher failure'
         }
     }
 
     It 'fails infrastructure instead of using the DLL when <Suite> is absent' -TestCases @(
-        @{ Suite = 'AdvancedPaste.UITests.Next' }
+        @{ Suite = 'AdvancedPaste.UITests' }
         @{ Suite = 'AltWindowCycle.UITests' }
         @{ Suite = 'CropAndLock.UITests' }
         @{ Suite = 'GrabAndMove.UITests' }
-        @{ Suite = 'Microsoft.CmdPal.UITests.Next' }
-        @{ Suite = 'MouseUtils.UITests.Next' }
-        @{ Suite = 'PowerOCR.UITests.Next' }
+        @{ Suite = 'Microsoft.CmdPal.UITests' }
+        @{ Suite = 'MouseUtils.UITests' }
+        @{ Suite = 'PowerOCR.UITests' }
         @{ Suite = 'Settings.UITests' }
-        @{ Suite = 'Workspaces.UITests.Next' }
+        @{ Suite = 'Workspaces.UITests' }
     ) {
         param($Suite)
 
@@ -633,17 +633,17 @@ Describe 'UI-test pipeline non-elevated dispatch' {
     }
 
     It 'scopes Workspaces package and Quick Access signing to the selected suite' -TestCases @(
-        @{ Modules = @('Workspaces.UITests.Next'); AllModules = $false; Expected = $true }
+        @{ Modules = @('Workspaces.UITests'); AllModules = $false; Expected = $true }
         @{ Modules = @('Workspaces.Editor.UITests'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Other.Workspaces.UITests.Next'); AllModules = $false; Expected = $false }
-        @{ Modules = @('Workspaces.UITests.Next.Other'); AllModules = $false; Expected = $false }
+        @{ Modules = @('Other.Workspaces.UITests'); AllModules = $false; Expected = $false }
+        @{ Modules = @('Workspaces.UITests.Other'); AllModules = $false; Expected = $false }
         @{ Modules = @('RegistryPreview.UITests'); AllModules = $false; Expected = $false }
         @{ Modules = @(); AllModules = $true; Expected = $true }
     ) {
         param($Modules, $AllModules, $Expected)
 
         $template = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
-        $signing = [regex]::Match($template, '(?ms)^ {6}if \(\$allModules -or \$selectedModules -contains ''Workspaces\.UITests\.Next''\) \{.*?^ {6}\}').Value
+        $signing = [regex]::Match($template, '(?ms)^ {6}if \(\$allModules -or \$selectedModules -contains ''Workspaces\.UITests''\) \{.*?^ {6}\}').Value
         $signing | Should Not BeNullOrEmpty
         $selectedModules = $Modules
         $allModules = $AllModules

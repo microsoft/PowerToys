@@ -34,24 +34,24 @@ Describe 'UI test artifact selection and payload' {
     BeforeEach {
         $script:artifactCaseRoot = Join-Path $TestDrive ([guid]::NewGuid().ToString('N'))
         New-ArtifactTestProject -Name 'Alpha.UITests' -Package 'Alpha.TestApp.msix'
-        New-ArtifactTestProject -Name 'Beta.UITests.Next'
-        $selection = @(Get-UiTestArtifactSelection -RepoRoot $script:artifactCaseRoot -Modules @('Alpha.UITests', 'Beta.UITests.Next') -Platform x64)
+        New-ArtifactTestProject -Name 'Beta.UITests'
+        $selection = @(Get-UiTestArtifactSelection -RepoRoot $script:artifactCaseRoot -Modules @('Alpha.UITests', 'Beta.UITests') -Platform x64)
         $root = Join-Path $script:artifactCaseRoot 'artifact'
     }
 
     It 'rejects the literal unresolved variable from the failed download' {
-        { Assert-UiTestArtifactPattern -Pattern '$(UiTestArtifactPattern)' -Modules @('Alpha.UITests', 'Beta.UITests.Next') } |
+        { Assert-UiTestArtifactPattern -Pattern '$(UiTestArtifactPattern)' -Modules @('Alpha.UITests', 'Beta.UITests') } |
             Should Throw 'patterns do not match'
     }
 
     It 'rejects a truncated selection even when one suite would download successfully' {
-        { Assert-UiTestArtifactPattern -Pattern '**/tests/Alpha.UITests/**' -Modules @('Alpha.UITests', 'Beta.UITests.Next') } |
+        { Assert-UiTestArtifactPattern -Pattern '**/tests/Alpha.UITests/**' -Modules @('Alpha.UITests', 'Beta.UITests') } |
             Should Throw 'patterns do not match'
     }
 
     It 'accepts the exact job-resolved selection without a logging command' {
-        { Assert-UiTestArtifactPattern -Pattern "**/tests/Alpha.UITests/**`n**/tests/Beta.UITests.Next/**" `
-            -Modules @('Alpha.UITests', 'Beta.UITests.Next') } | Should Not Throw
+        { Assert-UiTestArtifactPattern -Pattern "**/tests/Alpha.UITests/**`n**/tests/Beta.UITests/**" `
+            -Modules @('Alpha.UITests', 'Beta.UITests') } | Should Not Throw
         $yaml = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
         $yaml | Should Not Match 'task\.setvariable variable=UiTestArtifactPattern'
         $yaml | Should Match 'UiTestArtifactPattern: \$\{\{ format'
@@ -100,7 +100,7 @@ Describe 'UI test artifact selection and payload' {
     It 'fails if a selected suite is absent instead of running only the downloaded subset' {
         New-ArtifactTestPayload $selection[0]
         { Assert-UiTestArtifactPayload -ArtifactRoot $root -Selection $selection } |
-            Should Throw 'Beta.UITests.Next'
+            Should Throw 'Beta.UITests'
     }
 
     It 'rejects a missing required file <File>' -TestCases @(
@@ -151,7 +151,7 @@ Describe 'Repository UI-test artifact contract' {
         $selection = @(Get-UiTestArtifactSelection -RepoRoot $repoRoot -Platform x64)
         ($selection.Count -gt 0) | Should Be $true
         (($selection | Where-Object Name -eq 'CropAndLock.UITests').Files -contains 'CropAndLock.TestApp.msix') | Should Be $true
-        (($selection | Where-Object Name -eq 'Workspaces.UITests.Next').Files -contains 'Workspaces.TestApp.msix') | Should Be $true
-        (($selection | Where-Object Name -eq 'Microsoft.CmdPal.UITests.Next').Files -contains 'SamplePagesExtension.msix') | Should Be $true
+        (($selection | Where-Object Name -eq 'Workspaces.UITests').Files -contains 'Workspaces.TestApp.msix') | Should Be $true
+        (($selection | Where-Object Name -eq 'Microsoft.CmdPal.UITests').Files -contains 'SamplePagesExtension.msix') | Should Be $true
     }
 }

@@ -6,10 +6,10 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
 using System.Text.Json;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using ComboBox = Microsoft.PowerToys.UITest.Next.ComboBox;
-using TextBox = Microsoft.PowerToys.UITest.Next.TextBox;
+using ComboBox = Microsoft.PowerToys.UITest.ComboBox;
+using TextBox = Microsoft.PowerToys.UITest.TextBox;
 
 namespace Microsoft.GrabAndMove.UITests;
 
@@ -416,7 +416,7 @@ public sealed class GrabAndMoveTests : UITestBase
         modifier.Invoke(msPostAction: 0);
 
         // WinUI exposes the dropdown in a process-owned popup, not the Settings HWND's tree.
-        var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess(
+        var settings = Microsoft.PowerToys.UITest.Session.FromProcess(
             Session.ProcessId.ToString(CultureInfo.InvariantCulture),
             attributeAs: PowerToysModule.PowerToysSettings);
         var option = WaitHelper.WaitForStable(

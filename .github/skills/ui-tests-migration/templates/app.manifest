@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  TEMPLATE app.manifest for a .Next UI-test project.
+  TEMPLATE app.manifest for a UI-test project.
 
-  Copy this into EVERY UI-test executable that references UITestAutomation.Next, including greenfield
-  projects without a .Next suffix. Element.Click and MouseHelper consume physical-pixel bounds from
+  Copy this into every UI-test executable that references UITestAutomation.
+  Element.Click and MouseHelper consume physical-pixel bounds from
   winappcli; without PerMonitorV2, Win32 cursor coordinates can be virtualized by the display scale
   and miss their targets on scaled or mixed-DPI desktops.
 

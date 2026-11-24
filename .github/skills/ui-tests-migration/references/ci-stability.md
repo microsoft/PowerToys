@@ -8,7 +8,7 @@ is the *validation*, not the *discovery*.
 
 Read this **after** [patterns-and-pitfalls.md](patterns-and-pitfalls.md) (it references those recipes
 and pitfalls by number). The canonical worked example for everything below is the ScreenRuler port:
-[ScreenRuler.UITests.Next/TestHelper.cs](../../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next/TestHelper.cs).
+[ScreenRuler.UITests/TestHelper.cs](../../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests/TestHelper.cs).
 
 > **Why this matters for iteration count.** Almost every "flaky on CI, fine locally" failure traces to
 > one of the root causes below. A dev box hides them (higher-res display, warmed caches, a
@@ -319,7 +319,7 @@ a one-time fix; do them all up-front:
 
 | Difference (CI vs local) | Symptom | Fix (bake in once) |
 |---|---|---|
-| **DPI** — CI often 100%, dev often 125–150% (or vice-versa) | physical clicks miss or drags are scaled (`150 × 149` for a 100px drag) | every `UITestAutomation.Next` test Exe embeds `app.manifest` with `PerMonitorV2` (Pitfall 12) |
+| **DPI** — CI often 100%, dev often 125–150% (or vice-versa) | physical clicks miss or drags are scaled (`150 × 149` for a 100px drag) | every `UITestAutomation` test Exe embeds `app.manifest` with `PerMonitorV2` (Pitfall 12) |
 | **Off-screen** — same-size 1920×1080 agent, a resized window keeps its old top-left | gesture lands off-screen → empty result | anchor to `ScreenCenter()`, move in steps; harness centers+clamps `WindowSize` presets (Pitfall 16, Recipe 11) |
 | **Fresh profile** — OOBE / "what's new" window, centered + topmost | centre-screen gesture hits *that* window | harness `PreTestHygiene` calls `SettingsConfigHelper.SuppressFirstRunExperience()` (Pitfall 17) |
 | **Cursor position** — undefined at test start | gesture anchored to current cursor drifts off-screen | park at `ScreenCenter()`, never anchor to `GetMousePosition()` (Recipe 11) |
@@ -383,7 +383,7 @@ Tick these **before** the first CI push. Each maps to a principle/recipe above; 
 likely extra CI iteration.
 
 ```markdown
-- [ ] app.manifest (PerMonitorV2) wired into every UITestAutomation.Next test Exe, including greenfield projects without a .Next suffix (P6 / Pitfall 12)
+- [ ] app.manifest (PerMonitorV2) wired into every UI-test executable (P6 / Pitfall 12)
 - [ ] Base ctor enables ONLY the module under test (P6 / Recipe 9)
 - [ ] First-run/what's-new suppression confirmed for capture & coordinate modules (P6 / Pitfall 17)
 - [ ] Gestures anchored to ScreenCenter(), cursor moved in steps, never to the current cursor (P6 / Recipe 11)

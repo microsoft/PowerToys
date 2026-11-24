@@ -1,44 +1,31 @@
 ---
 name: ui-tests-migration
-description: "Create and stabilize PowerToys UI suites using the existing Microsoft.PowerToys.UITest.Next framework and winappcli. Use for new UITest projects, flaky CI, Settings IPC and signing, Explorer/Shell selection, preview and thumbnail handlers, hotkeys, foreground ownership, and WinUI/WebView visual assertions. Covers test design, Hyper-V validation and the required CI handoff. WinAppDriver/Selenium migration guidance is historical and applies only to older branches that still contain the legacy framework."
+description: "Create and stabilize PowerToys UI suites using the existing Microsoft.PowerToys.UITest framework and winappcli. Use for new UITest projects, flaky CI, Settings IPC and signing, Explorer/Shell selection, preview and thumbnail handlers, hotkeys, foreground ownership, and WinUI/WebView visual assertions. Covers test design, Hyper-V validation and the required CI handoff. WinAppDriver/Selenium migration guidance is historical and applies only to older branches that still contain the legacy framework."
 license: Complete terms in LICENSE.txt
 ---
 
-# PowerToys UI-Tests Migration (legacy → `.Next`)
+# PowerToys UI-test development
 
-> **Legacy retirement:** `main` no longer contains `src/common/UITestAutomation` or its test
-> projects. Use the existing `.Next` suites and Scenario B for current development. Scenario A
-> and the legacy comparisons in this skill are historical guidance for older branches; do not
-> restore the retired framework or tests. Existing `.Next` project names remain unchanged.
+Create and stabilize UI tests using `Microsoft.PowerToys.UITest`, the **winappcli** framework
+in `src/common/UITestAutomation/`. The framework shells out to `winapp.exe` and parses its JSON.
+It does not use WinAppDriver, Selenium, or Appium.
 
-Convert a PowerToys module's UI tests from the legacy **WinAppDriver / Selenium / Appium** harness
-(`Microsoft.PowerToys.UITest`, in `src/common/UITestAutomation/`) to the new **winappcli** harness
-(`Microsoft.PowerToys.UITest.Next`, in `src/common/UITestAutomation.Next/`).
-
-The new harness shells out to `winapp.exe` and parses its JSON — **no WinAppDriver server on :4723,
-no Selenium/Appium NuGet packages, no `WindowsElement`/`WindowsDriver`.** The public *shape*
-(`UITestBase`, `Session`, `Find<T>`, `By`, element wrappers like `ToggleSwitch`) is deliberately
-similar, so most of the work is mechanical API mapping plus reworking a few patterns that don't
-translate one-to-one (XPath selectors, stateful elements, instance mouse/keyboard helpers).
+The WinAppDriver harness and its test projects were removed from `main`. The legacy comparisons
+linked below are historical guidance for older branches, not scaffolding for current tests.
 
 ## When to use this skill
 
 Use this skill when the task is to:
 
-- **Port** a module's existing legacy UI tests to `.Next` (e.g. "migrate the ScreenRuler UI tests to
-  the new framework", "convert FancyZones.UITests to winappcli").
-- **Create a new** `[Module].UITests.Next` project that re-implements the legacy tests with the new
-  harness, leaving the old project in place.
-- **Stand up brand-new** `.Next` UI tests for a module that has **no** UI tests at all, by reading the
+- **Extend or stabilize** an existing `[Module].UITests` project using the shared framework.
+- **Create a new** `[Module].UITests` project for a module with **no** UI tests by reading the
   module's human test **sign-off markdown** (e.g. `ColorPickerUITest.md`) and turning each manual
   checklist item into an automated test.
 - **Validate a new or migrated suite in a local Windows VM** through an unattended
   build/package/deploy/run/TRX/diagnose loop. Use a retained VM for fast iteration and a restored
   baseline checkpoint when clean-profile behavior matters.
 
-This skill is the *how*: the framework differences, the API mapping, the project scaffolding, the
-naming rules, the recurring PowerToys test recipes, and the build/validate loop. The *what* (which
-module, which tests) comes from the calling prompt.
+This skill covers project scaffolding, PowerToys test recipes, and the build and validation loop.
 
 ## End-to-end completion contract
 
@@ -54,20 +41,18 @@ FTE-only and requires the pipeline skill's successful access preflight; report a
 when unavailable, never call local-only evidence CI-validated. The pipeline skill owns publication,
 queueing, completion watching, and the three-run stabilization limit.
 
-> **Reference implementation — read these working examples before porting anything.** They are
-> the ground truth for "what good looks like" with each harness:
-> - **New (`.Next`)**: [ColorPickerEndToEndTests.cs](../../../src/modules/colorPicker/ColorPicker.UITests/ColorPickerEndToEndTests.cs)
+> **Reference implementations — read the examples relevant to the suite.**
+> - **End-to-end flow**: [ColorPickerEndToEndTests.cs](../../../src/modules/colorPicker/ColorPicker.UITests/ColorPickerEndToEndTests.cs)
 >   — full end-to-end scenario (navigate Settings → toggle module → read shortcut → fire hotkey →
 >   read overlay → click-capture → inspect editor), driven entirely through `winappcli`.
-> - **Worked Scenario-A port (validated 5/5)**: the
->   ScreenRuler suite ported from the retired legacy project lives in
->   [ScreenRuler.UITests.Next/TestHelper.cs](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next/TestHelper.cs)
+> - **Cross-window input**: the ScreenRuler suite lives in
+>   [ScreenRuler.UITests/TestHelper.cs](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests/TestHelper.cs)
 >   + 5 test classes. It is the canonical port reference — cross-window toolbar discovery via
 >   `Session.FromProcess`, a DPI-aware `app.manifest`, cursor centering, and patient hotkey
 >   activation are all there because real runs needed them (see
 >   [references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md)).
 > - **Stateful/visual reference (validated 15/15 across Win10 x64, Win11 x64, and ARM64)**:
->   [PeekFilePreviewTests.cs](../../../src/modules/peek/Peek.UITests.Next/PeekFilePreviewTests.cs)
+>   [PeekFilePreviewTests.cs](../../../src/modules/peek/Peek.UITests/PeekFilePreviewTests.cs)
 >   demonstrates stable Explorer Shell selection, toggle-hotkey activation, process-preserving
 >   pinning tests, renderer readiness, and composed WinUI/WebView visual baselines.
 > - **Explorer/Shell-extension reference (validated across x64 and ARM64 CI)**:
@@ -79,21 +64,18 @@ queueing, completion watching, and the three-run stabilization limit.
 
 ## Required reads (in order)
 
-1. **This `SKILL.md`** — the decision tree (which scenario), the naming rules, the high-level
-   workflow, and the build/validate loop.
-2. **[references/framework-differences.md](references/framework-differences.md)** — the conceptual
-   deltas you MUST internalize before writing code: winappcli engine, stateless elements, selector
+1. **This `SKILL.md`** — the naming rules, workflow, and build/validate loop.
+2. **[references/framework-differences.md](references/framework-differences.md)** — winappcli engine, stateless elements, selector
    grammar (no XPath/CssSelector), session scopes (window vs process), lifecycle/hygiene/module
-   pre-enablement, multi-window discovery, and what the new harness does NOT (yet) provide.
+   pre-enablement, multi-window discovery, and framework API limits.
 3. **[references/api-mapping.md](references/api-mapping.md)** — the line-by-line cheat sheet:
    namespaces, `By`, `Element` actions/properties, `Session`, `UITestBase`, the static
    Keyboard/Mouse/Clipboard helpers, and the element-wrapper catalog. Keep this open while editing.
 4. **[references/project-setup.md](references/project-setup.md)** — csproj scaffold, naming/placement
-   rules, `.slnx` registration, and how to build & run a `.Next` project. Uses the
+   rules, `.slnx` registration, and how to build and run a UI-test project. Uses the
    [templates/](templates/) starter files.
-5. **[references/porting-workflow.md](references/porting-workflow.md)** — the two end-to-end
-   playbooks: **A)** port existing legacy tests, and **B)** author tests from a human sign-off
-   markdown when none exist.
+5. **[references/porting-workflow.md](references/porting-workflow.md#scenario-b--greenfield-from-a-human-sign-off-markdown)** —
+   author tests from a human sign-off checklist. Use Scenario A only as historical migration guidance.
 6. **[references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md)** — adaptable recipes
    for the recurring PowerToys patterns (toggle a module + verify its process, read the activation
    shortcut from a `ShortcutControl`, fire a global hotkey reliably, inspect the clipboard, discover
@@ -115,39 +97,19 @@ queueing, completion watching, and the three-run stabilization limit.
 10. **[ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md)** — the mandatory post-local handoff
   for implementation tasks: preflight, scoped commit/push, exact-revision CI, and terminal sign-off.
 
-## Pick your scenario
+## Choose the project
 
-```mermaid
-flowchart TD
-    A[Module to migrate] --> B{Does a legacy<br/>UITests project exist?}
-    B -- Yes --> C["Scenario A: PORT<br/>Create [Module].UITests.Next<br/>Re-implement each legacy test"]
-    B -- No --> D{Is there a human test<br/>sign-off .md?}
-    D -- Yes --> E["Scenario B: GREENFIELD<br/>Create [Module].UITests<br/>Turn each checklist item into a test"]
-    D -- No --> F[Ask the user for the<br/>test spec / sign-off doc]
-```
-
-| Scenario | Trigger | New project name | Source of test cases |
-|---|---|---|---|
-| **A — Port** | A legacy `[Module].UITests` (or similar) project already exists and references `UITestAutomation.csproj` | **`[Module].UITests.Next`** — keep the `.Next` suffix so it lives **alongside** the legacy project | The existing legacy test methods (1:1 re-implementation) |
-| **B — Greenfield** | The module has **no** UI tests at all | **`[Module].UITests`** — **drop** the `.Next` suffix; there's nothing to live alongside | The module's human sign-off markdown (manual checklist), e.g. `ColorPickerUITest.md` |
-
-Place the new project under **`src/modules/[Module]/Tests/[Module].UITests.Next/`** (or
-`…/Tests/[Module].UITests/` for Scenario B). If the module already keeps tests in a different
-`Tests/` layout, match the module's existing convention rather than forcing this one — see
-[references/project-setup.md](references/project-setup.md).
-
-> **Keep it abstract.** Every PowerToys module is unique and the legacy tests were written by
-> different people in different styles. Treat the recipes in this skill as *adaptable patterns*, not
-> a rigid script. Re-create the **intent and assertions** of each test; do not mechanically translate
-> brittle, harness-specific scaffolding (Selenium `Actions`, XPath walks, manual driver attaches) when
-> the new harness has a cleaner idiom.
+Extend the module's existing UI-test project if it has one. Otherwise, use the module's manual
+sign-off checklist to create `[Module].UITests` under `src/modules/[Module]/Tests/[Module].UITests/`.
+If the module uses a different test layout, match its convention. If you cannot find a checklist or
+test spec, ask for one. See [project setup](references/project-setup.md).
 
 ## High-level workflow
 
 Create a TODO list and work top-to-bottom. Each step links to the reference that drives it.
 
 ```markdown
-- [ ] 1. Identify the module + scenario (A port / B greenfield) — this SKILL.md "Pick your scenario"
+- [ ] 1. Identify the module and whether to extend or create its suite
 - [ ] 1a. Read the module's developer docs — `doc/devdocs/modules/<module>.md` (if the exact file is
         missing, search `doc/devdocs/`, including `doc/devdocs/common/`) — to learn its
         development-cycle specifics BEFORE writing tests: how its shell extensions / context menus
@@ -155,19 +117,18 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
         and any Explorer-restart or first-run needs. Skipping this produces opaque failures — e.g. a
         context-menu entry never appears because a Debug build compiles registration out, or an
         unsigned `.msix` fails to register (`0x800B0100`).
-- [ ] 2. Read the two reference examples (ColorPicker + ScreenRuler `.Next`) end-to-end
+- [ ] 2. Read the relevant reference examples end-to-end
 - [ ] 3. Inventory the source:
-        • Scenario A → list every [TestMethod] + shared helper in the legacy project
-        • Scenario B → read the module's sign-off .md; list each manual checklist item
+        • For an existing suite, identify the relevant test methods and shared helpers
+        • For a new suite, read the module's sign-off markdown and list the checklist items
   • For each workflow → list every external boundary (runner, Explorer, HWND, renderer,
     compositor, child process) and its authoritative ready signal
         — references/porting-workflow.md
 - [ ] 4. Internalize the deltas — references/framework-differences.md
-- [ ] 5. Scaffold the new project (csproj + PerMonitorV2 app.manifest from templates, name per the
-  table, register in .slnx)
+- [ ] 5. If needed, scaffold a new project (csproj + PerMonitorV2 app.manifest from templates,
+  register in .slnx)
         — references/project-setup.md
-- [ ] 6. Re-implement tests, mapping each API as you go — references/api-mapping.md
-        + recipes from references/patterns-and-pitfalls.md
+- [ ] 6. Implement or update tests using recipes from references/patterns-and-pitfalls.md
 - [ ] 6a. If Explorer/Shell is involved, apply references/explorer-shell-tests.md
 - [ ] 7. Apply the CI-stability checklist BEFORE building — references/ci-stability.md
   (stable authoritative signals, retry classification, foreground/integrity, lifecycle reset
@@ -195,27 +156,27 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
 
 ## Build & validate
 
-The `.Next` harness needs `winapp.exe` only at **run** time, not build time — the project has zero
+The framework needs `winapp.exe` only at **run** time, not build time — the project has zero
 managed dependency on the engine. So you can always compile-verify a migration even on an agent with
 no winappcli installed.
 
 ```pwsh
 # 0. FIRST build of a brand-new project: restore so the assets file exists, otherwise the build
 #    fails with NETSDK1004 "Assets file ... project.assets.json not found".
-dotnet restore src\modules\<Module>\Tests\<Module>.UITests.Next\<Module>.UITests.Next.csproj -p:Platform=x64
+dotnet restore src\modules\<Module>\Tests\<Module>.UITests\<Module>.UITests.csproj -p:Platform=x64
 #    (Equivalently, run tools\build\build-essentials.cmd once at the start of the session.)
 
 # 1. Build just the new test project (fast inner loop). Prefer the repo build script.
-tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests.Next -Platform x64 -Configuration Debug
+tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests -Platform x64 -Configuration Debug
 #    Exit code 0 = success; non-zero = failure. On failure read the errors log under the repo root:
-#    artifacts\logs\<Module>.UITests.Next\build.<Configuration>.<Platform>.errors.log
-#    Do not substitute `dotnet build` when UITestAutomation.Next's COM references are in the graph:
+#    artifacts\logs\<Module>.UITests\build.<Configuration>.<Platform>.errors.log
+#    Do not substitute `dotnet build` when UITestAutomation's COM references are in the graph:
 #    .NET SDK MSBuild cannot run ResolveComReference and fails with MSB4803. Use the repo script or
 #    Visual Studio's full-framework MSBuild.exe; use `dotnet restore` only to create project.assets.json.
 
-# 2. Run (needs a live desktop). A .Next project is a Microsoft.Testing.Platform Exe — run the
+# 2. Run (needs a live desktop). A UI-test project is a Microsoft.Testing.Platform Exe — run the
 #    produced exe directly with a TRX report; filter to one test/category for a tight loop.
-$exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
+$exe = "<repo>\x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Module>.UITests.exe"
 & $exe --filter "TestCategory=<Cat>" --report-trx --report-trx-filename run.trx --results-directory <dir>
 #    --filter accepts "TestCategory=X" or "FullyQualifiedName~Y"; omit it to run everything.
 #    Exit 0 = all passed. Parse the .trx for per-test outcomes + failure messages.
@@ -245,17 +206,6 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0
   [references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md) Pitfall 26). If there is
   no video, find out why rather than proceeding blind — the harness now prints the reason (a clean
   Windows image without the Visual C++ redistributable cannot load the native encoder).
-- **First, run the *legacy* suite once for a baseline — and run it ELEVATED.** The legacy harness
-  launches PowerToys via `ProcessStartInfo { Verb = "runas" }` (elevated), so a **non-elevated** test
-  host can't complete the launch and **every test fails at startup with a misleading `Win32Exception`
-  cascade** — a false 0/N that looks like "the tests are broken" but is purely the run method. (That's
-  why VS Test Explorer passes them: VS runs as admin.) Run from an **elevated** terminal: start
-  `WinAppDriver.exe` on `127.0.0.1:4723`, then run the built DLL with `vstest.console.exe` (see
-  [references/porting-workflow.md](references/porting-workflow.md) §A0 for the `-Verb RunAs` recipe).
-  A measurement failure on a scaled (non-100%) display is usually a pre-existing DPI issue (Pitfall
-  12), not something the port must reproduce — the ScreenRuler legacy suite scores **4/5** elevated
-  here (Bounds fails at 150% scale) while the `.Next` port scores **5/5**. `.Next` tests themselves
-  need **no** elevation (the new harness launches the runner non-elevated).
 - **Always** build to exit code 0 before proceeding to live validation. Fix every compile error — do
   not leave `// TODO: port this` stubs that break the build.
 - Running the tests requires a **live interactive desktop** plus `winapp.exe`
@@ -269,9 +219,7 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0
 
 ## What NOT to do
 
-- **Do NOT delete or edit the legacy `[Module].UITests` project** in Scenario A. The `.Next` project
-  lives alongside it; removing the old one is a separate, explicit decision for the maintainers.
-- **Do NOT change product behaviour.** This is a test-only migration. The one sanctioned product edit
+- **Do NOT change product behaviour.** The one sanctioned product edit
   is adding **`AutomationProperties.AutomationId`** to a control that is otherwise unaddressable — an
   icon-only button whose label lives in a tooltip has no UIA Name at all, and the alternative is a
   brittle coordinate click. Use `AutomationProperties.AutomationId`, never `x:Name` (which also emits
@@ -282,13 +230,12 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0
 - **Do NOT port the legacy plumbing literally.** No Selenium `Actions`, no `WindowsDriver`/`WindowsElement`,
   no `By.XPath`/`By.CssSelector`, no `:4723`. Map them to the winappcli idioms in
   [references/api-mapping.md](references/api-mapping.md).
-- **Do NOT add a `ProjectReference` to `UITestAutomation.csproj`** (the legacy harness) — reference
-  **`UITestAutomation.Next.csproj`** only.
+- **Do NOT restore the legacy harness.** Reference the current winappcli-based
+  `src/common/UITestAutomation/UITestAutomation.csproj`.
 - **Do NOT invent assertions** for a vague sign-off item. If a checklist line has no observable
   pass/fail signal, implement what you can and leave a clearly-marked `TestContext.WriteLine` note
   (or skip with an explanation) rather than asserting on something you can't actually read.
-- **Do NOT introduce new third-party NuGet dependencies.** The `.Next` harness is intentionally
-  dependency-free (MSTest only). Use the Win32-based helpers it already ships.
+- **Do NOT introduce new third-party NuGet dependencies.** Use the helpers the framework already ships.
 - **Do NOT retry a toggle hotkey blindly.** Once any target window appears, wait for initialization;
   resending the chord may close a healthy window. Restart only after a terminal readiness failure.
 - **Do NOT replace or weaken visual baselines before proving capture is correct.** Foreground HWND,

@@ -1,12 +1,12 @@
 ---
 name: ui-tests-local-vm
-description: "Run PowerToys UITest.Next suites in persistent Hyper-V VMs over PowerShell Direct. Validate full default and constrained suites on Windows 10 and Windows 11, plus applicable ARM64 guests, then automatically hand implementation tasks to ui-tests-pipeline-ci for commit/push and CI validation. Local green is not end-to-end completion. Use for agentic UI-test iteration, reusable standard-user desktops, payload staging, evidence export, VM customization, clean baselines, or hosts without nested virtualization. Keywords: Hyper-V, local VM, virtual machine, PowerShell Direct, Copy-VMFile, VMBus, checkpoint, unattend, autounattend, ISO, Windows 10 LTSC, Windows 11, ARM64, Windows on ARM, UI tests, UITest.Next, winappcli, TRX, CI handoff."
+description: "Run PowerToys UITest suites in persistent Hyper-V VMs over PowerShell Direct. Validate full default and constrained suites on Windows 10 and Windows 11, plus applicable ARM64 guests, then automatically hand implementation tasks to ui-tests-pipeline-ci for commit/push and CI validation. Local green is not end-to-end completion. Use for agentic UI-test iteration, reusable standard-user desktops, payload staging, evidence export, VM customization, clean baselines, or hosts without nested virtualization. Keywords: Hyper-V, local VM, virtual machine, PowerShell Direct, Copy-VMFile, VMBus, checkpoint, unattend, autounattend, ISO, Windows 10 LTSC, Windows 11, ARM64, Windows on ARM, UI tests, UITest, winappcli, TRX, CI handoff."
 license: MIT
 ---
 
 # Local VM UI testing
 
-Run PowerToys `.Next` UI tests in a persistent, interactive Windows VM while keeping product and test
+Run PowerToys UI tests in a persistent, interactive Windows VM while keeping product and test
 execution off the host. Use this skill as the execution complement to
 [ui-tests-migration](../ui-tests-migration/SKILL.md). Restore the baseline checkpoint or recreate the
 guest when clean-profile behavior must be validated.
@@ -206,7 +206,7 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -VmName PowerToysUiTest-Win10 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\MyModule `
-  -TestExecutable MyModule.UITests.Next.exe `
+  -TestExecutable MyModule.UITests.exe `
   -Filter 'Name=MyModule.FocusedTest' `
   -Platform x64Win10 `
   -BuildLabel (git rev-parse HEAD) `

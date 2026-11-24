@@ -6,7 +6,7 @@ as **Window Hopper**, while its settings directory and enabled-map key remain `A
 
 ## UI tests
 
-`src\modules\AltWindowCycle\Tests\AltWindowCycle.UITests` uses `Microsoft.PowerToys.UITest.Next`.
+`src\modules\AltWindowCycle\Tests\AltWindowCycle.UITests` uses `Microsoft.PowerToys.UITest`.
 Run it non-elevated, with a live desktop and the repository-pinned winappcli:
 
 ```powershell

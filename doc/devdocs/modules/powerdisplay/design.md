@@ -1711,7 +1711,7 @@ sequenceDiagram
 
 ## UI Tests
 
-`src\modules\powerdisplay\PowerDisplay.UITests` uses `Microsoft.PowerToys.UITest.Next`
+`src\modules\powerdisplay\PowerDisplay.UITests` uses `Microsoft.PowerToys.UITest`
 and the repository-pinned winappcli. It covers module lifecycle, the notification icon,
 shortcut activation, monitor discovery and refresh, identification overlays, flyout
 Settings navigation, and brightness round-trip when supported hardware is available.

@@ -4,7 +4,7 @@
 
 <#
 .SYNOPSIS
-Runs PowerToys UITest.Next executables in a persistent local Hyper-V VM.
+Runs PowerToys UITest executables in a persistent local Hyper-V VM.
 
 .DESCRIPTION
 Creates a hash-addressed request, starts or reuses the guest, verifies a non-admin interactive
@@ -20,7 +20,7 @@ pwsh ./Invoke-LocalVmUiTest.ps1 `
   -VmName PowerToysUiTest-Win10 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\Peek `
-  -TestExecutable Peek.UITests.Next.exe `
+  -TestExecutable Peek.UITests.exe `
   -Filter 'Name=Peek.Preview.PDF' `
   -Platform x64Win10 `
   -BuildLabel (git rev-parse HEAD) `

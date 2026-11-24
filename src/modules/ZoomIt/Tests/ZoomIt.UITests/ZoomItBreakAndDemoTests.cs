@@ -8,7 +8,7 @@ using System.Drawing.Imaging;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Text;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Forms = System.Windows.Forms;
 

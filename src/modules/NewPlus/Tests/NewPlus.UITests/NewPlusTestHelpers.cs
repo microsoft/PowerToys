@@ -5,7 +5,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Win32;
 

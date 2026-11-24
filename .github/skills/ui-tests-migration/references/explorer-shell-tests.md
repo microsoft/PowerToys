@@ -8,7 +8,7 @@ implementation is
 ## Reuse the shared primitives
 
 Do not add another module-private implementation of Explorer launch/close/restart, popup
-classification, visible menu-item polling, or menu caption parsing. `UITestAutomation.Next` owns
+classification, visible menu-item polling, or menu caption parsing. `UITestAutomation` owns
 these operations:
 
 | Helper | Responsibility |

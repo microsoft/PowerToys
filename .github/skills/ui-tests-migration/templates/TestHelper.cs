@@ -2,7 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// TEMPLATE — a static helper for a `.Next` UI-test project, distilled from the validated ScreenRuler
+// TEMPLATE — a static helper for a UI-test project, distilled from the validated ScreenRuler
 // port. Copy alongside ModuleEndToEndTests.cs, then:
 //   • Replace __MODULE__ (project name) and __MODULEUI__ (the module's PROCESS name, e.g.
 //     "PowerToys.MeasureToolUI" — NOT the window title; see ModuleConfigData.cs in the harness).
@@ -10,7 +10,7 @@
 //     module's XAML (or discover them live: `winapp ui search "<id>" -a PowerToys.Settings --json`).
 //   • Delete the helpers you don't need. Keep each helper ADAPTABLE — every module is different.
 // See references/patterns-and-pitfalls.md for the full recipe catalog these are based on.
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.__MODULE__.UITests;

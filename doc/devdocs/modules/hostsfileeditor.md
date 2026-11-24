@@ -101,8 +101,8 @@ The module is loaded by the PowerToys runner from:
 
 ## UI Test Automation
 
-Hosts File Editor UI tests use `Microsoft.PowerToys.UITest.Next` in
-`src\modules\Hosts\Hosts.UITests.Next`. See the [UI-test guide](../development/ui-tests.md).
+Hosts File Editor UI tests use `Microsoft.PowerToys.UITest` in
+`src\modules\Hosts\Hosts.UITests`. See the [UI-test guide](../development/ui-tests.md).
 
 ## How to Build and Debug
 

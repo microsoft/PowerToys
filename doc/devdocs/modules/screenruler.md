@@ -65,7 +65,7 @@ The Screen Ruler module consists of several components:
 
 ### UI testing
 
-The [ScreenRuler.UITests.Next](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests.Next)
+The [ScreenRuler.UITests](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests)
 suite discovers the `PowerToys.ScreenRuler` toolbar through Win32 and binds its session to that
 exact HWND. A winappcli app-name target is not a global search across every matching process:
 overlapping cold-start launches can make `-a PowerToys.MeasureToolUI` ambiguous. Window scoping

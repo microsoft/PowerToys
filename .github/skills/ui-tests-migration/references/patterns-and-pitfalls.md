@@ -1,8 +1,8 @@
 # Patterns & pitfalls
 
 Adaptable recipes for the recurring PowerToys UI-test patterns, plus the gotchas that bite during a
-`.Next` migration. **These are patterns, not a script** — every module differs; lift the shape, not
-the literal strings. All snippets assume `using Microsoft.PowerToys.UITest.Next;` and a class deriving
+winappcli framework. **These are patterns, not a script** — every module differs; lift the shape, not
+the literal strings. All snippets assume `using Microsoft.PowerToys.UITest;` and a class deriving
 from `UITestBase`.
 
 ## Recipe 1 — Navigate to a module's Settings page
@@ -248,7 +248,7 @@ SettingsConfigHelper.UpdateModuleSettings(
 ## Recipe 10 — Drive controls that live in a *different* window (process-scoped session)
 
 A module's toolbar / overlay / editor is a separate window from Settings. The legacy `global: true`
-Find reached into it implicitly; in `.Next` bind a session to that **process** and search there.
+Find reached into it implicitly; with winappcli, bind a session to that **process** and search there.
 `Session.FromProcess` uses the `-a` (process) scope, so it resolves a control across whichever of the
 process's windows owns it — ideal for a toolbar that may be one of several windows.
 
@@ -590,7 +590,7 @@ swallow in `FancyZones.cpp::OnKeyDown`.
 
 ## Pitfalls
 
-1. **`Click` has no `msPreAction` in `.Next`.** Legacy `Click(msPreAction: 1000, msPostAction: 2000)`
+1. **`Click` has no `msPreAction`.** Legacy `Click(msPreAction: 1000, msPostAction: 2000)`
    → `Thread.Sleep(1000); el.Click(msPostAction: 2000);`. Forgetting the pre-delay causes flaky clicks
    on slow-rendering pages.
 2. **`Click` (physical) vs. `Invoke` (coordinate-free).** `Click` raises the target window and uses
@@ -618,8 +618,7 @@ swallow in `FancyZones.cpp::OnKeyDown`.
     the template already includes it.
 11. **`winapp.exe` missing at run time** is expected on a headless agent — the project still *builds*.
     Don't treat a missing-CLI run failure as a migration defect; report build-clean + ready-to-run.
-12. **Every `UITestAutomation.Next` test Exe needs an `app.manifest` with `PerMonitorV2`.** This
-    includes greenfield projects whose names omit `.Next`. Without it the test host is DPI-unaware,
+12. **Every UI-test executable needs an `app.manifest` with `PerMonitorV2`.** Without it the test host is DPI-unaware,
     so `Element.Click()` and `MouseHelper` can feed virtualized Win32 cursor coordinates with
     winappcli's PHYSICAL-pixel bounds. Ordinary clicks can miss their controls; exact drags make the
     scale error especially obvious (Screen Ruler reported `150 x 149` instead of `100 x 100` on a
@@ -630,7 +629,7 @@ swallow in `FancyZones.cpp::OnKeyDown`.
     inside `testhost.exe` (vstest), whose manifest — not the test DLL's — governs DPI awareness, so the
     legacy `app.manifest` is silently ignored and its physical input can't be DPI-correct on a
     scaled display (the ScreenRuler legacy Bounds test fails `150 x 149` even *with* its manifest). A
-    `.Next` project is an `OutputType=Exe` (MTP), so ITS manifest applies to its own process — which is
+    current UI-test project is an `OutputType=Exe` (MTP), so its manifest applies to its own process — which is
     why adding the manifest actually fixes the port, and can make it pass where the legacy can't.
 13. **Anchor coordinate gestures to the screen centre, not the current cursor** (Recipe 11). This is
     the #1 cause of "measurement is wrong/empty" — the cursor drifts to the bottom edge after a
