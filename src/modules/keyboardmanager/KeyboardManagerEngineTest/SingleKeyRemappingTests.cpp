@@ -1245,9 +1245,11 @@ namespace RemappingLogicTests
             Assert::AreEqual((DWORD)0x46, events[0].first);
         }
 
-        // A key-up that never arrives leaves its press recorded: the next key-down is taken for an
-        // auto-repeat and ignored, and the key-up of that second press clears the record. (A known
-        // limitation, see SequencePressTracker.)
+        // A key-up that never arrives leaves its press recorded. A key-down that follows as quickly
+        // as an auto-repeat could (here: at the same time stamp) is taken for one and ignored, and
+        // the key-up of that second press clears the record. (A known limitation, see
+        // SequencePressTracker. A key-down that follows later is a new press, see
+        // SequenceRemap_KeyThatNeverSendsKeyUp_SendsItsSequenceOnEveryPress.)
         TEST_METHOD (SequenceRemap_LostKeyUp_IgnoresOnePress_ThenRecovers)
         {
             AddSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
@@ -1337,6 +1339,14 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(inputs);
         }
 
+        // Moves the time stamp of the following events on by the given number of milliseconds
+        DWORD eventTime = 0;
+        void AdvanceTime(DWORD milliseconds)
+        {
+            eventTime += milliseconds;
+            mockedInputHandler.SetEventTime(eventTime);
+        }
+
         // Number of events of the key itself (not sent by Keyboard Manager) that reached the system
         size_t Delivered(DWORD vk, bool keyUp)
         {
@@ -1378,9 +1388,148 @@ namespace RemappingLogicTests
         {
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
             remappingSuspended = false;
+            eventTime = 0;
             mockedInputHandler.SetHookProc([this](LowlevelKeyboardEvent* data) {
                 return KeyboardEventHandlers::DispatchKeyboardEvent(mockedInputHandler, data, testState, remappingSuspended);
             });
+        }
+
+        // A key may not send a key-up when it is released (some IME keys of a Japanese keyboard are
+        // known for that), and a key-up can go missing (the secure desktop takes over in the middle
+        // of a press). A key-down that comes later than any auto-repeat could is a new press: the
+        // sequence is sent on every press.
+        TEST_METHOD (SequenceRemap_KeyThatNeverSendsKeyUp_SendsItsSequenceOnEveryPress)
+        {
+            constexpr WORD imeKey = 0xF3;
+            constexpr WORD imeKeyScanCode = 0x29;
+            ReloadSequenceRemaps({ { imeKey, { 0x41, 0x42 } } });
+            AdvanceTime(100000);
+
+            SendKey(imeKey, false, imeKeyScanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            AdvanceTime(SequencePressTracker::StalePressAfterMs + 1);
+            SendKey(imeKey, false, imeKeyScanCode);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+
+            AdvanceTime(60000);
+            SendKey(imeKey, false, imeKeyScanCode);
+            Assert::AreEqual((size_t)12, SequenceEvents());
+
+            Assert::AreEqual((size_t)0, Delivered(imeKey, false));
+        }
+
+        // A key that is really held keeps repeating at short intervals, however long it is held:
+        // the sequence is sent once, and the key-up is still suppressed.
+        TEST_METHOD (SequenceRemap_HeldKeyAutoRepeating_SendsItsSequenceOnce)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            AdvanceTime(100000);
+
+            SendKey(VK_F1, false);
+            AdvanceTime(1000); // the longest repeat delay
+            SendKey(VK_F1, false);
+            for (int i = 0; i < 20; i++)
+            {
+                AdvanceTime(400); // the slowest repeat rate
+                SendKey(VK_F1, false);
+            }
+
+            // Exactly at the limit is still an auto-repeat
+            AdvanceTime(SequencePressTracker::StalePressAfterMs);
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+        }
+
+        // A held key whose auto-repeat has stopped (another key was pressed after it) sends nothing
+        // for a long time and then its key-up. That key-up still belongs to the press.
+        TEST_METHOD (SequenceRemap_KeyUpLongAfterTheKeyDown_StillEndsThatPress)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            AdvanceTime(60000);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+        }
+
+        // A press whose key-up never arrived was let through to the system. The record it left
+        // behind must not make a remap that is enabled later miss the next press of the key.
+        TEST_METHOD (SequenceRemap_StaleForwardedPress_DoesNotBlockANewlyEnabledRemap)
+        {
+            ReloadSequenceRemaps({ { VK_F2, { 0x43 } } });
+
+            SendKey(VK_F1, false); // the key-up of this press is lost
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            ReloadSequenceRemaps({ { VK_F2, { 0x43 } }, { VK_F1, { 0x41, 0x42 } } });
+
+            AdvanceTime(SequencePressTracker::StalePressAfterMs + 1);
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+        }
+
+        // The event time is a tick count that wraps around to 0. The age of a press is measured
+        // across the wrap.
+        TEST_METHOD (SequenceRemap_EventTimeWrapsAround_PressAgeIsStillMeasured)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            AdvanceTime(0xFFFFFF00);
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            AdvanceTime(0x200); // the time is now 0x100: an auto-repeat half a second later
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            // The key-up is lost; the next key-down comes later than a repeat could
+            AdvanceTime(SequencePressTracker::StalePressAfterMs + 1);
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+
+            // And once more across the wrap, without a repeat in between
+            AdvanceTime(0x7FFFFFFF);
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)12, SequenceEvents());
+            AdvanceTime(0xFFFFFF00 - eventTime);
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)16, SequenceEvents());
+            AdvanceTime(SequencePressTracker::StalePressAfterMs + 0x200);
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)20, SequenceEvents());
+        }
+
+        // An event can carry a time stamp slightly older than the event before it (input sent by
+        // another program is stamped on its own). That is not a long gap: the key-down is an
+        // auto-repeat.
+        TEST_METHOD (SequenceRemap_EventTimeSlightlyOutOfOrder_IsStillAnAutoRepeat)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            AdvanceTime(100000);
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            mockedInputHandler.SetEventTime(eventTime - 15);
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
         }
 
         // A remap that starts to apply while its key is held (the key-down already reached the app)

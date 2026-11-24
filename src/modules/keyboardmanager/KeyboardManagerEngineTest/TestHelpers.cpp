@@ -14,6 +14,7 @@ namespace TestHelpers
         input.SetSendVirtualInputShouldFail(nullptr);
         input.SetQueuedDelivery(false);
         input.SetEncodeNumpadOrigin(false);
+        input.SetEventTime(0);
         input.ClearDeliveredEvents();
         input.SetForegroundProcess(L"");
         state.ClearSingleKeyRemaps();

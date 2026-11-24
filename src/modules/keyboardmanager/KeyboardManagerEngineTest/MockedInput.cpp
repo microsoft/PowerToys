@@ -80,10 +80,11 @@ void MockedInput::DeliverInput(const INPUT& input)
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Set vkCode, dwExtraInfo, the scan code and the extended-key flag since other values are unused
+        // Set vkCode, dwExtraInfo, the scan code, the extended-key flag and the time since other values are unused
         lParam.vkCode = input.ki.wVk;
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
         lParam.scanCode = input.ki.wScan;
+        lParam.time = input.ki.time != 0 ? input.ki.time : eventTime;
         if (input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY)
         {
             lParam.flags |= LLKHF_EXTENDED;
@@ -221,6 +222,12 @@ void MockedInput::SetQueuedDelivery(bool queued)
 void MockedInput::SetEncodeNumpadOrigin(bool encode)
 {
     encodeNumpadOrigin = encode;
+}
+
+// Function to set the time stamp (in milliseconds, as KBDLLHOOKSTRUCT.time) of the events sent from now on
+void MockedInput::SetEventTime(DWORD time)
+{
+    eventTime = time;
 }
 
 // Function to get the events that reached the system (were not suppressed by the hook), in order

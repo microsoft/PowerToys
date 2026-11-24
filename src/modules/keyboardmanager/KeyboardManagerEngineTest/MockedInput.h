@@ -49,6 +49,10 @@ namespace KeyboardManagerInput
         // KeyboardManager::HookProc sets it from the extended-key flag.
         bool encodeNumpadOrigin = false;
 
+        // The time stamp the hook sees on an event that does not bring its own (KEYBDINPUT.time is
+        // 0), the way the system stamps such an event with its tick count
+        DWORD eventTime = 0;
+
         // The events that reached the system (the hook returned 0), in order
         std::vector<DeliveredKeyEvent> deliveredEvents;
 
@@ -93,6 +97,9 @@ namespace KeyboardManagerInput
 
         // Function to make the hook see numpad-origin encoded virtual keys, as the real hook procedure does
         void SetEncodeNumpadOrigin(bool encode);
+
+        // Function to set the time stamp (in milliseconds, as KBDLLHOOKSTRUCT.time) of the events sent from now on
+        void SetEventTime(DWORD time);
 
         // Function to get the events that reached the system (were not suppressed by the hook), in order
         const std::vector<DeliveredKeyEvent>& GetDeliveredEvents() const;

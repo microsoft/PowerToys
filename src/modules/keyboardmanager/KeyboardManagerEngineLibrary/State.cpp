@@ -149,7 +149,19 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress
     const uint64_t id = KeyIdOf(key);
     if (const auto it = m_presses.find(id); it != m_presses.end())
     {
-        return it->second;
+        // The time is a tick count that wraps around, so the age is the unsigned difference. A
+        // difference in the upper half of the range is a time stamp a little older than the last
+        // one (events are not always stamped in the order they arrive), not a gap of weeks.
+        const DWORD age = key.time - it->second.lastEventTime;
+        if (age <= StalePressAfterMs || age > static_cast<DWORD>(INT_MAX))
+        {
+            it->second.lastEventTime = key.time;
+            return it->second.disposition;
+        }
+
+        // Too late for an auto-repeat: the key-up of the recorded press never arrived, and this is
+        // a new press.
+        m_presses.erase(it);
     }
 
     if (!m_seededKeys.empty())
@@ -164,7 +176,7 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress
         {
             // First event of a key that was down when tracking started: from here on it is known by
             // its own identity.
-            m_presses.emplace(id, Disposition::Forwarded);
+            m_presses.insert_or_assign(id, Press{ Disposition::Forwarded, key.time });
             return Disposition::Forwarded;
         }
     }
@@ -174,7 +186,7 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress
 
 void SequencePressTracker::RecordPress(const KBDLLHOOKSTRUCT& key, const Disposition disposition)
 {
-    m_presses.insert_or_assign(KeyIdOf(key), disposition);
+    m_presses.insert_or_assign(KeyIdOf(key), Press{ disposition, key.time });
 }
 
 std::optional<SequencePressTracker::Disposition> SequencePressTracker::ReleasePress(const KBDLLHOOKSTRUCT& key)
@@ -183,7 +195,7 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::ReleasePr
 
     if (const auto it = m_presses.find(KeyIdOf(key)); it != m_presses.end())
     {
-        const Disposition disposition = it->second;
+        const Disposition disposition = it->second.disposition;
         m_presses.erase(it);
         return disposition;
     }

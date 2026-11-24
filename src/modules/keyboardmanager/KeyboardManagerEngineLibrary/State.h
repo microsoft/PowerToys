@@ -23,12 +23,22 @@
 // Used on the low-level keyboard hook thread only (the thread that installs the hook and runs its
 // message loop). Nothing here is cleared by a settings reload.
 //
+// A key-up can fail to arrive: the secure desktop takes over in the middle of a press (a UAC
+// prompt, Win+L), the keyboard is unplugged, another hook swallows it, or the key does not send
+// one when it is released (as some IME keys of a Japanese keyboard are known to do). The record of
+// that press stays behind. Each record therefore carries the time of the last event of its press,
+// and a key-down that comes later than an auto-repeat could (see StalePressAfterMs) discards the
+// record and counts as a new press. A key-up ends the record of its key whatever its age: a held
+// key that no longer repeats sends nothing until it is released.
+//
 // Known limitations:
-//  - A key-up that never arrives (the secure desktop, sleep, the keyboard unplugged, another hook
-//    swallowing it) leaves the record of that press behind. The next key-down of the key is then
-//    taken for an auto-repeat of the old press: a key with a sequence remap is ignored once, or
-//    passes through once without its sequence. The key-up of that press removes the record, so the
-//    press after it is handled normally. Installing the hook again also clears all records.
+//  - After a key-up that never arrived, a key-down of the same key within StalePressAfterMs is
+//    still taken for an auto-repeat of the old press: a key with a sequence remap is ignored, or
+//    passes through without its sequence. The record stays until a key-up of the key arrives, a
+//    key-down comes later than that, or the hook is installed again. If none of these happens
+//    (the key is not touched again) the record just stays, which costs a lookup per key event.
+//  - The time is the one the event carries. Input sent by another program with a made-up time
+//    stamp can make an auto-repeat look like a new press, or the other way round.
 //  - The same key held at once from two sources (two keyboards, or a keyboard and another
 //    program's injected input) shares one record, and the first key-up ends it.
 //  - A press without a scan code is paired by virtual key, so the keypad case above is not paired
@@ -56,13 +66,27 @@ public:
         PassThroughTerminal,
     };
 
+    // A key-down that comes more than this many milliseconds (KBDLLHOOKSTRUCT.time) after the last
+    // event of the press on record for its key is not an auto-repeat of that press but a new
+    // press: the key-up in between never arrived.
+    //
+    // A held key repeats after the repeat delay (at most 1 s in the Windows keyboard settings) and
+    // then at the repeat rate (at least about 2.5 a second), so the key-downs of one press are at
+    // most about 1 s apart. A held key that stops repeating, because another key of the same
+    // keyboard was pressed, sends no further key-down at all, only its key-up. 2 s is twice the
+    // longest gap a repeating key can produce. (The Filter Keys accessibility feature can slow the
+    // repeat down to 2 s and more. With such a setting a held key counts as pressed again at each
+    // repeat, and its sequence is sent again.)
+    static constexpr DWORD StalePressAfterMs = 2000;
+
     // Identity of a physical key: scan code + extended-key flag, or the virtual key if the event
     // has no scan code.
     static uint64_t MakeKeyId(DWORD scanCode, bool extended, DWORD vkCode) noexcept;
 
     // For a key-down: the disposition of the press the key already belongs to (the key-down is an
-    // auto-repeat), or nullopt if this is a new press. ii is only asked for the key state when
-    // keys seeded by SeedForwardedPresses are left.
+    // auto-repeat), or nullopt if this is a new press. A record whose last event is more than
+    // StalePressAfterMs older than this key-down is discarded first. ii is only asked for the key
+    // state when keys seeded by SeedForwardedPresses are left.
     std::optional<Disposition> FindPress(const KBDLLHOOKSTRUCT& key, KeyboardManagerInput::InputInterface& ii);
 
     // Records the disposition of a new press, or changes the one recorded for the key.
@@ -84,7 +108,15 @@ public:
     bool Empty() const noexcept;
 
 private:
-    std::unordered_map<uint64_t, Disposition> m_presses;
+    struct Press
+    {
+        Disposition disposition;
+
+        // KBDLLHOOKSTRUCT.time of the last event of the press (its key-down or its latest auto-repeat)
+        DWORD lastEventTime;
+    };
+
+    std::unordered_map<uint64_t, Press> m_presses;
 
     // Virtual keys seeded by SeedForwardedPresses that had no event of their own yet.
     std::unordered_set<DWORD> m_seededKeys;
