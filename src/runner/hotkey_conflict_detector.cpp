@@ -142,12 +142,16 @@ namespace HotkeyConflictDetector
         return HotkeyConflictType::InAppConflict;
     }
 
-    // This function should only be called when a conflict has already been identified. 
-    // It returns a list of all conflicting shortcuts.
+    // Returns a list of all conflicting shortcuts, or an empty vector if no conflict exists.
     std::vector<HotkeyConflictInfo> HotkeyConflictManager::GetAllConflicts(Hotkey const& _hotkey)
     {
         std::vector<HotkeyConflictInfo> conflicts;
         uint16_t handle = GetHotkeyHandle(_hotkey);
+
+        if (handle == 0)
+        {
+            return conflicts;
+        }
 
         // Check in-app conflicts first
         auto inAppIt = inAppConflictHotkeyMap.find(handle);
@@ -185,12 +189,15 @@ namespace HotkeyConflictDetector
             return conflicts;
         }
 
-        // If all the above conditions are ruled out, a system-level conflict is the only remaining explanation.
-        HotkeyConflictInfo systemConflict;
-        systemConflict.hotkey = _hotkey;
-        systemConflict.moduleName = L"System";
-        systemConflict.hotkeyID = 0;
-        conflicts.push_back(systemConflict);
+        // Check if the hotkey conflicts with a system-reserved shortcut.
+        if (HasConflictWithSystemHotkey(_hotkey))
+        {
+            HotkeyConflictInfo systemConflict;
+            systemConflict.hotkey = _hotkey;
+            systemConflict.moduleName = L"System";
+            systemConflict.hotkeyID = 0;
+            conflicts.push_back(systemConflict);
+        }
 
         return conflicts;
     }
