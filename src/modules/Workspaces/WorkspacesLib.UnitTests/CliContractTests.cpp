@@ -3,7 +3,6 @@
 #include <WorkspacesLib/CliCommands.h>
 #include <WorkspacesLib/LaunchingStatus.h>
 #include <fstream>
-#include <wil/resource.h>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -127,44 +126,25 @@ namespace WorkspacesLibUnitTests
             Assert::IsFalse(WorkspacesSession::DeserializeResult(wire, result.operationId).CanRecapture());
         }
 
-        TEST_METHOD (FailedMoveCanRecaptureOnlyItsLiveExistingWindow)
+        TEST_METHOD (FailedMoveWindowReferenceIsLimitedToResultMessages)
         {
-            wil::unique_hwnd window{ CreateWindowExW(WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW, L"STATIC", nullptr, WS_POPUP,
-                                                     -32000, -32000, 1, 1, nullptr, nullptr, nullptr, nullptr) };
-            Assert::IsTrue(window.get() != nullptr);
-            ShowWindow(window.get(), SW_SHOWNOACTIVATE);
+            auto project = Project();
+            project.apps.resize(1);
+            auto arranger = FinalResult(project, { LaunchingState::Failed });
+            auto item = arranger.GetNamedArray(L"applications").GetObjectAt(0);
+            item.SetNamedValue(L"existingWindow", json::value(123));
+            item.SetNamedValue(L"existingWindowProcessId", json::value(456));
 
-            WorkspacesSession::Result session;
-            session.operationId = L"existing-window-recapture";
-            session.project = Project();
-            session.project.moveExistingWindows = true;
-            session.project.apps.resize(1);
-            session.project.monitors.push_back({ .number = 1, .dpi = 96 });
-            auto& app = session.project.apps.front();
-            app.monitor = 1;
-            app.position = { 10, 20, 640, 400 };
+            LaunchingStatus expected(project);
+            const auto applications = WorkspacesCli::ParseArrangerResult(arranger, expected.Get(), L"operation");
+            const auto& outcome = applications.at(project.apps.front());
+            Assert::IsTrue(outcome.state == LaunchingState::Failed);
+            Assert::AreEqual(123UL, HandleToULong(outcome.window));
+            Assert::AreEqual(456UL, outcome.existingWindowProcessId);
 
-            const WorkspacesData::LaunchingAppState failedMove{ app, window.get(), LaunchingState::Failed, GetCurrentProcessId() };
-            auto arranger = FinalResult(session.project, { LaunchingState::Failed });
-            arranger.SetNamedValue(L"operationId", json::value(session.operationId));
-            arranger.GetNamedArray(L"applications").SetAt(0, WorkspacesData::AppLaunchInfoJSON::ToResultJson(failedMove));
-            LaunchingStatus expected(session.project);
-            session.applications = WorkspacesCli::ParseArrangerResult(arranger, expected.Get(), session.operationId);
-            const auto decoded = WorkspacesSession::DeserializeResult(WorkspacesSession::SerializeResult(session), session.operationId);
-            Assert::IsTrue(decoded.CanRecapture());
-            Assert::IsFalse(decoded.launchedAnyApplication);
-            Assert::IsTrue(decoded.applications.at(app).state == LaunchingState::Failed);
-            Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::ToJson(failedMove).HasKey(L"existingWindow"));
-
-            session.project.moveExistingWindows = false;
-            Assert::IsFalse(session.CanRecapture());
-            session.project.moveExistingWindows = true;
-            session.applications.at(app).existingWindowProcessId = GetCurrentProcessId() + 1;
-            Assert::IsFalse(session.CanRecapture());
-            ShowWindow(window.get(), SW_HIDE);
-            Assert::IsFalse(decoded.CanRecapture());
-            window.reset();
-            Assert::IsFalse(decoded.CanRecapture());
+            const auto progress = WorkspacesData::AppLaunchInfoJSON::ToJson(outcome);
+            Assert::IsFalse(progress.HasKey(L"existingWindow"));
+            Assert::IsFalse(progress.HasKey(L"existingWindowProcessId"));
         }
 
         TEST_METHOD (RejectsIncompleteOrInvalidExistingWindowReferences)

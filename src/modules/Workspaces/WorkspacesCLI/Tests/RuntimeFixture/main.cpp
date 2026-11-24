@@ -218,10 +218,51 @@ std::wstring GuiErrorProbe::Resource(UINT id)
 
 namespace
 {
-    void Check(bool value)
+    void Check(bool value, const char* message = "CLI runtime fixture assertion failed.")
     {
         if (!value)
-            throw std::runtime_error("CLI runtime fixture assertion failed.");
+            throw std::runtime_error(message);
+    }
+
+    void CheckExistingWindowRecapture()
+    {
+        wil::unique_hwnd window{ CreateWindowExW(WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW, L"STATIC", nullptr, WS_POPUP,
+                                                 -32000, -32000, 1, 1, nullptr, nullptr, nullptr, nullptr) };
+        Check(window.get() != nullptr, "Could not create the fixture window.");
+        ShowWindow(window.get(), SW_SHOWNOACTIVATE);
+        Check(IsWindowVisible(window.get()) != FALSE, "The fixture window must be visible on the interactive desktop.");
+
+        WorkspacesSession::Result session;
+        session.operationId = L"existing-window-recapture";
+        session.project.id = L"{6CF910A2-D2E0-436D-A50E-41432A88452A}";
+        session.project.moveExistingWindows = true;
+        session.project.monitors.push_back({ .number = 1, .dpi = 96 });
+        auto& app = session.project.apps.emplace_back();
+        app.id = L"{49330ECB-5917-4DF3-B70A-1F2D7FE4899B}";
+        app.monitor = 1;
+        app.position = { 10, 20, 640, 400 };
+        const DWORD owner = GetCurrentProcessId();
+        session.applications.emplace(app, WorkspacesData::LaunchingAppState{ app, window.get(), LaunchingState::Failed, owner });
+
+        auto decoded = WorkspacesSession::DeserializeResult(WorkspacesSession::SerializeResult(session), session.operationId);
+        auto& outcome = decoded.applications.at(app);
+        Check(!decoded.launchedAnyApplication && outcome.state == LaunchingState::Failed, "The failed move was reported as a launch.");
+        Check(outcome.window == window.get() && outcome.existingWindowProcessId == owner, "The result lost the original window or its owner.");
+        Check(decoded.CanRecapture(), "The visible original window should allow recapture after a failed move.");
+
+        decoded.project.moveExistingWindows = false;
+        Check(!decoded.CanRecapture(), "Recapture should require the move-existing-windows option.");
+        decoded.project.moveExistingWindows = true;
+        outcome.existingWindowProcessId = owner + 1;
+        Check(!decoded.CanRecapture(), "Recapture should reject a different window owner.");
+        outcome.existingWindowProcessId = owner;
+
+        ShowWindow(window.get(), SW_HIDE);
+        Check(!decoded.CanRecapture(), "Recapture should reject a hidden window.");
+        ShowWindow(window.get(), SW_SHOWNOACTIVATE);
+        Check(decoded.CanRecapture(), "The original window should allow recapture when shown again.");
+        window.reset();
+        Check(!decoded.CanRecapture(), "Recapture should reject a destroyed window.");
     }
 
     void CheckGuiFileErrors()
@@ -828,6 +869,12 @@ int wmain(int argc, wchar_t** argv)
             Check(result.GetNamedString(L"state") == L"launched");
             Check(result.GetNamedString(L"message") == L"Localized unconfirmed arrangement test message.");
             Check(exitCode == 10);
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
+        if (std::wstring_view(argv[1]) == L"existing-window-recapture")
+        {
+            CheckExistingWindowRecapture();
             std::cout << "{\"passed\":true}\n";
             return 0;
         }
