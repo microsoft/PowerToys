@@ -47,7 +47,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
                 var formatter = new DateTimeFormatter("month year", string.IsNullOrEmpty(language) ? ApplicationLanguages.Languages : new[] { language });
                 DateText = IsPreview ?
                     ResourceLoaderInstance.ResourceLoader.GetString("ScoobeReleaseGroup_Preview") :
-                    formatter.Format(latestRelease.PublishedDate);
+                    formatter.Format(latestRelease.PublishedDate).Replace("\u200E", string.Empty);
             }
             else
             {

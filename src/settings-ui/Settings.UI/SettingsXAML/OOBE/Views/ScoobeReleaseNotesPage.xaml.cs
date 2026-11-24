@@ -130,7 +130,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
                 var releaseUrl = string.Format(CultureInfo.InvariantCulture, GitHubReleaseLinkTemplate, release.TagName);
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"# {release.Name}");
-                string formattedDate = formatter.Format(release.PublishedDate);
+                string formattedDate = formatter.Format(release.PublishedDate).Replace("\u200E", string.Empty);
                 releaseNotesHtmlBuilder.AppendLine(CultureInfo.InvariantCulture, $"{formattedDate.Replace(".", "\\.")} • [{ResourceLoaderInstance.ResourceLoader.GetString("ScoobeReleaseNotes_ViewOnGitHub")}]({releaseUrl})");
                 releaseNotesHtmlBuilder.AppendLine();
                 releaseNotesHtmlBuilder.AppendLine("&nbsp;");
