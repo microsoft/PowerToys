@@ -134,7 +134,7 @@ void HideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
     }
 }
 
-void HideForFile(const path& dir, const wstring& relativePath, const vector<wstring>& xpaths)
+void HideForFile(const path& dir, const wstring& relativePath, const vector<wstring>& escapePaths)
 {
     path jsonPath = dir;
     jsonPath.append(relativePath);
@@ -146,7 +146,7 @@ void HideForFile(const path& dir, const wstring& relativePath, const vector<wstr
     }
 
     JsonValue jValue = json::value(jObject.value());
-    for (auto xpath : xpaths)
+    for (auto xpath : escapePaths)
     {
         vector<wstring> xpathArray = GetXpathArray(xpath);
         HideByXPath(jValue, xpathArray, 0);
