@@ -572,6 +572,7 @@ namespace RemappingUITests
 
             const std::wstring invalidValues[] = {
                 L"", L"0", L"255", L"256", L"257", L"999999", L"99999999999999999999",
+                L"231", // VK_PACKET: text sent as Unicode input, never tracked as a press
                 L"0x1B", L"27abc", L"-27", L"+27", L" 27", L"27;26",
                 std::wstring(L"27\0abc", 6), std::wstring(L"27\0", 3),
                 std::to_wstring(VK_F1 | Helpers::GetNumpadOriginEncodingBit()), // F1 never has the numpad marker
@@ -617,6 +618,7 @@ namespace RemappingUITests
             inProcessSequence.Append(entry(L"116", L"65;0"));                       // target out of range
             const DWORD numpadEnd = Helpers::EncodeKeyNumpadOrigin(VK_END, false);
             inProcessSequence.Append(entry(std::to_wstring(numpadEnd), L"66"));     // numpad-origin encoding of the source
+            inProcessSequence.Append(entry(L"231", L"65"));                         // VK_PACKET as the source: never tracked, so rejected
 
             json::JsonObject remapKeys;
             remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray());

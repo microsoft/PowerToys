@@ -115,7 +115,8 @@ public:
     // can report (1-254, or a numpad key with the numpad-origin marker, see Helpers::EncodeKeyNumpadOrigin).
     // The hook never reports 260 (Win) or the generic Shift/Ctrl/Alt (16/17/18) for a physical key, so
     // those are expanded to the left and right keys (saving the profile then writes both entries).
-    // Throws on anything else; the loader then skips that remap.
+    // Throws on anything else, and on 231 (VK_PACKET, never a physical press); the loader then skips
+    // that remap with a warning.
     static std::vector<DWORD> ParseSequenceSourceKeys(const std::wstring& value);
 
 private:
