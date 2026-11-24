@@ -1,6 +1,6 @@
 ---
 name: ui-tests-pipeline-ci
-description: "Microsoft FTE-only completion workflow for PowerToys UI-test implementation: automatically continue after successful local VM suites, commit and push scoped changes, queue CI, wait synchronously, and stabilize through Azure CLI and Azure DevOps REST APIs. No separate push/run-CI request is needed for create, migrate, or stabilize tasks unless the user limited scope. Also use for explicit UITests CI, setup preflight, 401/403 diagnosis, build reuse, recordings/artifacts, and the three-run limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, commit, push, local-to-CI handoff, buildNow, specificBuildId, uiTestModules, CI flake."
+description: "Microsoft FTE-only completion workflow for PowerToys UI-test implementation: automatically continue after successful local VM suites, commit and push scoped changes, queue CI, watch through completion, and stabilize through Azure CLI and Azure DevOps REST APIs. No separate push/run-CI request is needed for create, migrate, or stabilize tasks unless the user limited scope. Also use for explicit UITests CI, setup preflight, 401/403 diagnosis, build reuse, recordings/artifacts, and the three-run limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, commit, push, local-to-CI handoff, buildNow, specificBuildId, uiTestModules, CI flake."
 license: MIT
 ---
 
@@ -72,12 +72,12 @@ verified terminal success or a documented blocker/three-run escalation.
 7. **Evidence before edits.** Read the failed result, logs, screenshot, and recording before forming
    a fix hypothesis. Preserve assertions and classify infrastructure failures separately.
 8. **Tracked runs remain unfinished work.** After queueing, persist the build ID, branch, source SHA,
-   attempt number, and parameters in session/task state. Do not mark the task complete or claim a
-   terminal result while that build is nonterminal. Immediately run
-   [Wait-AzureDevOpsBuild.ps1](./scripts/Wait-AzureDevOpsBuild.ps1) synchronously in the foreground,
-   bound to the exact build ID, branch, and source SHA. Keep the same agent turn alive until the
-   waiter returns, then verify the terminal result and continue stabilization without user input.
-   Do not end the turn or call `task_complete` while the waiter runs.
+   attempt number, and parameters in session/task state. Run
+   [Wait-AzureDevOpsBuild.ps1](./scripts/Wait-AzureDevOpsBuild.ps1) as one attached background
+   command bound to those exact identifiers. It checks every 20 minutes by default. Wait for the
+   completion notification instead of repeatedly reading the shell. Then verify the terminal
+   result and continue stabilization without user input. Do not call `task_complete` while the
+   build is nonterminal.
 
 ## Internal constants
 
@@ -105,7 +105,7 @@ contains:
 - `buildNow` versus `specificBuildId` decision rules.
 - Exact queue parameters and branch targeting.
 - Monitoring, failure evidence, direct Azure Test attachment downloads, and recording links.
-- Agent-owned foreground completion waiting and truthful client capability limits.
+- Agent-owned completion watching, 20-minute polling, and client capability limits.
 - The three-run stabilization ledger and stop conditions.
 
 ## Completion standard

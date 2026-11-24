@@ -6,13 +6,13 @@
 
 <#
 .SYNOPSIS
-Waits synchronously for exact Azure DevOps builds to become terminal.
+Watches exact Azure DevOps builds until they become terminal.
 
 .DESCRIPTION
 Polls checkpointed build IDs through the existing Azure CLI-authenticated REST helper. Every response
-must match the expected branch and source commit. The process remains in the foreground so an active
-agent turn resumes when all builds become terminal. On Windows, the process prevents system sleep
-while it waits.
+must match the expected branch and source commit. Run this as one attached background command in a
+client with completion notifications. On Windows, the process requests continuous system sleep
+prevention while it waits.
 
 .PARAMETER BuildId
 One or more numeric Azure DevOps build IDs.
@@ -24,10 +24,10 @@ The exact source branch ref expected for every build.
 The exact 40-character source commit expected for every build.
 
 .PARAMETER PollIntervalSeconds
-Seconds between authenticated status reads. Defaults to 120.
+Seconds between authenticated status reads. Defaults to 1200 (20 minutes).
 
 .PARAMETER TimeoutMinutes
-Maximum total wait. Defaults to 180 minutes.
+Maximum total wait. Defaults to 360 minutes (6 hours).
 
 .PARAMETER MaxConsecutiveErrors
 Number of consecutive REST failures allowed before stopping. Defaults to 3.
@@ -56,10 +56,10 @@ param(
     [string] $ExpectedSourceVersion,
 
     [ValidateRange(10, 3600)]
-    [int] $PollIntervalSeconds = 120,
+    [int] $PollIntervalSeconds = 1200,
 
     [ValidateRange(1, 720)]
-    [int] $TimeoutMinutes = 180,
+    [int] $TimeoutMinutes = 360,
 
     [ValidateRange(1, 20)]
     [int] $MaxConsecutiveErrors = 3
@@ -77,7 +77,6 @@ $lastFingerprint = $null
 $lastOutputUtc = [DateTime]::MinValue
 $lastBuilds = @()
 $consecutiveErrors = 0
-$waitHandle = [Threading.ManualResetEventSlim]::new($false)
 $executionStateContinuous = [uint32]2147483648
 $executionStateSystemRequired = [uint32]2147483649
 $executionStateSet = $false
@@ -104,7 +103,8 @@ namespace PowerToys.UiTests.Ci
 '@
             }
 
-            $executionStateSet = [PowerToys.UiTests.Ci.NativeMethods]::SetThreadExecutionState($executionStateSystemRequired) -ne 0
+            $executionStateSet = [PowerToys.UiTests.Ci.NativeMethods]::SetThreadExecutionState(
+                ($executionStateContinuous -bor $executionStateSystemRequired)) -ne 0
             if (-not $executionStateSet)
             {
                 Write-Warning 'System sleep prevention was rejected; the Azure DevOps wait will continue.'
@@ -173,7 +173,7 @@ namespace PowerToys.UiTests.Ci
             }
 
             $waitSeconds = [Math]::Min($PollIntervalSeconds, $remainingSeconds)
-            $null = $waitHandle.Wait([TimeSpan]::FromSeconds($waitSeconds))
+            Start-Sleep -Seconds $waitSeconds
             continue
         }
 
@@ -192,7 +192,7 @@ namespace PowerToys.UiTests.Ci
         $fingerprint = @($builds | ForEach-Object {
                 "$($_.Id):$($_.Status):$($_.Result):$($_.LastChangedDate)"
             }) -join '|'
-        if ($fingerprint -ne $lastFingerprint -or ($observedUtc - $lastOutputUtc).TotalMinutes -ge 15)
+        if ($fingerprint -ne $lastFingerprint -or ($observedUtc - $lastOutputUtc).TotalMinutes -ge 20)
         {
             [pscustomobject]@{
                 Event = 'progress'
@@ -218,7 +218,7 @@ namespace PowerToys.UiTests.Ci
         }
 
         $waitSeconds = [Math]::Min($PollIntervalSeconds, $remainingSeconds)
-        $null = $waitHandle.Wait([TimeSpan]::FromSeconds($waitSeconds))
+        Start-Sleep -Seconds $waitSeconds
     }
 }
 finally
@@ -236,6 +236,4 @@ finally
             Write-Warning "System sleep-prevention cleanup failed: $($_.Exception.Message)"
         }
     }
-
-    $waitHandle.Dispose()
 }

@@ -266,12 +266,13 @@ Modules: [<exact project stems>]
 State: <notStarted|inProgress|...>
 ```
 
-After any interruption or user turn, query every exact checkpointed build ID before other Azure
-work. Never rediscover by adopting the newest run.
+After an interruption, resume the existing attached waiter if it is still running. If it stopped,
+query every exact checkpointed build ID before other Azure work. Never rediscover by adopting the
+newest run.
 
-### Agent-owned foreground completion waiter
+### Agent-owned completion watcher
 
-After queueing and checkpointing, invoke the bundled waiter synchronously in the foreground:
+After queueing and checkpointing, start the bundled waiter once:
 
 ```pwsh
 pwsh -NoLogo -NoProfile -File `
@@ -281,27 +282,30 @@ pwsh -NoLogo -NoProfile -File `
   -ExpectedSourceVersion <40_CHARACTER_SOURCE_SHA>
 ```
 
-For an explicitly authorized supplemental architecture run, pass both checkpointed IDs to one
-invocation, for example `-BuildId 123456789,123456790`. Every ID must share the expected branch and
-source SHA.
+For an explicitly authorized supplemental architecture run, invoke the script directly in PowerShell
+with both checkpointed IDs (`-BuildId 123456789,123456790`), rather than passing the array through
+`pwsh -File`. Every ID must share the expected branch and source SHA.
 
-Run the setup preflight first. Keep the waiter attached to the active agent turn; do not use an
-async/background mode, end the response, or call `task_complete` while it runs. The waiter validates
-identity on every read, polls every 120 seconds, requests system sleep prevention, and returns on
-terminal status, timeout, or a genuine query failure.
+Run the setup preflight first. In Copilot CLI, start the command in async mode without detaching,
+and record its shell ID alongside the build checkpoint. Verify startup once. The waiter validates
+identity on every read, checks immediately and then every 20 minutes (`-PollIntervalSeconds 1200`),
+and requests system sleep prevention. The default wait is bounded to six hours (`-TimeoutMinutes 360`).
+Wait for the shell completion notification and collect its output once. Do not periodically read
+the shell to keep the agent turn alive or issue redundant build-status queries while the waiter runs.
+Keep the CI task open until the terminal result is verified.
 
 Read the waiter's JSON-lines `Event`: `progress` is a successful nonterminal read, `query-error` is a
 retryable read failure, `terminal` means every build completed, and `timeout` ends the bounded wait.
 Require at least one `progress` or `terminal` record before attributing a nonzero exit to Azure DevOps;
 otherwise diagnose the waiter invocation itself. On `terminal`, immediately query timeline, logs,
 tests, and artifacts and apply the completion standard. If it times out while builds are progressing,
-invoke another bounded foreground wait. For authentication or repeated query errors, rerun the setup
+start another bounded wait for the same IDs. For authentication or repeated query errors, rerun the setup
 preflight and follow its blocker rules. After a failed terminal run, diagnose, fix, rerun local gates,
 queue the next authorized attempt, and invoke a new waiter.
 
-This mechanism relies on a client that keeps a synchronous shell tool call attached to the active
-agent turn. Copilot CLI in autopilot mode supports that execution model. If the current client cannot
-do so, state that limitation before queueing.
+If the client has no completion notifications but can sustain a foreground command for the whole
+wait, run the same script in the foreground. If neither is supported, state the limitation before
+queueing. Stopping the local waiter does not cancel the pipeline.
 
 ## 5. Monitor exact builds
 
