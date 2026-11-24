@@ -49,7 +49,14 @@ namespace
             {
                 throw std::ios::failure("Failed to scan report file");
             }
-            for (const auto character : std::string_view(buffer.data(), static_cast<std::size_t>(input.gcount())))
+            const std::string_view chunk(buffer.data(), static_cast<std::size_t>(input.gcount()));
+            // UTF-32LE shares the UTF-16LE BOM prefix.
+            if (offset == 0 && (chunk.starts_with("\xFF\xFE") || chunk.starts_with("\xFE\xFF") ||
+                                chunk.starts_with(std::string_view("\0\0\xFE\xFF", 4))))
+            {
+                throw std::ios::failure("Unsupported report text encoding");
+            }
+            for (const auto character : chunk)
             {
                 const auto characterOffset = offset++;
                 if (pendingPropertyOffset)

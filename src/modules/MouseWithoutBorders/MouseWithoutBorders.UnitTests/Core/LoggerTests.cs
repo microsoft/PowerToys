@@ -236,6 +236,10 @@ public static class LoggerTests
         [DataRow("securitykey")]
         [DataRow("<MyKey>k__BackingField")]
         [DataRow("<SecurityKey>k__BackingField")]
+        [DataRow("_securityCode")]
+        [DataRow("_SECURITYCODE")]
+        [DataRow("SecurityCodeField")]
+        [DataRow("securitycodefield")]
         public void KnownKeyFieldsAreOmittedBeforeFormatting(string fieldName)
         {
             var output = new StringBuilder();
@@ -298,6 +302,45 @@ public static class LoggerTests
             }
             finally
             {
+                Encryption.MyKey = previousKey;
+                Common.BinaryName = previousBinaryName;
+            }
+        }
+
+        [TestMethod]
+        public void PendingSetupKeyIsOmittedWithoutChangingActiveKeyOrOtherSetupDiagnostics()
+        {
+            var codeField = typeof(SetupPage2a).GetField("_securityCode", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var nameField = typeof(SetupPage2a).GetField("_computerName", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var previousCode = codeField.GetValue(null);
+            var previousName = nameField.GetValue(null);
+            var previousBinaryName = Common.BinaryName;
+            var previousKey = Encryption.MyKey;
+            try
+            {
+                Common.BinaryName = "DumpTestBinary";
+                Encryption.MyKey = "synthetic-active-key";
+                codeField.SetValue(null, "synthetic-pending-key");
+                nameField.SetValue(null, "SetupTestMachine");
+                var output = new StringBuilder();
+                var method = typeof(Logger).GetMethod("PrivateDump", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+                foreach (var field in new[] { codeField, nameField })
+                {
+                    method.Invoke(null, new object[] { output, field.GetValue(null)!, field.Name, 0, 2, true });
+                }
+
+                var dump = output.ToString();
+                Assert.IsFalse(dump.Contains("_securityCode", StringComparison.OrdinalIgnoreCase));
+                Assert.IsFalse(dump.Contains("synthetic-pending-key", StringComparison.Ordinal));
+                StringAssert.Contains(dump, "_computerName = SetupTestMachine");
+                Assert.AreEqual("synthetic-active-key", Encryption.MyKey);
+                Assert.AreEqual("synthetic-pending-key", codeField.GetValue(null));
+            }
+            finally
+            {
+                codeField.SetValue(null, previousCode);
+                nameField.SetValue(null, previousName);
                 Encryption.MyKey = previousKey;
                 Common.BinaryName = previousBinaryName;
             }

@@ -128,6 +128,57 @@ namespace BugReportToolUnitTests
             }
         }
 
+        TEST_METHOD (RemovesBomMarkedUtf16AndUtf32ReportFiles)
+        {
+            struct EncodingFixture
+            {
+                std::string bom;
+                size_t bytesPerCharacter;
+                bool bigEndian;
+            };
+            const std::string settings = R"({"properties":{"SecurityKey":{"value":"fixture-key"}}})";
+            for (const auto& encoding : {
+                     EncodingFixture{ std::string("\xFF\xFE", 2), 2, false },
+                     EncodingFixture{ std::string("\xFE\xFF", 2), 2, true },
+                     EncodingFixture{ std::string("\xFF\xFE\x00\x00", 4), 4, false },
+                     EncodingFixture{ std::string("\x00\x00\xFE\xFF", 4), 4, true } })
+            {
+                TemporaryDirectory temporary;
+                const auto file = temporary.path / L"MouseWithoutBorders" / L"settings.json";
+                const auto diagnostic = temporary.path / L"runner.log";
+                auto encoded = encoding.bom;
+                for (const auto character : settings)
+                {
+                    for (size_t byte = 0; byte < encoding.bytesPerCharacter; ++byte)
+                    {
+                        encoded += byte == (encoding.bigEndian ? encoding.bytesPerCharacter - 1 : 0) ? character : '\0';
+                    }
+                }
+                Write(file, encoded);
+                Write(diagnostic, "[info] unaffected UTF-8 diagnostic\r\n");
+
+                const auto removedPaths = ReportSanitizer::Sanitize(temporary.path);
+
+                Assert::AreEqual(size_t{ 1 }, removedPaths.size());
+                Assert::IsTrue(removedPaths.front() == file);
+                Assert::IsFalse(std::filesystem::exists(file));
+                AssertTextEquals("[info] unaffected UTF-8 diagnostic\r\n", Read(diagnostic));
+            }
+        }
+
+        TEST_METHOD (PreservesUtf8BomAndTrailingNulPadding)
+        {
+            const std::string padding(4, '\0');
+            for (const auto& bom : { std::string{}, std::string("\xEF\xBB\xBF", 3) })
+            {
+                AssertTextEquals(
+                    bom + R"({"SecurityKey":"<private_data>","other":"retained"})" + padding,
+                    SanitizeText(bom + R"({"SecurityKey":"fixture-key","other":"retained"})" + padding));
+                const auto diagnostic = bom + "[info] unaffected UTF-8 diagnostic\r\n" + padding;
+                AssertTextEquals(diagnostic, SanitizeText(diagnostic));
+            }
+        }
+
         TEST_METHOD (DeletesUnreadableOrUnwritableReportFilesAndContinuesProcessing)
         {
             TemporaryDirectory temporary;

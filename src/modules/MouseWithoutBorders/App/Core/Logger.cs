@@ -274,7 +274,9 @@ internal static class Logger
         if (objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
             || objName.Equals("SecurityKey", StringComparison.OrdinalIgnoreCase)
             || objName.Equals("<MyKey>k__BackingField", StringComparison.OrdinalIgnoreCase)
-            || objName.Equals("<SecurityKey>k__BackingField", StringComparison.OrdinalIgnoreCase))
+            || objName.Equals("<SecurityKey>k__BackingField", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("_securityCode", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("SecurityCodeField", StringComparison.OrdinalIgnoreCase))
         {
             return false;
         }
