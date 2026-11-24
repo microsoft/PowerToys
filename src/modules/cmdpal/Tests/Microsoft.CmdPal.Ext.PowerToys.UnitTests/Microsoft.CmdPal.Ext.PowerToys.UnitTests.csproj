@@ -5,8 +5,12 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <!-- Match the self-contained extension executable referenced by these tests. -->
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == '' and '$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
     <RootNamespace>Microsoft.CmdPal.Ext.PowerToys.UnitTests</RootNamespace>
-    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\</OutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\CmdPal\tests\PowerToys\</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Nullable>enable</Nullable>
@@ -17,12 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Helpers\PowerToysFallbackCommandItem.cs" Link="PowerToysFallbackCommandItem.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\..\ext\Microsoft.CmdPal.Ext.PowerToys\Microsoft.CmdPal.Ext.PowerToys.csproj" />
     <ProjectReference Include="..\..\..\..\common\Common.Search\Common.Search.csproj" />
     <ProjectReference Include="..\..\extensionsdk\Microsoft.CommandPalette.Extensions.Toolkit\Microsoft.CommandPalette.Extensions.Toolkit.csproj" />
-    <ProjectReference Include="..\Microsoft.CmdPal.Ext.UnitTestsBase\Microsoft.CmdPal.Ext.UnitTestBase.csproj" />
   </ItemGroup>
 </Project>

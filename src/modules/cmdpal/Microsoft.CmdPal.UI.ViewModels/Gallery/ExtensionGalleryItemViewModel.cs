@@ -105,11 +105,6 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
     public string? Homepage => _entry.Homepage;
 
-    // Validated, browser-openable homepage uri. Null when the entry has no
-    // homepage or it is not a web uri. NavigateUri bindings must use this
-    // (a Uri) rather than the raw Homepage string: x:Bind evaluates bindings
-    // regardless of element visibility, and converting a null/invalid string
-    // to Uri throws and crashes the page.
     public Uri? HomepageUri => _homepageHttpUri;
 
     public Uri IconUri { get; }
@@ -385,7 +380,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
 
         try
         {
-            var packagesResult = await _winGetPackageManagerService.GetPackagesByIdAsync([WinGetId], includeStoreCatalog: false);
+            var packagesResult = await _winGetPackageManagerService.GetPackagesByIdAsync(new string[] { WinGetId }, includeStoreCatalog: false);
             if (!packagesResult.IsSuccess)
             {
                 WinGetActionMessage = packagesResult.ErrorMessage ?? Resources.gallery_item_winget_action_resolve_failed;
@@ -883,7 +878,7 @@ public sealed partial class ExtensionGalleryItemViewModel : ObservableObject
     {
         if (_winGetPackageStatusService is not null && !string.IsNullOrWhiteSpace(WinGetId))
         {
-            var infos = await _winGetPackageStatusService.TryGetPackageInfosAsync([WinGetId]);
+            var infos = await _winGetPackageStatusService.TryGetPackageInfosAsync(new string[] { WinGetId });
             if (infos is not null && infos.TryGetValue(WinGetId, out var packageInfo))
             {
                 ApplyWinGetPackageInfo(packageInfo);

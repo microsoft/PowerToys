@@ -47,6 +47,8 @@
                                             Width="16"
                                             Height="16"
                                             AutomationProperties.AccessibilityView="Raw"
+                                            DiagnosticScope="RankerItem"
+                                            RequestSite="Fallback"
                                             SourceKey="{x:Bind Icon, Mode=OneWay}"
                                             SourceRequested="{x:Bind helpers:IconProvider.SourceRequested20}" />
                                     </cpcontrols:ContentIcon.Content>

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using PowerToysExtension.Commands;
@@ -13,19 +14,32 @@ namespace PowerToysExtension.Modules;
 
 internal sealed class EnvironmentVariablesModuleCommandProvider : ModuleCommandProvider
 {
+    private readonly Func<SettingsWindow, bool> _isModuleEnabled;
+
+    internal EnvironmentVariablesModuleCommandProvider(Func<SettingsWindow, bool>? isModuleEnabled = null)
+    {
+        _isModuleEnabled = isModuleEnabled ?? ModuleEnablementService.IsModuleEnabled;
+    }
+
     public override IEnumerable<ListItem> BuildCommands()
     {
         var module = SettingsWindow.EnvironmentVariables;
         var title = module.ModuleDisplayName();
         var icon = module.ModuleIcon();
 
-        if (ModuleEnablementService.IsModuleEnabled(module))
+        if (_isModuleEnabled(module))
         {
             yield return new ListItem(new OpenEnvironmentVariablesCommand() { Id = "com.microsoft.powertoys.environmentVariables.open" })
             {
                 Title = Resources.EnvironmentVariables_Open_Title,
                 Subtitle = Resources.EnvironmentVariables_Open_Subtitle,
                 Icon = icon,
+                MoreCommands = [
+                    new CommandContextItem(new OpenEnvironmentVariablesAdminCommand() { Id = "com.microsoft.powertoys.environmentVariables.openAdmin" })
+                    {
+                        RequestedShortcut = KeyChords.RunAsAdministrator,
+                    },
+                ],
             };
 
             yield return new ListItem(new OpenEnvironmentVariablesAdminCommand() { Id = "com.microsoft.powertoys.environmentVariables.openAdmin" })

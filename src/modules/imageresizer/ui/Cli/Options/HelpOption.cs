@@ -8,11 +8,10 @@ namespace ImageResizer.Cli.Options
 {
     public sealed class HelpOption : Option<bool>
     {
-        private static readonly string[] _aliases = ["--help", "-?", "/?"];
-
         public HelpOption()
-            : base(_aliases, Properties.Resources.CLI_Option_Help)
+            : base("--help", "-?", "/?")
         {
+            Description = Properties.Resources.CLI_Option_Help;
         }
     }
 }

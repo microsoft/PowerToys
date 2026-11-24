@@ -61,6 +61,34 @@ public class ExtensionGalleryServiceTests
     }
 
     [TestMethod]
+    public async Task GalleryHttpClient_ForceRefresh_DoesNotReuseCompletedFetch()
+    {
+        var feedUri = new Uri("https://example.com/extensions.json");
+        var feedBytes = System.Text.Encoding.UTF8.GetBytes(CreateGalleryFeedJson("sample-extension", "Sample extension"));
+
+        // Reusing a completed fetch depends on thread-pool timing, so repeat to make a regression surface reliably.
+        for (var i = 0; i < 50; i++)
+        {
+            var handler = new TestHttpMessageHandler(_ =>
+                CreateHttpResponse(
+                    HttpStatusCode.OK,
+                    feedBytes,
+                    "application/json",
+                    "\"feed-v1\"",
+                    maxAge: TimeSpan.FromHours(1)));
+            using var galleryHttpClient = CreateGalleryHttpClient(CreateTempDirectory("cache"), handler);
+
+            await galleryHttpClient.Cache.GetResourceAsync(feedUri);
+            var cachedResult = await galleryHttpClient.Cache.GetResourceAsync(feedUri);
+            var refreshedResult = await galleryHttpClient.Cache.GetResourceAsync(feedUri, forceRefresh: true);
+
+            Assert.IsTrue(cachedResult.Resource.FromCache);
+            Assert.IsFalse(refreshedResult.Resource.FromCache);
+            Assert.AreEqual(2, handler.CallCount);
+        }
+    }
+
+    [TestMethod]
     public async Task FetchExtensionsAsync_UsesFreshCacheWithoutFallbackWarning()
     {
         var cacheDirectory = CreateTempDirectory("cache");

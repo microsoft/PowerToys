@@ -57,8 +57,8 @@ namespace Peek.UI
         private int _displayIndex;
 
         /// <summary>
-        /// The item to be displayed by a matching previewer. May be null if the user has deleted
-        /// all items.
+        /// The selected item from Explorer or the command line. May be null if the user has
+        /// deleted all items.
         /// </summary>
         [ObservableProperty]
         private IFileSystemItem? _currentItem;
@@ -95,12 +95,6 @@ namespace Peek.UI
         /// </summary>
         private string? _previewedShortcutTargetPath;
 
-        /// <summary>
-        /// Work around missing navigation when peeking from CLI.
-        /// TODO: Implement navigation when peeking from CLI.
-        /// </summary>
-        private bool _isFromCli;
-
         partial void OnCurrentItemChanged(IFileSystemItem? value)
         {
             UpdateShortcutTarget(value);
@@ -131,7 +125,7 @@ namespace Peek.UI
         }
 
         /// <summary>
-        /// Goes back to previewing the item that was selected in File Explorer.
+        /// Goes back to previewing the selected item.
         /// </summary>
         [RelayCommand]
         private void ShowSelectedItem()
@@ -192,7 +186,8 @@ namespace Peek.UI
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(DisplayItemCount))]
-        private NeighboringItems? _items;
+        [NotifyPropertyChangedFor(nameof(HasMultipleItems))]
+        private IReadOnlyList<IFileSystemItem>? _items;
 
         /// <summary>
         /// The number of items selected and available to preview. Decreases as the user deletes
@@ -212,6 +207,13 @@ namespace Peek.UI
                 }
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether more than one item is available for
+        /// navigation, from either Explorer or CLI.
+        /// Controls the visibility of the index/total counter in the title bar.
+        /// </summary>
+        public bool HasMultipleItems => (Items?.Count ?? 0) > 1;
 
         [ObservableProperty]
         private double _scalingFactor = 1.0;
@@ -251,6 +253,10 @@ namespace Peek.UI
         {
             switch (selectedItem)
             {
+                case SelectedItemsByPaths selectedItemsByPaths:
+                    InitializeFromCliPaths(selectedItemsByPaths.Paths);
+                    break;
+
                 case SelectedItemByPath selectedItemByPath:
                     InitializeFromCli(selectedItemByPath.Path);
                     break;
@@ -276,18 +282,30 @@ namespace Peek.UI
             }
 
             _currentIndex = DisplayIndex = 0;
-            _isFromCli = false;
 
             CurrentItem = (Items != null && Items.Count > 0) ? Items[0] : null;
         }
 
         private void InitializeFromCli(string path)
         {
-            // TODO: implement navigation
-            _isFromCli = true;
-            Items = null;
+            InitializeFromCliPaths(new[] { path });
+        }
+
+        private void InitializeFromCliPaths(IReadOnlyList<string> paths)
+        {
             _currentIndex = DisplayIndex = 0;
-            CurrentItem = new FileItem(path, Path.GetFileName(path));
+
+            var items = new List<IFileSystemItem>(paths.Count);
+            foreach (var path in paths)
+            {
+                string name = Path.GetFileName(path);
+                items.Add(Directory.Exists(path)
+                    ? new FolderItem(path, name, path)
+                    : new FileItem(path, name));
+            }
+
+            Items = items;
+            CurrentItem = items.Count > 0 ? items[0] : null;
         }
 
         public void Uninitialize()
@@ -298,7 +316,6 @@ namespace Peek.UI
             Items = null;
             _navigationDirection = NavigationDirection.Forwards;
             IsErrorVisible = false;
-            _isFromCli = false;
         }
 
         public void AttemptPreviousNavigation() => Navigate(NavigationDirection.Backwards);
@@ -308,12 +325,6 @@ namespace Peek.UI
         private void Navigate(NavigationDirection direction, bool isAfterDelete = false)
         {
             if (NavigationThrottleTimer.IsEnabled)
-            {
-                return;
-            }
-
-            // TODO: implement navigation.
-            if (_isFromCli)
             {
                 return;
             }

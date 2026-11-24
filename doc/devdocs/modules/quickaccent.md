@@ -105,6 +105,7 @@ The module includes multiple language-specific character sets and special charac
 - Various language sets for different alphabets and writing systems
 - Special character sets (currency symbols, mathematical notations, etc.)
 - These sets are defined in the core component and can be extended
+- The Settings UI includes a character reference guide for browsing and searching the same character data by language set. Standalone combining marks are displayed with a dotted circle placeholder while preserving the original character when copied.
 
 ### Known Behaviors
 
@@ -129,7 +130,7 @@ tools\build\build.cmd -Path src\modules\poweraccent\PowerAccent.UITests -Platfor
 Run the produced Microsoft Testing Platform executable with the `PowerAccent` category:
 
 ```powershell
-x64\Debug\tests\PowerAccent.UITests\net10.0-windows10.0.26100.0\PowerAccent.UITests.exe `
+x64\Debug\tests\PowerAccent.UITests\net11.0-windows10.0.26100.0\PowerAccent.UITests.exe `
   --filter "TestCategory=PowerAccent"
 ```
 

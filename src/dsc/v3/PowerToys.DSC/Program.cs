@@ -17,13 +17,13 @@ public class Program
     public static async Task<int> Main(string[] args)
     {
         var rootCommand = new RootCommand(Properties.Resources.PowerToysDSC);
-        rootCommand.AddCommand(new GetCommand());
-        rootCommand.AddCommand(new SetCommand());
-        rootCommand.AddCommand(new ExportCommand());
-        rootCommand.AddCommand(new TestCommand());
-        rootCommand.AddCommand(new SchemaCommand());
-        rootCommand.AddCommand(new ManifestCommand());
-        rootCommand.AddCommand(new ModulesCommand());
-        return await rootCommand.InvokeAsync(args);
+        rootCommand.Subcommands.Add(new GetCommand());
+        rootCommand.Subcommands.Add(new SetCommand());
+        rootCommand.Subcommands.Add(new ExportCommand());
+        rootCommand.Subcommands.Add(new TestCommand());
+        rootCommand.Subcommands.Add(new SchemaCommand());
+        rootCommand.Subcommands.Add(new ManifestCommand());
+        rootCommand.Subcommands.Add(new ModulesCommand());
+        return await rootCommand.Parse(args).InvokeAsync();
     }
 }

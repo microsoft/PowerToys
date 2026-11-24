@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -27,6 +28,8 @@ public class ExtensionGalleryViewModelTests
     private static readonly string[] NameOrderIds = ["alpha", "beta", "gamma"];
     private static readonly string[] AuthorOrderIds = ["second", "third", "first"];
     private static readonly string[] InstallationStatusOrderIds = ["update", "installed", "not-installed"];
+
+    private readonly QueuedTaskScheduler _uiScheduler = new();
 
     [TestMethod]
     public async Task LoadAsync_DoesNotBlockOnSlowSynchronousInstalledStatusKickoff()
@@ -64,10 +67,13 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         var loadTask = viewModel.LoadAsync();
-        var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1)));
+        using var timeoutCts = new CancellationTokenSource();
+        var completedTask = await Task.WhenAny(loadTask, Task.Delay(TimeSpan.FromSeconds(1), timeoutCts.Token));
+        timeoutCts.Cancel();
 
         Assert.AreSame(loadTask, completedTask);
         Assert.IsTrue(loadTask.IsCompletedSuccessfully);
@@ -124,7 +130,8 @@ public class ExtensionGalleryViewModelTests
             CreateGalleryExtensionViewModelFactory(winGetService.Object, winGetStatusService.Object),
             winGetService.Object,
             winGetStatusService.Object,
-            winGetOperationTrackerService: null);
+            winGetOperationTrackerService: null,
+            uiScheduler: _uiScheduler);
 
         await viewModel.RefreshCommand.ExecuteAsync(null);
 
@@ -208,10 +215,13 @@ public class ExtensionGalleryViewModelTests
             CreateGalleryExtensionViewModelFactory(winGetService.Object, winGetStatusService.Object),
             winGetService.Object,
             winGetStatusService.Object,
-            winGetOperationTrackerService: null);
+            winGetOperationTrackerService: null,
+            uiScheduler: _uiScheduler);
 
         var refreshTask = viewModel.RefreshCommand.ExecuteAsync(null);
-        var completedTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(1)));
+        using var timeoutCts = new CancellationTokenSource();
+        var completedTask = await Task.WhenAny(refreshTask, Task.Delay(TimeSpan.FromSeconds(1), timeoutCts.Token));
+        timeoutCts.Cancel();
 
         Assert.AreSame(refreshTask, completedTask);
         Assert.IsTrue(refreshTask.IsCompletedSuccessfully);
@@ -230,7 +240,8 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             [],
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
 
@@ -276,7 +287,8 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
 
@@ -318,7 +330,8 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
 
@@ -350,7 +363,8 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
 
@@ -385,7 +399,8 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
 
@@ -399,7 +414,9 @@ public class ExtensionGalleryViewModelTests
     }
 
     [TestMethod]
-    public async Task SortByNameCommand_SortsEntriesByTitle()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task SortByNameCommand_SortsEntriesByTitle(bool refreshBeforeSorting)
     {
         var galleryService = CreateGalleryService(
             CreateGalleryEntry("beta", "Beta Extension", "Contoso B"),
@@ -415,9 +432,16 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
+        await WaitForConditionAsync(() => _uiScheduler.PendingCount > 0);
+
+        if (refreshBeforeSorting)
+        {
+            _uiScheduler.ExecuteAllAvailable();
+        }
 
         CollectionAssert.AreEqual(
             FeaturedOrderIds,
@@ -428,10 +452,18 @@ public class ExtensionGalleryViewModelTests
         CollectionAssert.AreEqual(
             NameOrderIds,
             viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
+
+        _uiScheduler.ExecuteAllAvailable();
+
+        CollectionAssert.AreEqual(
+            NameOrderIds,
+            viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
     }
 
     [TestMethod]
-    public async Task SortByAuthorCommand_SortsEntriesByAuthor()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task SortByAuthorCommand_SortsEntriesByAuthor(bool refreshBeforeSorting)
     {
         var galleryService = CreateGalleryService(
             CreateGalleryEntry("first", "First Extension", "Charlie"),
@@ -447,11 +479,24 @@ public class ExtensionGalleryViewModelTests
             galleryService.Object,
             new[] { extensionService.Object },
             NullLogger<ExtensionGalleryViewModel>.Instance,
-            CreateGalleryExtensionViewModelFactory());
+            CreateGalleryExtensionViewModelFactory(),
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
+        await WaitForConditionAsync(() => _uiScheduler.PendingCount > 0);
+
+        if (refreshBeforeSorting)
+        {
+            _uiScheduler.ExecuteAllAvailable();
+        }
 
         viewModel.SortByAuthorCommand.Execute(null);
+
+        CollectionAssert.AreEqual(
+            AuthorOrderIds,
+            viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
+
+        _uiScheduler.ExecuteAllAvailable();
 
         CollectionAssert.AreEqual(
             AuthorOrderIds,
@@ -459,7 +504,9 @@ public class ExtensionGalleryViewModelTests
     }
 
     [TestMethod]
-    public async Task SortByInstallationStatusCommand_SortsUpdatesBeforeInstalledBeforeNotInstalled()
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task SortByInstallationStatusCommand_SortsUpdatesBeforeInstalledBeforeNotInstalled(bool refreshBeforeSorting)
     {
         var galleryService = CreateGalleryService(
             CreateGalleryEntry(
@@ -514,15 +561,28 @@ public class ExtensionGalleryViewModelTests
             CreateGalleryExtensionViewModelFactory(winGetPackageStatusService: winGetStatusService.Object),
             winGetPackageManagerService: null,
             winGetStatusService.Object,
-            winGetOperationTrackerService: null);
+            winGetOperationTrackerService: null,
+            uiScheduler: _uiScheduler);
 
         await viewModel.LoadAsync();
         await WaitForConditionAsync(() =>
             viewModel.FilteredEntries.Count == 3
             && viewModel.FilteredEntries.Any(entry => entry.Id == "update" && entry.IsUpdateAvailable)
-            && viewModel.FilteredEntries.Any(entry => entry.Id == "not-installed" && entry.IsInstalledStateKnown));
+            && viewModel.FilteredEntries.Any(entry => entry.Id == "not-installed" && entry.IsInstalledStateKnown)
+            && _uiScheduler.PendingCount >= 2);
+
+        if (refreshBeforeSorting)
+        {
+            _uiScheduler.ExecuteAllAvailable();
+        }
 
         viewModel.SortByInstallationStatusCommand.Execute(null);
+
+        CollectionAssert.AreEqual(
+            InstallationStatusOrderIds,
+            viewModel.FilteredEntries.Select(entry => entry.Id).ToArray());
+
+        _uiScheduler.ExecuteAllAvailable();
 
         CollectionAssert.AreEqual(
             InstallationStatusOrderIds,
@@ -604,6 +664,28 @@ public class ExtensionGalleryViewModelTests
             }
 
             await Task.Delay(25);
+        }
+    }
+
+    private sealed class QueuedTaskScheduler : TaskScheduler
+    {
+        private readonly ConcurrentQueue<Task> _tasks = [];
+
+        public int PendingCount => _tasks.Count;
+
+        protected override IEnumerable<Task> GetScheduledTasks() => _tasks.ToArray();
+
+        protected override void QueueTask(Task task) => _tasks.Enqueue(task);
+
+        protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued) => false;
+
+        public void ExecuteAllAvailable()
+        {
+            while (_tasks.TryDequeue(out var task))
+            {
+                TryExecuteTask(task);
+                task.GetAwaiter().GetResult();
+            }
         }
     }
 }

@@ -186,14 +186,13 @@ public class DragWindowTests : UITestBase
             (byte)255,
             alphaWhenShiftHeldFirst,
             "With Shift-to-activate off, a drag started while Shift is held should leave the zones inactive.");
-        Assert.AreEqual(
-            (byte)255,
-            afterShift,
+        string shiftDeactivationMessage =
             "With Shift-to-activate off, holding Shift should deactivate the zones. This regressed once " +
             "before: FancyZones' low-level hook swallows the bare Shift while zones are showing, which " +
             "also hid it from the module's own raw-input handler, so OnKeyDown must record the press " +
             $"itself. (The system still reports Shift held = {shiftReachedTheSystem}, because the key is " +
-            "deliberately kept from the foreground app.)");
+            "deliberately kept from the foreground app.)";
+        Assert.AreEqual((byte)255, afterShift, shiftDeactivationMessage);
     }
 
     /// <summary>

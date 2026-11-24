@@ -9,7 +9,7 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_MeasureTool" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/ScreenRuler.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_MeasureTool" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/ScreenRuler.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToLaunch" Style="{ThemeResource OobeSubtitleStyle}" />

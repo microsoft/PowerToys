@@ -98,6 +98,31 @@ public sealed class ShellMenuTests
     }
 
     [TestMethod]
+    [DataRow("RuntimeId hash doesn't match; the UI may have changed")]
+    [DataRow("""{"code":"internal_error","message":"RuntimeId hash doesn\u0027t match; the UI may have changed"}""")]
+    public void VisibleItemWaitReobservesRuntimeIdentityRaces(string message)
+    {
+        var calls = 0;
+        var expected = Item("Preview", width: 100);
+        var result = ShellMenu.WaitForVisibleMenuItem(
+            () => ++calls == 1 ? throw new AssertFailedException(message) : new[] { expected },
+            "Preview",
+            1_000,
+            StringComparison.Ordinal,
+            1);
+
+        Assert.AreSame(expected, result);
+        Assert.AreEqual(2, calls);
+    }
+
+    [TestMethod]
+    [DataRow("internal_error")]
+    [DataRow("RuntimeId hash computation failed")]
+    [DataRow("the UI may have changed")]
+    public void RuntimeIdentityRetryDoesNotBroadenToUnrelatedErrors(string message) =>
+        Assert.IsFalse(ShellMenu.IsTransientElementException(new AssertFailedException(message)));
+
+    [TestMethod]
     public void SubmenuDiscoveryUsesContentAndOwningProcessNotTheFirstPopup()
     {
         var root = new Session(PowerToysModule.Runner, 1, "Root", 10, "explorer");

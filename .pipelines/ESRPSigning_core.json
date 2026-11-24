@@ -10,14 +10,17 @@
             "PowerToys.ActionRunner.exe",
             "PowerToys.Update.exe",
             "PowerToys.BackgroundActivatorDLL.dll",
+            "BackgroundActivator.winmd",
 
             "PowerToys.exe",
             "PowerToys.FilePreviewCommon.dll",
             "PowerToys.Interop.dll",
+            "PowerToys.Interop.winmd",
             "Tools\\PowerToys.BugReportTool.exe",
             "StylesReportTool\\PowerToys.StylesReportTool.exe",
 
             "CalculatorEngineCommon.dll",
+            "CalculatorEngineCommon.winmd",
             "PowerToys.Common.UI.Controls.dll",
             "PowerToys.ManagedTelemetry.dll",
             "PowerToys.ManagedCommon.dll",
@@ -25,6 +28,7 @@
             "PowerToys.Common.UI.dll",
             "PowerToys.Settings.UI.Lib.dll",
             "PowerToys.GPOWrapper.dll",
+            "PowerToys.GPOWrapper.winmd",
             "PowerToys.GPOWrapperProjection.dll",
             "PowerToys.AllExperiments.dll",
             "LanguageModelProvider.dll",
@@ -53,6 +57,10 @@
             "PowerToys.AdvancedPasteModuleInterface.dll",
             "WinUI3Apps\\PowerToys.AdvancedPaste.exe",
             "WinUI3Apps\\PowerToys.AdvancedPaste.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Core.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Engine.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.exe",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.dll",
 
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",
@@ -111,6 +119,7 @@
             "WinUI3Apps\\PowerToys.Hosts.exe",
 
             "WinUI3Apps\\PowerToys.FileLocksmithLib.Interop.dll",
+            "PowerToys.FileLocksmithLib.Interop.winmd",
             "WinUI3Apps\\PowerToys.FileLocksmithExt.dll",
             "WinUI3Apps\\PowerToys.FileLocksmithUI.exe",
             "WinUI3Apps\\PowerToys.FileLocksmithUI.dll",
@@ -143,6 +152,8 @@
 
             "PowerToys.LightSwitchModuleInterface.dll",
             "LightSwitchService\\PowerToys.LightSwitchService.exe",
+            "PowerToys.LightSwitch.Cli.exe",
+            "PowerToys.LightSwitch.Cli.dll",
 
             "PowerToys.KeyboardManager.dll",
             "KeyboardManagerEditor\\PowerToys.KeyboardManagerEditor.exe",
@@ -179,6 +190,7 @@
 
             "WinUI3Apps\\PowerToys.MeasureToolModuleInterface.dll",
             "WinUI3Apps\\PowerToys.MeasureToolCore.dll",
+            "PowerToys.MeasureToolCore.winmd",
             "WinUI3Apps\\PowerToys.MeasureToolUI.dll",
             "WinUI3Apps\\PowerToys.MeasureToolUI.exe",
 
@@ -194,6 +206,7 @@
             "WinUI3Apps\\PowerToys.MouseJump.WinUI3.exe",
             "PowerToys.MousePointerCrosshairs.dll",
             "PowerToys.CursorWrap.dll",
+            "PowerToys.MouseButtonLock.dll",
 
             "PowerToys.MouseWithoutBorders.dll",
             "PowerToys.MouseWithoutBorders.exe",
@@ -213,6 +226,7 @@
             "WinUI3Apps\\PowerToys.PowerAccent.exe",
             "PowerToys.PowerAccentModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerAccentKeyboardService.dll",
+            "PowerToys.PowerAccentKeyboardService.winmd",
 
             "PowerToys.PowerDisplayModuleInterface.dll",
             "WinUI3Apps\\PowerToys.PowerDisplay.dll",
@@ -226,16 +240,18 @@
 
             "WinUI3Apps\\PowerToys.PowerRenameExt.dll",
             "WinUI3Apps\\PowerToys.PowerRename.exe",
+            "PowerRenameUI.winmd",
             "WinUI3Apps\\PowerToys.PowerRenameContextMenu.dll",
             "WinUI3Apps\\PowerRenameContextMenuPackage.msix",
 
             "PowerToys.WorkspacesSnapshotTool.exe",
             "PowerToys.WorkspacesLauncher.exe",
+            "PowerToys.WorkspacesCLI.exe",
             "PowerToys.WorkspacesWindowArranger.exe",
-            "PowerToys.WorkspacesEditor.exe",
-            "PowerToys.WorkspacesEditor.dll",
-            "PowerToys.WorkspacesLauncherUI.exe",
-            "PowerToys.WorkspacesLauncherUI.dll",
+            "WinUI3Apps\\PowerToys.WorkspacesEditor.exe",
+            "WinUI3Apps\\PowerToys.WorkspacesEditor.dll",
+            "WinUI3Apps\\PowerToys.WorkspacesLauncherUI.exe",
+            "WinUI3Apps\\PowerToys.WorkspacesLauncherUI.dll",
             "PowerToys.WorkspacesModuleInterface.dll",
             "PowerToys.WorkspacesCsharpLibrary.dll",
 
@@ -254,20 +270,23 @@
             "PowerToys.ZoomIt.exe",
             "PowerToys.ZoomItModuleInterface.dll",
             "PowerToys.ZoomItSettingsInterop.dll",
+            "PowerToys.ZoomItSettingsInterop.winmd",
 
             "PowerToys.GrabAndMove.exe",
             "PowerToys.GrabAndMoveModuleInterface.dll",
 
             "WinUI3Apps\\PowerToys.Settings.dll",
             "WinUI3Apps\\PowerToys.Settings.exe",
+            "WinUI3Apps\\PowerToys.Settings.Cli.dll",
+            "WinUI3Apps\\PowerToys.Settings.Cli.exe",
 
             "PowerToys.CmdPalModuleInterface.dll",
-            "CmdPalKeyboardService.dll",
             "PowerToys.ModuleContracts.dll",
             "Awake.ModuleServices.dll",
             "ColorPicker.ModuleServices.dll",
             "Workspaces.ModuleServices.dll",
             "Microsoft.CommandPalette.Extensions.dll",
+            "Microsoft.CommandPalette.Extensions.winmd",
             "Microsoft.CommandPalette.Extensions.Toolkit.dll",
             "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.dll",
             "WinUI3Apps\\Microsoft.CmdPal.Ext.PowerToys.exe",
@@ -320,6 +339,7 @@
         },
         {
             "MatchedPath": [
+                "SkiaSharp.Views.WinUI.Native.winmd",
                 "ModernWpf.dll",
                 "ModernWpf.Controls.dll", 
                 "System.IO.Abstractions.dll", 
@@ -393,11 +413,6 @@
                 "WinUI3Apps\\Google.Apis.Core.dll",
                 "WinUI3Apps\\Google.GenAI.dll",
                 "WinUI3Apps\\YamlDotNet.dll",
-
-                "boost_regex-vc143-mt-gd-x32-1_87.dll",
-                "boost_regex-vc143-mt-gd-x64-1_87.dll",
-                "boost_regex-vc143-mt-x32-1_87.dll",
-                "boost_regex-vc143-mt-x64-1_87.dll",
 
                 "Microsoft.ML.OnnxRuntime.dll",
 

@@ -13,6 +13,8 @@ namespace PowerDisplay.Models
     /// </summary>
     public class PowerDisplayProfile
     {
+        private readonly List<ProfileMonitorSetting> _monitorSettings = new();
+
         [JsonPropertyName("name")]
         public string Name { get; set; }
 
@@ -20,7 +22,11 @@ namespace PowerDisplay.Models
         public int Id { get; set; }
 
         [JsonPropertyName("monitorSettings")]
-        public List<ProfileMonitorSetting> MonitorSettings { get; set; }
+        public List<ProfileMonitorSetting> MonitorSettings
+        {
+            get => _monitorSettings;
+            init => _monitorSettings = value ?? new();
+        }
 
         [JsonPropertyName("createdDate")]
         public DateTime CreatedDate { get; set; }
@@ -31,7 +37,6 @@ namespace PowerDisplay.Models
         public PowerDisplayProfile()
         {
             Name = string.Empty;
-            MonitorSettings = new List<ProfileMonitorSetting>();
             CreatedDate = DateTime.UtcNow;
             LastModified = DateTime.UtcNow;
         }

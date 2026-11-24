@@ -220,7 +220,7 @@ named modules and **disables every other one**, so the runner boots only what yo
 // All five ScreenRuler test classes do this; ColorPicker too. The key is the settings.json
 // "enabled" name (note spaces, e.g. "Measure Tool", "PowerToys Run") — see the enabled section of
 // %LocalAppData%\Microsoft\PowerToys\settings.json or ModuleConfigData.
-public MyTests() : base(PowerToysModule.PowerToysSettings, enableModules: new[] { "Measure Tool" }) { }
+public MyTests() : base(PowerToysModule.PowerToysSettings, enableModules: ["Measure Tool"]) { }
 ```
 
 Why it's worth doing on every per-module suite:
@@ -694,7 +694,7 @@ swallow in `FancyZones.cpp::OnKeyDown`.
     `TryKillProcessTreeByNameAndWait` per scenario (Recipe 14).
 23. **Foreground activation is best-effort across integrity levels.** An elevated visible helper
     console can permanently block a non-elevated target. Log `GetForegroundWindowInfo()` and fix the
-    environment (for example launch shared WinAppDriver hidden), rather than adding infinite retries.
+    environment (for example launch prerequisite helpers hidden), rather than adding infinite retries.
 24. **Explorer UIA is not the Shell selection authority.** Title readiness and visible file rows do
     not prove the exact selected set or focused item. Use `ExplorerShell` (Recipe 13).
 25. **`PrintWindow` is not a composed-content oracle.** WinUI/WebView2 can render correctly on video

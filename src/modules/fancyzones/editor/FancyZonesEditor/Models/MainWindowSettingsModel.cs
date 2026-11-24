@@ -45,45 +45,44 @@ namespace FancyZonesEditor
 
         public MainWindowSettingsModel()
         {
+            var templates = CreateDefaultTemplateModels();
+            foreach (var model in templates)
+            {
+                model.InitTemplateZones();
+                TemplateModels.Insert((int)model.Type, model);
+            }
+
+            DefaultLayouts.Set(templates[(int)LayoutType.Rows], MonitorConfigurationType.Vertical);
+            DefaultLayouts.Set(templates[(int)LayoutType.PriorityGrid], MonitorConfigurationType.Horizontal);
+        }
+
+        internal static LayoutModel[] CreateDefaultTemplateModels()
+        {
             // Initialize default layout models: Blank, Focus, Columns, Rows, Grid, and PriorityGrid
             var blankModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Blank, LayoutType.Blank)
             {
                 TemplateZoneCount = 0,
                 SensitivityRadius = 0,
             };
-            TemplateModels.Insert((int)LayoutType.Blank, blankModel);
-
             var focusModel = new CanvasLayoutModel(Properties.Resources.Template_Layout_Focus, LayoutType.Focus);
-            focusModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Focus, focusModel);
 
             var columnsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Columns, LayoutType.Columns)
             {
                 Rows = 1,
-                RowPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
-            columnsModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Columns, columnsModel);
+            columnsModel.RowPercents.Add(GridLayoutModel.GridMultiplier);
 
             var rowsModel = new GridLayoutModel(Properties.Resources.Template_Layout_Rows, LayoutType.Rows)
             {
                 Columns = 1,
-                ColumnPercents = new List<int>(1) { GridLayoutModel.GridMultiplier },
             };
-            rowsModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Rows, rowsModel);
+            rowsModel.ColumnPercents.Add(GridLayoutModel.GridMultiplier);
 
             var gridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Grid, LayoutType.Grid);
-            gridModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.Grid, gridModel);
 
             var priorityGridModel = new GridLayoutModel(Properties.Resources.Template_Layout_Priority_Grid, LayoutType.PriorityGrid);
-            priorityGridModel.InitTemplateZones();
-            TemplateModels.Insert((int)LayoutType.PriorityGrid, priorityGridModel);
 
-            // set default layouts
-            DefaultLayouts.Set(rowsModel, MonitorConfigurationType.Vertical);
-            DefaultLayouts.Set(priorityGridModel, MonitorConfigurationType.Horizontal);
+            return [blankModel, focusModel, columnsModel, rowsModel, gridModel, priorityGridModel];
         }
 
         // IsShiftKeyPressed - is the shift key currently being held down
@@ -136,37 +135,28 @@ namespace FancyZonesEditor
 
         public static IList<LayoutModel> TemplateModels { get; } = new List<LayoutModel>(6);
 
-        public static ObservableCollection<LayoutModel> CustomModels
+        public static ObservableCollection<LayoutModel> CustomModels { get; } = new ObservableCollection<LayoutModel>();
+
+        public static void SetCustomModels(IEnumerable<LayoutModel> models)
         {
-            get
+            foreach (LayoutModel model in CustomModels)
             {
-                return _customModels;
+                LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
             }
 
-            set
+            CustomModels.Clear();
+            foreach (LayoutModel model in models)
             {
-                foreach (LayoutModel model in _customModels)
-                {
-                    LayoutHotkeys.PropertyChanged -= model.LayoutHotkeys_PropertyChanged;
-                }
-
-                _customModels.Clear();
-                _customModels = value;
-
-                foreach (LayoutModel model in _customModels)
-                {
-                    LayoutHotkeys.PropertyChanged += model.LayoutHotkeys_PropertyChanged;
-                }
+                CustomModels.Add(model);
+                LayoutHotkeys.PropertyChanged += model.LayoutHotkeys_PropertyChanged;
             }
         }
-
-        private static ObservableCollection<LayoutModel> _customModels = new ObservableCollection<LayoutModel>();
 
         public static int CustomModelsCount
         {
             get
             {
-                return _customModels.Count;
+                return CustomModels.Count;
             }
         }
 

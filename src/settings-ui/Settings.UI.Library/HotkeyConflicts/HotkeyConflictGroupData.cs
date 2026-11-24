@@ -18,6 +18,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library.HotkeyConflicts
 
         public bool ShouldShowSysConflict => !ConflictIgnored && IsSystemConflict;
 
-        public List<ModuleHotkeyData> Modules { get; set; }
+        public List<ModuleHotkeyData> Modules { get; init; }
     }
 }

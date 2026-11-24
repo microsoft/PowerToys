@@ -49,7 +49,7 @@
             x:Name="TitleBarControl"
             Grid.Row="0"
             FileIndex="{x:Bind ViewModel.DisplayIndex, Mode=OneWay}"
-            IsMultiSelection="{x:Bind ViewModel.NeighboringItemsQuery.IsMultipleFilesActivation, Mode=OneWay}"
+            IsMultiSelection="{x:Bind ViewModel.HasMultipleItems, Mode=OneWay}"
             IsPreviewingShortcutTarget="{x:Bind ViewModel.IsPreviewingShortcutTarget, Mode=OneWay}"
             Item="{x:Bind ViewModel.PreviewItem, Mode=OneWay}"
             NumberOfFiles="{x:Bind ViewModel.DisplayItemCount, Mode=OneWay}"

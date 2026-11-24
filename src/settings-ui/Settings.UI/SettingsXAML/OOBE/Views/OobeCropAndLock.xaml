@@ -8,7 +8,7 @@
     xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     mc:Ignorable="d">
 
-    <controls:OOBEPageControl x:Uid="Oobe_CropAndLock" HeroImage="ms-appx:///Assets/Settings/Modules/OOBE/CropAndLock.gif">
+    <controls:OOBEPageControl x:Uid="Oobe_CropAndLock" HeroVideo="ms-appx:///Assets/Settings/Modules/OOBE/CropAndLock.mp4">
         <controls:OOBEPageControl.PageContent>
             <StackPanel Orientation="Vertical" Spacing="12">
                 <TextBlock x:Uid="Oobe_HowToUse" Style="{ThemeResource OobeSubtitleStyle}" />

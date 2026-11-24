@@ -20,6 +20,8 @@ namespace Microsoft.CmdPal.UI.Controls;
 public sealed partial class FiltersDropDown : UserControl,
     ICurrentPageAware
 {
+    public event EventHandler? FocusSearchRequested;
+
     private bool _isDropDownOpen;
     private string? _pendingSearchText;
     private IFilterItemViewModel[] _allItems = [];
@@ -334,6 +336,9 @@ public sealed partial class FiltersDropDown : UserControl,
     {
         _isDropDownOpen = true;
 
+        // Let the search box handle Alt+F while the flyout is open.
+        FilterDropDownButton.AccessKey = string.Empty;
+
         FilterSearchBox.Text = _pendingSearchText ?? string.Empty;
         FilterSearchBox.SelectionStart = FilterSearchBox.Text.Length;
         _pendingSearchText = null;
@@ -345,6 +350,7 @@ public sealed partial class FiltersDropDown : UserControl,
     private void FilterFlyout_Closed(object sender, object e)
     {
         _isDropDownOpen = false;
+        FilterDropDownButton.AccessKey = "F";
         _pendingSearchText = null;
         FilterSearchBox.Text = string.Empty;
     }
@@ -386,7 +392,7 @@ public sealed partial class FiltersDropDown : UserControl,
             FilterFlyout.Hide();
         }
 
-        WeakReferenceMessenger.Default.Send<FocusSearchBoxMessage>();
+        FocusSearchRequested?.Invoke(this, EventArgs.Empty);
     }
 
     /// <summary>

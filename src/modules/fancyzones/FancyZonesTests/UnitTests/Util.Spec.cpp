@@ -347,6 +347,87 @@ namespace FancyZonesUnitTests
             const auto actual = HexToRGB(L"zzz");
             Assert::AreEqual(expected, actual);
         }
+
+        TEST_METHOD (TestHexToRGB_nonNullTerminatedInput)
+        {
+            // Regression test for passing wstring_view::data() to std::stoll:
+            // the view must be the only input, characters past its end must be ignored.
+            const std::wstring buffer = L"A3F6FF1234";
+            const std::wstring_view hex{ buffer.data(), 6 }; // "A3F6FF", not null-terminated
+            const auto expected = RGB(163, 246, 255);
+            const auto actual = HexToRGB(hex);
+            Assert::AreEqual(expected, actual);
+        }
+    };
+
+    TEST_CLASS (PickNextLayoutIdUnitTests)
+    {
+        const GUID m_id1 = GuidFromString(L"{10000000-0000-0000-0000-000000000001}").value();
+        const GUID m_id2 = GuidFromString(L"{20000000-0000-0000-0000-000000000002}").value();
+        const GUID m_id3 = GuidFromString(L"{30000000-0000-0000-0000-000000000003}").value();
+        const GUID m_unknownId = GuidFromString(L"{40000000-0000-0000-0000-000000000004}").value();
+        const std::vector<GUID> m_ids = { m_id1, m_id2, m_id3 };
+
+        TEST_METHOD (Forward)
+        {
+            const auto actual = PickNextLayoutId(m_ids, m_id1, false);
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(m_id2 == actual.value());
+        }
+
+        TEST_METHOD (ForwardWrapsAround)
+        {
+            const auto actual = PickNextLayoutId(m_ids, m_id3, false);
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(m_id1 == actual.value());
+        }
+
+        TEST_METHOD (Reverse)
+        {
+            const auto actual = PickNextLayoutId(m_ids, m_id2, true);
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(m_id1 == actual.value());
+        }
+
+        TEST_METHOD (ReverseWrapsAround)
+        {
+            const auto actual = PickNextLayoutId(m_ids, m_id1, true);
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(m_id3 == actual.value());
+        }
+
+        TEST_METHOD (CurrentNotInList)
+        {
+            const auto actual = PickNextLayoutId(m_ids, m_unknownId, false);
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(m_id1 == actual.value());
+        }
+
+        TEST_METHOD (CurrentNotInListReverse)
+        {
+            const auto actual = PickNextLayoutId(m_ids, m_unknownId, true);
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(m_id3 == actual.value());
+        }
+
+        TEST_METHOD (NoCurrent)
+        {
+            const auto actual = PickNextLayoutId(m_ids, std::nullopt, false);
+            Assert::IsTrue(actual.has_value());
+            Assert::IsTrue(m_id1 == actual.value());
+        }
+
+        TEST_METHOD (EmptyList)
+        {
+            const auto actual = PickNextLayoutId({}, m_id1, false);
+            Assert::IsFalse(actual.has_value());
+        }
+
+        TEST_METHOD (SingleLayout)
+        {
+            const auto actual = PickNextLayoutId({ m_id1 }, m_id1, false);
+            Assert::IsFalse(actual.has_value());
+        }
     };
 }
 

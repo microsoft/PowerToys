@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
 
 namespace Microsoft.LightSwitch.UITests;
 
@@ -135,7 +136,7 @@ internal sealed class TestHelper
         WaitForSetting("changeApps", apps);
     }
 
-    public void SendShortcut()
+    public void SendShortcut(bool expectThemeChange = true)
     {
         var keys = ReadShortcut();
         RequireForeground();
@@ -149,24 +150,26 @@ internal sealed class TestHelper
             pollIntervalMS: 250);
         Assert.IsTrue(received.Succeeded, $"The Runner did not acknowledge the single shortcut. Foreground: {WindowControl.GetForegroundWindowInfo()}. New LightSwitch logs:\n{received.LastObservation}");
 
-        // ThemeHelper.cpp sends several synchronous HWND_BROADCAST messages, each allowing 5s per
-        // recipient window. The 120s completion budget covers those serial waits on busy desktops;
-        // hotkey acknowledgement is separate, and this wait never resends the toggle chord.
-        var completed = WaitHelper.WaitForStable(
-            () => logs.ReadNew(),
-            text => text!.Contains("[Light Switch] Manual override event set", StringComparison.Ordinal),
-            timeoutMS: 120_000,
-            pollIntervalMS: 250);
-        Assert.IsTrue(completed.Succeeded, $"The Runner did not finish applying the single theme-toggle chord. New LightSwitch logs:\n{completed.LastObservation}");
+        if (!expectThemeChange)
+        {
+            // The service owns the queued toggle. Confirm it processed the no-target request
+            // before checking that the theme stayed unchanged; never resend the chord.
+            var completed = WaitHelper.WaitForStable(
+                () => logs.ReadNew(),
+                text => text!.Contains("[LightSwitchService] Toggle failed: No theme targets are enabled in Light Switch settings.", StringComparison.Ordinal),
+                timeoutMS: 120_000,
+                pollIntervalMS: 250);
+            Assert.IsTrue(completed.Succeeded, $"The service did not reject the no-target shortcut. New LightSwitch logs:\n{completed.LastObservation}");
+        }
     }
 
-    public void WaitForTheme(ThemeState expected)
+    public void WaitForTheme(ThemeState expected, int timeoutMS = 30_000)
     {
         Step($"Waiting for HKCU theme state {expected}");
         var result = WaitHelper.WaitForStable(
             TestState.ReadTheme,
             theme => theme == expected,
-            timeoutMS: 30_000,
+            timeoutMS: timeoutMS,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 250);
         Assert.IsTrue(result.Succeeded, $"Expected HKCU theme {expected}, observed {result.LastObservation}.");
@@ -174,7 +177,7 @@ internal sealed class TestHelper
 
     public void AssertThemeUnchanged(ThemeState expected)
     {
-        Step($"Verifying both themes remain {expected} throughout five seconds after the acknowledged shortcut");
+        Step($"Verifying both themes remain {expected} throughout five seconds after the service rejected the no-target shortcut");
         var watch = Stopwatch.StartNew();
         do
         {
@@ -189,14 +192,29 @@ internal sealed class TestHelper
     {
         Step($"Opening {pickerId}");
         scheduleUpdate = new LogCursor();
-        FindDescendant<Button>(pickerId, "Button").Invoke(msPostAction: 0);
-        var minute = ui.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);
-        Step($"Moving the minute selection in {pickerId}");
         RequireForeground();
-        minute.Focus();
+        FindDescendant<Button>(pickerId, "Button").Invoke(msPostAction: 0);
+        var flyout = WindowsFinder.WaitForPopupContaining(
+            window.ProcessId,
+            By.AccessibilityId("MinuteLoopingSelector"),
+            timeoutMS: 10_000);
+        Assert.IsNotNull(flyout, $"The {pickerId} time picker did not expose its popup window.");
+        var minute = flyout.Find(By.AccessibilityId("MinuteLoopingSelector"), 10_000);
+        Step($"Moving the minute selection in {pickerId}");
+        Assert.IsTrue(
+            WindowControl.WaitForForeground(new IntPtr(flyout.WindowHandle), 5_000, 2),
+            $"The {pickerId} time picker could not gain foreground. Current foreground: {WindowControl.GetForegroundWindowInfo()}.");
+        minute.Click(msPostAction: 0);
         KeyboardHelper.SendKeys(Key.Up);
-        ui.Find<Button>(By.AccessibilityId("AcceptButton"), 10_000).Invoke(msPostAction: 0);
-        Assert.IsTrue(minute.WaitForGone(10_000), "The time picker flyout did not close after accepting.");
+        flyout.Find<Button>(By.AccessibilityId("AcceptButton"), 10_000).Invoke(msPostAction: 0);
+        var closed = WaitHelper.WaitForStable(
+            () => WindowControl.EnumerateProcessWindows([window.ProcessId])
+                .Any(candidate => candidate.Hwnd.ToInt64() == flyout.WindowHandle && candidate.IsVisible),
+            visible => !visible,
+            timeoutMS: 10_000,
+            requiredConsecutiveMatches: 2,
+            pollIntervalMS: 100);
+        Assert.IsTrue(closed.Succeeded, "The time picker flyout did not close after accepting.");
     }
 
     public int WaitForChangedTime(string name, int previous)
@@ -235,7 +253,7 @@ internal sealed class TestHelper
 
     public TimelineState WaitForPersistedTimeline()
     {
-        WaitForScheduleReload();
+        WaitForSettingsChangeNotification();
         int light = ReadSetting<int>("lightTime");
         int dark = ReadSetting<int>("darkTime");
         Assert.IsTrue(light is >= 0 and < 1440 && dark is >= 0 and < 1440 && light != dark, $"Sun times must be distinct valid minutes: {light}/{dark}.");
@@ -244,7 +262,7 @@ internal sealed class TestHelper
 
     public void WaitForScheduledTheme()
     {
-        WaitForScheduleReload();
+        WaitForSettingsChangeNotification();
         string mode = ReadSetting<string>("scheduleMode");
         Assert.IsTrue(mode is "FixedHours" or "SunsetToSunrise", "This check requires an active time schedule.");
         int light = ReadSetting<int>("lightTime") + (mode == "SunsetToSunrise" ? ReadSetting<int>("sunrise_offset") : 0);
@@ -267,6 +285,9 @@ internal sealed class TestHelper
     public void OpenLocation()
     {
         Step("Opening the location dialog");
+
+        // Windows requires foreground ownership when requesting location consent.
+        RequireForeground();
         ui.Find<Button>(By.AccessibilityId("SetLocationButton_LightSwitch")).Invoke(msPostAction: 0);
         var ready = WaitHelper.WaitForStable(
             () =>
@@ -307,8 +328,15 @@ internal sealed class TestHelper
     public void DetectLocation()
     {
         Step("Requesting the real Windows geolocation provider");
+        RequireForeground();
         var sync = ui.Find<Button>(By.AccessibilityId("SyncLocationButton_LightSwitch"));
-        Assert.AreEqual("true", sync.GetProperty("IsEnabled").ToLowerInvariant(), $"Geolocation prerequisite unavailable: {ReadLocationError()}. Enable Windows location services and provide a location source; manual coordinates are not a substitute for this test.");
+        if (!sync.GetProperty("IsEnabled").Equals("true", StringComparison.OrdinalIgnoreCase))
+        {
+            // Settings disables the button when Windows reports no location provider (for example ARM64 CI VMs).
+            // Manual coordinates are not a substitute, so report the prerequisite instead of passing or failing.
+            Assert.Inconclusive($"Geolocation prerequisite unavailable: {ReadLocationError()}. Enable Windows location services and provide a location source.");
+        }
+
         sync.Invoke(msPostAction: 0);
         var result = WaitHelper.WaitForStable(
             () => (Ready: sync.GetProperty("IsEnabled"), Error: ReadLocationError(), Times: HasSunTimes()),
@@ -397,6 +425,21 @@ internal sealed class TestHelper
         context.AddResultFile(prefix + "-settings.json");
         File.WriteAllText(prefix + "-state.txt", $"Theme: {TestState.ReadTheme()}\nService PIDs: {string.Join(", ", ObserveService())}\nForeground: {WindowControl.GetForegroundWindowInfo()}");
         context.AddResultFile(prefix + "-state.txt");
+
+        const string ConsentPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\location";
+        const string PolicyPath = @"HKEY_LOCAL_MACHINE\SOFTWARE\Policies\Microsoft\Windows\LocationAndSensors";
+        var locationState = new
+        {
+            MachineConsent = Registry.GetValue($@"HKEY_LOCAL_MACHINE\{ConsentPath}", "Value", null),
+            UserConsent = Registry.GetValue($@"HKEY_CURRENT_USER\{ConsentPath}", "Value", null),
+            DesktopConsent = Registry.GetValue($@"HKEY_CURRENT_USER\{ConsentPath}\NonPackaged", "Value", null),
+            ServiceEnabled = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lfsvc\Service\Configuration", "Status", null),
+            ServiceStart = Registry.GetValue(@"HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\lfsvc", "Start", null),
+            PolicyDisableLocation = Registry.GetValue(PolicyPath, "DisableLocation", null),
+            PolicyDisableProvider = Registry.GetValue(PolicyPath, "DisableWindowsLocationProvider", null),
+        };
+        File.WriteAllText(prefix + "-location.json", JsonSerializer.Serialize(locationState));
+        context.AddResultFile(prefix + "-location.json");
     }
 
     private void SetCheck(string id, bool expected)
@@ -415,10 +458,10 @@ internal sealed class TestHelper
 
     private void RequireForeground()
     {
-        Step("Establishing foreground ownership for physical keyboard input");
+        Step("Establishing Settings foreground ownership");
         Assert.IsTrue(
             WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), 10_000, requiredConsecutiveMatches: 3),
-            $"Settings must own foreground before SendInput. Observed {WindowControl.GetForegroundWindowInfo()}.");
+            $"Settings must own foreground for this interaction. Observed {WindowControl.GetForegroundWindowInfo()}.");
     }
 
     private T FindDescendant<T>(string parentId, string type)
@@ -459,17 +502,20 @@ internal sealed class TestHelper
         }
     }
 
-    private void WaitForScheduleReload()
+    private void WaitForSettingsChangeNotification()
     {
         Assert.IsNotNull(scheduleUpdate, "A real Settings edit must precede the native scheduling check.");
-        Step("Waiting for the LightSwitch service's debounced settings reload");
+        Step("Waiting for the LightSwitch service's debounced settings change notification");
+
+        // This marker confirms notification only. The subsequent theme checks
+        // wait for the worker to apply the changed schedule.
         var result = WaitHelper.WaitForStable(
             () => scheduleUpdate.ReadNew(),
-            text => text!.Contains("[LightSwitchSettings] Settings file stabilized, reloading.", StringComparison.Ordinal),
+            text => text!.Contains("[LightSwitchSettings] Settings file stabilized, notifying worker.", StringComparison.Ordinal),
             timeoutMS: 20_000,
             pollIntervalMS: 250);
-        Assert.IsTrue(result.Succeeded, $"The service did not reload the changed schedule. New logs:\n{result.LastObservation}");
-        Assert.HasCount(1, ObserveService(), "The native scheduler must remain alive after loading settings.");
+        Assert.IsTrue(result.Succeeded, $"The service did not notify its worker about the changed schedule. New logs:\n{result.LastObservation}");
+        Assert.HasCount(1, ObserveService(), "The native scheduler must remain alive after the settings change notification.");
     }
 
     private bool HasSunTimes()

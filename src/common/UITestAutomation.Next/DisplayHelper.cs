@@ -21,12 +21,14 @@ public static class DisplayHelper
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     private static extern int ChangeDisplaySettings(ref DEVMODE lpDevMode, int dwflags);
 
+#pragma warning disable SA1310 // Field names should not contain underscore - Win32 constant names
     private const int ENUM_CURRENT_SETTINGS = -1;
     private const int CDS_TEST = 0x00000002;
     private const int CDS_UPDATEREGISTRY = 0x00000001;
     private const int DISP_CHANGE_SUCCESSFUL = 0;
     private const int DM_PELSWIDTH = 0x00080000;
     private const int DM_PELSHEIGHT = 0x00100000;
+#pragma warning restore SA1310
 
     /// <summary>
     /// Pin the primary display to <paramref name="width"/> x <paramref name="height"/>. No-op when
@@ -65,7 +67,8 @@ public static class DisplayHelper
 
             if (ChangeDisplaySettings(ref devMode, CDS_TEST) == DISP_CHANGE_SUCCESSFUL)
             {
-                ChangeDisplaySettings(ref devMode, CDS_UPDATEREGISTRY);
+                // Best-effort: a failed mode change leaves the agent at its current resolution.
+                _ = ChangeDisplaySettings(ref devMode, CDS_UPDATEREGISTRY);
             }
         }
         catch

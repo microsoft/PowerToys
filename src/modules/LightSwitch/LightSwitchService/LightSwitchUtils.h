@@ -1,5 +1,4 @@
 ﻿#pragma once
-#include <windows.h>
 
 constexpr bool ShouldBeLight(int nowMinutes, int lightTime, int darkTime)
 {
@@ -14,11 +13,4 @@ constexpr bool ShouldBeLight(int nowMinutes, int lightTime, int darkTime)
 
     // Case 2: Wrap-around range, e.g. light mode starts in the evening and dark mode starts in the morning
     return normalizedNowMinutes >= normalizedLightTime || normalizedNowMinutes < normalizedDarkTime;
-}
-
-inline int GetNowMinutes()
-{
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    return st.wHour * 60 + st.wMinute;
 }

@@ -4,6 +4,19 @@ Param(
     [string]$platform
 )
 
+$ErrorActionPreference = 'Stop'
+$originalWxs = @{}
+trap {
+    foreach ($path in $originalWxs.Keys) {
+        [IO.File]::WriteAllBytes($path, $originalWxs[$path])
+    }
+    throw $_
+}
+
+. "$PSScriptRoot\InstallerMedia.ps1"
+$fileListRoots = @{}
+$installerFiles = [Collections.Generic.List[object]]::new()
+
 Function Generate-FileList() {
     [CmdletBinding()]
     Param(
@@ -33,7 +46,7 @@ Function Generate-FileList() {
     # Without them GetReadyState() reports NotReady and EnsureReadyAsync() fails with
     # RO_E_METADATA_NAME_NOT_FOUND (0x8000000F). The build already emits them into the app output
     # (e.g. WinUI3Apps); they were previously dropped here because the harvest didn't include them.
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml", "*.winmd")
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.mp4", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml", "*.winmd")
 
     # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
@@ -78,8 +91,9 @@ Function Generate-FileList() {
     }
 
     $fileList = Get-ChildItem $fileDepsRoot -Include $fileInclusionList -Exclude $fileExclusionList -File -Name
+    $fileListRoots[$fileListName] = $fileDepsRoot
 
-    $fileWxs = $fileWxs -replace "(<\?define $($fileListName)=)", "<?define $fileListName=$($fileList -join ';')"
+    $fileWxs = $fileWxs -replace "<\?define $([regex]::Escape($fileListName))=.*?\?>", "<?define $fileListName=$($fileList -join ';')?>"
 
     Set-Content -Path $wxsFilePath -Value $fileWxs
 }
@@ -125,6 +139,12 @@ Function Generate-FileComponents() {
         $fileTmp = $file -replace "-", "_"
         $fileTmp = $fileTmp -replace "[^A-Za-z0-9_.]", "_"
         if ($fileTmp -match "^[^A-Za-z_]") { $fileTmp = "_$fileTmp" }
+        $installerFiles.Add([pscustomobject]@{
+            Id = "$($fileListName)_File_$($fileTmp)"
+            Component = $componentId
+            SourcePath = Join-Path $fileListRoots[$fileListName] $file
+            WxsPath = $wxsFilePath
+        })
         $componentDefs +=
     @"
               <File Id="$($fileListName)_File_$($fileTmp)" Source="`$(var.$($fileListName)Path)\$($file)" />`r`n
@@ -146,6 +166,11 @@ Function Generate-FileComponents() {
     $wxsFile = $wxsFile -replace "\s+(</ComponentGroup>)", "$componentRef`r`n    </ComponentGroup>"
 
     Set-Content -Path $wxsFilePath -Value $wxsFile
+}
+
+# A failed harvest never reaches the MSI post-build template restore.
+foreach ($file in (Get-ChildItem -LiteralPath $PSScriptRoot -Filter '*.wxs' -File)) {
+    $originalWxs[$file.FullName] = [IO.File]::ReadAllBytes($file.FullName)
 }
 
 if ($platform -ceq "arm64") {
@@ -181,68 +206,50 @@ $baseAppWxs = $baseAppWxs -replace ';"', '"'
 Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
+# Light Switch CLI translations can arrive after the English resources. Harvest only
+# available satellites, including System.CommandLine's neutral language directories.
+$resourcesWxsPath = Join-Path $PSScriptRoot 'Resources.wxs'
+$resourcesWxs = Get-Content -LiteralPath $resourcesWxsPath -Raw
+$localizedLanguages = [regex]::Match($resourcesWxs, '<\?define LocLanguageList\s*=\s*([^?]+)\?>').Groups[1].Value.Trim().Split(';')
+$releaseDirectory = Join-Path $PSScriptRoot "..\..\$platform\Release"
+$cliSatellites = foreach ($assembly in @('PowerToys.LightSwitch.Cli.resources.dll', 'System.CommandLine.resources.dll')) {
+    Get-ChildItem -Path (Join-Path $releaseDirectory "*\$assembly") -File -ErrorAction SilentlyContinue
+}
+$resourceDirectories = ''
+$resourceComponents = ''
+foreach ($culture in ($cliSatellites | Group-Object { $_.Directory.Name } | Sort-Object Name)) {
+    $language = $culture.Name
+    $idSafeLanguage = $language -replace '-', '_'
+    $directoryId = "Resource$($idSafeLanguage)INSTALLFOLDER"
+    # The existing pipeline-only resource block already declares these directories.
+    $directory = @"
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Directory Id="$directoryId" Name="$language" />
+    </DirectoryRef>
+"@
+    if ($language -in $localizedLanguages) {
+        $directory = "<?ifndef env.IsPipeline?>`r`n$directory`r`n<?endif?>"
+    }
+    $resourceDirectories += "$directory`r`n"
+    foreach ($satellite in $culture.Group) {
+        $componentId = "LightSwitchCli_$($idSafeLanguage)_$($satellite.BaseName)"
+        $resourceComponents += @"
+      <Component Id="$componentId" Directory="$directoryId" Guid="$((New-Guid).ToString().ToUpper())">
+        <RegistryKey Root="`$(var.RegistryScope)" Key="Software\Classes\powertoys\components">
+          <RegistryValue Type="string" Name="$componentId" Value="" KeyPath="yes" />
+        </RegistryKey>
+        <File Id="$($componentId)_File" Source="`$(var.BinDir)$language\$($satellite.Name)" />
+        <RemoveFolder Id="$($componentId)_Folder" Directory="$directoryId" On="uninstall" />
+      </Component>
+"@
+    }
+}
+$resourcesWxs = $resourcesWxs.Replace('<!--LightSwitchCliResourceDirectories-->', $resourceDirectories)
+$resourcesWxs = $resourcesWxs.Replace('<!--LightSwitchCliResourceComponents-->', $resourceComponents)
+Set-Content -LiteralPath $resourcesWxsPath -Value $resourcesWxs
+
 #WinUI3Applications
 Generate-FileList -fileDepsJson "" -fileListName WinUI3ApplicationsFiles -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
-
-# Deduplicate: Remove files from WinUI3Apps that are identical to root (same name + same hash).
-# These will be re-created as plain file copies at install time by CreateWinAppSDKHardlinksCA.
-# (The CA's name is historical: it now uses fs::copy_file rather than CreateHardLinkW to avoid
-# DACL contamination across the shared inode -- see CustomAction.cpp for details.)
-$rootPath = "$PSScriptRoot..\..\..\$platform\Release"
-$winui3Path = "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps"
-$winui3WxsPath = "$PSScriptRoot\WinUI3Applications.wxs"
-$winui3Wxs = Get-Content $winui3WxsPath -Raw
-$manifestPath = Join-Path $winui3Path "hardlinks.txt"
-
-if ($winui3Wxs -match "\<\?define WinUI3ApplicationsFiles=([^?]*)\?\>") {
-    $winui3FileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
-    $hardlinkFiles = @()
-
-    # Read the BaseApplications WXS file list so we only deduplicate files that the MSI
-    # is actually deploying to the install root. If a file was stripped from BaseApplications
-    # by an earlier step (e.g., the ImageResizer leaked-apphost workaround above), the
-    # install-time CA's source would be missing and both copies would disappear.
-    $baseAppsWxs = Get-Content $baseAppWxsPath -Raw
-    $baseAppsFileList = @()
-    if ($baseAppsWxs -match "\<\?define BaseApplicationsFiles=([^?]*)\?\>") {
-        $baseAppsFileList = $matches[1] -split ';' | Where-Object { $_ -ne '' }
-    }
-
-    foreach ($file in $winui3FileList) {
-        # Skip files that were intentionally not deployed to root by the build
-        if ($baseAppsFileList -notcontains $file) { continue }
-
-        $rootFile = Join-Path $rootPath $file
-        $winui3File = Join-Path $winui3Path $file
-        if ((Test-Path $rootFile) -and (Test-Path $winui3File)) {
-            $rootHash = (Get-FileHash $rootFile -Algorithm SHA256).Hash
-            $winui3Hash = (Get-FileHash $winui3File -Algorithm SHA256).Hash
-            if ($rootHash -eq $winui3Hash) {
-                $hardlinkFiles += $file
-            }
-        }
-    }
-
-    if ($hardlinkFiles.Count -gt 0) {
-        # Remove deduplicated files from WinUI3Apps file list
-        $remainingFiles = $winui3FileList | Where-Object { $_ -notin $hardlinkFiles }
-        if ($remainingFiles.Count -eq 0) {
-            # All files are duplicates — keep at least a dummy entry won't be emitted
-            # Generate-FileComponents handles empty defines by producing no <File> entries
-            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=?>"
-        } else {
-            $winui3Wxs = $winui3Wxs -replace "\<\?define WinUI3ApplicationsFiles=[^?]*\?\>", "<?define WinUI3ApplicationsFiles=$($remainingFiles -join ';')?>"
-        }
-        Set-Content -Path $winui3WxsPath -Value $winui3Wxs
-        Write-Host "Deduplicated $($hardlinkFiles.Count) files from WinUI3Apps (will be copied at install time)"
-    }
-
-    # Always write hardlinks.txt (may be empty — CA handles that gracefully)
-    # Write as UTF-8 without BOM so the install-time CA can read it via std::ifstream
-    # + MultiByteToWideChar(CP_UTF8) without dealing with PS-version-dependent default
-    # encodings or a leading BOM.
-    [System.IO.File]::WriteAllLines($manifestPath, [string[]]$hardlinkFiles, (New-Object System.Text.UTF8Encoding($false)))
-}
 
 Generate-FileComponents -fileListName "WinUI3ApplicationsFiles" -wxsFilePath $PSScriptRoot\WinUI3Applications.wxs
 
@@ -440,20 +447,27 @@ Generate-FileComponents -fileListName "ShortcutGuideManifestsFiles" -wxsFilePath
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsModulesFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\OOBE\"
+Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEWelcomeAssetsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Modules\OOBE\Welcome\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2OOBEAssetsFluentIconsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2IconsModelsFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\Icons\Models\"
 Generate-FileList -fileDepsJson "" -fileListName SettingsV2AssetsCmdPalFiles -wxsFilePath $PSScriptRoot\Settings.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Settings\CmdPal\"
 Generate-FileComponents -fileListName "SettingsV2AssetsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2AssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsModulesFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
+Generate-FileComponents -fileListName "SettingsV2OOBEWelcomeAssetsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2AssetsCmdPalFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
-Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Workspaces\"
+# Both Workspaces UIs emit their shared icons under WinUI3Apps. Keep the root assets for legacy relative paths.
+Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Workspaces\"
 Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
+Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesWinUI3ComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Workspaces\"
+Generate-FileComponents -fileListName "WorkspacesImagesWinUI3ComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
 
 #DSC Resources - JSON manifest files in DSCModules subfolder
 Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCModules\"
 Generate-FileComponents -fileListName "DscJsonFiles" -wxsFilePath $PSScriptRoot\DscResources.wxs
+
+Set-InstallerMedia -Files $installerFiles.ToArray() -ProductWxsPath "$PSScriptRoot\Product.wxs" -ManifestPath "$PSScriptRoot\obj\InstallerMedia.json"

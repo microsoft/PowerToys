@@ -5,8 +5,10 @@
 using ManagedCommon;
 using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.Common.Text;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.MainPage;
+using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CommandPalette.Extensions;
 
@@ -17,13 +19,15 @@ namespace Microsoft.CmdPal.UI;
 internal sealed class PowerToysRootPageService : IRootPageService
 {
     private readonly TopLevelCommandManager _tlcManager;
+    private readonly HeartbeatTelemetry _heartbeatTelemetry;
 
     private IExtensionWrapper? _activeExtension;
     private Lazy<MainListPage> _mainListPage;
 
-    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService)
+    public PowerToysRootPageService(TopLevelCommandManager topLevelCommandManager, AliasManager aliasManager, IFuzzyMatcherProvider fuzzyMatcherProvider, ISettingsService settingsService, IAppStateService appStateService, HeartbeatTelemetry heartbeatTelemetry)
     {
         _tlcManager = topLevelCommandManager;
+        _heartbeatTelemetry = heartbeatTelemetry;
 
         _mainListPage = new Lazy<MainListPage>(() =>
         {
@@ -34,6 +38,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
     public async Task PreLoadAsync()
     {
         await _tlcManager.LoadBuiltInProvidersAsync();
+        _heartbeatTelemetry.BuiltInExtensionsLoaded();
     }
 
     public Microsoft.CommandPalette.Extensions.IPage GetRootPage()
@@ -47,6 +52,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
         _tlcManager.LoadExternalProvidersCommand.Execute(null);
 
         await _tlcManager.LoadExternalProvidersCommand.ExecutionTask!;
+        _heartbeatTelemetry.ExternalExtensionsLoaded();
         if (_tlcManager.LoadExternalProvidersCommand.ExecutionTask.Status != TaskStatus.RanToCompletion)
         {
             // TODO: Handle failure case
@@ -59,7 +65,7 @@ internal sealed class PowerToysRootPageService : IRootPageService
         {
             if (context is IListItem listItem)
             {
-                _mainListPage.Value.UpdateHistory(listItem);
+                _mainListPage.Value.UpdateHistory(new InProcObject<IListItem>(listItem));
             }
         }
         catch (Exception ex)

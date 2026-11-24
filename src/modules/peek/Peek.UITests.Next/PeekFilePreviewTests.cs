@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -26,8 +27,10 @@ public class PeekFilePreviewTests : UITestBase
     private const int MaxHotkeyAttempts = 3;
     private const int MaxNavigationAttempts = 3;
     private static readonly IDisposable PeekSettings;
+    private static readonly string[] PeekModules = { "Peek" };
 
     private long explorerWindowHandle;
+    private string? singleFilePreviewDirectory;
     private IReadOnlyList<string> expectedExplorerSelection = Array.Empty<string>();
     private string? expectedExplorerFocusedPath;
 
@@ -37,7 +40,7 @@ public class PeekFilePreviewTests : UITestBase
     private static bool restoreAppsUseLightTheme;
 
     public PeekFilePreviewTests()
-        : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical, enableModules: new[] { "Peek" })
+        : base(PowerToysModule.PowerToysSettings, WindowSize.Small_Vertical, enableModules: PeekModules)
     {
     }
 
@@ -48,15 +51,16 @@ public class PeekFilePreviewTests : UITestBase
         {
             ForcePipelineLightTheme();
 
-            SettingsConfigHelper.UpdateModuleSettings(
-                "Peek",
-                """
+            const string DefaultPeekSettings = """
                 {
                   "name": "Peek",
                   "version": "1.0",
                   "properties": {}
                 }
-                """,
+                """;
+            SettingsConfigHelper.UpdateModuleSettings(
+                "Peek",
+                DefaultPeekSettings,
                 settings =>
                 {
                     var properties = settings["properties"] as JsonObject ?? new JsonObject();
@@ -134,7 +138,12 @@ public class PeekFilePreviewTests : UITestBase
     public async Task CleanupPeekTest()
     {
         await CaptureFailureArtifactsBeforeCleanupAsync(TimeSpan.FromSeconds(2));
-        CloseTestWindows();
+        CloseTestWindows(preservePeekProcess: singleFilePreviewDirectory is null);
+        if (singleFilePreviewDirectory is not null)
+        {
+            Directory.Delete(singleFilePreviewDirectory, recursive: true);
+            singleFilePreviewDirectory = null;
+        }
     }
 
     [TestMethod("Peek.FilePreview.Folder")]
@@ -203,6 +212,32 @@ public class PeekFilePreviewTests : UITestBase
 
         var secondWindow = OpenPeekWindow(secondImagePath);
         AssertBoundsEqual(movedBounds, GetWindowBounds(secondWindow), "when switching images while pinned");
+    }
+
+    [TestMethod("Peek.Explorer.ForegroundRecovery")]
+    public void ExplorerRegainsForegroundWithoutClosingPeek()
+    {
+        var imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+        var peek = OpenPeekWindow(imagePath);
+        var explorer = new IntPtr(explorerWindowHandle);
+        var peekHandle = new IntPtr(peek.WindowHandle);
+        WindowHelper.MoveWindow(explorer, 20, 20);
+        WindowHelper.MoveWindow(peekHandle, 400, 200);
+        Assert.IsTrue(WindowControl.WaitForForeground(peekHandle), "Peek should own foreground before the Explorer recovery.");
+
+        Assert.IsTrue(WindowControl.TryClickExposedCaption(explorer), "Explorer should expose a safe caption for physical activation.");
+
+        // Observe only: another activation or selection write would hide a missed caption click.
+        var restored = WaitHelper.WaitForStable(
+            () => WindowControl.GetForegroundWindowHandle() == explorer ? ExplorerShell.TryGetSelection(explorer) : null,
+            selection => selection is not null && selection.SelectedPaths.SetEquals([imagePath]) &&
+                string.Equals(selection.FocusedPath, imagePath, StringComparison.OrdinalIgnoreCase),
+            ExplorerOpenTimeoutMS,
+            ExplorerSelectionStableSamples);
+        Assert.IsTrue(restored.Succeeded, "The caption click should restore the original Explorer foreground without changing its selection or focused item.");
+        Assert.IsTrue(
+            WindowsFinder.ListByApp(PeekProcessName).Any(window => window.Hwnd == peek.WindowHandle),
+            "Foreground recovery must not close or restart the existing Peek window.");
     }
 
     [TestMethod("Peek.WindowPinning.PinAndReopen")]
@@ -324,7 +359,7 @@ public class PeekFilePreviewTests : UITestBase
 
         var peekWindow = SendPeekHotkeyWithRetry(selectedFiles[2]);
         EnsurePeekWindowInteractive(peekWindow);
-        var expectedNames = selectedFiles.Select(Path.GetFileNameWithoutExtension).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var expectedNames = selectedFiles.Select(path => Path.GetFileNameWithoutExtension(path)).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var visitedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             FileNameFromTitle(peekWindow.WindowTitle, expectedNames),
@@ -406,7 +441,7 @@ public class PeekFilePreviewTests : UITestBase
             });
             TestContext.WriteLine(
                 $"Explorer launch attempt {attempt}/{ExplorerOpenAttempts}: " +
-                $"launcherPid={launchProcess?.Id.ToString() ?? "unknown"}, existingHwnds=[{string.Join(", ", existingHandles)}].");
+                $"launcherPid={launchProcess?.Id.ToString(CultureInfo.InvariantCulture) ?? "unknown"}, existingHwnds=[{string.Join(", ", existingHandles)}].");
 
             var explorerWindow = WindowsFinder.WaitForWindowByApp(
                 "explorer",
@@ -420,6 +455,7 @@ public class PeekFilePreviewTests : UITestBase
             }
 
             var expectedExplorerTitle = Path.GetFileName(Path.GetDirectoryName(normalizedPath));
+            Assert.IsNotNull(expectedExplorerTitle, $"Test asset '{normalizedPath}' has no parent folder for Explorer to open.");
             if (!WaitForExplorerWindowTitle(explorerWindow.WindowHandle, expectedExplorerTitle, ExplorerOpenTimeoutMS))
             {
                 TestContext.WriteLine(
@@ -451,8 +487,8 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         Assert.Fail(
-            $"Explorer did not open for {selectedItemName} after {ExplorerOpenAttempts} launch attempts." +
-            Environment.NewLine + GetActivationDiagnostics("Explorer launch failed"));
+            $"Explorer did not establish its window, folder, foreground and exact selection for {selectedItemName} after {ExplorerOpenAttempts} attempts." +
+            Environment.NewLine + GetActivationDiagnostics("Explorer readiness failed"));
         return null!;
     }
 
@@ -484,14 +520,15 @@ public class PeekFilePreviewTests : UITestBase
         var normalizedPaths = selectedPaths.Select(NormalizePath).ToList();
         var normalizedFocusedPath = NormalizePath(focusedPath);
 
-        Assert.IsTrue(
-            SetAndWaitForExplorerSelection(
-                explorerWindow.WindowHandle,
-                normalizedPaths,
-                normalizedFocusedPath,
-                ExplorerOpenTimeoutMS),
+        bool selectionEstablished = SetAndWaitForExplorerSelection(
+            explorerWindow.WindowHandle,
+            normalizedPaths,
+            normalizedFocusedPath,
+            ExplorerOpenTimeoutMS);
+        string selectionMessage =
             $"Explorer did not establish the expected selection [{string.Join(", ", normalizedPaths.Select(Path.GetFileName))}] " +
-            $"with '{Path.GetFileName(normalizedFocusedPath)}' focused.");
+            $"with '{Path.GetFileName(normalizedFocusedPath)}' focused.";
+        Assert.IsTrue(selectionEstablished, selectionMessage);
 
         explorerWindowHandle = explorerWindow.WindowHandle;
         expectedExplorerSelection = normalizedPaths;
@@ -504,12 +541,40 @@ public class PeekFilePreviewTests : UITestBase
         string focusedPath,
         int timeoutMS)
     {
-        return ExplorerShell.SetSelectionAndWaitForStable(
-            new IntPtr(windowHandle),
+        var timer = Stopwatch.StartNew();
+        var window = new IntPtr(windowHandle);
+        if (!WindowControl.WaitForForeground(window, timeoutMS: Math.Min(2_000, timeoutMS)))
+        {
+            Console.WriteLine($"Peek Explorer foreground recovery: target={windowHandle}; current={WindowControl.GetForegroundWindowInfo()}.");
+            bool clicked = WindowControl.TryClickExposedCaption(window);
+            Console.WriteLine($"Peek Explorer caption click issued={clicked}; current={WindowControl.GetForegroundWindowInfo()}.");
+        }
+
+        var remaining = timeoutMS - (int)timer.ElapsedMilliseconds;
+        if (remaining <= 0)
+        {
+            Console.WriteLine($"Peek Explorer readiness budget expired during foreground recovery for HWND {windowHandle}.");
+            return false;
+        }
+
+        var result = ExplorerShell.SetSelectionAndWaitForStable(
+            window,
             selectedPaths,
             focusedPath,
-            timeoutMS,
-            ExplorerSelectionStableSamples).Succeeded;
+            remaining,
+            ExplorerSelectionStableSamples);
+        if (!result.Succeeded)
+        {
+            string selection = result.LastObservation is null
+                ? "(unavailable)"
+                : string.Join(", ", result.LastObservation.SelectedPaths);
+            Console.WriteLine(
+                $"Peek Explorer selection readiness failed: target={windowHandle}; foreground={WindowControl.GetForegroundWindowInfo()}; " +
+                $"selected=[{selection}]; " +
+                $"focused={result.LastObservation?.FocusedPath}; error={result.LastException}.");
+        }
+
+        return result.Succeeded;
     }
 
     private static string NormalizePath(string path)
@@ -521,7 +586,8 @@ public class PeekFilePreviewTests : UITestBase
     {
         for (var attempt = 1; attempt <= MaxHotkeyAttempts; attempt++)
         {
-            var visiblePeekWindow = WindowsFinder.ListByApp(PeekProcessName).FirstOrDefault();
+            var visiblePeekWindows = WindowsFinder.ListByApp(PeekProcessName);
+            var visiblePeekWindow = visiblePeekWindows.Count > 0 ? visiblePeekWindows[0] : null;
             if (visiblePeekWindow is not null)
             {
                 return WaitForInitializedPeekWindow(
@@ -613,20 +679,20 @@ public class PeekFilePreviewTests : UITestBase
         var output = new StringBuilder();
         using var testHost = Process.GetCurrentProcess();
         var foreground = WindowControl.GetForegroundWindowInfo();
-        output.AppendLine($"[{DateTime.UtcNow:O}] {stage}");
-        output.AppendLine(
-            $"Test host: pid={testHost.Id}, session={GetProcessSessionId(testHost.Id)}, " +
-            $"elevated={ElevationHelper.IsCurrentProcessElevated()}.");
-        output.AppendLine(
-            $"Foreground: hwnd={foreground.Hwnd.ToInt64()}, pid={foreground.ProcessId}, " +
-            $"process='{foreground.ProcessName}', class='{foreground.ClassName}', title='{foreground.Title}', " +
-            $"elevated={FormatElevation(foreground.IsElevated)}.");
-        output.AppendLine(
-            $"Settings session: pid={Session.ProcessId}, session={GetProcessSessionId(Session.ProcessId)}, " +
-            $"elevated={FormatElevation(Session.IsElevated)}.");
-        output.AppendLine(
-            $"Configured Peek shortcut: Ctrl+Space; AlwaysRunNotElevated=true; EnableSpaceToActivate=false; " +
-            $"AppsUseLightTheme={ReadAppsUseLightTheme()?.ToString() ?? "unknown"}.");
+        output.AppendLine(CultureInfo.InvariantCulture, $"[{DateTime.UtcNow:O}] {stage}");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Test host: pid={testHost.Id}, session={GetProcessSessionId(testHost.Id)}, ")
+            .AppendLine(CultureInfo.InvariantCulture, $"elevated={ElevationHelper.IsCurrentProcessElevated()}.");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Foreground: hwnd={foreground.Hwnd.ToInt64()}, pid={foreground.ProcessId}, ")
+            .Append(CultureInfo.InvariantCulture, $"process='{foreground.ProcessName}', class='{foreground.ClassName}', title='{foreground.Title}', ")
+            .AppendLine(CultureInfo.InvariantCulture, $"elevated={FormatElevation(foreground.IsElevated)}.");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Settings session: pid={Session.ProcessId}, session={GetProcessSessionId(Session.ProcessId)}, ")
+            .AppendLine(CultureInfo.InvariantCulture, $"elevated={FormatElevation(Session.IsElevated)}.");
+        output
+            .Append(CultureInfo.InvariantCulture, $"Configured Peek shortcut: Ctrl+Space; AlwaysRunNotElevated=true; EnableSpaceToActivate=false; ")
+            .AppendLine(CultureInfo.InvariantCulture, $"AppsUseLightTheme={ReadAppsUseLightTheme()?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}.");
         AppendProcessDiagnostics(output, "PowerToys");
         AppendProcessDiagnostics(output, "explorer");
         AppendProcessDiagnostics(output, PeekProcessName);
@@ -640,7 +706,7 @@ public class PeekFilePreviewTests : UITestBase
         var processes = Process.GetProcessesByName(processName);
         if (processes.Length == 0)
         {
-            output.AppendLine($"Process '{processName}': none.");
+            output.AppendLine(CultureInfo.InvariantCulture, $"Process '{processName}': none.");
             return;
         }
 
@@ -648,10 +714,10 @@ public class PeekFilePreviewTests : UITestBase
         {
             using (process)
             {
-                output.AppendLine(
-                    $"Process '{processName}': pid={process.Id}, session={GetProcessSessionId(process.Id)}, " +
-                    $"elevated={FormatElevation(ElevationHelper.IsProcessElevated(process.Id))}, " +
-                    $"mainHwnd={GetMainWindowHandle(process)}.");
+                output
+                    .Append(CultureInfo.InvariantCulture, $"Process '{processName}': pid={process.Id}, session={GetProcessSessionId(process.Id)}, ")
+                    .Append(CultureInfo.InvariantCulture, $"elevated={FormatElevation(ElevationHelper.IsProcessElevated(process.Id))}, ")
+                    .AppendLine(CultureInfo.InvariantCulture, $"mainHwnd={GetMainWindowHandle(process)}.");
             }
         }
     }
@@ -661,15 +727,15 @@ public class PeekFilePreviewTests : UITestBase
         var windows = WindowsFinder.ListByApp(appName);
         if (windows.Count == 0)
         {
-            output.AppendLine($"Windows for '{appName}': none.");
+            output.AppendLine(CultureInfo.InvariantCulture, $"Windows for '{appName}': none.");
             return;
         }
 
         foreach (var window in windows)
         {
-            output.AppendLine(
-                $"Window for '{appName}': hwnd={window.Hwnd}, pid={window.ProcessId}, " +
-                $"class='{window.ClassName}', title='{window.Title}', size={window.Width}x{window.Height}.");
+            output
+                .Append(CultureInfo.InvariantCulture, $"Window for '{appName}': hwnd={window.Hwnd}, pid={window.ProcessId}, ")
+                .AppendLine(CultureInfo.InvariantCulture, $"class='{window.ClassName}', title='{window.Title}', size={window.Width}x{window.Height}.");
         }
     }
 
@@ -804,11 +870,12 @@ public class PeekFilePreviewTests : UITestBase
     private void EnsurePeekWindowForeground(long windowHandle)
     {
         var nativeWindowHandle = new IntPtr(windowHandle);
-        Assert.IsTrue(
-            WindowControl.WaitForForeground(nativeWindowHandle, PeekWindowTimeoutMS, pollIntervalMS: 250),
+        bool isForeground = WindowControl.WaitForForeground(nativeWindowHandle, PeekWindowTimeoutMS, pollIntervalMS: 250);
+        string foregroundMessage =
             $"Peek HWND {windowHandle} did not become the foreground window within " +
             $"{PeekWindowTimeoutMS / 1_000}s." + Environment.NewLine +
-            GetActivationDiagnostics("Peek foreground activation failed"));
+            GetActivationDiagnostics("Peek foreground activation failed");
+        Assert.IsTrue(isForeground, foregroundMessage);
     }
 
     private static void EnsurePeekReady(Session peekWindow)
@@ -816,10 +883,11 @@ public class PeekFilePreviewTests : UITestBase
         EnsurePeekWindowInteractive(peekWindow);
 
         var previewState = peekWindow.Find<Element>(By.AccessibilityId("PreviewStateAutomationPeer"), 15_000);
-        Assert.IsTrue(
-            previewState.WaitForValue("Loaded", timeoutMS: PreviewLoadTimeoutMS),
+        bool loaded = previewState.WaitForValue("Loaded", timeoutMS: PreviewLoadTimeoutMS);
+        string loadedMessage =
             $"Peek did not finish loading '{peekWindow.WindowTitle}' within {PreviewLoadTimeoutMS / 1_000}s. " +
-            $"Last preview state: '{previewState.GetValue()}'.");
+            $"Last preview state: '{previewState.GetValue()}'.";
+        Assert.IsTrue(loaded, loadedMessage);
 
         var loadingIndicator = peekWindow
             .FindAll<Element>(By.AccessibilityId("LoadingIndicator"), 1_000)
@@ -863,7 +931,13 @@ public class PeekFilePreviewTests : UITestBase
 
     private void TestSingleFilePreview(string filePath, string expectedFileName)
     {
-        var previewWindow = OpenPeekWindow(filePath);
+        // A single Explorer selection can still include neighboring files in Peek's title counter.
+        singleFilePreviewDirectory = Path.Combine(Path.GetTempPath(), "PowerToys.Peek.UITests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(singleFilePreviewDirectory);
+        var isolatedFilePath = Path.Combine(singleFilePreviewDirectory, Path.GetFileName(filePath));
+        File.Copy(filePath, isolatedFilePath);
+
+        var previewWindow = OpenPeekWindow(isolatedFilePath);
         VisualAssert.AreEqual(TestContext, previewWindow, expectedFileName);
     }
 
@@ -994,5 +1068,4 @@ public class PeekFilePreviewTests : UITestBase
     {
         public (int X, int Y) Center => (Left + (Width / 2), Top + (Height / 2));
     }
-
 }

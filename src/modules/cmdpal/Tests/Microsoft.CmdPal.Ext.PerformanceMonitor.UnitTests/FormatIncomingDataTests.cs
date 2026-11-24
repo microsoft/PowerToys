@@ -11,19 +11,27 @@ public class FormatIncomingDataTests
 {
     [DataTestMethod]
     [DataRow(0f, "0.0 Kbps")]
-    [DataRow(6400f, "50.0 Kbps")]
-    [DataRow(12793f, "99.9 Kbps")]
-    [DataRow(12800f, "100 Kbps")]
-    [DataRow(127872f, "999 Kbps")]
-    [DataRow(131072f, "1.0 Mbps")]
-    [DataRow(6553600f, "50.0 Mbps")]
-    [DataRow(13107200f, "100 Mbps")]
-    [DataRow(134217728f, "1.0 Gbps")]
-    [DataRow(6710886400f, "50.0 Gbps")]
-    [DataRow(13421772800f, "100 Gbps")]
+    [DataRow(6250f, "50.0 Kbps")]
+    [DataRow(12487.5f, "99.9 Kbps")]
+    [DataRow(12500f, "100 Kbps")]
+    [DataRow(124875f, "999 Kbps")]
+    [DataRow(125000f, "1.0 Mbps")]
+    [DataRow(6250000f, "50.0 Mbps")]
+    [DataRow(12500000f, "100 Mbps")]
+    [DataRow(125000000f, "1.0 Gbps")]
+    [DataRow(6250000000f, "50.0 Gbps")]
+    [DataRow(12500000000f, "100 Gbps")]
     public void AsBitsPerSecString_FormatsBoundaryValues(float bytesPerSecond, string expected)
     {
         Assert.AreEqual(expected, FormatIncomingData.AsBitsPerSecString(bytesPerSecond));
+    }
+
+    [TestMethod]
+    public void AsBitsPerSecString_UsesDecimalScaling()
+    {
+        // 902,092 bits per second, which showed as 881 Kbps when each step was 1024.
+        Assert.AreEqual("902 Kbps", FormatIncomingData.AsBitsPerSecString(902_092 / 8f));
+        Assert.AreEqual("1.0 Mbps", FormatIncomingData.AsBitsPerSecString(1_000_000 / 8f));
     }
 
     [DataTestMethod]

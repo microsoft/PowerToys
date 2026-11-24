@@ -174,17 +174,18 @@ public sealed class RegistryPreviewEditorTests : RegistryPreviewTestBase
         window.Find<Button>(By.AccessibilityId("writeButton"), ActionTimeoutMS).Click(msPostAction: 300);
         var confirmationWasAutomated = ConfirmRegistryImport();
 
-        Assert.IsTrue(
-            window.WaitFor(
-                () =>
-                {
-                    using var key = Registry.CurrentUser.OpenSubKey(subKey);
-                    return string.Equals(key?.GetValue("SampleString") as string, "written-value", StringComparison.Ordinal);
-                },
-                confirmationWasAutomated ? ActionTimeoutMS : InteractiveRegistryImportTimeoutMS,
-                pollIntervalMS: 250),
+        bool stringValueImported = window.WaitFor(
+            () =>
+            {
+                using var key = Registry.CurrentUser.OpenSubKey(subKey);
+                return string.Equals(key?.GetValue("SampleString") as string, "written-value", StringComparison.Ordinal);
+            },
+            confirmationWasAutomated ? ActionTimeoutMS : InteractiveRegistryImportTimeoutMS,
+            pollIntervalMS: 250);
+        const string StringValueImportMessage =
             "Registry Editor did not import the string value into the isolated HKCU key. " +
-            "If UAC requested credentials for a different administrator account, run Visual Studio elevated under the test account so HKCU remains the same user.");
+            "If UAC requested credentials for a different administrator account, run Visual Studio elevated under the test account so HKCU remains the same user.";
+        Assert.IsTrue(stringValueImported, StringValueImportMessage);
 
         using var imported = Registry.CurrentUser.OpenSubKey(subKey);
         Assert.IsNotNull(imported, "Registry Editor did not create the isolated HKCU key.");

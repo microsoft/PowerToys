@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -54,6 +55,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             "image-to-text",
             "paste-as-file.paste-as-txt-file",
             "paste-as-file.paste-as-png-file",
+            "paste-as-file.paste-as-jpg-file",
             "paste-as-file.paste-as-html-file",
             "transcode.transcode-to-mp3",
             "transcode.transcode-to-mp4",
@@ -290,6 +292,31 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     }
 
     [TestMethod]
+    public void PasteDestinationRegainsForegroundAfterSettingsActivation()
+    {
+        NavigateToSettings();
+        for (int attempt = 0; attempt < 5; attempt++)
+        {
+            if (attempt % 2 == 1)
+            {
+                WindowHelper.MinimizeWindow(Target.Handle);
+                Assert.AreEqual(System.Windows.Forms.FormWindowState.Minimized, Target.State.WindowState);
+            }
+
+            RequireForeground(SettingsWindow());
+            Step($"Reacquiring the paste destination after Settings activation, attempt {attempt + 1}");
+            Target.Focus();
+            var state = Target.State;
+            Assert.AreEqual(Target.Handle, state.Foreground);
+            Assert.IsTrue(state.EditorFocused, "Foreground recovery must preserve the real editor as the paste destination.");
+        }
+
+        SetClipboardText(ShortcutFixtureText);
+        SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsPlainText);
+        Target.AssertText(ShortcutFixtureText);
+    }
+
+    [TestMethod]
     public Task AIInputVisibilityIsIndependentOfProviderAvailability()
     {
         NavigateToSettings();
@@ -400,6 +427,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     [DataRow("ImageToText", "image-to-text", "image", ProductStrings.ImageToText)]
     [DataRow("PasteAsTxtFile", "paste-as-file.paste-as-txt-file", "text", ProductStrings.PasteAsTxtFile)]
     [DataRow("PasteAsPngFile", "paste-as-file.paste-as-png-file", "image", ProductStrings.PasteAsPngFile)]
+    [DataRow("PasteAsJpgFile", "paste-as-file.paste-as-jpg-file", "image", ProductStrings.PasteAsJpgFile)]
     [DataRow("PasteAsHtmlFile", "paste-as-file.paste-as-html-file", "html", ProductStrings.PasteAsHtmlFile)]
     [DataRow("TranscodeToMp3", "transcode.transcode-to-mp3", "video", ProductStrings.TranscodeToMp3)]
     [DataRow("TranscodeToMp4", "transcode.transcode-to-mp4", "video", ProductStrings.TranscodeToMp4)]
@@ -433,7 +461,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         NavigateToSettings();
         var original = AdditionalAction(ReadProperties(), propertyPath)["isShown"]!.GetValue<bool>();
         string[] actions = card == "PasteAsFile"
-            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsHtmlFile]
+            ? [ProductStrings.PasteAsTxtFile, ProductStrings.PasteAsPngFile, ProductStrings.PasteAsJpgFile, ProductStrings.PasteAsHtmlFile]
             : [ProductStrings.TranscodeToMp3, ProductStrings.TranscodeToMp4];
         var originalChildren = AdditionalAction(ReadProperties(), propertyPath).DeepClone();
 
@@ -484,7 +512,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         finally
         {
             Step("Restoring this scenario's Settings UI changes");
-            if (shortcutDialogOpened && Session.Has(By.AccessibilityId("ResetBtn"), 0))
+            if (shortcutDialogOpened && SettingsSession.Has(By.AccessibilityId("ResetBtn"), 0))
             {
                 CloseShortcutDialog("CloseButton");
             }
@@ -494,11 +522,11 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
     }
 
-    private ToggleSwitch ModuleToggle() => AdvancedPasteUi.CardControl<ToggleSwitch>(Session, EnableCard, "Button", className: "ToggleSwitch");
+    private ToggleSwitch ModuleToggle() => AdvancedPasteUi.CardControl<ToggleSwitch>(SettingsSession, EnableCard, "Button", className: "ToggleSwitch");
 
-    private CheckBox Preference(string card) => AdvancedPasteUi.CardControl<CheckBox>(Session, card, "CheckBox");
+    private CheckBox Preference(string card) => AdvancedPasteUi.CardControl<CheckBox>(SettingsSession, card, "CheckBox");
 
-    private Button ShortcutButton(string card) => AdvancedPasteUi.CardControl<Button>(Session, card, "Button", automationId: "EditButton");
+    private Button ShortcutButton(string card) => AdvancedPasteUi.CardControl<Button>(SettingsSession, card, "Button", automationId: "EditButton");
 
     private static bool ReadBoolean(string property) => ReadProperties()[property]!["value"]!.GetValue<bool>();
 
@@ -523,14 +551,14 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
     }
 
-    private static int WaitForStableModuleProcess()
+    private static (int Id, DateTime StartTimeUtc) WaitForStableModuleProcess()
     {
-        int? previous = null;
+        // Windows can reuse a PID after the module has exited.
+        (int Id, DateTime StartTimeUtc)? previous = null;
         var result = WaitHelper.WaitForStable(
-            GetModuleProcessIds,
-            ids =>
+            GetRunningModuleProcess,
+            current =>
             {
-                var current = ids is { Length: 1 } ? ids[0] : (int?)null;
                 var stable = current.HasValue && current == previous;
                 previous = current;
                 return stable;
@@ -538,8 +566,38 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 250);
-        Assert.IsTrue(result.Succeeded, $"Advanced Paste did not reach one stable running process. Last process IDs: {string.Join(", ", result.LastObservation ?? [])}.");
-        return result.LastObservation![0];
+        Assert.IsTrue(result.Succeeded, $"Advanced Paste did not reach one stable running process. Last process identity: {result.LastObservation}.");
+        return result.LastObservation!.Value;
+    }
+
+    private static (int Id, DateTime StartTimeUtc)? GetRunningModuleProcess()
+    {
+        var processes = Process.GetProcessesByName(ProcessName);
+        try
+        {
+            if (processes.Length != 1)
+            {
+                return null;
+            }
+
+            var process = processes[0];
+            try
+            {
+                var startTimeUtc = process.StartTime.ToUniversalTime();
+                return process.HasExited ? null : (process.Id, startTimeUtc);
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+                return null;
+            }
+        }
+        finally
+        {
+            foreach (var process in processes)
+            {
+                process.Dispose();
+            }
+        }
     }
 
     private void SetPreference(string card, string property, bool value)
@@ -559,7 +617,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     private void SetAIEnabled(bool enabled)
     {
         Step($"Setting IsAIEnabled={enabled} without configuring a provider");
-        var toggle = Session.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle"));
+        var toggle = SettingsSession.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle"));
         Assert.IsTrue(toggle.IsEnabled, "BLOCKED: policy or module state prevents exercising the AI Settings toggle.");
         if (toggle.IsOn != enabled)
         {
@@ -567,7 +625,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
 
         Assert.IsTrue(
-            Session.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle")).WaitForProperty("ToggleState", enabled ? "On" : "Off", 10_000),
+            SettingsSession.Find<ToggleSwitch>(By.AccessibilityId("AdvancedPaste_EnableAIToggle")).WaitForProperty("ToggleState", enabled ? "On" : "Off", 10_000),
             "The AI toggle did not reach the requested state.");
         WaitForSetting(p => p["IsAIEnabled"]!["value"]!.GetValue<bool>() == enabled, "The AI enabled setting was not persisted.");
     }
@@ -591,28 +649,28 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         Step($"Opening the shortcut editor for {card}");
         shortcutDialogOpened = true;
         ShortcutButton(card).Invoke(msPostAction: 0);
-        Session.Find(By.AccessibilityId("ResetBtn"), 10_000);
+        SettingsSession.Find(By.AccessibilityId("ResetBtn"), 10_000);
     }
 
     private void EnterShortcut(Key[] keys)
     {
         Step($"Entering shortcut {string.Join(" + ", keys)}");
-        RequireForeground(Session);
+        RequireForeground(SettingsWindow());
 
         // The shortcut hook ignores keyboard input when a ContentDialog Button has focus.
         // Its Reset hyperlink is focusable without invoking it, and remains inside the editor.
-        var captureFocus = Session.Find(By.AccessibilityId("ResetBtn"));
+        var captureFocus = SettingsSession.Find(By.AccessibilityId("ResetBtn"));
         captureFocus.Focus();
         Assert.IsTrue(captureFocus.WaitForProperty("HasKeyboardFocus", "true", 5_000), "The shortcut editor did not receive keyboard focus.");
         SendShortcut(keys);
-        WaitUntil(() => Session.Find<Button>(By.AccessibilityId("PrimaryButton")).IsEnabled, "The shortcut editor did not accept a valid chord.");
+        WaitUntil(() => SettingsSession.Find<Button>(By.AccessibilityId("PrimaryButton")).IsEnabled, "The shortcut editor did not accept a valid chord.");
     }
 
     private void CloseShortcutDialog(string buttonId)
     {
         Step($"Invoking {buttonId} in the shortcut dialog");
-        Session.Find(By.AccessibilityId(buttonId)).Invoke(msPostAction: 0);
-        WaitUntil(() => !Session.Has(By.AccessibilityId("ResetBtn"), 0), "The shortcut dialog did not close.");
+        SettingsSession.Find(By.AccessibilityId(buttonId)).Invoke(msPostAction: 0);
+        WaitUntil(() => !SettingsSession.Has(By.AccessibilityId("ResetBtn"), 0), "The shortcut dialog did not close.");
         shortcutDialogOpened = false;
     }
 
@@ -704,11 +762,11 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
                 (requireStopped && state.ProcessIds.Length != 0),
             timeoutMS: 2_500);
         var observed = unexpectedEffect.LastObservation;
-        Assert.IsFalse(
-            unexpectedEffect.Succeeded,
+        string effectMessage =
             $"An inactive shortcut had an effect: visible={observed.Visible}; processes={string.Join(", ", observed.ProcessIds)}; " +
             $"pasted characters={observed.TargetText.Length}; clipboard matches={observed.ClipboardText == source}; " +
-            $"formats before=[{string.Join(", ", formats)}], after=[{string.Join(", ", observed.Formats)}].");
+            $"formats before=[{string.Join(", ", formats)}], after=[{string.Join(", ", observed.Formats)}].";
+        Assert.IsFalse(unexpectedEffect.Succeeded, effectMessage);
         Assert.AreEqual(source, ReadClipboardText(), "An inactive shortcut changed the text clipboard.");
         Assert.AreEqual(string.Empty, Target.Text, "An inactive shortcut pasted into the destination.");
     }
@@ -759,10 +817,10 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         string.Join("\n", text.ReplaceLineEndings("\n").Split('\n').Select(line => string.IsNullOrWhiteSpace(line) ? string.Empty : line)).TrimEnd();
 
     private static void RequireForeground(Session window) =>
-        TestWindow.SelectFromTaskbar(new IntPtr(window.WindowHandle), window.ProcessName);
+        TestWindow.EnsureForeground(new IntPtr(window.WindowHandle), window.ProcessName);
 
     private static bool HasText(Session window, string text) =>
-        window.FindAll<TextBlock>(By.Name(text), 0).Any(element => element.Name == text);
+        window.FindAll<TextBlock>(By.AccessibilityId("ClipboardPreviewText"), 0).Any(element => element.Name == text);
 
     private static bool HasAction(Session window, string name) =>
         window.FindAll<Element>(By.Name(name), 0).Any(element =>
@@ -793,7 +851,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
     private void SetActionShown(string card, string propertyPath, bool shown)
     {
         Step($"Setting {propertyPath}.isShown={shown} through Settings");
-        var toggle = AdvancedPasteUi.CardControl<ToggleSwitch>(Session, card, "Button", className: "ToggleSwitch");
+        var toggle = AdvancedPasteUi.CardControl<ToggleSwitch>(SettingsSession, card, "Button", className: "ToggleSwitch");
         Assert.IsTrue(toggle.IsEnabled, $"The {card} visibility switch is not enabled.");
         if (toggle.IsOn != shown)
         {
@@ -801,7 +859,7 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
 
         Assert.IsTrue(
-            AdvancedPasteUi.CardControl<ToggleSwitch>(Session, card, "Button", className: "ToggleSwitch").WaitForProperty("ToggleState", shown ? "On" : "Off", 10_000),
+            AdvancedPasteUi.CardControl<ToggleSwitch>(SettingsSession, card, "Button", className: "ToggleSwitch").WaitForProperty("ToggleState", shown ? "On" : "Off", 10_000),
             $"The {card} visibility switch did not change.");
         WaitForSetting(p => AdditionalAction(p, propertyPath)["isShown"]!.GetValue<bool>() == shown, $"The {propertyPath} visibility was not persisted.");
     }

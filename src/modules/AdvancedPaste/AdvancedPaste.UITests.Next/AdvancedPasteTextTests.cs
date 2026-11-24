@@ -46,6 +46,10 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         Assert.IsFalse(clipboard.Contains(StandardDataFormats.Rtf), "Rich text remained on the transformed clipboard.");
         Assert.IsFalse(clipboard.Contains(StandardDataFormats.Html), "HTML remained on the transformed clipboard.");
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste did not finish the plain-text paste.");
+        if (invocation == Invocation.DirectShortcut)
+        {
+            ReleaseDirectPlainTextModifiers();
+        }
 
         Step("Verifying subsequent normal paste also contains only plain text");
         Target.Clear();
@@ -113,8 +117,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         SelectAction(OpenAdvancedPaste(), ProductStrings.PasteAsMarkdown);
         AssertTransformedText();
 
-        // CF_HTML boundary comments remain inert HTML comments in the generated Markdown.
-        Assert.AreEqual("<!--StartFragment -->\n## Offline\n\n**Bold** and *italic* [link](https://example.test/)\n<!--EndFragment -->", NormalizeMarkdown(Target.Text));
+        Assert.AreEqual("## Offline\n\n**Bold** and *italic* [link](https://example.test/)", NormalizeMarkdown(Target.Text));
     }
 
     [TestMethod]
@@ -125,6 +128,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         InvokeCoreAction(ProductStrings.PasteAsPlainText, Key.O, Key.Num1, Invocation.DirectShortcut);
         Target.AssertText(input);
         Assert.AreEqual(input, ReadClipboardText(), "Plain-text conversion changed Unicode or whitespace.");
+        ReleaseDirectPlainTextModifiers();
     }
 
     [TestMethod]
@@ -165,17 +169,22 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         const string html = "<p>Desktop clipboard <strong>snapshot</strong></p>";
         const string rtf = @"{\rtf1\ansi Desktop clipboard \b snapshot\b0}";
         Step("Preparing a desktop data object before taking a clipboard snapshot from an MTA worker");
-        Target.Invoke(() =>
+        if (includeRichFormats)
         {
-            var data = new Forms.DataObject(text);
-            if (includeRichFormats)
+            Target.Invoke(() =>
             {
+                var data = new Forms.DataObject(text);
                 data.SetData(Forms.DataFormats.Html, autoConvert: false, HtmlFormatHelper.CreateHtmlFormat(html));
                 data.SetData(Forms.DataFormats.Rtf, autoConvert: false, rtf);
-            }
+                Forms.Clipboard.SetDataObject(data, copy: true, retryTimes: 50, retryDelay: 100);
+            });
+        }
+        else
+        {
+            SetClipboardText(text);
+        }
 
-            Forms.Clipboard.SetDataObject(data, copy: true);
-        });
+        Assert.AreEqual(text, ReadClipboardText(), "The original desktop clipboard fixture was not established before taking its snapshot.");
         var formats = ReadClipboardFormats();
         var readAttempts = 0;
         var snapshot = await Task.Run(() =>
@@ -256,6 +265,33 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         }
     }
 
+    private void ReleaseDirectPlainTextModifiers()
+    {
+        // The native plain-text action restores the held modifiers after injecting Ctrl+V.
+        // Those key-downs can arrive after this fixture's batched shortcut key-ups.
+        Key[] sentModifiers = [Key.Ctrl, Key.Alt, Key.LWin];
+        var released = WaitHelper.WaitForStable(
+            () => sentModifiers.Where(KeyboardHelper.IsKeyDown).ToArray(),
+            held => held is { Length: 0 },
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 3,
+            recover: held =>
+            {
+                if (held is { Length: > 0 })
+                {
+                    Step($"Releasing modifiers restored by the direct plain-text paste: {string.Join(", ", held)}");
+                    Target.Invoke(() =>
+                    {
+                        foreach (var key in held)
+                        {
+                            KeyboardHelper.ReleaseKey(key);
+                        }
+                    });
+                }
+            });
+        Assert.IsTrue(released.Succeeded, $"Direct plain-text paste left modifiers held: {string.Join(", ", released.LastObservation ?? [])}.");
+    }
+
     private void AssertTransformedText()
     {
         WaitUntil(() => !string.IsNullOrEmpty(Target.Text), "The destination did not receive transformed text.");
@@ -264,10 +300,10 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
             state => !string.IsNullOrEmpty(state.PastedText) && state.ClipboardText == state.PastedText,
             timeoutMS: 15_000,
             requiredConsecutiveMatches: 2);
-        Assert.IsTrue(
-            result.Succeeded,
+        string mismatchMessage =
             $"The clipboard and actual pasted text did not reach the same nonempty value. " +
-            $"Clipboard: '{result.LastObservation.ClipboardText}'; pasted: '{result.LastObservation.PastedText}'.");
+            $"Clipboard: '{result.LastObservation.ClipboardText}'; pasted: '{result.LastObservation.PastedText}'.";
+        Assert.IsTrue(result.Succeeded, mismatchMessage);
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste did not hide after pasting.");
     }
 

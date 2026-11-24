@@ -16,6 +16,10 @@ namespace Microsoft.Workspaces.UITests
     [DoNotParallelize]
     public sealed partial class WorkspacesTests : UITestBase
     {
+        // Re-enable these scenarios after the WinUI automation contracts and end-to-end behavior are validated.
+        private const string WinUiMigrationIgnoreReason =
+            "Temporarily disabled pending Workspaces WinUI migration validation: https://github.com/microsoft/PowerToys/pull/49077";
+
         private const string EditorProcess = "PowerToys.WorkspacesEditor";
         private const string LauncherProcess = "PowerToys.WorkspacesLauncher";
         private const string LauncherUiProcess = "PowerToys.WorkspacesLauncherUI";
@@ -28,6 +32,7 @@ namespace Microsoft.Workspaces.UITests
             "PowerToys.WorkspacesSnapshotTool",
             EditorProcess,
         ];
+
         private static WorkspaceTestState? state;
         private Session? editor;
         private Session? settingsUi;
@@ -52,7 +57,7 @@ namespace Microsoft.Workspaces.UITests
         // window-scoped session pinned to the original HWND then fails every lookup with "Window HWND ...
         // not found". Route Settings UIA reads through a process-scoped session (-a) so navigation and
         // toggles survive the swap — winappcli re-resolves the live window on every call.
-        private Session SettingsUi => settingsUi ??= Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
+        private Session SettingsUi => settingsUi ??= OpenWorkspacesSettings();
 
         [ClassInitialize]
         public static void ValidateDesktop(TestContext context)
@@ -81,7 +86,6 @@ namespace Microsoft.Workspaces.UITests
             State.Fixture.CloseAll();
             State.Reset();
             settingsUi = null;
-            NavigateToSettings();
         }
 
         [TestCleanup]
@@ -132,21 +136,23 @@ namespace Microsoft.Workspaces.UITests
             }
         }
 
-        private void NavigateToSettings()
+        private Session OpenWorkspacesSettings()
         {
             Step("Navigating to Workspaces Settings.");
 
             // Wait out any startup window replacement before driving the UI, so navigation runs against the
             // window Settings actually settles on rather than the transient handle it was launched with.
             _ = SettingsWindow();
+            var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
 
-            if (!SettingsUi.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
+            if (!settings.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
             {
-                SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
+                settings.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
             }
 
-            SettingsUi.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(SettingsUi.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+            settings.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
+            Assert.IsTrue(settings.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
+            return settings;
         }
 
         // Freshly resolve the current PowerToys.Settings main window for the few physical operations that
@@ -181,6 +187,7 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(
                 WindowControl.WaitForForeground(SettingsWindow(), 10_000),
                 $"Settings did not acquire foreground for the launch card: {WindowControl.GetForegroundWindowInfo()}.");
+
             // SettingsCard exposes a Button role but no InvokePattern; its pointer command is the user action.
             launch.Click(msPostAction: 0);
             AttachEditor();
@@ -288,8 +295,9 @@ namespace Microsoft.Workspaces.UITests
                 .ToArray();
             Assert.HasCount(1, more, "The workspace actions button was not uniquely addressable.");
             more[0].Invoke(msPostAction: 0);
+
+            // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
             Assert.IsTrue(
-                // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
                 Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess).Has<Button>(By.Name("Remove"), 10_000),
                 "The workspace actions menu did not open.");
         }

@@ -78,7 +78,7 @@ namespace FancyZonesEditorCommon.Data
 
             public bool SpanZonesAcrossMonitors { get; set; }
 
-            public List<NativeMonitorDataWrapper> Monitors { get; set; }
+            public List<NativeMonitorDataWrapper> Monitors { get; init; }
         }
 
         public EditorParameters()

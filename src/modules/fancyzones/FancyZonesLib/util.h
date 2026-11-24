@@ -91,7 +91,7 @@ namespace FancyZonesUtils
 
         try
         {
-            const long long tmp = std::stoll(hex.data(), nullptr, 16);
+            const long long tmp = std::stoll(std::wstring(hex), nullptr, 16);
             const BYTE nR = static_cast<BYTE>((tmp & 0xFF0000) >> 16);
             const BYTE nG = static_cast<BYTE>((tmp & 0xFF00) >> 8);
             const BYTE nB = static_cast<BYTE>((tmp & 0xFF));
@@ -219,6 +219,10 @@ namespace FancyZonesUtils
     std::optional<std::wstring> GuidToString(const GUID& guid) noexcept;
 
     size_t ChooseNextZoneByPosition(DWORD vkCode, RECT windowRect, const std::vector<RECT>& zoneRects) noexcept;
+
+    // Picks the layout id following (or preceding, if reverse) `current` in `layoutIds`, wrapping around.
+    // Returns std::nullopt if there is nothing to cycle to (fewer than 2 layouts).
+    std::optional<GUID> PickNextLayoutId(const std::vector<GUID>& layoutIds, const std::optional<GUID>& current, bool reverse) noexcept;
 
     void SwallowKey(const WORD key) noexcept;
 }

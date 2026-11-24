@@ -47,14 +47,14 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
         /// <param name="stream">The Stream instance for the Stl content.</param>
         /// <param name="cx">The maximum thumbnail size, in pixels.</param>
         /// <returns>A thumbnail rendered from the Stl model.</returns>
-        public static Bitmap GetThumbnail(Stream stream, uint cx)
+        public static Bitmap? GetThumbnail(Stream? stream, uint cx)
         {
-            if (cx > MaxThumbnailSize || stream == null || stream.Length == 0)
+            if (cx > MaxThumbnailSize || stream == null || !IsSafeToParse(stream))
             {
                 return null;
             }
 
-            Bitmap thumbnail = null;
+            Bitmap? thumbnail = null;
 
             var stlReader = new StLReader
             {
@@ -120,11 +120,61 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
         }
 
         /// <summary>
+        /// Checks that HelixToolkit cannot mistake a wrapped binary facet count for a valid payload length.
+        /// </summary>
+        /// <param name="stream">The STL stream.</param>
+        /// <returns><see langword="true"/> when the stream can be delegated to HelixToolkit.</returns>
+        public static bool IsSafeToParse(Stream stream)
+        {
+            if (stream == null || !stream.CanRead || !stream.CanSeek || stream.Position < 0 || stream.Position >= stream.Length)
+            {
+                return false;
+            }
+
+            var initialPosition = stream.Position;
+            try
+            {
+                var remainingLength = stream.Length - initialPosition;
+                if (remainingLength < 84)
+                {
+                    return true;
+                }
+
+                stream.Position = initialPosition + 80;
+                Span<byte> triangleCountBytes = stackalloc byte[sizeof(uint)];
+                if (stream.ReadAtLeast(triangleCountBytes, triangleCountBytes.Length, throwOnEndOfStream: false) != triangleCountBytes.Length)
+                {
+                    return false;
+                }
+
+                var triangleCount = BitConverter.ToUInt32(triangleCountBytes);
+                var payloadLength = (ulong)(remainingLength - 84);
+
+                // HelixToolkit 2.24 tries binary first and compares the payload length with a
+                // 32-bit triangleCount * 50 expression. Reject an overflow that would make that
+                // check succeed and then drive billions of binary facet reads.
+                var helixPayloadLength = unchecked(triangleCount * 50U);
+                if (payloadLength == helixPayloadLength)
+                {
+                    return payloadLength == 50UL * triangleCount;
+                }
+
+                // HelixToolkit delegates every other stream to its ASCII parser. Do not duplicate
+                // that parser's grammar here, because doing so would reject supported extensions.
+                return true;
+            }
+            finally
+            {
+                stream.Position = initialPosition;
+            }
+        }
+
+        /// <summary>
         /// Generate thumbnail bitmap for provided Gcode file/stream.
         /// </summary>
         /// <param name="cx">Maximum thumbnail size, in pixels.</param>
         /// <returns>Generated bitmap</returns>
-        public Bitmap GetThumbnail(uint cx)
+        public Bitmap? GetThumbnail(uint cx)
         {
             if (cx == 0 || cx > MaxThumbnailSize)
             {
@@ -137,7 +187,7 @@ namespace Microsoft.PowerToys.ThumbnailHandler.Stl
                 return null;
             }
 
-            Bitmap thumbnail = GetThumbnail(this.Stream, cx);
+            Bitmap? thumbnail = GetThumbnail(this.Stream, cx);
             if (thumbnail != null && thumbnail.Size.Width > 0 && thumbnail.Size.Height > 0)
             {
                 return thumbnail;

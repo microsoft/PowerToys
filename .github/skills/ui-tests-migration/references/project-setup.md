@@ -39,11 +39,10 @@ ProjectReference. For a project folder that sits 3 levels under `src/`, the scaf
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetFramework>net11.0-windows10.0.26100.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
     <RootNamespace>Microsoft.__MODULE__.UITests</RootNamespace>
     <AssemblyName>__MODULE__.UITests.Next</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -85,13 +84,22 @@ Critical, non-negotiable bits (CI audits or the build will fail without them):
   physical mouse coordinates match winappcli's UIA bounds on every monitor.
 4. **`<OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\<Name>\</OutputPath>`** — stages the
    build output where the UI-tests pipeline globs (`**/<plat>/<config>/tests/**`). Without it the app
-   builds to `bin\` and is never picked up by the test job.
+   builds to `bin\` and is never picked up by the test job. `<Name>` must exactly match the `.csproj`
+   file stem and `AssemblyName` (including case). For each staged MSIX fixture, declare
+   `<FileWrites Include="$(TargetDir)FixtureName.msix" />` so CI verifies that it reached the worker.
+   See the **Repository UI-test artifact contract** in `.pipelines/tests/uiTestArtifacts.Tests.ps1`.
 5. **`RunVSTest=false`** — UI tests must not run during MSBuild.
 6. **ProjectReference to `UITestAutomation.Next.csproj` only** — never the legacy
    `UITestAutomation.csproj`. Fix the `..\` depth to match the folder nesting:
    - `src/modules/<M>/Tests/<M>.UITests.Next/` (4 levels under `src`) → `..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
    - `src/modules/<M>/<M>.UITests/` (3 levels under `src`) → `..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
    - `src/settings-ui/<M>.UITests/` (2 levels under `src`) → `..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj`
+7. **No `<TreatWarningsAsErrors>false</TreatWarningsAsErrors>` override** — UI-test projects inherit the
+   repo default (warnings are errors), so StyleCop/analyzer/nullable warnings must be fixed, not
+   hidden. If a rule genuinely does not apply (e.g. CA1716 for a `*.UITests.Next` namespace), add a
+   scoped `[assembly: SuppressMessage(..., Scope = "namespace", Target = "~N:...", Justification = "...")]`
+   in a project-local file such as `ProjectSuppressions.cs` (`src\codeAnalysis\GlobalSuppressions.cs`
+   is already linked into every project by `Directory.Build.props`, so don't add it again).
 
 > Use `MSTest` (the meta-package) for a test **Exe**, matching the ColorPicker/Settings examples — not
 > the bare `MSTest.TestFramework` the harness library itself uses.
@@ -207,12 +215,13 @@ tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests.Next -Pl
 
 # 2. Run (needs a live desktop + winapp.exe). A .Next project is a Microsoft.Testing.Platform Exe,
 #    so run the produced exe directly (Test Explorer also works). Filter + TRX report for a tight loop:
-$exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net10.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
+$exe = "$PWD\x64\Debug\tests\<Module>.UITests.Next\net11.0-windows10.0.26100.0\<Module>.UITests.Next.exe"
 & $exe --filter "TestCategory=<Cat>" --report-trx --report-trx-filename run.trx --results-directory .\TestResults\<Module>
 #    --filter accepts "TestCategory=X" or "FullyQualifiedName~Y"; omit it to run everything. Exit 0 = all passed.
 ```
 
-- On build failure, read `build.<Configuration>.<Platform>.errors.log` next to the project.
+- On build failure, read `artifacts\logs\<project>\build.<Configuration>.<Platform>.errors.log` at the
+  repo root (`<project>` is the project file name without its extension).
 - For CI runtime-pack restore or dependency-audit failures, see
   [NuGet runtime-pack cache misses](nuget-runtime-pack-cache.md).
 - `winapp.exe` is a **run-time** prerequisite only (`winget install Microsoft.winappcli`, or set

@@ -19,12 +19,12 @@ The `ZoomIt` module configures PowerToys ZoomIt, a screen zoom and annotation ut
 
 The ZoomIt module supports the following configurable properties:
 
-### ActivationShortcut
+### ToggleKey
 
-Sets the keyboard shortcut to activate the zoom mode.
+Sets the keyboard shortcut that toggles zoom mode. Like every hotkey property, the shortcut is wrapped in a `value` object.
 
 **Type:** object  
-**Properties:**
+**Properties of `value`:**
 
 - `win` (boolean) - Windows key modifier
 - `ctrl` (boolean) - Ctrl key modifier
@@ -34,6 +34,8 @@ Sets the keyboard shortcut to activate the zoom mode.
 - `key` (string) - Key name
 
 **Default:** `Ctrl+1` (VK code 49)
+
+The other ZoomIt settings (drawing, break timer, recording, webcam) use the property names of the ZoomIt settings model, for example `DrawToggleKey`, `BreakTimeout` or `RecordFormat`. Run `PowerToys.DSC.exe schema --resource 'settings' --module ZoomIt` for the complete list.
 
 ## Examples
 
@@ -45,13 +47,15 @@ This example sets a custom keyboard shortcut to activate ZoomIt.
 $config = @{
     settings = @{
         properties = @{
-            ActivationShortcut = @{
-                win = $false
-                ctrl = $true
-                alt = $false
-                shift = $true
-                code = 90
-                key = "Z"
+            ToggleKey = @{
+                value = @{
+                    win = $false
+                    ctrl = $true
+                    alt = $false
+                    shift = $true
+                    code = 90
+                    key = "Z"
+                }
             }
         }
         name = "ZoomIt"
@@ -79,13 +83,14 @@ resources:
     properties:
       settings:
         properties:
-          ActivationShortcut:
-            win: false
-            ctrl: true
-            alt: false
-            shift: false
-            code: 49
-            key: "1"
+          ToggleKey:
+            value:
+              win: false
+              ctrl: true
+              alt: false
+              shift: false
+              code: 49
+              key: "1"
         name: ZoomIt
         version: 1.0
 ```
@@ -116,13 +121,14 @@ resources:
     properties:
       settings:
         properties:
-          ActivationShortcut:
-            win: false
-            ctrl: true
-            alt: false
-            shift: true
-            code: 90
-            key: Z
+          ToggleKey:
+            value:
+              win: false
+              ctrl: true
+              alt: false
+              shift: true
+              code: 90
+              key: Z
         name: ZoomIt
         version: 1.0
 ```
@@ -144,13 +150,14 @@ resources:
     properties:
       settings:
         properties:
-          ActivationShortcut:
-            win: true
-            ctrl: false
-            alt: false
-            shift: false
-            code: 187
-            key: "="
+          ToggleKey:
+            value:
+              win: true
+              ctrl: false
+              alt: false
+              shift: false
+              code: 187
+              key: "="
         name: ZoomIt
         version: 1.0
 ```
@@ -168,13 +175,14 @@ resources:
     properties:
       settings:
         properties:
-          ActivationShortcut:
-            win: false
-            ctrl: true
-            alt: false
-            shift: false
-            code: 49
-            key: "1"
+          ToggleKey:
+            value:
+              win: false
+              ctrl: true
+              alt: false
+              shift: false
+              code: 49
+              key: "1"
         name: ZoomIt
         version: 1.0
 ```
@@ -190,16 +198,27 @@ resources:
     properties:
       settings:
         properties:
-          ActivationShortcut:
-            win: true
-            ctrl: false
-            alt: false
-            shift: true
-            code: 90
-            key: Z
+          ToggleKey:
+            value:
+              win: true
+              ctrl: false
+              alt: false
+              shift: true
+              code: 90
+              key: Z
         name: ZoomIt
         version: 1.0
 ```
+
+## Important notes
+
+> **Note:** ZoomIt stores its settings in the registry
+> (`HKCU\Software\Sysinternals\ZoomIt`), not in a `settings.json` file. The
+> `settings` resource reads and writes them through the ZoomIt settings
+> interop, the same component the PowerToys Settings app uses. Properties that
+> are not part of the configuration keep their current value. A running ZoomIt
+> instance reloads the settings immediately; otherwise they take effect the
+> next time ZoomIt starts.
 
 ## See also
 

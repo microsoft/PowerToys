@@ -82,6 +82,10 @@ namespace ImageResizer.Properties
             "CLI_ErrorInvalidDimension",
             "Width and height must be finite numbers greater than or equal to zero.");
 
+        public static string CLI_ErrorInvalidEnumValue => GetStringOrDefault(
+            "CLI_ErrorInvalidEnumValue",
+            "Invalid value '{0}' for option '{1}'.");
+
         public static string CLI_ErrorZeroDimensions => GetStringOrDefault(
             "CLI_ErrorZeroDimensions",
             "Width and height cannot both be zero for a custom size.");
