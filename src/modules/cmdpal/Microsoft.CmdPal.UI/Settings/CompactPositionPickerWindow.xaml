@@ -213,6 +213,7 @@
                     <StackPanel Spacing="4">
                         <TextBlock
                             x:Uid="CompactPositionPickerWindow_Heading"
+                            AutomationProperties.HeadingLevel="Level1"
                             FontWeight="SemiBold"
                             Style="{StaticResource SubtitleTextBlockStyle}" />
                         <TextBlock

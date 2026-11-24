@@ -448,6 +448,7 @@ public sealed partial class ListItemsView : UserControl, IPageInteractionTarget,
         try
         {
             var container = args.ItemContainer;
+            UpdateContainerAutomationName(container, args.InRecycleQueue ? null : args.Item as ListItemViewModel);
             if (!sender.IsLoaded || args.InRecycleQueue || args.Item is not ListItemViewModel item)
             {
                 ReleaseRealizedItem(container);
@@ -459,6 +460,20 @@ public sealed partial class ListItemsView : UserControl, IPageInteractionTarget,
         catch (Exception ex)
         {
             Logger.LogError("Failed to track a realized list item", ex);
+        }
+    }
+
+    // Section header containers hold a view model, so without an explicit name
+    // their automation peer falls back to the view model's ToString().
+    private static void UpdateContainerAutomationName(SelectorItem container, ListItemViewModel? item)
+    {
+        if (item?.Type == ListItemType.SectionHeader)
+        {
+            AutomationProperties.SetName(container, item.Section);
+        }
+        else
+        {
+            container.ClearValue(AutomationProperties.NameProperty);
         }
     }
 

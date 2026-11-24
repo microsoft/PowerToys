@@ -229,7 +229,7 @@
                         ItemsSource="{x:Bind BreadCrumbs, Mode=OneWay}">
                         <BreadcrumbBar.ItemTemplate>
                             <DataTemplate x:DataType="local:Crumb">
-                                <TextBlock Text="{x:Bind Label}" />
+                                <TextBlock AutomationProperties.HeadingLevel="Level1" Text="{x:Bind Label}" />
                             </DataTemplate>
                         </BreadcrumbBar.ItemTemplate>
                         <BreadcrumbBar.Resources>
