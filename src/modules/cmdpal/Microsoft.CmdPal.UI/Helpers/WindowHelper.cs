@@ -6,11 +6,20 @@ using System.Diagnostics;
 using Windows.Win32;
 using Windows.Win32.Foundation;
 using Windows.Win32.UI.Shell;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Microsoft.CmdPal.UI.Helpers;
 
 internal sealed partial class WindowHelper
 {
+    internal static bool HasForegroundWindow(nint hwnd)
+    {
+        // Palette and dock windows have hidden owners; their popups share that ownership root.
+        var rootOwner = PInvoke.GetAncestor((HWND)hwnd, GET_ANCESTOR_FLAGS.GA_ROOTOWNER);
+        return rootOwner != HWND.Null &&
+            PInvoke.GetAncestor(PInvoke.GetForegroundWindow(), GET_ANCESTOR_FLAGS.GA_ROOTOWNER) == rootOwner;
+    }
+
     /// <summary>
     /// Known applications whose visible windows can trigger a QUNS_BUSY state
     /// even when the user is not actually in a fullscreen/presentation scenario.

@@ -307,6 +307,7 @@ public partial class App : Application, IDisposable
     {
         // Core services
         services.AddSingleton(appInfoService);
+        services.AddSingleton<WindowDismissalService>();
 
         // Load IExtensionServices here
         services.AddSingleton<IExtensionService, BuiltInExtensionService>();

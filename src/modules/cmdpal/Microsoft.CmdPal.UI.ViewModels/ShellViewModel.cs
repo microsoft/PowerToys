@@ -7,10 +7,13 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common;
+using Microsoft.CmdPal.Common.Messages;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
 using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.ViewModels.Messages;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -27,6 +30,7 @@ public partial class ShellViewModel : ObservableObject,
     public event EventHandler<ShellNavigationRequestedEventArgs>? GoBackRequested;
 
     private readonly IRootPageService _rootPageService;
+    private readonly WindowDismissalService _windowDismissal;
     private readonly TaskScheduler _scheduler;
     private readonly PageNavigationService _pageNavigation;
     private readonly Lock _invokeLock = new();
@@ -110,11 +114,13 @@ public partial class ShellViewModel : ObservableObject,
         TaskScheduler scheduler,
         IRootPageService rootPageService,
         IPageViewModelFactoryService pageViewModelFactory,
-        IAppHostService appHostService)
+        IAppHostService appHostService,
+        WindowDismissalService windowDismissal)
     {
         _pageNavigation = new(pageViewModelFactory, appHostService);
         _scheduler = scheduler;
         _rootPageService = rootPageService;
+        _windowDismissal = windowDismissal;
 
         NullPage = new NullPageViewModel(_scheduler, appHostService.GetDefaultHost());
         _currentPage = new LoadingPageViewModel(null, _scheduler, appHostService.GetDefaultHost());
@@ -375,11 +381,27 @@ public partial class ShellViewModel : ObservableObject,
         try
         {
             ICommandResult? result;
+            IDisposable? dismissalHold = null;
             try
             {
                 extensionId = host?.GetExtensionDisplayName() ?? "builtin";
                 commandId = message.Command.Id;
                 commandName = message.Command.Name;
+
+                if (invokable is IRequiresHostHwnd requiresHwnd)
+                {
+                    // Forwarding clears the message route but retains the source page's owner.
+                    var ownerHwnd = message.Context?.Page?.DockRoute?.OwnerHwnd ?? 0;
+                    if (ownerHwnd == 0)
+                    {
+                        var hwndMessage = new GetHwndMessage();
+                        WeakReferenceMessenger.Default.Send(hwndMessage);
+                        ownerHwnd = hwndMessage.Hwnd;
+                    }
+
+                    dismissalHold = ownerHwnd != 0 ? _windowDismissal.Acquire(ownerHwnd) : null;
+                    requiresHwnd.SetHostHwnd(ownerHwnd);
+                }
 
                 // Call out to extension process.
                 // * May fail!
@@ -389,6 +411,8 @@ public partial class ShellViewModel : ObservableObject,
             }
             finally
             {
+                dismissalHold?.Dispose();
+
                 // Report the invocation outcome before processing its result.
                 stopwatch.Stop();
                 WeakReferenceMessenger.Default.Send<TelemetryExtensionInvokedMessage>(

@@ -5,6 +5,7 @@
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
+using Microsoft.CmdPal.Common.Services;
 using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -65,6 +66,7 @@ public sealed partial class DockWindow : WindowEx,
 #pragma warning restore SA1306 // Field names should begin with lower-case letter
 
     private readonly IThemeService _themeService;
+    private readonly WindowDismissalService _windowDismissal;
     private readonly ISettingsService _settingsService;
     private readonly IMonitorService _monitorService;
     private readonly DockWindowViewModel _windowViewModel;
@@ -94,6 +96,7 @@ public sealed partial class DockWindow : WindowEx,
     private RECT _revealedRect;
     private RECT _collapsedRect;
     private DispatcherQueueTimer? _collapseTimer;
+    private bool _pendingImmediateCollapse;
     private DispatcherQueueTimer? _revealPollTimer;
     private DispatcherQueueTimer? _slideTimer;
     private RECT _slideFromRect;
@@ -102,6 +105,7 @@ public sealed partial class DockWindow : WindowEx,
     private System.Diagnostics.Stopwatch? _slideStopwatch;
     private bool _paletteOpenedFromDock;
     private bool _hasKeyboardFocus;
+    private bool _deactivationPending;
     private HWND _windowBeforeKeyboardFocus = HWND.Null;
     private const int AutoHideCollapsedThicknessDips = 0;
     private const int RevealHitTestMarginPixels = 1;
@@ -149,6 +153,8 @@ public sealed partial class DockWindow : WindowEx,
         _sideOverride = sideOverride;
 
         var serviceProvider = App.Current.Services;
+        _windowDismissal = serviceProvider.GetRequiredService<WindowDismissalService>();
+        _windowDismissal.LastHoldReleased += WindowDismissal_LastHoldReleased;
         var mainSettings = serviceProvider.GetRequiredService<ISettingsService>().Settings;
         _settingsService = serviceProvider.GetRequiredService<ISettingsService>();
         _settingsService.SettingsChanged += SettingsChangedHandler;
@@ -239,7 +245,8 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DockWindow_Activated(object sender, WindowActivatedEventArgs args)
     {
-        if (args.WindowActivationState == WindowActivationState.Deactivated)
+        _deactivationPending = args.WindowActivationState == WindowActivationState.Deactivated && _windowDismissal.IsSuppressed((nint)_hwnd);
+        if (args.WindowActivationState == WindowActivationState.Deactivated && !_deactivationPending)
         {
             // Focus moved somewhere else on its own, so stop pretending we still hold it.
             ReleaseKeyboardFocus(restoreForeground: false);
@@ -247,6 +254,29 @@ public sealed partial class DockWindow : WindowEx,
 
         UpdateWindowFrame();
         UpdateTopmostState();
+    }
+
+    private void WindowDismissal_LastHoldReleased(object? sender, nint ownerHwnd)
+    {
+        if (ownerHwnd != (nint)_hwnd)
+        {
+            return;
+        }
+
+        DispatcherQueue.TryEnqueue(DispatcherQueuePriority.Low, () =>
+        {
+            if (_isDisposed || !_deactivationPending || _windowDismissal.IsSuppressed(ownerHwnd))
+            {
+                return;
+            }
+
+            _deactivationPending = false;
+            if (!WindowHelper.HasForegroundWindow(ownerHwnd))
+            {
+                ReleaseKeyboardFocus(restoreForeground: false);
+                HandleDeactivationForAutoHide();
+            }
+        });
     }
 
     private void UpdateWindowFrame()
@@ -550,6 +580,7 @@ public sealed partial class DockWindow : WindowEx,
 
     private void DestroyAppBar(HWND hwnd)
     {
+        _pendingImmediateCollapse = false;
         StopCollapseTimer();
         StopRevealPollTimer();
         StopSlideAnimation();
@@ -1042,14 +1073,16 @@ public sealed partial class DockWindow : WindowEx,
             return;
         }
 
-        if (!immediate && !CanCollapseAutoHideDock())
+        if (_windowDismissal.IsSuppressed((nint)_hwnd) || (!immediate && !CanCollapseAutoHideDock()))
         {
             // Cursor is still over the dock or a blocking condition exists.
             // Reschedule so we retry when conditions change.
+            _pendingImmediateCollapse |= immediate;
             ScheduleCollapseAutoHideDock();
             return;
         }
 
+        _pendingImmediateCollapse = false;
         StopCollapseTimer();
         _isDockRevealed = false;
 
@@ -1135,7 +1168,10 @@ public sealed partial class DockWindow : WindowEx,
         timer.Tick += (sender, _) =>
         {
             sender.Stop();
-            CollapseAutoHideDock();
+            System.Diagnostics.Debug.Assert(!_pendingImmediateCollapse || _isFullScreenAppOpen, "A deferred full-screen collapse must be cancelled when full screen ends.");
+            var immediate = _pendingImmediateCollapse && _isFullScreenAppOpen;
+            _pendingImmediateCollapse = false;
+            CollapseAutoHideDock(immediate);
         };
 
         return timer;
@@ -1377,6 +1413,12 @@ public sealed partial class DockWindow : WindowEx,
     {
         if (_appBarMode != DockAppBarMode.AutoHide)
         {
+            return;
+        }
+
+        if (_windowDismissal.IsSuppressed((nint)_hwnd))
+        {
+            _deactivationPending = true;
             return;
         }
 
@@ -1632,6 +1674,11 @@ public sealed partial class DockWindow : WindowEx,
             else if (wParam.Value == PInvoke.ABN_FULLSCREENAPP)
             {
                 _isFullScreenAppOpen = lParam != 0;
+                if (!_isFullScreenAppOpen)
+                {
+                    _pendingImmediateCollapse = false;
+                }
+
                 if (_isFullScreenAppOpen)
                 {
                     StopRevealPollTimer();
@@ -1883,6 +1930,8 @@ public sealed partial class DockWindow : WindowEx,
         }
 
         _isDisposed = true;
+        _windowDismissal.LastHoldReleased -= WindowDismissal_LastHoldReleased;
+        _windowDismissal.Reset((nint)_hwnd);
 
         _settingsService?.SettingsChanged -= SettingsChangedHandler;
 
