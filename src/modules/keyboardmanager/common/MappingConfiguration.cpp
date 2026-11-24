@@ -166,27 +166,61 @@ std::wstring MappingConfiguration::KeySequenceToString(const std::vector<DWORD>&
     return result;
 }
 
+namespace
+{
+    // Parses a complete decimal key code: ASCII digits only, nothing else (no sign, space, hex prefix,
+    // NUL or trailing characters), so a malformed value is rejected instead of becoming a different key.
+    DWORD ParseDecimalKeyCode(const std::wstring_view element)
+    {
+        // A DWORD has at most 10 digits (numpad-origin encodings use bit 31, so they have 10).
+        if (element.empty() || element.size() > 10)
+        {
+            throw std::invalid_argument("invalid key code");
+        }
+
+        uint64_t key = 0;
+        for (const wchar_t c : element)
+        {
+            if (c < L'0' || c > L'9')
+            {
+                throw std::invalid_argument("invalid key code");
+            }
+            key = key * 10 + static_cast<uint64_t>(c - L'0');
+        }
+
+        if (key > MAXDWORD)
+        {
+            throw std::invalid_argument("invalid key code");
+        }
+
+        return static_cast<DWORD>(key);
+    }
+}
+
 std::vector<DWORD> MappingConfiguration::ParseKeySequence(const std::wstring& value)
 {
     std::vector<DWORD> sequence;
+    if (value.empty())
+    {
+        return sequence;
+    }
+
     size_t start = 0;
-    while (start <= value.size())
+    while (true)
     {
         const size_t end = value.find(L';', start);
-        const std::wstring element = value.substr(start, end == std::wstring::npos ? std::wstring::npos : end - start);
-        if (!element.empty())
-        {
-            // Decimal VK codes only: reject trailing characters (e.g. "0x1A" or "27abc") and values
-            // outside the key range, instead of silently sending a different key.
-            size_t parsed = 0;
-            const unsigned long key = std::iswdigit(element[0]) ? std::stoul(element, &parsed) : 0;
-            if (parsed != element.size() || key == 0 || (key > 0xFF && key != CommonSharedConstants::VK_DISABLED && key != CommonSharedConstants::VK_WIN_BOTH))
-            {
-                throw std::invalid_argument("invalid key code in key sequence");
-            }
+        const std::wstring_view element = std::wstring_view(value).substr(start, end == std::wstring::npos ? std::wstring::npos : end - start);
 
-            sequence.push_back(static_cast<DWORD>(key));
+        // Each element is sent with SendInput, whose KEYBDINPUT.wVk takes 1-254. The KBM codes for
+        // Disabled (skipped) and Win (sent as Left Win) are handled by the engine. An empty element
+        // ("27;;26" or a trailing ';') is rejected like any other malformed element.
+        const DWORD key = ParseDecimalKeyCode(element);
+        if ((key == 0 || key > 0xFE) && key != CommonSharedConstants::VK_DISABLED && key != CommonSharedConstants::VK_WIN_BOTH)
+        {
+            throw std::invalid_argument("invalid key code in key sequence");
         }
+
+        sequence.push_back(key);
 
         if (end == std::wstring::npos)
         {
@@ -197,6 +231,45 @@ std::vector<DWORD> MappingConfiguration::ParseKeySequence(const std::wstring& va
     }
 
     return sequence;
+}
+
+std::vector<DWORD> MappingConfiguration::ParseSequenceSourceKeys(const std::wstring& value)
+{
+    const DWORD key = ParseDecimalKeyCode(value);
+
+    // Codes the keyboard hook never reports for a physical key: expand them to the left and right keys,
+    // as the editor does when it saves an ordinary remap (key sequences are written by hand for now).
+    switch (key)
+    {
+    case CommonSharedConstants::VK_WIN_BOTH:
+        return { VK_LWIN, VK_RWIN };
+    case VK_SHIFT:
+        return { VK_LSHIFT, VK_RSHIFT };
+    case VK_CONTROL:
+        return { VK_LCONTROL, VK_RCONTROL };
+    case VK_MENU:
+        return { VK_LMENU, VK_RMENU };
+    default:
+        break;
+    }
+
+    // The hook reports 1-254, and marks a numpad key that shares its VK code with another key (e.g.
+    // NumPad End) with the numpad-origin bit; accept exactly those encodings.
+    if (key >= 1 && key <= 0xFE)
+    {
+        return { key };
+    }
+
+    if (Helpers::IsNumpadOriginated(key))
+    {
+        const DWORD baseKey = Helpers::ClearKeyNumpadOrigin(key);
+        if (baseKey >= 1 && baseKey <= 0xFE && (Helpers::EncodeKeyNumpadOrigin(baseKey, false) == key || Helpers::EncodeKeyNumpadOrigin(baseKey, true) == key))
+        {
+            return { key };
+        }
+    }
+
+    throw std::invalid_argument("invalid source key");
 }
 
 bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text)
@@ -330,31 +403,27 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
                 std::wstring originalKey;
                 try
                 {
-                    originalKey = it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName).c_str();
-                    auto sequence = it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName);
+                    // Convert with the full length (not c_str()), so a NUL inside the string is validated
+                    // as part of it instead of silently cutting the value short.
+                    originalKey = std::wstring{ std::wstring_view{ it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName) } };
+                    const std::wstring sequence{ std::wstring_view{ it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName) } };
 
-                    // Decimal only: digits from the first character (stoul would accept " 27", "+27" and
-                    // "-27"), no trailing characters (e.g. "0x1B" would otherwise become 0).
-                    if (originalKey.empty() || !std::iswdigit(originalKey[0]))
-                    {
-                        throw std::invalid_argument("invalid source key");
-                    }
+                    // Both throw on a value that is not a complete decimal key code in range.
+                    const auto sourceKeys = ParseSequenceSourceKeys(originalKey);
+                    const auto keySequence = ParseKeySequence(sequence);
 
-                    size_t parsed = 0;
-                    const DWORD sourceKey = static_cast<DWORD>(std::stoul(originalKey, &parsed));
-                    if (parsed != originalKey.size() || sourceKey == 0)
+                    // A generic source key (e.g. 260 = Win) adds one remap for each side.
+                    for (const DWORD sourceKey : sourceKeys)
                     {
-                        throw std::invalid_argument("invalid source key");
-                    }
-
-                    if (!AddSingleKeyToSequenceRemap(sourceKey, ParseKeySequence(sequence.c_str())))
-                    {
-                        Logger::warn(L"Ignored the key sequence remap for key {}: the sequence is empty or the key already has one.", originalKey);
+                        if (!AddSingleKeyToSequenceRemap(sourceKey, keySequence))
+                        {
+                            Logger::warn(L"Ignored the key sequence remap for key {}: the sequence is empty or the key already has one.", sourceKey);
+                        }
                     }
                 }
                 catch (...)
                 {
-                    Logger::warn(L"Ignored the key sequence remap for key {}: not a valid entry.", originalKey);
+                    Logger::warn(L"Ignored the key sequence remap for key {}: not a valid entry.", originalKey.c_str());
                 }
             }
         }

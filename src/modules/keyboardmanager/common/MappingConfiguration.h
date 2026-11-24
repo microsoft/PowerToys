@@ -103,11 +103,18 @@ public:
 
     // Converts between a key sequence and its settings string: the VK codes in order, ';'-separated
     // (e.g. Esc then IME-Off = "27;26"). Stored in the separate inProcessSequence array, so the
-    // same ';' format as a shortcut means "one after another" here, not "at the same time". ParseKeySequence skips
-    // empty elements and throws on an element that is not a decimal key code (1-255, or the KBM
-    // codes for Disabled and Win); the loader then skips that remap.
+    // same ';' format as a shortcut means "one after another" here, not "at the same time". ParseKeySequence
+    // throws on an element that is empty or not a complete decimal key code that can be sent (1-254, or
+    // the KBM codes 256 = Disabled and 260 = Win); the loader then skips that remap.
     static std::wstring KeySequenceToString(const std::vector<DWORD>& sequence);
     static std::vector<DWORD> ParseKeySequence(const std::wstring& value);
+
+    // Parses the source key of a key-sequence remap: a complete decimal key code that the keyboard hook
+    // can report (1-254, or a numpad key with the numpad-origin marker, see Helpers::EncodeKeyNumpadOrigin).
+    // The hook never reports 260 (Win) or the generic Shift/Ctrl/Alt (16/17/18) for a physical key, so
+    // those are expanded to the left and right keys (saving the profile then writes both entries).
+    // Throws on anything else; the loader then skips that remap.
+    static std::vector<DWORD> ParseSequenceSourceKeys(const std::wstring& value);
 
 private:
     bool configurationNameResolved = false;

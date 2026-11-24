@@ -7,6 +7,7 @@
 #pragma warning(pop)
 
 #include <keyboardmanager/common/MappingConfiguration.h>
+#include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h>
 #include <common/interop/shared_constants.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
@@ -516,16 +517,23 @@ namespace RemappingUITests
             Assert::IsTrue(config.aloneSingleKeyReMap.empty());
         }
 
-        // Test the key-sequence string parser: empty elements are skipped, and a non-numeric element
-        // throws (LoadSingleKeyRemaps catches it and skips that one remap).
-        TEST_METHOD (ParseKeySequence_ShouldSkipEmptyElements_AndThrowOnInvalid)
+        // Test the key-sequence string parser: every element must be a complete decimal key code that
+        // can be sent (1-254, or the KBM codes 256 = Disabled and 260 = Win); anything else, including an
+        // empty element, throws (LoadSingleKeyRemaps catches it and skips that one remap).
+        TEST_METHOD (ParseKeySequence_ShouldThrowOnInvalidOrEmptyElements)
         {
-            Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"27;;26;") == std::vector<DWORD>{ 27, 26 });
+            Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"27;26") == std::vector<DWORD>{ 27, 26 });
             Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"").empty());
 
-            Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"256;260;255") == std::vector<DWORD>{ CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH, 255 });
+            Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"1;254;256;260") == std::vector<DWORD>{ 1, 254, CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH });
 
-            for (const wchar_t* invalid : { L"27;abc", L"0x1A", L"27abc", L"0", L"300", L"-1", L"+27", L" 27" })
+            const std::wstring invalidValues[] = {
+                L"27;;26", L"27;26;", L";27", L";",
+                L"27;abc", L"0x1A", L"27abc", L"-1", L"+27", L" 27", L"27 ",
+                L"0", L"255", L"257", L"300", L"999999", L"99999999999999999999",
+                std::wstring(L"65;66\0;300", 10), std::wstring(L"65\0", 3),
+            };
+            for (const auto& invalid : invalidValues)
             {
                 bool threw = false;
                 try
@@ -536,8 +544,86 @@ namespace RemappingUITests
                 {
                     threw = true;
                 }
-                Assert::IsTrue(threw, invalid);
+                Assert::IsTrue(threw, invalid.c_str());
             }
+        }
+
+        // Test the source-key parser: a source key must be a complete decimal key code that the keyboard
+        // hook can report -- 1-254, or a numpad key with the numpad-origin marker. The codes the hook
+        // never reports for a physical key are expanded to the left and right keys: 260 (Win) and the
+        // generic Shift/Ctrl/Alt (16/17/18).
+        TEST_METHOD (ParseSequenceSourceKeys_ShouldAcceptHookKeys_AndExpandGenericKeys)
+        {
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"27") == std::vector<DWORD>{ 27 });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"1") == std::vector<DWORD>{ 1 });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"254") == std::vector<DWORD>{ 254 });
+
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"260") == std::vector<DWORD>{ VK_LWIN, VK_RWIN });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"16") == std::vector<DWORD>{ VK_LSHIFT, VK_RSHIFT });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"17") == std::vector<DWORD>{ VK_LCONTROL, VK_RCONTROL });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"18") == std::vector<DWORD>{ VK_LMENU, VK_RMENU });
+
+            // Numpad-origin encodings, as the hook reports them (e.g. NumPad End and NumPad Enter).
+            const DWORD numpadEnd = Helpers::EncodeKeyNumpadOrigin(VK_END, false);
+            const DWORD numpadEnter = Helpers::EncodeKeyNumpadOrigin(VK_RETURN, true);
+            Assert::IsTrue(numpadEnd != VK_END && numpadEnter != VK_RETURN);
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(std::to_wstring(numpadEnd)) == std::vector<DWORD>{ numpadEnd });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(std::to_wstring(numpadEnter)) == std::vector<DWORD>{ numpadEnter });
+
+            const std::wstring invalidValues[] = {
+                L"", L"0", L"255", L"256", L"257", L"999999", L"99999999999999999999",
+                L"0x1B", L"27abc", L"-27", L"+27", L" 27", L"27;26",
+                std::wstring(L"27\0abc", 6), std::wstring(L"27\0", 3),
+                std::to_wstring(VK_F1 | Helpers::GetNumpadOriginEncodingBit()), // F1 never has the numpad marker
+                std::to_wstring(Helpers::GetNumpadOriginEncodingBit()),
+            };
+            for (const auto& invalid : invalidValues)
+            {
+                bool threw = false;
+                try
+                {
+                    MappingConfiguration::ParseSequenceSourceKeys(invalid);
+                }
+                catch (...)
+                {
+                    threw = true;
+                }
+                Assert::IsTrue(threw, invalid.c_str());
+            }
+        }
+
+        // The loader validates the complete JSON strings: a NUL inside the source or the target makes the
+        // entry invalid instead of cutting the string there. A source of 260 (Win) loads for both Win keys.
+        TEST_METHOD (LoadSingleKeyRemaps_ValidatesCompleteStrings_AndExpandsWinSource)
+        {
+            auto entry = [](const std::wstring& original, const std::wstring& sequence) {
+                json::JsonObject e;
+                e.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::JsonValue::CreateStringValue(winrt::hstring(std::wstring_view(original))));
+                e.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::JsonValue::CreateStringValue(winrt::hstring(std::wstring_view(sequence))));
+                return e;
+            };
+
+            json::JsonArray inProcessSequence;
+            inProcessSequence.Append(entry(std::wstring(L"112\0abc", 7), L"65")); // NUL in the source
+            inProcessSequence.Append(entry(L"113", std::wstring(L"65;66\0;300", 10))); // NUL in the target
+            inProcessSequence.Append(entry(L"114", L"65;255"));                     // target out of range
+            inProcessSequence.Append(entry(L"115", L"65;;66"));                     // empty element
+            inProcessSequence.Append(entry(L"999999", L"65"));                      // source out of range
+            inProcessSequence.Append(entry(L"260", L"27;26"));                      // Win: both Win keys
+            inProcessSequence.Append(entry(L"27", L"27;254;256;260"));              // valid, with the aliases
+
+            json::JsonObject remapKeys;
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray());
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequence);
+            json::JsonObject root;
+            root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+            MappingConfiguration config;
+            Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+            Assert::AreEqual(static_cast<size_t>(3), config.singleKeyToSequenceReMap.size());
+            Assert::IsTrue(config.singleKeyToSequenceReMap[VK_LWIN] == std::vector<DWORD>{ 27, 26 });
+            Assert::IsTrue(config.singleKeyToSequenceReMap[VK_RWIN] == std::vector<DWORD>{ 27, 26 });
+            Assert::IsTrue(config.singleKeyToSequenceReMap[27] == std::vector<DWORD>{ 27, 254, CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH });
         }
 
         // Test that loading again replaces the key sequences instead of keeping the old ones (the
