@@ -191,6 +191,21 @@ public class MouseJumpTests : UITestBase
         Assert.IsTrue(
             Math.Abs(renderedContentAspectRatio - displayAspectRatio) <= 0.02,
             $"Preview content aspect ratio {renderedContentAspectRatio:F3} did not preserve display ratio {displayAspectRatio:F3}.");
+
+        MouseUtilsTestHelper.ReplaceModuleSettings(ModuleName, CreateSettings(new MouseJumpConfiguration(Width: 720, Height: 540, PreviewType: "Compact")));
+        MouseUtilsTestHelper.ReplaceModuleSettings(ModuleName, CreateSettings(new MouseJumpConfiguration(Width: 520, Height: 390, PreviewType: "Compact")));
+
+        var resized = WaitHelper.WaitForStable(
+            () =>
+            {
+                var resizedPreview = ShowPreview();
+                var resizedBounds = WindowHelper.GetWindowBounds(resizedPreview.Hwnd);
+                return (resizedPreview.ProcessId, Width: resizedBounds.Right - resizedBounds.Left);
+            },
+            observation => observation.Width is >= 500 and <= 530,
+            timeoutMS: 10_000);
+        Assert.IsTrue(resized.Succeeded, $"Mouse Jump did not apply the final 520px preview width. Last width: {resized.LastObservation.Width}px.");
+        Assert.AreEqual(preview.ProcessId, resized.LastObservation.ProcessId, "Mouse Jump restarted while applying the updated settings.");
     }
 
     [TestMethod]
