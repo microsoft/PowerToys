@@ -16,6 +16,7 @@
 #include <common/utils/winapi_error.h>
 #include <common/utils/gpo.h>
 #include <common/utils/EventWaiter.h>
+#include <common/utils/copy_selection.h>
 #include <common/utils/input_injection.h>
 
 #include <algorithm>
@@ -517,18 +518,17 @@ private:
         }
     }
 
-    // Sends Ctrl+<key> to the foreground app once the user lets go of the hotkey modifiers.
-    // Must not be called on the low-level keyboard hook thread: the physical key-ups it waits
-    // for are queued behind that hook and would never be observed. Held modifiers are released,
-    // never re-pressed afterwards, so none can be left logically stuck (#27612).
-    static bool send_ctrl_chord(WORD key, const wchar_t* chord_name)
+    static constexpr input_injection::chord_options ctrl_chord_options()
     {
         input_injection::chord_options options;
         // Keeps the centralized keyboard hook from treating the chord as a hotkey, e.g. Ctrl+V as activation.
         options.extra_info = CENTRALIZED_KEYBOARD_HOOK_DONT_TRIGGER_FLAG;
         options.modifier_release_timeout = std::chrono::milliseconds(1000);
+        return options;
+    }
 
-        const auto result = input_injection::send_chord({ VK_CONTROL, key }, options);
+    static void log_ctrl_chord_result(const input_injection::chord_result& result, const input_injection::chord_options& options, const wchar_t* chord_name)
+    {
         if (result.modifier_wait_timed_out)
         {
             Logger::warn(L"Modifier keys still held after {}ms; released them before sending {}", options.modifier_release_timeout.count(), chord_name);
@@ -539,111 +539,58 @@ private:
             auto errorMessage = get_last_error_message(result.error);
             Logger::error(L"SendInput failed for {}. Expected to send {} inputs and sent only {}; released {} of {} pressed keys. {}", chord_name, result.requested, result.sent, result.cleanup_sent, result.cleanup_requested, errorMessage.has_value() ? errorMessage.value() : L"");
             Trace::AdvancedPaste_Error(result.error, errorMessage.has_value() ? errorMessage.value() : L"", L"input.SendInput");
-            return false;
         }
-
-        return true;
     }
 
-    bool try_send_copy_message()
+    // Sends Ctrl+<key> to the foreground app once the user lets go of the hotkey modifiers.
+    // Must not be called on the low-level keyboard hook thread: the physical key-ups it waits
+    // for are queued behind that hook and would never be observed. Held modifiers are released,
+    // never re-pressed afterwards, so none can be left logically stuck (#27612).
+    static bool send_ctrl_chord(WORD key, const wchar_t* chord_name)
     {
-        GUITHREADINFO gui_info = {};
-        gui_info.cbSize = sizeof(GUITHREADINFO);
-
-        if (!GetGUIThreadInfo(0, &gui_info))
-        {
-            Logger::warn(L"Auto-copy: GetGUIThreadInfo failed (error={})", GetLastError());
-            return false;
-        }
-
-        HWND target = gui_info.hwndFocus ? gui_info.hwndFocus : gui_info.hwndActive;
-        if (!target)
-        {
-            Logger::warn(L"Auto-copy: no focused or active window found");
-            return false;
-        }
-
-        DWORD_PTR result = 0;
-        auto sendResult = SendMessageTimeout(target, WM_COPY, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 50, &result);
-        return sendResult != 0;
+        const auto options = ctrl_chord_options();
+        const auto result = input_injection::send_chord({ VK_CONTROL, key }, options);
+        log_ctrl_chord_result(result, options, chord_name);
+        return result.succeeded();
     }
 
-    // Helper: poll clipboard sequence number for a change from initial_sequence.
-    // Returns true if the sequence number changed within the given number of polls.
-    bool poll_clipboard_sequence(DWORD initial_sequence, int poll_attempts, std::chrono::milliseconds poll_delay)
-    {
-        for (int poll = 0; poll < poll_attempts; ++poll)
-        {
-            if (GetClipboardSequenceNumber() != initial_sequence)
-            {
-                return true;
-            }
-            std::this_thread::sleep_for(poll_delay);
-        }
-        return false;
-    }
-
-    // Helper: send Ctrl+C via SendInput. The hotkey combination may still have modifiers
-    // physically pressed; without releasing them the target app would see e.g. Win+Shift+Ctrl+C.
-    bool send_ctrl_c_input()
-    {
-        return send_ctrl_chord('C', L"Ctrl+C");
-    }
-
+    // Copies the foreground app's selection: WM_COPY first (standard Win32 controls), then Ctrl+C
+    // (Electron, browsers, etc.). Must not be called on the low-level keyboard hook thread.
     bool send_copy_selection()
     {
-        constexpr int copy_attempts = 2;
-        constexpr auto copy_retry_delay = std::chrono::milliseconds(100);
-        constexpr int clipboard_poll_attempts = 5;
-        constexpr auto clipboard_poll_delay = std::chrono::milliseconds(30);
+        copy_selection::copy_options options;
+        options.attempts = 2;
+        options.retry_delay = std::chrono::milliseconds(100);
+        options.wm_copy_timeout = std::chrono::milliseconds(50);
+        options.clipboard_timeout = std::chrono::milliseconds(150);
+        options.clipboard_poll_interval = std::chrono::milliseconds(30);
+        options.chord = ctrl_chord_options();
 
-        bool copy_succeeded = false;
-        for (int attempt = 0; attempt < copy_attempts; ++attempt)
+        const auto result = copy_selection::copy(options);
+
+        for (const auto& attempt : result.attempts)
         {
-            const auto initial_sequence = GetClipboardSequenceNumber();
-
-            // Strategy 1: Try WM_COPY message (works for standard Win32 controls)
-            bool wm_copy_sent = try_send_copy_message();
-
-            if (wm_copy_sent)
+            if (attempt.wm_copy == copy_selection::wm_copy_outcome::gui_thread_info_failed)
             {
-                if (poll_clipboard_sequence(initial_sequence, clipboard_poll_attempts, clipboard_poll_delay))
-                {
-                    copy_succeeded = true;
-                }
+                Logger::warn(L"Auto-copy: GetGUIThreadInfo failed (error={})", attempt.wm_copy_error);
+            }
+            else if (attempt.wm_copy == copy_selection::wm_copy_outcome::no_target_window)
+            {
+                Logger::warn(L"Auto-copy: no focused or active window found");
             }
 
-            // Strategy 2: If WM_COPY didn't work, try SendInput Ctrl+C (works for Electron, browsers, etc.)
-            if (!copy_succeeded)
+            if (attempt.ctrl_c_attempted)
             {
-                const auto sequence_before_ctrl_c = GetClipboardSequenceNumber();
-
-                if (send_ctrl_c_input())
-                {
-                    if (poll_clipboard_sequence(sequence_before_ctrl_c, clipboard_poll_attempts, clipboard_poll_delay))
-                    {
-                        copy_succeeded = true;
-                    }
-                }
-            }
-
-            if (copy_succeeded)
-            {
-                break;
-            }
-
-            if (attempt + 1 < copy_attempts)
-            {
-                std::this_thread::sleep_for(copy_retry_delay);
+                log_ctrl_chord_result(attempt.ctrl_c, options.chord, L"Ctrl+C");
             }
         }
 
-        if (!copy_succeeded)
+        if (!result.copied())
         {
-            Logger::warn(L"Auto-copy: all {} copy attempts failed — the target application did not update the clipboard after WM_COPY and Ctrl+C", copy_attempts);
+            Logger::warn(L"Auto-copy: all {} copy attempts failed — the target application did not update the clipboard after WM_COPY and Ctrl+C", options.attempts);
         }
 
-        return copy_succeeded;
+        return result.copied();
     }
 
     void try_to_paste_as_plain_text()
