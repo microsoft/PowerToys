@@ -660,7 +660,9 @@ namespace KeyboardEventHandlers
     // chosen by the virtual key of this key-down (numpad-origin encoded, as the hook reports it).
     SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {
-        // Keep the table alive until this function is done with it, whatever is published meanwhile.
+        // Keep the table alive until this function is done with it, whatever is published meanwhile:
+        // the taps sent below can go through the hook nested inside this call, and each hook call
+        // publishes a table that was staged in the meantime.
         const std::shared_ptr<const SingleKeyToSequenceRemapTable> sequenceTable = state.GetLiveSequenceTable();
         const auto sequenceRemap = sequenceTable->find(data->lParam->vkCode);
         if (sequenceRemap == sequenceTable->end())
@@ -2620,7 +2622,14 @@ namespace KeyboardEventHandlers
     // See header.
     intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const bool remappingSuspended) noexcept
     {
-        // Key-sequence remap (#5679), step 1: pair the event with its physical press. This comes
+        // Key-sequence remap (#5679): if a settings reload staged a new key-sequence table, make it
+        // the live one now. This is the hook thread, and nothing in this call has read the table
+        // yet. (A call further up the stack may have, if this event is one it injected; it holds on
+        // to the table it took.) Done while remapping is suspended too: the staged table is a
+        // finished copy. One atomic read when nothing is staged.
+        state.PublishStagedSequenceTable(ii);
+
+        // Key-sequence remap, step 1: pair the event with its physical press. This comes
         // before everything else, the suspension check included, and reads no mapping table: an
         // auto-repeat or a key-up follows what was decided at the first key-down of its press.
         SequencePressStep sequencePressStep = ResolveSequencePress(ii, data, state);

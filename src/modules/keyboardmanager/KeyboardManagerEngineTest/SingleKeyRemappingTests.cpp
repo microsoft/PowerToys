@@ -1314,20 +1314,19 @@ namespace RemappingLogicTests
             }
         }
 
-        // Replaces the key-sequence remaps the way a settings reload does: load, stage a finished
-        // copy, and publish it on the hook thread.
+        // Replaces the key-sequence remaps the way a settings reload does while the hook is
+        // running: load, and stage a finished copy. Nothing publishes it here; the hook does that
+        // itself at the next key event it dispatches.
         void ReloadSequenceRemaps(const SequenceRemaps& remaps)
         {
             LoadSequenceRemaps(remaps);
             testState.StageSequenceTable();
-            testState.PublishStagedSequenceTable(mockedInputHandler);
         }
 
-        // What KeyboardManager::StartLowlevelKeyboardHook does to the press records before it installs the hook
+        // What KeyboardManager::StartLowlevelKeyboardHook does for the key-sequence remap before it installs the hook
         void RestartPressTracking()
         {
-            testState.SequencePresses().Reset();
-            testState.SequencePresses().SeedForwardedPresses(mockedInputHandler);
+            testState.StartSequencePressTracking(mockedInputHandler);
         }
 
         void SendKey(WORD vk, bool keyUp, WORD scanCode = 0)
@@ -1665,9 +1664,11 @@ namespace RemappingLogicTests
             Assert::AreEqual((size_t)0, SequenceEvents());
         }
 
-        // Loading key-sequence remaps does not change what the hook does. Only publishing the staged
-        // table does, and that happens on the hook thread, between two hook calls.
-        TEST_METHOD (SequenceTable_LoadedRemaps_AreNotUsed_UntilPublished)
+        // The hook never reads the table the settings are loaded into, so loading alone changes
+        // nothing. Once a finished copy is staged, the very next key event the hook dispatches is
+        // handled with it: the hook publishes a staged table itself, before it does anything else
+        // with the event. No message to the hook thread is involved.
+        TEST_METHOD (SequenceTable_LoadedRemaps_AreUsedFromTheFirstKeyEventAfterTheyAreStaged)
         {
             LoadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
             SendKey(VK_F1, false);
@@ -1677,15 +1678,10 @@ namespace RemappingLogicTests
 
             testState.StageSequenceTable();
             SendKey(VK_F1, false);
-            SendKey(VK_F1, true);
-            Assert::AreEqual((size_t)0, SequenceEvents());
-            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
-
-            Assert::IsTrue(testState.PublishStagedSequenceTable(mockedInputHandler));
-            SendKey(VK_F1, false);
-            SendKey(VK_F1, true);
             Assert::AreEqual((size_t)4, SequenceEvents());
-            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
 
             // The same goes for removing them: the loader clearing its table changes nothing for the hook
             LoadSequenceRemaps({});
@@ -1694,11 +1690,27 @@ namespace RemappingLogicTests
             Assert::AreEqual((size_t)8, SequenceEvents());
 
             testState.StageSequenceTable();
-            Assert::IsTrue(testState.PublishStagedSequenceTable(mockedInputHandler));
             SendKey(VK_F1, false);
             SendKey(VK_F1, true);
             Assert::AreEqual((size_t)8, SequenceEvents());
-            Assert::AreEqual((size_t)3, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, true));
+        }
+
+        // A table staged while there is no hook is the live one when the hook starts, and a key that
+        // is down at that moment waits for its next press.
+        TEST_METHOD (SequenceTable_StagedBeforeTheHookStarts_IsLiveWhenItStarts)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            Assert::IsTrue(testState.GetLiveSequenceTable()->empty());
+
+            mockedInputHandler.SetKeyboardState(VK_F2, true);
+            RestartPressTracking();
+            Assert::IsTrue(testState.GetLiveSequenceTable()->contains(VK_F1));
+            Assert::IsFalse(testState.SequencePresses().Empty());
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
         }
 
         // Publishing a new table keeps the press records: a press that began under the old table
@@ -1741,18 +1753,56 @@ namespace RemappingLogicTests
             Assert::IsTrue(live->contains(VK_F2));
         }
 
-        // A table that is still in use stays valid when another one is published.
-        TEST_METHOD (SequenceTable_SnapshotInUse_StaysValid_AfterPublish)
+        // The hook call that is sending a sequence keeps the table it took the sequence from alive
+        // until it is done, even when another table is published in the middle of it. That happens
+        // when the injected taps go through the hook nested inside the call that sends them: the
+        // nested call publishes whatever was staged in the meantime.
+        TEST_METHOD (SequenceTable_InUseByADispatch_StaysAlive_WhenAnotherIsPublishedDuringItsInjection)
         {
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
-            const auto inUse = testState.GetLiveSequenceTable();
+            SendKey(0x43, false); // any key event publishes the staged table
+            SendKey(0x43, true);
 
-            ReloadSequenceRemaps({});
+            const std::weak_ptr<const SingleKeyToSequenceRemapTable> inUse = testState.GetLiveSequenceTable();
+            Assert::IsFalse(inUse.expired());
 
-            Assert::IsTrue(inUse != testState.GetLiveSequenceTable());
-            Assert::IsTrue(testState.GetLiveSequenceTable()->empty());
-            Assert::AreEqual((size_t)1, inUse->size());
-            Assert::AreEqual((size_t)2, inUse->at(VK_F1).size());
+            // Runs for every event right before it goes through the hook. At the first tap event a
+            // reload stages an empty table, which the hook call for that event publishes. From the
+            // second tap event on the state has let go of the old table; only the call that is still
+            // sending the taps can be holding it.
+            int tapEvents = 0;
+            bool replacedDuringInjection = false;
+            bool aliveDuringInjection = true;
+            mockedInputHandler.SetSendVirtualInputTestHandler([&](LowlevelKeyboardEvent* data) {
+                if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG)
+                {
+                    if (tapEvents == 0)
+                    {
+                        ReloadSequenceRemaps({});
+                    }
+                    else
+                    {
+                        replacedDuringInjection = testState.GetLiveSequenceTable()->empty();
+                        aliveDuringInjection = aliveDuringInjection && !inUse.expired();
+                    }
+                    tapEvents++;
+                }
+                return false;
+            });
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual(4, tapEvents);
+            Assert::IsTrue(replacedDuringInjection);
+            Assert::IsTrue(aliveDuringInjection);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            // Once that call has returned nothing holds the old table any more
+            Assert::IsTrue(inUse.expired());
+
+            // The press still ends the way it began
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+            Assert::IsTrue(testState.SequencePresses().Empty());
         }
 
         // Without key-sequence remaps nothing is tracked. Tracking starts when a table with remaps is
@@ -1765,14 +1815,15 @@ namespace RemappingLogicTests
             SendKey(0x43, true);
 
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
-            Assert::IsFalse(testState.IsSequenceRemapIdle());
             SendKey(0x43, false);
+            Assert::IsFalse(testState.IsSequenceRemapIdle());
             Assert::IsFalse(testState.SequencePresses().Empty());
 
             // The remaps are removed while C is held: its record stays until its key-up, and new presses are not recorded
             ReloadSequenceRemaps({});
-            Assert::IsFalse(testState.IsSequenceRemapIdle());
             SendKey(0x44, false);
+            Assert::IsFalse(testState.IsSequenceRemapIdle());
+            Assert::IsFalse(testState.HasLiveSequenceRemaps());
             SendKey(0x44, true);
             SendKey(0x43, true);
             Assert::IsTrue(testState.IsSequenceRemapIdle());

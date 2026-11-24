@@ -1,6 +1,7 @@
 #pragma once
 #include <keyboardmanager/common/MappingConfiguration.h>
 #include <keyboardmanager/common/InputInterface.h>
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <mutex>
@@ -120,9 +121,15 @@ private:
     std::shared_ptr<const SingleKeyToSequenceRemapTable> liveSequenceTable = std::make_shared<const SingleKeyToSequenceRemapTable>();
 
     // A finished table on its way from the thread that loaded the settings to the hook thread
-    // (null when there is none). The only key-sequence data the two threads share.
+    // (null when there is none). Together with the flag below, the only key-sequence data the two
+    // threads share.
     std::mutex stagedSequenceTableMutex;
     std::shared_ptr<const SingleKeyToSequenceRemapTable> stagedSequenceTable;
+
+    // True while stagedSequenceTable holds a table. Only written with the mutex held, so the two
+    // always agree; read without it by the hook, which checks it at every key event and takes the
+    // mutex only when there is something to publish.
+    std::atomic_bool sequenceTableStaged = false;
 
 public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
@@ -140,15 +147,25 @@ public:
     // the table it has until PublishStagedSequenceTable runs.
     void StageSequenceTable();
 
-    // Makes the staged key-sequence table the one the hook uses. Low-level keyboard hook thread
-    // only (run from its message loop, or before the hook is installed), so it never runs in the
-    // middle of a hook call. Press records are kept: a press that began under the old table ends
-    // the way it began. Returns false if nothing was staged.
+    // Makes the staged key-sequence table, if there is one, the table the hook uses. Low-level
+    // keyboard hook thread only. The hook calls this itself at the start of every key event
+    // (DispatchKeyboardEvent), before it reads the table, so the loading thread does not have to
+    // notify the hook thread; the same is done before a hook is installed. When nothing is staged
+    // this is one atomic read. Press records are kept: a press that began under the old table
+    // ends the way it began. Returns false if nothing was staged.
     bool PublishStagedSequenceTable(KeyboardManagerInput::InputInterface& ii);
+
+    // Gets the key-sequence remap ready for a hook that is about to be installed: publishes a
+    // staged table, forgets the press records (no event was seen while there was no hook) and, if
+    // there are key-sequence remaps, records the keys that are down right now as presses that
+    // already reached the system. Low-level keyboard hook thread only, before the hook can deliver
+    // anything.
+    void StartSequencePressTracking(KeyboardManagerInput::InputInterface& ii);
 
     // The key-sequence table the hook uses. Low-level keyboard hook thread only. The caller keeps
     // the returned pointer for as long as it uses the table, so the table stays alive even if
-    // another one is published in the meantime.
+    // another one is published in the meantime (a hook call nested in the caller's own injection
+    // can do that).
     std::shared_ptr<const SingleKeyToSequenceRemapTable> GetLiveSequenceTable() const;
 
     // True if the hook has key-sequence remaps to apply. Low-level keyboard hook thread only.

@@ -33,7 +33,7 @@ KeyboardManager::KeyboardManager()
     // Load the initial settings. This is the hook thread and no hook is installed yet, so the
     // key-sequence table can be published right here.
     LoadSettings();
-    PublishPendingSettings();
+    state.PublishStagedSequenceTable(inputHandler);
 
     // Set the static pointer to the newest object of the class
     keyboardManagerObjectPtr = this;
@@ -64,15 +64,10 @@ KeyboardManager::KeyboardManager()
             return;
 
         // This is a worker thread. The key-sequence table was parsed into the loader's own table and
-        // staged by LoadSettings; ask the hook thread to make it live. Its message loop does that
-        // between two hook calls, so no hook call ever sees the table change under it. Posted before
-        // the StartHook message below so that a hook installed for these settings starts with them.
-        // Until the message is handled the hook uses the previous key-sequence table.
-        if (!PostThreadMessageW(mainThreadId, PublishSettingsMessageID, 0, 0))
-        {
-            // The staged table is not lost: it is published by the next reload or hook start.
-            Logger::error(L"Failed to notify the hook thread of new key sequence remaps. {}", get_last_error_or_default(GetLastError()));
-        }
+        // staged by LoadSettings, and this thread does nothing more about it. The hook thread makes
+        // the staged table live itself: at the next key event if the hook is installed (see
+        // KeyboardEventHandlers::DispatchKeyboardEvent), or else when it installs the hook (see
+        // StartLowlevelKeyboardHook).
 
         const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
         // We didn't have any bindings before and we have now
@@ -115,9 +110,9 @@ void KeyboardManager::LoadSettings()
     state.ClearAllAloneKeyState();
 
     // The key-sequence remaps are not applied by the loading thread. Hand a finished copy over to
-    // the hook thread instead (see PublishPendingSettings). This covers the key-sequence table and
-    // its press records only; the other tables are still updated in place under loadingSettings,
-    // as before.
+    // the hook thread instead (see State::PublishStagedSequenceTable). This covers the key-sequence
+    // table and its press records only; the other tables are still updated in place under
+    // loadingSettings, as before.
     state.StageSequenceTable();
     try
     {
@@ -213,10 +208,6 @@ void KeyboardManager::HandleMouseHookEvent() noexcept
     KeyboardEventHandlers::PromotePendingAloneKeysToCombination(inputHandler, state);
 }
 
-void KeyboardManager::PublishPendingSettings()
-{
-    state.PublishStagedSequenceTable(inputHandler);
-}
 
 void KeyboardManager::StartLowlevelKeyboardHook()
 {
@@ -227,21 +218,14 @@ void KeyboardManager::StartLowlevelKeyboardHook()
     }
 #endif
 
-    // Normally the publish message was handled before this one. Publishing again costs nothing and
-    // makes sure a new hook never starts with an older key-sequence table.
-    PublishPendingSettings();
-
     if (!hookHandle)
     {
-        // No event was seen while there was no hook, so start the key-sequence press records afresh.
-        // If there are key-sequence remaps, the keys that are down right now are recorded as presses
-        // that already reached the system. This runs on the hook thread, before the hook can deliver
-        // anything.
-        state.SequencePresses().Reset();
-        if (state.HasLiveSequenceRemaps())
-        {
-            state.SequencePresses().SeedForwardedPresses(inputHandler);
-        }
+        // The new hook starts with the key-sequence table of the settings loaded last. No event was
+        // seen while there was no hook, so the press records start afresh; if there are key-sequence
+        // remaps, the keys that are down right now are recorded as presses that already reached the
+        // system. This runs on the hook thread, before the hook can deliver anything. (A hook that
+        // is installed already publishes a staged table itself, at its next key event.)
+        state.StartSequencePressTracking(inputHandler);
 
         hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
         hookHandleCopy = hookHandle;

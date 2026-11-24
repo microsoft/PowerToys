@@ -81,12 +81,7 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
         kbm.StartLowlevelKeyboardHook();
     };
 
-    // Reloaded settings are published on this thread, the one the low-level hook runs on.
-    auto PublishSettingsFunc = [&kbm]() {
-        kbm.PublishPendingSettings();
-    };
-
-    run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc }, { KeyboardManager::PublishSettingsMessageID, PublishSettingsFunc } });
+    run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc } });
 
     kbm.StopLowlevelKeyboardHook();
     Trace::UnregisterProvider();

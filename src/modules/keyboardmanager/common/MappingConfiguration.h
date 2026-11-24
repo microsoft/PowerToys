@@ -77,7 +77,7 @@ public:
 
     // Stores single-key-to-sequence remappings (source key -> ordered list of key taps, #5679).
     // In the engine this is the table the settings are loaded into; the keyboard hook uses a
-    // finished copy of it that is published on the hook thread (see State::StageSequenceTable).
+    // finished copy of it that the hook thread publishes (see State::StageSequenceTable).
     SingleKeyToSequenceRemapTable singleKeyToSequenceReMap;
 
     std::unordered_map<DWORD, DWORD> scanMap;

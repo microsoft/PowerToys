@@ -47,15 +47,23 @@ void State::StageSequenceTable()
     {
         std::lock_guard lock{ stagedSequenceTableMutex };
         stagedSequenceTable.swap(staged);
+        sequenceTableStaged = true;
     }
 }
 
 bool State::PublishStagedSequenceTable(KeyboardManagerInput::InputInterface& ii)
 {
+    // The hook gets here at every key event: nothing staged is the usual case, and costs this read.
+    if (!sequenceTableStaged)
+    {
+        return false;
+    }
+
     std::shared_ptr<const SingleKeyToSequenceRemapTable> staged;
     {
         std::lock_guard lock{ stagedSequenceTableMutex };
         staged.swap(stagedSequenceTable);
+        sequenceTableStaged = false;
     }
 
     if (!staged)
@@ -65,7 +73,7 @@ bool State::PublishStagedSequenceTable(KeyboardManagerInput::InputInterface& ii)
 
     const bool trackingStarts = liveSequenceTable->empty() && !staged->empty();
 
-    // The previous table is freed here (outside any hook call), or by a caller that still holds it.
+    // The previous table is freed here, or by a hook call that still holds it (see GetLiveSequenceTable).
     liveSequenceTable = std::move(staged);
 
     if (trackingStarts)
@@ -77,6 +85,17 @@ bool State::PublishStagedSequenceTable(KeyboardManagerInput::InputInterface& ii)
     }
 
     return true;
+}
+
+void State::StartSequencePressTracking(KeyboardManagerInput::InputInterface& ii)
+{
+    PublishStagedSequenceTable(ii);
+
+    sequencePresses.Reset();
+    if (HasLiveSequenceRemaps())
+    {
+        sequencePresses.SeedForwardedPresses(ii);
+    }
 }
 
 std::shared_ptr<const SingleKeyToSequenceRemapTable> State::GetLiveSequenceTable() const

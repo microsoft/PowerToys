@@ -188,7 +188,8 @@ namespace KeyboardEventHandlers
     // Runs one low-level keyboard event through the remap handlers, in their fixed order. Returns 1
     // to suppress the event and 0 to pass it on. remappingSuspended is true while remapping is
     // bypassed for a moment (settings are being loaded, or the editor window is open); the mapping
-    // tables are not read then, but physical presses are still paired with their releases. This is the
+    // tables are not read then, but physical presses are still paired with their releases. A
+    // key-sequence table staged by a settings reload is made the live one first. This is the
     // whole body of the hook callback, kept apart from KeyboardManager so the unit tests can drive
     // the handler chain as a whole.
     intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool remappingSuspended) noexcept;
