@@ -1103,9 +1103,13 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     private void CompactLayoutPage_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(PageViewModel.HasContent)
-            or nameof(PageViewModel.SearchTextBox)
-            or nameof(PageViewModel.ErrorMessage))
+        var queryChanged = e.PropertyName is nameof(PageViewModel.SearchTextBox);
+        var contentChanged = e.PropertyName is nameof(PageViewModel.HasContent)
+            or nameof(PageViewModel.ErrorMessage);
+        if (CompactModeLayout.ShouldUpdateForPageChange(
+            ViewModel.CurrentPage?.IsRootPage == true,
+            queryChanged,
+            contentChanged))
         {
             UpdateCompactModeForCurrentPage();
         }

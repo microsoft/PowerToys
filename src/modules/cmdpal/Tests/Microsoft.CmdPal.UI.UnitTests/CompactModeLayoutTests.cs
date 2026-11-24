@@ -11,6 +11,22 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 public sealed class CompactModeLayoutTests
 {
     [DataTestMethod]
+    [DataRow(true, true, false, true)]
+    [DataRow(true, false, true, false)]
+    [DataRow(false, false, true, true)]
+    [DataRow(false, false, false, false)]
+    public void ShouldUpdateForPageChange_PreservesManuallyExpandedRootPage(
+        bool isRootPage,
+        bool queryChanged,
+        bool contentChanged,
+        bool expected)
+    {
+        Assert.AreEqual(
+            expected,
+            CompactModeLayout.ShouldUpdateForPageChange(isRootPage, queryChanged, contentChanged));
+    }
+
+    [DataTestMethod]
     [DataRow(false, false, true, false, false, true)]
     [DataRow(true, true, true, false, false, true)]
     [DataRow(true, false, false, false, true, false)]

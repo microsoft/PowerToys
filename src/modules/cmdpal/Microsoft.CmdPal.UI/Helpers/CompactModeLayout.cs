@@ -6,6 +6,14 @@ namespace Microsoft.CmdPal.UI.Helpers;
 
 internal static class CompactModeLayout
 {
+    public static bool ShouldUpdateForPageChange(
+        bool isRootPage,
+        bool queryChanged,
+        bool contentChanged)
+    {
+        return queryChanged || (!isRootPage && contentChanged);
+    }
+
     public static bool ShouldExpand(
         bool compactMode,
         bool isTransient,
