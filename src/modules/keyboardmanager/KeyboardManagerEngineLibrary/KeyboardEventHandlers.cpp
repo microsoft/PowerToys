@@ -36,6 +36,27 @@ namespace
         return data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
     }
 
+    // True if a key-sequence target is down already. A target code that stands for two keys (Win, or
+    // Ctrl/Shift/Alt without a side) is down when either of them is. isKeyDown answers for one
+    // virtual key.
+    template<typename IsKeyDown>
+    bool IsSequenceTargetDown(const DWORD targetKey, const IsKeyDown& isKeyDown)
+    {
+        switch (targetKey)
+        {
+        case CommonSharedConstants::VK_WIN_BOTH:
+            return isKeyDown(VK_LWIN) || isKeyDown(VK_RWIN);
+        case VK_CONTROL:
+            return isKeyDown(VK_CONTROL) || isKeyDown(VK_LCONTROL) || isKeyDown(VK_RCONTROL);
+        case VK_SHIFT:
+            return isKeyDown(VK_SHIFT) || isKeyDown(VK_LSHIFT) || isKeyDown(VK_RSHIFT);
+        case VK_MENU:
+            return isKeyDown(VK_MENU) || isKeyDown(VK_LMENU) || isKeyDown(VK_RMENU);
+        default:
+            return isKeyDown(targetKey);
+        }
+    }
+
     void UpdateNumpadWithShift(LowlevelKeyboardEvent* data, State& state)
     {
         //Function for fixing numpad when used as shift https://github.com/microsoft/PowerToys/issues/22346
@@ -489,10 +510,19 @@ namespace KeyboardEventHandlers
 
         // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
         // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
+        //
+        // A target that is down already is skipped as well: the key-up of its tap would release a
+        // key the sequence did not press (with Left Ctrl held, "Left Ctrl, A" would send A without
+        // Ctrl). The sequence only releases what it pressed; the key that is down stays down for
+        // the following taps and until its own key-up.
+        const auto isKeyDown = [&ii](const DWORD key) {
+            return ii.GetVirtualKeyState(static_cast<int>(key));
+        };
+
         std::vector<INPUT> keyEventList;
         for (const DWORD targetKey : sequenceRemap->second)
         {
-            if (targetKey == CommonSharedConstants::VK_DISABLED)
+            if (targetKey == CommonSharedConstants::VK_DISABLED || IsSequenceTargetDown(targetKey, isKeyDown))
             {
                 continue;
             }

@@ -1779,5 +1779,123 @@ namespace RemappingLogicTests
             Assert::AreEqual((size_t)2, Delivered(0x43, false));
             Assert::AreEqual((size_t)2, Delivered(0x43, true));
         }
+
+        // The events that reached the system from the given position on, as (key, is key-up) pairs.
+        // Keyboard Manager's dummy key events are left out.
+        using KeyTrace = std::vector<std::pair<DWORD, bool>>;
+        KeyTrace DeliveredFrom(size_t first)
+        {
+            KeyTrace trace;
+            const auto& delivered = mockedInputHandler.GetDeliveredEvents();
+            for (size_t i = first; i < delivered.size(); i++)
+            {
+                if (delivered[i].vkCode != KeyboardManagerConstants::DUMMY_KEY)
+                {
+                    trace.emplace_back(delivered[i].vkCode, delivered[i].isKeyUp);
+                }
+            }
+            return trace;
+        }
+
+        void AssertDeliveredFrom(size_t first, const KeyTrace& expected)
+        {
+            const KeyTrace actual = DeliveredFrom(first);
+            std::wstring text;
+            for (const auto& [key, isKeyUp] : actual)
+            {
+                text += std::to_wstring(key) + (isKeyUp ? L"u " : L"d ");
+            }
+            Assert::IsTrue(actual == expected, text.c_str());
+        }
+
+        // A target key that is already down is not tapped: its injected key-up would release a key
+        // the sequence did not press. With Left Ctrl held, F1 -> Left Ctrl, A sends only the A tap, so A
+        // arrives while Ctrl is down, and Ctrl stays down until its own key-up.
+        TEST_METHOD (SequenceRemap_TargetAlreadyHeld_IsNotTapped)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { VK_LCONTROL, 0x41 } } });
+
+            SendKey(VK_LCONTROL, false);
+            const size_t first = mockedInputHandler.GetDeliveredEvents().size();
+
+            SendKey(VK_F1, false);
+            AssertDeliveredFrom(first, { { 0x41, false }, { 0x41, true } });
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+
+            // The real key-up releases Ctrl
+            SendKey(VK_LCONTROL, true);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            AssertDeliveredFrom(first, { { 0x41, false }, { 0x41, true }, { VK_LCONTROL, true } });
+        }
+
+        // The same target is tapped as before when it is not down.
+        TEST_METHOD (SequenceRemap_TargetNotHeld_IsTapped)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { VK_LCONTROL, 0x41 } } });
+
+            SendKey(VK_F1, false);
+            AssertDeliveredFrom(0, { { VK_LCONTROL, false }, { VK_LCONTROL, true }, { 0x41, false }, { 0x41, true } });
+        }
+
+        // A target that stands for two keys is resolved first: Ctrl (either) is not tapped while
+        // Right Ctrl is down, and Win (either) is not tapped while Right Win is down.
+        TEST_METHOD (SequenceRemap_AliasTargetAlreadyHeld_IsNotTapped)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { VK_CONTROL, 0x41 } }, { VK_F2, { CommonSharedConstants::VK_WIN_BOTH, 0x42 } }, { VK_F3, { VK_SHIFT, VK_MENU, 0x43 } } });
+
+            SendKey(VK_RCONTROL, false);
+            size_t first = mockedInputHandler.GetDeliveredEvents().size();
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            AssertDeliveredFrom(first, { { 0x41, false }, { 0x41, true } });
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+            SendKey(VK_RCONTROL, true);
+
+            SendKey(VK_RWIN, false);
+            first = mockedInputHandler.GetDeliveredEvents().size();
+            SendKey(VK_F2, false);
+            SendKey(VK_F2, true);
+            AssertDeliveredFrom(first, { { 0x42, false }, { 0x42, true } });
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_RWIN));
+            SendKey(VK_RWIN, true);
+
+            // Left Shift is down, no Alt key is: only the Shift tap is left out
+            SendKey(VK_LSHIFT, false);
+            first = mockedInputHandler.GetDeliveredEvents().size();
+            SendKey(VK_F3, false);
+            SendKey(VK_F3, true);
+            AssertDeliveredFrom(first, { { VK_MENU, false }, { VK_MENU, true }, { 0x43, false }, { 0x43, true } });
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT));
+        }
+
+        // A left or right target is only left out when that very key is down: with Right Ctrl held,
+        // a Left Ctrl target is still tapped, and Right Ctrl stays down.
+        TEST_METHOD (SequenceRemap_OtherSideOfTargetHeld_IsStillTapped)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { VK_LCONTROL, 0x41 } } });
+
+            SendKey(VK_RCONTROL, false);
+            const size_t first = mockedInputHandler.GetDeliveredEvents().size();
+            SendKey(VK_F1, false);
+            AssertDeliveredFrom(first, { { VK_LCONTROL, false }, { VK_LCONTROL, true }, { 0x41, false }, { 0x41, true } });
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+        }
+
+        // An ordinary key that is down is left out the same way, and when no tap is left the press is
+        // still replaced (nothing is sent, the source key does not reach the system).
+        TEST_METHOD (SequenceRemap_EveryTargetAlreadyHeld_SendsNothing)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41 } } });
+
+            SendKey(0x41, false);
+            const size_t first = mockedInputHandler.GetDeliveredEvents().size();
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            AssertDeliveredFrom(first, {});
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x41));
+        }
     };
 }
