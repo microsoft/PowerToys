@@ -842,7 +842,7 @@ jobs:
       targetPath: '$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)'
       artifactName: ui-test-diagnostics-$(TestPlatform)-$(System.JobId)
 
-  - ${{ if and(eq(parameters.platform, 'x64Win11'), eq(length(parameters.uiTestModules), 1), containsValue(parameters.uiTestModules, 'Microsoft.CmdPal.UITests.Next')) }}:
+  - ${{ if and(eq(parameters.platform, 'x64Win11'), containsValue(parameters.uiTestModules, 'Microsoft.CmdPal.UITests.Next')) }}:
     - pwsh: |
         $pattern = '^Windows Search (?:readiness: indexedMatches=\d+/2; waitMs=\d+; fixtureAgeMs=\d+; osUptimeMs=\d+|service: status=\w+; startType=\w+|scope: (?:documents|fixtureFolder)=\w+|(?:service|scope) query unavailable: \w+ \(0x[0-9A-F]{8}\))\.$'
         $reports = @(Get-ChildItem -LiteralPath '$(Common.TestResultsDirectory)' -Filter '*.trx' -File -Recurse)
