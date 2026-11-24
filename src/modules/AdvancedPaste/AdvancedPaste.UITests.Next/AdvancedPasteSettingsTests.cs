@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -550,14 +551,14 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
         }
     }
 
-    private static int WaitForStableModuleProcess()
+    private static (int Id, DateTime StartTimeUtc) WaitForStableModuleProcess()
     {
-        int? previous = null;
+        // Windows can reuse a PID after the module has exited.
+        (int Id, DateTime StartTimeUtc)? previous = null;
         var result = WaitHelper.WaitForStable(
-            GetModuleProcessIds,
-            ids =>
+            GetRunningModuleProcess,
+            current =>
             {
-                var current = ids is { Length: 1 } ? ids[0] : (int?)null;
                 var stable = current.HasValue && current == previous;
                 previous = current;
                 return stable;
@@ -565,8 +566,38 @@ public sealed class AdvancedPasteSettingsTests : AdvancedPasteTestBase
             timeoutMS: 30_000,
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 250);
-        Assert.IsTrue(result.Succeeded, $"Advanced Paste did not reach one stable running process. Last process IDs: {string.Join(", ", result.LastObservation ?? [])}.");
-        return result.LastObservation![0];
+        Assert.IsTrue(result.Succeeded, $"Advanced Paste did not reach one stable running process. Last process identity: {result.LastObservation}.");
+        return result.LastObservation!.Value;
+    }
+
+    private static (int Id, DateTime StartTimeUtc)? GetRunningModuleProcess()
+    {
+        var processes = Process.GetProcessesByName(ProcessName);
+        try
+        {
+            if (processes.Length != 1)
+            {
+                return null;
+            }
+
+            var process = processes[0];
+            try
+            {
+                var startTimeUtc = process.StartTime.ToUniversalTime();
+                return process.HasExited ? null : (process.Id, startTimeUtc);
+            }
+            catch (InvalidOperationException) when (process.HasExited)
+            {
+                return null;
+            }
+        }
+        finally
+        {
+            foreach (var process in processes)
+            {
+                process.Dispose();
+            }
+        }
     }
 
     private void SetPreference(string card, string property, bool value)

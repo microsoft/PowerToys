@@ -63,7 +63,7 @@ before sending input, because a visible host window can precede initialized cont
 #### Prepare and run locally
 
 Use a disposable Windows test VM with an unlocked English-language, **en-US keyboard-layout**
-standard-user desktop, .NET 10 Desktop Runtime, and the repository-pinned winappcli build.
+standard-user desktop, .NET 11 Desktop Runtime, and the repository-pinned winappcli build.
 The suite checks the keyboard-layout prerequisite explicitly because the configured shortcut's
 displayed OEM-key label depends on that layout. The default shortcut is **Win + Shift + /**.
 

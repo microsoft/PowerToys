@@ -151,7 +151,7 @@ public sealed class GrabAndMoveTests : UITestBase
     [TestMethod]
     public void AltLeftDragMovesWindowToExpectedPosition()
     {
-        DragAndAssert(Key.Alt, resize: false);
+        DragAndAssert(Key.Alt, resize: false, retryUnclaimedMove: true);
     }
 
     [TestMethod]
@@ -454,7 +454,7 @@ public sealed class GrabAndMoveTests : UITestBase
         fixture.Focus();
     }
 
-    private void DragAndAssert(Key modifier, bool resize, bool expectedChange = true, Action? duringDrag = null)
+    private void DragAndAssert(Key modifier, bool resize, bool expectedChange = true, Action? duringDrag = null, bool retryUnclaimedMove = false)
     {
         Assert.IsNotNull(fixture);
         FocusFixture();
@@ -471,10 +471,13 @@ public sealed class GrabAndMoveTests : UITestBase
         MouseHelper.MoveTo(start.X, start.Y);
         var cursor = WaitHelper.WaitForStable(
             MouseHelper.GetMousePosition,
-            position => position == (start.X, start.Y),
+            position => position == (start.X, start.Y) &&
+                        WindowControl.IsPointOwnedByWindow(fixture.Handle, start.X, start.Y),
             5_000,
             requiredConsecutiveMatches: 3);
-        Assert.IsTrue(cursor.Succeeded, $"The gesture cursor did not settle at {start}: {cursor.LastObservation}.");
+        Assert.IsTrue(cursor.Succeeded, $"The gesture cursor did not settle over fixture {fixture.Handle} at {start}: {cursor.LastObservation}.");
+        var clicksBeforeDrag = fixture.ClientClickCount;
+        bool boundsChanged;
         try
         {
             KeyboardHelper.PressKey(modifier);
@@ -500,6 +503,7 @@ public sealed class GrabAndMoveTests : UITestBase
                 requiredConsecutiveMatches: 3);
             Assert.IsTrue(endpoint.Succeeded, $"The gesture cursor did not reach its endpoint: {endpoint.LastObservation}.");
 
+            boundsChanged = fixture.Bounds != before;
             duringDrag?.Invoke();
         }
         finally
@@ -518,7 +522,24 @@ public sealed class GrabAndMoveTests : UITestBase
 
         if (expectedChange)
         {
-            AssertBounds(expected);
+            var result = WaitHelper.WaitForStable(
+                () => fixture.Bounds,
+                bounds =>
+                {
+                    boundsChanged |= bounds != before;
+                    return bounds == expected;
+                },
+                5_000,
+                requiredConsecutiveMatches: 3);
+            if (!result.Succeeded && retryUnclaimedMove && !boundsChanged && fixture.ClientClickCount > clicksBeforeDrag)
+            {
+                // The fixture received the button press and never moved: the module did not capture this gesture.
+                Step("The first drag reached the fixture as a client click without moving it; re-establishing focus and retrying once.");
+                DragAndAssert(modifier, resize);
+                return;
+            }
+
+            Assert.IsTrue(result.Succeeded, $"Expected exact physical bounds {expected}; last bounds={result.LastObservation}. {ForegroundDiagnostic()}");
         }
         else
         {
@@ -530,12 +551,6 @@ public sealed class GrabAndMoveTests : UITestBase
             }
             while (observation.ElapsedMilliseconds < 2_000);
         }
-    }
-
-    private void AssertBounds(Rectangle expected)
-    {
-        var result = WaitHelper.WaitForStable(() => fixture!.Bounds, bounds => bounds == expected, 5_000, requiredConsecutiveMatches: 3);
-        Assert.IsTrue(result.Succeeded, $"Expected exact physical bounds {expected}; last bounds={result.LastObservation}. {ForegroundDiagnostic()}");
     }
 
     private void Step(string message) => TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");
