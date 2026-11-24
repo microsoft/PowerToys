@@ -19,6 +19,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TitleBar
@@ -64,7 +65,48 @@
                 <HorizontalAlignment x:Key="TitleBarContentHorizontalAlignment">Stretch</HorizontalAlignment>
             </TitleBar.Resources>
         </TitleBar>
-        <Grid Grid.Row="1">
+        <StackPanel
+            x:Name="WorkspaceNotifications"
+            Grid.Row="1"
+            Margin="24,0">
+            <InfoBar
+                x:Uid="WorkspaceReadFailureBar"
+                AutomationProperties.AutomationId="WorkspaceReadFailureBar"
+                IsClosable="False"
+                IsOpen="{Binding WorkspaceReadFailed, Mode=OneWay}"
+                Severity="Error">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="ReloadWorkspacesAction"
+                        AutomationProperties.AutomationId="ReloadWorkspacesAction"
+                        Command="{Binding ReloadWorkspacesCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <InfoBar
+                x:Uid="WorkspaceSaveConflictBar"
+                AutomationProperties.AutomationId="WorkspaceSaveConflictBar"
+                IsClosable="False"
+                IsOpen="{Binding WorkspaceSaveConflict, Mode=OneWay}"
+                Severity="Warning">
+                <InfoBar.ActionButton>
+                    <Button
+                        x:Uid="DiscardAndReloadWorkspaceAction"
+                        AutomationProperties.AutomationId="DiscardAndReloadWorkspaceAction"
+                        Command="{Binding DiscardAndReloadWorkspaceCommand}" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+            <InfoBar
+                x:Uid="WorkspaceSaveError"
+                IsClosable="False"
+                IsOpen="{Binding SaveFailed, Mode=OneWay}"
+                Severity="Error" />
+            <InfoBar
+                CloseButtonClick="ShortcutNotice_CloseButtonClick"
+                IsOpen="{Binding HasShortcutNotice, Mode=OneWay}"
+                Message="{Binding ShortcutNotice, Mode=OneWay}"
+                Severity="Warning" />
+        </StackPanel>
+        <Grid Grid.Row="2">
             <Frame x:Name="ContentFrame" />
             <ProgressRing
                 x:Name="LoadingRing"

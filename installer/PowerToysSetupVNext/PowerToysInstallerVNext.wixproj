@@ -9,29 +9,17 @@
     <DscModuleVersion>$(Version)$(DscModuleVersionSuffix)</DscModuleVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-  <DefineConstants>Version=$(Version);DscModuleVersion=$(DscModuleVersion);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>    <!-- THIS IS AN INNER LOOP OPTIMIZATION
-    The build pipeline builds the Settings and Launcher projects for Publication
-    using a specific profile. If you're doing local installer builds, this will
-    simulate the build pipeline doing that for you. -->
-    <PreBuildEvent>IF NOT DEFINED IsPipeline (
-call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=amd64 -host_arch=amd64 -vcvars_ver=$(VCToolsVersion)
-SET PTRoot=$(SolutionDir)\..
-call "..\..\..\publish.cmd" x64
-)
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
+    <DefineConstants>Version=$(Version);DscModuleVersion=$(DscModuleVersion);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
+    <PreBuildEvent>call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
     <DefineConstants>Version=$(Version);DscModuleVersion=$(DscModuleVersion);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
-    <PreBuildEvent>IF NOT DEFINED IsPipeline (
-call "$([MSBuild]::GetVsInstallRoot())\Common7\Tools\VsDevCmd.bat" -arch=arm64 -host_arch=amd64 -vcvars_ver=$(VCToolsVersion)
-SET PTRoot=$(SolutionDir)\..
-call "..\..\..\publish.cmd" arm64
-)
-call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
+    <PreBuildEvent>call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
     </PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- MSBuild CoreBuild.OnError also runs this restore for failed local WiX builds. -->
     <RunPostBuildEvent>Always</RunPostBuildEvent>
     <PostBuildEvent>
       call move /Y ..\..\..\AdvancedPaste.wxs.bk ..\..\..\AdvancedPaste.wxs

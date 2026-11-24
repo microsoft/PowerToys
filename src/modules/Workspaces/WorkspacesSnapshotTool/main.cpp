@@ -52,7 +52,8 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
 
     // create new project
     time_t creationTime = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-    WorkspacesData::WorkspacesProject project{ .id = CreateGuidString(), .creationTime = creationTime };
+    const auto requestId = cmdArgs.workspaceId.empty() ? std::nullopt : GuidFromString(cmdArgs.workspaceId);
+    WorkspacesData::WorkspacesProject project{ .id = requestId ? GuidToString(*requestId) : CreateGuidString(), .creationTime = creationTime };
     Logger::trace(L"Creating workspace {}:{}", project.name, project.id);
 
     project.monitors = MonitorUtils::IdentifyMonitors();
@@ -80,9 +81,19 @@ int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, LPSTR cmdLine, int cm
         }
         return project.monitors[0].monitorRectDpiUnaware; });
 
-    JsonUtils::Write(WorkspacesData::TempWorkspacesFile(), project);
-    Logger::trace(L"WorkspacesProject {}:{} created", project.name, project.id);
+    // Older callers read the shared draft directly. The editor publishes its own
+    // capture only after checking that the corresponding edit session is current.
+    auto output = WorkspacesData::TempWorkspacesFile();
+    if (requestId)
+    {
+        output += L"." + project.id;
+    }
+    const bool saved = JsonUtils::Write(output, project);
+    if (!saved)
+    {
+        Logger::error(L"Unable to save workspace snapshot {}", project.id);
+    }
 
     CoUninitialize();
-    return 0;
+    return saved ? 0 : ERROR_WRITE_FAULT;
 }

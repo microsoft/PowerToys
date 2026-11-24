@@ -46,6 +46,10 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         Assert.IsFalse(clipboard.Contains(StandardDataFormats.Rtf), "Rich text remained on the transformed clipboard.");
         Assert.IsFalse(clipboard.Contains(StandardDataFormats.Html), "HTML remained on the transformed clipboard.");
         WaitUntil(() => !IsAdvancedPasteVisible(), "Advanced Paste did not finish the plain-text paste.");
+        if (invocation == Invocation.DirectShortcut)
+        {
+            ReleaseDirectPlainTextModifiers();
+        }
 
         Step("Verifying subsequent normal paste also contains only plain text");
         Target.Clear();
@@ -124,6 +128,7 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
         InvokeCoreAction(ProductStrings.PasteAsPlainText, Key.O, Key.Num1, Invocation.DirectShortcut);
         Target.AssertText(input);
         Assert.AreEqual(input, ReadClipboardText(), "Plain-text conversion changed Unicode or whitespace.");
+        ReleaseDirectPlainTextModifiers();
     }
 
     [TestMethod]
@@ -258,6 +263,33 @@ public sealed class AdvancedPasteTextTests : AdvancedPasteTestBase
                 SendShortcut(Key.Ctrl, accelerator);
             }
         }
+    }
+
+    private void ReleaseDirectPlainTextModifiers()
+    {
+        // The native plain-text action restores the held modifiers after injecting Ctrl+V.
+        // Those key-downs can arrive after this fixture's batched shortcut key-ups.
+        Key[] sentModifiers = [Key.Ctrl, Key.Alt, Key.LWin];
+        var released = WaitHelper.WaitForStable(
+            () => sentModifiers.Where(KeyboardHelper.IsKeyDown).ToArray(),
+            held => held is { Length: 0 },
+            timeoutMS: 5_000,
+            requiredConsecutiveMatches: 3,
+            recover: held =>
+            {
+                if (held is { Length: > 0 })
+                {
+                    Step($"Releasing modifiers restored by the direct plain-text paste: {string.Join(", ", held)}");
+                    Target.Invoke(() =>
+                    {
+                        foreach (var key in held)
+                        {
+                            KeyboardHelper.ReleaseKey(key);
+                        }
+                    });
+                }
+            });
+        Assert.IsTrue(released.Succeeded, $"Direct plain-text paste left modifiers held: {string.Join(", ", released.LastObservation ?? [])}.");
     }
 
     private void AssertTransformedText()

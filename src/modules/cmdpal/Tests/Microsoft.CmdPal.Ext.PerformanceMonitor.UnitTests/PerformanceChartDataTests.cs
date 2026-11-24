@@ -139,6 +139,21 @@ public class PerformanceChartDataTests
         Assert.AreEqual(100d, PerformanceChartData.GetSparklineMax(140));
     }
 
+    [TestMethod]
+    public void EngineTilesHaveASparklineOfTheirHistory()
+    {
+        var engine = SystemGPUUsageWidgetPage.CreateEngine("Video decode", 23f, [5f, 23f]);
+
+        Assert.AreEqual("Video decode", (string)engine["name"]);
+        Assert.AreEqual(30d, (double)engine["chartMax"], 1e-9);
+        var series = (JsonArray)engine["series"];
+        Assert.AreEqual(1, series.Count);
+        Assert.AreEqual(PerformanceChartData.GpuColor, (string)series[0]["color"]);
+        var values = (JsonArray)series[0]["values"];
+        Assert.AreEqual(2, values.Count);
+        Assert.AreEqual(23d, (double)values[^1]["y"], 1e-9);
+    }
+
     // "% Processor Time" counts idle time, in 100-nanosecond units, against elapsed time.
     private static CounterSample ProcessorTimeSample(long idle, long time) =>
         new(idle, 0, 10_000_000, 10_000_000, time, time, PerformanceCounterType.Timer100NsInverse);
