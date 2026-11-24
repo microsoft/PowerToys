@@ -245,6 +245,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
                new object[] { "0+(1*2)/(0+1)", 2M }, // Validate that division by "(0+1)" is not interpret as division by zero.
                new object[] { "0+(1*2)/0.5", 4M }, // Validate that division by number with decimal digits is not interpret as division by zero.
                new object[] { "0+(1*2)/0o004", 0.5M }, // Validate that division by an octal number with zeroes is not treated as division by zero.
+               new object[] { "0.1+0.2", 0.3M }, // Validate that binary floating-point noise (0.30000000000000004) is not carried over to the decimal result.
            };
 
         [DataTestMethod]

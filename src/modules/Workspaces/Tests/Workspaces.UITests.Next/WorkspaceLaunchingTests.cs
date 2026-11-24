@@ -234,36 +234,65 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancelLaunchStopsPendingAppsAndPreservesOpenedWindows()
         {
             var gateName = $@"Local\{State.Prefix}-cancel-gate";
             var startedName = $@"Local\{State.Prefix}-first-started";
-            var tailName = $@"Local\{State.Prefix}-tail-started";
             using var gate = new EventWaitHandle(false, EventResetMode.ManualReset, gateName);
             using var started = new EventWaitHandle(false, EventResetMode.ManualReset, startedName);
-            using var tailStarted = new EventWaitHandle(false, EventResetMode.ManualReset, tailName);
             var firstTitle = State.Prefix + "-opened";
             var first = State.Application("Opened fixture", firstTitle);
+            first["maximized"] = true;
             var applications = new List<JsonObject> { first };
-            applications.AddRange(PendingApplications(16, gateName, startedName, tailName));
+            applications.AddRange(PendingApplications(16, gateName, startedName));
             var project = State.Project("cancel-launch", applications.ToArray());
             State.WriteProjects(project);
-            OpenEditor();
-            LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
+
+            // Read launch attempts and cancellation from the same native log so in-flight Shell calls are allowed.
+            var logSettingsPath = Path.Combine(SettingsConfigHelper.PowerToysSettingsRoot, "log_settings.json");
+            using var restoreLogSettings = SettingsConfigHelper.PreserveFile(logSettingsPath);
+            File.WriteAllText(logSettingsPath, """{"logLevel":"trace"}""");
+            var launcherLogs = Path.Combine(WorkspaceTestState.DirectoryPath, "WorkspacesLauncher", "Logs");
+            var launcherOffsets = CaptureLogOffsets(launcherLogs);
+
+            // Use the same launcher entry point as a workspace shortcut.
+            var productRoot = Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!;
+            var start = new ProcessStartInfo(Path.Combine(productRoot, "PowerToys.WorkspacesLauncher.exe"))
+            {
+                UseShellExecute = false,
+                WorkingDirectory = productRoot,
+            };
+            var projectId = WorkspaceTestState.Text(project, "id");
+            start.ArgumentList.Add(projectId);
+            start.ArgumentList.Add("1"); // InvokePoint.Shortcut
+            using var launcher = Process.Start(start);
+            Assert.IsNotNull(launcher);
             var opened = State.Fixture.WaitForWindow(firstTitle);
             AssertPositioned(opened, first);
+            var openedBounds = WindowHelper.GetWindowBounds(new IntPtr(opened.WindowHandle));
             Assert.IsTrue(started.WaitOne(20_000), "The blocking fixture never reached its startup gate.");
-            Assert.IsFalse(tailStarted.WaitOne(0), "The final fixture started before the cancellation precondition was established.");
             Step("Cancelling the launch with one window open and more applications pending.");
             var progress = LauncherWindow();
+            using var ui = Process.GetProcessById(progress.ProcessId);
+            var uiDirectory = Path.Combine(productRoot, "WinUI3Apps");
+            Assert.AreEqual(Path.Combine(uiDirectory, "PowerToys.WorkspacesLauncherUI.exe"), NativeMethods.ProcessImagePath(ui), true, "The progress window must belong to the product under test.");
+            var logVersion = FileVersionInfo.GetVersionInfo(Path.Combine(uiDirectory, "PowerToys.ManagedCommon.dll")).FileVersion!;
+            var logDirectory = Path.Combine(WorkspaceTestState.DirectoryPath, "WorkspacesLauncherUI", logVersion);
+            var logOffsets = CaptureLogOffsets(logDirectory);
+
             progress.Find<Button>(By.AccessibilityId("CancelButton"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(WaitForProcess(LauncherUiProcess, false), "Cancel launch did not close the progress UI.");
-            Assert.IsTrue(WaitForProcess(LauncherProcess, false, 45_000), "Cancel launch did not stop the launch engine.");
-            Assert.IsFalse(tailStarted.WaitOne(0), "Cancel launch still started an application that was pending.");
+            Assert.IsTrue(ui.WaitForExit(20_000), "Cancel launch did not close the progress UI.");
+            Assert.IsTrue(launcher.WaitForExit(45_000), "Cancel launch did not stop the launch engine.");
+            Assert.AreEqual(0, launcher.ExitCode, "The shortcut launcher must exit normally after cancellation.");
+            var acknowledgement = $"Workspaces launcher acknowledged cancellation for UI process {ui.Id}.";
+            Assert.IsTrue(ReadNewLogLines(logDirectory, logOffsets).Any(line => line.Contains(acknowledgement, StringComparison.Ordinal)), "The progress UI exited without receiving the launcher's cancellation acknowledgement.");
             var remaining = State.Fixture.FindWindow(firstTitle);
             Assert.IsNotNull(remaining, "Cancel launch closed an already-open application.");
             Assert.AreEqual(opened.WindowHandle, remaining.Hwnd, "Cancel launch replaced an already-open application.");
+            Assert.AreEqual(openedBounds, WindowHelper.GetWindowBounds(new IntPtr(remaining.Hwnd)), "Cancel launch moved or resized an already-open application.");
+
+            var launcherLines = ReadNewLogLines(launcherLogs, launcherOffsets).Where(line => line.Contains($"[p-{launcher.Id}]", StringComparison.Ordinal));
+            AssertNoPendingAppLaunched(launcherLines, projectId, applications, State.Fixture.ProcessIds().Count);
         }
 
         [TestMethod]
@@ -295,6 +324,70 @@ namespace Microsoft.Workspaces.UITests
 
             WaitForLaunchCompletion(project);
             Assert.AreEqual(applications.Length, State.Fixture.ProcessIds().Count, "Dismiss did not allow every configured app to launch.");
+        }
+
+        private static Dictionary<string, long> CaptureLogOffsets(string logDirectory) => Directory.Exists(logDirectory)
+            ? Directory.EnumerateFiles(logDirectory, "*.log", SearchOption.AllDirectories).ToDictionary(path => path, path => new FileInfo(path).Length)
+            : [];
+
+        private static void AssertNoPendingAppLaunched(IEnumerable<string> launcherLines, string projectId, IReadOnlyList<JsonObject> applications, int fixtureProcessCount)
+        {
+            var trace = launcherLines.ToList();
+            var cancellation = trace.FindIndex(line => line.EndsWith($"Accepted UI cancellation for workspace {projectId}", StringComparison.OrdinalIgnoreCase));
+            Assert.IsTrue(cancellation >= 0, "The native launcher did not record receiving this workspace's cancellation.");
+
+            var admitted = new HashSet<string>(StringComparer.Ordinal);
+            var launched = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var app in applications)
+            {
+                var name = WorkspaceTestState.Text(app, "application");
+                var path = WorkspaceTestState.Text(app, "application-path");
+                var begin = $"] Launching {name} at {path}";
+                var success = $"] {name} launched at {path}";
+                int attempt = -1;
+                for (int i = 0; i < trace.Count; i++)
+                {
+                    if (trace[i].EndsWith(begin, StringComparison.OrdinalIgnoreCase))
+                    {
+                        attempt = i;
+                        if (i < cancellation)
+                        {
+                            admitted.Add(name);
+                        }
+                    }
+                    else if (trace[i].EndsWith(success, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Assert.IsTrue(attempt >= 0 && attempt < cancellation, $"The launcher started '{name}' without a matching attempt before cancellation.");
+                        Assert.IsTrue(launched.Add(name), $"The launcher started '{name}' more than once.");
+                        attempt = -1;
+                    }
+                }
+            }
+
+            Assert.IsTrue(admitted.Count < applications.Count, "The workspace must still have pending applications when the launcher accepts cancellation.");
+
+            // The gate keeps the child processes alive, including fixtures whose CLR has not entered Main yet.
+            Assert.AreEqual(launched.Count, fixtureProcessCount, "The launch trace must account for every test-owned fixture process.");
+        }
+
+        private static IEnumerable<string> ReadNewLogLines(string logDirectory, IReadOnlyDictionary<string, long> logOffsets)
+        {
+            foreach (var path in Directory.EnumerateFiles(logDirectory, "*.log", SearchOption.AllDirectories).Order(StringComparer.Ordinal))
+            {
+                var offset = logOffsets.GetValueOrDefault(path);
+                if (new FileInfo(path).Length <= offset)
+                {
+                    continue;
+                }
+
+                using var stream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                stream.Position = offset;
+                using var reader = new StreamReader(stream);
+                while (reader.ReadLine() is { } line)
+                {
+                    yield return line;
+                }
+            }
         }
 
         private void LaunchWorkspace(string name)
@@ -371,16 +464,15 @@ namespace Microsoft.Workspaces.UITests
                 $"'{application}' did not show the expected launch state. Actual: '{result.LastObservation}'. Last error: {result.LastException?.Message}");
         }
 
-        private IEnumerable<JsonObject> PendingApplications(int count, string gate, string? firstStarted = null, string? lastStarted = null)
+        private IEnumerable<JsonObject> PendingApplications(int count, string gate, string? firstStarted = null)
         {
             for (var index = 1; index <= count; index++)
             {
                 var title = $"{State.Prefix}-pending-{index:00}";
-                var started = index == 1 ? firstStarted : index == count ? lastStarted : null;
                 var arguments = $"--title \"{title}\" --wait-event \"{gate}\"";
-                if (started is not null)
+                if (index == 1 && firstStarted is not null)
                 {
-                    arguments += $" --started-event \"{started}\"";
+                    arguments += $" --started-event \"{firstStarted}\"";
                 }
 
                 yield return State.Application($"Pending fixture {index:00}", title, arguments);

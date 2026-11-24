@@ -18,6 +18,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="WorkspacesCsharpLibrary.UnitTests" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="System.IO.Abstractions" />
   </ItemGroup>

@@ -49,9 +49,11 @@ The fixture supports `--title`, `--payload`, `--minimized`, and existing local
 the first window until the test releases it; no sleeps stand in for app readiness.
 Launch-progress/cancellation cases use ordered application IDs and same-executable
 pending instances because the native launcher iterates an ID-ordered map and
-serializes outstanding instances. Cancellation proves that a final pending app
-never started while an already-open HWND survives. Dismissal releases the gate
-after the UI closes and requires every configured app to appear and be positioned.
+serializes outstanding instances. The cancellation test checks every successful fixture
+launch against the native cancellation trace and verifies the count against the live
+fixture processes. An in-flight launch can finish, and the already-open HWND must survive.
+Dismissal releases the gate after the UI closes and requires every configured app
+to appear and be positioned.
 
 Run in an unlocked, English-language **non-elevated** desktop. No Visual Studio,
 Store access, third-party applications, or elevated fixture process is needed on
@@ -188,7 +190,7 @@ On a connected, unlocked, non-elevated host you can run the unpackaged cases fro
 Visual Studio Test Explorer, or directly against the built executable:
 
 ```powershell
-$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net10.0-windows10.0.26100.0).Path
+$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net11.0-windows10.0.26100.0).Path
 & "$tests\Workspaces.UITests.Next.exe" `
     --filter "FullyQualifiedName~CancelLaunchStopsPendingAppsAndPreservesOpenedWindows" `
     --report-trx --results-directory .\TestResults
@@ -202,7 +204,7 @@ Sign the staged payload before packaging it for a VM. Use the existing signer
 without adding trust to the build host:
 
 ```powershell
-$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net10.0-windows10.0.26100.0).Path
+$tests = (Resolve-Path .\x64\Debug\tests\Workspaces.UITests.Next\net11.0-windows10.0.26100.0).Path
 $runtime = 'C:\PowerToysUiTestPayload\Product'
 $certificate = 'C:\PowerToysUiTestPayload\workspaces-test-signing.cer'
 
