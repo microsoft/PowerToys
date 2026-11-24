@@ -46,7 +46,7 @@ Function Generate-FileList() {
     # Without them GetReadyState() reports NotReady and EnsureReadyAsync() fails with
     # RO_E_METADATA_NAME_NOT_FOUND (0x8000000F). The build already emits them into the app output
     # (e.g. WinUI3Apps); they were previously dropped here because the harvest didn't include them.
-    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.mp4", "*.ico", "*.cur", "*.svg", "index.html", "reg.js", "gitignore.js", "srt.js", "monacoSpecialLanguages.js", "customTokenThemeRules.js", "*.pri", "*.yml", "*.winmd")
+    $fileInclusionList = @("*.dll", "*.exe", "*.json", "*.msix", "*.png", "*.gif", "*.mp4", "*.ico", "*.cur", "*.svg", "index.html", "monaco.js", "monaco.css", "codicon.ttf", "editor.worker.js", "*.pri", "*.yml", "*.winmd")
 
     # MFC DLLs leak into the output via WindowsAppSDKSelfContained but no PowerToys binary imports them.
     # Verified with dumpbin /dependents across all 2176 binaries — zero consumers.
@@ -271,9 +271,7 @@ Generate-FileComponents -fileListName "EnvironmentVariablesAssetsFiles" -wxsFile
 
 #FileExplorerAdd-ons
 Generate-FileList -fileDepsJson "" -fileListName MonacoPreviewHandlerMonacoAssetsFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Monaco"
-Generate-FileList -fileDepsJson "" -fileListName MonacoPreviewHandlerCustomLanguagesFiles -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\Assets\Monaco\customLanguages"
 Generate-FileComponents -fileListName "MonacoPreviewHandlerMonacoAssetsFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs
-Generate-FileComponents -fileListName "MonacoPreviewHandlerCustomLanguagesFiles" -wxsFilePath $PSScriptRoot\FileExplorerPreview.wxs
 
 #FileLocksmith
 Generate-FileList -fileDepsJson "" -fileListName FileLocksmithAssetsFiles -wxsFilePath $PSScriptRoot\FileLocksmith.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\FileLocksmith"
@@ -460,11 +458,9 @@ Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath 
 Generate-FileComponents -fileListName "SettingsV2AssetsCmdPalFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
 #Workspaces
-# Both Workspaces UIs emit their shared icons under WinUI3Apps. Keep the root assets for legacy relative paths.
-Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Workspaces\"
-Generate-FileComponents -fileListName "WorkspacesImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
-Generate-FileList -fileDepsJson "" -fileListName WorkspacesImagesWinUI3ComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\Workspaces\"
-Generate-FileComponents -fileListName "WorkspacesImagesWinUI3ComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
+$workspacesAssetsOutputPath = Join-Path $PSScriptRoot "..\..\$platform\Release\WinUI3Apps\Assets\Workspaces"
+Generate-FileList -fileDepsJson "" -fileListName WorkspacesWinUIImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath $workspacesAssetsOutputPath
+Generate-FileComponents -fileListName "WorkspacesWinUIImagesComponentFiles" -wxsFilePath $PSScriptRoot\Workspaces.wxs
 
 #DSC Resources - JSON manifest files in DSCModules subfolder
 Generate-FileList -fileDepsJson "" -fileListName DscJsonFiles -wxsFilePath $PSScriptRoot\DscResources.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\DSCModules\"

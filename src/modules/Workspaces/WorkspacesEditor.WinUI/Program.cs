@@ -6,6 +6,7 @@ using System;
 using System.Threading;
 
 using ManagedCommon;
+using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 
 namespace WorkspacesEditor
@@ -35,22 +36,46 @@ namespace WorkspacesEditor
                 return;
             }
 
-            if (args.Length > 0 && int.TryParse(args[0], out int powerToysRunnerPid))
-            {
-                Logger.LogInfo($"WorkspacesEditor started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
-                RunnerHelper.WaitForPowerToysRunner(powerToysRunnerPid, () =>
-                {
-                    Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor.");
-                    Environment.Exit(0);
-                });
-            }
-
+            // End the local recording session when the UI message loop exits, including Runner shutdown.
+            using var etwTrace = TryStartLocalRecording();
             Microsoft.UI.Xaml.Application.Start((p) =>
             {
-                var context = new DispatcherQueueSynchronizationContext(DispatcherQueue.GetForCurrentThread());
+                var dispatcherQueue = DispatcherQueue.GetForCurrentThread();
+                var context = new DispatcherQueueSynchronizationContext(dispatcherQueue);
                 SynchronizationContext.SetSynchronizationContext(context);
-                _ = new App();
+                var app = new App();
+
+                if (args.Length > 0 && int.TryParse(args[0], out int powerToysRunnerPid))
+                {
+                    Logger.LogInfo($"WorkspacesEditor started from the PowerToys Runner. Runner pid={powerToysRunnerPid}");
+                    if (args.Length > 1 && Guid.TryParseExact(args[1], "B", out _))
+                    {
+                        app.ListenForModuleRequests(args[1], dispatcherQueue);
+                    }
+
+                    if (!RunnerHelper.TryWaitForProcessExit(powerToysRunnerPid, () =>
+                    {
+                        Logger.LogInfo("PowerToys Runner exited. Exiting WorkspacesEditor.");
+                        dispatcherQueue.TryEnqueue(app.Shutdown);
+                    }))
+                    {
+                        dispatcherQueue.TryEnqueue(app.Shutdown);
+                    }
+                }
             });
+        }
+
+        private static ETWTrace TryStartLocalRecording()
+        {
+            try
+            {
+                return new ETWTrace();
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to start local Workspaces Editor telemetry recording.", ex);
+                return null;
+            }
         }
     }
 }

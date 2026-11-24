@@ -48,7 +48,6 @@ namespace WorkspacesEditor.Models
             MonitorNumber = other.MonitorNumber;
             Version = other.Version;
 
-            Parent = other.Parent;
             IsNotFound = other.IsNotFound;
             IsHighlighted = other.IsHighlighted;
             RepeatIndex = other.RepeatIndex;
@@ -58,6 +57,7 @@ namespace WorkspacesEditor.Models
             Aumid = other.Aumid;
             IsExpanded = other.IsExpanded;
             IsIncluded = other.IsIncluded;
+            Parent = other.Parent;
         }
 
         public Project Parent { get; set; }
@@ -101,13 +101,11 @@ namespace WorkspacesEditor.Models
 
         public string Id { get; set; }
 
+        internal string IdWithoutBraces => Guid.TryParseExact(Id, "B", out var guid) ? guid.ToString("D") : Id;
+
         public string AppName { get; set; }
 
         public string AppTitle { get; set; }
-
-        public string PackageFullName { get; set; }
-
-        public string AppUserModelId { get; set; }
 
         public string CommandLineArguments { get; set; }
 
@@ -187,8 +185,13 @@ namespace WorkspacesEditor.Models
             get => _position;
             set
             {
+                bool sizeChanged = value.Width != _position.Width || value.Height != _position.Height;
                 _position = value;
                 _scaledPosition = null;
+                if (sizeChanged && IsIncluded)
+                {
+                    Parent?.NotifyCanBeSavedChanged();
+                }
             }
         }
 
@@ -214,7 +217,22 @@ namespace WorkspacesEditor.Models
             }
         }
 
-        public int MonitorNumber { get; set; }
+        private int _monitorNumber;
+
+        public int MonitorNumber
+        {
+            get => _monitorNumber;
+            set
+            {
+                if (_monitorNumber != value)
+                {
+                    _monitorNumber = value;
+                    _monitorSetup = null;
+                    _scaledPosition = null;
+                    Parent?.NotifyApplicationsChanged();
+                }
+            }
+        }
 
         private MonitorSetup _monitorSetup;
 
@@ -231,16 +249,6 @@ namespace WorkspacesEditor.Models
         public void InitializationFinished()
         {
             _isInitialized = true;
-            LoadIcon();
-        }
-
-        private void LoadIcon()
-        {
-            _iconImage = IconHelper.TryGetExecutableIcon(AppPath);
-            if (_iconImage == null && !string.IsNullOrEmpty(AppPath))
-            {
-                IsNotFound = true;
-            }
         }
 
         [ObservableProperty]
@@ -269,12 +277,28 @@ namespace WorkspacesEditor.Models
             {
                 IsExpanded = false;
             }
+
+            Parent?.NotifyMonitorReferencesChanged();
         }
 
         private BitmapImage _iconImage;
+        private bool _isIconImageLoaded;
 
         [JsonIgnore]
-        public BitmapImage IconImage => _iconImage;
+        public BitmapImage IconImage
+        {
+            get
+            {
+                // Create WinUI images only when the UI requests them, not during model initialization.
+                if (!_isIconImageLoaded)
+                {
+                    _iconImage = IconHelper.TryGetApplicationIcon(this);
+                    _isIconImageLoaded = true;
+                }
+
+                return _iconImage;
+            }
+        }
 
         internal void CommandLineTextChanged(string newCommandLineValue)
         {
@@ -283,11 +307,47 @@ namespace WorkspacesEditor.Models
             OnPropertyChanged(nameof(IsAppMainParamVisible));
         }
 
+        internal void ApplyDraftSettings(Application beforeCapture, Application current)
+        {
+            CommandLineArguments = current.CommandLineArguments;
+            IsElevated = current.IsElevated;
+            IsIncluded = current.IsIncluded;
+            if (ReferenceEquals(beforeCapture, current))
+            {
+                return;
+            }
+
+            if (beforeCapture.PositionComboboxIndex != current.PositionComboboxIndex)
+            {
+                Maximized = current.Maximized;
+                Minimized = current.Minimized;
+            }
+
+            // The snapshot owns the new layout except for fields edited while it was running.
+            var before = beforeCapture.Position;
+            var edited = current.Position;
+            if (before != edited)
+            {
+                Position = new WindowPosition
+                {
+                    X = before.X == edited.X ? Position.X : edited.X,
+                    Y = before.Y == edited.Y ? Position.Y : edited.Y,
+                    Width = before.Width == edited.Width ? Position.Width : edited.Width,
+                    Height = before.Height == edited.Height ? Position.Height : edited.Height,
+                };
+            }
+        }
+
         internal void UpdatePositionX(string text)
         {
             if (!int.TryParse(text, out int value))
             {
                 value = 0;
+            }
+
+            if (Position.X == value)
+            {
+                return;
             }
 
             Position = new WindowPosition { X = value, Y = Position.Y, Width = Position.Width, Height = Position.Height };
@@ -301,6 +361,11 @@ namespace WorkspacesEditor.Models
                 value = 0;
             }
 
+            if (Position.Y == value)
+            {
+                return;
+            }
+
             Position = new WindowPosition { X = Position.X, Y = value, Width = Position.Width, Height = Position.Height };
             MarkPositionChanged();
         }
@@ -312,6 +377,11 @@ namespace WorkspacesEditor.Models
                 value = 0;
             }
 
+            if (Position.Width == value)
+            {
+                return;
+            }
+
             Position = new WindowPosition { X = Position.X, Y = Position.Y, Width = value, Height = Position.Height };
             MarkPositionChanged();
         }
@@ -321,6 +391,11 @@ namespace WorkspacesEditor.Models
             if (!int.TryParse(text, out int value))
             {
                 value = 0;
+            }
+
+            if (Position.Height == value)
+            {
+                return;
             }
 
             Position = new WindowPosition { X = Position.X, Y = Position.Y, Width = Position.Width, Height = value };
@@ -335,8 +410,6 @@ namespace WorkspacesEditor.Models
                 Parent.InitializePreview();
             }
         }
-
-        public string Version { get; set; }
 
         public new void Dispose()
         {

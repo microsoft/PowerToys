@@ -9,14 +9,10 @@
     <DscModuleVersion>$(Version)$(DscModuleVersionSuffix)</DscModuleVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' == 'x64'">
-    <DefineConstants>Version=$(Version);DscModuleVersion=$(DscModuleVersion);MonacoSRCHarvestPath=$(ProjectDir)..\..\x64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
-    <PreBuildEvent>call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
-    </PreBuildEvent>
+    <DefineConstants>Version=$(Version);DscModuleVersion=$(DscModuleVersion);CmdPalVersion=$(CmdPalVersion)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Platform)' != 'x64'">
-    <DefineConstants>Version=$(Version);DscModuleVersion=$(DscModuleVersion);MonacoSRCHarvestPath=$(ProjectDir)..\..\ARM64\$(Configuration)\Assets\Monaco\monacoSRC;CmdPalVersion=$(CmdPalVersion)</DefineConstants>
-    <PreBuildEvent>call powershell.exe -NonInteractive -executionpolicy Unrestricted -File $(MSBuildThisFileDirectory)\generateMonacoWxs.ps1 -monacoWxsFile "$(MSBuildThisFileDirectory)\MonacoSRC.wxs" -Platform "$(Platform)" -nugetHeatPath "$(NUGET_PACKAGES)\wixtoolset.heat\5.0.2"
-    </PreBuildEvent>
+    <DefineConstants>Version=$(Version);DscModuleVersion=$(DscModuleVersion);CmdPalVersion=$(CmdPalVersion)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup>
     <!-- MSBuild CoreBuild.OnError also runs this restore for failed local WiX builds. -->
@@ -127,7 +123,6 @@
     <Compile Include="CliShims.wxs" />
     <Compile Include="MouseWithoutBorders.wxs" />
     <Compile Include="WinUI3Applications.wxs" />
-    <Compile Include="MonacoSRC.wxs" />
     <Compile Include="Core.wxs" />
     <Compile Include="Resources.wxs" />
     <Compile Include="WinAppSDK.wxs" />
@@ -137,7 +132,6 @@
     <Folder Include="CustomDialogs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WixToolset.Heat" />
       <PackageReference Include="WixToolset.Firewall.wixext" />
       <PackageReference Include="WixToolset.Util.wixext" />
       <PackageReference Include="WixToolset.UI.wixext" />

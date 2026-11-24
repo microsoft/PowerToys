@@ -93,3 +93,78 @@ Describe 'ConvertTo-AzDevOpsBuildSnapshot' {
         $threw | Should Be $true
     }
 }
+
+Describe 'Wait-AzureDevOpsBuild' {
+    BeforeAll {
+        $script:waiter = Join-Path $TestDrive 'Wait-AzureDevOpsBuild.ps1'
+        Copy-Item (Join-Path $PSScriptRoot '..\scripts\Wait-AzureDevOpsBuild.ps1') $script:waiter
+        Copy-Item (Join-Path $PSScriptRoot '..\scripts\AzureDevOps.ps1') (Join-Path $TestDrive 'AzureDevOps.Real.ps1')
+        ({
+            . (Join-Path $PSScriptRoot 'AzureDevOps.Real.ps1')
+
+            function Test-AzDevOpsSession {}
+
+            function Invoke-AzDevOpsRest {
+                param([string] $Uri)
+
+                $response = $fakeBuilds.Dequeue()
+                if ($response -is [string]) {
+                    throw $response
+                }
+
+                [pscustomobject]@{ Body = $response }
+            }
+
+            function Start-Sleep {
+                param([int] $Seconds)
+
+                $observedWaits.Add($Seconds)
+            }
+        }).ToString() | Set-Content (Join-Path $TestDrive 'AzureDevOps.ps1')
+
+        $script:watchBranch = 'refs/heads/test-watch'
+        $script:watchVersion = '0123456789abcdef0123456789abcdef01234567'
+    }
+
+    BeforeEach {
+        $fakeBuilds = [System.Collections.Generic.Queue[object]]::new()
+        $observedWaits = [System.Collections.Generic.List[int]]::new()
+        $build = @{
+            id = 101
+            buildNumber = '20261119.1'
+            sourceBranch = $script:watchBranch
+            sourceVersion = $script:watchVersion
+            _links = [pscustomobject]@{ web = [pscustomobject]@{ href = 'https://example.test/101' } }
+        }
+        $pending = $build.Clone()
+        $pending.status = 'inProgress'
+        $terminal = $build.Clone()
+        $terminal.status = 'completed'
+        $terminal.result = 'succeeded'
+    }
+
+    It 'waits 20 minutes after a progress read and after a transient query failure' {
+        $fakeBuilds.Enqueue([pscustomobject]$pending)
+        $fakeBuilds.Enqueue('Transient read failure')
+        $fakeBuilds.Enqueue([pscustomobject]$terminal)
+
+        $events = @(& $script:waiter -BuildId 101 -ExpectedBranch $script:watchBranch -ExpectedSourceVersion $script:watchVersion | ConvertFrom-Json)
+
+        ($observedWaits -join ',') | Should Be '1200,1200'
+        ($events.Event -join ',') | Should Be 'progress,query-error,terminal'
+        $waitBudget = ([DateTimeOffset]$events[0].DeadlineUtc) - ([DateTimeOffset]$events[0].ObservedUtc)
+        [Math]::Ceiling($waitBudget.TotalMinutes) | Should Be 360
+        $events[-1].Builds[0].Result | Should Be 'succeeded'
+    }
+
+    It 'shortens the sleep when less than one polling interval remains' {
+        $fakeBuilds.Enqueue([pscustomobject]$pending)
+        $fakeBuilds.Enqueue([pscustomobject]$terminal)
+
+        $events = @(& $script:waiter -BuildId 101 -ExpectedBranch $script:watchBranch -ExpectedSourceVersion $script:watchVersion -TimeoutMinutes 1 | ConvertFrom-Json)
+
+        $observedWaits.Count | Should Be 1
+        ($observedWaits[0] -gt 0 -and $observedWaits[0] -le 60) | Should Be $true
+        $events[-1].Event | Should Be 'terminal'
+    }
+}

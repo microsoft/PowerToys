@@ -3,6 +3,7 @@
 #include "WindowUtils.h"
 
 #include <filesystem>
+#include <string_view>
 
 #include <appmodel.h>
 #include <shellapi.h>
@@ -26,8 +27,7 @@ namespace Utils
     namespace NonLocalizable
     {
         const std::wstring EdgeAppIdIdentifier = L"--app-id=";
-        const std::wstring ChromeAppIdIdentifier = L"Chrome._crx_";
-        const std::wstring ChromeBase = L"Google\\Chrome\\User Data\\Default\\Web Applications";
+        const std::wstring ChromeBase = L"Google\\Chrome\\User Data";
         const std::wstring EdgeBase = L"Microsoft\\Edge\\User Data\\Default\\Web Applications";
         const std::wstring ChromeDirPrefix = L"_crx_";
         const std::wstring EdgeDirPrefix = L"_crx__";
@@ -86,73 +86,91 @@ namespace Utils
         return pwaHelperProcessIds;
     }
 
-    PwaHelper::PwaHelper()
+    PwaHelper::PwaHelper() :
+        PwaHelper(GetLocalAppDataFolder())
     {
-        InitChromeAppIds();
-        InitEdgeAppIds();
     }
 
-    void PwaHelper::InitAppIds(const std::wstring& browserDataFolder, const std::wstring& browserDirPrefix, const std::function<void(const std::wstring&)>& addingAppIdCallback)
+    PwaHelper::PwaHelper(std::filesystem::path localAppData) :
+        m_localAppData(std::move(localAppData))
     {
-        std::filesystem::path folderPath(GetLocalAppDataFolder());
-        folderPath.append(browserDataFolder);
-        if (!std::filesystem::exists(folderPath))
+    }
+
+    namespace
+    {
+        bool MatchesChromeComponent(std::wstring_view original, std::wstring_view captured, size_t componentCount)
         {
-            Logger::info(L"Edge base path does not exist: {}", folderPath.wstring());
-            return;
+            if (original == captured)
+                return true;
+            // Chromium's ShellUtil::BuildAppUserModelId splits a 64-character budget
+            // among all components and keeps the ends of each overlong component.
+            const size_t limit = (64 - (componentCount - 1)) / componentCount;
+            const size_t first = limit / 2;
+            const size_t last = limit - first;
+            return original.size() > limit && captured.size() == limit &&
+                   original.starts_with(captured.substr(0, first)) && original.ends_with(captured.substr(first, last));
         }
 
-        try
+        std::wstring ChromeProfileId(const std::filesystem::path& directory)
         {
-            for (const auto& directory : std::filesystem::directory_iterator(folderPath))
+            std::wstring result = L"UserData.";
+            for (const wchar_t c : directory.filename().wstring())
             {
-                if (!directory.is_directory())
-                {
+                if ((c >= L'a' && c <= L'z') || (c >= L'A' && c <= L'Z') || (c >= L'0' && c <= L'9') || c == L'.')
+                    result += c;
+            }
+            return result;
+        }
+
+        std::wstring IconName(const std::filesystem::path& directory)
+        {
+            std::error_code ec;
+            for (std::filesystem::directory_iterator entry(directory, ec), end; !ec && entry != end; entry.increment(ec))
+            {
+                const auto& file = *entry;
+                if (file.is_regular_file(ec) && StringUtils::CaseInsensitiveEquals(file.path().extension(), NonLocalizable::IcoExtension))
+                    return file.path().stem().wstring();
+            }
+            return {};
+        }
+
+        bool MatchChromeProfile(const std::filesystem::path& profile, std::wstring_view appPart, size_t components,
+                                std::optional<std::wstring>& match, std::wstring& name)
+        {
+            std::optional<std::wstring> profileMatch;
+            const auto webApps = profile / L"Web Applications";
+            for (const bool manifest : { false, true })
+            {
+                const auto folder = manifest ? webApps / L"Manifest Resources" : webApps;
+                if (!std::filesystem::is_directory(folder))
                     continue;
-                }
-
-                const std::wstring directoryName = directory.path().filename();
-                if (directoryName.find(browserDirPrefix) != 0)
+                for (const auto& entry : std::filesystem::directory_iterator(folder))
                 {
-                    continue;
-                }
-
-                const std::wstring appId = directoryName.substr(browserDirPrefix.length());
-                if (addingAppIdCallback)
-                {
-                    addingAppIdCallback(appId);
-                }
-
-                for (const auto& filename : std::filesystem::directory_iterator(directory))
-                {
-                    if (!filename.is_directory())
-                    {
-                        const std::filesystem::path filenameString = filename.path().filename();
-                        if (StringUtils::CaseInsensitiveEquals(filenameString.extension(), NonLocalizable::IcoExtension))
-                        {
-                            const auto stem = filenameString.stem().wstring();
-                            m_pwaAppIdsToAppNames.insert({ appId, stem });
-                            Logger::info(L"Found an installed Pwa app {} with PwaAppId {}", stem, appId);
-                            break;
-                        }
-                    }
+                    const std::wstring leaf = entry.path().filename().wstring();
+                    if (!manifest && !leaf.starts_with(NonLocalizable::ChromeDirPrefix))
+                        continue;
+                    const auto id = manifest ? leaf : leaf.substr(NonLocalizable::ChromeDirPrefix.size());
+                    if (id.size() != 32 || id.find_first_not_of(L"abcdefghijklmnop") != std::wstring::npos ||
+                        !MatchesChromeComponent(NonLocalizable::ChromeDirPrefix + id, appPart, components) || !entry.is_directory())
+                        continue;
+                    // The same installation can be represented in both layouts. Different
+                    // installed apps or profiles can collide after Chromium shortens their IDs.
+                    if (match || (profileMatch && *profileMatch != id))
+                        return false;
+                    profileMatch = id;
+                    if (!manifest)
+                        name = IconName(entry.path());
                 }
             }
-        }
-        catch (std::exception& ex)
-        {
-            Logger::error("Failed to iterate over the directory: {}", ex.what());
+            if (profileMatch)
+                match = std::move(profileMatch);
+            return true;
         }
     }
 
     void PwaHelper::InitEdgeAppIds()
     {
-        if (!m_edgeAppIds.empty())
-        {
-            // already initialized
-            return;
-        }
-
+        m_edgeInitialized = true;
         CommandLineArgsHelper commandLineArgsHelper{};
 
         const auto pwaHelperProcessIds = FindPwaHelperProcessIds();
@@ -168,65 +186,96 @@ namespace Utils
             Logger::info(L"Found an edge Pwa helper process with AumidID {} and PwaAppId {}", aumidID, appId);
         }
 
-        InitAppIds(NonLocalizable::EdgeBase, NonLocalizable::EdgeDirPrefix, [&](const std::wstring&) {});
     }
 
-    void PwaHelper::InitChromeAppIds()
+    std::optional<std::wstring> PwaHelper::GetEdgeAppId(const std::wstring& windowAumid)
     {
-        if (!m_chromeAppIds.empty())
-        {
-            // already initialized
-            return;
-        }
-
-        InitAppIds(NonLocalizable::ChromeBase, NonLocalizable::ChromeDirPrefix, [&](const std::wstring& appId) {
-            m_chromeAppIds.push_back(appId);
-        });
-    }
-
-    std::optional<std::wstring> PwaHelper::GetEdgeAppId(const std::wstring& windowAumid) const
-    {
+        if (windowAumid.empty())
+            return std::nullopt;
+        if (!m_edgeInitialized)
+            InitEdgeAppIds();
         const auto pwaIndex = m_edgeAppIds.find(windowAumid);
         if (pwaIndex != m_edgeAppIds.end())
         {
+            if (!m_localAppData.empty() && !m_pwaAppIdsToAppNames.contains(pwaIndex->second))
+            {
+                const auto& id = pwaIndex->second;
+                if (!id.empty() && id.find_first_not_of(L"abcdefghijklmnop") == std::wstring::npos)
+                {
+                    try
+                    {
+                        const auto folder = m_localAppData / NonLocalizable::EdgeBase / (NonLocalizable::EdgeDirPrefix + id);
+                        if (std::filesystem::is_directory(folder))
+                            m_pwaAppIdsToAppNames.emplace(id, IconName(folder));
+                    }
+                    catch (const std::filesystem::filesystem_error& ex)
+                    {
+                        Logger::info("Could not read an Edge PWA name: {}", ex.what());
+                    }
+                }
+            }
             return pwaIndex->second;
         }
 
         return std::nullopt;
     }
 
-    std::optional<std::wstring> PwaHelper::GetChromeAppId(const std::wstring& windowAumid) const
+    std::optional<std::wstring> PwaHelper::GetChromeAppId(const std::wstring& windowAumid)
     {
-        const auto appIdIndexStart = windowAumid.find(NonLocalizable::ChromeAppIdIdentifier);
-        if (appIdIndexStart != std::wstring::npos)
-        {
-            std::wstring windowAumidSub = windowAumid.substr(appIdIndexStart + NonLocalizable::ChromeAppIdIdentifier.size());
-            const auto appIdIndexEnd = windowAumidSub.find(L" ");
-            if (appIdIndexEnd != std::wstring::npos)
-            {
-                windowAumidSub = windowAumidSub.substr(0, appIdIndexEnd);
-            }
+        constexpr std::wstring_view browser = L"Chrome.";
+        if (!windowAumid.starts_with(L"Chrome._crx_") || m_localAppData.empty())
+            return std::nullopt;
+        if (const auto known = m_chromeAppsByAumid.find(windowAumid); known != m_chromeAppsByAumid.end())
+            return known->second.first;
 
-            const std::wstring windowAumidBegin = windowAumidSub.substr(0, 10);
-            for (const auto chromeAppId : m_chromeAppIds)
+        const std::wstring_view components = std::wstring_view(windowAumid).substr(browser.size());
+        const auto split = components.find(L'.');
+        const bool hasProfile = split != std::wstring_view::npos;
+        const auto appPart = components.substr(0, split);
+        const auto profilePart = hasProfile ? components.substr(split + 1) : std::wstring_view{};
+        if (hasProfile && profilePart.empty())
+            return std::nullopt;
+
+        std::optional<std::wstring> match;
+        std::wstring name;
+        try
+        {
+            const auto root = m_localAppData / NonLocalizable::ChromeBase;
+            if (!hasProfile)
             {
-                if (chromeAppId.find(windowAumidBegin) == 0)
+                if (!MatchChromeProfile(root / L"Default", appPart, 2, match, name))
+                    return std::nullopt;
+            }
+            else if (std::filesystem::is_directory(root))
+            {
+                for (const auto& profile : std::filesystem::directory_iterator(root))
                 {
-                    return chromeAppId;
+                    if (!MatchesChromeComponent(ChromeProfileId(profile.path()), profilePart, 3) || !profile.is_directory())
+                        continue;
+                    if (!MatchChromeProfile(profile.path(), appPart, 3, match, name))
+                        return std::nullopt;
                 }
             }
         }
-
-        return std::nullopt;
+        catch (const std::filesystem::filesystem_error& ex)
+        {
+            Logger::info("Could not resolve a Chrome PWA: {}", ex.what());
+            return std::nullopt;
+        }
+        if (match)
+            m_chromeAppsByAumid.emplace(windowAumid, std::make_pair(*match, std::move(name)));
+        return match;
     }
 
     std::wstring PwaHelper::SearchPwaName(const std::wstring& pwaAppId, const std::wstring& windowAumid) const
     {
-        const auto index = m_pwaAppIdsToAppNames.find(pwaAppId);
-        if (index != m_pwaAppIdsToAppNames.end())
+        if (const auto chrome = m_chromeAppsByAumid.find(windowAumid); chrome != m_chromeAppsByAumid.end())
         {
-            return index->second;
+            if (chrome->second.first == pwaAppId && !chrome->second.second.empty())
+                return chrome->second.second;
         }
+        else if (const auto edge = m_pwaAppIdsToAppNames.find(pwaAppId); edge != m_pwaAppIdsToAppNames.end() && !edge->second.empty())
+            return edge->second;
 
         std::wstring nameFromAumid{ windowAumid };
         const std::size_t delimiterPos = nameFromAumid.find(L"-");

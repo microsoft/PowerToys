@@ -1,12 +1,11 @@
-﻿<!doctype HTML>
+﻿<!doctype html>
 <html>
 <head>
-	<!-- Set browser to Edge-->
-	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 	<!-- Set charset -->
 	<meta charset="utf-8" />
 	<!-- Title (normally not displayed)-->
 	<title>Registry Preview Editor</title>
+	<link rel="stylesheet" href="http://PowerToysLocalMonaco/monaco.css" />
 	<style>
 		/* Fits content to window size */
 		html, body {
@@ -32,40 +31,36 @@
 <body>
 	<!-- Container for the editor -->
 	<div id="container"></div>
-	<!-- Script -->
-	<script src="http://PowerToysLocalMonaco/monacoSRC/min/vs/loader.js"></script>
+	<!-- monaco.js is built from the pinned monaco-editor npm package; see src/Monaco/package.json -->
 	<script type="module">
-        import { registerAdditionalLanguages } from 'http://PowerToysLocalMonaco/monacoSpecialLanguages.js';
-        import { customTokenThemeRules } from 'http://PowerToysLocalMonaco/customTokenThemeRules.js';
-        require.config({ paths: { vs: 'http://PowerToysLocalMonaco/monacoSRC/min/vs' } });
-		require(['vs/editor/editor.main'], async function () {
-            await registerAdditionalLanguages(monaco)
+		import { monaco } from 'http://PowerToysLocalMonaco/monaco.js';
 
-            const editor = monaco.editor.create(document.getElementById('container'), {
-				automaticLayout: true,
-				language: 'reg',
-                minimap: { enabled: false },
-                scrollBeyondLastLine: false,
-                scrollbar: {
-                    horizontal: 'auto',
-                    vertical: 'auto',
-                },
-            });
+		const editor = monaco.editor.create(document.getElementById('container'), {
+			automaticLayout: true,
+			language: 'reg',
+			minimap: { enabled: false },
+			scrollBeyondLastLine: false,
+			scrollbar: {
+				horizontal: 'auto',
+				vertical: 'auto',
+			},
+		});
 
-            window.onresize = () => {
-                editor.layout();
-			};
+		window.onresize = () => {
+			editor.layout();
+		};
 
-			editor.focus();
+		editor.focus();
 
-            window.editor = editor;
-            window.startEditorChangeTracking = () => {
-                editor.getModel().onDidChangeContent((event) => {
-                    window.chrome.webview.postMessage({ 'id': 'contentChanged', 'content': editor.getValue() });
-                });
-            };
-			window.chrome.webview.postMessage({ 'id': 'editorReady' });
-		});      
+		// MonacoEditorControl waits for editorReady, sets the theme and text through ExecuteScriptAsync
+		// (monaco.editor.setTheme, editor.setValue), and then calls startEditorChangeTracking().
+		window.editor = editor;
+		window.startEditorChangeTracking = () => {
+			editor.getModel().onDidChangeContent((event) => {
+				window.chrome.webview.postMessage({ 'id': 'contentChanged', 'content': editor.getValue() });
+			});
+		};
+		window.chrome.webview.postMessage({ 'id': 'editorReady' });
 	</script>
 </body>
 </html>
