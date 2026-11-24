@@ -1677,7 +1677,7 @@ namespace KeyboardEventHandlers
         } }.detach();*/
     }
 
-    void CreateOrShowProcessForShortcut(Shortcut shortcut) noexcept
+    void CreateOrShowProcessForShortcut(Shortcut shortcut, const ProgramLauncher::LaunchCallback& launchProgram) noexcept
     {
         try
         {
@@ -1707,27 +1707,37 @@ namespace KeyboardEventHandlers
                     processName = *linkProcessName;
                 }
 
-                const DWORD targetPid = GetProcessIdByName(processName);
-                Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", processName, targetPid, shortcut.alreadyRunningAction);
-
-                if (targetPid != 0)
+                if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::CloseAndEndTask)
                 {
-                    if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
+                    if (CloseAndEndProcessesByName(processName))
                     {
-                        TerminateProcessesByName(processName);
+                        return;
                     }
-                    else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
+                }
+                else
+                {
+                    const DWORD targetPid = GetProcessIdByName(processName);
+                    Logger::trace(L"ChordKeyboardHandler:{}, already running, pid:{}, alreadyRunningAction:{}", processName, targetPid, shortcut.alreadyRunningAction);
+
+                    if (targetPid != 0)
                     {
-                        CloseProcessByName(processName);
-                    }
-                    else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
-                    {
-                        for (DWORD pid : GetProcessesIdByName(processName))
+                        if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::EndTask)
                         {
-                            TryShowExistingProgram(pid, processName);
+                            TerminateProcessesByName(processName);
                         }
+                        else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::Close)
+                        {
+                            CloseProcessByName(processName);
+                        }
+                        else if (shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::ShowWindow)
+                        {
+                            for (DWORD pid : GetProcessesIdByName(processName))
+                            {
+                                TryShowExistingProgram(pid, processName);
+                            }
+                        }
+                        return;
                     }
-                    return;
                 }
             }
 
@@ -1766,6 +1776,12 @@ namespace KeyboardEventHandlers
                     toast(fmt::format(L"Error starting {}", fileNamePart), L"The start in path was not valid. It could not be used.");
                     return;
                 }
+            }
+
+            if (launchProgram)
+            {
+                launchProgram(*launchPath, *expandedArgs, currentDir);
+                return;
             }
 
             DWORD processId = 0;
@@ -1869,6 +1885,114 @@ namespace KeyboardEventHandlers
         }
 
         Logger::trace(L"ChordKeyboardHandler:{}, CloseProcessByName returning", fileNamePart);
+    }
+
+    bool CloseAndEndProcessesByName(const std::wstring& fileNamePart)
+    {
+        // Toolhelp supplies PIDs, not process identities. Pin accessible process objects
+        // BEFORE the matching snapshot so their PIDs cannot be recycled in its open gap.
+        // A process first seen after this inventory is conservatively skipped.
+        std::vector<std::pair<DWORD, wil::unique_handle>> pinnedProcesses;
+        wil::unique_tool_help_snapshot inventory{ CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
+        PROCESSENTRY32 entry{};
+        entry.dwSize = sizeof(entry);
+        if (inventory && Process32First(inventory.get(), &entry))
+        {
+            do
+            {
+                wil::unique_handle process{ OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, entry.th32ProcessID) };
+                if (process)
+                {
+                    pinnedProcesses.emplace_back(entry.th32ProcessID, std::move(process));
+                }
+            } while (Process32Next(inventory.get(), &entry));
+        }
+
+        const auto processIds = GetProcessesIdByName(fileNamePart);
+        std::vector<ProcessCloser::ProcessSnapshot> snapshots;
+        for (const auto& [pid, process] : pinnedProcesses)
+        {
+            if (std::find(processIds.begin(), processIds.end(), pid) != processIds.end())
+            {
+                auto snapshot = ProcessCloser::SnapshotProcess(process.get());
+                if (snapshot && _wcsicmp(GetFileNameFromPath(snapshot->imagePath).c_str(), fileNamePart.c_str()) == 0)
+                {
+                    snapshots.push_back(std::move(*snapshot));
+                }
+            }
+        }
+
+        // Keep the pins alive until every destructive handle has been validated.
+        ProcessCloser::CloseAndEndProcesses(snapshots);
+        return !processIds.empty();
+    }
+
+    std::optional<ProcessCloser::ProcessSnapshot> ProcessCloser::SnapshotProcess(HANDLE process)
+    {
+        ProcessSnapshot snapshot{};
+        FILETIME exitTime{}, kernelTime{}, userTime{};
+        snapshot.pid = GetProcessId(process);
+        snapshot.imagePath.resize(32768);
+        DWORD length = static_cast<DWORD>(snapshot.imagePath.size());
+        if (!snapshot.pid ||
+            !GetProcessTimes(process, &snapshot.creationTime, &exitTime, &kernelTime, &userTime) ||
+            !QueryFullProcessImageNameW(process, 0, snapshot.imagePath.data(), &length))
+        {
+            return std::nullopt;
+        }
+        snapshot.imagePath.resize(length);
+        return snapshot;
+    }
+
+    void ProcessCloser::CloseAndEndProcesses(const std::vector<ProcessSnapshot>& snapshots)
+    {
+        std::vector<std::pair<DWORD, wil::unique_handle>> processes;
+        for (const auto& snapshot : snapshots)
+        {
+            wil::unique_handle process{ OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_QUERY_LIMITED_INFORMATION, FALSE, snapshot.pid) };
+            const auto opened = process ? SnapshotProcess(process.get()) : std::nullopt;
+            // Compare identities, not a wall-clock cutoff: clock adjustments and timestamp
+            // granularity cannot admit a replacement because the original object is pinned.
+            if (opened && opened->imagePath == snapshot.imagePath &&
+                CompareFileTime(&opened->creationTime, &snapshot.creationTime) == 0)
+            {
+                processes.emplace_back(snapshot.pid, std::move(process));
+            }
+        }
+
+        if (!processes.empty())
+        {
+            std::thread([processes = std::move(processes)]() {
+                // All instances share one grace period, regardless of their number.
+                const auto deadline = GetTickCount64() + 1000;
+                for (const auto& [pid, process] : processes)
+                {
+                    if (WaitForSingleObject(process.get(), 0) == WAIT_TIMEOUT)
+                    {
+                        HWND window = FindMainWindow(pid, false);
+                        if (!window)
+                        {
+                            window = FindMainWindow(pid, true);
+                        }
+                        if (window && WaitForSingleObject(process.get(), 0) == WAIT_TIMEOUT)
+                        {
+                            PostMessageW(window, WM_CLOSE, 0, 0);
+                        }
+                    }
+                }
+
+                for (const auto& [pid, process] : processes)
+                {
+                    const auto now = GetTickCount64();
+                    const DWORD remaining = now < deadline ? static_cast<DWORD>(deadline - now) : 0;
+                    // WAIT_FAILED is not evidence that a process is still running.
+                    if (WaitForSingleObject(process.get(), remaining) == WAIT_TIMEOUT)
+                    {
+                        TerminateProcess(process.get(), 0);
+                    }
+                }
+            }).detach();
+        }
     }
 
     void TerminateProcessesByName(const std::wstring& fileNamePart)

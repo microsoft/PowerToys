@@ -250,6 +250,11 @@ try {
         }
         Remove-MwbPrivateTargetState $modernIdentity.TargetStateRoot
     }
+    elseif ($provision.SandboxBackend -ceq 'WinApp') {
+        # A stopped modern instance can leave its shared OS broker running.
+        Assert-MwbHostOnlyModernSandboxIdle $journal $provision
+        $modernRecovery = $true
+    }
 
     $sandbox = @()
     if ($journal.SandboxProcesses) {

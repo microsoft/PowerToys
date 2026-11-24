@@ -115,6 +115,8 @@ public partial class App : Application, IDisposable
         // Now that CoreLogger is initialized, initialize the logger delegates in ApplicationInfoService
         appInfoService.SetLogDirectory(() => Logger.CurrentVersionLogDirectoryPath);
         appInfoService.SetLogFile(() => Logger.CurrentLogFile);
+
+        _ = Services.GetRequiredService<HeartbeatTelemetry>();
     }
 
     /// <summary>
@@ -318,6 +320,9 @@ public partial class App : Application, IDisposable
 
         services.AddSingleton<IAppHostService, PowerToysAppHostService>();
         services.AddSingleton<ITelemetryService, TelemetryForwarder>();
+        services.AddSingleton(sp => new HeartbeatTelemetry(
+            () => sp.GetRequiredService<TopLevelCommandManager>().CommandProviders.Count(),
+            heartbeat => PowerToysTelemetry.Log.WriteEvent(heartbeat)));
 
         services.AddSingleton<IFuzzyMatcherProvider, FuzzyMatcherProvider>(
             _ => new FuzzyMatcherProvider(new PrecomputedFuzzyMatcherOptions(), new PinyinFuzzyMatcherOptions()));

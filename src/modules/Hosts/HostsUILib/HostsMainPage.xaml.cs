@@ -166,6 +166,11 @@ namespace HostsUILib.Views
             }
         }
 
+        private void FilterBox_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            ViewModel.ApplyFilters();
+        }
+
         private void ReorderButtonUp_Click(object sender, RoutedEventArgs e)
         {
             if (Entries.SelectedItem is Entry entry)

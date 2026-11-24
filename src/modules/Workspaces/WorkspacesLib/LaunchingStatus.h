@@ -21,7 +21,7 @@ public:
     bool IsWindowProcessed(HWND window) noexcept;
 
     void Update(const WorkspacesData::WorkspacesProject::Application& app, LaunchingState state);
-    void Update(const WorkspacesData::WorkspacesProject::Application& app, HWND window, LaunchingState state);
+    void Update(const WorkspacesData::WorkspacesProject::Application& app, HWND window, LaunchingState state, DWORD existingWindowProcessId = 0);
     void Cancel();
     
 private:

@@ -214,6 +214,32 @@ public class PeekFilePreviewTests : UITestBase
         AssertBoundsEqual(movedBounds, GetWindowBounds(secondWindow), "when switching images while pinned");
     }
 
+    [TestMethod("Peek.Explorer.ForegroundRecovery")]
+    public void ExplorerRegainsForegroundWithoutClosingPeek()
+    {
+        var imagePath = Path.GetFullPath(@".\TestAssets\8.png");
+        var peek = OpenPeekWindow(imagePath);
+        var explorer = new IntPtr(explorerWindowHandle);
+        var peekHandle = new IntPtr(peek.WindowHandle);
+        WindowHelper.MoveWindow(explorer, 20, 20);
+        WindowHelper.MoveWindow(peekHandle, 400, 200);
+        Assert.IsTrue(WindowControl.WaitForForeground(peekHandle), "Peek should own foreground before the Explorer recovery.");
+
+        Assert.IsTrue(WindowControl.TryClickExposedCaption(explorer), "Explorer should expose a safe caption for physical activation.");
+
+        // Observe only: another activation or selection write would hide a missed caption click.
+        var restored = WaitHelper.WaitForStable(
+            () => WindowControl.GetForegroundWindowHandle() == explorer ? ExplorerShell.TryGetSelection(explorer) : null,
+            selection => selection is not null && selection.SelectedPaths.SetEquals([imagePath]) &&
+                string.Equals(selection.FocusedPath, imagePath, StringComparison.OrdinalIgnoreCase),
+            ExplorerOpenTimeoutMS,
+            ExplorerSelectionStableSamples);
+        Assert.IsTrue(restored.Succeeded, "The caption click should restore the original Explorer foreground without changing its selection or focused item.");
+        Assert.IsTrue(
+            WindowsFinder.ListByApp(PeekProcessName).Any(window => window.Hwnd == peek.WindowHandle),
+            "Foreground recovery must not close or restart the existing Peek window.");
+    }
+
     [TestMethod("Peek.WindowPinning.PinAndReopen")]
     [TestCategory("Window Pinning")]
     public void TestPinWindowAndReopen()
@@ -461,8 +487,8 @@ public class PeekFilePreviewTests : UITestBase
         }
 
         Assert.Fail(
-            $"Explorer did not open for {selectedItemName} after {ExplorerOpenAttempts} launch attempts." +
-            Environment.NewLine + GetActivationDiagnostics("Explorer launch failed"));
+            $"Explorer did not establish its window, folder, foreground and exact selection for {selectedItemName} after {ExplorerOpenAttempts} attempts." +
+            Environment.NewLine + GetActivationDiagnostics("Explorer readiness failed"));
         return null!;
     }
 
@@ -515,12 +541,40 @@ public class PeekFilePreviewTests : UITestBase
         string focusedPath,
         int timeoutMS)
     {
-        return ExplorerShell.SetSelectionAndWaitForStable(
-            new IntPtr(windowHandle),
+        var timer = Stopwatch.StartNew();
+        var window = new IntPtr(windowHandle);
+        if (!WindowControl.WaitForForeground(window, timeoutMS: Math.Min(2_000, timeoutMS)))
+        {
+            Console.WriteLine($"Peek Explorer foreground recovery: target={windowHandle}; current={WindowControl.GetForegroundWindowInfo()}.");
+            bool clicked = WindowControl.TryClickExposedCaption(window);
+            Console.WriteLine($"Peek Explorer caption click issued={clicked}; current={WindowControl.GetForegroundWindowInfo()}.");
+        }
+
+        var remaining = timeoutMS - (int)timer.ElapsedMilliseconds;
+        if (remaining <= 0)
+        {
+            Console.WriteLine($"Peek Explorer readiness budget expired during foreground recovery for HWND {windowHandle}.");
+            return false;
+        }
+
+        var result = ExplorerShell.SetSelectionAndWaitForStable(
+            window,
             selectedPaths,
             focusedPath,
-            timeoutMS,
-            ExplorerSelectionStableSamples).Succeeded;
+            remaining,
+            ExplorerSelectionStableSamples);
+        if (!result.Succeeded)
+        {
+            string selection = result.LastObservation is null
+                ? "(unavailable)"
+                : string.Join(", ", result.LastObservation.SelectedPaths);
+            Console.WriteLine(
+                $"Peek Explorer selection readiness failed: target={windowHandle}; foreground={WindowControl.GetForegroundWindowInfo()}; " +
+                $"selected=[{selection}]; " +
+                $"focused={result.LastObservation?.FocusedPath}; error={result.LastException}.");
+        }
+
+        return result.Succeeded;
     }
 
     private static string NormalizePath(string path)

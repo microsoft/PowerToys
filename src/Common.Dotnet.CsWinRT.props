@@ -11,6 +11,13 @@
     <PackageReference Include="Microsoft.Windows.CsWinRT" />
   </ItemGroup>
 
+  <!-- Unit tests run JIT-only and never marshal these collections across the WinRT ABI, so the CsWinRT AOT
+       collection-expression analyzer does not apply. IsTestProject comes from the MSTest package props,
+       which are imported before this file. -->
+  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+    <NoWarn>$(NoWarn);CsWinRT1032</NoWarn>
+  </PropertyGroup>
+
   <!-- This may need to be removed on future CsWinRT upgrades-->
   <Target Name="RemoveCsWinRTPackageAnalyzer" BeforeTargets="CoreCompile">
     <ItemGroup>

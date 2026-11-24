@@ -71,7 +71,9 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         $official | Should Match "installMode: 'peruser'\r?\n\s+jobSuffix: '_PerUser'"
         ([regex]::Matches($ci, 'template: job-test-arm64.yml')).Count | Should Be 1
         ([regex]::Matches($ci, 'template: job-test-project.yml')).Count | Should Be 2
-        ([regex]::Matches($full, 'template: job-test-project.yml')).Count | Should Be 2
+        ([regex]::Matches($full, 'template: job-test-project.yml')).Count | Should Be 4
+        ([regex]::Matches($full, 'uiTestDiagnosticCohort: true')).Count | Should Be 2
+        ([regex]::Matches($full, 'uiTestExecutionModules: \$\{\{ cohort.modules \}\}')).Count | Should Be 2
         ([regex]::Matches($official, 'template: job-test-project.yml')).Count | Should Be 4
     }
 

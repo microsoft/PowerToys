@@ -41,6 +41,14 @@ jobs:
 
   - template: .\steps-ensure-nuget-version.yml
 
+  - ${{ if eq(parameters.codeSign, true) }}:
+    - template: .\steps-ensure-dotnet-version.yml
+      parameters:
+        sdk: true
+        version: '6.0' # .NET 6.0 is required for ESRP code signing tasks.
+
+  - template: .\steps-ensure-dotnet-version.yml
+
   - task: NuGetAuthenticate@1
 
   - ${{ if eq(parameters.official, true) }}:

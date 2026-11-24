@@ -54,6 +54,10 @@ namespace KeyboardManagerEditorUI
                 // Release the keyboard hook when the window is deactivated
                 KeyboardHookHelper.Instance.CleanupHook();
             }
+            else
+            {
+                MainPageContent.ReloadIfChangedOnDisk();
+            }
         }
 
         private void MainWindow_Closed(object sender, WindowEventArgs args)
