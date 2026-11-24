@@ -68,6 +68,15 @@
     <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
   </PropertyGroup>
 
+  <Target Name="UseNativeAotSymbolsForMsix"
+          BeforeTargets="GetPackagingOutputs"
+          Condition="'$(PublishAot)' == 'true' and '$(IncludePublishItemsOutputGroup)' == 'true'">
+    <PropertyGroup>
+      <!-- The Native AOT publish outputs already contain the PDB for the packaged executable. -->
+      <IncludeDebugSymbolsProjectOutputGroup>false</IncludeDebugSymbolsProjectOutputGroup>
+    </PropertyGroup>
+  </Target>
+
   <!-- BODGY: XES Versioning and WinAppSDK get into a fight about the app manifest, which breaks WinAppSDK. -->
   <Target Name="RearrangeXefVersioningAndWinAppSDKResourceGeneration" DependsOnTargets="GetNewAppManifestValues;CreateWinRTRegistration" BeforeTargets="XesWriteVersionInfoResourceFile">
     <PropertyGroup>
