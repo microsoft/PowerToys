@@ -101,6 +101,13 @@ namespace KeyboardManagerConstants
     inline const ULONG_PTR KEYBOARDMANAGER_SHORTCUT_FLAG = 0x101; // Shortcut remaps
     inline const ULONG_PTR KEYBOARDMANAGER_SUPPRESS_FLAG = 0x111; // Key events which must be suppressed
 
+    // Taps of a key sequence. Every remapping stage passes them on untouched: the single-key stages because
+    // bit 0 is set (as for the flags above), the shortcut stages because they skip this value. A tap is never
+    // taken out and sent again, so the taps reach the system whole and in the order they were sent, and they
+    // do not trigger shortcut remaps. The value is not one of the flags above, nor one that other PowerToys
+    // modules use to mark their input (0x5555, 0x5557).
+    inline const ULONG_PTR KEYBOARDMANAGER_SEQUENCE_FLAG = 0x1001;
+
     // Dummy key event used in between key up and down events to prevent certain global events from happening
     inline const DWORD DUMMY_KEY = 0xFF;
 
