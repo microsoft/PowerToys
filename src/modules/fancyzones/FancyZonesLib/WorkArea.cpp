@@ -173,21 +173,26 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
             const LONG zoneSpacing = std::max<LONG>(0, m_layout->ZoneSpacing());
             const RECT snapScreenRect = NativeSnap::ExtendToWorkAreaEdges(targetScreenRect, workAreaRect, zoneSpacing + NativeSnap::EdgeTolerance);
 
-            snappedNatively = NativeSnap::SnapWindowToRect(window, snapScreenRect);
-
-            if (snappedNatively && !::EqualRect(&snapScreenRect, &targetScreenRect))
+            if (NativeSnap::SnapWindowToRect(window, snapScreenRect))
             {
-                // The Shell applies a snap asynchronously, so the window has to be at the snapped
-                // position before it is moved again; otherwise the Shell places it afterwards and
-                // the spacing inset is lost. Capture everything this function still needs first:
-                // the wait runs code outside this object (see WaitForSnapApplied), so no member may
-                // be read afterwards.
+                // Capture everything this function still needs before the wait: it runs code
+                // outside this object (see WaitForSnapApplied), so no member may be read after it.
                 const HWND workAreaWindow = m_window;
-                NativeSnap::WaitForSnapApplied(window, snapScreenRect, 400);
 
-                // SetWindowPos keeps the arranged state that SetWindowPlacement drops.
-                const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workAreaWindow);
-                ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+                // The Shell applies a snap asynchronously and occasionally drops the request
+                // without reporting an error, so a successful call proves nothing by itself.
+                // Measured on Windows 11 26H1: a snap that is applied at all lands within 63 ms,
+                // and one that has not landed after 400 ms never lands. IsWindowArranged cannot
+                // be used as a second opinion here because it stays set on a window that was
+                // arranged earlier, which a dropped request does not clear.
+                snappedNatively = NativeSnap::WaitForSnapApplied(window, snapScreenRect, 400);
+
+                if (snappedNatively && !::EqualRect(&snapScreenRect, &targetScreenRect))
+                {
+                    // SetWindowPos keeps the arranged state that SetWindowPlacement drops.
+                    const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workAreaWindow);
+                    ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+                }
             }
         }
 
