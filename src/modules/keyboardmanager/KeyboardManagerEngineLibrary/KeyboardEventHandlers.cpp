@@ -36,6 +36,90 @@ namespace
         return data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
     }
 
+    // True while a shortcut with the right Alt key (AltGr, which also presses Left Ctrl) is being handled.
+    // Set by HandleShortcutRemapEvent.
+    bool isAltRightKeyInvoked = false;
+
+    // The part of "Case 5" of HandleShortcutRemapEvent that does not depend on which key was pressed:
+    // while a shortcut remap is invoked (the system sees the target, the original shortcut is held),
+    // a key that is not part of the original shortcut goes down. Appends the key events that put the
+    // keyboard state back to the keys that are physically held (the original modifiers, and the
+    // original action key if the target's action key was down). The caller adds the event of the key
+    // that was pressed, resets the state of the remap and sends the events.
+    // Returns false if nothing is to be put back: a shortcut remapped to a key whose target key is
+    // still down stays as it is, so that the target key can be combined with other keys.
+    bool AppendRevertOfInvokedShortcut(KeyboardManagerInput::InputInterface& ii, const Shortcut& originalShortcut, const RemapShortcut& remap, std::vector<INPUT>& keyEventList)
+    {
+        if (remap.targetShortcut.index() == 1)
+        {
+            const Shortcut& targetShortcut = std::get<Shortcut>(remap.targetShortcut);
+
+            // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
+            bool isActionKeyPressed = ii.GetVirtualKeyState(targetShortcut.GetActionKey());
+
+            // Release new shortcut state (release in reverse order of shortcut to be accurate)
+            if (isActionKeyPressed)
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+            if (!isAltRightKeyInvoked)
+            {
+                Helpers::SetModifierKeyEvents(targetShortcut, remap.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, originalShortcut);
+
+                // Set old shortcut key down state
+                Helpers::SetModifierKeyEvents(originalShortcut, remap.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, targetShortcut);
+            }
+
+            // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
+            if (isActionKeyPressed)
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(originalShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+
+            return true;
+        }
+
+        // For remap to key, if the original action key is not currently pressed, we should revert the keyboard state to the physical keys. If it is pressed we should not suppress the event so that shortcut to key remaps can be pressed with other keys. Example use-case: Alt+D->Win, allows Alt+D+A to perform Win+A
+        auto maybeTargetKey = std::get_if<DWORD>(&remap.targetShortcut);
+
+        // If the shortcut is remapped to Disable then we have to revert the keyboard state to the physical keys
+        bool isRemapToDisable = maybeTargetKey && (*maybeTargetKey == CommonSharedConstants::VK_DISABLED);
+        bool isOriginalActionKeyPressed = false;
+
+        if (maybeTargetKey && !isRemapToDisable)
+        {
+            // If the remap target key is currently pressed, then we do not have to revert the keyboard state to the physical keys
+            if (ii.GetVirtualKeyState((Helpers::FilterArtificialKeys(*maybeTargetKey))))
+            {
+                isOriginalActionKeyPressed = true;
+            }
+        }
+        else
+        {
+            isOriginalActionKeyPressed = remap.isOriginalActionKeyPressed;
+        }
+
+        if (!isRemapToDisable && isOriginalActionKeyPressed)
+        {
+            return false;
+        }
+
+        if (!isAltRightKeyInvoked)
+        {
+            // Set original shortcut key down state
+            Helpers::SetModifierKeyEvents(originalShortcut, remap.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+
+        // Send the original action key only if it is physically pressed. For remappings to keys other than disabled we already check earlier that it is not pressed in this scenario. For remap to disable
+        if (isRemapToDisable && isOriginalActionKeyPressed)
+        {
+            // Set original action key
+            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(originalShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+
+        return true;
+    }
+
     // True if a key-sequence target is down already. A target code that stands for two keys (Win, or
     // Ctrl/Shift/Alt without a side) is down when either of them is. isKeyDown answers for one
     // virtual key.
@@ -828,7 +912,6 @@ namespace KeyboardEventHandlers
             bool isMatchOnChordEnd = false;
             bool isMatchOnChordStart = false;
 
-            static bool isAltRightKeyInvoked = false;
 
             // Check if the right Alt key (AltGr) is pressed.
             if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
@@ -1444,27 +1527,8 @@ namespace KeyboardEventHandlers
                             }
                             else
                             {
-                                // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
-                                bool isActionKeyPressed = ii.GetVirtualKeyState(std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
-
-                                // Release new shortcut state (release in reverse order of shortcut to be accurate)
-                                if (isActionKeyPressed)
-                                {
-                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
-                                if (!isAltRightKeyInvoked)
-                                {
-                                    Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
-
-                                    // Set old shortcut key down state
-                                    Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
-                                }
-
-                                // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
-                                if (isActionKeyPressed)
-                                {
-                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
+                                // Release the new shortcut and set the original shortcut again
+                                AppendRevertOfInvokedShortcut(ii, it->first, it->second, keyEventList);
 
                                 // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
                                 Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
@@ -1505,40 +1569,10 @@ namespace KeyboardEventHandlers
                                 ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, Helpers::FilterArtificialKeys(*maybeTargetKey));
                             }
 
-                            // If the shortcut is remapped to Disable then we have to revert the keyboard state to the physical keys
-                            bool isRemapToDisable = maybeTargetKey && (*maybeTargetKey == CommonSharedConstants::VK_DISABLED);
-                            bool isOriginalActionKeyPressed = false;
-
-                            if (maybeTargetKey && !isRemapToDisable)
+                            // Set the original shortcut again, unless the remap target key is currently pressed
+                            std::vector<INPUT> keyEventList;
+                            if (AppendRevertOfInvokedShortcut(ii, it->first, it->second, keyEventList))
                             {
-                                // If the remap target key is currently pressed, then we do not have to revert the keyboard state to the physical keys
-                                if (ii.GetVirtualKeyState((Helpers::FilterArtificialKeys(*maybeTargetKey))))
-                                {
-                                    isOriginalActionKeyPressed = true;
-                                }
-                            }
-                            else
-                            {
-                                isOriginalActionKeyPressed = it->second.isOriginalActionKeyPressed;
-                            }
-
-                            if (isRemapToDisable || !isOriginalActionKeyPressed)
-                            {
-                                std::vector<INPUT> keyEventList;
-
-                                if (!isAltRightKeyInvoked)
-                                {
-                                    // Set original shortcut key down state
-                                    Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
-
-                                // Send the original action key only if it is physically pressed. For remappings to keys other than disabled we already check earlier that it is not pressed in this scenario. For remap to disable
-                                if (isRemapToDisable && isOriginalActionKeyPressed)
-                                {
-                                    // Set original action key
-                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
-
                                 // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
                                 Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
 
