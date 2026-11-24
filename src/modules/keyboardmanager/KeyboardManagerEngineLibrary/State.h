@@ -1,6 +1,91 @@
 #pragma once
 #include <keyboardmanager/common/MappingConfiguration.h>
+#include <keyboardmanager/common/InputInterface.h>
+#include <cstdint>
+#include <optional>
+#include <unordered_map>
 #include <unordered_set>
+
+// Remembers what the key-sequence remap (#5679) did with the first key-down of each physical key
+// that is down, until the matching key-up. Auto-repeats and the key-up of a press get the same
+// answer as its first key-down, whatever the mapping tables say by then: a settings reload, a
+// remap added or removed, or a temporary bypass of remapping in the middle of a press cannot
+// separate a key-down from its key-up.
+//
+// A key is identified by its scan code and extended-key flag, not by its virtual key: the virtual
+// key of a keypad key can change between its key-down and its key-up (NumPad1 goes down, Shift
+// changes the state, and the key comes up as End). An event without a scan code (some injected
+// input) is identified by its virtual key instead.
+//
+// Used on the low-level keyboard hook thread only (the thread that installs the hook and runs its
+// message loop). Nothing here is cleared by a settings reload.
+//
+// Known limitations:
+//  - A key-up that never arrives (the secure desktop, sleep, the keyboard unplugged, another hook
+//    swallowing it) leaves the record of that press behind. The next key-down of the key is then
+//    taken for an auto-repeat of the old press: a key with a sequence remap is ignored once, or
+//    passes through once without its sequence. The key-up of that press removes the record, so the
+//    press after it is handled normally. Installing the hook again also clears all records.
+//  - The same key held at once from two sources (two keyboards, or a keyboard and another
+//    program's injected input) shares one record, and the first key-up ends it.
+//  - A press without a scan code is paired by virtual key, so the keypad case above is not paired
+//    for such input.
+//  - Keys that are already down when tracking starts are only known by virtual key, taken from the
+//    key state the system reports (see SeedForwardedPresses). That misses a key whose key-down an
+//    earlier remap suppressed, and it cannot tell apart two keys with the same virtual key (for
+//    example the keypad and the navigation End).
+class SequencePressTracker
+{
+public:
+    enum class Disposition
+    {
+        // The press was replaced by its key sequence. Its auto-repeats and its key-up are suppressed.
+        SequenceFired,
+
+        // The key-sequence remap left the press alone: the key had no sequence remap, another
+        // handler took the key-down, remapping was suspended, or the key was already down when
+        // tracking started. The rest of the press goes on to the other handlers; a sequence remap
+        // that appears in the meantime waits for the next press.
+        Forwarded,
+
+        // The sequence could not be injected, so the key-down was passed to the system unchanged.
+        // The rest of the press is passed through too, and no other handler gets to see it.
+        PassThroughTerminal,
+    };
+
+    // Identity of a physical key: scan code + extended-key flag, or the virtual key if the event
+    // has no scan code.
+    static uint64_t MakeKeyId(DWORD scanCode, bool extended, DWORD vkCode) noexcept;
+
+    // For a key-down: the disposition of the press the key already belongs to (the key-down is an
+    // auto-repeat), or nullopt if this is a new press. ii is only asked for the key state when
+    // keys seeded by SeedForwardedPresses are left.
+    std::optional<Disposition> FindPress(const KBDLLHOOKSTRUCT& key, KeyboardManagerInput::InputInterface& ii);
+
+    // Records the disposition of a new press, or changes the one recorded for the key.
+    void RecordPress(const KBDLLHOOKSTRUCT& key, Disposition disposition);
+
+    // For a key-up: ends the press of the key and returns its disposition, or nullopt if no press
+    // of the key was recorded.
+    std::optional<Disposition> ReleasePress(const KBDLLHOOKSTRUCT& key);
+
+    // Records every key the system reports as down as a forwarded press. Called when tracking
+    // starts while keys may be held (the hook is installed), so that a remap of such a key waits
+    // for its next press.
+    void SeedForwardedPresses(KeyboardManagerInput::InputInterface& ii);
+
+    // Forgets every press. Called before the hook is installed: no event was seen while there was
+    // no hook, so the records can be out of date.
+    void Reset() noexcept;
+
+    bool Empty() const noexcept;
+
+private:
+    std::unordered_map<uint64_t, Disposition> m_presses;
+
+    // Virtual keys seeded by SeedForwardedPresses that had no event of their own yet.
+    std::unordered_set<DWORD> m_seededKeys;
+};
 
 class State : public MappingConfiguration
 {
@@ -22,15 +107,9 @@ private:
     std::unordered_set<DWORD> alonePendingKeys;      // held, still a tap candidate
     std::unordered_set<DWORD> aloneCombinationKeys;  // real key-down injected (combination started)
 
-    // Key-sequence source keys that are currently held, i.e. whose sequence already fired on this
-    // press. Auto-repeat key-downs of a held key are swallowed instead of sending the sequence again.
-    std::unordered_set<DWORD> heldSequenceKeys;
-    // Key-sequence source keys whose injection was blocked on this press, so the original key-down
-    // was passed through. The rest of the press (auto-repeats and the key-up) is passed through too,
-    // without retrying, so the key can't end up down in the app with its key-up swallowed.
-    std::unordered_set<DWORD> passedThroughSequenceKeys;
-    // Both sets are used by the low-level keyboard hook thread. heldSequenceKeys is also cleared by
-    // the settings thread on reload (ClearAllSequenceKeyState), the same as the alone sets above.
+    // What the key-sequence remap did with each physical key that is down (see SequencePressTracker).
+    // Only accessed from the low-level keyboard hook thread; a settings reload does not touch it.
+    SequencePressTracker sequencePresses;
 
 public:
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
@@ -45,21 +124,8 @@ public:
     // Function to get the iterator of a single-key-to-sequence remap. Returns nullopt if not remapped.
     std::optional<SingleKeyToSequenceRemapTable::iterator> GetSingleKeyToSequenceRemap(const DWORD& originalKey);
 
-    // Marks a key-sequence source key as held. Returns false if it was already held (the key-down
-    // is an auto-repeat), true if this is a fresh press.
-    bool MarkSequenceKeyHeld(const DWORD key);
-    // Forgets that a key-sequence source key is held (on its key-up). Returns true if it was held.
-    bool ClearSequenceKeyHeld(const DWORD key);
-    // Marks / checks / forgets that this press of a key-sequence source key is being passed through
-    // because its injection was blocked (see passedThroughSequenceKeys).
-    void SetSequenceKeyPassedThrough(const DWORD key);
-    bool IsSequenceKeyPassedThrough(const DWORD key) const;
-    bool ClearSequenceKeyPassedThrough(const DWORD key);
-    // Forgets all held key-sequence source keys. Called when the mapping tables are reloaded, like
-    // ClearAllAloneKeyState, so a key-up lost before the reload can't make the next press be ignored.
-    // Passed-through presses are kept: their key-down already reached the app, so their key-up must
-    // still be passed through.
-    void ClearAllSequenceKeyState();
+    // The press records of the key-sequence remap. Low-level keyboard hook thread only.
+    SequencePressTracker& SequencePresses() noexcept;
 
     // Dual-key ("Alone") runtime state transitions (see member declarations above).
     // Mark an alone-mapped key as held and still a tap candidate.

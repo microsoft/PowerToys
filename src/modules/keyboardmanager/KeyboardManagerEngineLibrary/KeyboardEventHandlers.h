@@ -45,8 +45,43 @@ namespace KeyboardEventHandlers
     // Function to handle a single-key-to-sequence remap (#5679): pressing the source key sends an
     // ordered list of key taps (down+up each), in order, once per press. The source key's own key-down
     // (including auto-repeats) and key-up are suppressed; the whole sequence is injected on the first
-    // key-down.
+    // key-down. This is ResolveSequencePress followed, for a new press, by StartSequencePress; the
+    // hook's handler chain (DispatchKeyboardEvent) calls those two itself, because other steps of
+    // the chain come in between.
     intptr_t HandleSingleKeyToSequenceRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
+    // What the key-sequence remap says about an event.
+    enum class SequencePressStep
+    {
+        // Sent by Keyboard Manager itself, or neither a key-down nor a key-up: not part of a physical press.
+        NotTracked,
+
+        // First key-down of a press. Nothing is recorded for it yet.
+        NewPress,
+
+        // Belongs to a press the key-sequence remap left alone (or a key-up with no known key-down):
+        // the other handlers decide.
+        Forwarded,
+
+        // Belongs to a press that was replaced by its sequence: suppress the event.
+        Suppress,
+
+        // Belongs to a press whose sequence could not be injected: pass the event to the system
+        // without running any other handler.
+        PassThrough,
+    };
+
+    // Pairs an event with its physical press, before the mapping tables are looked at: an
+    // auto-repeat or a key-up gets the answer recorded for the first key-down of its press (and a
+    // key-up ends the press). Only a first key-down returns NewPress, and it is the caller that
+    // records what becomes of it: StartSequencePress, or SequencePressTracker::RecordPress with
+    // Forwarded if the press does not get that far.
+    SequencePressStep ResolveSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
+    // Handles the first key-down of a press: if the key (the virtual key of this key-down) has a
+    // sequence remap, sends the sequence. Records the outcome for the rest of the press and returns
+    // it: Suppress, Forwarded (no sequence remap), or PassThrough (the injection failed).
+    SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 
     // Promote every currently-pending ("tap candidate") "Alone" key into a started combination by
     // injecting its original key-down as a real key/modifier, so in-combination behavior works (e.g.
@@ -148,7 +183,8 @@ namespace KeyboardEventHandlers
 
     // Runs one low-level keyboard event through the remap handlers, in their fixed order. Returns 1
     // to suppress the event and 0 to pass it on. remappingSuspended is true while remapping is
-    // bypassed for a moment (settings are being loaded, or the editor window is open). This is the
+    // bypassed for a moment (settings are being loaded, or the editor window is open); the mapping
+    // tables are not read then, but physical presses are still paired with their releases. This is the
     // whole body of the hook callback, kept apart from KeyboardManager so the unit tests can drive
     // the handler chain as a whole.
     intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool remappingSuspended) noexcept;

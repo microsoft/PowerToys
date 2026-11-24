@@ -1,4 +1,4 @@
-﻿#include "pch.h"
+#include "pch.h"
 #include "KeyboardManager.h"
 #include <interface/powertoy_module_interface.h>
 #include <common/SettingsAPI/settings_objects.h>
@@ -100,7 +100,6 @@ void KeyboardManager::LoadSettings()
     // that was physically held across the reload can't leave a stale pending/combination entry (which a
     // later event would promote, injecting an unmatched original key-down). No-op on the initial load.
     state.ClearAllAloneKeyState();
-    state.ClearAllSequenceKeyState();
     try
     {
         // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
@@ -206,6 +205,12 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
     if (!hookHandle)
     {
+        // No event was seen while there was no hook, so start the key-sequence press records afresh,
+        // with the keys that are down right now recorded as presses that already reached the system.
+        // This runs on the hook thread, before the hook can deliver anything.
+        state.SequencePresses().Reset();
+        state.SequencePresses().SeedForwardedPresses(inputHandler);
+
         hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
         hookHandleCopy = hookHandle;
         if (!hookHandle)

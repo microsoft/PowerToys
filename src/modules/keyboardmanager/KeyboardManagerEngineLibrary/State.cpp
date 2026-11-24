@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "State.h"
 #include <optional>
+#include <keyboardmanager/common/Helpers.h>
 
 // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
 std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWORD& originalKey)
@@ -49,35 +50,117 @@ std::optional<SingleKeyToSequenceRemapTable::iterator> State::GetSingleKeyToSequ
     return std::nullopt;
 }
 
-bool State::MarkSequenceKeyHeld(const DWORD key)
+SequencePressTracker& State::SequencePresses() noexcept
 {
-    return heldSequenceKeys.insert(key).second;
+    return sequencePresses;
 }
 
-bool State::ClearSequenceKeyHeld(const DWORD key)
+namespace
 {
-    return heldSequenceKeys.erase(key) > 0;
+    uint64_t KeyIdOf(const KBDLLHOOKSTRUCT& key) noexcept
+    {
+        return SequencePressTracker::MakeKeyId(key.scanCode, (key.flags & LLKHF_EXTENDED) != 0, key.vkCode);
+    }
+
+    // The virtual key without the numpad-origin marker the hook procedure adds to it.
+    DWORD PlainVirtualKey(const KBDLLHOOKSTRUCT& key) noexcept
+    {
+        return Helpers::ClearKeyNumpadOrigin(key.vkCode);
+    }
 }
 
-void State::SetSequenceKeyPassedThrough(const DWORD key)
+uint64_t SequencePressTracker::MakeKeyId(const DWORD scanCode, const bool extended, const DWORD vkCode) noexcept
 {
-    passedThroughSequenceKeys.insert(key);
+    if (scanCode != 0)
+    {
+        // Bit 32 keeps the scan-code ids apart from the virtual-key ids below.
+        return (uint64_t{ 1 } << 32) | (extended ? 0x10000u : 0u) | (scanCode & 0xFFFFu);
+    }
+
+    // No scan code: fall back to the virtual key as the hook reports it (with its numpad-origin marker).
+    return vkCode;
 }
 
-bool State::IsSequenceKeyPassedThrough(const DWORD key) const
+std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress(const KBDLLHOOKSTRUCT& key, KeyboardManagerInput::InputInterface& ii)
 {
-    return passedThroughSequenceKeys.contains(key);
+    const uint64_t id = KeyIdOf(key);
+    if (const auto it = m_presses.find(id); it != m_presses.end())
+    {
+        return it->second;
+    }
+
+    if (!m_seededKeys.empty())
+    {
+        // A seeded key that the system no longer reports as down was released without an event the
+        // hook tracks (for example it was down because Keyboard Manager itself had sent it). The hook
+        // runs before the key state changes, so a held key that repeats is still reported as down
+        // here, and a key that is pressed again is not.
+        std::erase_if(m_seededKeys, [&ii](const DWORD vk) { return !ii.GetVirtualKeyState(static_cast<int>(vk)); });
+
+        if (m_seededKeys.erase(PlainVirtualKey(key)) > 0)
+        {
+            // First event of a key that was down when tracking started: from here on it is known by
+            // its own identity.
+            m_presses.emplace(id, Disposition::Forwarded);
+            return Disposition::Forwarded;
+        }
+    }
+
+    return std::nullopt;
 }
 
-bool State::ClearSequenceKeyPassedThrough(const DWORD key)
+void SequencePressTracker::RecordPress(const KBDLLHOOKSTRUCT& key, const Disposition disposition)
 {
-    return passedThroughSequenceKeys.erase(key) > 0;
+    m_presses.insert_or_assign(KeyIdOf(key), disposition);
 }
 
-void State::ClearAllSequenceKeyState()
+std::optional<SequencePressTracker::Disposition> SequencePressTracker::ReleasePress(const KBDLLHOOKSTRUCT& key)
 {
-    // passedThroughSequenceKeys is deliberately kept (see State.h).
-    heldSequenceKeys.clear();
+    const bool seeded = !m_seededKeys.empty() && m_seededKeys.erase(PlainVirtualKey(key)) > 0;
+
+    if (const auto it = m_presses.find(KeyIdOf(key)); it != m_presses.end())
+    {
+        const Disposition disposition = it->second;
+        m_presses.erase(it);
+        return disposition;
+    }
+
+    if (seeded)
+    {
+        return Disposition::Forwarded;
+    }
+
+    return std::nullopt;
+}
+
+void SequencePressTracker::SeedForwardedPresses(KeyboardManagerInput::InputInterface& ii)
+{
+    for (DWORD vk = 1; vk < 0xFF; vk++)
+    {
+        // Skip the mouse buttons, and the Shift/Ctrl/Alt codes that do not say which side is down:
+        // the hook reports the left and right keys, which are checked on their own.
+        if (vk == VK_LBUTTON || vk == VK_RBUTTON || vk == VK_MBUTTON || vk == VK_XBUTTON1 || vk == VK_XBUTTON2 ||
+            vk == VK_SHIFT || vk == VK_CONTROL || vk == VK_MENU)
+        {
+            continue;
+        }
+
+        if (ii.GetVirtualKeyState(static_cast<int>(vk)))
+        {
+            m_seededKeys.insert(vk);
+        }
+    }
+}
+
+void SequencePressTracker::Reset() noexcept
+{
+    m_presses.clear();
+    m_seededKeys.clear();
+}
+
+bool SequencePressTracker::Empty() const noexcept
+{
+    return m_presses.empty() && m_seededKeys.empty();
 }
 
 void State::SetAlonePending(const DWORD key)

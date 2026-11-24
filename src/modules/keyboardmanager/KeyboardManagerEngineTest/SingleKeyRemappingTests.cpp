@@ -1183,7 +1183,10 @@ namespace RemappingLogicTests
                 { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_F1 } },
             };
             mockedInputHandler.SendVirtualInput(f1Down);
-            testState.ClearAllSequenceKeyState(); // settings reload while held
+
+            // settings reload while held
+            testState.ClearSingleKeyToSequenceRemaps();
+            testState.AddSingleKeyToSequenceRemap(VK_F1, std::vector<DWORD>{ 0x41, 0x42 });
             blocked = false;
             mockedInputHandler.SendVirtualInput(f1Down); // auto-repeat
             Assert::AreEqual((size_t)0, injected.size());
@@ -1231,9 +1234,32 @@ namespace RemappingLogicTests
             Assert::AreEqual((DWORD)0x46, events[0].first);
         }
 
-        // Reloading the tables forgets held keys, so a key-up lost before the reload doesn't make the
-        // next press be treated as an auto-repeat and ignored.
-        TEST_METHOD (SequenceRemap_ClearAllSequenceKeyState_ForgetsHeldKey)
+        // A key-up that never arrives leaves its press recorded: the next key-down is taken for an
+        // auto-repeat and ignored, and the key-up of that second press clears the record. (A known
+        // limitation, see SequencePressTracker.)
+        TEST_METHOD (SequenceRemap_LostKeyUp_IgnoresOnePress_ThenRecovers)
+        {
+            testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
+            RecordInjected();
+
+            std::vector<INPUT> escDown{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
+            };
+            std::vector<INPUT> escUp{
+                { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE, .dwFlags = KEYEVENTF_KEYUP } },
+            };
+            mockedInputHandler.SendVirtualInput(escDown); // key-up of this press is "lost"
+            mockedInputHandler.SendVirtualInput(escDown);
+            Assert::AreEqual((size_t)4, injected.size());
+
+            mockedInputHandler.SendVirtualInput(escUp);
+            mockedInputHandler.SendVirtualInput(escDown);
+            Assert::AreEqual((size_t)8, injected.size());
+        }
+
+        // Installing the hook again starts the press records afresh, so a key-up lost before that
+        // doesn't make the next press be treated as an auto-repeat and ignored.
+        TEST_METHOD (SequenceRemap_ResetOfPressRecords_ForgetsHeldKey)
         {
             testState.AddSingleKeyToSequenceRemap(VK_ESCAPE, std::vector<DWORD>{ static_cast<DWORD>(VK_ESCAPE), static_cast<DWORD>(VK_IME_OFF) });
             RecordInjected();
@@ -1242,7 +1268,10 @@ namespace RemappingLogicTests
                 { .type = INPUT_KEYBOARD, .ki = { .wVk = VK_ESCAPE } },
             };
             mockedInputHandler.SendVirtualInput(escDown); // key-up of this press is "lost"
-            testState.ClearAllSequenceKeyState();
+
+            // What KeyboardManager::StartLowlevelKeyboardHook does before it installs the hook
+            testState.SequencePresses().Reset();
+            testState.SequencePresses().SeedForwardedPresses(mockedInputHandler);
             mockedInputHandler.SendVirtualInput(escDown);
 
             Assert::AreEqual((size_t)8, injected.size());
@@ -1271,9 +1300,13 @@ namespace RemappingLogicTests
             {
                 testState.AddSingleKeyToSequenceRemap(key, sequence);
             }
+        }
 
-            // KeyboardManager::LoadSettings does this after loading the tables
-            testState.ClearAllSequenceKeyState();
+        // What KeyboardManager::StartLowlevelKeyboardHook does to the press records before it installs the hook
+        void RestartPressTracking()
+        {
+            testState.SequencePresses().Reset();
+            testState.SequencePresses().SeedForwardedPresses(mockedInputHandler);
         }
 
         void SendKey(WORD vk, bool keyUp, WORD scanCode = 0)
@@ -1497,6 +1530,118 @@ namespace RemappingLogicTests
             SendKey(VK_NUMPAD1, false, keypad1ScanCode);
             Assert::AreEqual((size_t)8, SequenceEvents());
             Assert::AreEqual((size_t)0, Delivered(VK_NUMPAD1, false));
+        }
+
+        // The remap is chosen by the virtual key of the first key-down: a keypad key that goes down
+        // as End (no remap for it) is an ordinary press, even if it comes up as NumPad1, which has a
+        // sequence remap.
+        TEST_METHOD (SequenceRemap_IsChosenByTheVirtualKeyOfTheFirstKeyDown)
+        {
+            constexpr WORD keypad1ScanCode = 0x4F;
+            mockedInputHandler.SetEncodeNumpadOrigin(true);
+            ReloadSequenceRemaps({ { VK_NUMPAD1, { 0x41, 0x42 } } });
+            const DWORD keypadEnd = Helpers::EncodeKeyNumpadOrigin(VK_END, false);
+
+            SendKey(VK_END, false, keypad1ScanCode);
+            Assert::AreEqual((size_t)1, Delivered(keypadEnd, false));
+
+            SendKey(VK_NUMPAD1, false, keypad1ScanCode); // auto-repeat under the other virtual key
+            SendKey(VK_NUMPAD1, true, keypad1ScanCode);
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)1, Delivered(VK_NUMPAD1, false));
+            Assert::AreEqual((size_t)1, Delivered(VK_NUMPAD1, true));
+        }
+
+        // Events without a scan code are paired by virtual key, and the two kinds of identity are kept apart.
+        TEST_METHOD (SequencePressTracker_MakeKeyId_UsesScanCodeAndExtendedFlag_OrTheVirtualKey)
+        {
+            // Same physical key under two virtual keys
+            Assert::IsTrue(SequencePressTracker::MakeKeyId(0x4F, false, VK_NUMPAD1) == SequencePressTracker::MakeKeyId(0x4F, false, VK_END));
+
+            // The extended-key flag tells the keypad key from the navigation key with the same scan code
+            Assert::IsTrue(SequencePressTracker::MakeKeyId(0x4F, false, VK_END) != SequencePressTracker::MakeKeyId(0x4F, true, VK_END));
+
+            // No scan code: the virtual key decides
+            Assert::IsTrue(SequencePressTracker::MakeKeyId(0, false, VK_F1) == SequencePressTracker::MakeKeyId(0, true, VK_F1));
+            Assert::IsTrue(SequencePressTracker::MakeKeyId(0, false, VK_F1) != SequencePressTracker::MakeKeyId(0, false, VK_F2));
+
+            // A virtual-key identity never equals a scan-code identity
+            Assert::IsTrue(SequencePressTracker::MakeKeyId(0, false, 0x4F) != SequencePressTracker::MakeKeyId(0x4F, false, 0x4F));
+        }
+
+        // A key that is already down when the hook is installed reached the system before: its
+        // auto-repeats and its key-up are let through, and its remap waits for the next press.
+        TEST_METHOD (SequenceRemap_KeyAlreadyDownWhenTheHookStarts_WaitsForTheNextPress)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            mockedInputHandler.SetKeyboardState(VK_F1, true);
+            RestartPressTracking();
+
+            SendKey(VK_F1, false); // auto-repeat
+            SendKey(VK_F1, false); // auto-repeat
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+        }
+
+        // A key that was down when the hook was installed, and went up without an event the hook
+        // tracks (Keyboard Manager itself had sent it), is not mistaken for a held key later.
+        TEST_METHOD (SequenceRemap_KeyDownWhenTheHookStarts_ThenReleasedUnseen_IsANewPress)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            mockedInputHandler.SetKeyboardState(VK_F1, true);
+            RestartPressTracking();
+            mockedInputHandler.SetKeyboardState(VK_F1, false);
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+        }
+
+        // A press that a sequence replaced stays suppressed when remapping is suspended in the
+        // middle of it: the system never saw its key-down.
+        TEST_METHOD (SequenceRemap_RemappingSuspendedWhileKeyIsHeld_KeepsThatPressSuppressed)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            remappingSuspended = true;
+            SendKey(VK_F1, false); // auto-repeat
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+
+            // A new press while suspended is an ordinary F1
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+        }
+
+        // A key that the "Alone" remap took is not handed to a sequence remap that is loaded while it is held.
+        TEST_METHOD (SequenceRemap_EnabledWhileAnAloneKeyIsHeld_WaitsForTheNextPress)
+        {
+            testState.AddSingleKeyAloneRemap(VK_F1, static_cast<DWORD>(0x43));
+            ReloadSequenceRemaps({ { VK_F2, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false); // held as a tap candidate, suppressed
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+
+            testState.ClearSingleKeyAloneRemaps();
+            testState.ClearAllAloneKeyState();
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false); // auto-repeat
+            Assert::AreEqual((size_t)0, SequenceEvents());
         }
     };
 }

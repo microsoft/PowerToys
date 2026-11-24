@@ -410,6 +410,109 @@ namespace KeyboardEventHandlers
         return 0;
     }
 
+    // See header. Bookkeeping only: nothing is sent and no mapping table is read here.
+    SequencePressStep ResolveSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Our own injected events are not physical presses.
+        if (GeneratedByKBM(data))
+        {
+            return SequencePressStep::NotTracked;
+        }
+
+        const auto toStep = [](const SequencePressTracker::Disposition disposition) {
+            switch (disposition)
+            {
+            case SequencePressTracker::Disposition::SequenceFired:
+                return SequencePressStep::Suppress;
+            case SequencePressTracker::Disposition::PassThroughTerminal:
+                return SequencePressStep::PassThrough;
+            default:
+                return SequencePressStep::Forwarded;
+            }
+        };
+
+        if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+        {
+            // The release ends the press and is answered from its record alone. The remap that was
+            // used for the key-down may be gone or changed by now, and the key-up may carry another
+            // virtual key than the key-down did.
+            const auto disposition = state.SequencePresses().ReleasePress(*data->lParam);
+
+            // A key-up with no recorded key-down (the key-up of an earlier press was lost and this is
+            // a stray one, or the press was not seen): the key-sequence remap never acted on it.
+            return disposition ? toStep(*disposition) : SequencePressStep::Forwarded;
+        }
+
+        if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+        {
+            // A key that is already down is repeating: same answer as its first key-down.
+            const auto disposition = state.SequencePresses().FindPress(*data->lParam, ii);
+            return disposition ? toStep(*disposition) : SequencePressStep::NewPress;
+        }
+
+        return SequencePressStep::NotTracked;
+    }
+
+    // See header. Injects the whole sequence on the first key-down of a press. The sequence remap is
+    // chosen by the virtual key of this key-down (numpad-origin encoded, as the hook reports it).
+    SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        const auto sequenceRemap = state.GetSingleKeyToSequenceRemap(data->lParam->vkCode);
+        if (!sequenceRemap)
+        {
+            // Not a sequence key now. If a sequence remap for it is loaded while it is held, that
+            // remap waits for the next press.
+            state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::Forwarded);
+            return SequencePressStep::Forwarded;
+        }
+
+        // From here on the press is replaced by its sequence: holding the key must not replay the
+        // sequence on every auto-repeat key-down, and the physical key-up is suppressed too, so the
+        // source key never reaches the app on its own.
+        state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::SequenceFired);
+
+        // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
+        // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
+        std::vector<INPUT> keyEventList;
+        for (const DWORD targetKey : sequenceRemap.value()->second)
+        {
+            if (targetKey == CommonSharedConstants::VK_DISABLED)
+            {
+                continue;
+            }
+            const DWORD filtered = Helpers::FilterArtificialKeys(targetKey);
+            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
+        }
+
+        if (keyEventList.empty())
+        {
+            return SequencePressStep::Suppress;
+        }
+
+        // If a Ctrl/Alt/Shift key is the source, reset the modifier state first (as the single-key
+        // remap does) so the injected taps are delivered as WM_KEYDOWN, not WM_SYSKEYDOWN.
+        const DWORD sourceKey = data->lParam->vkCode;
+        if (Helpers::IsModifierKey(sourceKey) && !(sourceKey == VK_LWIN || sourceKey == VK_RWIN || sourceKey == CommonSharedConstants::VK_WIN_BOTH))
+        {
+            std::vector<INPUT> suppressList;
+            Helpers::SetKeyEvent(suppressList, INPUT_KEYBOARD, static_cast<WORD>(sourceKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+            ii.SendVirtualInput(suppressList);
+        }
+
+        if (!ii.SendVirtualInput(keyEventList))
+        {
+            // Injection was blocked (e.g. by UIPI). Pass the original key through instead of leaving
+            // a dead key, and keep passing this press through (no retry) until its key-up, so the
+            // key isn't stranded down. The result is final: the caller must not hand the event to
+            // the handlers after this one, or a Disabled remap of the same key would swallow it.
+            state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::PassThroughTerminal);
+            return SequencePressStep::PassThrough;
+        }
+
+        return SequencePressStep::Suppress;
+    }
+
     // Function to handle a single-key-to-sequence remap (#5679). Pressing the source key sends an
     // ordered list of key taps (down+up each), in order, once per press: the whole sequence is
     // injected on the first key-down, auto-repeat key-downs while the key stays held are swallowed,
@@ -417,93 +520,13 @@ namespace KeyboardEventHandlers
     // dispatch chain, so a sequence remap takes precedence over a regular remap of the same key.
     intptr_t HandleSingleKeyToSequenceRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {
-        // Ignore our own injected events to avoid re-processing / recursion.
-        if (GeneratedByKBM(data))
+        SequencePressStep step = ResolveSequencePress(ii, data, state);
+        if (step == SequencePressStep::NewPress)
         {
-            return 0;
+            step = StartSequencePress(ii, data, state);
         }
 
-        const auto sequenceRemap = state.GetSingleKeyToSequenceRemap(data->lParam->vkCode);
-        if (!sequenceRemap)
-        {
-            return 0;
-        }
-
-        const bool isKeyDown = (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN);
-        const bool isKeyUp = (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP);
-
-        if (isKeyDown)
-        {
-            // This press is being passed through because its injection was blocked: keep passing it
-            // through (no retry) until its key-up.
-            if (state.IsSequenceKeyPassedThrough(data->lParam->vkCode))
-            {
-                return 0;
-            }
-
-            // Holding the key must not replay the sequence on every auto-repeat key-down.
-            if (!state.MarkSequenceKeyHeld(data->lParam->vkCode))
-            {
-                return 1;
-            }
-
-            // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
-            // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
-            std::vector<INPUT> keyEventList;
-            for (const DWORD targetKey : sequenceRemap.value()->second)
-            {
-                if (targetKey == CommonSharedConstants::VK_DISABLED)
-                {
-                    continue;
-                }
-                const DWORD filtered = Helpers::FilterArtificialKeys(targetKey);
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG);
-            }
-
-            if (keyEventList.empty())
-            {
-                return 1;
-            }
-
-            // If a Ctrl/Alt/Shift key is the source, reset the modifier state first (as the single-key
-            // remap does) so the injected taps are delivered as WM_KEYDOWN, not WM_SYSKEYDOWN.
-            const DWORD sourceKey = data->lParam->vkCode;
-            if (Helpers::IsModifierKey(sourceKey) && !(sourceKey == VK_LWIN || sourceKey == VK_RWIN || sourceKey == CommonSharedConstants::VK_WIN_BOTH))
-            {
-                std::vector<INPUT> suppressList;
-                Helpers::SetKeyEvent(suppressList, INPUT_KEYBOARD, static_cast<WORD>(sourceKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
-                ii.SendVirtualInput(suppressList);
-            }
-
-            if (!ii.SendVirtualInput(keyEventList))
-            {
-                // Injection was blocked (e.g. by UIPI). Pass the original key through instead of
-                // leaving a dead key, as the single-key remap does, and keep passing this press
-                // through until its key-up so the key isn't stranded down.
-                state.ClearSequenceKeyHeld(sourceKey);
-                state.SetSequenceKeyPassedThrough(sourceKey);
-                return 0;
-            }
-
-            return 1;
-        }
-
-        if (isKeyUp)
-        {
-            // The sequence already fired on the key-down; swallow the physical key-up so the source
-            // key is fully replaced and never reaches the app on its own. If the key-down was not
-            // handled here (the key was already held when this remap was loaded, so its down reached
-            // the app), pass the key-up through so the key isn't left stuck down.
-            if (state.ClearSequenceKeyPassedThrough(data->lParam->vkCode))
-            {
-                return 0;
-            }
-
-            return state.ClearSequenceKeyHeld(data->lParam->vkCode) ? 1 : 0;
-        }
-
-        return 0;
+        return step == SequencePressStep::Suppress ? 1 : 0;
     }
 
     // Function to handle a single key remap
@@ -2397,9 +2420,23 @@ namespace KeyboardEventHandlers
     // See header.
     intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const bool remappingSuspended) noexcept
     {
+        // Key-sequence remap (#5679), step 1: pair the event with its physical press. This comes
+        // before everything else, the suspension check included, and reads no mapping table: an
+        // auto-repeat or a key-up follows what was decided at the first key-down of its press.
+        SequencePressStep sequencePressStep = ResolveSequencePress(ii, data, state);
+
         if (remappingSuspended)
         {
-            return 0;
+            // Remapping is bypassed, so a key pressed now reaches the system. Remember that: when
+            // remapping resumes while the key is still held, the rest of the press must reach the
+            // system too, instead of starting a sequence on an auto-repeat.
+            if (sequencePressStep == SequencePressStep::NewPress)
+            {
+                state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::Forwarded);
+            }
+
+            // The rest of a press that a sequence replaced stays suppressed: the system never saw its key-down.
+            return sequencePressStep == SequencePressStep::Suppress ? 1 : 0;
         }
 
         // If key has suppress flag, then suppress it
@@ -2408,20 +2445,46 @@ namespace KeyboardEventHandlers
             return 1;
         }
 
+        // Auto-repeat or key-up of a press the key-sequence remap already decided on.
+        if (sequencePressStep == SequencePressStep::Suppress)
+        {
+            return 1;
+        }
+        if (sequencePressStep == SequencePressStep::PassThrough)
+        {
+            return 0;
+        }
+
         // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
         // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
         intptr_t SingleKeyAloneRemapResult = HandleSingleKeyAloneRemapEvent(ii, data, state);
         if (SingleKeyAloneRemapResult == 1)
         {
+            // The key belongs to the "Alone" remap for this press, not to a sequence.
+            if (sequencePressStep == SequencePressStep::NewPress)
+            {
+                state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::Forwarded);
+            }
             return 1;
         }
 
-        // Remap a key to an ordered sequence of taps (#5679). Runs before the regular single-key remap;
-        // if it handles the event it fully replaces the source key, so suppress the original.
-        intptr_t SingleKeyToSequenceRemapResult = HandleSingleKeyToSequenceRemapEvent(ii, data, state);
-        if (SingleKeyToSequenceRemapResult == 1)
+        // Key-sequence remap, step 2: a new press of a key with a sequence remap sends the sequence.
+        // Runs before the regular single-key remap; the sequence fully replaces the source key, so
+        // the original is suppressed.
+        if (sequencePressStep == SequencePressStep::NewPress)
         {
-            return 1;
+            sequencePressStep = StartSequencePress(ii, data, state);
+            if (sequencePressStep == SequencePressStep::Suppress)
+            {
+                return 1;
+            }
+
+            // The sequence could not be injected, so this press is passed through as it is. Stop
+            // here: a later handler (e.g. a Disabled remap of the same key) must not consume it.
+            if (sequencePressStep == SequencePressStep::PassThrough)
+            {
+                return 0;
+            }
         }
 
         // Remap a key
