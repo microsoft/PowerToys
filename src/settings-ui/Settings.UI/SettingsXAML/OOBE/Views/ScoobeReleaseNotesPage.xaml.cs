@@ -99,7 +99,7 @@ namespace Microsoft.PowerToys.Settings.UI.OOBE.Views
 
             StringBuilder releaseNotesHtmlBuilder = new StringBuilder(string.Empty);
             var language = ApplicationLanguages.PrimaryLanguageOverride;
-            var formatter = new DateTimeFormatter("longdate", string.IsNullOrEmpty(language) ? ApplicationLanguages.Languages : new[] { language });
+            var formatter = new DateTimeFormatter("day month.full year", string.IsNullOrEmpty(language) ? ApplicationLanguages.Languages : new[] { language });
 
             // Regex to remove installer hash sections from the release notes.
             Regex removeHashRegex = new Regex(RemoveInstallerHashesRegex, RemoveInstallerHashesRegexOptions);
