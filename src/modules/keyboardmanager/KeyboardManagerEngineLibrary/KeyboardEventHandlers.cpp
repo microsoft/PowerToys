@@ -120,13 +120,34 @@ namespace
         return true;
     }
 
-    // A shortcut remap that a key sequence puts back before its taps (see StartSequencePress)
+    // A shortcut remap that a key sequence puts back before its taps (see StartSequencePress).
+    // Named by its key in the shortcut tables rather than by a pointer into them: the remap is
+    // looked up again after the key events were sent (FindShortcutRemap), and a settings reload
+    // may have rebuilt the tables by then.
     struct RevertedShortcutRemap
     {
         // Set for an app-specific shortcut remap
         std::optional<std::wstring> app;
-        RemapShortcut* remap;
+        Shortcut originalShortcut;
     };
+
+    // The shortcut remap with that app and original shortcut as the tables are now, or nullptr
+    RemapShortcut* FindShortcutRemap(State& state, const RevertedShortcutRemap& reverted)
+    {
+        ShortcutRemapTable* table = &state.osLevelShortcutReMap;
+        if (reverted.app)
+        {
+            const auto appTable = state.appSpecificShortcutReMap.find(*reverted.app);
+            if (appTable == state.appSpecificShortcutReMap.end())
+            {
+                return nullptr;
+            }
+            table = &appTable->second;
+        }
+
+        const auto remap = table->find(reverted.originalShortcut);
+        return remap == table->end() ? nullptr : &remap->second;
+    }
 
     // For a key sequence that is about to be sent: appends the key events that put every invoked
     // shortcut remap back to the physically held keys, as a key outside the shortcut does when it
@@ -151,7 +172,7 @@ namespace
 
                 if (AppendRevertOfInvokedShortcut(ii, originalShortcut, remap, keyEventList))
                 {
-                    reverted.push_back({ app, &remap });
+                    reverted.push_back({ app, originalShortcut });
                 }
             }
         };
@@ -780,14 +801,20 @@ namespace KeyboardEventHandlers
             return SequencePressStep::PassThrough;
         }
 
-        // The shortcut remaps were put back: reset their state, as the shortcut handler does.
+        // The shortcut remaps were put back: reset their state, as the shortcut handler does. Each
+        // one is looked up again, because the tables may have been rebuilt while the events were
+        // being sent; a remap that is gone has no state to reset, and one that was loaded anew is
+        // not invoked.
         for (const RevertedShortcutRemap& reverted : revertedShortcutRemaps)
         {
             if (!isAltRightKeyInvoked)
             {
-                reverted.remap->isShortcutInvoked = false;
-                reverted.remap->modifierKeysInvoked.Reset();
-                reverted.remap->isOriginalActionKeyPressed = false;
+                if (RemapShortcut* const remap = FindShortcutRemap(state, reverted))
+                {
+                    remap->isShortcutInvoked = false;
+                    remap->modifierKeysInvoked.Reset();
+                    remap->isOriginalActionKeyPressed = false;
+                }
             }
 
             // If app specific shortcut has finished invoking, reset the target application

@@ -2596,6 +2596,67 @@ namespace RemappingLogicTests
             Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT));
         }
 
+        // The shortcut tables are rebuilt by a settings reload, which can happen while the key events
+        // are being sent. The shortcut remap that was put back is looked up again after the send, by
+        // its app and original shortcut, and only what is still in the tables is reset: here the
+        // OS-level remap is gone by then, and the app-specific one is a new entry.
+        void ShortcutTablesRebuiltDuringTheSend(const std::optional<std::wstring>& appName)
+        {
+            const bool appSpecific = appName.has_value();
+            const Shortcut src = AddCtrlXToShiftY(appName);
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_LCONTROL, false);
+            SendKey(0x58, false);
+            Assert::IsTrue(testState.GetShortcutRemapTable(appName)[src].isShortcutInvoked);
+            const size_t first = mockedInputHandler.GetDeliveredEvents().size();
+
+            // Rebuild the tables when the call that carries the taps is made
+            bool rebuilt = false;
+            mockedInputHandler.SetSendVirtualInputShouldFail([&](const std::vector<INPUT>& inputs) {
+                const bool carriesTaps = std::any_of(inputs.begin(), inputs.end(), [](const INPUT& input) {
+                    return input.ki.dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG;
+                });
+                if (carriesTaps && !rebuilt)
+                {
+                    rebuilt = true;
+                    testState.ClearOSLevelShortcuts();
+                    testState.ClearAppSpecificShortcuts();
+                    if (appSpecific)
+                    {
+                        AddCtrlXToShiftY(appName);
+                    }
+                }
+                return false;
+            });
+
+            SendKey(VK_F1, false);
+            SendKey(VK_F1, true);
+            mockedInputHandler.SetSendVirtualInputShouldFail(nullptr);
+
+            Assert::IsTrue(rebuilt);
+            Assert::IsTrue(DeliveredFrom(first, { 0x41, 0x42 }) == KeyTrace{ { 0x41, false }, { 0x41, true }, { 0x42, false }, { 0x42, true } }, ToText(DeliveredFrom(first)).c_str());
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT));
+            Assert::IsTrue(testState.osLevelShortcutReMap.empty());
+            Assert::AreEqual(appSpecific ? (size_t)1 : (size_t)0, testState.appSpecificShortcutReMap.size());
+            if (appSpecific)
+            {
+                Assert::IsFalse(testState.appSpecificShortcutReMap[*appName][src].isShortcutInvoked);
+                Assert::IsTrue(testState.GetActivatedApp() == KeyboardManagerConstants::NoActivatedApp);
+            }
+        }
+
+        TEST_METHOD (SequenceRemap_WhileOSLevelShortcutRemapIsActive_ShortcutTablesRebuiltDuringTheSend_OnlyResetsWhatIsStillThere)
+        {
+            ShortcutTablesRebuiltDuringTheSend(std::nullopt);
+        }
+
+        TEST_METHOD (SequenceRemap_WhileAppSpecificShortcutRemapIsActive_ShortcutTablesRebuiltDuringTheSend_OnlyResetsWhatIsStillThere)
+        {
+            ShortcutTablesRebuiltDuringTheSend(std::wstring(L"testprocess1.exe"));
+        }
+
         // If the sequence cannot be injected, nothing was put back either: the shortcut remap stays
         // active, and the source key is passed through.
         TEST_METHOD (SequenceRemap_WhileShortcutRemapIsActive_InjectionFailed_LeavesTheShortcutRemapActive)
