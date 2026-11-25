@@ -23,6 +23,12 @@ The exact source branch ref expected for every build.
 .PARAMETER ExpectedSourceVersion
 The exact 40-character source commit expected for every build.
 
+.PARAMETER Organization
+Azure DevOps organization for all checkpointed build IDs. Defaults to `shine-oss`.
+
+.PARAMETER Project
+Azure DevOps project for all checkpointed build IDs. Defaults to `PowerToys`.
+
 .PARAMETER PollIntervalSeconds
 Seconds between authenticated status reads. Defaults to 1200 (20 minutes).
 
@@ -54,6 +60,12 @@ param(
     [Parameter(Mandatory)]
     [ValidatePattern('^[0-9a-fA-F]{40}$')]
     [string] $ExpectedSourceVersion,
+
+    [ValidateNotNullOrEmpty()]
+    [string] $Organization = 'shine-oss',
+
+    [ValidateNotNullOrEmpty()]
+    [string] $Project = 'PowerToys',
 
     [ValidateRange(10, 3600)]
     [int] $PollIntervalSeconds = 1200,
@@ -129,7 +141,9 @@ namespace PowerToys.UiTests.Ci
                     [pscustomobject]@{
                         RequestedId = $id
                         Build = (Invoke-AzDevOpsRest `
-                                -Uri "_apis/build/builds/${id}?api-version=7.1").Body
+                                -Uri "_apis/build/builds/${id}?api-version=7.1" `
+                                -Organization $Organization `
+                                -Project $Project).Body
                     }
                 }
             )

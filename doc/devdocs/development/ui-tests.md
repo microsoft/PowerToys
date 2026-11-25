@@ -167,13 +167,14 @@ The `umdfHidArm64Image` template parameter is declared by
 `.pipelines\v2\templates\pipeline-ui-tests-automation.yml` and `pipeline-ci-build.yml`, then passed
 explicitly through the stage/job templates so it is available during structural expansion:
 
-- Manual internal UI-test runs default to `SHINE-W11-Preview-Testing-arm64-TestSigning` through
+- Manual UI-test runs default to `SHINE-W11-Preview-Testing-arm64-TestSigning` through
   `ImageOverride`. The image parameter permits only that name or `disabled` to turn off routing;
   root templates translate `disabled` to the internal empty-image convention.
 - PR CI enables the image only in the verified internal collection (`SHINE-INT-Testing-arm64`).
-  The shared CI template defaults to disabled; public `shine-oss` PR CI explicitly keeps it
-  disabled until the image is provisioned and verified there. Implicit ARM64 selections then
-  skip the UMDF fixture suites with a warning while other suites still run.
+  Public `shine-oss` PR CI leaves this route disabled. Implicit ARM64 selections continue on
+  the ordinary image without the dedicated driver-backed cases. The OSS manual pipeline requests
+  the isolated image explicitly; its registration and transport were verified in
+  [ARM64 smoke run 394611](https://dev.azure.com/shine-oss/PowerToys/_build/results?buildId=394611).
 - Image isolation is explicit: ordinary jobs retain the pool's default image. Do not make the
   TESTSIGNING image the pool default. Registering the image in an OSS pool alone does not opt
   public CI into it; its root pipeline configuration must also be updated.
@@ -259,7 +260,10 @@ desktop, PowerShell Direct, payload, shell-extension signing, and evidence failu
 
 ## Running tests in pipeline
 
-The PowerToys UI test pipeline provides flexible options for building and testing:
+For manual current-source UI testing, use
+[UI Test Automation in `shine-oss/PowerToys`](https://dev.azure.com/shine-oss/PowerToys/_build?definitionId=36).
+Its run logs and artifacts are public. Keep internal-only evidence and signed-build modes in
+[Dart](https://microsoft.visualstudio.com/Dart/_build?definitionId=161438&_a=summary).
 
 Full builds with test compilation enabled and UI-tests-only builds first run the
 MWB/shared winapp CLI PowerShell infrastructure tests using Pester 3.4.0 under
@@ -270,10 +274,10 @@ explicit tool/runtime paths and are excluded from this fast gate.
 ### Pipeline Options
 
 - **buildSource**: Select the build type for testing:
-  - `latestMainOfficialBuild`: Downloads and uses the latest official PowerToys build from main branch; does not support Mouse Without Borders Sandbox tests
+  - `latestMainOfficialBuild`: Dart only. Downloads and uses the latest official PowerToys build from main; does not support Mouse Without Borders Sandbox tests
   - `buildNow`: Builds PowerToys from current source code and uses it for testing
   - `buildNowSlim`: Builds the same current-source product, but downloads and installs its installer rather than the whole artifact
-  - `specificBuildId`: Downloads a specific PowerToys build using the build ID specified in `specificBuildId` parameter; does not support Mouse Without Borders Sandbox tests
+  - `specificBuildId`: Dart only. Downloads the build specified by `specificBuildId`; does not support Mouse Without Borders Sandbox tests
 
   **Default value**: `buildNow`
 
@@ -336,8 +340,7 @@ explicit tool/runtime paths and are excluded from this fast gate.
 
 > **Note**: All modes support the `uiTestModules` parameter to control which specific UI test modules to build and run. Both machine-level and per-user installation modes are tested automatically when using official builds.
 
-### Pipeline Access
-- Pipeline: https://microsoft.visualstudio.com/Dart/_build?definitionId=161438&_a=summary
+For automated queueing and monitoring, use the [UI-test pipeline CI skill](../../../.github/skills/ui-tests-pipeline-ci/SKILL.md).
 
 ## How to add the first UI tests for your modules
 
