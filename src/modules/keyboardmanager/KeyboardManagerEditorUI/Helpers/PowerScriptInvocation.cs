@@ -25,7 +25,7 @@ namespace KeyboardManagerEditorUI.Helpers
             }
 
             var arguments = new StringBuilder("run ").Append(scriptId)
-                .Append(" --consumer ").Append(ConsumerId).Append(" --no-consent");
+                .Append(" --consumer ").Append(ConsumerId);
             foreach (var pair in parameters.OrderBy(pair => pair.Key, StringComparer.Ordinal))
             {
                 if (string.IsNullOrWhiteSpace(pair.Key) || pair.Key.Contains('\0') || pair.Value?.Contains('\0') == true)
@@ -45,7 +45,7 @@ namespace KeyboardManagerEditorUI.Helpers
             return arguments.ToString();
         }
 
-        /// <summary>Recognizes only silent script invocations that the editor can round-trip without losing arguments.</summary>
+        /// <summary>Recognizes current and legacy script invocations that the editor can round-trip without losing arguments.</summary>
         public static bool TryParseArguments(string? arguments, out string scriptId, out IReadOnlyDictionary<string, string?> parameters)
         {
             scriptId = string.Empty;
@@ -108,7 +108,7 @@ namespace KeyboardManagerEditorUI.Helpers
                 return false;
             }
 
-            if (!noConsent)
+            if (!hasConsumer && !noConsent)
             {
                 return false;
             }

@@ -21,16 +21,61 @@ namespace RemappingLogicTests
         {
             const auto parsed = PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager --no-consent --set-base64 bmFtZQB2YWx1ZQ==");
             Assert::IsTrue(parsed.has_value());
-            Assert::AreEqual(size_t{ 7 }, parsed->size());
+            Assert::AreEqual(size_t{ 6 }, parsed->size());
             Assert::AreEqual(L"bmFtZQB2YWx1ZQ==", parsed->back().c_str());
+            Assert::IsTrue(std::find(parsed->begin(), parsed->end(), L"--no-consent") == parsed->end());
+        }
+
+        TEST_METHOD (PowerScriptsHotkey_RequestsConsentForCurrentAndLegacyBindings)
+        {
+            const auto current = PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager");
+            const auto legacy = PowerScripts::ParseHotkeyInvocation(L"run sample --no-consent");
+            Assert::IsTrue(current.has_value());
+            Assert::IsTrue(legacy.has_value());
+            Assert::IsTrue(*current == *legacy);
+            Assert::AreEqual(size_t{ 4 }, current->size());
         }
 
         TEST_METHOD (PowerScriptsHotkey_DoesNotInterceptOtherCommandsOrConsumers)
         {
             Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"trust approve sample").has_value());
             Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample --consumer command-line --no-consent").has_value());
-            Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager").has_value());
+            Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample").has_value());
+            Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager --set-base64 \"value with spaces\"").has_value());
             Assert::IsFalse(PowerScripts::ParseHotkeyInvocation(L"run sample --consumer keyboard-manager --no-consent --root other").has_value());
+        }
+
+        TEST_METHOD (PowerScriptsHotkey_LaunchArgumentsAllowFirstUseConsent)
+        {
+            GUID id{};
+            Assert::AreEqual(S_OK, CoCreateGuid(&id));
+            wchar_t name[40]{};
+            Assert::IsTrue(StringFromGUID2(id, name, ARRAYSIZE(name)) != 0);
+            const auto directory = std::filesystem::temp_directory_path() / name;
+            Assert::IsTrue(std::filesystem::create_directory(directory));
+            const auto cleanup = wil::scope_exit([&]() { RemoveDirectoryW(directory.c_str()); });
+            const auto executable = directory / L"PowerScripts.Host.exe";
+            wil::unique_hfile file{ CreateFileW(executable.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_NEW, FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, nullptr) };
+            Assert::IsTrue(static_cast<bool>(file));
+
+            for (const auto arguments : { L"run sample --consumer keyboard-manager", L"run sample --consumer keyboard-manager --no-consent", L"run sample --no-consent" })
+            {
+                Shortcut shortcut;
+                shortcut.runProgramFilePath = executable.wstring();
+                shortcut.runProgramArgs = arguments;
+                shortcut.alreadyRunningAction = Shortcut::ProgramAlreadyRunningAction::StartAnother;
+                shortcut.elevationLevel = Shortcut::ElevationLevel::NonElevated;
+                shortcut.startWindowType = Shortcut::StartWindowType::Hidden;
+                bool launched = false;
+                std::wstring actualArguments;
+                KeyboardEventHandlers::CreateOrShowProcessForShortcut(
+                    shortcut, [&](const std::wstring&, const std::wstring& actual, const std::wstring&) {
+                        launched = true;
+                        actualArguments = actual;
+                    });
+                Assert::IsTrue(launched);
+                Assert::AreEqual(L"run sample --consumer keyboard-manager", actualArguments.c_str());
+            }
         }
 
         TEST_METHOD (RelativeProgramPath_ShouldUseEngineCurrentDirectory)

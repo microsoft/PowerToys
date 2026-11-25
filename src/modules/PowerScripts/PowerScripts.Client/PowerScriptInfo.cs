@@ -82,7 +82,10 @@ public sealed class PowerScriptInfo
     /// <summary>Absolute path to the entry file (diagnostics only; do not execute directly).</summary>
     public string? EntryFullPath { get; init; }
 
-    /// <summary>Whether the user has already approved the script's current content (trust-on-first-use).</summary>
+    /// <summary>
+    /// Informational snapshot of approval for the current content. Do not gate consumer selection
+    /// or activation on it; the Host checks current integrity and requests consent at execution.
+    /// </summary>
     public bool Trusted { get; init; }
 
     /// <summary>Typed parameters that the consumer may collect and pass to <c>Run</c>.</summary>

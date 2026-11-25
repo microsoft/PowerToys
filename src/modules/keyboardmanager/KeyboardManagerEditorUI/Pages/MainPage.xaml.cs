@@ -644,11 +644,6 @@ namespace KeyboardManagerEditorUI.Pages
 
             _previousPowerScriptSettings = _isEditMode && _editingItem?.Item is PowerScriptShortcut shortcut &&
                 SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(shortcut.Id, out var settings) ? settings : null;
-            if ((_previousPowerScriptSettings?.IsActive ?? true) && !current.Trusted)
-            {
-                UnifiedMappingControl.ShowValidationError(ResourceHelper.GetString("PowerScript_ValidationTitle"), ResourceHelper.GetString("PowerScript_ReviewTrust"));
-                return false;
-            }
 
             _preparedPowerScriptHostPath = UnifiedMappingControl.GetPowerScriptsHostPath();
             _preparedPowerScriptArguments = PowerScriptInvocation.BuildArguments(current.Id, UnifiedMappingControl.GetPowerScriptParameters());
@@ -1111,11 +1106,6 @@ namespace KeyboardManagerEditorUI.Pages
             if (script is null)
             {
                 return ResourceHelper.GetString("PowerScript_NoLongerAvailable");
-            }
-
-            if (!script.Trusted)
-            {
-                return ResourceHelper.GetString("PowerScript_ReviewTrust");
             }
 
             if (!PowerScripts.Client.PowerScriptParameterValues.TryCreate(script.Script, shortcut.ParameterValues, out _, out string? error))

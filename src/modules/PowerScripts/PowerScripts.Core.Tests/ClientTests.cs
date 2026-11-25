@@ -367,6 +367,36 @@ public class ClientTests
     }
 
     [TestMethod]
+    public void KeyboardManagerDiscoversUntrustedActionsWithoutApprovingThem()
+    {
+        var hostPath = PowerScriptsClient.ResolveHostPath();
+        Assert.IsFalse(string.IsNullOrEmpty(hostPath), "The referenced Host project must be built.");
+        var root = Path.Combine(Path.GetTempPath(), "ps-kbm-discovery-" + Guid.NewGuid().ToString("N"));
+        var id = "kbm-untrusted-" + Guid.NewGuid().ToString("N");
+        Directory.CreateDirectory(root);
+        try
+        {
+            File.WriteAllText(Path.Combine(root, "action.ps1"), "throw 'Discovery must not execute this script.'");
+            File.WriteAllText(Path.Combine(root, "action.ps1.tool.json"), $$"""
+                {
+                  "name": "{{id}}",
+                  "inputSchema": {"type": "object", "properties": {}, "additionalProperties": false},
+                  "outputSchema": {"type": "object", "properties": {}, "additionalProperties": false}
+                }
+                """);
+            var client = new PowerScriptsClient(PowerScriptConsumer.KeyboardManager, hostPath, scriptsRoot: root);
+            var action = client.ListActions().Single();
+            Assert.AreEqual(id, action.Id);
+            Assert.IsFalse(action.Trusted);
+            Assert.IsFalse(client.List().Single().Trusted, "Selecting an action must not grant approval.");
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void Client_FileDiscoveryAndTransform_UseTheSharedPngContract()
     {
         var hostPath = PowerScriptsClient.ResolveHostPath();

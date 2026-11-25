@@ -26,6 +26,7 @@ public sealed class KbmPowerScriptInvocationTests
         string arguments = PowerScriptInvocation.BuildArguments("file-query-8f72", values);
 
         StringAssert.Contains(arguments, "--consumer keyboard-manager");
+        Assert.IsFalse(arguments.Contains("--no-consent", StringComparison.Ordinal));
         Assert.IsTrue(PowerScriptInvocation.TryParseArguments(arguments, out string scriptId, out var restored));
         Assert.AreEqual("file-query-8f72", scriptId);
         Assert.AreEqual(5, restored.Count);
@@ -38,6 +39,7 @@ public sealed class KbmPowerScriptInvocationTests
     [TestMethod]
     public void ExistingConsumerBindingAndOlderSilentBindingRemainRecognizable()
     {
+        Assert.IsTrue(PowerScriptInvocation.TryParseArguments("run layouts --consumer keyboard-manager", out _, out _));
         Assert.IsTrue(PowerScriptInvocation.TryParseArguments("run layouts --consumer keyboard-manager --no-consent", out _, out _));
         Assert.IsTrue(PowerScriptInvocation.TryParseArguments("run layouts --no-consent", out _, out _));
     }
@@ -47,7 +49,7 @@ public sealed class KbmPowerScriptInvocationTests
     [DataRow("run layouts --consumer keyboard-manager --consumer keyboard-manager --no-consent")]
     [DataRow("run layouts --no-consent --root C:\\OtherScripts")]
     [DataRow("run layouts --no-consent --files C:\\input.txt")]
-    [DataRow("run layouts --consumer keyboard-manager")]
+    [DataRow("run layouts")]
     [DataRow("run layouts --no-consent --no-consent")]
     [DataRow("run layouts --no-consent --set-base64")]
     [DataRow("run layouts --no-consent --set-base64 invalid!")]

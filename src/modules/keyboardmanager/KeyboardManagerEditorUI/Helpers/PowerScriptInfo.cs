@@ -23,8 +23,6 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string Description => Script.Description;
 
-        public bool Trusted => Script.Trusted;
-
         public IReadOnlyList<PowerScriptParameter> Parameters => Script.Parameters;
 
         public override string ToString() => Name;

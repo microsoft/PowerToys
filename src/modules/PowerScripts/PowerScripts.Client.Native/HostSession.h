@@ -35,7 +35,7 @@ namespace PowerScripts
     {
         int count = 0;
         wil::unique_hlocal_ptr<PWSTR[]> parsed{ CommandLineToArgvW((L"host " + arguments).c_str(), &count) };
-        if (!parsed || count < 6 || wcscmp(parsed[1], L"run") != 0 ||
+        if (!parsed || count < 4 || wcscmp(parsed[1], L"run") != 0 ||
             std::wstring_view{ parsed[2] }.find_first_not_of(L"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.") != std::wstring_view::npos ||
             parsed[2][0] == L'\0')
         {
@@ -44,12 +44,15 @@ namespace PowerScripts
 
         bool consumer = false;
         bool silent = false;
+        std::vector<std::wstring> result{ L"run", parsed[2] };
         for (int index = 3; index < count; ++index)
         {
             const std::wstring_view token{ parsed[index] };
             if (token == L"--consumer" && !consumer && index + 1 < count && wcscmp(parsed[index + 1], L"keyboard-manager") == 0)
             {
                 consumer = true;
+                result.emplace_back(L"--consumer");
+                result.emplace_back(L"keyboard-manager");
                 ++index;
             }
             else if (token == L"--no-consent" && !silent)
@@ -58,9 +61,16 @@ namespace PowerScripts
             }
             else if (token == L"--set-base64" && index + 1 < count && !std::wstring_view{ parsed[index + 1] }.starts_with(L"--"))
             {
+                result.emplace_back(token);
                 while (index + 1 < count && !std::wstring_view{ parsed[index + 1] }.starts_with(L"--"))
                 {
                     ++index;
+                    const std::wstring_view value{ parsed[index] };
+                    if (value.empty() || value.find_first_not_of(L"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=") != std::wstring_view::npos)
+                    {
+                        return std::nullopt;
+                    }
+                    result.emplace_back(value);
                 }
             }
             else
@@ -69,12 +79,19 @@ namespace PowerScripts
             }
         }
 
-        if (!consumer || !silent)
+        if (!consumer && !silent)
         {
             return std::nullopt;
         }
 
-        return std::vector<std::wstring>{ parsed.get() + 1, parsed.get() + count };
+        if (!consumer)
+        {
+            result.emplace_back(L"--consumer");
+            result.emplace_back(L"keyboard-manager");
+        }
+
+        // Older KBM bindings forced --no-consent. Request ordinary Host approval without granting trust.
+        return result;
     }
 
     // Uses the same private stdio framing as the managed client, with no named IPC endpoint.

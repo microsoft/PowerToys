@@ -73,7 +73,7 @@ namespace
                         if (key.shiftKey != ModifierKey::Disabled)
                         {
                             if (state.numpadKeyPressed[it->second])
-                            { 
+                            {
                                 //replace it with original numpad
                                 data->lParam->vkCode = it->second;
                             }
@@ -1749,7 +1749,7 @@ namespace KeyboardEventHandlers
                 return;
             }
 
-            const auto expandedArgs = ProgramLauncher::ExpandEnvironmentVariables(shortcut.runProgramArgs);
+            auto expandedArgs = ProgramLauncher::ExpandEnvironmentVariables(shortcut.runProgramArgs);
             if (!expandedArgs)
             {
                 toast(fmt::format(L"Error starting {}", fileNamePart), L"The program arguments could not be expanded.");
@@ -1779,44 +1779,56 @@ namespace KeyboardEventHandlers
                 }
             }
 
+            const auto powerScriptArguments = _wcsicmp(fileNamePart.c_str(), L"PowerScripts.Host.exe") == 0 &&
+                                                      shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::StartAnother &&
+                                                      shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated &&
+                                                      shortcut.startWindowType == Shortcut::StartWindowType::Hidden ?
+                                                  PowerScripts::ParseHotkeyInvocation(*expandedArgs) :
+                                                  std::nullopt;
+            if (powerScriptArguments)
+            {
+                // The parser restricts tokens to fixed flags, safe IDs and whitespace-free Base64.
+                expandedArgs->clear();
+                for (const auto& argument : *powerScriptArguments)
+                {
+                    if (!expandedArgs->empty())
+                    {
+                        *expandedArgs += L' ';
+                    }
+                    *expandedArgs += argument;
+                }
+            }
+
             if (launchProgram)
             {
                 launchProgram(*launchPath, *expandedArgs, currentDir);
                 return;
             }
 
-            if (_wcsicmp(fileNamePart.c_str(), L"PowerScripts.Host.exe") == 0 &&
-                shortcut.alreadyRunningAction == Shortcut::ProgramAlreadyRunningAction::StartAnother &&
-                shortcut.elevationLevel == Shortcut::ElevationLevel::NonElevated &&
-                shortcut.startWindowType == Shortcut::StartWindowType::Hidden && !is_process_elevated())
+            if (powerScriptArguments && !is_process_elevated())
             {
-                if (const auto arguments = PowerScripts::ParseHotkeyInvocation(*expandedArgs))
+                try
                 {
-                    try
+                    static const auto pool = std::make_shared<PowerScripts::HostPool>();
+                    const auto owner = pool;
+                    const auto result = owner->Invoke(*launchPath, currentDir, *powerScriptArguments);
+                    if (result.ExitCode != 0)
                     {
-                        static const auto pool = std::make_shared<PowerScripts::HostPool>();
-                        const auto owner = pool;
-                        const auto result = owner->Invoke(*launchPath, currentDir, *arguments);
-                        if (result.ExitCode != 0)
-                        {
-                            Logger::error(L"PowerScript hotkey failed with exit code {}; the invocation was not retried.", result.ExitCode);
-                            toast(L"PowerScript failed", result.Error.empty()
-                                                           ? L"Check PowerScripts Activity for details. The invocation was not retried."
-                                                           : result.Error.substr(0, 500));
-                        }
+                        Logger::error(L"PowerScript hotkey failed with exit code {}; the invocation was not retried.", result.ExitCode);
+                        toast(L"PowerScript failed", result.Error.empty() ? L"Check PowerScripts Activity for details. The invocation was not retried." : result.Error.substr(0, 500));
                     }
-                    catch (const winrt::hresult_error& exception)
-                    {
-                        Logger::error(L"PowerScripts Host session failed: {}. The invocation was not retried.", exception.message());
-                        toast(L"PowerScript failed", L"The Host session failed. The invocation was not retried.");
-                    }
-                    catch (const std::exception& exception)
-                    {
-                        Logger::error(L"PowerScripts Host session failed: {}. The invocation was not retried.", winrt::to_hstring(exception.what()));
-                        toast(L"PowerScript failed", L"The Host session failed. The invocation was not retried.");
-                    }
-                    return;
                 }
+                catch (const winrt::hresult_error& exception)
+                {
+                    Logger::error(L"PowerScripts Host session failed: {}. The invocation was not retried.", exception.message());
+                    toast(L"PowerScript failed", L"The Host session failed. The invocation was not retried.");
+                }
+                catch (const std::exception& exception)
+                {
+                    Logger::error(L"PowerScripts Host session failed: {}. The invocation was not retried.", winrt::to_hstring(exception.what()));
+                    toast(L"PowerScript failed", L"The Host session failed. The invocation was not retried.");
+                }
+                return;
             }
 
             DWORD processId = 0;
@@ -1858,7 +1870,7 @@ namespace KeyboardEventHandlers
                 return;
             }
 
-            if (processId != 0 && shortcut.startWindowType == Shortcut::StartWindowType::Hidden)
+            if (processId != 0 && shortcut.startWindowType == Shortcut::StartWindowType::Hidden && !powerScriptArguments)
             {
                 HideProgram(processId, fileNamePart, 0);
             }
