@@ -18,9 +18,11 @@ namespace AdvancedPaste.Cli;
 internal static class NativeClipboard
 {
     private const uint BitmapFormat = 2;
+    private const uint DibFormat = 8;
     private const uint UnicodeTextFormat = 13;
     private const uint FileDropFormat = 15;
     private const uint MoveableMemory = 0x0002;
+    private const int BitmapFileHeaderSize = 14;
     private const int DropFilesHeaderSize = 20;
     private const int DropFilesWideFlagOffset = 16;
     private const int ClipboardRetryDelay = 100;
@@ -96,9 +98,7 @@ internal static class NativeClipboard
 
             if (content.BitmapBytes is not null)
             {
-                using var stream = new MemoryStream(content.BitmapBytes);
-                using var bitmap = new Bitmap(stream);
-                handles.Add(new ClipboardHandle(BitmapFormat, bitmap.GetHbitmap()));
+                handles.Add(CreateDibBlock(content.BitmapBytes));
             }
 
             OpenWithRetry(window, retries: 5);
@@ -130,16 +130,7 @@ internal static class NativeClipboard
         {
             foreach (var data in handles)
             {
-                if (data.Handle == IntPtr.Zero)
-                {
-                    continue;
-                }
-
-                if (data.Format == BitmapFormat)
-                {
-                    DeleteObject(data.Handle);
-                }
-                else
+                if (data.Handle != IntPtr.Zero)
                 {
                     GlobalFree(data.Handle);
                 }
@@ -263,9 +254,21 @@ internal static class NativeClipboard
         return data;
     }
 
-    private static ClipboardHandle CreateMemoryBlock(uint format, byte[] bytes)
+    private static ClipboardHandle CreateDibBlock(byte[] bitmapBytes)
     {
-        var handle = GlobalAlloc(MoveableMemory, (nuint)bytes.Length);
+        using var source = new MemoryStream(bitmapBytes);
+        using var bitmap = new Bitmap(source);
+        using var bmp = new MemoryStream();
+        bitmap.Save(bmp, ImageFormat.Bmp);
+
+        // CF_DIB contains the BMP information header and pixels without the file header.
+        return CreateMemoryBlock(DibFormat, bmp.GetBuffer(), BitmapFileHeaderSize, checked((int)bmp.Length - BitmapFileHeaderSize));
+    }
+
+    private static ClipboardHandle CreateMemoryBlock(uint format, byte[] bytes, int offset = 0, int? length = null)
+    {
+        var count = length ?? (bytes.Length - offset);
+        var handle = GlobalAlloc(MoveableMemory, checked((nuint)count));
         if (handle == IntPtr.Zero)
         {
             throw new Win32Exception(Marshal.GetLastPInvokeError());
@@ -281,7 +284,7 @@ internal static class NativeClipboard
 
             try
             {
-                Marshal.Copy(bytes, 0, pointer, bytes.Length);
+                Marshal.Copy(bytes, offset, pointer, count);
             }
             finally
             {
@@ -343,10 +346,6 @@ internal static class NativeClipboard
 
     [DllImport("kernel32.dll")]
     private static extern IntPtr GlobalFree(IntPtr handle);
-
-    [DllImport("gdi32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DeleteObject(IntPtr handle);
 
     private readonly record struct ClipboardHandle(uint Format, IntPtr Handle);
 }
