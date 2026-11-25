@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "NativeSnap.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <chrono>
 #include <condition_variable>
@@ -9,6 +10,7 @@
 #include <winstring.h>
 #include <dwmapi.h>
 #include <thread>
+#include <utility>
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -23,22 +25,29 @@ namespace
     constexpr wchar_t SnapLayoutManagerClassName[] = L"WindowsUdk.UI.Shell.SnapLayoutManager";
     constexpr UINT32 SnapLayoutManagerClassNameLength = ARRAYSIZE(SnapLayoutManagerClassName) - 1;
 
-    // The Shell flyout that offers a window for the space next to a snap. Identified by class and
-    // title together, because the class is also used by other Shell surfaces (Start, Task View).
+    // The Shell hosts its flyouts, Task View and Snap Assist among them, in island windows. Only
+    // the class is used to find them: their titles are localized by the Shell, so a fixed string
+    // matches at most one language ("Snap Assist" is "贴靠助手" on a zh-CN system).
     constexpr wchar_t SnapAssistWindowClass[] = L"XamlExplorerHostIslandWindow";
-    constexpr wchar_t SnapAssistWindowTitle[] = L"Snap Assist";
 
-    // Finds the Snap Assist flyout, whether or not it has been shown yet. The Shell creates the
-    // window before it makes it visible, so this returns it during that gap as well.
-    HWND FindSnapAssistFlyout() noexcept
+    // Finds the Snap Assist flyout, as the island window that is not in `existing`.
+    //
+    // Task View lives in an island window as well and is present the whole time, so membership in
+    // the set captured before the snap is what tells the flyout apart, not its title. The flyout is
+    // returned whether or not it has been shown yet: the Shell creates the window before it makes
+    // it visible, and that gap is when the dismissal is most effective.
+    HWND FindNewIslandWindow(const NativeSnap::IslandWindows& existing) noexcept
     {
         struct Context
         {
+            const NativeSnap::IslandWindows* existing = nullptr;
             HWND found = nullptr;
-        } context;
+        } context{ &existing, nullptr };
 
         ::EnumWindows(
             [](HWND candidate, LPARAM parameter) noexcept -> BOOL {
+                auto* ctx = reinterpret_cast<Context*>(parameter);
+
                 wchar_t className[64]{};
                 if (!::GetClassNameW(candidate, className, ARRAYSIZE(className)) ||
                     wcscmp(className, SnapAssistWindowClass) != 0)
@@ -46,14 +55,13 @@ namespace
                     return TRUE;
                 }
 
-                wchar_t title[64]{};
-                if (!::GetWindowTextW(candidate, title, ARRAYSIZE(title)) ||
-                    wcscmp(title, SnapAssistWindowTitle) != 0)
+                const auto& set = *ctx->existing;
+                if (std::find(set.begin(), set.end(), candidate) != set.end())
                 {
                     return TRUE;
                 }
 
-                reinterpret_cast<Context*>(parameter)->found = candidate;
+                ctx->found = candidate;
                 return FALSE;
             },
             reinterpret_cast<LPARAM>(&context));
@@ -200,6 +208,113 @@ namespace
         }
         return edges >= 2;
     }
+
+    RECT VisibleFrame(HWND window) noexcept
+    {
+        RECT current{};
+        if (FAILED(::DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &current, sizeof(current))))
+        {
+            if (!::GetWindowRect(window, &current))
+            {
+                return RECT{};
+            }
+        }
+
+        return current;
+    }
+
+    bool SameRect(const RECT& left, const RECT& right) noexcept
+    {
+        return left.left == right.left && left.top == right.top &&
+               left.right == right.right && left.bottom == right.bottom;
+    }
+
+    // Whether the Shell has finished placing the window on `snapRect`.
+    // IsWindowArranged is set by the Shell once the window is part of the snap layout; the geometry
+    // check makes sure the Shell applied the rectangle that was requested instead of an older one.
+    // The comparison uses the visible frame: GetWindowRect includes the invisible resize border that
+    // Windows 11 draws around windows, so it never matches the requested rectangle.
+    bool IsSnapApplied(HWND window, const RECT& snapRect) noexcept
+    {
+        if (!::IsWindowArranged(window))
+        {
+            return false;
+        }
+
+        const RECT current = VisibleFrame(window);
+        return std::abs(current.left - snapRect.left) <= NativeSnap::EdgeTolerance &&
+               std::abs(current.top - snapRect.top) <= NativeSnap::EdgeTolerance &&
+               std::abs(current.right - snapRect.right) <= NativeSnap::EdgeTolerance &&
+               std::abs(current.bottom - snapRect.bottom) <= NativeSnap::EdgeTolerance;
+    }
+
+    // Waits `milliseconds` without the 15.6 ms granularity of a plain Sleep.
+    //
+    // The wait loop polls for the Shell to finish, and with the default timer resolution every
+    // Sleep(5) actually sleeps one full tick: the observed waits were 0 / 16 / 31 / 32 ms, exact
+    // multiples of the tick, while the snap itself had already landed. A high-resolution waitable
+    // timer gives ~1 ms precision for this thread only, without raising the resolution for the
+    // whole system the way timeBeginPeriod does.
+    void PreciseWait(DWORD milliseconds) noexcept
+    {
+        static HANDLE timer = ::CreateWaitableTimerExW(nullptr,
+                                                      nullptr,
+                                                      CREATE_WAITABLE_TIMER_HIGH_RESOLUTION,
+                                                      TIMER_ALL_ACCESS);
+
+        if (!timer)
+        {
+            ::Sleep(milliseconds);
+            return;
+        }
+
+        // A negative interval means "relative"; the unit is 100 ns.
+        LARGE_INTEGER due{};
+        due.QuadPart = -static_cast<LONGLONG>(milliseconds) * 10'000;
+
+        if (!::SetWaitableTimer(timer, &due, 0, nullptr, nullptr, FALSE))
+        {
+            ::Sleep(milliseconds);
+            return;
+        }
+
+        ::WaitForSingleObject(timer, milliseconds + 100);
+    }
+
+    // Services the messages the Shell sends to this thread and waits a little.
+    // MsgWaitForMultipleObjectsEx and Sleep do not service sent messages, and the Shell completes
+    // the snap by sending one, so the snap never lands without this.
+    // PeekMessage with PM_NOREMOVE services sent messages without removing or dispatching posted
+    // ones, which keeps this loop from re-entering the module's window procedure (a display change
+    // arriving here would rebuild every work area, destroying the caller's objects while its stack
+    // frame is still live).
+    void PumpThreadMessages(DWORD milliseconds) noexcept
+    {
+        MSG message;
+        ::PeekMessageW(&message, nullptr, 0, 0, PM_NOREMOVE);
+        PreciseWait(milliseconds);
+    }
+}
+
+NativeSnap::IslandWindows NativeSnap::CaptureIslandWindows() noexcept
+{
+    IslandWindows islands;
+
+    ::EnumWindows(
+        [](HWND candidate, LPARAM parameter) noexcept -> BOOL {
+            wchar_t className[64]{};
+            if (!::GetClassNameW(candidate, className, ARRAYSIZE(className)) ||
+                wcscmp(className, SnapAssistWindowClass) != 0)
+            {
+                return TRUE;
+            }
+
+            reinterpret_cast<IslandWindows*>(parameter)->push_back(candidate);
+            return TRUE;
+        },
+        reinterpret_cast<LPARAM>(&islands));
+
+    return islands;
 }
 
 RECT NativeSnap::ExtendToWorkAreaEdges(const RECT& rect, const RECT& workArea, LONG maxEdgeInset) noexcept
@@ -332,7 +447,74 @@ bool NativeSnap::SnapWindowToRect(HWND window, const RECT& snapRect) noexcept
     return SUCCEEDED(snapResult);
 }
 
-void NativeSnap::DismissSnapAssist(HWND window, DWORD timeoutMs) noexcept
+bool NativeSnap::WaitForSnapApplied(HWND window, const RECT& snapRect, DWORD timeoutMs) noexcept
+{
+    if (!window)
+    {
+        return false;
+    }
+
+    const ULONGLONG deadline = ::GetTickCount64() + timeoutMs;
+    while (::GetTickCount64() < deadline)
+    {
+        if (IsSnapApplied(window, snapRect))
+        {
+            return true;
+        }
+
+        PumpThreadMessages(5);
+    }
+
+    return IsSnapApplied(window, snapRect);
+}
+
+bool NativeSnap::SnapWindowAndWait(HWND window, const RECT& snapRect, DWORD timeoutMs, int maxAttempts) noexcept
+{
+    if (!window || maxAttempts <= 0)
+    {
+        return false;
+    }
+
+    // The window is remembered before the first request: a drop is a request the Shell accepted
+    // without moving anything, and that is only distinguishable from "moved somewhere else" by
+    // comparing against where the window was.
+    RECT original{};
+    if (!::GetWindowRect(window, &original))
+    {
+        return false;
+    }
+
+    for (int attempt = 1; attempt <= maxAttempts; ++attempt)
+    {
+        if (!SnapWindowToRect(window, snapRect))
+        {
+            return false;
+        }
+
+        if (WaitForSnapApplied(window, snapRect, timeoutMs))
+        {
+            return true;
+        }
+
+        if (attempt == maxAttempts)
+        {
+            break;
+        }
+
+        // A window that moved but did not land on the requested rectangle was placed by the Shell
+        // on purpose (a different snap layout, for instance). Repeating the request would fight it,
+        // so only a window that has not moved at all is retried.
+        RECT current{};
+        if (!::GetWindowRect(window, &current) || !SameRect(current, original))
+        {
+            return false;
+        }
+    }
+
+    return false;
+}
+
+void NativeSnap::DismissSnapAssist(HWND window, const IslandWindows& existing, DWORD timeoutMs) noexcept
 {
     if (!window)
     {
@@ -347,11 +529,14 @@ void NativeSnap::DismissSnapAssist(HWND window, DWORD timeoutMs) noexcept
     // SC_CLOSE and SW_HIDE all leave it on screen (measured). What dismisses it is taking the
     // foreground back, which is what clicking outside of it does.
     //
-    // The trigger is the flyout holding the foreground. Dismissing it earlier does not work:
-    // before it exists the Shell shows it anyway, and while it exists but has not been shown yet,
-    // taking the foreground only postpones it by about half a second. Dismissing it the moment it
-    // holds the foreground closes it within ~30 ms, so what remains is the flyout's own opening
+    // The trigger is the flyout holding the foreground. Dismissing it earlier does not work: before
+    // it exists the Shell shows it anyway, and while it exists but has not been shown yet, taking
+    // the foreground only postpones it by about half a second. Dismissing it the moment it holds
+    // the foreground closes it within ~30 ms, so what remains is the flyout's own opening
     // animation, which is the best available outcome through the supported means.
+    //
+    // The flyout is recognized by having appeared since the snap, not by its title: the Shell
+    // localizes that title, so a fixed string only works on one language.
     //
     // Running this on the caller's thread would block it for up to a second, and the caller handles
     // the end of the user's drag, so callers normally use DismissSnapAssistInBackground instead.
@@ -360,7 +545,7 @@ void NativeSnap::DismissSnapAssist(HWND window, DWORD timeoutMs) noexcept
 
     while (std::chrono::steady_clock::now() < deadline)
     {
-        const HWND flyout = FindSnapAssistFlyout();
+        const HWND flyout = FindNewIslandWindow(existing);
         if (!flyout)
         {
             if (dismissed)
@@ -381,7 +566,7 @@ void NativeSnap::DismissSnapAssist(HWND window, DWORD timeoutMs) noexcept
     }
 }
 
-void NativeSnap::DismissSnapAssistInBackground(HWND window, DWORD timeoutMs) noexcept
+void NativeSnap::DismissSnapAssistInBackground(HWND window, IslandWindows existing, DWORD timeoutMs) noexcept
 {
     if (!window)
     {
@@ -396,18 +581,25 @@ void NativeSnap::DismissSnapAssistInBackground(HWND window, DWORD timeoutMs) noe
     // One worker serves every snap: it is started on the first request, picks up the newest window
     // on each pass, and exits once it has been idle, so dragging several windows into zones in
     // quick succession does not pile up one thread per snap.
+    struct Pending
+    {
+        HWND window = nullptr;
+        IslandWindows existing{};
+        DWORD timeout = 0;
+    };
+
     static std::mutex mutex;
     static std::condition_variable wake;
-    static HWND pendingWindow = nullptr;
-    static DWORD pendingTimeout = 0;
+    static Pending pending{};
     static bool workerRunning = false;
 
     {
         std::lock_guard lock(mutex);
         // The newest snap wins: the older one's flyout, if any, belongs to a window the user has
         // already moved on from, and BringToForeground would take the foreground from the new one.
-        pendingWindow = window;
-        pendingTimeout = timeoutMs;
+        pending.window = window;
+        pending.existing = std::move(existing);
+        pending.timeout = timeoutMs;
 
         if (workerRunning)
         {
@@ -421,86 +613,28 @@ void NativeSnap::DismissSnapAssistInBackground(HWND window, DWORD timeoutMs) noe
     std::thread([]() noexcept {
         for (;;)
         {
-            HWND target = nullptr;
-            DWORD budget = 0;
+            Pending work{};
             {
                 std::unique_lock lock(mutex);
-                if (!pendingWindow)
+                if (!pending.window)
                 {
                     // Idle: give a following snap a chance to reuse this thread, then stop.
                     wake.wait_for(lock, std::chrono::seconds(1), [] {
-                        return pendingWindow != nullptr;
+                        return pending.window != nullptr;
                     });
                 }
 
-                target = pendingWindow;
-                budget = pendingTimeout;
-                pendingWindow = nullptr;
+                work = std::move(pending);
+                pending = Pending{};
 
-                if (!target)
+                if (!work.window)
                 {
                     workerRunning = false;
                     return;
                 }
             }
 
-            DismissSnapAssist(target, budget);
+            DismissSnapAssist(work.window, work.existing, work.timeout);
         }
     }).detach();
-}
-
-bool NativeSnap::WaitForSnapApplied(HWND window, const RECT& snapRect, DWORD timeoutMs) noexcept
-{
-    if (!window)
-    {
-        return false;
-    }
-
-    // IsWindowArranged is set by the Shell once the window is part of the snap layout; the
-    // geometry check makes sure the Shell actually applied the rectangle that was requested
-    // instead of an older one.
-    // The comparison uses the visible frame: GetWindowRect includes the invisible resize border
-    // that Windows 11 draws around windows, so it never matches the requested rectangle.
-    const auto isApplied = [window, &snapRect]() noexcept {
-        if (!::IsWindowArranged(window))
-        {
-            return false;
-        }
-
-        RECT current{};
-        if (FAILED(::DwmGetWindowAttribute(window, DWMWA_EXTENDED_FRAME_BOUNDS, &current, sizeof(current))))
-        {
-            if (!::GetWindowRect(window, &current))
-            {
-                return false;
-            }
-        }
-
-        return std::abs(current.left - snapRect.left) <= EdgeTolerance &&
-               std::abs(current.top - snapRect.top) <= EdgeTolerance &&
-               std::abs(current.right - snapRect.right) <= EdgeTolerance &&
-               std::abs(current.bottom - snapRect.bottom) <= EdgeTolerance;
-    };
-
-    const ULONGLONG deadline = ::GetTickCount64() + timeoutMs;
-    while (::GetTickCount64() < deadline)
-    {
-        if (isApplied())
-        {
-            return true;
-        }
-
-        // The Shell completes the snap by sending a message to this thread, so the thread has to
-        // service its sent messages; MsgWaitForMultipleObjectsEx and Sleep do not do that and the
-        // snap never lands. PeekMessage with PM_NOREMOVE services sent messages without removing
-        // or dispatching posted ones, which keeps this function from re-entering the module's
-        // window procedure (a display change arriving here would rebuild every work area,
-        // destroying the caller's objects while its stack frame is still live).
-        MSG message;
-        ::PeekMessageW(&message, nullptr, 0, 0, PM_NOREMOVE);
-
-        ::Sleep(5);
-    }
-
-    return isApplied();
 }

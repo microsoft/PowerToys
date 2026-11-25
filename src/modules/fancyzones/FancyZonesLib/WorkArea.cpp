@@ -178,33 +178,37 @@ bool WorkArea::Snap(HWND window, const ZoneIndexSet& zones, bool updatePosition)
             const LONG zoneSpacing = std::max<LONG>(0, m_layout->ZoneSpacing());
             const RECT snapScreenRect = NativeSnap::ExtendToWorkAreaEdges(targetScreenRect, workAreaRect, zoneSpacing + NativeSnap::EdgeTolerance);
 
-            if (NativeSnap::SnapWindowToRect(window, snapScreenRect))
+            // Captured before the request: the Snap Assist flyout is the island window that is not
+            // in this set, which is how it is told apart from Task View without reading titles the
+            // Shell localizes.
+            const NativeSnap::IslandWindows existingIslands = NativeSnap::CaptureIslandWindows();
+
+            // The Shell applies a snap asynchronously and occasionally drops the request without
+            // reporting an error, so a successful call proves nothing by itself. Measured on
+            // Windows 11 26H1: a snap that is applied at all lands within 63 ms, and one that has
+            // not landed after 150 ms never lands. A dropped request does land when it is asked for
+            // again, so the request is repeated instead of waiting longer: a single long wait just
+            // blocks the thread that is finishing the user's drag. IsWindowArranged cannot be used
+            // as a second opinion here because it stays set on a window that was arranged earlier,
+            // which a dropped request does not clear.
+            snappedNatively = NativeSnap::SnapWindowAndWait(window, snapScreenRect, 150, 3);
+
+            if (snappedNatively && !::EqualRect(&snapScreenRect, &targetScreenRect))
             {
-                // The Shell applies a snap asynchronously and occasionally drops the request
-                // without reporting an error, so a successful call proves nothing by itself.
-                // Measured on Windows 11 26H1: a snap that is applied at all lands within 63 ms,
-                // and one that has not landed after 400 ms never lands. IsWindowArranged cannot
-                // be used as a second opinion here because it stays set on a window that was
-                // arranged earlier, which a dropped request does not clear.
-                snappedNatively = NativeSnap::WaitForSnapApplied(window, snapScreenRect, 400);
+                // SetWindowPos keeps the arranged state that SetWindowPlacement drops.
+                const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workAreaWindow);
+                ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
+            }
 
-                if (snappedNatively && !::EqualRect(&snapScreenRect, &targetScreenRect))
-                {
-                    // SetWindowPos keeps the arranged state that SetWindowPlacement drops.
-                    const RECT adjustedRect = FancyZonesWindowUtils::AdjustRectForSizeWindowToRect(window, rect, workAreaWindow);
-                    ::SetWindowPos(window, nullptr, adjustedRect.left, adjustedRect.top, adjustedRect.right - adjustedRect.left, adjustedRect.bottom - adjustedRect.top, SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOOWNERZORDER);
-                }
-
-                if (snappedNatively)
-                {
-                    // The Shell offers a window for the space next to the snap through the Snap
-                    // Assist flyout, which also takes the foreground away from the window the user
-                    // just dropped. FancyZones has already decided where the window goes, so the
-                    // offer is dismissed. Measured: the Shell can create and show the flyout up to
-                    // a second after the snap, so the wait happens off this thread, and this call
-                    // returns immediately.
-                    NativeSnap::DismissSnapAssistInBackground(window, 1500);
-                }
+            if (snappedNatively)
+            {
+                // The Shell offers a window for the space next to the snap through the Snap
+                // Assist flyout, which also takes the foreground away from the window the user
+                // just dropped. FancyZones has already decided where the window goes, so the
+                // offer is dismissed. Measured: the Shell can create and show the flyout up to
+                // a second after the snap, so the wait happens off this thread, and this call
+                // returns immediately.
+                NativeSnap::DismissSnapAssistInBackground(window, existingIslands, 1500);
             }
         }
 
