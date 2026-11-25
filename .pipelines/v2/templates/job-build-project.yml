@@ -647,6 +647,17 @@ jobs:
         }
       displayName: Remove tests folder before signing
 
+    - task: PowerShell@2
+      displayName: Prepare Core signing policy
+      inputs:
+        targetType: filePath
+        filePath: '$(Build.SourcesDirectory)\.pipelines\prepareCoreSigningPolicy.ps1'
+        arguments: >-
+          -BuildOutputDirectory "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)"
+          -PolicyFile "$(Build.SourcesDirectory)\.pipelines\ESRPSigning_core.json"
+          -OutputPolicyFile "$(Agent.TempDirectory)\ESRPSigning_core.json"
+        pwsh: true
+
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys
@@ -654,7 +665,7 @@ jobs:
         inputs:
           FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
           signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
+          batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
     - template: steps-esrp-signing.yml
