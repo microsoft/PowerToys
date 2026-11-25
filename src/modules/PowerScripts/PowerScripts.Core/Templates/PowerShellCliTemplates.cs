@@ -23,13 +23,17 @@ public sealed record PowerShellCliTemplate(
     [property: JsonIgnore] string? StandardInput = null,
     [property: JsonIgnore] string? OutputScript = null)
 {
-    public string ModuleId => Id switch
-    {
-        "advanced-paste-local" or "advanced-paste-list" or "advanced-paste-transform" => "advanced-paste",
-        "settings-query" or "settings-module-state" => "settings",
-        "power-display-query" or "power-display-adjust" or "power-display-discrete" => "power-display",
-        _ => Id,
-    };
+    private static readonly string[] ModuleIds =
+    [
+        "advanced-paste", "settings", "power-display", "file-locksmith", "fancyzones",
+        "workspaces", "image-resizer", "awake", "light-switch",
+    ];
+
+    public string ModuleId => ModuleIds.FirstOrDefault(module =>
+        Id == module || Id.StartsWith(module + "-", StringComparison.Ordinal)) ?? Id;
+
+    public bool SupportsFileBatch => ModuleId == "image-resizer" ||
+        Id is "file-locksmith-query" or "file-locksmith-wait";
 
     public string Group => ModuleId switch
     {
@@ -91,13 +95,18 @@ public static partial class PowerShellCliTemplates
         command description. File Locksmith process termination, forced monitor power-off,
         elevation controls and arbitrary command passthrough are intentionally not scaffolded.
         Additional custom parameters are available for your own edits; they are not appended
-        to the CLI arguments automatically. The Image Resizer recipe returns new workspace
+        to the CLI arguments automatically. File-producing recipes return new workspace
         files through the PowerScripts files-output contract; the consumer owns saving them.
-        Other recipes return the selected command's text output.
+        Queries and text transformations return text, including intentionally structured JSON.
+        Action-only recipes have no primary output; native status remains diagnostic stderr.
+        Inline image/audio envelopes are not interchangeable with file paths. See
+        CLI-TEMPLATE-SCENARIOS.md in the source tree for supported contracts and review items.
 
         """;
 
-    public static IReadOnlyList<PowerShellCliTemplate> All { get; } = CreateDefinitions();
+    private static readonly IReadOnlyList<PowerShellCliTemplate> LegacyDefinitions = CreateDefinitions();
+
+    public static IReadOnlyList<PowerShellCliTemplate> All { get; } = CreateScenarioCatalogue();
 
     internal static string CreateGuide(string id)
     {
@@ -131,7 +140,7 @@ public static partial class PowerShellCliTemplates
             throw new ArgumentException("Custom parameter names must not conflict with module arguments or the primary input.", nameof(options));
         }
 
-        if (input == "files" && template.Id != "image-resizer" &&
+        if (input == "files" && !template.SupportsFileBatch &&
             (options.MinFiles != 1 || options.MaxFiles > 1))
         {
             throw new ArgumentException("This CLI template accepts exactly one selected file.", nameof(options));
@@ -141,7 +150,7 @@ public static partial class PowerShellCliTemplates
         {
             Parameters = definitions.Where(parameter => bindings[parameter.Name].Source == "parameter").Concat(options.Parameters ?? []).ToArray(),
             Description = string.IsNullOrWhiteSpace(options.Description) ? template.Description : options.Description,
-            MaxFiles = input == "files" && template.Id != "image-resizer" && options.MaxFiles == 0 ? 1 : options.MaxFiles,
+            MaxFiles = input == "files" && !template.SupportsFileBatch && options.MaxFiles == 0 ? 1 : options.MaxFiles,
         };
     }
 
@@ -152,12 +161,13 @@ public static partial class PowerShellCliTemplates
     {
         var template = Get(id);
         var capabilities = new List<string> { "fileRead", HostCliBroker.Capability };
-        if (template.Output == "files" || id is "advanced-paste-transform" or "fancyzones" or "workspaces" or "light-switch" or "settings-module-state")
+        if (template.Output == "files" || id is "advanced-paste-transform" or "fancyzones" or "workspaces" or "light-switch" or "settings-module-state" ||
+            (template.Output == "none" && template.ModuleId is "settings" or "fancyzones" or "workspaces" or "light-switch" or "power-display"))
         {
             capabilities.Add("fileWrite");
         }
 
-        if (id == "advanced-paste-transform")
+        if (id == "advanced-paste-transform" || id.StartsWith("advanced-paste-ai-", StringComparison.Ordinal))
         {
             capabilities.Add("network");
         }
@@ -286,7 +296,7 @@ public static partial class PowerShellCliTemplates
     }
 
     internal static PowerShellCliTemplate Get(string? id) =>
-        All.SingleOrDefault(template => string.Equals(template.Id, id, StringComparison.Ordinal))
+        All.Concat(LegacyDefinitions).FirstOrDefault(template => string.Equals(template.Id, id, StringComparison.Ordinal))
         ?? throw new ArgumentException("Choose a known module CLI content template.", nameof(id));
 
     private static string Quote(string value) => "'" + value.Replace("'", "''", StringComparison.Ordinal) + "'";

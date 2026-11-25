@@ -31,6 +31,9 @@ public sealed class PowerScriptOperationTemplate
     [JsonPropertyName("output")]
     public string Output { get; set; }
 
+    [JsonPropertyName("supportsFileBatch")]
+    public bool SupportsFileBatch { get; set; }
+
     [JsonPropertyName("inputArgument")]
     public PowerScriptOperationTemplateParameter InputArgument { get; set; }
 

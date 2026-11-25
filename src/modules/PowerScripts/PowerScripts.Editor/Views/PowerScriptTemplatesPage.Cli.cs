@@ -63,7 +63,7 @@ public sealed partial class PowerScriptTemplatesPage
         if (cli.Input == "files")
         {
             MinimumFilesNumberBox.Value = 1;
-            MaximumFilesNumberBox.Value = cli.Id == "image-resizer" ? 0 : 1;
+            MaximumFilesNumberBox.Value = cli.SupportsFileBatch ? 0 : 1;
         }
 
         if (!_cliDrafts.TryGetValue(cli.Id, out var draft))

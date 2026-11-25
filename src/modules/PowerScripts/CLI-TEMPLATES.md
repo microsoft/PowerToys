@@ -3,23 +3,23 @@
 ## Editable PowerShell CLI content
 
 In **My scripts**, **Create Script** opens one creation page directly, without a
-creation menu. Its **Script type** selector offers **General script** or
-**PowerToys module script**. Module scripts use PowerShell and offer a
+creation menu. Its runtime selector offers PowerShell, Python or
+**PowerToys CLI calling**. CLI recipes use PowerShell and offer a
 **PowerToys module** dropdown followed by a **Module action** dropdown containing
 only that module's CLI recipes. The module-script choice creates
 a script that invokes an existing installed PowerToys module; it does not
 reimplement that module. This is distinct
-from the data-only **Restricted PowerToys operation (no script code)** creation form below. Python continues
+from the data-only **Restricted PowerToys operation (no script code)** mechanism below. Python continues
 to offer general script content; the Host also rejects CLI content with a Python runtime.
-The module-script form has a secondary **Create a restricted operation instead
-(no script code)** link to the dedicated restricted-operation form. Back returns
-to script creation; restricted operations are not a third script type.
+The duplicate restricted-operation creation choice is no longer exposed by
+**New script**. Existing restricted-operation packages remain supported.
 
-The CLI catalogue currently has 14 recipes covering Advanced Paste (local text transforms,
-discovery and full file transforms),
-File Locksmith (query only), FancyZones (queries, layouts, hotkeys and UI),
-Workspaces (list/launch), Image Resizer, Awake, Light Switch, Settings, and Power Display
-(queries, continuous adjustments, color temperature, input source and orientation).
+The current CLI catalogue separates queries/text transforms, action-only commands,
+and generated-file results across nine modules. The authoritative
+[scenario matrix](CLI-TEMPLATE-SCENARIOS.md) records every supported functionality,
+native flag, input/output contract and deliberate exclusion/review case.
+The original 14 recipe IDs retain their original contracts for saved scripts;
+mixed-purpose legacy recipes are no longer offered for new creation.
 The module-call form offers three value sources for each argument:
 
 - **Fixed value** saves a typed value in the reviewed script and descriptor, not a runtime parameter.
@@ -35,8 +35,9 @@ The form infers the primary input contract and updates consumer compatibility.
 Several arguments can use the same primary input, but text and files cannot be
 mixed: a PowerScript has one primary input. A module's input-file argument can
 instead be a fixed path or a named file-picker parameter, producing a no-primary-input
-script unless another argument uses input. Image Resizer accepts a selected-file
-batch through primary input; a fixed/runtime file path identifies one file.
+script unless another argument uses input. Image Resizer and File Locksmith
+query/wait recipes accept selected-file batches through primary input;
+a fixed/runtime file path identifies one file.
 Primary input and file-picker parameters identify the current caller's files.
 The approved host recipe uses the original paths, not isolated substitutes.
 
@@ -51,8 +52,10 @@ host execution. With MXC off, the generated script's literal selects the root.
 Arguments use `ProcessStartInfo.ArgumentList`,
 not shell command interpolation; native stderr and nonzero exits remain failures.
 No CLI is run during creation, and no trust, runtime, sandbox or isolation setting
-is changed. CLI text is returned as text; Image Resizer instead returns a standard
-files-output envelope containing its generated images.
+is changed. Queries/text transforms return text, including intentional JSON.
+Action-only recipes return no primary data. Image Resizer and file-producing
+Advanced Paste recipes return validated files-output envelopes; native
+status/progress is diagnostic stderr rather than a file or action result.
 
 Supported CLI templates automatically include the scoped host recipe permission;
 there is no separate allowlist toggle or MXC policy change. The creation page uses
@@ -203,7 +206,7 @@ Enabling a module also does not initialize all of its persisted data. For exampl
 FancyZones `get-layouts` fails if `layout-templates.json` has never been saved;
 this is separate from the module-not-running and sandbox-compatibility errors.
 
-### Approved host recipe checks
+### Historical approved host recipe checks (original 14 recipes)
 
 The full-MXC broker matrix verifies real host Settings state, Advanced Paste
 action/provider discovery and local/full plain-text/Markdown/JSON transforms,
@@ -307,13 +310,9 @@ exposed parameters:
   "runtime": "powershell",
   "input": "none",
   "output": "text",
-  "cliContent": "fancyzones",
+  "cliContent": "fancyzones-query",
   "cliBindings": {
-    "Command": { "source": "fixed", "value": "get-layouts" },
-    "Layout": { "source": "fixed", "value": "" },
-    "Monitor": { "source": "parameter" },
-    "AllMonitors": { "source": "fixed", "value": false },
-    "Hotkey": { "source": "fixed", "value": 1 }
+    "Command": { "source": "fixed", "value": "get-layouts" }
   }
 }
 ```
@@ -338,9 +337,9 @@ PowerScripts owns the built-in operation catalogue and execution. Keyboard Manag
 Command Palette and other consumers discover the resulting ordinary PowerScripts.
 There is no separate Keyboard Manager CLI action type, command catalogue or binding store.
 
-In **My scripts**, choose **Create Script**, then **PowerToys module script**,
-and follow **Create a restricted operation instead (no script code)**.
-This opens a dedicated compact form with
+Existing restricted-operation packages and the Host operation-template APIs
+remain supported. New script now opens normal editable creation directly,
+without a duplicate restricted-operation entry. The retained dedicated form uses
 two-level **Module** and **Operation** selection, friendly parameter fields, a script
 name and **Test run** at the bottom of the form.
 It does not ask users to edit runtime names, parameter keys, schemas or JSON files.

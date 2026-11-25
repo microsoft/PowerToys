@@ -333,11 +333,158 @@ public sealed class PowerShellCliTemplateTests
         Assert.AreEqual(0, process.ExitCode, stdout.GetAwaiter().GetResult() + stderr.GetAwaiter().GetResult());
     }
 
+    [DataTestMethod]
+    [DataRow("fancyzones", "none", "text")]
+    [DataRow("workspaces", "none", "text")]
+    [DataRow("light-switch", "none", "text")]
+    [DataRow("awake", "none", "text")]
+    [DataRow("settings-module-state", "none", "text")]
+    [DataRow("power-display-query", "none", "text")]
+    [DataRow("power-display-adjust", "none", "text")]
+    [DataRow("power-display-discrete", "none", "text")]
+    [DataRow("advanced-paste-transform", "files", "text")]
+    [DataRow("file-locksmith", "files", "text")]
+    [DataRow("image-resizer", "files", "files")]
+    public void RetiredRecipesKeepExistingSavedContracts(string id, string input, string output)
+    {
+        var created = ScriptTemplates.Create(_root, new("Existing " + id, Input: input, Output: output,
+            CliContent: id, CliBindings: FixedDefaults(id)));
+        var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
+        Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
+        Assert.AreEqual(id, manifest.HostCli!.Id);
+        Assert.IsFalse(PowerShellCliTemplates.All.Any(template => template.Id == id), "Mixed legacy contracts must not be offered for new creation.");
+    }
+
+    [DataTestMethod]
+    [DataRow("advanced-paste-file-result", false)]
+    [DataRow("advanced-paste-file-result", true)]
+    [DataRow("advanced-paste-text-file", false)]
+    [DataRow("advanced-paste-text-file", true)]
+    [DataRow("advanced-paste-html-file", false)]
+    [DataRow("advanced-paste-html-file", true)]
+    [DataRow("advanced-paste-ai-text-file", false)]
+    [DataRow("advanced-paste-ai-text-file", true)]
+    [DataRow("advanced-paste-ai-files-file", false)]
+    [DataRow("advanced-paste-ai-files-file", true)]
+    public void GeneratedFileResultsRequireAFileAndKeepNativeProgressOffStdout(string id, bool missing)
+    {
+        var result = RunGeneratedFixture(id, $$"""
+            $fixture = & ([ScriptBlock]::Create($builder + '; @{ arguments = $__powerscriptArguments.ToArray(); file = $__powerscriptResultFile }'))
+            if ($fixture.arguments -contains '--stdout' -or $fixture.arguments -contains '--output-clipboard') { throw 'File recipes must use an explicit file output.' }
+            $__powerscriptResultFile = $fixture.file
+            $__powerscriptOutput = 'native progress, not primary output'
+            if (-not ${{(missing ? "true" : "false")}}) { [IO.File]::WriteAllText($__powerscriptResultFile, 'fixture output') }
+            try {
+                & ([ScriptBlock]::Create($env:CLI_TEMPLATE_OUTPUT_CODE))
+                if (${{(missing ? "true" : "false")}}) { throw 'Missing output was accepted.' }
+            } catch {
+                if (-not ${{(missing ? "true" : "false")}} -or $_.Exception.Message -notlike '*did not produce the requested output file*') { throw }
+            }
+            """);
+        StringAssert.Contains(result.Stderr, "native progress, not primary output");
+        if (missing)
+        {
+            Assert.AreEqual(string.Empty, result.Stdout, "Missing output cannot produce a success envelope.");
+        }
+        else
+        {
+            using var document = JsonDocument.Parse(result.Stdout);
+            var files = document.RootElement.GetProperty("files").EnumerateArray().Select(file => file.GetString()!).ToArray();
+            Assert.AreEqual(1, files.Length);
+            Assert.IsTrue(File.Exists(files[0]));
+            Assert.AreEqual("fixture output", File.ReadAllText(files[0]));
+            Assert.IsTrue(Path.GetFullPath(files[0]).StartsWith(_root + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow("1, 2,1", true)]
+    [DataRow("1,,2", false)]
+    [DataRow("1,0", false)]
+    [DataRow("1,--confirm-power-off", false)]
+    public void DisplayBatchesRemainOneValidatedNativeArgument(string monitors, bool valid)
+    {
+        var result = RunGeneratedFixture("power-display-adjust-action", $$"""
+            $MonitorNumbers = $env:CLI_TEMPLATE_MONITORS
+            try {
+                $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
+                if (-not ${{(valid ? "true" : "false")}}) { throw 'Invalid monitor batch was accepted.' }
+                if ($arguments.Count -ne 5 -or $arguments[1] -cne '--monitor-number' -or $arguments[2] -cne '1,2,1' -or $arguments[3] -cne '--brightness') { throw 'Batch targets and setting flags must remain separate native arguments.' }
+            } catch {
+                if (${{(valid ? "true" : "false")}} -or $_.Exception.Message -notlike '*comma-separated positive monitor indices*') { throw }
+            }
+            """, monitors);
+        Assert.AreEqual(string.Empty, result.Stdout);
+    }
+
+    [DataTestMethod]
+    [DataRow("dimensions", "0", "768", true)]
+    [DataRow("dimensions", "0", "0", false)]
+    [DataRow("preset", "invalid ignored width", "invalid ignored height", true)]
+    public void ResizerSupportsAutomaticDimensionsAndPresetsWithoutPassingOriginals(string sizing, string width, string height, bool valid)
+    {
+        var result = RunGeneratedFixture("image-resizer-options", $$"""
+            $Sizing = '{{sizing}}'; $Width = '{{width}}'; $Height = '{{height}}'
+            $JpegQuality = 80; $RemoveMetadata = $true
+            try {
+                $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
+                if (-not ${{(valid ? "true" : "false")}}) { throw 'Zero dimensions were accepted.' }
+                if ($arguments -contains $Files[0]) { throw 'An original file was passed to the CLI.' }
+                if (-not ($arguments -contains '--quality') -or -not ($arguments -contains '--remove-metadata')) { throw 'Resize options were not forwarded.' }
+                if ($Sizing -eq 'preset' -and (($arguments -contains '--width') -or -not ($arguments -contains '--size'))) { throw 'Preset settings were overwritten by dimensions.' }
+                $separator = [Array]::IndexOf($arguments, '--')
+                if ($separator -lt 0 -or $arguments.Count -ne $separator + 2) { throw 'Expected one staged copy after the native argument separator.' }
+                if ([IO.File]::ReadAllText($arguments[-1]) -cne 'original fixture') { throw 'Staged content was not preserved.' }
+            } catch {
+                if (${{(valid ? "true" : "false")}} -or $_.Exception.Message -notlike '*At least one dimension must be positive*') { throw }
+            }
+            if ([IO.File]::ReadAllText($Files[0]) -cne 'original fixture') { throw 'Original content changed.' }
+            """);
+        Assert.AreEqual(string.Empty, result.Stdout);
+    }
+
+    [DataTestMethod]
+    [DataRow("file-locksmith-query", "files", "text")]
+    [DataRow("file-locksmith-wait", "files", "none")]
+    public void FileLocksmithBatchesCreateCompatiblePackagesAndNeverTerminateProcesses(string id, string input, string output)
+    {
+        var created = ScriptTemplates.Create(_root, new("Batch " + id, Input: input, Output: output, CliContent: id, MaxFiles: 0));
+        var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
+        Assert.IsNull(manifest.Input!.MaxFiles, "Batch input must not be limited to one file.");
+        Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
+        var result = RunGeneratedFixture(id, """
+            $Files = @($Files[0], [IO.Path]::GetDirectoryName($Files[0]))
+            $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
+            if ($arguments -contains '--kill') { throw 'A query/wait must never terminate processes.' }
+            if ($arguments[-2] -cne $Files[0] -or $arguments[-1] -cne $Files[1]) { throw 'Every requested path must remain a separate native argument.' }
+            if ($arguments -contains '--wait' -and $arguments -contains '--json') { throw 'Native wait does not support JSON output.' }
+            """);
+        Assert.AreEqual(string.Empty, result.Stdout);
+    }
+
+    [TestMethod]
+    public void ProfileApplicationUsesThePositiveNumericSelectorWithoutExtraFlags()
+    {
+        var bindings = FixedDefaults("power-display-profile");
+        bindings["ProfileId"] = Fixed(0);
+        Assert.ThrowsException<InvalidDataException>(() => ScriptTemplates.Create(_root,
+            new("Invalid profile", Output: "none", CliContent: "power-display-profile", CliBindings: bindings)));
+        var result = RunGeneratedFixture("power-display-profile", """
+            $ProfileId = 3
+            $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
+            if ($arguments.Count -ne 2 -or $arguments[0] -cne 'apply-profile' -or $arguments[1] -cne '3') { throw 'Profile application requires one numeric selector.' }
+            $__powerscriptOutput = 'profile application status'
+            & ([ScriptBlock]::Create($env:CLI_TEMPLATE_OUTPUT_CODE))
+            """);
+        Assert.AreEqual(string.Empty, result.Stdout, "Action status must not masquerade as primary text.");
+        StringAssert.Contains(result.Stderr, "profile application status");
+    }
+
     private static PowerShellCliBinding Fixed<T>(T value) => new("fixed", JsonSerializer.SerializeToElement(value));
 
     private static Dictionary<string, PowerShellCliBinding> FixedDefaults(string id)
     {
-        var template = PowerShellCliTemplates.All.Single(template => template.Id == id);
+        var template = PowerShellCliTemplates.Get(id);
         var result = template.Parameters.ToDictionary(parameter => parameter.Name, parameter => new PowerShellCliBinding("fixed", parameter.Schema.Default));
         if (template.InputArgument is { } file)
         {
@@ -346,4 +493,52 @@ public sealed class PowerShellCliTemplateTests
 
         return result;
     }
+
+    private (string Stdout, string Stderr) RunGeneratedFixture(string id, string command, string monitors = "")
+    {
+        var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "PowerShell", "7", "pwsh.exe");
+        if (!OperatingSystem.IsWindows() || !File.Exists(executable))
+        {
+            Assert.Inconclusive("Generated recipe fixtures require Windows and PowerShell 7.");
+        }
+
+        var template = PowerShellCliTemplates.Get(id);
+        var created = ScriptTemplates.Create(_root, new("Fixture " + id, Input: template.Input, Output: template.Output, CliContent: id));
+        var input = Path.Combine(_root, "original.txt");
+        File.WriteAllText(input, "original fixture");
+        var body = """
+            $ErrorActionPreference = 'Stop'
+            $generated = [IO.File]::ReadAllText($env:CLI_TEMPLATE_ARGS_ENTRY)
+            $begin = $generated.IndexOf('$__powerscriptArguments =')
+            $end = $generated.IndexOf('$__powerscriptStartInfo =')
+            $builder = $generated.Substring($begin, $end - $begin)
+            $values = ConvertFrom-Json -InputObject $env:CLI_TEMPLATE_DEFAULTS -AsHashtable
+            foreach ($name in $values.Keys) { Set-Variable -Name $name -Value $values[$name] }
+            $Files = @($env:CLI_TEMPLATE_INPUT); $Content = '<p>fixture text</p>'
+            """ + Environment.NewLine + command + Environment.NewLine + "exit 0";
+        var startInfo = new ProcessStartInfo(executable)
+        {
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+        };
+        startInfo.ArgumentList.Add("-NoProfile");
+        startInfo.ArgumentList.Add("-NonInteractive");
+        startInfo.ArgumentList.Add("-EncodedCommand");
+        startInfo.ArgumentList.Add(Convert.ToBase64String(Encoding.Unicode.GetBytes(body)));
+        startInfo.Environment["CLI_TEMPLATE_ARGS_ENTRY"] = created.EntryPath;
+        startInfo.Environment["CLI_TEMPLATE_OUTPUT_CODE"] = template.OutputScript ?? string.Empty;
+        startInfo.Environment["CLI_TEMPLATE_DEFAULTS"] = JsonSerializer.Serialize(template.Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.Schema.Default));
+        startInfo.Environment["CLI_TEMPLATE_INPUT"] = input;
+        startInfo.Environment["CLI_TEMPLATE_MONITORS"] = monitors;
+        startInfo.Environment["POWERSCRIPTS_MXC_WORKSPACE"] = _root;
+        using var process = Process.Start(startInfo)!;
+        var stdout = process.StandardOutput.ReadToEndAsync();
+        var stderr = process.StandardError.ReadToEndAsync();
+        Assert.IsTrue(process.WaitForExit(30_000), "Generated fixture did not finish.");
+        var result = (Stdout: stdout.GetAwaiter().GetResult(), Stderr: stderr.GetAwaiter().GetResult());
+        Assert.AreEqual(0, process.ExitCode, result.Stdout + result.Stderr);
+        return result;
+    }
+
 }
