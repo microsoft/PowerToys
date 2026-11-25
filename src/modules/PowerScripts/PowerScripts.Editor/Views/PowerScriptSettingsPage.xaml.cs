@@ -3,9 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Nodes;
@@ -16,11 +20,14 @@ using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml.Navigation;
 using PowerScripts.Client;
 using PowerScripts.Editor.Helpers;
 using PowerScripts.UI.Helpers;
 using PowerScripts.UI.ViewModels;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace PowerScripts.Editor.Views;
 
@@ -30,6 +37,14 @@ namespace PowerScripts.Editor.Views;
     Justification = "WinUI owns the Page lifecycle. Navigation cancels execution and disposes cancellation and reusable Host clients before replacing the lifetime.")]
 public sealed partial class PowerScriptSettingsPage : Page
 {
+    private const string SettingsIconFolder = "ms-appx:///Assets/Settings/Icons/";
+    private const double WideLayoutMinimumWidth = 1000;
+    private const double SideColumnWidth = 340;
+    private const double BodyColumnSpacing = 24;
+    private const int RecentRunCount = 3;
+
+    private readonly Dictionary<string, BitmapImage> _images = new(StringComparer.OrdinalIgnoreCase);
+
     private NavigationContext _context;
     private bool _isLoading;
     private bool _isRunLoading;
@@ -42,6 +57,12 @@ public sealed partial class PowerScriptSettingsPage : Page
 
     public PowerScriptRunViewModel RunModel { get; } = new();
 
+    public ObservableCollection<PowerScriptPreviewRow> Places { get; } = new();
+
+    public ObservableCollection<PowerScriptPreviewRow> UnavailablePlaces { get; } = new();
+
+    private ObservableCollection<PowerScriptActivityItem> RecentRuns { get; } = new();
+
     public PowerScriptSettingsPage()
     {
         InitializeComponent();
@@ -53,6 +74,13 @@ public sealed partial class PowerScriptSettingsPage : Page
         PowerScriptsViewModel ViewModel,
         PowerScriptListItem Script);
 
+    public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+
+    public static Visibility TextVisibility(string value) => BoolToVisibility(!string.IsNullOrEmpty(value));
+
+    public static Visibility RunInputsVisibility(bool hasTextInput, bool hasFileInput, bool hasNoParameters) =>
+        BoolToVisibility(hasTextInput || hasFileInput || !hasNoParameters);
+
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
         base.OnNavigatedTo(e);
@@ -63,8 +91,10 @@ public sealed partial class PowerScriptSettingsPage : Page
         _pageCancellation = new CancellationTokenSource();
         DataContext = _context.Script;
         _context.Script.PropertyChanged += Script_PropertyChanged;
+        _context.ViewModel.ActivityItems.CollectionChanged += ActivityItems_CollectionChanged;
         UpdateHeaderIcon();
-        UpdateBreadcrumb();
+        UpdateScriptDetails();
+        UpdateRecentRuns();
         UpdateCommands();
     }
 
@@ -75,6 +105,7 @@ public sealed partial class PowerScriptSettingsPage : Page
         _runCancellation?.Cancel();
         ReleaseNavigationCancellation();
         _context.Script.PropertyChanged -= Script_PropertyChanged;
+        _context.ViewModel.ActivityItems.CollectionChanged -= ActivityItems_CollectionChanged;
         RunModel.PropertyChanged -= RunModel_PropertyChanged;
         base.OnNavigatedFrom(e);
     }
@@ -96,7 +127,12 @@ public sealed partial class PowerScriptSettingsPage : Page
         }
     }
 
-    private async void Page_Loaded(object sender, RoutedEventArgs e) => await RefreshMetadataAsync();
+    private async void Page_Loaded(object sender, RoutedEventArgs e)
+    {
+        await RefreshMetadataAsync();
+        _ = LoadRunContractAsync();
+        await RefreshActivityAsync();
+    }
 
     private async void RefreshMetadataButton_Click(object sender, RoutedEventArgs e) => await RefreshMetadataAsync();
 
@@ -121,19 +157,19 @@ public sealed partial class PowerScriptSettingsPage : Page
                 DataContext = current;
                 current.PropertyChanged += Script_PropertyChanged;
                 UpdateHeaderIcon();
-                UpdateBreadcrumb();
+                UpdateScriptDetails();
+                UpdateRecentRuns();
             }
 
             var descriptor = JsonNode.Parse(await File.ReadAllTextAsync(entryPath + ".tool.json")) as JsonObject
                 ?? throw new InvalidDataException("Metadata must be a JSON object.");
-            MetadataSections.ItemsSource = PowerScriptMetadataDetails.Create(descriptor, ResourceLoaderInstance.ResourceLoader.GetString, Path.GetExtension(entryPath));
             MetadataText.Text = descriptor.ToJsonString(new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
             using (var reader = new StreamReader(entryPath))
             {
                 var preview = new char[(256 * 1024) + 1];
                 var count = await reader.ReadBlockAsync(preview.AsMemory());
                 SourceText.Text = count == preview.Length
-                    ? ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_DetailsSourceUnavailable")
+                    ? Resource("PowerScripts_DetailsSourceUnavailable")
                     : new string(preview, 0, count);
             }
 
@@ -148,7 +184,6 @@ public sealed partial class PowerScriptSettingsPage : Page
         }
         catch (Exception ex)
         {
-            MetadataSections.ItemsSource = Array.Empty<PowerScriptMetadataSection>();
             MetadataText.Text = string.Empty;
             SourceText.Text = string.Empty;
             ShowError(ex);
@@ -160,13 +195,21 @@ public sealed partial class PowerScriptSettingsPage : Page
         }
     }
 
-    public static Visibility BoolToVisibility(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
+    private async Task RefreshActivityAsync()
+    {
+        try
+        {
+            await _context.ViewModel.RefreshActivityAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Unable to refresh PowerScripts activity: {ex.Message}");
+        }
+    }
 
     private async void RunCommandButton_Click(object sender, RoutedEventArgs e)
     {
-        DetailsTabs.SelectedItem = OverviewTab;
-        RunExpander.Visibility = Visibility.Visible;
-        RunExpander.IsExpanded = true;
+        RunCard.StartBringIntoView();
         if (!RunModel.IsRunning)
         {
             await LoadRunContractAsync();
@@ -316,6 +359,11 @@ public sealed partial class PowerScriptSettingsPage : Page
 
             UpdateCommands();
         }
+
+        if (_isActive)
+        {
+            await RefreshActivityAsync();
+        }
     }
 
     private void CancelRunButton_Click(object sender, RoutedEventArgs e)
@@ -388,31 +436,45 @@ public sealed partial class PowerScriptSettingsPage : Page
         {
             UpdateCommands();
         }
+
+        ResultPlaceholder.Visibility = BoolToVisibility(!RunModel.HasOutput && !RunModel.HasDiagnostics && !RunModel.HasFailure);
     }
 
     private void UpdateCommands()
     {
         var canManage = _isActive && !_isLoading && !_isRunLoading && !RunModel.IsRunning;
-        MetadataCommands.IsEnabled = canManage;
         HeroEditScriptButton.IsEnabled = canManage;
         CopyAgentInstructionsButton.IsEnabled = canManage;
+        MoreButton.IsEnabled = canManage;
+        CodeEditButton.IsEnabled = canManage;
         RunCommandButton.IsEnabled = canManage && _context?.ViewModel.IsEnabled == true && !_context.Script.HasConfigurationErrors;
     }
 
     private static string Resource(string name) => PowerScriptsViewModel.GetResourceString(name);
 
+    private static string Format(string name, object value) => string.Format(CultureInfo.CurrentCulture, Resource(name), value);
+
+    private void HeroEditScriptButton_Click(SplitButton sender, SplitButtonClickEventArgs args) => OpenEditor(_context.Script.EntryFullPath, isMetadata: false);
+
     private void EditMetadataButton_Click(object sender, RoutedEventArgs e) => OpenEditor(_context.Script.EntryFullPath + ".tool.json", isMetadata: true);
 
-    private void DetailsTabs_SelectionChanged(SelectorBar sender, SelectorBarSelectionChangedEventArgs args)
+    private void CodeEditButton_Click(object sender, RoutedEventArgs e)
     {
-        if (OverviewPanel is not null)
-        {
-            OverviewPanel.Visibility = sender.SelectedItem == OverviewTab ? Visibility.Visible : Visibility.Collapsed;
-            CodePanel.Visibility = sender.SelectedItem == CodeTab ? Visibility.Visible : Visibility.Collapsed;
-        }
+        var isMetadata = CodeSwitch.SelectedIndex == 1;
+        OpenEditor(isMetadata ? _context.Script.EntryFullPath + ".tool.json" : _context.Script.EntryFullPath, isMetadata);
     }
 
-    private void EditScriptButton_Click(object sender, RoutedEventArgs e) => OpenEditor(_context.Script.EntryFullPath, isMetadata: false);
+    private void CodeSwitch_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (SourceText is null || MetadataText is null)
+        {
+            return;
+        }
+
+        var isMetadata = CodeSwitch.SelectedIndex == 1;
+        SourceText.Visibility = BoolToVisibility(!isMetadata);
+        MetadataText.Visibility = BoolToVisibility(isMetadata);
+    }
 
     private void OpenEditor(string path, bool isMetadata)
     {
@@ -429,15 +491,201 @@ public sealed partial class PowerScriptSettingsPage : Page
 
     private void Script_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(PowerScriptListItem.Name))
+        switch (e.PropertyName)
         {
-            UpdateBreadcrumb();
+            case nameof(PowerScriptListItem.HasIcon):
+                UpdateHeaderIcon();
+                break;
+            case nameof(PowerScriptListItem.Io):
+            case nameof(PowerScriptListItem.Input):
+            case nameof(PowerScriptListItem.Capabilities):
+            case nameof(PowerScriptListItem.Trusted):
+            case nameof(PowerScriptListItem.EntryFullPath):
+            case null:
+            case "":
+                UpdateScriptDetails();
+                break;
+        }
+    }
+
+    private void ActivityItems_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e) => UpdateRecentRuns();
+
+    private void UpdateScriptDetails()
+    {
+        UpdatePlaces();
+        UpdateSafety();
+        UpdateFiles();
+    }
+
+    private void UpdatePlaces()
+    {
+        var script = _context.Script;
+        var viewModel = _context.ViewModel;
+        var input = script.Io?.Input?.ToLowerInvariant() ?? string.Empty;
+        var output = script.Io?.Output?.ToLowerInvariant() ?? string.Empty;
+        var hasInput = input != "none";
+        var knownIo = IsKnownIo(input) && IsKnownIo(output);
+        var available = new List<PowerScriptPreviewRow>();
+        var unavailable = new List<PowerScriptPreviewRow>();
+
+        void AddPlace(string id, string icon, PowerScriptsViewModel.PowerScriptConsumerItem consumer, bool eligible, Func<string> detail, string whyKey)
+        {
+            eligible &= knownIo;
+            var rows = eligible ? available : unavailable;
+            rows.Add(new PowerScriptPreviewRow
+            {
+                Title = Resource("PowerScripts_NewScript_Place_" + id),
+                Detail = eligible ? detail() : Resource("PowerScripts_NewScript_" + whyKey),
+                Icon = GetImage(SettingsIconFolder + icon + ".png"),
+                IsOff = eligible && (!viewModel.IsEnabled || !consumer.IsEnabled),
+                HasDivider = rows.Count > 0,
+            });
         }
 
-        if (e.PropertyName == nameof(PowerScriptListItem.HasIcon))
+        AddPlace(
+            "AdvancedPaste",
+            "AdvancedPaste",
+            viewModel.AdvancedPasteConsumer,
+            hasInput && output != "none",
+            () => Format("PowerScripts_NewScript_PlaceDetail_AdvancedPaste", Resource("PowerScripts_NewScript_TakesWord_" + input)),
+            hasInput ? "PlaceWhy_AdvancedPasteOutput" : "PlaceWhy_AdvancedPaste");
+        AddPlace(
+            "KeyboardManager",
+            "KeyboardManager",
+            viewModel.KeyboardManagerConsumer,
+            !hasInput,
+            () => Resource("PowerScripts_NewScript_PlaceDetail_KeyboardManager"),
+            "PlaceWhy_KeyboardManager");
+        AddPlace(
+            "CommandPalette",
+            "CmdPal",
+            viewModel.CommandPaletteConsumer,
+            !hasInput && output is "none" or "text",
+            () => Resource("PowerScripts_NewScript_PlaceDetail_CommandPalette"),
+            hasInput ? "PlaceWhy_CommandPalette" : "PlaceWhy_CommandPaletteOutput");
+        AddPlace(
+            "FileExplorer",
+            "FileExplorerPreview",
+            viewModel.FileExplorerConsumer,
+            input is "files" or "image" or "audio",
+            () => Format("PowerScripts_NewScript_PlaceDetail_FileExplorer", ExplorerExtensions(script, input)),
+            "PlaceWhy_FileExplorer");
+
+        ReplaceRows(Places, available);
+        ReplaceRows(UnavailablePlaces, unavailable);
+        PlacesEmpty.Visibility = BoolToVisibility(Places.Count == 0);
+        UnavailableExpander.Visibility = BoolToVisibility(UnavailablePlaces.Count > 0);
+    }
+
+    private static bool IsKnownIo(string value) => value is "none" or "text" or "files" or "image" or "audio";
+
+    private static string ExplorerExtensions(PowerScriptListItem script, string input)
+    {
+        var extensions = script.Input?.Extensions;
+        if (input != "files" || extensions is not { Count: > 0 } || extensions.Contains("*"))
         {
-            UpdateHeaderIcon();
+            return string.Empty;
         }
+
+        return string.Join(", ", extensions) + " ";
+    }
+
+    private static void ReplaceRows(ObservableCollection<PowerScriptPreviewRow> target, List<PowerScriptPreviewRow> rows)
+    {
+        target.Clear();
+        foreach (var row in rows)
+        {
+            target.Add(row);
+        }
+    }
+
+    private BitmapImage GetImage(string uri)
+    {
+        if (!_images.TryGetValue(uri, out var image))
+        {
+            image = new BitmapImage(new Uri(uri));
+            _images.Add(uri, image);
+        }
+
+        return image;
+    }
+
+    private void UpdateSafety()
+    {
+        var script = _context.Script;
+        TrustIcon.Glyph = script.Trusted ? "\uEA18" : "\uE7BA";
+        TrustIcon.Foreground = (Brush)Application.Current.Resources[script.Trusted ? "SystemFillColorSuccessBrush" : "SystemFillColorCautionBrush"];
+        TrustText.Text = Resource(script.Trusted ? "PowerScripts_Script_Allowed" : "PowerScripts_Script_NotAllowed");
+
+        var capabilities = script.Capabilities ?? new List<string>();
+        CapabilitiesText.Text = string.Join(", ", capabilities.Select(CapabilityDisplay));
+        CapabilitiesRow.Visibility = BoolToVisibility(capabilities.Count > 0);
+    }
+
+    private static string CapabilityDisplay(string capability) => capability switch
+    {
+        "fileRead" => Resource("PowerScripts_DetailsFileRead"),
+        "fileWrite" => Resource("PowerScripts_DetailsFileWrite"),
+        "network" => Resource("PowerScripts_DetailsNetwork"),
+        "ui" => Resource("PowerScripts_DetailsUi"),
+        "hostPowerToysCli" => Resource("PowerScripts_DetailsHostCli"),
+        _ => capability,
+    };
+
+    private void UpdateFiles()
+    {
+        var name = Path.GetFileName(_context.Script.EntryFullPath);
+        ScriptFileItem.Content = name;
+        FileNames.Text = string.IsNullOrEmpty(name) ? string.Empty : name + Environment.NewLine + name + ".tool.json";
+    }
+
+    private void UpdateRecentRuns()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        var runs = _context.ViewModel.ActivityItems
+            .Where(item => string.Equals(item.ScriptId, _context.Script.Id, StringComparison.OrdinalIgnoreCase))
+            .Take(RecentRunCount)
+            .ToList();
+        if (!RecentRuns.SequenceEqual(runs))
+        {
+            RecentRuns.Clear();
+            foreach (var run in runs)
+            {
+                RecentRuns.Add(run);
+            }
+        }
+
+        SeeAllButton.Visibility = BoolToVisibility(runs.Count > 0);
+        RecentEmpty.Visibility = BoolToVisibility(runs.Count == 0);
+    }
+
+    private void SeeAll_Click(object sender, RoutedEventArgs e) => App.MainWindow.ShowActivity();
+
+    private void CopyPath_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var package = new DataPackage();
+            package.SetText(_context.Script.EntryFullPath);
+            Clipboard.SetContent(package);
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex);
+        }
+    }
+
+    private void BodyGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        var wide = e.NewSize.Width >= WideLayoutMinimumWidth;
+        SideColumn.Width = new GridLength(wide ? SideColumnWidth : 0);
+        BodyGrid.ColumnSpacing = wide ? BodyColumnSpacing : 0;
+        Grid.SetRow(SidePanel, wide ? 0 : 1);
+        Grid.SetColumn(SidePanel, wide ? 1 : 0);
     }
 
     private void UpdateHeaderIcon() =>
@@ -449,21 +697,8 @@ public sealed partial class PowerScriptSettingsPage : Page
         _context.Script.MarkIconUnavailable();
     }
 
-    private void UpdateBreadcrumb() =>
-        ScriptBreadcrumb.ItemsSource = new[] { "PowerScripts", _context.Script.Name };
-
-    private void BackButton_Click(object sender, RoutedEventArgs e) => EditorNavigation.GoBack(Frame);
-
     private void BackKeyboardAccelerator_Invoked(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs args) =>
         args.Handled = EditorNavigation.GoBack(Frame);
-
-    private void ScriptBreadcrumb_ItemClicked(BreadcrumbBar sender, BreadcrumbBarItemClickedEventArgs args)
-    {
-        if (args.Index == 0)
-        {
-            EditorNavigation.GoBack(Frame);
-        }
-    }
 
     private void OpenScriptFolderButton_Click(object sender, RoutedEventArgs e)
     {

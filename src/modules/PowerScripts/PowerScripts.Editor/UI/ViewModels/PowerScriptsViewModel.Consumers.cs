@@ -112,6 +112,17 @@ public partial class PowerScriptsViewModel
         }
     }
 
+    private void ApplyScriptPlaces()
+    {
+        foreach (var script in Scripts)
+        {
+            script.SetEnabledPlaces(
+                _isEnabled && AdvancedPasteConsumer.IsEnabled,
+                _isEnabled && CommandPaletteConsumer.IsEnabled,
+                _isEnabled && FileExplorerConsumer.IsEnabled);
+        }
+    }
+
     private async Task UpdateConsumersAsync(string[] arguments)
     {
         if (_consumerSettingsBusy)
@@ -138,6 +149,7 @@ public partial class PowerScriptsViewModel
             FileExplorerConsumer.Update(fileExplorer);
             CommandPaletteConsumer.Update(commandPalette);
             _consumerSettingsLoaded = true;
+            ApplyScriptPlaces();
             OnPropertyChanged(nameof(IsEnabled));
             OnPropertyChanged(nameof(ExecutionSettingsSummary));
             OnPropertyChanged(nameof(IsPowerScriptsPolicyControlled));
@@ -278,7 +290,7 @@ public partial class PowerScriptsViewModel
             NotifyCatalogueStatus();
         }
 
-        private bool IsApplicable(PowerScriptListItem script)
+        internal static bool AppliesTo(string consumerId, PowerScriptListItem script)
         {
             var input = script.Io?.Input?.ToLowerInvariant();
             var output = script.Io?.Output?.ToLowerInvariant();
@@ -288,7 +300,7 @@ public partial class PowerScriptsViewModel
                 return false;
             }
 
-            return Id switch
+            return consumerId switch
             {
                 "advanced-paste" => input != "none" && output != "none",
                 "keyboard-manager" => input == "none",
@@ -297,6 +309,8 @@ public partial class PowerScriptsViewModel
                 _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
             };
         }
+
+        private bool IsApplicable(PowerScriptListItem script) => AppliesTo(Id, script);
 
         private void NotifyCatalogueStatus()
         {

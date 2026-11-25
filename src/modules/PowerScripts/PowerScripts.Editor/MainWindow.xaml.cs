@@ -73,9 +73,13 @@ public sealed partial class MainWindow : Window
         UpdateBackButton();
     }
 
+    internal void ShowActivity() => Navigation.SelectedItem = ActivityTab;
+
     internal void UpdateBackButton()
     {
-        EditorTitleBar.IsBackButtonEnabled = TabContent.Content is Frame { CanGoBack: true } frame &&
+        var frame = TabContent.Content as Frame;
+        EditorTitleBar.IsBackButtonVisible = frame is { CanGoBack: true };
+        EditorTitleBar.IsBackButtonEnabled = frame is { CanGoBack: true } &&
             frame.Content is not PowerScriptTemplatesPage { IsCreating: true };
         EditorSearch.IsEnabled = _frames[0].Content is not PowerScriptTemplatesPage;
     }
@@ -88,7 +92,10 @@ public sealed partial class MainWindow : Window
         }
     }
 
-    private void TitleBar_PaneToggleRequested(TitleBar sender, object args) => Navigation.IsPaneOpen = !Navigation.IsPaneOpen;
+    private void SearchAccelerator_Invoked(Microsoft.UI.Xaml.Input.KeyboardAccelerator sender, Microsoft.UI.Xaml.Input.KeyboardAcceleratorInvokedEventArgs args)
+    {
+        args.Handled = EditorSearch.IsEnabled && EditorSearch.Focus(FocusState.Keyboard);
+    }
 
     private void Search_TextChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
     {

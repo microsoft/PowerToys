@@ -11,7 +11,6 @@ using System.Text.Json.Nodes;
 using ManagedCommon;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using PowerScripts.Client;
 using PowerScripts.UI.ViewModels;
 
 namespace PowerScripts.Editor.Views;
@@ -25,9 +24,6 @@ public sealed partial class PowerScriptTemplatesPage
 
     private string CliInput => CliArguments.Where(argument => argument.SourceIndex == 1)
         .Select(argument => argument.InputType).FirstOrDefault() ?? "none";
-
-    private string[] SelectedConsumers => ConsumerChoices.Children.OfType<CheckBox>()
-        .Where(choice => choice.IsChecked == true).Select(choice => (string)choice.Tag).ToArray();
 
     private static IEnumerable<string> PossibleCliInputs(PowerScriptOperationTemplate template)
     {
@@ -54,7 +50,7 @@ public sealed partial class PowerScriptTemplatesPage
         foreach (var argument in CliArguments)
         {
             argument.PropertyChanged -= CliArgument_PropertyChanged;
-            argument.Value.PropertyChanged -= CliArgument_PropertyChanged;
+            argument.Value.PropertyChanged -= CliValue_PropertyChanged;
         }
 
         CliArguments.Clear();
@@ -75,7 +71,7 @@ public sealed partial class PowerScriptTemplatesPage
             var arguments = cli.Parameters.Select(parameter => new PowerScriptCliArgument(parameter, useInput: false)).ToList();
             if (cli.InputArgument is { } input)
             {
-                arguments.Insert(0, new PowerScriptCliArgument(input, PowerScriptConsumerGuidance.Allows(SelectedConsumers, cli.Input, cli.Output)));
+                arguments.Insert(0, new PowerScriptCliArgument(input, useInput: true));
             }
 
             draft = arguments;
@@ -86,15 +82,34 @@ public sealed partial class PowerScriptTemplatesPage
         {
             CliArguments.Add(argument);
             argument.PropertyChanged += CliArgument_PropertyChanged;
-            argument.Value.PropertyChanged += CliArgument_PropertyChanged;
+            argument.Value.PropertyChanged += CliValue_PropertyChanged;
         }
     }
 
+    private void CliValue_PropertyChanged(object sender, PropertyChangedEventArgs e) => UpdateCreateButton();
+
     private void CliArgument_PropertyChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (sender is PowerScriptCliArgument && e.PropertyName != nameof(PowerScriptCliArgument.SourceIndex))
+        if (_syncingCliSources || e.PropertyName != nameof(PowerScriptCliArgument.SourceIndex) || sender is not PowerScriptCliArgument changed)
         {
             return;
+        }
+
+        // One script can only take one kind of input, so picking a new one releases the others.
+        if (changed.IsInput)
+        {
+            _syncingCliSources = true;
+            try
+            {
+                foreach (var other in CliArguments.Where(argument => argument != changed && argument.IsInput && argument.InputType != changed.InputType).ToList())
+                {
+                    other.SourceIndex = 0;
+                }
+            }
+            finally
+            {
+                _syncingCliSources = false;
+            }
         }
 
         UpdateOptions();
@@ -116,12 +131,6 @@ public sealed partial class PowerScriptTemplatesPage
         if (CliArguments.Where(argument => argument.SourceIndex == 1).Select(argument => argument.InputType).Distinct(StringComparer.Ordinal).Count() > 1)
         {
             error = PowerScriptsViewModel.GetResourceString("PowerScripts_CliArgumentMixedInput");
-            return false;
-        }
-
-        if (!PowerScriptConsumerGuidance.Allows(SelectedConsumers, CliInput, SelectedCliContent.Output))
-        {
-            error = PowerScriptsViewModel.GetResourceString("PowerScripts_CliArgumentIncompatible");
             return false;
         }
 
