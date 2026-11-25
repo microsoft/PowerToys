@@ -4,6 +4,7 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 using Windows.UI;
 
@@ -50,18 +51,23 @@ public static class ScriptTileTint
         var dark = tile.ActualTheme == ElementTheme.Dark;
         var hue = GetKind(tile) switch
         {
-            "text" or "blue" => dark ? 0x60CDFFu : 0x0067C0u,
-            "image" or "teal" => dark ? 0x5FD8D8u : 0x00787Au,
-            "files" or "purple" => dark ? 0xC7A4FFu : 0x7A4FBFu,
-            "audio" or "pink" => dark ? 0xF19CE6u : 0xB4009Eu,
-            "operation" or "orange" => dark ? 0xFFB36Bu : 0xC25400u,
-            "green" => dark ? 0x6CCB5Fu : 0x0F7B0Fu,
-            _ => dark ? 0xA9B8C8u : 0x4A5868u,
+            "text" or "blue" => dark ? "#60CDFF" : "#0067C0",
+            "image" or "teal" => dark ? "#5FD8D8" : "#00787A",
+            "files" or "purple" => dark ? "#C7A4FF" : "#7A4FBF",
+            "audio" or "pink" => dark ? "#F19CE6" : "#B4009E",
+            "operation" or "orange" => dark ? "#FFB36B" : "#C25400",
+            "green" => dark ? "#6CCB5F" : "#0F7B0F",
+            _ => dark ? "#A9B8C8" : "#4A5868",
         };
 
-        var background = new SolidColorBrush(FromRgb(hue, 0x21));
-        var border = new SolidColorBrush(FromRgb(hue, 0x2E));
-        var foreground = new SolidColorBrush(FromRgb(hue, 0xFF));
+        var color = (Color)XamlBindingHelper.ConvertValue(typeof(Color), hue);
+        var backgroundColor = color;
+        backgroundColor.A = 0x21;
+        var borderColor = color;
+        borderColor.A = 0x2E;
+        var background = new SolidColorBrush(backgroundColor);
+        var border = new SolidColorBrush(borderColor);
+        var foreground = new SolidColorBrush(color);
         switch (tile)
         {
             case ContentPresenter presenter:
@@ -83,7 +89,4 @@ public static class ScriptTileTint
                 break;
         }
     }
-
-    private static Color FromRgb(uint rgb, byte alpha) =>
-        Color.FromArgb(alpha, (byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
 }

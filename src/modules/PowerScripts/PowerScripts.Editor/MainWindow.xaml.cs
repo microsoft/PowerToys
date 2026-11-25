@@ -7,6 +7,7 @@ using System.Globalization;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using PowerScripts.Editor.Helpers;
 using PowerScripts.Editor.Views;
@@ -53,6 +54,17 @@ public sealed partial class MainWindow : Window
                 await consumers.RefreshConsumersAsync();
             }
         };
+    }
+
+    private void Navigation_Loaded(object sender, RoutedEventArgs args)
+    {
+        if (Navigation.SettingsItem is NavigationViewItem settingsItem)
+        {
+            settingsItem.Content = PowerScriptsViewModel.GetResourceString("PowerScripts_WorkspaceSettings.Content");
+            settingsItem.SelectsOnInvoked = false;
+            settingsItem.Style = (Style)Application.Current.Resources["MainNavigationViewItemStyle"];
+            AutomationProperties.SetAutomationId(settingsItem, "PowerScriptsGlobalSettings");
+        }
     }
 
     private void Navigation_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -112,7 +124,7 @@ public sealed partial class MainWindow : Window
 
     private void Navigation_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
     {
-        if (args.InvokedItemContainer == GlobalSettingsItem)
+        if (args.IsSettingsInvoked)
         {
             try
             {

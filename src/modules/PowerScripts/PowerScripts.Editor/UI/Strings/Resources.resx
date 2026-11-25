@@ -1199,16 +1199,16 @@ Once ready, ask what I want to automate and use the skill to help author and val
   <data name="PowerScripts_NewScriptDialogDescription.Text" xml:space="preserve">
     <value>Write your own, or start from a PowerToys action.</value>
   </data>
-  <data name="PowerScripts_NewScriptChoiceScript.Header" xml:space="preserve">
+  <data name="PowerScripts_NewScriptChoiceScriptTitle.Text" xml:space="preserve">
     <value>Script</value>
   </data>
-  <data name="PowerScripts_NewScriptChoiceScript.Description" xml:space="preserve">
+  <data name="PowerScripts_NewScriptChoiceScriptDescription.Text" xml:space="preserve">
     <value>Your own PowerShell or Python code. Runs on text, files, images or audio.</value>
   </data>
-  <data name="PowerScripts_NewScriptChoiceOperation.Header" xml:space="preserve">
+  <data name="PowerScripts_NewScriptChoiceOperationTitle.Text" xml:space="preserve">
     <value>PowerToys action</value>
   </data>
-  <data name="PowerScripts_NewScriptChoiceOperation.Description" xml:space="preserve">
+  <data name="PowerScripts_NewScriptChoiceOperationDescription.Text" xml:space="preserve">
     <value>A ready-made PowerToys command, like applying a FancyZones layout or keeping the PC awake. No code.</value>
   </data>
   <data name="PowerScripts_ActivityFilter.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">

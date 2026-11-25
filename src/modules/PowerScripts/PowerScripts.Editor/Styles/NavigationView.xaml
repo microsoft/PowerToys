@@ -256,7 +256,7 @@
         <Setter Property="AlwaysShowHeader" Value="False" />
         <Setter Property="IsBackButtonVisible" Value="Collapsed" />
         <Setter Property="IsPaneToggleButtonVisible" Value="False" />
-        <Setter Property="IsSettingsVisible" Value="False" />
+        <Setter Property="IsSettingsVisible" Value="True" />
         <Setter Property="PaneDisplayMode" Value="Left" />
         <Setter Property="OpenPaneLength" Value="{ThemeResource RailNavigationViewOpenPaneLength}" />
         <Setter Property="IsTabStop" Value="False" />

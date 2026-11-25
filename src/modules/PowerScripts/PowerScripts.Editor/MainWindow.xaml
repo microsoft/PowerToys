@@ -37,8 +37,8 @@
                     </AutoSuggestBox.QueryIcon>
                     <AutoSuggestBox.KeyboardAccelerators>
                         <KeyboardAccelerator
-                            Invoked="SearchAccelerator_Invoked"
                             Key="F"
+                            Invoked="SearchAccelerator_Invoked"
                             Modifiers="Control" />
                     </AutoSuggestBox.KeyboardAccelerators>
                 </AutoSuggestBox>
@@ -58,6 +58,7 @@
             HighContrastAdjustment="None"
             IsTitleBarAutoPaddingEnabled="False"
             ItemInvoked="Navigation_ItemInvoked"
+            Loaded="Navigation_Loaded"
             SelectionChanged="Navigation_SelectionChanged"
             Style="{StaticResource MainNavigationViewStyle}">
             <NavigationView.MenuItems>
@@ -91,18 +92,6 @@
                     </NavigationViewItem.Icon>
                 </NavigationViewItem>
             </NavigationView.MenuItems>
-            <NavigationView.FooterMenuItems>
-                <NavigationViewItem
-                    x:Name="GlobalSettingsItem"
-                    x:Uid="PowerScripts_WorkspaceSettings"
-                    AutomationProperties.AutomationId="PowerScriptsGlobalSettings"
-                    SelectsOnInvoked="False"
-                    Style="{StaticResource MainNavigationViewItemStyle}">
-                    <NavigationViewItem.Icon>
-                        <FontIcon Glyph="&#xE713;" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.FooterMenuItems>
             <ContentControl
                 x:Name="TabContent"
                 HorizontalContentAlignment="Stretch"

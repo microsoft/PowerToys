@@ -424,9 +424,7 @@
                                         Text="{x:Bind RunModel.PrimaryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                         TextWrapping="Wrap"
                                         Visibility="{x:Bind RunModel.HasTextInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                    <StackPanel
-                                        Spacing="8"
-                                        Visibility="{x:Bind RunModel.HasFileInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                    <StackPanel Spacing="8" Visibility="{x:Bind RunModel.HasFileInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                         <TextBox
                                             x:Uid="PowerScripts_RunFileInput"
                                             MinHeight="72"
@@ -454,25 +452,23 @@
                                                     <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind IsProvided, Mode=OneWay}">
                                                         <StackPanel Spacing="8">
                                                             <TextBox
-                                                                Header="{x:Bind DisplayLabel}"
                                                                 AutomationProperties.AutomationId="{x:Bind ControlId('Text')}"
+                                                                Header="{x:Bind DisplayLabel}"
                                                                 Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                                 Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsText), Mode=OneWay}" />
                                                             <ToggleSwitch
-                                                                Header="{x:Bind DisplayLabel}"
                                                                 AutomationProperties.AutomationId="{x:Bind ControlId('Boolean')}"
+                                                                Header="{x:Bind DisplayLabel}"
                                                                 IsOn="{x:Bind BooleanValue, Mode=TwoWay}"
                                                                 Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsBoolean), Mode=OneWay}" />
                                                             <ComboBox
                                                                 HorizontalAlignment="Stretch"
-                                                                Header="{x:Bind DisplayLabel}"
                                                                 AutomationProperties.AutomationId="{x:Bind ControlId('Choice')}"
+                                                                Header="{x:Bind DisplayLabel}"
                                                                 ItemsSource="{x:Bind Options}"
                                                                 SelectedItem="{x:Bind TextValue, Mode=TwoWay}"
                                                                 Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsChoice), Mode=OneWay}" />
-                                                            <StackPanel
-                                                                Spacing="4"
-                                                                Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsFile), Mode=OneWay}">
+                                                            <StackPanel Spacing="4" Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsFile), Mode=OneWay}">
                                                                 <TextBlock Text="{x:Bind DisplayLabel}" />
                                                                 <Grid ColumnSpacing="8">
                                                                     <Grid.ColumnDefinitions>

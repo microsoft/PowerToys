@@ -8,9 +8,7 @@
     xmlns:viewModels="using:PowerScripts.UI.ViewModels"
     xmlns:views="using:PowerScripts.Editor.Views"
     AutomationProperties.LandmarkType="Main">
-    <Grid
-        MaxWidth="1144"
-        Padding="32,28,32,32">
+    <Grid MaxWidth="1144" Padding="32,28,32,32">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -49,6 +47,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Button
+                x:Name="CreateScriptButton"
                 x:Uid="PowerScripts_CreateScriptAction"
                 AutomationProperties.AutomationId="PowerScriptsCreateScript"
                 Click="CreateScript_Click"
@@ -178,9 +177,9 @@
                 <ListView.ItemTemplate>
                     <DataTemplate x:DataType="viewModels:PowerScriptListItem">
                         <Grid
-                            Background="Transparent"
                             AutomationProperties.AutomationId="{x:Bind CardAutomationId, Mode=OneWay}"
                             AutomationProperties.Name="{x:Bind Name, Mode=OneWay}"
+                            Background="Transparent"
                             PointerEntered="ScriptRow_PointerEntered"
                             PointerExited="ScriptRow_PointerExited">
                             <Grid
@@ -439,23 +438,50 @@
                     Margin="0,0,0,12"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     TextWrapping="Wrap" />
-                <tkcontrols:SettingsCard
-                    x:Uid="PowerScripts_NewScriptChoiceScript"
+                <Button
+                    Padding="16"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
                     AutomationProperties.AutomationId="PowerScriptsNewScriptChoice"
                     Click="NewScriptChoice_Click"
-                    HeaderIcon="{ui:FontIcon Glyph=&#xE943;}"
-                    IsClickEnabled="True"
-                    Tag="Script" />
-                <tkcontrols:SettingsCard
-                    x:Uid="PowerScripts_NewScriptChoiceOperation"
+                    Tag="Script">
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <FontIcon Glyph="&#xE943;" />
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock x:Uid="PowerScripts_NewScriptChoiceScriptTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                            <TextBlock
+                                x:Uid="PowerScripts_NewScriptChoiceScriptDescription"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
+                <Button
+                    Padding="16"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
                     AutomationProperties.AutomationId="PowerScriptsNewOperationChoice"
                     Click="NewScriptChoice_Click"
-                    IsClickEnabled="True"
                     Tag="Operation">
-                    <tkcontrols:SettingsCard.HeaderIcon>
+                    <Grid ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
                         <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Settings/Icons/PowerToys.png" />
-                    </tkcontrols:SettingsCard.HeaderIcon>
-                </tkcontrols:SettingsCard>
+                        <StackPanel Grid.Column="1" Spacing="4">
+                            <TextBlock x:Uid="PowerScripts_NewScriptChoiceOperationTitle" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                            <TextBlock
+                                x:Uid="PowerScripts_NewScriptChoiceOperationDescription"
+                                Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Grid>
+                </Button>
             </StackPanel>
         </ContentDialog>
     </Grid>
