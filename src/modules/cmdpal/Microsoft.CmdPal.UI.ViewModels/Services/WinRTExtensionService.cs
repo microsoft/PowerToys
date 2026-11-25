@@ -140,7 +140,7 @@ public partial class WinRTExtensionService : IExtensionService, IDisposable
             var wrapper = new CommandProviderWrapper(extension, _taskScheduler, _commandProviderCache);
             Logger.LogInfo($"Late-started extension {extension.PackageFullName} in {sw.ElapsedMilliseconds} ms");
 
-            OnProviderAdded?.Invoke(this, [wrapper]);
+            OnProviderAdded?.Invoke(this, new[] { wrapper });
         }
         catch (OperationCanceledException)
         {

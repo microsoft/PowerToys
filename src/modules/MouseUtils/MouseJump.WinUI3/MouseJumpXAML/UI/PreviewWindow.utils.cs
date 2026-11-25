@@ -11,6 +11,7 @@ using MouseJump.Models.Display;
 using MouseJump.Models.Drawing;
 using MouseJump.Models.Layout;
 using MouseJump.Models.Styles;
+using MouseJump.WinUI3.Helpers;
 using MouseJump.WinUI3.Internal.Helpers;
 using MouseJump.WinUI3.Win32Gen;
 
@@ -102,21 +103,29 @@ internal sealed partial class PreviewWindow
     /// event handler because that satisfies the "calling process received the last input event."
     /// requirement so the process can set the foreground window even if it isn't currently
     /// the foreground process.
+    ///
+    /// Windows can still refuse (the foreground lock), in which case
+    /// <see cref="ForegroundHelper.TrySetForegroundWindow"/> retries once with input attached
+    /// to the current foreground thread. A failure is logged rather than thrown - the preview
+    /// window is topmost, so it stays visible and clickable without focus.
+    /// See https://github.com/microsoft/PowerToys/issues/50424.
     /// </remarks>
     private void SetAsForegroundWindow()
     {
         var hWnd = (HWND)WinRT.Interop.WindowNative.GetWindowHandle(this);
-        _ = User32.SetForegroundWindow(hWnd)
-            .IgnoreFailure();
+        if (!ForegroundHelper.TrySetForegroundWindow(hWnd))
+        {
+            Logger.LogWarning($"{nameof(ForegroundHelper.TrySetForegroundWindow)} failed after retry. Continuing without focus.");
+        }
     }
 
     /// <summary>
     /// Sets keyboard focus on <see cref="PreviewPane"/>, which owns all keyboard navigation
     /// (see <see cref="PreviewPane.NavigateTo"/>) via its own <c>PreviewKeyDown</c>.
     /// </summary>
-    private void FocusPreviewPane()
+    private void FocusPreviewPane(FocusState focusState = FocusState.Programmatic)
     {
-        if (this.PreviewPane.Focus(FocusState.Programmatic))
+        if (this.PreviewPane.Focus(focusState))
         {
             // success
             return;
@@ -125,7 +134,14 @@ internal sealed partial class PreviewWindow
         // <control>.Focus can fail silently if the pane hasn't finished layout
         // yet - most likely the very first time the window is ever shown after
         // the app starts - so retry (once) on the next UI thread tick
-        this.DispatcherQueue.TryEnqueue(() => this.PreviewPane.Focus(FocusState.Programmatic));
+        _ = this.DispatcherQueue.TryEnqueue(
+            () =>
+            {
+                if (!this.PreviewPane.Focus(focusState))
+                {
+                    Logger.LogWarning("Unable to set keyboard focus on the preview window.");
+                }
+            });
     }
 
     /// <summary>

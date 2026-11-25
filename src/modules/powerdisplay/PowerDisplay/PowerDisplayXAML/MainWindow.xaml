@@ -526,6 +526,7 @@
                                                         VerticalAlignment="Center"
                                                         helpers:SliderExtensions.IsMouseWheelEnabled="True"
                                                         helpers:SliderExtensions.MouseWheelChange="{x:Bind MouseWheelIncrement, Mode=OneWay}"
+                                                        AutomationProperties.AutomationId="{x:Bind Id}"
                                                         IsEnabled="{x:Bind IsBrightnessSliderEnabled, Mode=OneWay}"
                                                         IsTabStop="True"
                                                         Maximum="100"
@@ -592,6 +593,41 @@
                                                         Maximum="100"
                                                         Minimum="0"
                                                         Value="{x:Bind Volume, Mode=TwoWay}" />
+                                                </Grid>
+
+                                                <!--  Refresh rate control  -->
+                                                <Grid
+                                                    Margin="{StaticResource FlyoutSectionTopMargin}"
+                                                    ColumnSpacing="{StaticResource FlyoutStandardSpacing}"
+                                                    Visibility="{x:Bind helpers:VisibilityConverter.BoolToVisibility(ShowRefreshRate), Mode=OneWay}">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="{StaticResource FlyoutSliderIconColumnWidth}" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon
+                                                        x:Uid="RefreshRateTooltip"
+                                                        HorizontalAlignment="Center"
+                                                        VerticalAlignment="Center"
+                                                        FontSize="{StaticResource FlyoutActionGlyphSmallFontSize}"
+                                                        Glyph="&#xE7F4;" />
+                                                    <Grid Grid.Column="1" ColumnSpacing="{StaticResource FlyoutStandardSpacing}">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*" />
+                                                            <ColumnDefinition Width="Auto" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                                                            <TextBlock x:Uid="RefreshRateLabel" />
+                                                        </StackPanel>
+                                                        <ComboBox
+                                                            x:Uid="RefreshRateComboBox"
+                                                            Grid.Column="1"
+                                                            MinWidth="112"
+                                                            DisplayMemberPath="DisplayText"
+                                                            IsEnabled="{x:Bind IsInteractionEnabled, Mode=OneWay}"
+                                                            ItemsSource="{x:Bind RefreshRateOptions, Mode=OneWay}"
+                                                            SelectedValue="{x:Bind SelectedRefreshRate, Mode=TwoWay}"
+                                                            SelectedValuePath="Rate" />
+                                                    </Grid>
                                                 </Grid>
 
                                                 <!--  Rotation Controls  -->
@@ -773,6 +809,7 @@
                         </ToggleButton>
                         <Button
                             x:Uid="RefreshTooltip"
+                            AutomationProperties.AutomationId="RefreshMenuButton"
                             Content="{ui:FontIcon Glyph=&#xE777;,
                                                   FontSize=16}"
                             Style="{StaticResource SubtleButtonStyle}">

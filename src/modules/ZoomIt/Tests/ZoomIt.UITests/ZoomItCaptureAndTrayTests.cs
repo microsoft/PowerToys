@@ -18,17 +18,60 @@ namespace Microsoft.PowerToys.ZoomIt.UITests;
 public sealed partial class ZoomItTests
 {
     private const string CaptureRectangleClass = "ZoomitSelectRectangle";
-    private static readonly string[] TrayCommands = ["Break Timer", "Draw", "Zoom", "Record"];
+    private static readonly string[] TrayMenuCaptions = ["Settings", string.Empty, "Break Timer", "Draw", "Zoom", "Record", string.Empty, "Exit"];
     private static readonly string[] TrayChevronNames = ["hidden icon", "Notification Chevron", "NotificationChevron"];
     private readonly string captureEvidenceId = Guid.NewGuid().ToString("N");
 
     [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
-    public void TrayIconLeftAndRightClickShowExactlyFourActions(bool rightClick)
+    public void TrayIconLeftAndRightClickShowExpectedActions(bool rightClick)
     {
         OpenTrayMenu(rightClick);
         SaveDesktop(rightClick ? "tray-right-click" : "tray-left-click");
+        ShellMenu.Dismiss();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void TraySettingsOpensZoomItPage(bool minimizeSettings)
+    {
+        var settings = Session.FromProcess("PowerToys.Settings");
+        settings.Find<NavigationViewItem>(By.AccessibilityId("GeneralNavItem")).Invoke(msPostAction: 0);
+        Assert.IsTrue(settings.Has(By.AccessibilityId("GeneralPageRunAtStartUp"), 15_000), "General Settings did not appear before testing tray navigation.");
+        if (minimizeSettings)
+        {
+            WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        }
+
+        ClickTrayCommand("Settings");
+        Assert.IsTrue(settings.Has(By.AccessibilityId("ZoomItEnableToggleControlHeaderText"), 15_000), "The tray Settings action did not navigate to the ZoomIt page.");
+        var window = WindowsFinder.WaitForWindowByApp(
+            "PowerToys.Settings",
+            candidate => candidate.Title.Contains("PowerToys Settings", StringComparison.Ordinal) && candidate.Width > 500 && candidate.Height > 300,
+            10_000);
+        Assert.IsNotNull(window, "The tray Settings action did not show PowerToys Settings.");
+        Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(window.WindowHandle), 10_000), "The tray Settings action must bring PowerToys Settings to the foreground.");
+        ZoomItUi.WaitForProcess(true);
+        SaveDesktop(minimizeSettings ? "tray-settings-restored" : "tray-settings-navigation");
+    }
+
+    [TestMethod]
+    public void TrayExitStopsOnlyZoomItAndAllowsReenabling()
+    {
+        ClickTrayCommand("Exit");
+        ZoomItUi.WaitForProcess(false);
+        WaitForTrayIcon(false);
+        ShellMenu.Dismiss();
+        Assert.IsTrue(SessionHelper.IsRunning(PowerToysModule.Runner), "Exiting ZoomIt must not stop the PowerToys runner.");
+        Assert.IsTrue(SessionHelper.IsRunning(PowerToysModule.PowerToysSettings), "Exiting ZoomIt must not stop PowerToys Settings.");
+        SaveDesktop("tray-exit");
+
+        ui.SetToggle("ZoomItEnableToggleControlHeaderText", false);
+        ui.SetToggle("ZoomItEnableToggleControlHeaderText", true);
+        ZoomItUi.WaitForProcess(true);
+        WaitForTrayIcon(true);
         ShellMenu.Dismiss();
     }
 
@@ -399,10 +442,10 @@ public sealed partial class ZoomItTests
         Assert.IsNotNull(menu, "Clicking the Shell ZoomIt icon did not open its real popup menu.");
         var entries = WaitHelper.WaitForStable(
             () => ShellMenu.TryReadClassicItemCaptions(new IntPtr(menu.WindowHandle)),
-            captions => captions is not null && captions.SequenceEqual(TrayCommands, StringComparer.Ordinal),
+            captions => captions is not null && captions.SequenceEqual(TrayMenuCaptions, StringComparer.Ordinal),
             10_000,
             2);
-        Assert.IsTrue(entries.Succeeded, $"Expected exactly [{string.Join(", ", TrayCommands)}], including order and no extra entries or separators; actual [{string.Join(", ", entries.LastObservation ?? [])}].");
+        Assert.IsTrue(entries.Succeeded, $"Expected exactly [{string.Join(", ", TrayMenuCaptions)}], including order and separators; actual [{string.Join(", ", entries.LastObservation ?? [])}].");
         return menu;
     }
 

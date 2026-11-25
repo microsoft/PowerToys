@@ -9,7 +9,7 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 | Checklist | Automated scenario and observable result |
 |---|---|
 | Enable ZoomIt | Settings off/on changes the actual process lifecycle; the configured shortcut then produces a magnified image. |
-| 1 | Left- and right-clicking the real notification icon each opens exactly Break Timer, Draw, Zoom, and Record. |
+| 1 | Left- and right-clicking the real notification icon each opens Settings, a separator, Break Timer, Draw, Zoom, Record, a separator, and Exit, in that order. Settings navigates from General to ZoomIt's PowerToys page, including when Settings is minimized. Exit removes the icon and stops only ZoomIt; Settings can then re-enable it. |
 | 2-3 | The Settings switch removes and restores the Shell icon, including the notification overflow. |
 | 4 | Static zoom doubles a known marker, freezes subsequent source updates, and exits with both Escape and the configured shortcut. |
 | 5 | Live Zoom magnifies the marker and displays subsequent source updates; its shortcut exits. |
@@ -39,7 +39,7 @@ Save work before starting, do not interact with the desktop during a run, and do
 while using an unsaved ZoomIt drawing or recording. Settings are backed up and restored
 as described below.
 
-The suite requires winappcli, .NET 10, and a PowerToys runtime. The executable embeds a
+The suite requires winappcli, .NET 11, and a PowerToys runtime. The executable embeds a
 PerMonitorV2 manifest. Host runs retain their display resolution and DPI; only pipeline-like
 runs normalize the desktop to 1920x1080. Recording assertions account for the encoder's
 even-pixel padding, and timer placement accounts for padded text and font-relative ink
@@ -82,7 +82,7 @@ dotnet restore src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj -p:
 tools\build\build.cmd -Path src\modules\ZoomIt\Tests\ZoomIt.UITests -Platform x64 -Configuration Debug
 
 # Run on the prepared host desktop, or use ui-tests-local-vm for isolation.
-.\x64\Debug\tests\ZoomIt.UITests\net10.0-windows10.0.26100.0\ZoomIt.UITests.exe --report-trx
+.\x64\Debug\tests\ZoomIt.UITests\net11.0-windows10.0.26100.0\ZoomIt.UITests.exe --report-trx
 ```
 
 The suite writes a pre-mutation `zoomit-registry-original.json` backup under

@@ -265,3 +265,7 @@ dotnet_diagnostic.CA2022.severity = suggestion
 
 # CA2263: Prefer generic overload when type is known
 dotnet_diagnostic.CA2263.severity = suggestion
+
+# WFO2000: Getter directly returns a newly constructed reference instance (.NET 11 WinForms analyzer).
+# Plugin option getters and VDesktop.Empty intentionally return fresh instances.
+dotnet_diagnostic.WFO2000.severity = suggestion

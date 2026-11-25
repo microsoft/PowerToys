@@ -75,6 +75,7 @@ if ($SandboxBackend -eq 'WinApp') {
     Write-ProvisioningPhase 'Validating Sandbox preview'
     $windowsBuild = [int](Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion').CurrentBuild
     if ($windowsBuild -lt 26100) { throw 'BLOCKED_INFRASTRUCTURE: WinApp Sandbox requires Windows 11 24H2 or newer; use Legacy on Win10.' }
+    Write-ProvisioningPhase 'Checking staged Sandbox preview path'
     if ([string]::IsNullOrWhiteSpace($SandboxWinAppPath) -or
         $SandboxWinAppPath -notmatch '^[A-Za-z]:\\' -or
         [IO.Path]::GetFileName($SandboxWinAppPath) -ine 'winapp.exe' -or
@@ -89,20 +90,25 @@ if ($SandboxBackend -eq 'WinApp') {
         }
         $ancestor = Split-Path -Parent $ancestor
     }
+    Write-ProvisioningPhase 'Hashing Sandbox preview CLI'
     $sandboxWinAppHash = (Get-FileHash -LiteralPath $SandboxWinAppPath -Algorithm SHA256).Hash
 }
 elseif (-not [string]::IsNullOrWhiteSpace($SandboxWinAppPath)) {
     throw 'A Sandbox preview CLI is only accepted for the explicit WinApp backend.'
 }
-if ((Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Component Based Servicing\RebootPending') -or
-    (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired')) {
+Write-ProvisioningPhase 'Checking pending image reboot'
+# Get-MwbImageServicingReport captures CBS RebootPending; only Windows Update RebootRequired blocks here.
+if (Test-Path 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update\RebootRequired') {
+    Write-ProvisioningPhase 'Pending image reboot confirmed'
     throw 'BLOCKED_INFRASTRUCTURE: complete the pending image reboot before provisioning the test.'
 }
+Write-ProvisioningPhase 'Resolving interactive test identity'
 $userSid = (New-Object Security.Principal.NTAccount($TestUser)).Translate(
     [Security.Principal.SecurityIdentifier])
 $stateDirectory = [IO.Path]::GetFullPath($StateRoot).TrimEnd('\')
 $marker = Join-Path $stateDirectory 'host-provisioning.json'
 if ($stateDirectory -notmatch '^[A-Za-z]:\\') { throw 'A local provisioning directory is required.' }
+Write-ProvisioningPhase 'Checking prior provisioning ownership'
 if (Test-Path -LiteralPath $stateDirectory) {
     if ((Get-Item -LiteralPath $stateDirectory).Attributes -band [IO.FileAttributes]::ReparsePoint) {
         throw 'The provisioning directory cannot be a reparse point.'
@@ -133,11 +139,19 @@ if (Test-Path -LiteralPath $testCertificatePath) {
         (Get-FileHash -LiteralPath $testCertificatePath -Algorithm SHA256).Hash -ine $ExpectedTestSigningCertificateSha256) {
         throw 'The public signing certificate does not match the approved staged archive.'
     }
+    Write-ProvisioningPhase 'Inspecting public test trust'
     $testSigningTrust = Get-MwbTestSigningTrust $testCertificatePath
 }
 elseif ($ExpectedTestSigningCertificateSha256) {
     throw 'The approved MWB public signing certificate is missing from the staged product.'
 }
+Write-ProvisioningPhase 'Hashing MWB executable'
+$executableHash = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash
+Write-ProvisioningPhase 'Hashing MWB assembly'
+$libraryHash = (Get-FileHash -LiteralPath $library -Algorithm SHA256).Hash
+Write-ProvisioningPhase 'Hashing Sandbox runtime archive'
+$archiveHash = (Get-FileHash -LiteralPath $guestArchive -Algorithm SHA256).Hash
+Write-ProvisioningPhase 'Recording provisioning ownership'
 $state = [ordered]@{
     FormatVersion = 1
     RunId = $RunId.ToString()
@@ -145,10 +159,10 @@ $state = [ordered]@{
     Configuration = $Configuration
     TestSigningTrust = $testSigningTrust
     Executable = $executable
-    ExecutableSha256 = (Get-FileHash -LiteralPath $executable -Algorithm SHA256).Hash
-    LibrarySha256 = (Get-FileHash -LiteralPath $library -Algorithm SHA256).Hash
+    ExecutableSha256 = $executableHash
+    LibrarySha256 = $libraryHash
     GuestArchivePath = $guestArchive
-    GuestArchiveSha256 = (Get-FileHash -LiteralPath $guestArchive -Algorithm SHA256).Hash
+    GuestArchiveSha256 = $archiveHash
     SandboxBackend = $SandboxBackend
     SandboxWinAppPath = $SandboxWinAppPath
     SandboxWinAppSha256 = $sandboxWinAppHash
@@ -169,6 +183,7 @@ $state = [ordered]@{
 }
 # Complete the potentially slow hashes before creating a directory that requires
 # an ownership marker for recovery.
+Write-ProvisioningPhase 'Writing provisioning marker'
 $acl = New-Object Security.AccessControl.DirectorySecurity
 $acl.SetAccessRuleProtection($true, $false)
 $inheritance = [Security.AccessControl.InheritanceFlags]'ContainerInherit, ObjectInherit'

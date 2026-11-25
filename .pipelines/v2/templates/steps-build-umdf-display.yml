@@ -1,0 +1,13 @@
+parameters:
+  - name: condition
+    type: string
+    default: succeeded()
+
+steps:
+  - pwsh: |
+      & "$(Build.SourcesDirectory)\.pipelines\powerdisplay-idd-poc\Build-Poc.ps1" `
+        -WorkRoot "$(Agent.TempDirectory)\pt-umdf-display" `
+        -OutputRoot "$(JobOutputDirectory)\powerdisplay-idd" `
+        -Platform "$(BuildPlatform)"
+    displayName: Build isolated virtual monitor fixture (never included in installers)
+    condition: ${{ parameters.condition }}

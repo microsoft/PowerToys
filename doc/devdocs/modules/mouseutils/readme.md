@@ -53,9 +53,8 @@ Most of the sub-modules (Find My Mouse, Mouse Highlighter, Mouse Pointer Crossha
 
 ## UI Test Automation
 
-Mouse Utilities is currently undergoing a UI Test migration process to improve automated testing coverage. You can track the progress of this migration at:
-
-[Mouse Utils UI Test Migration Progress](https://github.com/microsoft/PowerToys/blob/feature/UITestAutomation/src/modules/MouseUtils/MouseUtils.UITests/Release-Test-Checklist-Migration-Progress.md)
+Mouse Utilities UI tests use `Microsoft.PowerToys.UITest.Next` in
+`src\modules\MouseUtils\MouseUtils.UITests.Next`. See the [UI-test guide](../../development/ui-tests.md).
 
 ## See Also
 

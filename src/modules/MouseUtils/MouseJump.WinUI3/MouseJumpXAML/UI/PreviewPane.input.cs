@@ -95,6 +95,7 @@ internal sealed partial class PreviewPane
     {
         if (e.Key == VirtualKey.Escape)
         {
+            e.Handled = true;
             this.Cancel?.Invoke(this, EventArgs.Empty);
             return;
         }

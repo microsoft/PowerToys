@@ -6,7 +6,6 @@ SetWindowLong
 USER_DEFAULT_SCREEN_DPI
 GetDpiForWindow
 
-SetForegroundWindow
 SetWindowRgn
 
 CreateRectRgn
@@ -14,3 +13,15 @@ CreateRoundRectRgn
 DeleteObject
 
 DwmFlush
+
+SetLastError
+
+ShowWindow
+SetForegroundWindow
+SetActiveWindow
+
+AttachThreadInput
+BringWindowToTop
+GetCurrentThreadId
+GetForegroundWindow
+GetWindowThreadProcessId

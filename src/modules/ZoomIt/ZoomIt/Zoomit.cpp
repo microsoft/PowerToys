@@ -7649,35 +7649,31 @@ HRESULT OpenPowerToysSettingsApp()
 
     std::wstring openSettings = L"--open-settings=ZoomIt";
 
-    std::wstring full_command_path = path + L" " + openSettings;
+    std::wstring full_command_path = L"\"" + path + L"\" " + openSettings;
 
     STARTUPINFO startupInfo;
     ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
     startupInfo.cb = sizeof(STARTUPINFO);
     startupInfo.wShowWindow = SW_SHOWNORMAL;
 
-    PROCESS_INFORMATION processInformation;
+    PROCESS_INFORMATION processInformation{};
 
-    CreateProcess(
+    if (!CreateProcess(
         path.c_str(),
         full_command_path.data(),
         NULL,
         NULL,
-        TRUE,
+        FALSE,
         0,
         NULL,
         NULL,
         &startupInfo,
-        &processInformation);
-
-    if (!CloseHandle(processInformation.hProcess))
+        &processInformation))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
-    if (!CloseHandle(processInformation.hThread))
-    {
-        return HRESULT_FROM_WIN32(GetLastError());
-    }
+    const wil::unique_handle process(processInformation.hProcess);
+    const wil::unique_handle thread(processInformation.hThread);
     return S_OK;
 }
 #endif // __ZOOMIT_POWERTOYS__
@@ -10721,20 +10717,14 @@ LRESULT APIENTRY MainWndProc(
             POINT pt;
             GetCursorPos( &pt );
             hPopupMenu = CreatePopupMenu();
-            if(!g_StartedByPowerToys) {
-                // Exiting will happen through disabling in PowerToys, not the context menu.
-                InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDCANCEL, L"E&xit" );
-                InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
-            }
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDCANCEL, L"E&xit" );
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
             InsertMenu( hPopupMenu, 0, MF_BYPOSITION | ( g_RecordToggle ? MF_CHECKED : 0 ), IDC_RECORD, L"&Record" );
             InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_ZOOM, L"&Zoom" );
             InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_DRAW, L"&Draw" );
             InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_BREAK, L"&Break Timer" );
-            if(!g_StartedByPowerToys) {
-                // When started by PowerToys, options are configured through the PowerToys Settings.
-                InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
-                InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, L"&Options" );
-            }
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION|MF_SEPARATOR, 0, NULL );
+            InsertMenu( hPopupMenu, 0, MF_BYPOSITION, IDC_OPTIONS, g_StartedByPowerToys ? L"&Settings" : L"&Options" );
             // Apply dark mode theme to the menu
             ApplyDarkModeToMenu( hPopupMenu );
             TrackPopupMenu( hPopupMenu, 0, pt.x , pt.y, 0, hWnd, NULL );
@@ -11776,7 +11766,11 @@ LRESULT APIENTRY MainWndProc(
             if( g_StartedByPowerToys )
             {
 #ifdef __ZOOMIT_POWERTOYS__
-                OpenPowerToysSettingsApp();
+                const HRESULT hr = OpenPowerToysSettingsApp();
+                if( FAILED( hr ) )
+                {
+                    Logger::error(L"Failed to open PowerToys Settings. HRESULT: {:#x}", static_cast<unsigned long>(hr));
+                }
 #endif // __ZOOMIT_POWERTOYS__
             }
             else

@@ -14,6 +14,8 @@ namespace HotkeyConflictDetector
     using HotkeyEx = PowertoyModuleIface::HotkeyEx;
     using Shortcut = CentralizedHotkeys::Shortcut;
 
+    bool IsWindows11OrGreater();
+
     struct HotkeyConflictInfo
     {
         Hotkey hotkey;

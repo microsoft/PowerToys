@@ -22,9 +22,8 @@ public sealed class WinAppSandboxCommandTests
         Directory.CreateDirectory(root);
         try
         {
-            var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
             const string script = "$null=[Console]::In.ReadToEnd(); [Console]::Out.WriteLine('input-closed')";
-            using var command = WinAppSandboxCommand.Start(executable, ["-NoProfile", "-NonInteractive", "-Command", script], root, root);
+            using var command = PowerShellFixture.StartCommand(script, root);
             var result = command.CompleteAndDispose(TimeSpan.FromSeconds(15));
             Assert.AreEqual(0, result.ExitCode);
             Assert.AreEqual("input-closed", result.StandardOutput.Trim());
@@ -77,9 +76,8 @@ public sealed class WinAppSandboxCommandTests
         var originalStateRoot = Environment.GetEnvironmentVariable("WINAPP_TARGET_STATE_ROOT");
         try
         {
-            var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
             const string script = "[Console]::WriteLine($env:WINAPP_TARGET_STATE_ROOT); [Console]::WriteLine($env:WINAPP_CLI_TELEMETRY_OPTOUT); [Console]::WriteLine($env:WINAPP_CLI_UPDATE_CHECK); [Console]::WriteLine($env:USERPROFILE)";
-            using var command = WinAppSandboxCommand.Start(executable, ["-NoProfile", "-NonInteractive", "-Command", script], root, root);
+            using var command = PowerShellFixture.StartCommand(script, root);
             var output = command.CompleteAndDispose(TimeSpan.FromSeconds(15)).RequireSuccess().Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             Assert.AreEqual(root, output[0]);
             Assert.AreEqual("1", output[1]);
@@ -99,23 +97,26 @@ public sealed class WinAppSandboxCommandTests
     public void RecordingAndWorkerCommandsShareOnlyTheirExplicitRunWorkflow()
     {
         var originalWorkflow = Environment.GetEnvironmentVariable("WINAPP_UI_WORKFLOW_ID");
-        var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
         const string script = "[Console]::WriteLine($env:WINAPP_UI_WORKFLOW_ID)";
         var runId = Guid.NewGuid();
         var otherRunId = Guid.NewGuid();
-        foreach (var workflow in new[] { runId, runId, otherRunId })
+        var root = Path.Combine(Path.GetTempPath(), "mwb-workflow-command-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        try
         {
-            using var command = WinAppSandboxCommand.Start(
-                executable,
-                ["-NoProfile", "-NonInteractive", "-Command", script],
-                Environment.CurrentDirectory,
-                Environment.CurrentDirectory,
-                workflow);
-            var output = command.CompleteAndDispose(TimeSpan.FromSeconds(15)).RequireSuccess().Trim();
-            Assert.AreEqual(workflow.ToString("D"), output);
-        }
+            foreach (var workflow in new[] { runId, runId, otherRunId })
+            {
+                using var command = PowerShellFixture.StartCommand(script, root, workflowId: workflow);
+                var output = command.CompleteAndDispose(TimeSpan.FromSeconds(15)).RequireSuccess().Trim();
+                Assert.AreEqual(workflow.ToString("D"), output);
+            }
 
-        Assert.AreEqual(originalWorkflow, Environment.GetEnvironmentVariable("WINAPP_UI_WORKFLOW_ID"));
+            Assert.AreEqual(originalWorkflow, Environment.GetEnvironmentVariable("WINAPP_UI_WORKFLOW_ID"));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
     }
 
     [TestMethod]
@@ -133,7 +134,7 @@ public sealed class WinAppSandboxCommandTests
             var script = $"$start=[Diagnostics.ProcessStartInfo]::new('{executable}'); $start.UseShellExecute=$false; $start.CreateNoWindow=$true; $start.RedirectStandardInput=$true; " +
                 $"$start.Arguments='-NoProfile -NonInteractive -EncodedCommand {encoded}'; $child=[Diagnostics.Process]::Start($start); " +
                 "[Console]::Out.WriteLine($child.Id); [Console]::Out.Flush(); Start-Sleep -Seconds 60";
-            using var command = WinAppSandboxCommand.Start(executable, ["-NoProfile", "-NonInteractive", "-Command", script], Path.Combine(root, "private"), root);
+            using var command = PowerShellFixture.StartCommand(script, root, Path.Combine(root, "private"));
             RunFiles.Wait(() => int.TryParse(command.StandardOutput.Trim(), out _), TimeSpan.FromSeconds(15), "The fixture child did not start.");
             child = System.Diagnostics.Process.GetProcessById(int.Parse(command.StandardOutput.Trim(), System.Globalization.CultureInfo.InvariantCulture));
             try
@@ -180,13 +181,8 @@ public sealed class WinAppSandboxCommandTests
         Directory.CreateDirectory(root);
         try
         {
-            var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
             const string script = "[Console]::Error.WriteLine('{\"event\":\"recording-started\"}'); [Console]::Error.Flush(); $null=[Console]::ReadLine(); [Console]::Out.WriteLine('{\"completed\":true}')";
-            using var command = WinAppSandboxCommand.Start(
-                executable,
-                ["-NoLogo", "-NoProfile", "-NonInteractive", "-Command", script],
-                Path.Combine(root, "private"),
-                root);
+            using var command = PowerShellFixture.StartCommand(script, root, Path.Combine(root, "private"));
             var healthChecks = 0;
             command.WaitForRecordingStart(TimeSpan.FromSeconds(15), () => healthChecks++);
             Assert.IsTrue(healthChecks > 0, "The attached worker must remain monitored while recording starts.");
@@ -210,9 +206,8 @@ public sealed class WinAppSandboxCommandTests
         Directory.CreateDirectory(root);
         try
         {
-            var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
             const string script = "[Console]::Out.WriteLine('{\"event\":\"recording-started\"}'); [Console]::Out.Flush(); $null=[Console]::ReadLine()";
-            using var command = WinAppSandboxCommand.Start(executable, ["-NoProfile", "-NonInteractive", "-Command", script], root, root);
+            using var command = PowerShellFixture.StartCommand(script, root);
             RunFiles.Wait(() => command.StandardOutput.Length > 0, TimeSpan.FromSeconds(15), "The fixture did not start.");
             var error = Assert.ThrowsExactly<WinAppSandboxException>(
                 () => command.WaitForRecordingStart(TimeSpan.FromMilliseconds(100), () => { }));
@@ -234,16 +229,14 @@ public sealed class WinAppSandboxCommandTests
         Directory.CreateDirectory(root);
         try
         {
-            var executable = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"System32\WindowsPowerShell\v1.0\powershell.exe");
             const string script = "[Console]::Error.WriteLine('{\"error\":{\"code\":\"sandbox_artifact_failed\"}}'); exit 1";
-            using var failed = WinAppSandboxCommand.Start(executable, ["-NoProfile", "-NonInteractive", "-Command", script], root, root);
+            using var failed = PowerShellFixture.StartCommand(script, root);
             Assert.IsTrue(failed.WaitForExit(TimeSpan.FromSeconds(15)));
             var error = Assert.ThrowsExactly<WinAppSandboxException>(
                 () => failed.WaitForRecordingStart(TimeSpan.FromSeconds(1), () => { }));
             Assert.AreEqual("sandbox_artifact_failed", error.Code);
 
-            using var waiting = WinAppSandboxCommand.Start(
-                executable, ["-NoProfile", "-NonInteractive", "-Command", "$null=[Console]::ReadLine()"], root, root);
+            using var waiting = PowerShellFixture.StartCommand("$null=[Console]::ReadLine()", root);
             error = Assert.ThrowsExactly<WinAppSandboxException>(
                 () => waiting.WaitForRecordingStart(TimeSpan.FromSeconds(15), () => throw new WinAppSandboxException("worker_exited")));
             Assert.AreEqual("worker_exited", error.Code);

@@ -162,5 +162,10 @@ namespace Peek.UI.Native
 
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern IntPtr GetModuleHandle(string? lpModuleName);
+
+        internal const int DWMWA_CLOAK = 13;
+
+        [DllImport("dwmapi.dll")]
+        internal static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     }
 }

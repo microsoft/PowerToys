@@ -1,0 +1,36 @@
+# Diagnostic cohorts share a product build and prerequisite selection, but not a desktop.
+parameters:
+  - name: platform
+    type: string
+    values: [x64]
+  - name: buildSource
+    type: string
+    values: [buildNow, buildNowSlim]
+  - name: enableMsBuildCaching
+    type: boolean
+    default: false
+  - name: useVSPreview
+    type: boolean
+    default: false
+  - name: useLatestWebView2
+    type: boolean
+    default: false
+  - name: uiTestModules
+    type: object
+    default: []
+  - name: executionMode
+    type: string
+    values: [fullProduct]
+  - name: cohorts
+    type: object
+
+stages:
+  - template: pipeline-ui-tests-full-build.yml
+    parameters:
+      platform: ${{ parameters.platform }}
+      buildSource: ${{ parameters.buildSource }}
+      enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
+      useVSPreview: ${{ parameters.useVSPreview }}
+      useLatestWebView2: ${{ parameters.useLatestWebView2 }}
+      uiTestModules: ${{ parameters.uiTestModules }}
+      uiTestDiagnosticCohorts: ${{ parameters.cohorts }}

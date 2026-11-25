@@ -12,7 +12,6 @@ namespace ipc
 {
     Writer::Writer()
     {
-        start();
     }
 
     Writer::~Writer()

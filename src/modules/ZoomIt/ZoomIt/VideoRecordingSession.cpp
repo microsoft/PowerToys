@@ -20,6 +20,7 @@ void OutputDebug(const TCHAR* format, ...);
 #include <filesystem>
 #include <shlwapi.h>   // For SHCreateStreamOnFileEx
 #include <mmsystem.h>   // For timeBeginPeriod/timeEndPeriod
+#include <codecapi.h>
 
 #pragma comment(lib, "shlwapi.lib")
 #pragma comment(lib, "winmm.lib")
@@ -1183,6 +1184,11 @@ VideoRecordingSession::VideoRecordingSession(
     video.Width(outputWidth);
     video.Height(outputHeight);
     video.Bitrate(static_cast<uint32_t>(outputWidth * outputHeight * frameRate * 2 * 0.07));
+    // The default CBR mode lets the encoder skip frames once full-screen changes (such as zoom
+    // animations over detailed content) overflow its rate buffer, leaving visible holes in playback.
+    // Unconstrained VBR still targets the average bitrate but encodes every submitted frame.
+    video.Properties().Insert(winrt::guid{ GUID{ STATIC_CODECAPI_AVEncCommonRateControlMode } },
+        winrt::Windows::Foundation::PropertyValue::CreateUInt32(eAVEncCommonRateControlMode_UnconstrainedVBR));
     video.FrameRate().Numerator(frameRate);
     video.FrameRate().Denominator(1);
     video.PixelAspectRatio().Numerator(1);
@@ -1421,12 +1427,9 @@ void VideoRecordingSession::OnMediaStreamSourceStarting(
     winrt::MediaStreamSource const&,
     winrt::MediaStreamSourceStartingEventArgs const& args)
 {
-    // Close the stale frame captured in the constructor (~1-2 seconds
-    // ago) and grab a FRESH frame via TryGetNextFrame.  This gives us
-    // both current visual content and a current SystemRelativeTime,
-    // avoiding the frozen-first-frame artefact.  WGC delivers a new
-    // frame within one vblank (~16 ms) after the old frame is released
-    // back to the pool, so a 200 ms timeout is very generous.
+    // Encoding/audio setup can take seconds. Discard those startup frames
+    // before choosing the shared video/audio time origin.
+    m_frameWait->DiscardPendingFrames();
     RecDiag( L"OnStarting: calling TryGetNextFrame(200) for fresh frame...\n" );
     auto frame = m_frameWait->TryGetNextFrame( 200 );
 
@@ -1688,6 +1691,8 @@ void VideoRecordingSession::OnMediaStreamSourceSampleRequested(
             winrt::check_hresult(m_previewSwapChain->Present1(0, 0, &presentParameters));
 
             auto sample = winrt::MediaStreamSample::CreateFromDirect3D11Surface(sampleSurface, timeStamp);
+            // Zero-duration samples can be discarded during frame-rate conversion.
+            sample.Duration(winrt::TimeSpan{ m_frameIntervalTicks });
             m_lastVideoTimestamp = timeStamp;
 
             if( !m_hasVideoSample.exchange( true ) )
@@ -7028,6 +7033,9 @@ static winrt::IAsyncOperation<winrt::hstring> RenderCompositionToFileAsync(
             video.Width(width);
             video.Height(height);
             video.Bitrate(static_cast<uint32_t>(width * height * 30.0 * 2 * 0.07));
+            // Avoid CBR frame skipping on re-encode (see recording profile).
+            video.Properties().Insert(winrt::guid{ GUID{ STATIC_CODECAPI_AVEncCommonRateControlMode } },
+                winrt::Windows::Foundation::PropertyValue::CreateUInt32(eAVEncCommonRateControlMode_UnconstrainedVBR));
             video.FrameRate().Numerator(30);
             video.FrameRate().Denominator(1);
             video.PixelAspectRatio().Numerator(1);

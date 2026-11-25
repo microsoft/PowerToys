@@ -107,7 +107,7 @@ internal static partial class MouseJumpEventLoop
         }
 
         // waits for an invocation to complete - cancelling it first if it's been superseded by a
-        // newer one - treating that cancellation as expected and rethrowing anything else
+        // newer one - treating that cancellation as expected and logging anything else
         static void EndInvocation(string eventName, Invocation invocation, bool superseded)
         {
             if (superseded)
@@ -127,12 +127,12 @@ internal static partial class MouseJumpEventLoop
             }
             catch (Exception ex)
             {
-                // if something went wrong the application could be in an unstable state.
-                // the main MouseJump module will restart the background process the next
-                // time the hotkey is invoked, so just rethrow the exception here.
+                // log and keep waiting for the next event. rethrowing here would be
+                // unhandled on this background thread and terminate the process, and
+                // the main MouseJump module can drop the hotkey activation that relaunches
+                // it if the new process's window isn't ready yet.
                 Logger.LogDebug($"[{eventName}] - error occurred");
                 Logger.LogError(ex.ToString());
-                throw;
             }
             finally
             {
@@ -158,7 +158,7 @@ internal static partial class MouseJumpEventLoop
                     Logger.LogDebug($"[{eventName}] - entering event handler loop");
 
                     // also wake up when the current invocation completes, so a failure is
-                    // observed (and rethrown) straight away rather than only when the event
+                    // observed (and logged) straight away rather than only when the event
                     // is next signalled
                     var waitHandles = invocation is null
                         ? new WaitHandle[] { cancel.WaitHandle, eventHandle }

@@ -4,7 +4,6 @@
 
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
-using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.Messages;
 using Microsoft.CmdPal.UI.ViewModels;
 using Microsoft.CmdPal.UI.ViewModels.Dock;
@@ -38,7 +37,7 @@ internal sealed partial class DockPageFlyoutController :
     // late still surfaces the palette at the right dock item.
     private sealed record ShownFlyout(DockCommandRoute Route, Point Position);
 
-    private readonly Flyout _flyout;
+    private readonly IDockPageHost _host;
     private readonly DispatcherQueue _dispatcherQueue;
     private readonly TaskScheduler _uiScheduler;
     private readonly IPageViewModelFactoryService _pageFactory;
@@ -47,6 +46,7 @@ internal sealed partial class DockPageFlyoutController :
     private readonly Func<DockSide> _dockSide;
     private readonly Func<bool> _shouldRestoreFocus;
     private readonly Action _restoreFocus;
+    private readonly Action? _rootBackRequested;
     private DockPageNavigationViewModel? _navigation;
     private DockPageControl? _control;
     private PageRequest? _openRequest;
@@ -54,6 +54,9 @@ internal sealed partial class DockPageFlyoutController :
     private ShownFlyout? _lastShown;
     private bool _isActive;
     private bool _isDisposed;
+    private bool _returnToRoot;
+
+    internal event EventHandler? Closed;
 
     internal DockPageFlyoutController(
         Flyout flyout,
@@ -65,8 +68,23 @@ internal sealed partial class DockPageFlyoutController :
         Func<DockSide> dockSide,
         Func<bool> shouldRestoreFocus,
         Action restoreFocus)
+        : this(new FlyoutDockPageHost(flyout), dispatcherQueue, uiScheduler, pageFactory, appHostService, ownerHwnd, dockSide, shouldRestoreFocus, restoreFocus)
     {
-        _flyout = flyout;
+    }
+
+    internal DockPageFlyoutController(
+        IDockPageHost host,
+        DispatcherQueue dispatcherQueue,
+        TaskScheduler uiScheduler,
+        IPageViewModelFactoryService pageFactory,
+        IAppHostService appHostService,
+        Func<IntPtr> ownerHwnd,
+        Func<DockSide> dockSide,
+        Func<bool> shouldRestoreFocus,
+        Action restoreFocus,
+        Action? rootBackRequested = null)
+    {
+        _host = host;
         _dispatcherQueue = dispatcherQueue;
         _uiScheduler = uiScheduler;
         _pageFactory = pageFactory;
@@ -75,13 +93,14 @@ internal sealed partial class DockPageFlyoutController :
         _dockSide = dockSide;
         _shouldRestoreFocus = shouldRestoreFocus;
         _restoreFocus = restoreFocus;
+        _rootBackRequested = rootBackRequested;
 
-        _flyout.Opened += Flyout_Opened;
-        _flyout.Closed += Flyout_Closed;
+        _host.Opened += Flyout_Opened;
+        _host.Closed += Flyout_Closed;
     }
 
     internal bool HasOpenTransientUi =>
-        _flyout.IsOpen ||
+        _host.IsOpen ||
         (_control?.HasOpenTransientUi ?? false);
 
     internal void Activate()
@@ -99,9 +118,9 @@ internal sealed partial class DockPageFlyoutController :
         _isActive = false;
         WeakReferenceMessenger.Default.UnregisterAll(this);
         _pendingRequest = null;
-        if (_flyout.IsOpen)
+        if (_host.IsOpen)
         {
-            _flyout.Hide();
+            _host.Hide();
         }
 
         Cleanup();
@@ -114,7 +133,7 @@ internal sealed partial class DockPageFlyoutController :
     /// </summary>
     internal void OpenPage(PerformCommandMessage message, FrameworkElement anchor, Point position)
     {
-        if (_flyout.IsOpen)
+        if (_host.IsOpen)
         {
             if (_openRequest is { } open &&
                 ReferenceEquals(anchor, open.Anchor) &&
@@ -127,7 +146,7 @@ internal sealed partial class DockPageFlyoutController :
             // A flyout can't move to another anchor while it's open. Show the next page
             // after this one closes.
             _pendingRequest = new(message, anchor, position);
-            _flyout.Hide();
+            _host.Hide();
             return;
         }
 
@@ -254,25 +273,24 @@ internal sealed partial class DockPageFlyoutController :
         {
             _lastShown = new(route, request.Position);
             _openRequest = request;
-            _navigation = new DockPageNavigationViewModel(route, _uiScheduler, _pageFactory, _appHostService);
+            _navigation = new DockPageNavigationViewModel(
+                route,
+                _uiScheduler,
+                _pageFactory,
+                _appHostService,
+                hasExternalBackTarget: _rootBackRequested is not null);
             _navigation.CloseRequested += Navigation_CloseRequested;
+            _navigation.RootBackRequested += Navigation_RootBackRequested;
             _control = new DockPageControl(_navigation);
             _control.CloseRequested += Control_CloseRequested;
-            _flyout.Content = _control;
+            _host.Content = _control;
 
             // A windowed popup only receives pointer input when its owner is active.
             var ownerHwnd = new HWND(_ownerHwnd());
             PInvoke.SetForegroundWindow(ownerHwnd);
             PInvoke.SetActiveWindow(ownerHwnd);
 
-            UIHelper.PreparePopupForShow(_flyout, request.Anchor);
-            _flyout.ShowAt(
-                request.Anchor,
-                new FlyoutShowOptions
-                {
-                    ShowMode = FlyoutShowMode.Standard,
-                    Placement = GetPlacement(),
-                });
+            _host.Show(request.Anchor, GetPlacement());
             return _navigation;
         }
         catch (Exception ex)
@@ -316,12 +334,13 @@ internal sealed partial class DockPageFlyoutController :
         };
     }
 
-    private void Close()
+    private void Close(bool returnToRoot = false)
     {
         _pendingRequest = null;
-        if (_flyout.IsOpen)
+        _returnToRoot = returnToRoot;
+        if (_host.IsOpen)
         {
-            _flyout.Hide();
+            _host.Hide();
         }
         else
         {
@@ -337,6 +356,14 @@ internal sealed partial class DockPageFlyoutController :
     private void Flyout_Closed(object? sender, object e)
     {
         Cleanup();
+        var returnToRoot = _returnToRoot;
+        _returnToRoot = false;
+        if (_isActive && returnToRoot)
+        {
+            _rootBackRequested?.Invoke();
+        }
+
+        Closed?.Invoke(this, EventArgs.Empty);
 
         var pending = _pendingRequest;
         _pendingRequest = null;
@@ -352,12 +379,14 @@ internal sealed partial class DockPageFlyoutController :
 
     private void Navigation_CloseRequested(object? sender, EventArgs e) => Close();
 
-    private void Control_CloseRequested(object? sender, EventArgs e) => Close();
+    private void Navigation_RootBackRequested(object? sender, EventArgs e) => Close(returnToRoot: true);
+
+    private void Control_CloseRequested(object? sender, EventArgs e) => Close(returnToRoot: true);
 
     private void Cleanup()
     {
         _openRequest = null;
-        _flyout.Content = null;
+        _host.Content = null;
 
         if (_control is not null)
         {
@@ -369,6 +398,7 @@ internal sealed partial class DockPageFlyoutController :
         if (_navigation is not null)
         {
             _navigation.CloseRequested -= Navigation_CloseRequested;
+            _navigation.RootBackRequested -= Navigation_RootBackRequested;
             _navigation.Dispose();
             _navigation = null;
         }
@@ -383,8 +413,9 @@ internal sealed partial class DockPageFlyoutController :
 
         _isDisposed = true;
         Deactivate();
-        _flyout.Opened -= Flyout_Opened;
-        _flyout.Closed -= Flyout_Closed;
+        _host.Opened -= Flyout_Opened;
+        _host.Closed -= Flyout_Closed;
+        _host.Dispose();
         GC.SuppressFinalize(this);
     }
 }
