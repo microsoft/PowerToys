@@ -2,7 +2,11 @@
 
 This is the functionality/input/output checklist for adding or changing an
 editable PowerScripts CLI recipe. The current creation catalogue is defined in
-`PowerScripts.Core\Templates\PowerShellCliTemplates.Scenarios.cs`.
+the compiled per-module files in `PowerScripts.Core\Templates\CliModules`.
+The supported-scenarios table is generated from those definitions, not read
+at runtime to create templates. Run `.\Update-CliTemplateMatrix.ps1` after
+building the Host; `-Check` verifies it without writing. Core tests also reject
+a stale table.
 The original 14 definitions in `PowerShellCliTemplates.Definitions.cs` remain
 available by ID for saved scripts; mixed-purpose legacy recipes are not offered
 for new creation. Their original contracts and bindings must not change.
@@ -26,47 +30,45 @@ before a success envelope is emitted; native nonzero exit remains failure.
 
 ## Supported scenarios
 
-| Module / functionality | Native command or options | Primary input | Primary output | Creation recipe / important conditions |
-| --- | --- | --- | --- | --- |
-| Settings: module catalogue/status | `list`, `status <module>`, `--json` | none | text | `settings-query`; saved state/GPO is not proof of a running process |
-| Settings: save enabled/disabled state | `enable <module>`, `disable <module>` | none | none | `settings-module-action`; requires Runner stopped; next-start state, not a live hotkey toggle |
-| Advanced Paste: local text formatting | local `--format plain-text/markdown/json`, stdin | text | text | `advanced-paste-local`; no clipboard, identity, provider or network |
-| Advanced Paste: action/provider discovery | `actions list`, `providers list`, `--json` | none | text | `advanced-paste-list`; JSON is text |
-| Advanced Paste: text/HTML file formatting | `transform --action plain-text/markdown/json --input ... --stdout` | files (one) | text | `advanced-paste-file-text`; HTML files retain HTML format |
-| Advanced Paste: Windows OCR | `transform --action image-to-text --input ... --stdout` | files (one image) | text | `advanced-paste-file-text`; Windows OCR, no AI provider |
-| Advanced Paste: text-file export | `paste-as-txt-file --input ... --output ...` | files (one text file) | files (TXT) | `advanced-paste-file-result`; workspace destination |
-| Advanced Paste: image export | `paste-as-png-file`, `paste-as-jpg-file`, explicit input/output | files (one image) | files (PNG/JPG) | `advanced-paste-file-result`; JPG uses module quality settings |
-| Advanced Paste: HTML-file export | `paste-as-html-file`, explicit HTML input/output | files (one HTML file) | files (HTML) | `advanced-paste-file-result`; stdin alone does not supply HTML |
-| Advanced Paste: media transcode | `transcode-to-mp3`, `transcode-to-mp4`, explicit input/output | files (one supported media file) | files (MP3/MP4) | `advanced-paste-file-result`; not a text result |
-| Advanced Paste: supplied text to TXT | `paste-as-txt-file --stdin --output ...` | text | files (TXT) | `advanced-paste-text-file` |
-| Advanced Paste: supplied HTML to text/Markdown/JSON | stage `.html`, `plain-text/markdown/json --input ... --stdout` | text (HTML) | text | `advanced-paste-html-text`; explicit staging preserves HTML semantics |
-| Advanced Paste: supplied HTML to HTML file | stage `.html`, `paste-as-html-file --output ...` | text (HTML) | files (HTML) | `advanced-paste-html-file` |
-| Advanced Paste: spelling/grammar, prompt or saved action on text | `fix-spelling-and-grammar`, `paste-with-ai`, or `--custom-action`; `--stdin`; optional `--prompt/--provider` | text | text | `advanced-paste-ai-text-text`; configured provider, possible cost/network; file-only results fail instead of being relabelled |
-| Advanced Paste: AI on selected file | same AI options, `--input ... --stdout` | files (one) | text | `advanced-paste-ai-files-text`; selected action must support input |
-| Advanced Paste: AI text result saved as file / generated file | same AI options with `--output ...` | text | files | `advanced-paste-ai-text-file`; single filename, expected extension chosen by author |
-| Advanced Paste: AI file input to returned file | same AI options with explicit input/output | files (one) | files | `advanced-paste-ai-files-file`; text can intentionally be saved as a file; media output depends on configured action |
-| File Locksmith: selected-file report | paths, optional `--json` | files (batch) | text | `file-locksmith-query`; never `--kill` |
-| File Locksmith: wait until files unlock | paths, `--wait --timeout <milliseconds>` | files (batch) | none | `file-locksmith-wait`; native/Host budgets both apply; timeout is failure |
-| File Locksmith: recursive directory or mixed-path report | one file/directory path per line, optional `--json` | text (paths) | text | `file-locksmith-paths-query`; accepts fixed/parameter paths too; never reads global clipboard itself |
-| File Locksmith: wait for directory/mixed paths | path lines, `--wait --timeout` | text (paths) | none | `file-locksmith-paths-wait`; no incompatible JSON/wait combination |
-| FancyZones: saved layouts, monitors, active layout, hotkeys | `get-layouts`, `get-monitors`, `get-active-layout`, `get-hotkeys` | none | text | `fancyzones-query`; missing saved layout data remains a real error |
-| FancyZones: apply layout | `set-layout <name-or-UUID> --monitor <n>` or `--all` | none | none | `fancyzones-layout`; one/all monitor choice |
-| FancyZones: assign/remove layout hotkey | `set-hotkey <0-9> <UUID>`, `remove-hotkey <0-9>` | none | none | `fancyzones-hotkey`; UUID required only for assignment |
-| FancyZones: launch UI | `open-editor`, `open-settings` | none | none | `fancyzones-open` |
-| Workspaces: list/filter/inspect | `list`, `--id/--name`, `--details`, `--json` | none | text | `workspaces-query`; ID/name mutually exclusive |
-| Workspaces: launch apps and arrange windows | `launch --id/--name --timeout` | none | none | `workspaces-launch`; not replay-safe; prompts/partial failures remain visible diagnostics |
-| Image Resizer: saved configuration/presets | `--show-config` / `--config` | none | text | `image-resizer-config` |
-| Image Resizer: explicit dimensions | `--width/--height --fit --unit` | files (batch) | files | `image-resizer-options`; invariant decimals; one dimension may be zero, not both |
-| Image Resizer: saved preset | `--size <zero-based-index>` | files (batch) | files | `image-resizer-options`; preserves preset fit/unit/dimensions |
-| Image Resizer: copy-only resize options | `--shrink-only`, `--ignore-orientation`, `--remove-metadata`, `--keep-date-modified`, `--quality`, `--filename` | files (batch) | files | `image-resizer-options`; true enables boolean overrides, false inherits native saved defaults; quality zero inherits; filename cannot escape workspace |
-| Awake: duration/expiry/lifetime/configuration | `--time-limit`, `--expire-at`, `--display-on`, `--pid`, `--use-parent-pid`, `--use-pt-config` | none | none | `awake-action`; default 10 seconds; awaited, not automatically detached; existing instance/GPO/Host timeout still apply |
-| Light Switch: inspect state | `status --json` | none | text | `light-switch-status` |
-| Light Switch: select/toggle theme | `light`, `dark`, `toggle` | none | none | `light-switch-theme` |
-| Light Switch: scheduling | `schedule enable --mode fixed-hours/sunset-to-sunrise/follow-night-light`, `schedule disable` | none | none | `light-switch-schedule`; actual hours/location configured in module Settings |
-| Power Display: discovery/read/profiles | `list`, `get`, `capabilities`, `profiles`, `--setting`, `--monitor-id/--monitor-number`, `--json` | none | text | `power-display-inspect`; get/capabilities use one monitor; structured JSON Lines is text |
-| Power Display: absolute/relative continuous adjustment | `set/up/down --brightness/--contrast/--volume`, `--step` | none | none | `power-display-adjust-action`; single stable ID or comma-separated monitor indices |
-| Power Display: discrete settings | `set --color-temperature/--input-source/--orientation` | none | none | `power-display-discrete-action`; supports monitor batches; input/orientation may disrupt desktop |
-| Power Display: saved profile | `apply-profile <positive numeric ID>` | none | none | `power-display-profile`; inspect profile first; name/GUID is not the CLI selector |
+<!-- BEGIN GENERATED CLI SCENARIOS -->
+<!-- Generated by PowerScripts.Host template cli-matrix. Do not edit this table. -->
+
+| Module | Creation recipe | Native commands/options | Default input | Output | Functionality and restrictions |
+| --- | --- | --- | --- | --- | --- |
+| Settings | `settings-query` | list &#124; status &lt;module&gt; [--json] | none | text | Read saved module state and Group Policy overrides. Status does not prove that a module's process is running. |
+| Settings | `settings-module-action` | enable &#124; disable &lt;module&gt; | none | none | Saves module state for the next PowerToys start; it does not live-toggle modules. The current Settings CLI requires PowerToys to be stopped, so this cannot currently enable a module from a PowerToys hotkey. Group Policy is respected. |
+| Advanced Paste | `advanced-paste-local` | --format plain-text&#124;markdown&#124;json; stdin | text | text | Convert text to plain text, Markdown or JSON using the local transformation engine. Uses standard input/output only; no clipboard, package identity, saved credentials, AI or network access. |
+| Advanced Paste | `advanced-paste-list` | actions &#124; providers list [--json] | none | text | Read-only discovery. Does not read the clipboard or contact AI providers. |
+| Advanced Paste | `advanced-paste-file-text` | transform --action plain-text&#124;markdown&#124;json&#124;image-to-text --input --stdout | files (one) | text | Read one text/HTML/image file and return plain text, Markdown, JSON text or Windows OCR text. No AI provider or clipboard access. |
+| Advanced Paste | `advanced-paste-file-result` | transform --action paste-as-*-file&#124;transcode-to-mp3&#124;transcode-to-mp4 --input --output | files (one) | files | Transform one supported input file into TXT, PNG, JPG, HTML, MP3 or MP4. Return a new workspace file; the consumer owns saving it. No clipboard or host destination. |
+| Advanced Paste | `advanced-paste-text-file` | transform --action paste-as-txt-file --stdin --output | text | files | Convert supplied text into a returned workspace TXT file; does not overwrite a host destination or read the clipboard. |
+| Advanced Paste | `advanced-paste-html-text` | transform --action plain-text&#124;markdown&#124;json --input &lt;staged HTML&gt; --stdout | text | text | Stage supplied HTML as an explicit UTF-8 .html input so the full CLI sees HTML, not only stdin plain text. New files stay in the workspace. |
+| Advanced Paste | `advanced-paste-html-file` | transform --action paste-as-html-file --input &lt;staged HTML&gt; --output | text | files | Stage supplied HTML as an explicit UTF-8 .html input so the full CLI sees HTML, not only stdin plain text. New files stay in the workspace. |
+| Advanced Paste | `advanced-paste-ai-text-text` | transform --action fix-spelling-and-grammar&#124;paste-with-ai &#124; --custom-action; --stdin --stdout | text | text | Run spelling/grammar, a prompt or a saved custom action with the configured provider. Content may leave the machine and incur costs. Text output rejects file-only results; file output saves a single result to the workspace. |
+| Advanced Paste | `advanced-paste-ai-files-text` | transform --action fix-spelling-and-grammar&#124;paste-with-ai &#124; --custom-action; --input --stdout | files (one) | text | Run spelling/grammar, a prompt or a saved custom action with the configured provider. Content may leave the machine and incur costs. Text output rejects file-only results; file output saves a single result to the workspace. |
+| Advanced Paste | `advanced-paste-ai-text-file` | transform --action fix-spelling-and-grammar&#124;paste-with-ai &#124; --custom-action; --stdin --output | text | files | Run spelling/grammar, a prompt or a saved custom action with the configured provider. Content may leave the machine and incur costs. Text output rejects file-only results; file output saves a single result to the workspace. |
+| Advanced Paste | `advanced-paste-ai-files-file` | transform --action fix-spelling-and-grammar&#124;paste-with-ai &#124; --custom-action; --input --output | files (one) | files | Run spelling/grammar, a prompt or a saved custom action with the configured provider. Content may leave the machine and incur costs. Text output rejects file-only results; file output saves a single result to the workspace. |
+| File Locksmith | `file-locksmith-query` | [--json] &lt;paths...&gt; | files (batch) | text | Inspect selected-file batches or wait for them to unlock. Never terminates processes; waiting is bounded by both native timeout and Host budget. |
+| File Locksmith | `file-locksmith-wait` | --wait --timeout &lt;milliseconds&gt; &lt;paths...&gt; | files (batch) | none | Inspect selected-file batches or wait for them to unlock. Never terminates processes; waiting is bounded by both native timeout and Host budget. |
+| File Locksmith | `file-locksmith-paths-query` | [--json] &lt;newline-separated absolute files/directories&gt; | text | text | Supply one absolute file/directory path per line. Directory queries are recursive. Never terminates processes; waiting is bounded by both native timeout and Host budget. |
+| File Locksmith | `file-locksmith-paths-wait` | --wait --timeout &lt;milliseconds&gt; &lt;newline-separated absolute files/directories&gt; | text | none | Supply one absolute file/directory path per line. Directory queries are recursive. Never terminates processes; waiting is bounded by both native timeout and Host budget. |
+| FancyZones | `fancyzones-query` | get-layouts &#124; get-monitors &#124; get-active-layout &#124; get-hotkeys | none | text | Read layout/monitor/hotkey information. Requires the running host module and any saved layout data. |
+| FancyZones | `fancyzones-layout` | set-layout &lt;name-or-UUID&gt; --monitor &lt;n&gt; &#124; --all | none | none | Apply a saved layout by name or UUID to one or all monitors. Changes desktop layout settings. |
+| FancyZones | `fancyzones-hotkey` | set-hotkey &lt;digit&gt; &lt;UUID&gt; &#124; remove-hotkey &lt;digit&gt; | none | none | Change saved layout hotkeys; not a report or automatic replay. |
+| FancyZones | `fancyzones-open` | open-editor &#124; open-settings | none | none | Launch the requested UI on the host desktop. |
+| Workspaces | `workspaces-query` | list [--id &#124; --name] [--details] [--json] | none | text | Read workspace summaries or application details, optionally filtered by ID or name. |
+| Workspaces | `workspaces-launch` | launch --id &#124; --name [--timeout] | none | none | Launch applications and arrange windows. Choose ID or name; execution can show prompts and is not replay-safe. |
+| Image Resizer | `image-resizer-config` | --show-config | none | text | Read saved presets and resize/encoding defaults; does not resize or replace files. |
+| Image Resizer | `image-resizer-options` | --width/--height --fit --unit &#124; --size; --shrink-only --ignore-orientation --remove-metadata --keep-date-modified --quality --filename; copy-only destination | files (batch) | files | Resize copies and return new workspace files. Choose dimensions (one can be zero for automatic sizing) or a saved preset. Quality, metadata and orientation options apply to copies; originals and host destinations are never replaced. |
+| Awake | `awake-action` | --time-limit &#124; --expire-at; --display-on; --pid &#124; --use-parent-pid; --use-pt-config | none | none | Starts a keep-awake process for a limited duration by default. An already-running Awake instance prevents another CLI instance from starting. This is a long-running CLI; increase the PowerScripts execution timeout deliberately if needed. |
+| Light Switch | `light-switch-status` | status [--json] | none | text | Read the current theme/schedule from the running host module. |
+| Light Switch | `light-switch-theme` | light &#124; dark &#124; toggle | none | none | Select light/dark or toggle the host desktop theme. |
+| Light Switch | `light-switch-schedule` | schedule enable --mode fixed-hours&#124;sunset-to-sunrise&#124;follow-night-light &#124; schedule disable | none | none | Change saved theme scheduling. Fixed hours/location remain configured in module Settings. |
+| Power Display | `power-display-inspect` | list &#124; get &#124; capabilities &#124; profiles; --setting --monitor-id/--monitor-number --json | none | text | Read connected monitors, setting values, capabilities or saved profiles. Get/capabilities target at most one monitor. |
+| Power Display | `power-display-adjust-action` | set &#124; up &#124; down; --brightness/--contrast/--volume --step --monitor-id/--monitor-number | none | none | Set or adjust brightness, contrast or volume on selected monitors. Monitor ID takes precedence; comma-separated positive indices support batches. No power-off or input-source change. |
+| Power Display | `power-display-discrete-action` | set --color-temperature/--input-source/--orientation --monitor-id/--monitor-number | none | none | Change color temperature, input source or orientation. Input/orientation changes may disrupt the desktop; query capabilities first. No monitor power-off. |
+| Power Display | `power-display-profile` | apply-profile &lt;positive numeric ID&gt; | none | none | Apply a saved profile to connected monitors. Review its settings first: applying it can change the desktop/display. Requires the running host module. |
+<!-- END GENERATED CLI SCENARIOS -->
 
 ## Deliberate exclusions and review cases
 
@@ -91,18 +93,73 @@ presentation switches warrant a separate script recipe.
 
 ## Adding a CLI or functionality
 
-1. Read the native command parser, input reader and output writer, not just help
-   text. Record command/flag coverage and restrictions in this matrix.
-2. Choose primary input/output per scenario. Separate queries, actions and
-   generated-file results when their contracts differ. Preserve existing recipe
-   IDs/bindings/contracts; use new IDs for incompatible changes.
-3. Add the recipe in `PowerShellCliTemplates.Scenarios.cs`. Update module
-   identity/group metadata if adding a module, scoped capabilities if needed,
-   and `SupportsFileBatch` when the native operation genuinely accepts batches.
-4. Keep native arguments separate and typed. Stage new results in the execution
-   workspace, validate them, preserve nonzero failures, and never auto-approve,
-   bypass the Host broker or retry uncertain side effects.
-5. Extend the focused template/broker tests. Check catalogue JSON, creation
-   schemas, generated PowerShell, correct results/failures and legacy
-   compatibility. Real AI/desktop/power/process actions require user consent;
-   use isolated fixtures/mocks for automated regression coverage.
+1. Read the native command parser, input reader and output writer, not just help.
+   Choose input/output per scenario, separating queries, actions and file results.
+2. Add a sealed `PowerShellCliModule` subclass under
+   `PowerScripts.Core\Templates\CliModules`, or edit the existing module's file.
+   Specify `Id`, `Name`, the installation-relative `Executable`, display `Order`
+   and `CreateRecipes()`. Optionally override `IconName` with an existing
+   Settings icon asset name; the default is the PowerToys icon.
+   Compiled definitions are discovered automatically:
+   no central registration list, module-name switch or Editor change is needed.
+3. Use `Query` with `CliArgument.Literal`, `Option`, `Switch` and `InputFiles`
+   for ordinary arguments; `Text`, `Integer` and `Flag` define typed controls.
+   Use `Template` for module-specific validation/staging adapters. `Describe`
+   supplies the command synopsis used in the generated table.
+4. `AsAction` makes stdout diagnostic rather than primary data; state-changing
+   actions also declare file-write capability by default. Use `writesState: false`
+   for non-writing actions such as waiting. Set `UsesNetwork` for AI/network
+   recipes and `SupportsFileBatch` only for actual batch-file inputs.
+   `WorkspaceDirectory` and `FileOutput` share single-file result handling;
+   Image Resizer demonstrates staged copies and batch-file validation.
+5. Add focused module tests; the shared suite automatically checks discovered
+   recipes, schemas, generated PowerShell and documentation. Preserve existing
+   recipe IDs/bindings/contracts; use new IDs for incompatible changes. The frozen
+   legacy definitions and compatibility fingerprints are not a place to add
+   new recipes or silently update old behavior.
+6. Build Core tests/Host, run `.\Update-CliTemplateMatrix.ps1`, rebuild tests
+   (the matrix is embedded for the drift check), then run the template/broker
+   tests and check the new module in the Editor. `-HostPath` selects another
+   configuration's Host; `-Check` is suitable for automation.
+
+Keep native arguments separate and typed. Stage new results in the execution
+workspace, validate them, preserve nonzero failures, and never auto-approve,
+bypass the Host broker or retry uncertain side effects. Definitions are compiled
+into Core; no writable external file can add a host recipe. Real AI/desktop/power
+actions require consent; use isolated fixtures for automated regression coverage.
+
+### Minimal module definition
+
+The following illustrative module would go in a new `ExampleCliModule.cs`.
+Its CLI executable must separately be included in the normal product build.
+
+```csharp
+using static PowerScripts.Core.Templates.CliRecipeBuilder;
+
+namespace PowerScripts.Core.Templates.CliModules;
+
+internal sealed class ExampleCliModule : PowerShellCliModule
+{
+    public override string Id => "example";
+    public override string Name => "Example";
+    public override string Executable => @"WinUI3Apps\Example.Cli.exe";
+    public override int Order => 90;
+
+    public override IReadOnlyList<PowerShellCliTemplate> CreateRecipes() =>
+    [
+        Describe(Query("example-inspect", "Inspect selected files",
+            "Read selected files and return a report.", "files",
+            CliArgument.Literal("inspect"),
+            CliArgument.Switch("--json", Flag("Json", "Return JSON.", true)),
+            CliArgument.Literal("--"),
+            CliArgument.InputFiles()) with { SupportsFileBatch = true },
+            "inspect [--json] -- <files...>"),
+    ];
+}
+```
+
+Add a sibling module test for actual argument/output behavior. Shared discovery,
+creation and syntax tests will include the new module without adding test rows.
+For an action use `AsAction(Query(...), writesState: true)`; for file-producing
+commands use a workspace-output adapter rather than relabelling native stdout
+as files. See the existing Advanced Paste and Image Resizer module files.

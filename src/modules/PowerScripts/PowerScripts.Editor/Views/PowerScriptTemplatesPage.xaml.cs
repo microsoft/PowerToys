@@ -178,19 +178,6 @@ public sealed partial class PowerScriptTemplatesPage : Page
         _ => DefaultGlyph,
     };
 
-    private static string ModuleIconName(string moduleId) => moduleId switch
-    {
-        "advanced-paste" => "AdvancedPaste",
-        "power-display" => "PowerDisplay",
-        "file-locksmith" => "FileLocksmith",
-        "fancyzones" => "FancyZones",
-        "workspaces" => "Workspaces",
-        "image-resizer" => "ImageResizer",
-        "awake" => "Awake",
-        "light-switch" => "LightSwitch",
-        _ => "PowerToys",
-    };
-
     private static bool IsValidParameterName(string name) =>
         name.Length > 0 && char.IsAsciiLetter(name[0]) && name.All(c => char.IsAsciiLetterOrDigit(c) || c == '_');
 
@@ -601,7 +588,8 @@ public sealed partial class PowerScriptTemplatesPage : Page
         GivesGlyph.Glyph = PickerGlyph("Output", _output);
         if (IsCliContent)
         {
-            RunsImage.Source = GetImage(SettingsIconFolder + ModuleIconName(SelectedCliModule?.Id) + ".png");
+            var icon = SelectedCliContent?.IconName;
+            RunsImage.Source = GetImage(SettingsIconFolder + (string.IsNullOrWhiteSpace(icon) ? "PowerToys" : icon) + ".png");
             RunsImage.Visibility = Visibility.Visible;
             RunsGlyph.Visibility = Visibility.Collapsed;
         }

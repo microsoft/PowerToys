@@ -18,6 +18,11 @@ The current CLI catalogue separates queries/text transforms, action-only command
 and generated-file results across nine modules. The authoritative
 [scenario matrix](CLI-TEMPLATE-SCENARIOS.md) records every supported functionality,
 native flag, input/output contract and deliberate exclusion/review case.
+Definitions live in one compiled file per module under
+`PowerScripts.Core\Templates\CliModules`; shared builders handle typed arguments
+and output contracts. The Host generates the matrix table from the same
+catalogue. See the matrix's maintainer checklist and minimal module example;
+editing Markdown alone does not add a recipe.
 The original 14 recipe IDs retain their original contracts for saved scripts;
 mixed-purpose legacy recipes are no longer offered for new creation.
 The module-call form offers three value sources for each argument:

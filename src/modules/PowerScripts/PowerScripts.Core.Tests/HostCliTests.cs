@@ -17,6 +17,7 @@ using PowerScripts.Core.Activity;
 using PowerScripts.Core.Storage;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Security;
+using PowerScripts.Core.Templates;
 
 namespace PowerScripts.Core.Tests;
 
@@ -310,6 +311,18 @@ public class HostCliTests
         Assert.AreNotEqual(0, exit);
         StringAssert.Contains(error, "extensions");
         CollectionAssert.AreEquivalent(before, Directory.GetDirectories(_root));
+    }
+
+    [TestMethod]
+    public void CliScenarioMatrixComesFromTheSameCatalogueAsEditorDiscovery()
+    {
+        var matrix = RunHostOk("template", "cli-matrix").Replace("\r\n", "\n", StringComparison.Ordinal);
+        Assert.AreEqual(PowerShellCliTemplates.CreateScenarioMatrix(), matrix);
+        using var catalogue = JsonDocument.Parse(RunHostOk("template", "cli-list"));
+        foreach (var recipe in catalogue.RootElement.EnumerateArray())
+        {
+            StringAssert.Contains(matrix, "`" + recipe.GetProperty("id").GetString() + "`");
+        }
     }
 
     [TestMethod]

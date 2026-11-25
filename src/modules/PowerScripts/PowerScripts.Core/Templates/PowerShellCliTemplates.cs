@@ -23,31 +23,19 @@ public sealed record PowerShellCliTemplate(
     [property: JsonIgnore] string? StandardInput = null,
     [property: JsonIgnore] string? OutputScript = null)
 {
-    private static readonly string[] ModuleIds =
-    [
-        "advanced-paste", "settings", "power-display", "file-locksmith", "fancyzones",
-        "workspaces", "image-resizer", "awake", "light-switch",
-    ];
+    public string ModuleId { get; init; } = string.Empty;
 
-    public string ModuleId => ModuleIds.FirstOrDefault(module =>
-        Id == module || Id.StartsWith(module + "-", StringComparison.Ordinal)) ?? Id;
+    public bool SupportsFileBatch { get; init; }
 
-    public bool SupportsFileBatch => ModuleId == "image-resizer" ||
-        Id is "file-locksmith-query" or "file-locksmith-wait";
+    public string Group { get; init; } = string.Empty;
 
-    public string Group => ModuleId switch
-    {
-        "advanced-paste" => "Advanced Paste",
-        "settings" => "Settings",
-        "power-display" => "Power Display",
-        "file-locksmith" => "File Locksmith",
-        "fancyzones" => "FancyZones",
-        "workspaces" => "Workspaces",
-        "image-resizer" => "Image Resizer",
-        "awake" => "Awake",
-        "light-switch" => "Light Switch",
-        _ => throw new InvalidOperationException($"CLI template '{Id}' requires module metadata."),
-    };
+    public string IconName { get; init; } = "PowerToys";
+
+    internal string CommandSynopsis { get; init; } = string.Empty;
+
+    internal bool WritesState { get; init; }
+
+    internal bool UsesNetwork { get; init; }
 }
 
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
@@ -104,10 +92,6 @@ public static partial class PowerShellCliTemplates
 
         """;
 
-    private static readonly IReadOnlyList<PowerShellCliTemplate> LegacyDefinitions = CreateDefinitions();
-
-    public static IReadOnlyList<PowerShellCliTemplate> All { get; } = CreateScenarioCatalogue();
-
     internal static string CreateGuide(string id)
     {
         var notice = Get(id).HostExecutionNotice;
@@ -161,13 +145,12 @@ public static partial class PowerShellCliTemplates
     {
         var template = Get(id);
         var capabilities = new List<string> { "fileRead", HostCliBroker.Capability };
-        if (template.Output == "files" || id is "advanced-paste-transform" or "fancyzones" or "workspaces" or "light-switch" or "settings-module-state" ||
-            (template.Output == "none" && template.ModuleId is "settings" or "fancyzones" or "workspaces" or "light-switch" or "power-display"))
+        if (template.Output == "files" || template.WritesState)
         {
             capabilities.Add("fileWrite");
         }
 
-        if (id == "advanced-paste-transform" || id.StartsWith("advanced-paste-ai-", StringComparison.Ordinal))
+        if (template.UsesNetwork)
         {
             capabilities.Add("network");
         }
@@ -296,7 +279,7 @@ public static partial class PowerShellCliTemplates
     }
 
     internal static PowerShellCliTemplate Get(string? id) =>
-        All.Concat(LegacyDefinitions).FirstOrDefault(template => string.Equals(template.Id, id, StringComparison.Ordinal))
+        All.Concat(LegacyCatalogue).FirstOrDefault(template => string.Equals(template.Id, id, StringComparison.Ordinal))
         ?? throw new ArgumentException("Choose a known module CLI content template.", nameof(id));
 
     private static string Quote(string value) => "'" + value.Replace("'", "''", StringComparison.Ordinal) + "'";
@@ -370,23 +353,6 @@ public static partial class PowerShellCliTemplates
         return $"{validation}[{type}]${parameter.Name}";
     }
 
-    private static PowerShellCliTemplate Template(string id, string name, string description, string input, string executable, string arguments, params ScriptTemplateParameter[] parameters)
-        => new(id, name, description, input, "text", parameters, executable, arguments,
-            input is "files" or "text" ? new(input == "files" ? "SourceFile" : "Content", new JsonSchemaProperty
-            {
-                Type = "string",
-                Format = input == "files" ? JsonSchemaProperty.FilePathFormat : null,
-                Title = input == "files" ? "Input file" : "Input text",
-                Description = input == "files"
-                    ? "Use selected files as script input, save one fixed file path, or ask for one file when the script runs."
-                    : "Use script text input, save fixed text, or ask for text when the script runs.",
-                MinLength = 1,
-            }, Required: true) : null,
-            HostExecutionNotice: "With MXC enabled, script code remains contained, but this approved CLI recipe runs on the host with your standard-user permissions. " +
-                "The host action is outside the script's filesystem, network and desktop restrictions. " +
-                (id == "settings-module-state" ? "The Settings CLI still requires PowerToys to be stopped; this does not bypass Group Policy or the Runner's settings lock." :
-                    "Review the descriptor's hostCli bindings and the action's side effects before approval."));
-
     internal static string InstallationDirectory()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
@@ -398,27 +364,4 @@ public static partial class PowerShellCliTemplates
         return directory.FullName;
     }
 
-    private static ScriptTemplateParameter Text(string name, string description, string value = "", params string[] choices) =>
-        new(name, new JsonSchemaProperty
-        {
-            Type = "string",
-            Title = name,
-            Description = description,
-            Default = JsonSerializer.SerializeToElement(value),
-            Enum = choices.Length == 0 ? null : choices.ToList(),
-        });
-
-    private static ScriptTemplateParameter Integer(string name, string description, int value, int minimum = 0, int maximum = int.MaxValue) =>
-        new(name, new JsonSchemaProperty
-        {
-            Type = "integer",
-            Title = name,
-            Description = description,
-            Default = JsonSerializer.SerializeToElement(value),
-            Minimum = minimum,
-            Maximum = maximum,
-        });
-
-    private static ScriptTemplateParameter Flag(string name, string description, bool value = false) =>
-        new(name, new JsonSchemaProperty { Type = "boolean", Title = name, Description = description, Default = JsonSerializer.SerializeToElement(value) });
 }

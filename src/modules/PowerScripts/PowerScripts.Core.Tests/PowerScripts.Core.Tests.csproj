@@ -29,6 +29,8 @@
                       Private="false" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CliCatalogueCompatibility.json" />
+    <EmbeddedResource Include="..\CLI-TEMPLATE-SCENARIOS.md" LogicalName="CliTemplateScenarioMatrix.md" />
     <Compile Remove="SessionHost\**\*.cs" />
     <Compile Include="..\PowerScripts.Editor\UI\ViewModels\PowerScriptMetadataDetails.cs"
              Link="EditorMetadata\PowerScriptMetadataDetails.cs" />

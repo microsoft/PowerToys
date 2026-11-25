@@ -112,6 +112,12 @@ internal static class Program
                     return 0;
                 }
 
+                if (positional.Count == 1 && positional[0] == "cli-matrix" && options.Count == 0)
+                {
+                    Console.Out.Write(PowerShellCliTemplates.CreateScenarioMatrix());
+                    return 0;
+                }
+
                 if ((positional.Count == 2 || (positional.Count == 1 && options.ContainsKey("configure"))) && positional[0] == "create" &&
                     options.Keys.All(key => key.Equals("root", StringComparison.OrdinalIgnoreCase) || key.Equals("configure", StringComparison.OrdinalIgnoreCase)) &&
                     (!options.TryGetValue("root", out var roots) || roots.Count == 1) &&
@@ -139,7 +145,7 @@ internal static class Program
                     return 0;
                 }
 
-                Console.Error.WriteLine("template: use list, cli-list, create <template-id> [--configure] [--root <dir>], or create --configure [--root <dir>]. Configuration includes projectName, description, runtime, input, output, fileExtensions, minFiles, maxFiles, parameters, iconPreset, iconSource and cliContent. PowerToys operation templates use operation.commandId and optional operation.bindings.");
+                Console.Error.WriteLine("template: use list, cli-list, cli-matrix, create <template-id> [--configure] [--root <dir>], or create --configure [--root <dir>]. Configuration includes projectName, description, runtime, input, output, fileExtensions, minFiles, maxFiles, parameters, iconPreset, iconSource and cliContent. PowerToys operation templates use operation.commandId and optional operation.bindings.");
                 return 1;
             }
 
@@ -935,7 +941,7 @@ internal static class Program
         Console.WriteLine("  linux-container-recover            (safely reset only the idle PowerScripts Linux runtime, then check Python)");
         Console.WriteLine("  linux-container-setup              (explicitly download/cache the managed Python image)");
         Console.WriteLine("  trust list | approve <id> | revoke <id>   (manage which scripts are allowed to run)");
-        Console.WriteLine("  template list | template cli-list | template create <template-id> [--configure] [--root <dir>]");
+        Console.WriteLine("  template list | template cli-list | template cli-matrix | template create <template-id> [--configure] [--root <dir>]");
         Console.WriteLine("  template create --configure [--root <dir>] (generate from projectName, description, runtime, input, output, fileExtensions, minFiles, maxFiles, parameters, iconPreset and iconSource JSON on stdin)");
         Console.WriteLine("       --configure reads {\"projectName\":\"My script\",\"description\":\"...\",\"fileExtensions\":\".txt, .md\"} from stdin. Extensions apply only to file-input templates.");
         Console.WriteLine("       Editable module calls use cliContent and optional cliBindings (fixed value, input or parameter sources).");
