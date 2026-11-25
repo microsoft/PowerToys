@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="..\FancyZonesEditorCommon\FancyZonesEditorCommon.csproj" />
     <ProjectReference Include="..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
+    <InternalsVisibleTo Include="FancyZonesEditor.UnitTests" />
   </ItemGroup>
 
   <ItemGroup>
