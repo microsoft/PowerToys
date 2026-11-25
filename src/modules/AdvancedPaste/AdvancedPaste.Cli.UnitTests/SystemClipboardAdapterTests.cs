@@ -3,19 +3,13 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Specialized;
-using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 using AdvancedPaste.Cli;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Windows.ApplicationModel.DataTransfer;
-
-using FormsDataFormats = System.Windows.Forms.DataFormats;
-using FormsDataObject = System.Windows.Forms.DataObject;
 
 namespace AdvancedPaste.Cli.UnitTests;
 
@@ -23,51 +17,47 @@ namespace AdvancedPaste.Cli.UnitTests;
 public class SystemClipboardAdapterTests
 {
     [TestMethod]
-    public async Task DataObjectConversion_PreservesRichFormats()
+    public async Task ClipboardSnapshotConversion_PreservesRichFormats()
     {
-        const string text = "Hello PowerToys";
-        var html = HtmlFormatHelper.CreateHtmlFormat("<strong>Hello PowerToys</strong>");
-        var path = Path.GetTempFileName();
-        var source = new FormsDataObject();
-        source.SetText(text);
-        source.SetData(FormsDataFormats.Html, autoConvert: false, html);
-        source.SetFileDropList(new StringCollection { path, path + ".deleted" });
-        using var image = new Bitmap(2, 2);
-        source.SetImage(image);
+        const string text = "Hello PowerToys \u03a9";
+        var html = HtmlFormatHelper.CreateHtmlFormat($"<strong>{text}</strong>");
+        var folder = Directory.CreateTempSubdirectory();
+        var path = Path.Combine(folder.FullName, "file.txt");
 
         try
         {
+            File.WriteAllText(path, text);
+            var bitmapBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAEElEQVR4AQEFAPr/AP8AAP8FAAH/+lyI0QAAAABJRU5ErkJggg==");
+            var source = new ClipboardSnapshot(text, html, [path, path + ".deleted", folder.FullName], bitmapBytes);
             var packageView = SystemClipboardAdapter.CreateDataPackageView(source);
             var storageItems = await packageView.GetStorageItemsAsync();
-            var roundTripped = await SystemClipboardAdapter.CreateDataObjectAsync(packageView);
+            var roundTripped = await SystemClipboardAdapter.CreateClipboardSnapshotAsync(packageView);
 
-            Assert.AreEqual(text, roundTripped.GetText());
-            Assert.IsTrue(roundTripped.TryGetData<string>(FormsDataFormats.Html, out var roundTrippedHtml));
-            Assert.AreEqual(html, roundTrippedHtml);
-            Assert.AreEqual(path, storageItems.Single().Path);
-            CollectionAssert.Contains(roundTripped.GetFileDropList(), path);
-            Assert.IsNotNull(roundTripped.GetImage());
+            Assert.AreEqual(text, roundTripped.Text);
+            Assert.AreEqual(html, roundTripped.Html);
+            var expectedPaths = new[] { path, folder.FullName };
+            CollectionAssert.AreEqual(expectedPaths, storageItems.Select(item => item.Path).ToArray());
+            CollectionAssert.AreEqual(expectedPaths, roundTripped.FilePaths.ToArray());
+            CollectionAssert.AreEqual(bitmapBytes, roundTripped.BitmapBytes);
         }
         finally
         {
             File.Delete(path);
+            folder.Delete();
         }
     }
 
     [TestMethod]
-    public async Task RunOnSta_FromMta_ExecutesOnSta()
+    public async Task ClipboardSnapshotConversion_OmitsMissingFormats()
     {
-        var apartment = await Task.Run(() => SystemClipboardAdapter.RunOnSta(() => Thread.CurrentThread.GetApartmentState()));
+        var missingPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+        var packageView = SystemClipboardAdapter.CreateDataPackageView(new ClipboardSnapshot(null, null, [missingPath], null));
+        var roundTripped = await SystemClipboardAdapter.CreateClipboardSnapshotAsync(packageView);
 
-        Assert.AreEqual(ApartmentState.STA, apartment);
-    }
-
-    [TestMethod]
-    public async Task RunOnSta_PropagatesOriginalException()
-    {
-        var exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
-            Task.Run(() => SystemClipboardAdapter.RunOnSta<int>(() => throw new InvalidOperationException("Test failure"))));
-
-        Assert.AreEqual("Test failure", exception.Message);
+        Assert.IsFalse(packageView.Contains(StandardDataFormats.StorageItems));
+        Assert.IsNull(roundTripped.Text);
+        Assert.IsNull(roundTripped.Html);
+        Assert.AreEqual(0, roundTripped.FilePaths.Count);
+        Assert.IsNull(roundTripped.BitmapBytes);
     }
 }
