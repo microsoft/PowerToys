@@ -198,12 +198,14 @@ public class MouseJumpTests : UITestBase
         var resized = WaitHelper.WaitForStable(
             () =>
             {
-                var resizedPreview = ShowPreview();
+                var resizedPreview = GetPreviewWindow();
                 var resizedBounds = WindowHelper.GetWindowBounds(resizedPreview.Hwnd);
                 return (resizedPreview.ProcessId, Width: resizedBounds.Right - resizedBounds.Left);
             },
             observation => observation.Width is >= 500 and <= 530,
-            timeoutMS: 10_000);
+            timeoutMS: 10_000,
+            pollIntervalMS: 250,
+            recover: _ => NamedEventHelper.TrySignal(NamedEventHelper.MouseJumpShowPreview));
         Assert.IsTrue(resized.Succeeded, $"Mouse Jump did not apply the final 520px preview width. Last width: {resized.LastObservation.Width}px.");
         Assert.AreEqual(preview.ProcessId, resized.LastObservation.ProcessId, "Mouse Jump restarted while applying the updated settings.");
     }
