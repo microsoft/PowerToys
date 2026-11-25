@@ -116,11 +116,10 @@ rename it to `[Module]EndToEndTests.cs`, and start filling in test methods.
 
 For anything beyond a single trivial test, also copy
 [../templates/TestHelper.cs](../templates/TestHelper.cs) — a static helper with the reusable building
-blocks every port needs (navigate to the page, toggle + verify the process, read the activation
+blocks a suite can reuse (navigate to the page, toggle + verify the process, read the activation
 shortcut, discover/activate/close the module window with patient retry, clipboard, screen-center).
 Fill in the `__MODULE__` / `__MODULEUI__` / AutomationId placeholders and delete what you don't use.
-This mirrors how the legacy suites are organized (a `TestHelper` + thin test classes) and is exactly
-the shape of the validated ScreenRuler port.
+The ScreenRuler suite is a working example of a shared helper with thin test classes.
 
 The standard file header is required on every `.cs`:
 
@@ -150,7 +149,7 @@ The scaffold step copies the manifest and references it in the csproj:
 Do not remove the manifest because assertions are behavioral or format-only. Exact-value drags make
 the defect especially visible, but ordinary `Element.Click()`, `MouseClick()`, `DoubleClick()`, and
 coordinate-based `MouseHelper` calls need the same physical coordinate space. Some older reference
-projects omit the manifest; do not copy that omission into new or migrated projects.
+projects omit the manifest; do not copy that omission when creating or updating a suite.
 
 **Size secondary windows explicitly.** `UITestBase` maximizes its own Settings/scope window by
 default, but an editor discovered with `WindowsFinder.WaitForWindowByApp` does not inherit that
@@ -214,6 +213,6 @@ $exe = "$PWD\x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Modul
   [NuGet runtime-pack cache misses](nuget-runtime-pack-cache.md).
 - `winapp.exe` is a **run-time** prerequisite only (`winget install Microsoft.winappcli`, or set
   `WINAPP_CLI_PATH`). If no supported CLI/desktop is available, report local validation blocked and
-  list the build result and coverage. A clean compile alone does not complete a migration.
+  list the build result and coverage. A clean compile alone does not validate UI behavior.
 - `dotnet test` also works for a one-shot run, but prefer the produced exe for a fast iterate loop and
   do **not** run UI tests from inside an MSBuild step — they need an interactive session.

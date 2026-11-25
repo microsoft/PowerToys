@@ -628,7 +628,7 @@ public static class FancyZonesTestHelper
     /// <summary>
     /// Move the cursor to (<paramref name="x"/>, <paramref name="y"/>) in a couple of steps so the
     /// zone overlay sees the cursor MOVE. A single <c>SetCursorPos</c> can land without a tracked move
-    /// and leave the drag unnoticed (ui-tests-migration Recipe 11).
+    /// and leave the drag unnoticed (ui-tests-maintenance Recipe 11).
     /// </summary>
     public static void MoveCursorTracked(int x, int y, int settleMs = 200)
     {

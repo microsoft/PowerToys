@@ -1,13 +1,13 @@
-# CI stability — get a port green in fewer iterations
+# CI stability for UI tests
 
-The expensive gap in a UI-test migration is between **"passes on my box"** and **"green on the CI
+The expensive gap in UI testing is between **"passes on my box"** and **"green on the CI
 agent."** Every round-trip through that gap is a push, a queue wait, and a log dig. This document
 distills the failure modes that cause those round-trips into (1) a **mental model**, (2) **design
 principles to bake in from the first commit**, and (3) a **pre-flight checklist** so the first CI run
 is the *validation*, not the *discovery*.
 
 Read this **after** [patterns-and-pitfalls.md](patterns-and-pitfalls.md) (it references those recipes
-and pitfalls by number). The canonical worked example for everything below is the ScreenRuler port:
+and pitfalls by number). The ScreenRuler suite is a worked example:
 [ScreenRuler.UITests/TestHelper.cs](../../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests/TestHelper.cs).
 
 > **Why this matters for iteration count.** Almost every "flaky on CI, fine locally" failure traces to

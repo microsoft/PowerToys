@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-// TEMPLATE — a static helper for a UI-test project, distilled from the validated ScreenRuler
-// port. Copy alongside ModuleEndToEndTests.cs, then:
+// TEMPLATE — a static helper for a UI-test project, based on the ScreenRuler suite.
+// Copy alongside ModuleEndToEndTests.cs, then:
 //   • Replace __MODULE__ (project name) and __MODULEUI__ (the module's PROCESS name, e.g.
 //     "PowerToys.MeasureToolUI" — NOT the window title; see ModuleConfigData.cs in the harness).
 //   • Fill in the AutomationIds for your module's nav item(s), toggle, and shortcut card from the
@@ -164,7 +164,7 @@ public static class TestHelper
     /// <summary>
     /// Activate the module via its shortcut and return a PROCESS-scoped session for its window(s).
     /// Process scope (<see cref="Session.FromProcess"/>) resolves controls across whichever of the
-    /// module's windows owns them — the winappcli equivalent of the legacy <c>global: true</c> Find.
+    /// module's windows owns them.
     /// </summary>
     public static Session ActivateModule(UITestBase testBase, Key[] activationKeys, string testName)
     {

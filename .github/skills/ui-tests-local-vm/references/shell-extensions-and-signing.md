@@ -193,4 +193,4 @@ reproduce on a local VM (even constrained to 1 core, see customization.md — yo
 on an x64 host, so reason from the failure video/screenshot). The robustness patterns — re-select
 before every attempt, retryable transient popups, verify fixtures reached disk, and slow-path
 timeouts — are test design and live with the rest of the Explorer/shell test guidance in
-[ui-tests-migration explorer-shell-tests.md](../../ui-tests-migration/references/explorer-shell-tests.md).
+[UI-test maintenance: Explorer and Shell tests](../../ui-tests-maintenance/references/explorer-shell-tests.md).

@@ -478,7 +478,7 @@ In "FancyZones::MoveSizeUpdate" function.
 
 ### Extra tools and information
 
-**Test samples**: see the [UI-tests migration skill](../../../.github/skills/ui-tests-migration/SKILL.md).
+**Test samples**: see the [UI-test maintenance skill](../../../.github/skills/ui-tests-maintenance/SKILL.md).
 
 While working on tests, you may need a tool that helps you to view the element's accessibility data, e.g. for finding the button to click. For this purpose, you could use [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview).
 

@@ -79,7 +79,7 @@ $build = (Invoke-AzDevOpsRest -Uri '_apis/build/builds/123?api-version=7.1').Bod
 `Get-AzDevOpsPagedValues` follows every `x-ms-continuationtoken` response header. Use it whenever an
 endpoint can paginate; never infer completeness from one page.
 
-REST writes mutate Azure state. A create, migrate, or stabilize UI-test task includes the scoped
+REST writes mutate Azure state. Creating, updating, or fixing UI tests includes the scoped
 commit/push and CI-validation continuation described in the three skills; it does not need a second
 "run CI" request. Explicit local-only/no-push/no-CI scope overrides that default. A status question,
 VM setup, or local run of existing tests does not authorize publication. Cancel, retry, or approve

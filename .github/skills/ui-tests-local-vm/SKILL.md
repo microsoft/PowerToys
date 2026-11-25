@@ -8,7 +8,7 @@ license: MIT
 
 Run PowerToys UI tests in a persistent, interactive Windows VM while keeping product and test
 execution off the host. Use this skill as the execution complement to
-[ui-tests-migration](../ui-tests-migration/SKILL.md). Restore the baseline checkpoint or recreate the
+[ui-tests-maintenance](../ui-tests-maintenance/SKILL.md). Restore the baseline checkpoint or recreate the
 guest when clean-profile behavior must be validated.
 
 The guest is a Hyper-V virtual machine. Nothing runs nested, so the same scaffold works on x64 and on
@@ -24,7 +24,7 @@ is the only practical guest; run it with `-Platform ARM64` and get the Windows 1
 Start guests with the default resource profile: 4 vCPUs and 8 GB RAM. Get the target suite fully
 green before lowering resources with the `Constrained` profile (1 vCPU and 4 GB RAM).
 
-For **create, migrate, or stabilize** tasks, complete both profiles and then automatically invoke
+For **create, update, or fix** tasks, complete both profiles and then automatically invoke
 [ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md): pass its access preflight, commit and push
 the scoped changes, queue CI, and remain attached until terminal validation. **Do not mark the task
 complete at local green or wait for another user request to publish/run CI.** Respect explicit
@@ -45,7 +45,7 @@ does not authorize publication. See the pipeline skill for the shared completion
 
 Use it when asked to:
 
-- Create or migrate UI tests and iterate repeatedly without reprovisioning Windows each run.
+- Create or maintain UI tests and iterate repeatedly without reprovisioning Windows each run.
 - Validate Explorer, hotkey, WebView2, shell-extension, foreground, or composed-visual behavior in a
   real interactive desktop.
 - Run tests as a true standard user while retaining a separate administrator control channel.
@@ -62,7 +62,7 @@ are the behavior under test.
 
 | Skill | Owns |
 |---|---|
-| `ui-tests-migration` | Test design, project scaffolding, framework APIs, assertions, lifecycle, and CI stability. |
+| `ui-tests-maintenance` | Test design, project scaffolding, framework APIs, assertions, lifecycle, and CI stability. |
 | `ui-tests-local-vm` | Fast persistent-VM setup, deployment, interactive execution, evidence export, and iteration. |
 | `ui-tests-pipeline-ci` | Required post-local commit/push, access preflight, scoped CI, and terminal sign-off for implementation tasks. |
 
@@ -112,8 +112,8 @@ Read only what the task needs:
    builds cannot register a sparse MSIX (0% on CI), classic (registry-COM, signing-free) vs modern
    (sparse-MSIX) surfaces, Debug vs Release/`NDEBUG` gating, runtime detection, and reproducing CI's
    classic scenario on a local signed VM.
-6. [ui-tests-migration](../ui-tests-migration/SKILL.md) - required whenever test code or framework
-   behavior is being created, migrated, or stabilized.
+6. [ui-tests-maintenance](../ui-tests-maintenance/SKILL.md) - required when creating tests or
+   updating or fixing test or framework behavior.
 
 ## Default agentic cycle
 
@@ -148,7 +148,7 @@ Create and maintain this task list:
 - [ ] 0. Verify host setup FIRST: `Initialize-LocalVmHost.ps1 -VmRoot <root> -CheckOnly`. If it reports
         IsReady=false, STOP and ask the user to run the elevated command it prints - Hyper-V group
         membership, the DPAPI credential, and guest creation all need a human. Never autopilot past it
-- [ ] 1. Read ui-tests-migration guidance for the target test surface
+- [ ] 1. Read ui-tests-maintenance guidance for the target test surface
 - [ ] 1a. Read the target module's dev docs — `doc/devdocs/modules/<module>.md` (search `doc/devdocs/`,
         including `common/`, if the exact file is missing) — for development-cycle gotchas such as
         Release/`NDEBUG` registration gating, signed sparse-MSIX context menus, and Explorer restarts,

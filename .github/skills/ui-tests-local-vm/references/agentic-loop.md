@@ -1,7 +1,7 @@
 # Agentic local-VM UI-test loop
 
 This loop assumes the test project follows `Microsoft.PowerToys.UITest`, builds as a
-Microsoft.Testing.Platform executable, and has already passed the `ui-tests-migration` design and
+Microsoft.Testing.Platform executable, and has already passed the `ui-tests-maintenance` design and
 CI-stability checks.
 
 Run the full suite twice: on a Windows 10 Enterprise LTSC 2021 guest first, then the same unfiltered
@@ -243,7 +243,7 @@ Do not call a retained run clean merely because the product archive was refreshe
 
 ## 9. Hand implementation tasks to CI automatically
 
-For a create, migrate, or stabilize task, **do not stop after local success**. Complete the default
+When creating, updating, or fixing UI tests, **do not stop after local success**. Complete the default
 and constrained matrices, then invoke
 [ui-tests-pipeline-ci](../../ui-tests-pipeline-ci/SKILL.md) without waiting for another user prompt.
 Keep publication and CI validation as unfinished TODOs.

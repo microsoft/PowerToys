@@ -1,35 +1,29 @@
 ---
-name: ui-tests-migration
-description: "Create and stabilize PowerToys UI suites using the existing Microsoft.PowerToys.UITest framework and winappcli. Use for new UITest projects, flaky CI, Settings IPC and signing, Explorer/Shell selection, preview and thumbnail handlers, hotkeys, foreground ownership, and WinUI/WebView visual assertions. Covers test design, Hyper-V validation and the required CI handoff. WinAppDriver/Selenium migration guidance is historical and applies only to older branches that still contain the legacy framework."
+name: ui-tests-maintenance
+description: "Create, update, and fix PowerToys UI tests with Microsoft.PowerToys.UITest and winappcli. Use for new coverage in new or existing modules, test project scaffolding, regressions, flaky CI, Settings IPC and signing, Explorer/Shell selection, preview and thumbnail handlers, hotkeys, foreground ownership, and WinUI/WebView visual assertions. Covers test design, Hyper-V validation, and CI handoff."
 license: Complete terms in LICENSE.txt
 ---
 
-# PowerToys UI-test development
+# PowerToys UI-test maintenance
 
-Create and stabilize UI tests using `Microsoft.PowerToys.UITest`, the **winappcli** framework
+Create and maintain UI tests using `Microsoft.PowerToys.UITest`, the **winappcli** framework
 in `src/common/UITestAutomation/`. The framework shells out to `winapp.exe` and parses its JSON.
-It does not use WinAppDriver, Selenium, or Appium.
-
-The WinAppDriver harness and its test projects were removed from `main`. The legacy comparisons
-linked below are historical guidance for older branches, not scaffolding for current tests.
 
 ## When to use this skill
 
-Use this skill when the task is to:
+Choose the workflow that matches the request:
 
-- **Extend or stabilize** an existing `[Module].UITests` project using the shared framework.
-- **Create a new** `[Module].UITests` project for a module with **no** UI tests by reading the
-  module's human test **sign-off markdown** (e.g. `ColorPickerUITest.md`) and turning each manual
-  checklist item into an automated test.
-- **Validate a new or migrated suite in a local Windows VM** through an unattended
-  build/package/deploy/run/TRX/diagnose loop. Use a retained VM for fast iteration and a restored
-  baseline checkpoint when clean-profile behavior matters.
-
-This skill covers project scaffolding, PowerToys test recipes, and the build and validation loop.
+1. **[Create new tests](references/test-workflows.md#scenario-1-create-new-tests)** for a new or
+   existing module. Add cases to its current suite; scaffold `[Module].UITests` only if no suite
+   exists. Derive assertions from the feature spec, regression report, or manual sign-off checklist.
+2. **[Update or fix existing tests](references/test-workflows.md#scenario-2-update-or-fix-existing-tests)**
+   when expected behavior changes, a regression breaks a test, or a test flakes. Reproduce the
+   issue, identify the failing boundary, and keep assertions as strong as before unless behavior
+   intentionally changed.
 
 ## End-to-end completion contract
 
-A request to **create, migrate, or stabilize UI tests** includes the complete delivery loop:
+A request to **create, update, or fix UI tests** includes the complete delivery loop:
 implement -> build -> full local VM matrix -> commit and push -> scoped CI -> terminal results.
 Local success is a handoff, **not completion**. After the full default and constrained suites pass,
 invoke [ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md) automatically; do not wait for a
@@ -47,9 +41,8 @@ queueing, completion watching, and the three-run stabilization limit.
 >   read overlay → click-capture → inspect editor), driven entirely through `winappcli`.
 > - **Cross-window input**: the ScreenRuler suite lives in
 >   [ScreenRuler.UITests/TestHelper.cs](../../../src/modules/MeasureTool/Tests/ScreenRuler.UITests/TestHelper.cs)
->   + 5 test classes. It is the canonical port reference — cross-window toolbar discovery via
->   `Session.FromProcess`, a DPI-aware `app.manifest`, cursor centering, and patient hotkey
->   activation are all there because real runs needed them (see
+>   and five test classes. It demonstrates cross-window toolbar discovery via `Session.FromProcess`,
+>   a DPI-aware `app.manifest`, cursor centering, and patient hotkey activation (see
 >   [references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md)).
 > - **Stateful/visual reference (validated 15/15 across Win10 x64, Win11 x64, and ARM64)**:
 >   [PeekFilePreviewTests.cs](../../../src/modules/peek/Peek.UITests/PeekFilePreviewTests.cs)
@@ -65,21 +58,20 @@ queueing, completion watching, and the three-run stabilization limit.
 ## Required reads (in order)
 
 1. **This `SKILL.md`** — the naming rules, workflow, and build/validate loop.
-2. **[references/framework-differences.md](references/framework-differences.md)** — winappcli engine, stateless elements, selector
-   grammar (no XPath/CssSelector), session scopes (window vs process), lifecycle/hygiene/module
-   pre-enablement, multi-window discovery, and framework API limits.
-3. **[references/api-mapping.md](references/api-mapping.md)** — the line-by-line cheat sheet:
+2. **[references/framework-guide.md](references/framework-guide.md)** — winappcli, element snapshots,
+   selectors, session scopes, lifecycle, module pre-enablement, and multi-window discovery.
+3. **[references/api-reference.md](references/api-reference.md)** — the API cheat sheet:
    namespaces, `By`, `Element` actions/properties, `Session`, `UITestBase`, the static
    Keyboard/Mouse/Clipboard helpers, and the element-wrapper catalog. Keep this open while editing.
 4. **[references/project-setup.md](references/project-setup.md)** — csproj scaffold, naming/placement
    rules, `.slnx` registration, and how to build and run a UI-test project. Uses the
    [templates/](templates/) starter files.
-5. **[references/porting-workflow.md](references/porting-workflow.md#scenario-b--greenfield-from-a-human-sign-off-markdown)** —
-   author tests from a human sign-off checklist. Use Scenario A only as historical migration guidance.
+5. **[references/test-workflows.md](references/test-workflows.md)** — create new tests or update and
+   fix existing ones.
 6. **[references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md)** — adaptable recipes
    for the recurring PowerToys patterns (toggle a module + verify its process, read the activation
    shortcut from a `ShortcutControl`, fire a global hotkey reliably, inspect the clipboard, discover
-   overlay/editor windows) and the gotchas that bite during migration.
+   overlay/editor windows) and common failure modes.
 7. **[references/explorer-shell-tests.md](references/explorer-shell-tests.md)** — required for tests
   involving Explorer, preview handlers, thumbnail providers, Shell selection, view modes, or Shell
   restarts. Covers lifecycle boundaries, authoritative signals, and failure evidence.
@@ -97,19 +89,12 @@ queueing, completion watching, and the three-run stabilization limit.
 10. **[ui-tests-pipeline-ci](../ui-tests-pipeline-ci/SKILL.md)** — the mandatory post-local handoff
   for implementation tasks: preflight, scoped commit/push, exact-revision CI, and terminal sign-off.
 
-## Choose the project
-
-Extend the module's existing UI-test project if it has one. Otherwise, use the module's manual
-sign-off checklist to create `[Module].UITests` under `src/modules/[Module]/Tests/[Module].UITests/`.
-If the module uses a different test layout, match its convention. If you cannot find a checklist or
-test spec, ask for one. See [project setup](references/project-setup.md).
-
 ## High-level workflow
 
 Create a TODO list and work top-to-bottom. Each step links to the reference that drives it.
 
 ```markdown
-- [ ] 1. Identify the module and whether to extend or create its suite
+- [ ] 1. Identify the module and choose the create or update/fix workflow
 - [ ] 1a. Read the module's developer docs — `doc/devdocs/modules/<module>.md` (if the exact file is
         missing, search `doc/devdocs/`, including `doc/devdocs/common/`) — to learn its
         development-cycle specifics BEFORE writing tests: how its shell extensions / context menus
@@ -119,12 +104,12 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
         unsigned `.msix` fails to register (`0x800B0100`).
 - [ ] 2. Read the relevant reference examples end-to-end
 - [ ] 3. Inventory the source:
-        • For an existing suite, identify the relevant test methods and shared helpers
-        • For a new suite, read the module's sign-off markdown and list the checklist items
+        • For new coverage, identify the behavior and list its observable acceptance criteria
+        • For an update or fix, identify the failing or outdated cases and shared helpers
   • For each workflow → list every external boundary (runner, Explorer, HWND, renderer,
     compositor, child process) and its authoritative ready signal
-        — references/porting-workflow.md
-- [ ] 4. Internalize the deltas — references/framework-differences.md
+        — references/test-workflows.md
+- [ ] 4. Review the applicable framework APIs — references/framework-guide.md
 - [ ] 5. If needed, scaffold a new project (csproj + PerMonitorV2 app.manifest from templates,
   register in .slnx)
         — references/project-setup.md
@@ -139,7 +124,7 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
   `$requiresAuthenticatedSettingsIpc` companion-signing path in
   `.pipelines/v2/templates/job-test-project.yml`; never add a test-side settings/restart fallback
   for Release CI — [references/ci-stability.md](references/ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc)
-- [ ] 8. Build the new project to exit code 0 — this SKILL.md "Build & validate"
+- [ ] 8. Build the affected project to exit code 0 — this SKILL.md "Build & validate"
 - [ ] 9. Run one deterministic test in the local VM and diagnose the first failure
       — ../ui-tests-local-vm/SKILL.md
 - [ ] 10. Rerun the focused test after each fix, then widen to the complete module suite with bounded
@@ -156,9 +141,8 @@ Create a TODO list and work top-to-bottom. Each step links to the reference that
 
 ## Build & validate
 
-The framework needs `winapp.exe` only at **run** time, not build time — the project has zero
-managed dependency on the engine. So you can always compile-verify a migration even on an agent with
-no winappcli installed.
+The framework needs `winapp.exe` only at **run** time. You can build the test project on a host
+without winappcli installed.
 
 ```pwsh
 # 0. FIRST build of a brand-new project: restore so the assets file exists, otherwise the build
@@ -166,7 +150,7 @@ no winappcli installed.
 dotnet restore src\modules\<Module>\Tests\<Module>.UITests\<Module>.UITests.csproj -p:Platform=x64
 #    (Equivalently, run tools\build\build-essentials.cmd once at the start of the session.)
 
-# 1. Build just the new test project (fast inner loop). Prefer the repo build script.
+# 1. Build just the affected test project (fast inner loop).
 tools\build\build.cmd -Path src\modules\<Module>\Tests\<Module>.UITests -Platform x64 -Configuration Debug
 #    Exit code 0 = success; non-zero = failure. On failure read the errors log under the repo root:
 #    artifacts\logs\<Module>.UITests\build.<Configuration>.<Platform>.errors.log
@@ -206,8 +190,7 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Mod
   [references/patterns-and-pitfalls.md](references/patterns-and-pitfalls.md) Pitfall 26). If there is
   no video, find out why rather than proceeding blind — the harness now prints the reason (a clean
   Windows image without the Visual C++ redistributable cannot load the native encoder).
-- **Always** build to exit code 0 before proceeding to live validation. Fix every compile error — do
-  not leave `// TODO: port this` stubs that break the build.
+- **Always** build to exit code 0 before proceeding to live validation.
 - Running the tests requires a **live interactive desktop** plus `winapp.exe`
   (`winget install Microsoft.winappcli`, or set `WINAPP_CLI_PATH`). The whole PowerToys runner is
   launched by the harness (`PowerToys.exe --open-settings`) — you should see the Settings window
@@ -227,11 +210,6 @@ $exe = "<repo>\x64\Debug\tests\<Module>.UITests\net11.0-windows10.0.26100.0\<Mod
   Recipe 16. Anything larger — a hidden automation-peer TextBlock, a new property, a state string —
   must be flagged for the user instead. (ColorPicker's `ColorHexAutomationPeer` hook is a documented,
   pre-existing exception — see its class remarks.)
-- **Do NOT port the legacy plumbing literally.** No Selenium `Actions`, no `WindowsDriver`/`WindowsElement`,
-  no `By.XPath`/`By.CssSelector`, no `:4723`. Map them to the winappcli idioms in
-  [references/api-mapping.md](references/api-mapping.md).
-- **Do NOT restore the legacy harness.** Reference the current winappcli-based
-  `src/common/UITestAutomation/UITestAutomation.csproj`.
 - **Do NOT invent assertions** for a vague sign-off item. If a checklist line has no observable
   pass/fail signal, implement what you can and leave a clearly-marked `TestContext.WriteLine` note
   (or skip with an explanation) rather than asserting on something you can't actually read.

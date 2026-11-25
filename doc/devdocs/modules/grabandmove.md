@@ -310,7 +310,7 @@ commands with `not-microsoft-signed`. Debug relaxes only that signature check; m
 filenames and the `WinUI3Apps` directory layout are still required.
 
 For Release validation, use a matching officially signed runtime or the existing
-[`signSparsePackages.ps1 -RequiredAuthenticodeFile` companion-signing workflow](../../../.github/skills/ui-tests-migration/references/ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc)
+[`signSparsePackages.ps1 -RequiredAuthenticodeFile` companion-signing workflow](../../../.github/skills/ui-tests-maintenance/references/ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc)
 for **both** `PowerToys.exe` and `PowerToys.Settings.exe` on the isolated execution machine.
 Keep its certificate marker separate from `driver-state.json` and remove that test trust with
 [removeTestSigningCertificates.ps1](../../../.pipelines/removeTestSigningCertificates.ps1).

@@ -164,8 +164,8 @@ string captured = ClipboardHelper.WaitForText(ignoredValue: string.Empty, timeou
 Assert.IsFalse(string.IsNullOrEmpty(captured), "Nothing was copied within 3s.");
 ```
 
-`ClipboardHelper` already marshals to an STA thread and swallows contention errors — delete any legacy
-hand-rolled STA wrapper.
+`ClipboardHelper` already marshals to an STA thread and handles contention errors. Do not add a
+separate STA wrapper.
 
 ## Recipe 6 — Discover overlay vs. editor windows from one process
 
@@ -247,8 +247,8 @@ SettingsConfigHelper.UpdateModuleSettings(
 
 ## Recipe 10 — Drive controls that live in a *different* window (process-scoped session)
 
-A module's toolbar / overlay / editor is a separate window from Settings. The legacy `global: true`
-Find reached into it implicitly; with winappcli, bind a session to that **process** and search there.
+A module's toolbar, overlay, or editor may be a separate window from Settings. Bind a session to
+that **process** and search there, or use a window-scoped session if you know the target HWND.
 `Session.FromProcess` uses the `-a` (process) scope, so it resolves a control across whichever of the
 process's windows owns it — ideal for a toolbar that may be one of several windows.
 
@@ -294,7 +294,7 @@ MouseHelper.LeftClick();               // or Drag(...) for a free-form box
 
 Modules built on Windows.Graphics.Capture (Screen Ruler spacing, Magnifier, Text Extractor, screenshot
 tools) need three habits a warm dev box hides — see [ci-stability.md](ci-stability.md) Principle 3. The
-ScreenRuler port is the reference (`SelectToolAndVerify` / `MeasureWithRetry` / `ReengageTool` /
+ScreenRuler suite is the reference (`SelectToolAndVerify` / `MeasureWithRetry` / `ReengageTool` /
 `IsMeasureOverlayPresent`).
 
 ```csharp
@@ -590,23 +590,23 @@ swallow in `FancyZones.cpp::OnKeyDown`.
 
 ## Pitfalls
 
-1. **`Click` has no `msPreAction`.** Legacy `Click(msPreAction: 1000, msPostAction: 2000)`
-   → `Thread.Sleep(1000); el.Click(msPostAction: 2000);`. Forgetting the pre-delay causes flaky clicks
-   on slow-rendering pages.
+1. **Wait for the control to be ready before clicking.** Assert an observable ready state rather
+   than assuming that a fixed delay covers rendering, layout, and foreground changes.
 2. **`Click` (physical) vs. `Invoke` (coordinate-free).** `Click` raises the target window and uses
     the element's winappcli bounds for a native mouse click; zero-bounds controls fall back to `Invoke`.
     Use `Invoke` directly when cursor movement is undesirable. `NavigationViewItem.Click()` overrides
     the default with `Invoke` so first-interaction navigation stays race-safe.
 3. **`By.Name` is a substring match and may return many hits.** Always `FindAll` + filter when the
    name isn't unique. Prefer `By.AccessibilityId`.
-4. **No `global` parameter.** If a legacy `Find(by, t, global: true)` reached into a popup/other
-   window, switch the session scope (`Session.FromProcess`) or discover the window via `WindowsFinder`.
-5. **`PowerToysModule.FancyZone` was renamed to `FancyZonesEditor`.** Update the enum value.
+4. **A window-scoped lookup cannot reach a separate popup.** Switch to `Session.FromProcess`
+   or discover and target the popup window through `WindowsFinder`.
+5. **Use a direct editor scope only when the scenario permits it.** For example,
+   `PowerToysModule.FancyZonesEditor` targets the editor, not Runner-driven activation.
 6. **Don't launch overlay/utility module exes standalone.** Drive `ColorPicker`/`LightSwitch`/etc.
    through the `PowerToysSettings` scope so the runner owns the hotkey and toggles; a standalone exe
    has no runner behind it.
 7. **`System.Threading.Timer` is ambiguous** in this harness (WinForms is referenced and also defines
-   `Timer`). Fully-qualify if you add one. (Rare in tests, common if you port harness-level code.)
+   `Timer`). Use the fully qualified name where both namespaces are in scope.
 8. **Cached element geometry is a snapshot.** Re-`Find` before using `X/Y/Width/Height` for a
    drag/mouse-click if the UI moved since the lookup.
 9. **Restore state you change.** Toggles, settings.json edits, and clipboard contents must be restored
@@ -617,7 +617,7 @@ swallow in `FancyZones.cpp::OnKeyDown`.
     `NETSDK1004`. Missing `Common.Dotnet.CsWinRT.props` import → CI's `verifyCommonProps.ps1` fails;
     the template already includes it.
 11. **`winapp.exe` missing at run time** is expected on a headless agent — the project still *builds*.
-    Don't treat a missing-CLI run failure as a migration defect; report build-clean + ready-to-run.
+    Report a missing CLI as a run-time prerequisite, not a passing test result.
 12. **Every UI-test executable needs an `app.manifest` with `PerMonitorV2`.** Without it the test host is DPI-unaware,
     so `Element.Click()` and `MouseHelper` can feed virtualized Win32 cursor coordinates with
     winappcli's PHYSICAL-pixel bounds. Ordinary clicks can miss their controls; exact drags make the
@@ -625,12 +625,8 @@ swallow in `FancyZones.cpp::OnKeyDown`.
     150% display). Copy [templates/app.manifest](../templates/app.manifest) and keep
     `<ApplicationManifest>app.manifest</ApplicationManifest>` in the csproj regardless of assertion
     type.
-    **Why the legacy project's manifest doesn't save it:** a legacy `OutputType=Library` test runs
-    inside `testhost.exe` (vstest), whose manifest — not the test DLL's — governs DPI awareness, so the
-    legacy `app.manifest` is silently ignored and its physical input can't be DPI-correct on a
-    scaled display (the ScreenRuler legacy Bounds test fails `150 x 149` even *with* its manifest). A
-    current UI-test project is an `OutputType=Exe` (MTP), so its manifest applies to its own process — which is
-    why adding the manifest actually fixes the port, and can make it pass where the legacy can't.
+    Run the Microsoft.Testing.Platform executable directly so its manifest applies to its own
+    process.
 13. **Anchor coordinate gestures to the screen centre, not the current cursor** (Recipe 11). This is
     the #1 cause of "measurement is wrong/empty" — the cursor drifts to the bottom edge after a
     toolbar appears.

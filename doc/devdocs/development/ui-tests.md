@@ -1,22 +1,22 @@
 # UI tests framework
 
-PowerToys provides a UI-test framework for modules and Settings. Tests use
-`Microsoft.PowerToys.UITest`, which drives Windows UI Automation through `winappcli` and runs as
-a Microsoft.Testing.Platform executable. The legacy WinAppDriver/Selenium framework and its test
-projects have been removed.
+PowerToys UI tests run as Microsoft.Testing.Platform executables. They use
+`Microsoft.PowerToys.UITest` to drive Windows UI Automation through `winappcli`.
 
 ## Agent-assisted workflows
 
-Two repository skills cover the complete implementation and validation loop:
+Three repository skills cover implementation and validation:
 
-- [UI-test development skill](../../../.github/skills/ui-tests-migration/SKILL.md): create or
-  extend UI-test projects, design stable selectors, waits, and lifecycle, and
+- [UI-test maintenance skill](../../../.github/skills/ui-tests-maintenance/SKILL.md): create,
+  update, or fix UI tests; design stable selectors, waits, and lifecycle; and
   prepare tests for CI.
 - [Local-VM UI-tests skill](../../../.github/skills/ui-tests-local-vm/SKILL.md): create persistent
   Windows 10 and Windows 11 Hyper-V guests, stage current build/test artifacts, execute tests in a
   standard-user interactive desktop, and collect durable TRX/log/screenshot/video evidence.
+- [UI-test CI skill](../../../.github/skills/ui-tests-pipeline-ci/SKILL.md): publish and validate the
+  tested revision in scoped CI after local validation (authorized Microsoft FTEs only).
 
-For new or updated tests, use both skills. Build first, then use the local VMs as the default live
+For new or updated tests, build first, then use the local VMs as the default live
 agentic loop: run one deterministic test, diagnose and fix it, and finally widen to the complete
 module suite on both supported Windows versions.
 
@@ -357,14 +357,14 @@ settings above; automatic sharding does not change them.
 
 ## How to add the first UI tests for your modules
 
-Use the [UI-test development skill](../../../.github/skills/ui-tests-migration/SKILL.md) for new
+Use the [UI-test maintenance skill](../../../.github/skills/ui-tests-maintenance/SKILL.md) for new
 or updated suites. It contains the executable project scaffold, naming rules,
 CI-stability checklist, and validated examples.
 
 Reference `src\common\UITestAutomation\UITestAutomation.csproj`, embed a per-monitor-DPI
 manifest, and stage the executable under the repository's `tests` output directory. Follow the
-skill's [project setup guide](../../../.github/skills/ui-tests-migration/references/project-setup.md)
-and [template](../../../.github/skills/ui-tests-migration/templates/Module.UITests.csproj).
+skill's [project setup guide](../../../.github/skills/ui-tests-maintenance/references/project-setup.md)
+and [template](../../../.github/skills/ui-tests-maintenance/templates/Module.UITests.csproj).
 
 ### Visual assertions in UITestAutomation
 
