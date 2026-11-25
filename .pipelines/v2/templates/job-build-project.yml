@@ -656,6 +656,7 @@ jobs:
           signType: batchSigning
           batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+          MaxConcurrency: '40'
 
     - template: steps-esrp-signing.yml
       parameters:
