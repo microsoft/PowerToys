@@ -9,6 +9,7 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <ResourceDictionary Source="Controls/EditorControls.xaml" />
                 <ResourceDictionary Source="Controls/SettingsGroup.xaml" />
+                <ResourceDictionary Source="Styles/NavigationView.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
             <converters:BoolNegationConverter x:Key="BoolNegationConverter" />

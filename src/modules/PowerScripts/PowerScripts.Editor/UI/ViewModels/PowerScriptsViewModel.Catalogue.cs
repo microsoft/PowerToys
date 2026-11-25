@@ -145,6 +145,8 @@ public partial class PowerScriptsViewModel
         }
 
         _loadedScriptsRoot = root;
+        ApplyLastRuns();
+        ApplyScriptPlaces();
         OnPropertyChanged(nameof(HasScripts));
         RefreshCatalogue(preserveEditorOrder);
     }

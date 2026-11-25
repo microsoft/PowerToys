@@ -11,8 +11,8 @@ using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
-using PowerScripts.Editor.Helpers;
 using PowerScripts.UI.Helpers;
 using PowerScripts.UI.ViewModels;
 
@@ -22,6 +22,7 @@ namespace PowerScripts.Editor.Views
     {
         private bool _preserveCatalogueOnLoad;
         private bool _refreshingConfiguration;
+        private string _newScriptChoice;
 
         private PowerScriptsViewModel ViewModel { get; set; }
 
@@ -44,6 +45,12 @@ namespace PowerScripts.Editor.Views
 
         public static bool IsDisabled(bool value) => !value;
 
+        public static Visibility FilterBadgeVisibility(int inputFilterIndex, int outputFilterIndex) =>
+            BoolToVisibility(inputFilterIndex > 0 || outputFilterIndex > 0);
+
+        public static Visibility ListVisibility(bool hasScripts, bool hasNoMatchingScripts) =>
+            BoolToVisibility(hasScripts && !hasNoMatchingScripts);
+
         public async Task RefreshConfigurationAsync()
         {
             if (ViewModel is null || _refreshingConfiguration)
@@ -63,6 +70,7 @@ namespace PowerScripts.Editor.Views
                 }
 
                 await RefreshScriptsAsync();
+                await ViewModel.RefreshActivityAsync();
             }
             catch (Exception exception)
             {
@@ -74,15 +82,46 @@ namespace PowerScripts.Editor.Views
             }
         }
 
-        private void OpenGlobalSettings_Click(object sender, RoutedEventArgs e)
+        private static PowerScriptListItem ScriptFromMenu(object sender) => (PowerScriptListItem)((FrameworkElement)sender).Tag;
+
+        private static void SetMoreButtonOpacity(object row, double opacity)
         {
-            try
+            if (row is Grid { Children.Count: > 0 } outer
+                && outer.Children[0] is Grid inner
+                && inner.Children[^1] is Button more)
             {
-                EditorNavigation.OpenGlobalSettings();
+                more.Opacity = opacity;
             }
-            catch (Exception exception)
+        }
+
+        private void ScriptRow_PointerEntered(object sender, PointerRoutedEventArgs e) => SetMoreButtonOpacity(sender, 1);
+
+        private void ScriptRow_PointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            if (sender is Grid { Children.Count: > 0 } outer
+                && outer.Children[0] is Grid inner
+                && inner.Children[^1] is Button { Flyout.IsOpen: true })
             {
-                ShowScriptSettingsError(exception);
+                return;
+            }
+
+            SetMoreButtonOpacity(sender, 0);
+        }
+
+        private void ScriptMoreButton_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            button.Opacity = 1;
+            button.LostFocus -= ScriptMoreButton_LostFocus;
+            button.LostFocus += ScriptMoreButton_LostFocus;
+        }
+
+        private void ScriptMoreButton_LostFocus(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            if (button.Flyout is not { IsOpen: true })
+            {
+                button.Opacity = 0;
             }
         }
 
@@ -108,13 +147,37 @@ namespace PowerScripts.Editor.Views
             }
         }
 
-        private void CreateCustomScript_Click(object sender, RoutedEventArgs e)
+        private async void CreateScript_Click(object sender, RoutedEventArgs e)
         {
-            if (!Frame.Navigate(typeof(PowerScriptTemplatesPage), ViewModel))
+            _newScriptChoice = null;
+            NewScriptDialog.XamlRoot = XamlRoot;
+            await NewScriptDialog.ShowAsync();
+
+            var (page, failure) = _newScriptChoice switch
+            {
+                "Script" => (typeof(PowerScriptTemplatesPage), "PowerScripts_TemplateNavigationFailed"),
+                "Operation" => (typeof(PowerToysOperationsPage), "PowerScripts_OperationNavigationFailed"),
+                _ => (null, null),
+            };
+
+            if (page is not null && !Frame.Navigate(page, ViewModel))
             {
                 ShowScriptSettingsError(new InvalidOperationException(
-                    ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateNavigationFailed")));
+                    ResourceLoaderInstance.ResourceLoader.GetString(failure)));
             }
+        }
+
+        private void NewScriptChoice_Click(object sender, RoutedEventArgs e)
+        {
+            _newScriptChoice = (string)((FrameworkElement)sender).Tag;
+            NewScriptDialog.Hide();
+        }
+
+        private void ClearFilters_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ScriptInputFilterIndex = 0;
+            ViewModel.ScriptOutputFilterIndex = 0;
+            ViewModel.ScriptSearchText = string.Empty;
         }
 
         private async Task RefreshScriptsAsync()
@@ -123,6 +186,7 @@ namespace PowerScripts.Editor.Views
             {
                 await ViewModel.ReloadScriptsAsync();
                 ScriptSettingsError.IsOpen = false;
+                ScriptSettingsError.Visibility = Visibility.Collapsed;
             }
             catch (Exception ex)
             {
@@ -140,14 +204,48 @@ namespace PowerScripts.Editor.Views
             _preserveCatalogueOnLoad = e.NavigationMode is NavigationMode.Back or NavigationMode.Forward;
         }
 
-        private void ScriptCard_ItemClick(object sender, ItemClickEventArgs e) => OpenScript((PowerScriptListItem)e.ClickedItem);
+        private void ScriptList_ItemClick(object sender, ItemClickEventArgs e) => OpenScript((PowerScriptListItem)e.ClickedItem);
 
-        private void ScriptGrid_SizeChanged(object sender, SizeChangedEventArgs e)
+        private void OpenScriptMenuItem_Click(object sender, RoutedEventArgs e) => OpenScript(ScriptFromMenu(sender));
+
+        private void EditScriptMenuItem_Click(object sender, RoutedEventArgs e)
         {
-            if (ScriptGrid.ItemsPanelRoot is ItemsWrapGrid panel)
+            try
             {
-                var columns = Math.Max(1, (int)(e.NewSize.Width / 240));
-                panel.ItemWidth = Math.Max(180, (e.NewSize.Width - 16) / columns);
+                PowerScriptFileEditor.Open(ScriptFromMenu(sender).EntryFullPath, isMetadata: false);
+            }
+            catch (Exception ex)
+            {
+                ShowScriptSettingsError(ex);
+            }
+        }
+
+        private void ShowInExplorerMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            var script = ScriptFromMenu(sender);
+            try
+            {
+                if (!string.IsNullOrEmpty(script.EntryFullPath) && File.Exists(script.EntryFullPath))
+                {
+                    Process.Start("explorer.exe", $"/select,\"{script.EntryFullPath}\"");
+                }
+                else if (Directory.Exists(script.FolderPath))
+                {
+                    Process.Start("explorer.exe", $"\"{script.FolderPath}\"");
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowScriptSettingsError(ex);
+            }
+        }
+
+        private void ScriptIcon_ImageFailed(object sender, ExceptionRoutedEventArgs e)
+        {
+            if (((FrameworkElement)sender).DataContext is PowerScriptListItem script)
+            {
+                Logger.LogWarning($"Unable to display PowerScript icon '{script.IconPath}': {e.ErrorMessage}");
+                script.MarkIconUnavailable();
             }
         }
 
@@ -166,6 +264,7 @@ namespace PowerScripts.Editor.Views
         {
             Logger.LogError("Unable to manage PowerScripts.", exception);
             ScriptSettingsError.Message = exception.Message;
+            ScriptSettingsError.Visibility = Visibility.Visible;
             ScriptSettingsError.IsOpen = true;
         }
 

@@ -2,765 +2,991 @@
     x:Class="PowerScripts.Editor.Views.PowerScriptTemplatesPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
-    xmlns:layout="using:PowerScripts.Editor.Controls"
-    xmlns:local="using:PowerScripts.Editor.Helpers"
+    xmlns:helpers="using:PowerScripts.Editor.Helpers"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:viewModels="using:PowerScripts.UI.ViewModels"
     xmlns:views="using:PowerScripts.Editor.Views"
     AutomationProperties.AutomationId="PowerScriptsTemplatesPage"
     AutomationProperties.LandmarkType="Main">
-    <Page.Resources>
-        <DataTemplate x:Key="CreationSectionHeaderTemplate">
-            <TextBlock
-                Margin="0,0,0,12"
-                Style="{StaticResource SubtitleTextBlockStyle}"
-                Text="{Binding}" />
-        </DataTemplate>
-        <Style
-            x:Key="ContractChoiceStyle"
-            BasedOn="{StaticResource DefaultGridViewItemStyle}"
-            TargetType="GridViewItem">
-            <Setter Property="Margin" Value="0,0,8,8" />
-            <Setter Property="Padding" Value="12" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
-            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
-        </Style>
-    </Page.Resources>
     <Page.KeyboardAccelerators>
         <KeyboardAccelerator
             Key="Left"
             Invoked="BackKeyboardAccelerator_Invoked"
             Modifiers="Menu" />
     </Page.KeyboardAccelerators>
-    <Grid RowSpacing="12">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
-        <Grid
-            Grid.ColumnSpan="2"
-            Margin="24,16,24,0"
-            ColumnSpacing="8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <Button
-                x:Uid="PowerScripts_SettingsBack"
-                AutomationProperties.AutomationId="PowerScriptsTemplatesBack"
-                Click="BackButton_Click"
-                Style="{StaticResource SubtleButtonStyle}">
-                <SymbolIcon Symbol="Back" />
-            </Button>
-            <BreadcrumbBar
-                x:Name="TemplateBreadcrumb"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                AutomationProperties.AutomationId="PowerScriptsTemplatesBreadcrumb"
-                ItemClicked="TemplateBreadcrumb_ItemClicked" />
-        </Grid>
-        <layout:ManagementPage
-            x:Name="CreationForm"
-            x:Uid="PowerScripts_TemplatesPage"
-            Grid.Row="1">
-            <layout:ManagementPage.ModuleContent>
-                <StackPanel Spacing="12">
-                    <TextBlock x:Uid="PowerScripts_TemplatesHelp" TextWrapping="Wrap" />
-                    <ComboBox
-                        x:Name="ContentKindComboBox"
-                        x:Uid="PowerScripts_TemplateContent"
-                        HorizontalAlignment="Stretch"
-                        AutomationProperties.AutomationId="PowerScriptsTemplateContent"
-                        SelectionChanged="Content_SelectionChanged">
-                        <ComboBoxItem x:Uid="PowerScripts_TemplateContentExample" Tag="example" />
-                        <ComboBoxItem x:Uid="PowerScripts_TemplateContentCli" Tag="cli" />
-                    </ComboBox>
-                    <Border Style="{StaticResource EditorSurfaceStyle}">
-                        <StackPanel Spacing="8">
-                            <TextBlock x:Uid="PowerScripts_TemplateConsumers" Style="{StaticResource SubtitleTextBlockStyle}" />
-                            <TextBlock x:Uid="PowerScripts_TemplateConsumersHelp" TextWrapping="Wrap" />
-                            <StackPanel x:Name="ConsumerChoices" Spacing="4">
-                                <CheckBox
-                                    x:Uid="PowerScripts_TemplateConsumerAdvancedPaste"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerAdvancedPaste"
-                                    Checked="Consumer_Changed"
-                                    Tag="advanced-paste"
-                                    Unchecked="Consumer_Changed" />
-                                <CheckBox
-                                    x:Uid="PowerScripts_TemplateConsumerKeyboardManager"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerKeyboardManager"
-                                    Checked="Consumer_Changed"
-                                    Tag="keyboard-manager"
-                                    Unchecked="Consumer_Changed" />
-                                <CheckBox
-                                    x:Uid="PowerScripts_TemplateConsumerCommandPalette"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerCommandPalette"
-                                    Checked="Consumer_Changed"
-                                    Tag="command-palette"
-                                    Unchecked="Consumer_Changed" />
-                                <CheckBox
-                                    x:Uid="PowerScripts_TemplateConsumerExplorer"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateConsumerExplorer"
-                                    Checked="Consumer_Changed"
-                                    Tag="file-explorer"
-                                    Unchecked="Consumer_Changed" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-                    <Border Style="{StaticResource EditorSurfaceStyle}">
-                        <StackPanel Spacing="12">
-                            <ComboBox
-                                x:Name="RuntimeComboBox"
-                                x:Uid="PowerScripts_TemplateRuntime"
-                                HorizontalAlignment="Stretch"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateRuntime"
-                                SelectionChanged="Options_SelectionChanged">
-                                <ComboBoxItem Content="PowerShell" Tag="powershell" />
-                                <ComboBoxItem Content="Python" Tag="python" />
-                            </ComboBox>
+    <Page.Resources>
+        <Style x:Key="NewScriptCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{ThemeResource CardBackgroundFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+            <Setter Property="Padding" Value="20" />
+        </Style>
+        <Style
+            x:Key="SideCardStyle"
+            BasedOn="{StaticResource NewScriptCardStyle}"
+            TargetType="Border">
+            <Setter Property="Padding" Value="0" />
+        </Style>
+        <Style
+            x:Key="HintTextStyle"
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style
+            x:Key="ErrorTextStyle"
+            BasedOn="{StaticResource CaptionTextBlockStyle}"
+            TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{ThemeResource SystemFillColorCriticalBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style BasedOn="{StaticResource DefaultGridViewItemStyle}" TargetType="GridViewItem">
+            <Setter Property="Margin" Value="0,0,4,4" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Background" Value="{ThemeResource ControlFillColorDefaultBrush}" />
+            <Setter Property="BorderBrush" Value="{ThemeResource ControlStrokeColorDefaultBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="{ThemeResource OverlayCornerRadius}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+        </Style>
+        <ItemsPanelTemplate x:Key="PickerPanel">
+            <ItemsWrapGrid
+                ItemHeight="72"
+                ItemWidth="90"
+                Orientation="Horizontal" />
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Key="RowsPanel">
+            <StackPanel />
+        </ItemsPanelTemplate>
+
+        <DataTemplate x:Key="PreviewRowTemplate" x:DataType="viewModels:PowerScriptPreviewRow">
+            <Grid
+                MinHeight="52"
+                Padding="16,8"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="{x:Bind views:PowerScriptTemplatesPage.DividerThickness(HasDivider)}"
+                ColumnSpacing="12"
+                Opacity="{x:Bind views:PowerScriptTemplatesPage.OffOpacity(IsOff)}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="28" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Image
+                    Width="20"
+                    Height="20"
+                    VerticalAlignment="Center"
+                    Source="{x:Bind Icon}"
+                    Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(HasIcon)}" />
+                <ContentPresenter
+                    Width="28"
+                    Height="28"
+                    VerticalAlignment="Center"
+                    helpers:ScriptTileTint.Kind="{x:Bind TileKind}"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Visibility="{x:Bind views:PowerScriptTemplatesPage.InvertBoolToVisibility(HasIcon)}">
+                    <FontIcon FontSize="14" Glyph="{x:Bind Glyph}" />
+                </ContentPresenter>
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Spacing="1">
+                    <TextBlock Text="{x:Bind Title}" TextWrapping="Wrap" />
+                    <TextBlock
+                        Style="{StaticResource HintTextStyle}"
+                        Text="{x:Bind Detail}"
+                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(HasDetail)}" />
+                </StackPanel>
+                <Border
+                    Grid.Column="2"
+                    Padding="8,1,8,2"
+                    VerticalAlignment="Center"
+                    Background="{ThemeResource ControlAltFillColorSecondaryBrush}"
+                    BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                    BorderThickness="1"
+                    CornerRadius="10"
+                    Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsOff)}">
+                    <TextBlock x:Uid="PowerScripts_NewScript_OffPill" Style="{StaticResource CaptionTextBlockStyle}" />
+                </Border>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="ParameterTemplate" x:DataType="viewModels:PowerScriptTemplateParameter">
+            <Expander
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                AutomationProperties.AutomationId="{x:Bind AutomationId}"
+                AutomationProperties.Name="{x:Bind DisplayName, Mode=OneWay}"
+                IsExpanded="True">
+                <Expander.Header>
+                    <Grid Padding="0,10" ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter
+                            Width="28"
+                            Height="28"
+                            VerticalAlignment="Center"
+                            helpers:ScriptTileTint.Kind="{x:Bind TypeKind, Mode=OneWay}"
+                            BorderThickness="1"
+                            CornerRadius="6">
+                            <FontIcon FontSize="14" Glyph="{x:Bind TypeGlyph, Mode=OneWay}" />
+                        </ContentPresenter>
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
                             <TextBlock
-                                x:Name="PythonHelp"
-                                x:Uid="PowerScripts_TemplatePythonHelp"
-                                TextWrapping="Wrap"
-                                Visibility="Collapsed" />
-                            <StackPanel
-                                x:Name="CliContentOptions"
-                                Spacing="12"
-                                Visibility="Collapsed">
-                                <TextBlock x:Uid="PowerScripts_TemplateCliHelp" TextWrapping="Wrap" />
-                                <ComboBox
-                                    x:Name="CliModuleComboBox"
-                                    x:Uid="PowerScripts_TemplateCliModule"
-                                    HorizontalAlignment="Stretch"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateCliModule"
-                                    MaxDropDownHeight="320"
-                                    SelectionChanged="CliModule_SelectionChanged" />
-                                <ComboBox
-                                    x:Name="CliContentComboBox"
-                                    x:Uid="PowerScripts_TemplateCliAction"
-                                    HorizontalAlignment="Stretch"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateCliAction"
-                                    MaxDropDownHeight="320"
-                                    SelectionChanged="Options_SelectionChanged" />
-                                <InfoBar
-                                    x:Name="CliCatalogueStatus"
-                                    AutomationProperties.AutomationId="PowerScriptsCliCatalogueStatus"
-                                    IsClosable="False"
-                                    IsOpen="False"
-                                    Severity="Informational">
-                                    <InfoBar.ActionButton>
-                                        <Button
-                                            x:Name="CliCatalogueRetry"
-                                            x:Uid="PowerScripts_OperationTemplateRetry"
-                                            AutomationProperties.AutomationId="PowerScriptsCliCatalogueRetry"
-                                            Click="CliCatalogueRetry_Click"
-                                            Visibility="Collapsed" />
-                                    </InfoBar.ActionButton>
-                                </InfoBar>
-                                <TextBlock x:Name="CliDescription" TextWrapping="Wrap" />
-                                <TextBlock x:Uid="PowerScripts_CliArgumentsHeading" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                <ItemsRepeater ItemsSource="{x:Bind CliArguments}">
-                                    <ItemsRepeater.Layout>
-                                        <StackLayout Spacing="20" />
-                                    </ItemsRepeater.Layout>
-                                    <ItemsRepeater.ItemTemplate>
-                                        <DataTemplate x:DataType="viewModels:PowerScriptCliArgument">
-                                            <StackPanel Spacing="6">
-                                                <TextBlock
-                                                    Style="{StaticResource BodyStrongTextBlockStyle}"
-                                                    Text="{x:Bind Value.DisplayLabel}"
-                                                    TextWrapping="Wrap" />
-                                                <TextBlock
-                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                    Text="{x:Bind Value.Description}"
-                                                    TextWrapping="Wrap" />
-                                                <ComboBox
-                                                    HorizontalAlignment="Stretch"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Source')}"
-                                                    AutomationProperties.Name="{x:Bind Value.Label}"
-                                                    SelectedIndex="{x:Bind SourceIndex, Mode=TwoWay}">
-                                                    <ComboBoxItem x:Uid="PowerScripts_CliArgumentFixed" />
-                                                    <ComboBoxItem x:Uid="PowerScripts_CliArgumentInput" IsEnabled="{x:Bind CanUseInput, Mode=OneWay}" />
-                                                    <ComboBoxItem x:Uid="PowerScripts_CliArgumentParameter" />
-                                                </ComboBox>
-                                                <TextBlock
-                                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                                    Text="{x:Bind SourceHelp, Mode=OneWay}"
-                                                    TextWrapping="Wrap" />
-                                                <Grid Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsFixed), Mode=OneWay}">
-                                                    <TextBox
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Text')}"
-                                                        AutomationProperties.Name="{x:Bind Value.Label}"
-                                                        Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsText)}" />
-                                                    <TextBox
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Integer')}"
-                                                        AutomationProperties.Name="{x:Bind Value.Label}"
-                                                        InputScope="Number"
-                                                        Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsInteger)}" />
-                                                    <ToggleSwitch
-                                                        x:Uid="PowerScripts_OperationsBoolean"
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Boolean')}"
-                                                        AutomationProperties.Name="{x:Bind Value.Label}"
-                                                        IsOn="{x:Bind Value.BooleanValue, Mode=TwoWay}"
-                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsBoolean)}" />
-                                                    <ComboBox
-                                                        HorizontalAlignment="Stretch"
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Choice')}"
-                                                        AutomationProperties.Name="{x:Bind Value.Label}"
-                                                        ItemsSource="{x:Bind Value.Choices}"
-                                                        SelectedItem="{x:Bind SelectedChoice, Mode=TwoWay}"
-                                                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsChoice)}" />
-                                                    <Grid ColumnSpacing="8" Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsFile)}">
-                                                        <Grid.ColumnDefinitions>
-                                                            <ColumnDefinition Width="*" />
-                                                            <ColumnDefinition Width="Auto" />
-                                                        </Grid.ColumnDefinitions>
-                                                        <TextBox
-                                                            AutomationProperties.AutomationId="{x:Bind ControlId('File')}"
-                                                            AutomationProperties.Name="{x:Bind Value.Label}"
-                                                            Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                        <Button
-                                                            x:Uid="PowerScripts_RunBrowse"
-                                                            Grid.Column="1"
-                                                            AutomationProperties.AutomationId="{x:Bind ControlId('Browse')}"
-                                                            AutomationProperties.Name="{x:Bind Value.BrowseLabel}"
-                                                            Click="CliBrowseFile_Click"
-                                                            Tag="{x:Bind}" />
-                                                    </Grid>
-                                                </Grid>
-                                            </StackPanel>
-                                        </DataTemplate>
-                                    </ItemsRepeater.ItemTemplate>
-                                </ItemsRepeater>
-                                <TextBlock
-                                    x:Name="CliBindingValidation"
-                                    AutomationProperties.AutomationId="PowerScriptsCliBindingValidation"
-                                    AutomationProperties.LiveSetting="Polite"
-                                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"
-                                    TextWrapping="Wrap"
-                                    Visibility="Collapsed" />
-                                <TextBlock
-                                    x:Uid="PowerScripts_TemplateCliSafety"
-                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                    TextWrapping="Wrap" />
-                                <HyperlinkButton
-                                    x:Uid="PowerScripts_TemplateRestrictedOperation"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateRestrictedOperation"
-                                    Click="RestrictedOperation_Click" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-                    <Border Style="{StaticResource EditorSurfaceStyle}">
-                        <StackPanel Spacing="16">
-                            <GridView
-                                x:Name="InputComboBox"
-                                x:Uid="PowerScripts_CreationInput"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateInput"
-                                HeaderTemplate="{StaticResource CreationSectionHeaderTemplate}"
-                                ItemContainerStyle="{StaticResource ContractChoiceStyle}"
-                                Loaded="ChoiceGrid_Loaded"
-                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                ScrollViewer.VerticalScrollMode="Disabled"
-                                SelectionChanged="Options_SelectionChanged"
-                                SelectionMode="Single"
-                                SizeChanged="ChoiceGrid_SizeChanged">
-                                <GridView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <ItemsWrapGrid
-                                            ItemHeight="112"
-                                            ItemWidth="196"
-                                            Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </GridView.ItemsPanel>
-                                <GridViewItem
-                                    x:Uid="PowerScripts_ChoiceInputNone"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateInputNone"
-                                    Tag="none">
-                                    <StackPanel
-                                        MinHeight="72"
-                                        Padding="4,12"
-                                        Spacing="8">
-                                        <FontIcon HorizontalAlignment="Left" Glyph="&#xE768;" />
-                                        <TextBlock x:Uid="PowerScripts_ChoiceNone" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                    </StackPanel>
-                                </GridViewItem>
-                                <GridViewItem
-                                    x:Uid="PowerScripts_ChoiceInputText"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateInputText"
-                                    Tag="text">
-                                    <StackPanel
-                                        MinHeight="72"
-                                        Padding="4,12"
-                                        Spacing="8">
-                                        <FontIcon HorizontalAlignment="Left" Glyph="&#xE8D2;" />
-                                        <TextBlock x:Uid="PowerScripts_ChoiceText" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                    </StackPanel>
-                                </GridViewItem>
-                                <GridViewItem
-                                    x:Uid="PowerScripts_ChoiceInputFiles"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateInputFiles"
-                                    Tag="files">
-                                    <StackPanel
-                                        MinHeight="72"
-                                        Padding="4,12"
-                                        Spacing="8">
-                                        <FontIcon HorizontalAlignment="Left" Glyph="&#xE8A5;" />
-                                        <TextBlock x:Uid="PowerScripts_ChoiceFiles" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                    </StackPanel>
-                                </GridViewItem>
-                                <GridViewItem
-                                    x:Uid="PowerScripts_ChoiceInputImage"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateInputImage"
-                                    Tag="image">
-                                    <StackPanel
-                                        MinHeight="72"
-                                        Padding="4,12"
-                                        Spacing="8">
-                                        <FontIcon HorizontalAlignment="Left" Glyph="&#xEB9F;" />
-                                        <TextBlock x:Uid="PowerScripts_ChoiceImage" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                    </StackPanel>
-                                </GridViewItem>
-                                <GridViewItem
-                                    x:Uid="PowerScripts_ChoiceInputAudio"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateInputAudio"
-                                    Tag="audio">
-                                    <StackPanel
-                                        MinHeight="72"
-                                        Padding="4,12"
-                                        Spacing="8">
-                                        <FontIcon HorizontalAlignment="Left" Glyph="&#xE8D6;" />
-                                        <TextBlock x:Uid="PowerScripts_ChoiceAudio" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                    </StackPanel>
-                                </GridViewItem>
-                            </GridView>
-                            <StackPanel
-                                x:Name="FileInputOptions"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateFileOptions"
-                                Spacing="16"
-                                Visibility="Collapsed">
-                                <TextBox
-                                    x:Name="ExtensionsTextBox"
-                                    x:Uid="PowerScripts_TemplateFileExtensions"
-                                    AutomationProperties.AutomationId="PowerScriptsTemplateFileExtensions"
-                                    MaxLength="1024"
-                                    PlaceholderText=".txt, .md, .png" />
-                                <TextBlock
-                                    x:Uid="PowerScripts_TemplateFileExtensionsHelp"
-                                    Style="{StaticResource CaptionTextBlockStyle}"
-                                    TextWrapping="Wrap" />
-                                <Grid ColumnSpacing="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <NumberBox
-                                        x:Name="MinimumFilesNumberBox"
-                                        x:Uid="PowerScripts_TemplateMinimumFiles"
-                                        AutomationProperties.AutomationId="PowerScriptsTemplateMinimumFiles"
-                                        Maximum="2147483647"
-                                        Minimum="1"
-                                        SmallChange="1"
-                                        SpinButtonPlacementMode="Compact"
-                                        ValueChanged="FileCount_ValueChanged" />
-                                    <NumberBox
-                                        x:Name="MaximumFilesNumberBox"
-                                        x:Uid="PowerScripts_TemplateMaximumFiles"
-                                        Grid.Column="1"
-                                        AutomationProperties.AutomationId="PowerScriptsTemplateMaximumFiles"
-                                        Maximum="2147483647"
-                                        Minimum="0"
-                                        SmallChange="1"
-                                        SpinButtonPlacementMode="Compact"
-                                        ValueChanged="FileCount_ValueChanged" />
-                                </Grid>
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-                    <Border Style="{StaticResource EditorSurfaceStyle}">
-                        <GridView
-                            x:Name="OutputComboBox"
-                            x:Uid="PowerScripts_CreationOutput"
-                            AutomationProperties.AutomationId="PowerScriptsTemplateOutput"
-                            HeaderTemplate="{StaticResource CreationSectionHeaderTemplate}"
-                            ItemContainerStyle="{StaticResource ContractChoiceStyle}"
-                            Loaded="ChoiceGrid_Loaded"
-                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                            ScrollViewer.VerticalScrollMode="Disabled"
-                            SelectionChanged="Options_SelectionChanged"
-                            SelectionMode="Single"
-                            SizeChanged="ChoiceGrid_SizeChanged">
-                            <GridView.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <ItemsWrapGrid
-                                        ItemHeight="112"
-                                        ItemWidth="196"
-                                        Orientation="Horizontal" />
-                                </ItemsPanelTemplate>
-                            </GridView.ItemsPanel>
-                            <GridViewItem
-                                x:Uid="PowerScripts_ChoiceOutputNone"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateOutputNone"
-                                Tag="none">
-                                <StackPanel
-                                    MinHeight="72"
-                                    Padding="4,12"
-                                    Spacing="8">
-                                    <FontIcon HorizontalAlignment="Left" Glyph="&#xE73E;" />
-                                    <TextBlock x:Uid="PowerScripts_ChoiceNoResult" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                </StackPanel>
-                            </GridViewItem>
-                            <GridViewItem
-                                x:Uid="PowerScripts_ChoiceOutputText"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateOutputText"
-                                Tag="text">
-                                <StackPanel
-                                    MinHeight="72"
-                                    Padding="4,12"
-                                    Spacing="8">
-                                    <FontIcon HorizontalAlignment="Left" Glyph="&#xE8D2;" />
-                                    <TextBlock x:Uid="PowerScripts_ChoiceText" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                </StackPanel>
-                            </GridViewItem>
-                            <GridViewItem
-                                x:Uid="PowerScripts_ChoiceOutputFiles"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateOutputFiles"
-                                Tag="files">
-                                <StackPanel
-                                    MinHeight="72"
-                                    Padding="4,12"
-                                    Spacing="8">
-                                    <FontIcon HorizontalAlignment="Left" Glyph="&#xE8A5;" />
-                                    <TextBlock x:Uid="PowerScripts_ChoiceFiles" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                </StackPanel>
-                            </GridViewItem>
-                            <GridViewItem
-                                x:Uid="PowerScripts_ChoiceOutputImage"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateOutputImage"
-                                Tag="image">
-                                <StackPanel
-                                    MinHeight="72"
-                                    Padding="4,12"
-                                    Spacing="8">
-                                    <FontIcon HorizontalAlignment="Left" Glyph="&#xEB9F;" />
-                                    <TextBlock x:Uid="PowerScripts_ChoiceImage" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                </StackPanel>
-                            </GridViewItem>
-                            <GridViewItem
-                                x:Uid="PowerScripts_ChoiceOutputAudio"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateOutputAudio"
-                                Tag="audio">
-                                <StackPanel
-                                    MinHeight="72"
-                                    Padding="4,12"
-                                    Spacing="8">
-                                    <FontIcon HorizontalAlignment="Left" Glyph="&#xE8D6;" />
-                                    <TextBlock x:Uid="PowerScripts_ChoiceAudio" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                </StackPanel>
-                            </GridViewItem>
-                        </GridView>
-                    </Border>
-                    <Border Style="{StaticResource EditorSurfaceStyle}">
-                        <StackPanel Spacing="12">
-                            <TextBlock
-                                x:Uid="PowerScripts_TemplateParameters"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateParametersHeading"
-                                Style="{StaticResource SubtitleTextBlockStyle}" />
-                            <TextBlock x:Uid="PowerScripts_TemplateParametersHelp" TextWrapping="Wrap" />
-                            <TextBlock
-                                x:Uid="PowerScripts_TemplateParameterDefaultHelp"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateDefaultHelp"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                TextWrapping="Wrap" />
-                            <ItemsRepeater ItemsSource="{x:Bind Parameters}">
-                                <ItemsRepeater.Layout>
-                                    <StackLayout Spacing="8" />
-                                </ItemsRepeater.Layout>
-                                <ItemsRepeater.ItemTemplate>
-                                    <DataTemplate x:DataType="viewModels:PowerScriptTemplateParameter">
-                                        <Expander
-                                            HorizontalAlignment="Stretch"
-                                            HorizontalContentAlignment="Stretch"
-                                            AutomationProperties.AutomationId="{x:Bind AutomationId}"
-                                            Header="{x:Bind views:PowerScriptTemplatesPage.ParameterHeader(Name), Mode=OneWay}"
-                                            IsExpanded="True">
-                                            <StackPanel Padding="16" Spacing="12">
-                                                <Grid ColumnSpacing="12">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBox
-                                                        x:Uid="PowerScripts_TemplateParameterName"
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Name')}"
-                                                        MaxLength="64"
-                                                        Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                    <ComboBox
-                                                        x:Uid="PowerScripts_TemplateParameterType"
-                                                        Grid.Column="1"
-                                                        HorizontalAlignment="Stretch"
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Type')}"
-                                                        SelectedIndex="{x:Bind TypeIndex, Mode=TwoWay}">
-                                                        <ComboBoxItem x:Uid="PowerScripts_TemplateParameterString" />
-                                                        <ComboBoxItem x:Uid="PowerScripts_TemplateParameterInteger" />
-                                                        <ComboBoxItem x:Uid="PowerScripts_TemplateParameterBoolean" />
-                                                        <ComboBoxItem x:Uid="PowerScripts_TemplateParameterFile" />
-                                                    </ComboBox>
-                                                </Grid>
-                                                <TextBox
-                                                    x:Uid="PowerScripts_TemplateParameterTitle"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Title')}"
-                                                    MaxLength="100"
-                                                    Text="{x:Bind Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                <TextBox
-                                                    x:Uid="PowerScripts_TemplateParameterDescription"
-                                                    AcceptsReturn="True"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Description')}"
-                                                    MaxLength="500"
-                                                    Text="{x:Bind Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                    TextWrapping="Wrap" />
-                                                <CheckBox
-                                                    x:Uid="PowerScripts_TemplateParameterRequired"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Required')}"
-                                                    IsChecked="{x:Bind Required, Mode=TwoWay}" />
-                                                <StackPanel Spacing="8" Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsString), Mode=OneWay}">
-                                                    <TextBox
-                                                        x:Uid="PowerScripts_TemplateParameterEnum"
-                                                        AcceptsReturn="True"
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Enum')}"
-                                                        MaxLength="4096"
-                                                        Text="{x:Bind EnumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                        TextWrapping="Wrap" />
-                                                    <TextBlock
-                                                        x:Uid="PowerScripts_TemplateParameterEnumHelp"
-                                                        Style="{StaticResource CaptionTextBlockStyle}"
-                                                        TextWrapping="Wrap" />
-                                                </StackPanel>
-                                                <Grid ColumnSpacing="12" Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsInteger), Mode=OneWay}">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*" />
-                                                        <ColumnDefinition Width="*" />
-                                                    </Grid.ColumnDefinitions>
-                                                    <TextBox
-                                                        x:Uid="PowerScripts_TemplateParameterMinimum"
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Minimum')}"
-                                                        MaxLength="12"
-                                                        Text="{x:Bind MinimumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                    <TextBox
-                                                        x:Uid="PowerScripts_TemplateParameterMaximum"
-                                                        Grid.Column="1"
-                                                        AutomationProperties.AutomationId="{x:Bind ControlId('Maximum')}"
-                                                        MaxLength="12"
-                                                        Text="{x:Bind MaximumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                                                </Grid>
-                                                <TextBox
-                                                    x:Uid="PowerScripts_TemplateParameterExtensions"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Extensions')}"
-                                                    MaxLength="1024"
-                                                    Text="{x:Bind FileExtensions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                    Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsFile), Mode=OneWay}" />
-                                                <CheckBox
-                                                    x:Uid="PowerScripts_TemplateParameterHasDefault"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('HasDefault')}"
-                                                    IsChecked="{x:Bind HasDefault, Mode=TwoWay}" />
-                                                <TextBox
-                                                    x:Uid="PowerScripts_TemplateParameterDefault"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Default')}"
-                                                    Text="{x:Bind DefaultText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                    Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(ShowTextDefault), Mode=OneWay}" />
-                                                <ToggleSwitch
-                                                    x:Uid="PowerScripts_TemplateParameterBooleanDefault"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('BooleanDefault')}"
-                                                    IsOn="{x:Bind DefaultBoolean, Mode=TwoWay}"
-                                                    Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(ShowBooleanDefault), Mode=OneWay}" />
-                                                <Button
-                                                    x:Uid="PowerScripts_TemplateParameterRemove"
-                                                    AutomationProperties.AutomationId="{x:Bind ControlId('Remove')}"
-                                                    Click="RemoveParameterButton_Click"
-                                                    Tag="{x:Bind}" />
-                                            </StackPanel>
-                                        </Expander>
-                                    </DataTemplate>
-                                </ItemsRepeater.ItemTemplate>
-                            </ItemsRepeater>
-                            <Button
-                                x:Name="AddParameterButton"
-                                x:Uid="PowerScripts_TemplateParameterAdd"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateParameterAdd"
-                                Click="AddParameterButton_Click" />
-                        </StackPanel>
-                    </Border>
-                    <Border Style="{StaticResource EditorSurfaceStyle}">
-                        <StackPanel Spacing="12">
-                            <TextBlock
-                                x:Uid="PowerScripts_CreationName"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateOtherHeading"
-                                Style="{StaticResource SubtitleTextBlockStyle}" />
-                            <TextBox
-                                x:Name="ProjectNameTextBox"
-                                x:Uid="PowerScripts_TemplateProjectName"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateProjectName"
-                                MaxLength="80"
-                                TextChanged="ProjectName_TextChanged" />
-                            <TextBlock
-                                x:Uid="PowerScripts_TemplateProjectNameHelp"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                TextWrapping="Wrap" />
-                            <TextBox
-                                x:Name="DescriptionTextBox"
-                                x:Uid="PowerScripts_TemplateDescription"
-                                MinHeight="72"
-                                AcceptsReturn="True"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateDescription"
-                                MaxLength="500"
-                                TextChanged="ProjectName_TextChanged"
-                                TextWrapping="Wrap" />
-                            <TextBlock x:Uid="PowerScripts_TemplateIcons" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                            <TextBlock
-                                x:Uid="PowerScripts_TemplateIconsHelp"
-                                Style="{StaticResource CaptionTextBlockStyle}"
-                                TextWrapping="Wrap" />
-                            <GridView
-                                x:Name="IconGrid"
-                                x:Uid="PowerScripts_TemplateIconPicker"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateIcons"
-                                ContainerContentChanging="IconGrid_ContainerContentChanging"
-                                ItemContainerStyle="{StaticResource ContractChoiceStyle}"
-                                ItemsSource="{x:Bind viewModels:PowerScriptTemplateIcon.All}"
-                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
-                                ScrollViewer.VerticalScrollMode="Disabled"
-                                SelectionChanged="Options_SelectionChanged"
-                                SelectionMode="Single">
-                                <GridView.ItemsPanel>
-                                    <ItemsPanelTemplate>
-                                        <ItemsWrapGrid
-                                            ItemHeight="96"
-                                            ItemWidth="92"
-                                            Orientation="Horizontal" />
-                                    </ItemsPanelTemplate>
-                                </GridView.ItemsPanel>
-                                <GridView.ItemTemplate>
-                                    <DataTemplate x:DataType="viewModels:PowerScriptTemplateIcon">
-                                        <StackPanel HorizontalAlignment="Center" Spacing="8">
-                                            <Grid Width="32" Height="32">
-                                                <FontIcon Glyph="&#xE756;" Visibility="{x:Bind views:PowerScriptTemplatesPage.InvertBoolToVisibility(HasIcon)}" />
-                                                <Image
-                                                    DataContext="{x:Bind}"
-                                                    Source="{Binding ImageSource}"
-                                                    Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(HasIcon)}" />
-                                            </Grid>
-                                            <TextBlock Style="{StaticResource CaptionTextBlockStyle}" Text="{x:Bind Name}" />
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </GridView.ItemTemplate>
-                            </GridView>
-                            <Button
-                                x:Name="CustomIconButton"
-                                x:Uid="PowerScripts_TemplateCustomIcon"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateCustomIcon"
-                                Click="CustomIconButton_Click" />
-                            <TextBlock
-                                x:Name="CustomIconName"
-                                AutomationProperties.AutomationId="PowerScriptsTemplateCustomIconName"
-                                Style="{StaticResource CaptionTextBlockStyle}"
+                                Style="{StaticResource BodyStrongTextBlockStyle}"
+                                Text="{x:Bind DisplayName, Mode=OneWay}"
                                 TextTrimming="CharacterEllipsis"
-                                Visibility="Collapsed" />
+                                TextWrapping="NoWrap" />
+                            <TextBlock
+                                Style="{StaticResource HintTextStyle}"
+                                Text="{x:Bind Meta, Mode=OneWay}"
+                                TextTrimming="CharacterEllipsis"
+                                TextWrapping="NoWrap" />
                         </StackPanel>
-                    </Border>
-                    <TextBlock x:Uid="PowerScripts_TemplateSetupHelp" TextWrapping="Wrap" />
-                    <InfoBar
-                        x:Name="TemplateStatus"
-                        AutomationProperties.AutomationId="PowerScriptsTemplateStatus"
-                        IsClosable="False" />
-                </StackPanel>
-            </layout:ManagementPage.ModuleContent>
-        </layout:ManagementPage>
-        <StackPanel
-            x:Name="PreviewPanel"
-            Grid.Row="1"
-            Grid.Column="1"
-            Width="300"
-            Margin="0,24,32,24"
-            Spacing="16"
-            Visibility="Collapsed">
-            <Border Style="{StaticResource EditorSurfaceStyle}">
+                        <FontIcon
+                            Grid.Column="2"
+                            FontSize="16"
+                            Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                            Glyph="&#xE783;"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(HasError), Mode=OneWay}" />
+                    </Grid>
+                </Expander.Header>
                 <StackPanel Spacing="16">
-                    <TextBlock x:Uid="PowerScripts_CreationPreview" Style="{StaticResource BodyStrongTextBlockStyle}" />
-                    <layout:ScriptCard
-                        x:Name="PreviewCard"
-                        AutomationProperties.AutomationId="PowerScriptsTemplatePreview"
-                        AutomationProperties.Name="{x:Bind PreviewCard.Script.Name, Mode=OneWay}" />
+                    <StackPanel Spacing="6">
+                        <tkcontrols:Segmented
+                            x:Uid="PowerScripts_NewScript_ParamType"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Type')}"
+                            SelectedIndex="{x:Bind TypeIndex, Mode=TwoWay}">
+                            <tkcontrols:SegmentedItem x:Uid="PowerScripts_NewScript_TypeSegText" Icon="{ui:FontIcon Glyph=&#xE8D2;}" />
+                            <tkcontrols:SegmentedItem x:Uid="PowerScripts_NewScript_TypeSegNumber" Icon="{ui:FontIcon Glyph=&#xE8EF;}" />
+                            <tkcontrols:SegmentedItem x:Uid="PowerScripts_NewScript_TypeSegBoolean" Icon="{ui:FontIcon Glyph=&#xE73A;}" />
+                            <tkcontrols:SegmentedItem x:Uid="PowerScripts_NewScript_TypeSegFile" Icon="{ui:FontIcon Glyph=&#xE8A5;}" />
+                        </tkcontrols:Segmented>
+                        <TextBlock Style="{StaticResource HintTextStyle}" Text="{x:Bind TypeHelp, Mode=OneWay}" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox
+                            x:Name="ParameterNameBox"
+                            x:Uid="PowerScripts_NewScript_ParamName"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Name')}"
+                            MaxLength="64"
+                            Text="{x:Bind Name, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox
+                            x:Uid="PowerScripts_NewScript_ParamTitle"
+                            Grid.Column="1"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Title')}"
+                            Text="{x:Bind Title, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </Grid>
+                    <TextBox
+                        x:Uid="PowerScripts_NewScript_ParamDescription"
+                        AutomationProperties.AutomationId="{x:Bind ControlId('Description')}"
+                        Text="{x:Bind Description, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <StackPanel>
+                        <CheckBox
+                            x:Uid="PowerScripts_NewScript_ParamRequired"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Required')}"
+                            IsChecked="{x:Bind Required, Mode=TwoWay}" />
+                        <TextBlock
+                            x:Uid="PowerScripts_NewScript_ParamRequiredHint"
+                            Margin="28,-4,0,0"
+                            Style="{StaticResource HintTextStyle}" />
+                    </StackPanel>
+                    <TextBox
+                        x:Uid="PowerScripts_NewScript_ParamChoices"
+                        MinHeight="72"
+                        AcceptsReturn="True"
+                        AutomationProperties.AutomationId="{x:Bind ControlId('Choices')}"
+                        Text="{x:Bind EnumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        TextWrapping="Wrap"
+                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsString), Mode=OneWay}" />
+                    <StackPanel Spacing="4" Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsInteger), Mode=OneWay}">
+                        <Grid ColumnSpacing="12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Uid="PowerScripts_NewScript_ParamMinimum"
+                                AutomationProperties.AutomationId="{x:Bind ControlId('Minimum')}"
+                                InputScope="Number"
+                                Text="{x:Bind MinimumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox
+                                x:Uid="PowerScripts_NewScript_ParamMaximum"
+                                Grid.Column="1"
+                                AutomationProperties.AutomationId="{x:Bind ControlId('Maximum')}"
+                                InputScope="Number"
+                                Text="{x:Bind MaximumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                        </Grid>
+                        <TextBlock x:Uid="PowerScripts_NewScript_ParamLimitsHint" Style="{StaticResource HintTextStyle}" />
+                    </StackPanel>
+                    <TextBox
+                        x:Uid="PowerScripts_NewScript_ParamFileTypes"
+                        AutomationProperties.AutomationId="{x:Bind ControlId('FileTypes')}"
+                        Text="{x:Bind FileExtensions, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsFile), Mode=OneWay}" />
+                    <StackPanel Spacing="8" Visibility="{x:Bind views:PowerScriptTemplatesPage.HasTypeVisibility(TypeIndex), Mode=OneWay}">
+                        <StackPanel>
+                            <CheckBox
+                                x:Uid="PowerScripts_NewScript_ParamSetDefault"
+                                AutomationProperties.AutomationId="{x:Bind ControlId('HasDefault')}"
+                                IsChecked="{x:Bind HasDefault, Mode=TwoWay}" />
+                            <TextBlock
+                                x:Uid="PowerScripts_NewScript_ParamSetDefaultHint"
+                                Margin="28,-4,0,0"
+                                Style="{StaticResource HintTextStyle}" />
+                        </StackPanel>
+                        <ToggleSwitch
+                            x:Uid="PowerScripts_OperationsBoolean"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('DefaultBoolean')}"
+                            IsOn="{x:Bind DefaultBoolean, Mode=TwoWay}"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(ShowBooleanDefault), Mode=OneWay}" />
+                        <TextBox
+                            x:Uid="PowerScripts_NewScript_ParamDefault"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Default')}"
+                            Text="{x:Bind DefaultText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(ShowTextDefault), Mode=OneWay}" />
+                    </StackPanel>
+                    <Grid ColumnSpacing="12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            AutomationProperties.LiveSetting="Polite"
+                            Style="{StaticResource ErrorTextStyle}"
+                            Text="{x:Bind Error, Mode=OneWay}"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(HasError), Mode=OneWay}" />
+                        <Button
+                            Grid.Column="1"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Remove')}"
+                            Click="RemoveParameter_Click"
+                            Tag="{x:Bind}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="14" Glyph="&#xE74D;" />
+                                <TextBlock x:Uid="PowerScripts_NewScript_ParamRemove" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
                 </StackPanel>
-            </Border>
-            <Border Style="{StaticResource EditorSurfaceStyle}">
-                <StackPanel Spacing="12">
-                    <TextBlock x:Uid="PowerScripts_CreationFiles" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            </Expander>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CliArgumentTemplate" x:DataType="viewModels:PowerScriptCliArgument">
+            <Grid
+                Padding="0,14"
+                BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
+                BorderThickness="0,1,0,0"
+                ColumnSpacing="12"
+                RowSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <ContentPresenter
+                    Width="28"
+                    Height="28"
+                    VerticalAlignment="Top"
+                    helpers:ScriptTileTint.Kind="{x:Bind TypeKind}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                    <FontIcon FontSize="14" Glyph="{x:Bind TypeGlyph}" />
+                </ContentPresenter>
+                <StackPanel
+                    Grid.Column="1"
+                    VerticalAlignment="Center"
+                    Spacing="1">
                     <TextBlock
-                        x:Name="PreviewFiles"
-                        AutomationProperties.AutomationId="PowerScriptsTemplateFilesPreview"
-                        FontFamily="Consolas"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind Value.DisplayLabel}"
                         TextWrapping="Wrap" />
                     <TextBlock
-                        x:Uid="PowerScripts_CreationSafety"
-                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                        Style="{StaticResource CaptionTextBlockStyle}"
-                        TextWrapping="Wrap" />
+                        Style="{StaticResource HintTextStyle}"
+                        Text="{x:Bind Value.Description}"
+                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.HasDescription)}" />
                 </StackPanel>
-            </Border>
-        </StackPanel>
-        <Border
-            Grid.Row="2"
-            Grid.ColumnSpan="2"
-            Padding="24,16"
-            Background="{ThemeResource LayerFillColorDefaultBrush}"
-            BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}"
-            BorderThickness="0,1,0,0">
-            <Grid ColumnSpacing="16">
+                <tkcontrols:Segmented
+                    Grid.Column="2"
+                    VerticalAlignment="Top"
+                    AutomationProperties.AutomationId="{x:Bind ControlId('Source')}"
+                    AutomationProperties.Name="{x:Bind Value.Label}"
+                    SelectedIndex="{x:Bind SourceIndex, Mode=TwoWay}">
+                    <tkcontrols:SegmentedItem x:Uid="PowerScripts_NewScript_SourceFixed" />
+                    <tkcontrols:SegmentedItem x:Uid="PowerScripts_NewScript_SourceInput" IsEnabled="{x:Bind CanUseInput, Mode=OneWay}" />
+                    <tkcontrols:SegmentedItem x:Uid="PowerScripts_NewScript_SourceAsk" />
+                </tkcontrols:Segmented>
+                <Grid
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Grid.ColumnSpan="2">
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsInput), Mode=OneWay}">
+                        <FontIcon
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="{x:Bind InputGlyph}" />
+                        <TextBlock Style="{StaticResource HintTextStyle}" Text="{x:Bind InputNote}" />
+                    </StackPanel>
+                    <StackPanel
+                        Orientation="Horizontal"
+                        Spacing="8"
+                        Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsAsk), Mode=OneWay}">
+                        <FontIcon
+                            FontSize="14"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Glyph="&#xE897;" />
+                        <TextBlock x:Uid="PowerScripts_NewScript_AskNote" Style="{StaticResource HintTextStyle}" />
+                    </StackPanel>
+                    <Grid Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(IsFixed), Mode=OneWay}">
+                        <TextBox
+                            x:Uid="PowerScripts_NewScript_OptionValue"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Text')}"
+                            AutomationProperties.Name="{x:Bind Value.Label}"
+                            Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsText)}" />
+                        <TextBox
+                            x:Uid="PowerScripts_NewScript_OptionValue"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Integer')}"
+                            AutomationProperties.Name="{x:Bind Value.Label}"
+                            InputScope="Number"
+                            Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsInteger)}" />
+                        <ToggleSwitch
+                            x:Uid="PowerScripts_OperationsBoolean"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Boolean')}"
+                            AutomationProperties.Name="{x:Bind Value.Label}"
+                            IsOn="{x:Bind Value.BooleanValue, Mode=TwoWay}"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsBoolean)}" />
+                        <ComboBox
+                            HorizontalAlignment="Stretch"
+                            AutomationProperties.AutomationId="{x:Bind ControlId('Choice')}"
+                            AutomationProperties.Name="{x:Bind Value.Label}"
+                            ItemsSource="{x:Bind Value.Choices}"
+                            SelectedItem="{x:Bind SelectedChoice, Mode=TwoWay}"
+                            Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsChoice)}" />
+                        <Grid ColumnSpacing="8" Visibility="{x:Bind views:PowerScriptTemplatesPage.BoolToVisibility(Value.IsFile)}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox
+                                x:Uid="PowerScripts_NewScript_OptionValue"
+                                AutomationProperties.AutomationId="{x:Bind ControlId('File')}"
+                                AutomationProperties.Name="{x:Bind Value.Label}"
+                                Text="{x:Bind Value.TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            <Button
+                                x:Uid="PowerScripts_RunBrowse"
+                                Grid.Column="1"
+                                AutomationProperties.AutomationId="{x:Bind ControlId('Browse')}"
+                                AutomationProperties.Name="{x:Bind Value.BrowseLabel}"
+                                Click="CliBrowseFile_Click"
+                                Tag="{x:Bind}" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </DataTemplate>
+    </Page.Resources>
+
+    <ScrollViewer>
+        <Grid
+            MaxWidth="1144"
+            Padding="32,28,32,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid Margin="0,0,0,20" ColumnSpacing="16">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock
-                    x:Uid="PowerScripts_CreationSafety"
+                    x:Uid="PowerScripts_NewScript_Title"
                     VerticalAlignment="Center"
-                    Style="{StaticResource CaptionTextBlockStyle}"
-                    TextWrapping="Wrap" />
-                <Button
-                    x:Uid="PowerScripts_TemplateCancel"
-                    Grid.Column="1"
-                    AutomationProperties.AutomationId="PowerScriptsTemplateCancel"
-                    Click="BackButton_Click" />
+                    AutomationProperties.HeadingLevel="Level1"
+                    Style="{StaticResource TitleTextBlockStyle}" />
                 <Button
                     x:Name="CreateButton"
-                    x:Uid="PowerScripts_TemplateCreate"
-                    Grid.Column="2"
+                    x:Uid="PowerScripts_NewScript_Create"
+                    Grid.Column="1"
+                    MinWidth="96"
                     AutomationProperties.AutomationId="PowerScriptsTemplateCreate"
                     Click="CreateButton_Click"
                     IsEnabled="False"
                     Style="{StaticResource AccentButtonStyle}" />
             </Grid>
-        </Border>
-        <VisualStateManager.VisualStateGroups>
-            <VisualStateGroup>
-                <VisualState>
-                    <VisualState.StateTriggers>
-                        <AdaptiveTrigger MinWindowWidth="1200" />
-                    </VisualState.StateTriggers>
-                    <VisualState.Setters>
-                        <Setter Target="PreviewPanel.Visibility" Value="Visible" />
-                    </VisualState.Setters>
-                </VisualState>
-            </VisualStateGroup>
-        </VisualStateManager.VisualStateGroups>
-    </Grid>
+            <InfoBar
+                x:Name="TemplateStatus"
+                Grid.Row="1"
+                Margin="0,0,0,16"
+                AutomationProperties.AutomationId="PowerScriptsTemplateStatus"
+                IsOpen="False" />
+            <ContentControl
+                x:Name="CreationForm"
+                Grid.Row="2"
+                HorizontalContentAlignment="Stretch"
+                IsTabStop="False">
+                <StackPanel Spacing="24">
+                    <Grid ColumnSpacing="20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid
+                            Width="64"
+                            Height="64"
+                            VerticalAlignment="Top">
+                            <Button
+                                x:Name="IconButton"
+                                x:Uid="PowerScripts_NewScript_IconButton"
+                                Width="64"
+                                Height="64"
+                                Padding="0"
+                                helpers:ScriptTileTint.Kind="blue"
+                                AutomationProperties.AutomationId="PowerScriptsTemplateIcon"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                                <Grid>
+                                    <FontIcon
+                                        x:Name="TileGlyph"
+                                        FontSize="30"
+                                        Glyph="&#xE756;" />
+                                    <Image
+                                        x:Name="TileImage"
+                                        Width="36"
+                                        Height="36"
+                                        Visibility="Collapsed" />
+                                </Grid>
+                                <Button.Flyout>
+                                    <MenuFlyout x:Name="IconMenu" Placement="BottomEdgeAlignedLeft" />
+                                </Button.Flyout>
+                            </Button>
+                            <Border
+                                Width="24"
+                                Height="24"
+                                Margin="0,0,-6,-6"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Bottom"
+                                Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}"
+                                BorderBrush="{ThemeResource ControlStrokeColorDefaultBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                IsHitTestVisible="False">
+                                <FontIcon FontSize="11" Glyph="&#xE70F;" />
+                            </Border>
+                        </Grid>
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBox
+                                x:Name="ProjectNameTextBox"
+                                x:Uid="PowerScripts_NewScript_NameBox"
+                                AutomationProperties.AutomationId="PowerScriptsTemplateProjectName"
+                                FontSize="28"
+                                FontWeight="SemiBold"
+                                MaxLength="80"
+                                TextChanged="Field_TextChanged" />
+                            <TextBlock
+                                x:Name="NameError"
+                                AutomationProperties.LiveSetting="Polite"
+                                Style="{StaticResource ErrorTextStyle}"
+                                Visibility="Collapsed" />
+                            <TextBox
+                                x:Name="DescriptionTextBox"
+                                x:Uid="PowerScripts_NewScript_DescriptionBox"
+                                AutomationProperties.AutomationId="PowerScriptsTemplateDescription"
+                                MaxLength="500" />
+                            <StackPanel
+                                x:Name="CustomIconPanel"
+                                Orientation="Horizontal"
+                                Spacing="6"
+                                Visibility="Collapsed">
+                                <FontIcon
+                                    FontSize="12"
+                                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                    Glyph="&#xE91B;" />
+                                <TextBlock
+                                    x:Name="CustomIconName"
+                                    AutomationProperties.AutomationId="PowerScriptsTemplateCustomIconName"
+                                    Style="{StaticResource HintTextStyle}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid
+                        x:Name="BodyGrid"
+                        ColumnSpacing="24"
+                        RowSpacing="16"
+                        SizeChanged="BodyGrid_SizeChanged">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition x:Name="SideColumn" Width="340" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Spacing="16">
+                            <Border Style="{StaticResource NewScriptCardStyle}">
+                                <StackPanel Spacing="20">
+                                    <TextBlock
+                                        x:Uid="PowerScripts_NewScript_IOHeading"
+                                        AutomationProperties.HeadingLevel="Level2"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+
+                                    <Grid ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="136" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Width="32"
+                                            Height="32"
+                                            VerticalAlignment="Top"
+                                            helpers:ScriptTileTint.Kind="teal"
+                                            BorderThickness="1"
+                                            CornerRadius="16">
+                                            <FontIcon
+                                                x:Name="TakesGlyph"
+                                                helpers:ScriptTileTint.Kind="teal"
+                                                FontSize="15"
+                                                Glyph="&#xE768;" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock x:Uid="PowerScripts_NewScript_Takes" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                            <TextBlock x:Uid="PowerScripts_NewScript_TakesHint" Style="{StaticResource HintTextStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="6">
+                                            <GridView
+                                                x:Name="InputPicker"
+                                                x:Uid="PowerScripts_NewScript_InputPicker"
+                                                Padding="0"
+                                                AutomationProperties.AutomationId="PowerScriptsTemplateInputPicker"
+                                                IsItemClickEnabled="False"
+                                                ItemsPanel="{StaticResource PickerPanel}"
+                                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                ScrollViewer.VerticalScrollMode="Disabled"
+                                                SelectionChanged="InputPicker_SelectionChanged"
+                                                SelectionMode="Single" />
+                                            <TextBlock
+                                                x:Name="InputDescription"
+                                                AutomationProperties.LiveSetting="Polite"
+                                                Style="{StaticResource HintTextStyle}" />
+                                            <StackPanel
+                                                x:Name="FilesOptions"
+                                                Margin="0,10,0,0"
+                                                Spacing="6"
+                                                Visibility="Collapsed">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="100" />
+                                                        <ColumnDefinition Width="120" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <TextBox
+                                                        x:Name="FileExtensionsTextBox"
+                                                        x:Uid="PowerScripts_NewScript_FileTypes"
+                                                        AutomationProperties.AutomationId="PowerScriptsTemplateFileExtensions"
+                                                        TextChanged="Field_TextChanged" />
+                                                    <NumberBox
+                                                        x:Name="MinimumFilesNumberBox"
+                                                        x:Uid="PowerScripts_NewScript_MinFiles"
+                                                        Grid.Column="1"
+                                                        AutomationProperties.AutomationId="PowerScriptsTemplateMinimumFiles"
+                                                        Minimum="0"
+                                                        SpinButtonPlacementMode="Compact"
+                                                        ValueChanged="FileCount_ValueChanged"
+                                                        Value="1" />
+                                                    <NumberBox
+                                                        x:Name="MaximumFilesNumberBox"
+                                                        x:Uid="PowerScripts_NewScript_MaxFiles"
+                                                        Grid.Column="2"
+                                                        AutomationProperties.AutomationId="PowerScriptsTemplateMaximumFiles"
+                                                        Minimum="0"
+                                                        SpinButtonPlacementMode="Compact"
+                                                        ValueChanged="FileCount_ValueChanged"
+                                                        Value="0" />
+                                                </Grid>
+                                                <TextBlock
+                                                    x:Name="FilesError"
+                                                    AutomationProperties.LiveSetting="Polite"
+                                                    Style="{StaticResource ErrorTextStyle}"
+                                                    Visibility="Collapsed" />
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                                    <Grid ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="136" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Width="32"
+                                            Height="32"
+                                            VerticalAlignment="Top"
+                                            helpers:ScriptTileTint.Kind="blue"
+                                            BorderThickness="1"
+                                            CornerRadius="8">
+                                            <Grid>
+                                                <FontIcon
+                                                    x:Name="RunsGlyph"
+                                                    helpers:ScriptTileTint.Kind="blue"
+                                                    FontSize="15"
+                                                    Glyph="&#xE756;" />
+                                                <Image
+                                                    x:Name="RunsImage"
+                                                    Width="18"
+                                                    Height="18"
+                                                    Visibility="Collapsed" />
+                                            </Grid>
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock x:Uid="PowerScripts_NewScript_Runs" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                            <TextBlock x:Uid="PowerScripts_NewScript_RunsHint" Style="{StaticResource HintTextStyle}" />
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="2" Spacing="10">
+                                            <GridView
+                                                x:Name="RuntimePicker"
+                                                x:Uid="PowerScripts_NewScript_RuntimePicker"
+                                                Padding="0"
+                                                AutomationProperties.AutomationId="PowerScriptsTemplateRuntimePicker"
+                                                IsItemClickEnabled="False"
+                                                ItemsPanel="{StaticResource PickerPanel}"
+                                                ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                                ScrollViewer.VerticalScrollMode="Disabled"
+                                                SelectionChanged="RuntimePicker_SelectionChanged"
+                                                SelectionMode="Single" />
+                                            <InfoBar
+                                                x:Name="PythonOffNote"
+                                                x:Uid="PowerScripts_NewScript_PythonOff"
+                                                AutomationProperties.AutomationId="PowerScriptsTemplatePythonOff"
+                                                IsClosable="False"
+                                                IsOpen="False"
+                                                Severity="Warning">
+                                                <InfoBar.ActionButton>
+                                                    <HyperlinkButton x:Uid="PowerScripts_NewScript_OpenSettings" Click="OpenSettings_Click" />
+                                                </InfoBar.ActionButton>
+                                            </InfoBar>
+                                            <StackPanel
+                                                x:Name="CliPanel"
+                                                Spacing="10"
+                                                Visibility="Collapsed">
+                                                <Grid ColumnSpacing="12">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <ComboBox
+                                                        x:Name="CliModuleComboBox"
+                                                        x:Uid="PowerScripts_NewScript_Module"
+                                                        HorizontalAlignment="Stretch"
+                                                        AutomationProperties.AutomationId="PowerScriptsTemplateCliModule"
+                                                        MaxDropDownHeight="320"
+                                                        SelectionChanged="CliModule_SelectionChanged" />
+                                                    <ComboBox
+                                                        x:Name="CliContentComboBox"
+                                                        x:Uid="PowerScripts_NewScript_Action"
+                                                        Grid.Column="1"
+                                                        HorizontalAlignment="Stretch"
+                                                        AutomationProperties.AutomationId="PowerScriptsTemplateCliAction"
+                                                        MaxDropDownHeight="320"
+                                                        SelectionChanged="CliContent_SelectionChanged" />
+                                                </Grid>
+                                                <InfoBar
+                                                    x:Name="CliCatalogueStatus"
+                                                    AutomationProperties.AutomationId="PowerScriptsCliCatalogueStatus"
+                                                    IsClosable="False"
+                                                    IsOpen="False"
+                                                    Severity="Informational">
+                                                    <InfoBar.ActionButton>
+                                                        <Button
+                                                            x:Name="CliCatalogueRetry"
+                                                            x:Uid="PowerScripts_OperationTemplateRetry"
+                                                            AutomationProperties.AutomationId="PowerScriptsCliCatalogueRetry"
+                                                            Click="CliCatalogueRetry_Click"
+                                                            Visibility="Collapsed" />
+                                                    </InfoBar.ActionButton>
+                                                </InfoBar>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <FontIcon
+                                                        FontSize="14"
+                                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                        Glyph="&#xEA18;" />
+                                                    <TextBlock x:Uid="PowerScripts_NewScript_Unsandboxed" Style="{StaticResource HintTextStyle}" />
+                                                </StackPanel>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />
+
+                                    <Grid ColumnSpacing="16">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="32" />
+                                            <ColumnDefinition Width="136" />
+                                            <ColumnDefinition Width="*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Border
+                                            Width="32"
+                                            Height="32"
+                                            VerticalAlignment="Top"
+                                            helpers:ScriptTileTint.Kind="purple"
+                                            BorderThickness="1"
+                                            CornerRadius="16">
+                                            <FontIcon
+                                                x:Name="GivesGlyph"
+                                                helpers:ScriptTileTint.Kind="purple"
+                                                FontSize="15"
+                                                Glyph="&#xE8D2;" />
+                                        </Border>
+                                        <StackPanel Grid.Column="1" Spacing="2">
+                                            <TextBlock x:Uid="PowerScripts_NewScript_Gives" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                            <TextBlock x:Uid="PowerScripts_NewScript_GivesHint" Style="{StaticResource HintTextStyle}" />
+                                        </StackPanel>
+                                        <GridView
+                                            x:Name="OutputPicker"
+                                            x:Uid="PowerScripts_NewScript_OutputPicker"
+                                            Grid.Column="2"
+                                            Padding="0"
+                                            AutomationProperties.AutomationId="PowerScriptsTemplateOutputPicker"
+                                            IsItemClickEnabled="False"
+                                            ItemsPanel="{StaticResource PickerPanel}"
+                                            ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                                            ScrollViewer.VerticalScrollMode="Disabled"
+                                            SelectionChanged="OutputPicker_SelectionChanged"
+                                            SelectionMode="Single" />
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="ParametersCard" Style="{StaticResource NewScriptCardStyle}">
+                                <StackPanel Spacing="16">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock
+                                            x:Uid="PowerScripts_NewScript_ParametersHeading"
+                                            AutomationProperties.HeadingLevel="Level2"
+                                            Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                        <TextBlock x:Uid="PowerScripts_NewScript_ParametersHint" Style="{StaticResource HintTextStyle}" />
+                                    </StackPanel>
+                                    <ItemsControl
+                                        x:Name="ParametersList"
+                                        IsTabStop="False"
+                                        ItemTemplate="{StaticResource ParameterTemplate}"
+                                        ItemsSource="{x:Bind Parameters}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Spacing="8" />
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock
+                                            x:Uid="PowerScripts_NewScript_Add"
+                                            Margin="0,0,4,0"
+                                            VerticalAlignment="Center"
+                                            Style="{StaticResource HintTextStyle}" />
+                                        <Button
+                                            x:Uid="PowerScripts_NewScript_AddText"
+                                            AutomationProperties.AutomationId="PowerScriptsTemplateAddParameter_string"
+                                            Click="AddParameter_Click"
+                                            Tag="0">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon
+                                                    helpers:ScriptTileTint.Kind="blue"
+                                                    FontSize="14"
+                                                    Glyph="&#xE8D2;" />
+                                                <TextBlock x:Uid="PowerScripts_NewScript_AddTextLabel" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button
+                                            x:Uid="PowerScripts_NewScript_AddNumber"
+                                            AutomationProperties.AutomationId="PowerScriptsTemplateAddParameter_int"
+                                            Click="AddParameter_Click"
+                                            Tag="1">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon
+                                                    helpers:ScriptTileTint.Kind="orange"
+                                                    FontSize="14"
+                                                    Glyph="&#xE8EF;" />
+                                                <TextBlock x:Uid="PowerScripts_NewScript_AddNumberLabel" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button
+                                            x:Uid="PowerScripts_NewScript_AddBoolean"
+                                            AutomationProperties.AutomationId="PowerScriptsTemplateAddParameter_bool"
+                                            Click="AddParameter_Click"
+                                            Tag="2">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon
+                                                    helpers:ScriptTileTint.Kind="green"
+                                                    FontSize="14"
+                                                    Glyph="&#xE73A;" />
+                                                <TextBlock x:Uid="PowerScripts_NewScript_AddBooleanLabel" />
+                                            </StackPanel>
+                                        </Button>
+                                        <Button
+                                            x:Uid="PowerScripts_NewScript_AddFile"
+                                            AutomationProperties.AutomationId="PowerScriptsTemplateAddParameter_file"
+                                            Click="AddParameter_Click"
+                                            Tag="3">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <FontIcon
+                                                    helpers:ScriptTileTint.Kind="purple"
+                                                    FontSize="14"
+                                                    Glyph="&#xE8A5;" />
+                                                <TextBlock x:Uid="PowerScripts_NewScript_AddFileLabel" />
+                                            </StackPanel>
+                                        </Button>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border
+                                x:Name="OptionsCard"
+                                Style="{StaticResource NewScriptCardStyle}"
+                                Visibility="Collapsed">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock
+                                            x:Uid="PowerScripts_NewScript_OptionsHeading"
+                                            AutomationProperties.HeadingLevel="Level2"
+                                            Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                        <TextBlock x:Uid="PowerScripts_NewScript_OptionsHint" Style="{StaticResource HintTextStyle}" />
+                                    </StackPanel>
+                                    <ItemsControl
+                                        IsTabStop="False"
+                                        ItemTemplate="{StaticResource CliArgumentTemplate}"
+                                        ItemsPanel="{StaticResource RowsPanel}"
+                                        ItemsSource="{x:Bind CliArguments}" />
+                                    <TextBlock
+                                        x:Name="CliBindingValidation"
+                                        AutomationProperties.AutomationId="PowerScriptsCliBindingValidation"
+                                        AutomationProperties.LiveSetting="Polite"
+                                        Style="{StaticResource ErrorTextStyle}"
+                                        Visibility="Collapsed" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel
+                            x:Name="SidePanel"
+                            Grid.Column="1"
+                            Spacing="16">
+                            <Border Style="{StaticResource SideCardStyle}">
+                                <StackPanel>
+                                    <TextBlock
+                                        x:Uid="PowerScripts_NewScript_PlacesHeading"
+                                        Margin="16,14,16,6"
+                                        AutomationProperties.HeadingLevel="Level2"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <ItemsControl
+                                        AutomationProperties.AutomationId="PowerScriptsTemplatePlaces"
+                                        IsTabStop="False"
+                                        ItemTemplate="{StaticResource PreviewRowTemplate}"
+                                        ItemsPanel="{StaticResource RowsPanel}"
+                                        ItemsSource="{x:Bind Places}" />
+                                    <StackPanel
+                                        x:Name="PlacesEmpty"
+                                        Padding="16,8,16,14"
+                                        Orientation="Horizontal"
+                                        Spacing="12"
+                                        Visibility="Collapsed">
+                                        <FontIcon
+                                            FontSize="16"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Glyph="&#xE946;" />
+                                        <TextBlock x:Uid="PowerScripts_NewScript_PlacesEmpty" Style="{StaticResource HintTextStyle}" />
+                                    </StackPanel>
+                                    <Expander
+                                        x:Name="UnavailableExpander"
+                                        x:Uid="PowerScripts_NewScript_Unavailable"
+                                        Margin="8,4,8,8"
+                                        Padding="0,4"
+                                        HorizontalAlignment="Stretch"
+                                        HorizontalContentAlignment="Stretch"
+                                        AutomationProperties.AutomationId="PowerScriptsTemplateUnavailable">
+                                        <ItemsControl
+                                            IsTabStop="False"
+                                            ItemTemplate="{StaticResource PreviewRowTemplate}"
+                                            ItemsPanel="{StaticResource RowsPanel}"
+                                            ItemsSource="{x:Bind UnavailablePlaces}" />
+                                    </Expander>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SideCardStyle}">
+                                <StackPanel Padding="0,0,0,6">
+                                    <TextBlock
+                                        x:Uid="PowerScripts_NewScript_AskHeading"
+                                        Margin="16,14,16,6"
+                                        AutomationProperties.HeadingLevel="Level2"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <ItemsControl
+                                        AutomationProperties.AutomationId="PowerScriptsTemplateAsks"
+                                        IsTabStop="False"
+                                        ItemTemplate="{StaticResource PreviewRowTemplate}"
+                                        ItemsPanel="{StaticResource RowsPanel}"
+                                        ItemsSource="{x:Bind AskRows}" />
+                                    <StackPanel
+                                        x:Name="AskEmpty"
+                                        Padding="16,8,16,8"
+                                        Orientation="Horizontal"
+                                        Spacing="12">
+                                        <FontIcon
+                                            FontSize="16"
+                                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                            Glyph="&#xE768;" />
+                                        <TextBlock x:Uid="PowerScripts_NewScript_AskEmpty" Style="{StaticResource HintTextStyle}" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SideCardStyle}">
+                                <StackPanel Padding="16,14,16,16" Spacing="8">
+                                    <TextBlock
+                                        x:Uid="PowerScripts_NewScript_CreatesHeading"
+                                        AutomationProperties.HeadingLevel="Level2"
+                                        Style="{StaticResource BodyStrongTextBlockStyle}" />
+                                    <TextBlock
+                                        x:Name="CreatesPath"
+                                        AutomationProperties.AutomationId="PowerScriptsTemplateCreatesPath"
+                                        IsTextSelectionEnabled="True"
+                                        TextWrapping="Wrap" />
+                                    <TextBlock
+                                        x:Name="CreatesFiles"
+                                        AutomationProperties.AutomationId="PowerScriptsTemplateCreatesFiles"
+                                        Style="{StaticResource HintTextStyle}" />
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </ContentControl>
+        </Grid>
+    </ScrollViewer>
 </Page>
