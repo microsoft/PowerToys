@@ -10,7 +10,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $winapp = (Get-Command $WinAppPath -ErrorAction Stop).Source
-$dialogOpen = $false
+$creationOpen = $false
 
 function Invoke-UI {
     param([Parameter(ValueFromRemainingArguments)][string[]]$Arguments)
@@ -24,35 +24,27 @@ try {
     Invoke-UI wait-for PowerScriptsGlobalSettings -t 5000 | Out-Null
 
     Invoke-UI invoke PowerScriptsCreateScript | Out-Null
-    $dialogOpen = $true
-    Invoke-UI wait-for PowerScriptsNewScriptChoice -t 5000 | Out-Null
-    Invoke-UI wait-for PowerScriptsCreateScript --property IsEnabled --value False -t 3000 | Out-Null
-    & $winapp ui invoke PowerScriptsCreateScript -a $AppPid 2>&1 | Out-Null
-    Invoke-UI wait-for PowerScriptsNewOperationChoice -t 3000 | Out-Null
-    Invoke-UI invoke CloseButton | Out-Null
-    $dialogOpen = $false
-    Invoke-UI wait-for PowerScriptsCreateScript --property IsEnabled --value True -t 3000 | Out-Null
-    Write-Output 'PASS: modal re-entry is blocked and cancellation restores creation.'
-
-    Invoke-UI invoke PowerScriptsCreateScript | Out-Null
-    $dialogOpen = $true
-    Invoke-UI wait-for PowerScriptsNewScriptChoice -t 5000 | Out-Null
-    Invoke-UI invoke PowerScriptsNewScriptChoice --action invoke | Out-Null
-    $dialogOpen = $false
     Invoke-UI wait-for PowerScriptsTemplateProjectName -t 5000 | Out-Null
-    Invoke-UI invoke PART_BackButton | Out-Null
-    Invoke-UI wait-for PowerScriptsCreateScript -t 5000 | Out-Null
-    Write-Output 'PASS: the script chooser supports InvokePattern and opens editable creation.'
+    $creationOpen = $true
+    Invoke-UI wait-for PowerScriptsNewScriptDialog --gone -t 3000 | Out-Null
+    Invoke-UI wait-for PowerScriptsNewOperationChoice --gone -t 3000 | Out-Null
+    Write-Output 'PASS: New script opens editable creation directly without a duplicate action chooser.'
 
-    Invoke-UI invoke PowerScriptsCreateScript | Out-Null
-    $dialogOpen = $true
-    Invoke-UI wait-for PowerScriptsNewOperationChoice -t 5000 | Out-Null
-    Invoke-UI invoke PowerScriptsNewOperationChoice --action invoke | Out-Null
-    $dialogOpen = $false
-    Invoke-UI wait-for PowerScriptsOperationSelector -t 5000 | Out-Null
+    Invoke-UI invoke PowerScriptsTemplateRuntime_pt | Out-Null
+    Invoke-UI wait-for PowerScriptsTemplateCliModule -t 5000 | Out-Null
+    Invoke-UI wait-for PowerScriptsTemplateCliAction -t 5000 | Out-Null
+    $action = Invoke-UI get-value PowerScriptsTemplateCliAction --json | ConvertFrom-Json
+    if (-not $action.text) { throw 'The CLI action catalogue is empty.' }
+    Write-Output 'PASS: PowerToys CLI calling remains available inside normal script creation.'
+
+    Invoke-UI invoke PowerScriptsTemplateRuntime_powershell | Out-Null
+    Invoke-UI invoke PowerScriptsTemplateOutput_none | Out-Null
+    Invoke-UI invoke PowerScriptsTemplateOutput_files | Out-Null
+    Invoke-UI invoke PowerScriptsTemplateOutput_text | Out-Null
     Invoke-UI invoke PART_BackButton | Out-Null
+    $creationOpen = $false
     Invoke-UI wait-for PowerScriptsCreateScript -t 5000 | Out-Null
-    Write-Output 'PASS: the operation chooser supports InvokePattern and opens native actions.'
+    Write-Output 'PASS: normal script outputs and back navigation remain available.'
 
     if ($ScriptName) {
         Invoke-UI invoke $ScriptName --type ListItem | Out-Null
@@ -66,7 +58,7 @@ try {
     if (-not (Get-Process -Id $AppPid).Responding) { throw 'The Editor is unresponsive.' }
 }
 finally {
-    if ($dialogOpen) {
-        & $winapp ui invoke CloseButton -a $AppPid 2>&1 | Out-Null
+    if ($creationOpen) {
+        & $winapp ui invoke PART_BackButton -a $AppPid 2>&1 | Out-Null
     }
 }

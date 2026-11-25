@@ -22,8 +22,6 @@ namespace PowerScripts.Editor.Views
     {
         private bool _preserveCatalogueOnLoad;
         private bool _refreshingConfiguration;
-        private string _newScriptChoice;
-        private bool _isShowingNewScriptDialog;
 
         private PowerScriptsViewModel ViewModel { get; set; }
 
@@ -148,49 +146,25 @@ namespace PowerScripts.Editor.Views
             }
         }
 
-        private async void CreateScript_Click(object sender, RoutedEventArgs e)
+        private void CreateScript_Click(object sender, RoutedEventArgs e)
         {
-            if (_isShowingNewScriptDialog)
+            if (ViewModel?.IsEnabled != true || !ReferenceEquals(Frame?.Content, this))
             {
                 return;
             }
 
-            _isShowingNewScriptDialog = true;
-            CreateScriptButton.IsEnabled = false;
             try
             {
-                _newScriptChoice = null;
-                NewScriptDialog.XamlRoot = XamlRoot;
-                await NewScriptDialog.ShowAsync();
-
-                var (page, failure) = _newScriptChoice switch
-                {
-                    "Script" => (typeof(PowerScriptTemplatesPage), "PowerScripts_TemplateNavigationFailed"),
-                    "Operation" => (typeof(PowerToysOperationsPage), "PowerScripts_OperationNavigationFailed"),
-                    _ => (null, null),
-                };
-
-                if (page is not null && !Frame.Navigate(page, ViewModel))
+                if (!Frame.Navigate(typeof(PowerScriptTemplatesPage), ViewModel))
                 {
                     ShowScriptSettingsError(new InvalidOperationException(
-                        ResourceLoaderInstance.ResourceLoader.GetString(failure)));
+                        ResourceLoaderInstance.ResourceLoader.GetString("PowerScripts_TemplateNavigationFailed")));
                 }
             }
             catch (Exception exception)
             {
                 ShowScriptSettingsError(exception);
             }
-            finally
-            {
-                _isShowingNewScriptDialog = false;
-                CreateScriptButton.IsEnabled = ViewModel.IsEnabled;
-            }
-        }
-
-        private void NewScriptChoice_Click(object sender, RoutedEventArgs e)
-        {
-            _newScriptChoice = (string)((FrameworkElement)sender).Tag;
-            NewScriptDialog.Hide();
         }
 
         private void ClearFilters_Click(object sender, RoutedEventArgs e)
