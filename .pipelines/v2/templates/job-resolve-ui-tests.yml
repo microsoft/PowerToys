@@ -1,3 +1,11 @@
+parameters:
+  - name: buildPlatform
+    type: string
+    values: [x64, arm64]
+  - name: routeUmdfArm64
+    type: boolean
+    default: false
+
 jobs:
 - job: Resolve
   displayName: Resolve affected UI test projects
@@ -43,12 +51,10 @@ jobs:
           -RepoRoot "$(Build.SourcesDirectory)" `
           -ChangedFile $changedFiles
         $modules = @($result.UiTestModules)
-        $modulesValue = $modules -join ';'
         $hasUiTests = if ($modules.Count -gt 0) { 'true' } else { 'false' }
         $hasMwbUiTests = if ($modules -contains 'MouseWithoutBorders.UITests') { 'true' } else { 'false' }
         $hasUmdfHidUiTests = if ($modules -contains 'GrabAndMove.UITests') { 'true' } else { 'false' }
         $hasUmdfDisplayUiTests = if ($modules -contains 'PowerDisplay.UITests') { 'true' } else { 'false' }
-        $hasNonUmdfHidUiTests = if (@($modules | Where-Object { $_ -notin @('GrabAndMove.UITests', 'PowerDisplay.UITests') }).Count) { 'true' } else { 'false' }
 
         Write-Host "Touched modules: $($result.TouchedModules -join ', ')"
         Write-Host "UI test infrastructure changed: $($result.InfrastructureChanged)"
@@ -57,7 +63,18 @@ jobs:
         Write-Host "##vso[task.setvariable variable=hasMwbUiTests;isOutput=true]$hasMwbUiTests"
         Write-Host "##vso[task.setvariable variable=hasUmdfHidUiTests;isOutput=true]$hasUmdfHidUiTests"
         Write-Host "##vso[task.setvariable variable=hasUmdfDisplayUiTests;isOutput=true]$hasUmdfDisplayUiTests"
-        Write-Host "##vso[task.setvariable variable=hasNonUmdfHidUiTests;isOutput=true]$hasNonUmdfHidUiTests"
-        Write-Host "##vso[task.setvariable variable=uiTestModules;isOutput=true]$modulesValue"
+        $platforms = if ('${{ parameters.buildPlatform }}' -eq 'x64') { 'x64Win10', 'x64Win11' } else { 'arm64' }
+        foreach ($platform in $platforms) {
+          $matrix = & "$(Build.SourcesDirectory)\.pipelines\New-PrUiTestMatrix.ps1" `
+            -Modules $modules -Platform $platform -RouteUmdfArm64:('${{ parameters.routeUmdfArm64 }}' -eq 'True')
+          if ($platform -eq 'arm64') {
+            $hasOrdinaryArm64UiTests = ($matrix.Count -gt 0).ToString().ToLowerInvariant()
+            Write-Host "##vso[task.setvariable variable=hasOrdinaryArm64UiTests;isOutput=true]$hasOrdinaryArm64UiTests"
+          }
+          if ($matrix.Count -gt 0) {
+            $matrixJson = ConvertTo-Json -InputObject $matrix -Compress -Depth 4
+            Write-Host "##vso[task.setvariable variable=uiTestMatrix${platform};isOutput=true]$matrixJson"
+          }
+        }
       name: resolve
       displayName: Resolve UI tests from pull request changes

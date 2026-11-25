@@ -121,3 +121,59 @@ Describe 'Deterministic UI suite sharding' {
         { Get-UiTestShardSuites @('A') -ShardIndex 3 -ShardCount 2 -DurationsPath $durations } | Should Throw 'outside'
     }
 }
+
+Describe 'Automatic PR UI test sharding' {
+    $planner = Join-Path $PSScriptRoot '..\New-PrUiTestMatrix.ps1'
+    . (Join-Path $PSScriptRoot '..\UiTestArtifacts.Common.ps1')
+
+    BeforeEach {
+        $durations = Join-Path $TestDrive 'pr-durations.json'
+        '{"suites":{"A.UITests":35,"B.UITests":25,"C.UITests":25},"defaultMinutes":5,"platformMultipliers":{"arm64":0.5}}' |
+            Set-Content -LiteralPath $durations
+    }
+
+    It 'keeps small selections on a single worker and does not create a worker for an empty selection' {
+        (& $planner -Modules @() -Platform x64Win11 -DurationsPath $durations).Count | Should Be 0
+        $matrix = & $planner -Modules @('A.UITests', 'D.UITests') -Platform x64Win11 -DurationsPath $durations
+        $matrix.Count | Should Be 1
+        $matrix.Shard1.AutoUiTestModules | Should Be 'A.UITests;D.UITests'
+    }
+
+    It 'uses the platform duration estimate and never splits a single suite' {
+        $modules = @('A.UITests', 'B.UITests', 'C.UITests')
+        (& $planner -Modules $modules -Platform x64Win11 -DurationsPath $durations).Count | Should Be 2
+        (& $planner -Modules $modules -Platform arm64 -DurationsPath $durations).Count | Should Be 1
+        '{"suites":{"A.UITests":120},"defaultMinutes":5,"platformMultipliers":{}}' | Set-Content -LiteralPath $durations
+        (& $planner -Modules @('A.UITests') -Platform x64Win11 -DurationsPath $durations).Count | Should Be 1
+    }
+
+    It 'caps broad selections and emits disjoint payload patterns that survive the Azure JSON round trip' {
+        $modules = @(1..48 | ForEach-Object { "Suite$_.UITests" })
+        $matrix = & $planner -Modules $modules -Platform x64Win11 -DurationsPath $durations
+        $json = ConvertTo-Json -InputObject $matrix -Compress -Depth 4
+        $json | Should Not Match '[\r\n]'
+        $roundTrip = ConvertFrom-Json -InputObject $json -AsHashtable
+        $roundTrip.Count | Should Be 3
+        $assigned = foreach ($shard in $roundTrip.Values) {
+            $suites = $shard.AutoUiTestModules -split ';'
+            Assert-UiTestArtifactPattern -Pattern $shard.UiTestArtifactPattern -Modules $suites
+            $suites
+        }
+        ($assigned | Sort-Object) -join ',' | Should Be (($modules | Sort-Object) -join ',')
+        [array]::Reverse($modules)
+        $reordered = & $planner -Modules $modules -Platform x64Win11 -DurationsPath $durations
+        foreach ($key in $matrix.Keys) {
+            $reordered[$key].AutoUiTestModules | Should Be $matrix[$key].AutoUiTestModules
+        }
+    }
+
+    It 'keeps optional Power Display on ordinary ARM64 and excludes routed and unsupported suites' {
+        $modules = @('GrabAndMove.UITests', 'PowerDisplay.UITests', 'MouseWithoutBorders.UITests', 'D.UITests')
+        $ordinary = & $planner -Modules $modules -Platform arm64 -DurationsPath $durations
+        $ordinary.Shard1.AutoUiTestModules | Should Be 'D.UITests;PowerDisplay.UITests'
+        $routed = & $planner -Modules $modules -Platform arm64 -RouteUmdfArm64 -DurationsPath $durations
+        $routed.Shard1.AutoUiTestModules | Should Be 'D.UITests'
+        $fixtureOnly = & $planner -Modules @('GrabAndMove.UITests', 'PowerDisplay.UITests') -Platform arm64 -RouteUmdfArm64 -DurationsPath $durations
+        $fixtureOnly.Count | Should Be 0
+    }
+}

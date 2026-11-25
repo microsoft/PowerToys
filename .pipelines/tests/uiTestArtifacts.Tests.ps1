@@ -55,7 +55,7 @@ Describe 'UI test artifact selection and payload' {
         $yaml = Get-Content (Join-Path $PSScriptRoot '..\v2\templates\job-test-project.yml') -Raw
         $yaml | Should Not Match 'task\.setvariable variable=UiTestArtifactPattern'
         $yaml | Should Match 'UiTestArtifactPattern: \$\{\{ format'
-        $yaml | Should Match 'UiTestArtifactPattern: \$\[ format'
+        $yaml | Should Match 'UI_TEST_ARTIFACT_PATTERN: \$\(UiTestArtifactPattern\)'
     }
 
     It 'retains the all-UI-test include-only pattern for an empty explicit selection' {
