@@ -171,26 +171,20 @@ public class SamplePagesTests : CommandPaletteTestBase
 
     private NavigationViewItem? FindExactItem(string name, int timeoutMS = 5000)
     {
-        var deadline = Environment.TickCount64 + timeoutMS;
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMS);
         do
         {
-            // Share the lookup budget so FindAll can retry a stale UIA read during result updates.
-            var remainingMs = (int)Math.Max(0, deadline - Environment.TickCount64);
             var match = CommandPaletteSession
-                .FindAll<NavigationViewItem>(By.Name(name), timeoutMS: remainingMs)
+                .FindAll<NavigationViewItem>(By.Name(name), timeoutMS: 0)
                 .FirstOrDefault(item => string.Equals(item.Name, name, StringComparison.Ordinal));
             if (match is not null)
             {
                 return match;
             }
 
-            remainingMs = (int)Math.Max(0, deadline - Environment.TickCount64);
-            if (remainingMs > 0)
-            {
-                Thread.Sleep(Math.Min(250, remainingMs));
-            }
+            Thread.Sleep(250);
         }
-        while (Environment.TickCount64 < deadline);
+        while (DateTime.UtcNow < deadline);
 
         return null;
     }

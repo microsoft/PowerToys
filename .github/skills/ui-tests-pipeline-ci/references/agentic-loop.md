@@ -25,7 +25,9 @@ Do not proceed unless it exits `0`, reports `Ready: true`, and every required ch
 default probe uses `refs/heads/main`, module `FancyZones.UITests.Next`, and dynamically selects one
 of the ten newest completed pipeline builds for build/log/artifact checks plus the first test-bearing
 build in that set for Azure Test checks. The JSON reports these separately as `ProbeBuildId` and
-`ProbeTestBuildId`. It creates no build and changes no Azure or repository state.
+`ProbeTestBuildId`. It creates no build and changes no Azure or repository state. The setup preview
+checks that Azure can expand the request, not which jobs or suites it would run. Inspect the actual
+run's expanded YAML separately before queueing (section 4).
 
 Use explicit probe inputs when diagnosing a particular branch or known build:
 

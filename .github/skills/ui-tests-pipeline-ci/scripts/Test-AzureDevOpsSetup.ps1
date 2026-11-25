@@ -405,13 +405,11 @@ if ($pipelineId -ne 0)
             throw 'Pipeline preview did not return id=-1 and expanded YAML.'
         }
 
-        $stages = Get-AzDevOpsUiTestPreviewStages -FinalYaml $preview.finalYaml -ProbeModule $ProbeModule
-
         Add-SetupCheck `
             'PipelinePreview' `
             'PASS' `
             $true `
-            "id=$($preview.id); requestedBranch=$ProbeBranch; module=$ProbeModule; stages=$($stages -join ',')"
+            "id=$($preview.id); requestedBranch=$ProbeBranch; requestedModule=$ProbeModule; YAML expanded"
     }
     catch
     {

@@ -320,8 +320,6 @@ explicit tool/runtime paths and are excluded from this fast gate.
   Successful runs retain their normal test-result attachments without an extra
   prerequisite artifact.
 
-- **runX64Win10UiTests**: Defaults to `true`. Set to `false` only for manual current-source x64 investigations that explicitly need Windows 11 alone. It does not change PR CI or the official-build modes.
-
 - **uiTestShardsX64Win10**, **uiTestShardsX64Win11**, **uiTestShardsArm64**: Number of workers per platform for fresh full builds, from 1 (default) to 6. Each worker uses the same [duration estimates](../../../.pipelines/uiTestDurations.json) to assign the longest remaining suite to the lightest shard. Unlisted suites use `defaultMinutes` (5); platform multipliers scale the printed estimates, not the assignments. Shared prerequisites (artifact selection/download, installer and signing where applicable) repeat per worker. Only the owning shard takes the full MWB servicing inventory, provisions Sandbox, or installs a suite's driver fixture.
 
 - **uiTestDiagnosticCohorts**: Optional execution-only groups, for example `[{"name":"Desktop","modules":["AdvancedPaste.UITests.Next","PreviewPane.UITests"]},{"name":"Sandbox","modules":["MouseWithoutBorders.UITests"]}]`. Include these suites in `uiTestModules` for shared prerequisites. Each cohort runs unsharded on a fresh x64 worker per selected x64 OS; use `buildPlatforms: [x64]` and `buildNow` or `buildNowSlim`, without smoke-only mode. Leave cohorts empty for normal CI.

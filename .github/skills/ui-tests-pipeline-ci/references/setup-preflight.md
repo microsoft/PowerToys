@@ -16,7 +16,7 @@ check proves. The normal CI workflow needs only the invocation and pass criterio
 | `PipelineDefinitionRead` | The enabled `UI Test Automation` definition is visible and uniquely resolved. |
 | `BuildRead`, `TimelineRead`, `BuildLogsRead`, `ArtifactsRead` | Build diagnostics and pipeline artifacts are readable. |
 | `TestRunsRead`, `TestResultsRead`, `TestAttachmentsRead` | Azure Test evidence endpoints are readable. An attachment count of zero is still a successful permission check. |
-| `PipelinePreview` | The Run Pipeline API accepts the identity, branch, parameters, and template expansion. `id=-1` proves no build was created. |
+| `PipelinePreview` | Azure accepts the preview request and returns expanded YAML with `id=-1` (no build created). Preflight does not interpret the YAML; check the expanded stages and suite selection for the actual request before queueing. |
 | `RepeatedPromptFreeRead` | A second token-backed call completes without another authentication prompt. |
 
 The preflight deliberately does **not** create a run, cancel a build, or retry/cancel a stage. Those
@@ -46,7 +46,7 @@ the same preflight.
 | `ProjectRead` | Confirm the signed-in identity is a Microsoft FTE with access to the selected project. A valid token alone is insufficient. |
 | `PipelineDefinitionRead` | Confirm project access and that `UI Test Automation` still exists and is enabled. |
 | Build/log/artifact/test read | Request the missing Azure DevOps project/build/test permission; do not weaken evidence requirements. |
-| `PipelinePreview` | Confirm the branch exists, the probe module is valid, and the identity can use/queue pipeline `UI Test Automation`. No run was created. |
+| `PipelinePreview` | Confirm the branch exists, the probe module is valid, and the identity can preview `UI Test Automation`. |
 
 No `az devops configure` defaults, PAT, `AZURE_DEVOPS_EXT_PAT`, service connection secret, or local
 credential file is required. Every helper call supplies organization/project explicitly and obtains

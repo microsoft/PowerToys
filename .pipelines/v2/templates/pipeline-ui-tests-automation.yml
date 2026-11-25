@@ -54,10 +54,6 @@ parameters:
     type: boolean
     default: false
     displayName: "Experimental UMDF HID smoke only (no PowerToys build)"
-  - name: runX64Win10UiTests
-    type: boolean
-    default: true
-    displayName: "Run Windows 10 UI tests for current-source x64 builds"
   # Scale UI tests out: number of parallel test agents (shards) per test platform, 1-6.
   # 1 keeps the single job per platform. Suites are balanced via .pipelines\uiTestDurations.json.
   - name: uiTestShardsX64Win10
@@ -94,7 +90,6 @@ stages:
           parameters:
             platform: ${{ platform }}
             buildSource: ${{ parameters.buildSource }}
-            runX64Win10UiTests: ${{ parameters.runX64Win10UiTests }}
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}
@@ -113,7 +108,6 @@ stages:
               umdfHidArm64Image: ${{ parameters.umdfHidArm64Image }}
             platform: ${{ platform }}
             buildSource: ${{ parameters.buildSource }}
-            runX64Win10UiTests: ${{ parameters.runX64Win10UiTests }}
             enableMsBuildCaching: ${{ parameters.enableMsBuildCaching }}
             useVSPreview: ${{ parameters.useVSPreview }}
             useLatestWebView2: ${{ parameters.useLatestWebView2 }}

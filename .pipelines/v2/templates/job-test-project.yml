@@ -842,18 +842,6 @@ jobs:
       targetPath: '$(Common.TestResultsDirectory)\mwb-prerequisites-$(System.JobId)'
       artifactName: ui-test-diagnostics-$(TestPlatform)-$(System.JobId)
 
-  - ${{ if and(eq(parameters.platform, 'x64Win11'), containsValue(parameters.uiTestModules, 'Microsoft.CmdPal.UITests.Next'), or(eq(length(parameters.uiTestExecutionModules), 0), containsValue(parameters.uiTestExecutionModules, 'Microsoft.CmdPal.UITests.Next'))) }}:
-    - pwsh: |
-        $pattern = '^Windows Search (?:readiness: indexedMatches=\d+/2; waitMs=\d+; fixtureAgeMs=\d+; osUptimeMs=\d+|service: status=\w+; startType=\w+|scope: (?:documents|fixtureFolder)=\w+|(?:service|scope) query unavailable: \w+ \(0x[0-9A-F]{8}\))\.$'
-        $reports = @(Get-ChildItem -LiteralPath '$(Common.TestResultsDirectory)' -Filter '*.trx' -File -Recurse)
-        $lines = @($reports | Select-String -Pattern $pattern | Select-Object -ExpandProperty Line -Unique)
-        if ($lines.Count -eq 0) {
-          Write-Warning 'The CmdPal TRX did not contain Windows Search readiness diagnostics.'
-        }
-        $lines | ForEach-Object { Write-Host $_ }
-      displayName: "Report CmdPal Windows Search readiness"
-      condition: succeededOrFailed()
-
   - task: PublishTestResults@2
     displayName: "Publish UI Test Results"
     condition: always()

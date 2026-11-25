@@ -192,61 +192,6 @@ function Get-AzDevOpsPagedValues
     }
 }
 
-function Get-AzDevOpsUiTestPreviewStages
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string] $FinalYaml,
-
-        [Parameter(Mandatory)]
-        [string] $ProbeModule
-    )
-
-    $stageBlocks = [regex]::Matches($FinalYaml, '(?ms)^- stage: (?<name>[^\r\n]+)\r?\n(?<body>.*?)(?=^- stage: |\z)')
-    $stages = @($stageBlocks | ForEach-Object { $_.Groups['name'].Value.Trim() })
-    $testStages = @('Test_x64Win10_FullBuild', 'Test_x64Win11_FullBuild')
-    $missingStages = @((@('Build_x64') + $testStages) | Where-Object { $_ -cnotin $stages })
-    if ($missingStages.Count -ne 0)
-    {
-        throw "Pipeline preview omitted required stages: $($missingStages -join ', '). Expanded stages: $($stages -join ', ')."
-    }
-
-    foreach ($stage in $stageBlocks)
-    {
-        $name = $stage.Groups['name'].Value.Trim()
-        if ($name -cnotin $testStages)
-        {
-            continue
-        }
-
-        $body = $stage.Groups['body'].Value
-        $assignments = [regex]::Matches($body, '(?m)^[ \t]+SELECTED_UI_TEST_MODULES:[ \t]*(?<value>[^\r\n]*)')
-        if ($assignments.Count -eq 0)
-        {
-            # Older probe branches pass the module selection as a PowerShell string literal.
-            $assignments = [regex]::Matches($body, '(?m)^[ \t]+\$modulesRaw[ \t]*=[ \t]*(?<value>''[^''\r\n]*'')[ \t\r]*$')
-        }
-
-        if ($assignments.Count -eq 0)
-        {
-            throw "Pipeline preview found no literal UI test module selection in '$name'."
-        }
-
-        $expectedValues = @($ProbeModule, "'$ProbeModule'", "`"$ProbeModule`"")
-        foreach ($assignment in $assignments)
-        {
-            $value = $assignment.Groups['value'].Value.Trim()
-            if ($value -cnotin $expectedValues)
-            {
-                throw "Pipeline preview did not resolve only module '$ProbeModule' in '$name'. Found: $value"
-            }
-        }
-    }
-
-    return $stages
-}
-
 function ConvertTo-AzDevOpsBuildSnapshot
 {
     [CmdletBinding()]

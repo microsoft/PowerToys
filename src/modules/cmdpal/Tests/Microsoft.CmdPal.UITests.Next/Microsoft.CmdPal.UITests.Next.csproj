@@ -24,7 +24,6 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
-    <PackageReference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 
   <ItemGroup>

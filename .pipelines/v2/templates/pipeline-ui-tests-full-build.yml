@@ -25,9 +25,6 @@ parameters:
   - name: uiTestDiagnosticCohorts
     type: object
     default: []
-  - name: runX64Win10UiTests
-    type: boolean
-    default: true
   # UI-test shards (parallel agents) per test platform; 1 = one job per platform, as before.
   - name: uiTestShardsX64Win10
     type: number
@@ -70,7 +67,7 @@ stages:
           timeoutInMinutes: 90
 
   # Stage 2: run the selected suites on each applicable Windows test image.
-  - ${{ if and(eq(parameters.platform, 'x64'), parameters.runX64Win10UiTests) }}:
+  - ${{ if eq(parameters.platform, 'x64') }}:
     - stage: Test_x64Win10_FullBuild
       displayName: Test x64Win10 (Full Build)
       dependsOn: Build_${{ parameters.platform }}
@@ -96,7 +93,6 @@ stages:
               uiTestDiagnosticCohort: true
               uiTestExecutionModules: ${{ cohort.modules }}
 
-  - ${{ if eq(parameters.platform, 'x64') }}:
     - stage: Test_x64Win11_FullBuild
       displayName: Test x64Win11 (Full Build)
       dependsOn: Build_${{ parameters.platform }}

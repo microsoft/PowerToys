@@ -18,9 +18,6 @@ parameters:
   - name: uiTestModules
     type: object
     default: []
-  - name: runX64Win10UiTests
-    type: boolean
-    default: true
   - name: executionMode
     type: string
     values: [fullProduct]
@@ -36,5 +33,4 @@ stages:
       useVSPreview: ${{ parameters.useVSPreview }}
       useLatestWebView2: ${{ parameters.useLatestWebView2 }}
       uiTestModules: ${{ parameters.uiTestModules }}
-      runX64Win10UiTests: ${{ parameters.runX64Win10UiTests }}
       uiTestDiagnosticCohorts: ${{ parameters.cohorts }}
