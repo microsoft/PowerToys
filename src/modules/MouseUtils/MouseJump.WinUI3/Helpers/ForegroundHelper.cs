@@ -59,7 +59,7 @@ internal static class ForegroundHelper
     /// once with this thread's input temporarily attached to the current foreground thread.
     /// </summary>
     /// <returns>True if the window became the foreground window, otherwise false.</returns>
-    private static bool TrySetForegroundWindow(HWND hWnd)
+    internal static bool TrySetForegroundWindow(HWND hWnd)
     {
         if ((bool)PInvoke.SetForegroundWindow(hWnd))
         {

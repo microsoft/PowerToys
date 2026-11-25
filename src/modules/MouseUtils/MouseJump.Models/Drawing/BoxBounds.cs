@@ -138,6 +138,31 @@ public sealed class BoxBounds
     }
 
     /// <summary>
+    /// Returns a new <see cref="BoxBounds"/> with every nested rectangle (outer, margin,
+    /// border, padding, content) offset by the same amount, so that <see cref="OuterBounds"/>
+    /// ends up at <paramref name="location"/>. Used to re-anchor a box to a known origin -
+    /// e.g. (0,0) - after enlarging/shrinking has left it positioned somewhere else, which
+    /// matters when the box's coordinates are about to be used as pixel coordinates into a
+    /// bitmap sized to match it.
+    /// </summary>
+    public BoxBounds MoveTo(PointInfo location)
+    {
+        ArgumentNullException.ThrowIfNull(location);
+
+        var dx = location.X - this.OuterBounds.X;
+        var dy = location.Y - this.OuterBounds.Y;
+
+        return this.IsEmpty
+            ? this
+            : new BoxBounds(
+                outerBounds: this.OuterBounds.Offset(dx, dy),
+                marginBounds: this.MarginBounds.Offset(dx, dy),
+                borderBounds: this.BorderBounds.Offset(dx, dy),
+                paddingBounds: this.PaddingBounds.Offset(dx, dy),
+                contentBounds: this.ContentBounds.Offset(dx, dy));
+    }
+
+    /// <summary>
     /// Calculates the bounds of the various areas of a box, given the outer bounds and the box style.
     /// This method starts with the outer bounds and works inward, shrinking the outer bounds by the margin, border, and padding sizes to calculate the content bounds of the box.
     /// </summary>

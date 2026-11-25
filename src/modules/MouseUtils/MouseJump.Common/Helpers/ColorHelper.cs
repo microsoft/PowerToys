@@ -9,6 +9,10 @@ namespace MouseJump.Common.Helpers;
 
 public static class ColorHelper
 {
+    /// <summary>
+    /// Converts a named color (e.g. Color.Red) to an equivalent unnamed ARGB color.
+    /// This forces serialization to emit the ARGB string instead of the color name.
+    /// </summary>
     public static Color? ToUnnamedColor(Color? value)
     {
         if (!value.HasValue)
@@ -75,10 +79,10 @@ public static class ColorHelper
         }
 
         // e.g. "SystemColors.Highlight"
-        const string systemColorPrefix = $"{nameof(SystemColors)}.";
-        if (value.StartsWith(systemColorPrefix, comparison))
+        const string systemColorsPrefix = $"{nameof(SystemColors)}.";
+        if (value.StartsWith(systemColorsPrefix, comparison))
         {
-            var colorName = value[systemColorPrefix.Length..];
+            var colorName = value[systemColorsPrefix.Length..];
             var property = typeof(SystemColors).GetProperties()
                 .SingleOrDefault(property => property.Name == colorName);
             if (property is not null)

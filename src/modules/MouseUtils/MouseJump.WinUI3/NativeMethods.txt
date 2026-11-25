@@ -6,6 +6,14 @@ SetWindowLong
 USER_DEFAULT_SCREEN_DPI
 GetDpiForWindow
 
+SetWindowRgn
+
+CreateRectRgn
+CreateRoundRectRgn
+DeleteObject
+
+DwmFlush
+
 SetLastError
 
 ShowWindow

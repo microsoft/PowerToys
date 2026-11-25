@@ -280,8 +280,8 @@ public class MouseJumpTests : UITestBase
                 pollIntervalMS: 100);
             if (preview.Succeeded)
             {
-                WindowControl.WaitForForeground(preview.LastObservation.Hwnd, 2_000);
-                return preview.LastObservation;
+                WindowControl.WaitForForeground(new IntPtr(preview.WindowHandle), 2_000);
+                return preview;
             }
         }
 

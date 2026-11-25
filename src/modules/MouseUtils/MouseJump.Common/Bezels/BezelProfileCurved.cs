@@ -18,13 +18,21 @@ namespace MouseJump.Common.Bezels;
 ///   n = bezel width
 ///   d = bezel depth
 ///
-///   position:   0           r           1-r          1
-///   pixel:      0           d           n-d          n
-///               │           │            │           │
-///   θ (normal): 0 ───────→ π/2 ──────── π/2 ───────→  π
-///   cos(θ):    +1 ───────→  0  ────────  0  ───────→ -1
-///               │outer ring │    flat    │inner ring │
-///               │(highlight)│   (none)   │(shadow)   │
+///                      _..--"""""""""""""""""""--.._
+///                   .-'     .                 .     '-.
+///                 .'        .                 .        '.
+///                /          .                 .          \
+///               |           .                 .           |
+///               +-----------------------------------------+
+///               0                                         1
+///
+///   position:   0           r                1-r          1
+///   pixel:      0           d                n-d          n
+///               │           │                 │           │
+///   θ (normal): 0 ───────→ π/2 ───────────── π/2 ───────→ π
+///   cos(θ):    +1 ───────→  0  ─────────────  0  ───────→ -1
+///               │outer ring │      flat       │inner ring │
+///               │(highlight)│     (none)      │(shadow)   │
 ///
 /// GetProfileNormal maps a position to a normal angle; the shared helpers in
 /// BezelProfile convert that angle to highlight / shadow intensities.
