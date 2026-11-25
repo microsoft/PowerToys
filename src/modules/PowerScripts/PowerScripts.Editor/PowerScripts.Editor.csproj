@@ -26,6 +26,7 @@
     <PackageReference Include="CommunityToolkit.WinUI.Converters" />
     <PackageReference Include="Microsoft.Web.WebView2" />
     <ProjectReference Include="UI\PowerScripts.UI.csproj" />
+    <ProjectReference Include="..\PowerScripts.Core\PowerScripts.Core.csproj" />
     <ProjectReference Include="..\PowerScripts.Host\PowerScripts.Host.csproj"
                       ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
     <ProjectReference Include="$(RepoRoot)src\settings-ui\Settings.UI.Library\Settings.UI.Library.csproj" />

@@ -395,6 +395,7 @@ public sealed partial class PowerScriptSettingsPage : Page
         var canManage = _isActive && !_isLoading && !_isRunLoading && !RunModel.IsRunning;
         MetadataCommands.IsEnabled = canManage;
         HeroEditScriptButton.IsEnabled = canManage;
+        CopyAgentInstructionsButton.IsEnabled = canManage;
         RunCommandButton.IsEnabled = canManage && _context?.ViewModel.IsEnabled == true && !_context.Script.HasConfigurationErrors;
     }
 

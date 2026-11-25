@@ -9,23 +9,22 @@ using Microsoft.UI.Xaml.Controls;
 using PowerScripts.Core.AgentSkills;
 using Windows.ApplicationModel.DataTransfer;
 
-namespace Microsoft.PowerToys.Settings.UI.Views;
+namespace PowerScripts.Editor.Views;
 
-public sealed partial class PowerScriptsPage
+public sealed partial class PowerScriptSettingsPage
 {
     private void CopyAgentSkillInstructions_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            var resources = Helpers.ResourceLoaderInstance.ResourceLoader;
-            var instructions = resources.GetString("PowerScripts_AgentSetupInstructions")
+            var instructions = Resource("PowerScripts_AgentSetupInstructions")
                 .Replace("{0}", AgentSkillBundle.GetDirectory(AppContext.BaseDirectory), StringComparison.Ordinal);
             var data = new DataPackage();
             data.SetText(instructions);
             Clipboard.SetContent(data);
             Clipboard.Flush();
             AgentSkillFeedback.Severity = InfoBarSeverity.Success;
-            AgentSkillFeedback.Message = resources.GetString("PowerScripts_AgentInstructionsCopied");
+            AgentSkillFeedback.Message = Resource("PowerScripts_AgentInstructionsCopied");
         }
         catch (Exception exception)
         {

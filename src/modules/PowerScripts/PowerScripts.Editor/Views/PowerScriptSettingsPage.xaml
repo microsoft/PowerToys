@@ -94,6 +94,11 @@
                             x:Uid="PowerScripts_EditScriptAction"
                             AutomationProperties.AutomationId="PowerScriptsHeroEditScript"
                             Click="EditScriptButton_Click" />
+                        <Button
+                            x:Name="CopyAgentInstructionsButton"
+                            x:Uid="PowerScripts_CopyAgentInstructionsButton"
+                            AutomationProperties.AutomationId="PowerScriptsCopySkillInstructionsButton"
+                            Click="CopyAgentSkillInstructions_Click" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -108,6 +113,10 @@
                 AutomationProperties.AutomationId="PowerScriptsEditorStatus"
                 IsClosable="True"
                 Severity="Informational" />
+            <InfoBar
+                x:Name="AgentSkillFeedback"
+                AutomationProperties.AutomationId="PowerScriptsAgentSkillFeedback"
+                IsClosable="True" />
             <SelectorBar
                 x:Name="DetailsTabs"
                 AutomationProperties.AutomationId="PowerScriptsDetailsTabs"
@@ -148,9 +157,7 @@
                                     Text="{x:Bind RunModel.PrimaryText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     TextWrapping="Wrap"
                                     Visibility="{x:Bind RunModel.HasTextInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}" />
-                                <StackPanel
-                                    Spacing="8"
-                                    Visibility="{x:Bind RunModel.HasFileInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <StackPanel Spacing="8" Visibility="{x:Bind RunModel.HasFileInput, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
                                     <TextBox
                                         x:Uid="PowerScripts_RunFileInput"
                                         MinHeight="72"
@@ -183,34 +190,30 @@
                                                 <ContentControl HorizontalContentAlignment="Stretch" IsEnabled="{x:Bind IsProvided, Mode=OneWay}">
                                                     <StackPanel Spacing="8">
                                                         <TextBox
-                                                            Header="{x:Bind DisplayLabel}"
                                                             AutomationProperties.AutomationId="{x:Bind ControlId('Text')}"
+                                                            Header="{x:Bind DisplayLabel}"
                                                             Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                             Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsText), Mode=OneWay}" />
                                                         <ToggleSwitch
-                                                            Header="{x:Bind DisplayLabel}"
                                                             AutomationProperties.AutomationId="{x:Bind ControlId('Boolean')}"
+                                                            Header="{x:Bind DisplayLabel}"
                                                             IsOn="{x:Bind BooleanValue, Mode=TwoWay}"
                                                             Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsBoolean), Mode=OneWay}" />
                                                         <ComboBox
                                                             HorizontalAlignment="Stretch"
-                                                            Header="{x:Bind DisplayLabel}"
                                                             AutomationProperties.AutomationId="{x:Bind ControlId('Choice')}"
+                                                            Header="{x:Bind DisplayLabel}"
                                                             ItemsSource="{x:Bind Options}"
                                                             SelectedItem="{x:Bind TextValue, Mode=TwoWay}"
                                                             Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsChoice), Mode=OneWay}" />
-                                                        <StackPanel
-                                                            Spacing="4"
-                                                            Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsFile), Mode=OneWay}">
+                                                        <StackPanel Spacing="4" Visibility="{x:Bind views:PowerScriptSettingsPage.BoolToVisibility(IsFile), Mode=OneWay}">
                                                             <TextBlock Text="{x:Bind DisplayLabel}" />
                                                             <Grid ColumnSpacing="8">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="*" />
                                                                     <ColumnDefinition Width="Auto" />
                                                                 </Grid.ColumnDefinitions>
-                                                                <TextBox
-                                                                    AutomationProperties.AutomationId="{x:Bind ControlId('File')}"
-                                                                    Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                                                                <TextBox AutomationProperties.AutomationId="{x:Bind ControlId('File')}" Text="{x:Bind TextValue, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                                                                 <Button
                                                                     x:Uid="PowerScripts_RunBrowse"
                                                                     Grid.Column="1"
@@ -250,7 +253,10 @@
                                 AutomationProperties.AutomationId="PowerScriptsRunCancel"
                                 Click="CancelRunButton_Click"
                                 IsEnabled="{x:Bind RunModel.IsRunning, Mode=OneWay}" />
-                            <ProgressRing Width="20" Height="20" IsActive="{x:Bind RunModel.IsRunning, Mode=OneWay}" />
+                            <ProgressRing
+                                Width="20"
+                                Height="20"
+                                IsActive="{x:Bind RunModel.IsRunning, Mode=OneWay}" />
                             <TextBlock
                                 VerticalAlignment="Center"
                                 AutomationProperties.AutomationId="PowerScriptsRunStatus"
