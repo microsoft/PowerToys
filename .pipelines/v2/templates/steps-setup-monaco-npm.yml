@@ -32,25 +32,26 @@ steps:
     inputs:
       version: '22.x'
 
+  # Use the release feed in PR CI so both builds depend on the same saved packages.
+  - pwsh: |-
+      $registry = 'https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/npm/registry/'
+      $npmrc = Join-Path '$(Agent.TempDirectory)' 'monaco.npmrc'
+      Set-Content -LiteralPath $npmrc -Value "registry=$registry"
+      Write-Host "##vso[task.setvariable variable=NPM_CONFIG_USERCONFIG]$npmrc"
+      Write-Host "##vso[task.setvariable variable=NPM_CONFIG_REGISTRY]$registry"
+    displayName: Point npm at the PowerToys dependencies feed
+
   - ${{ if eq(parameters.enablePackageCaching, true) }}:
     - task: Cache@2
       displayName: Cache npm packages (Monaco)
       inputs:
-        key: '"npm" | "$(Agent.OS)" | src/Monaco/package-lock.json'
+        key: '"npm" | "$(Agent.OS)" | "$(NPM_CONFIG_REGISTRY)" | src/Monaco/package-lock.json'
         path: $(Pipeline.Workspace)\.npm
 
-  # Official builds can't reach registry.npmjs.org, so npm resolves the lockfile through the
-  # PowerToys Azure Artifacts feed (npmjs upstream) instead.
   - ${{ if eq(parameters.official, true) }}:
-    - pwsh: |-
-        $npmrc = Join-Path '$(Agent.TempDirectory)' 'monaco.npmrc'
-        Set-Content -Path $npmrc -Value 'registry=https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/npm/registry/'
-        Write-Host "##vso[task.setvariable variable=NPM_CONFIG_USERCONFIG]$npmrc"
-      displayName: Point npm at the PowerToys dependencies feed
-
     - task: npmAuthenticate@0
       displayName: Authenticate npm with the PowerToys dependencies feed
       inputs:
         workingFile: $(Agent.TempDirectory)\monaco.npmrc
         azureDevOpsServiceConnection: 'SHINE PowerToys Artifact Feed'
-        feedUrl: https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/npm/registry/
+        feedUrl: $(NPM_CONFIG_REGISTRY)

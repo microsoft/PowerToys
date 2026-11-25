@@ -29,7 +29,7 @@ PowerToys doesn't check in Monaco's source. It builds a bundle from a pinned npm
 - **Temporary DOMPurify pin:** monaco-editor 0.57.0 bundles DOMPurify 3.4.15, which has security advisories fixed in 3.4.17. `package.json` pins `dompurify` 3.4.17 (with an `overrides` entry so the lockfile has only that version), and `build.mjs` points Monaco's import of its own DOMPurify copy at that package. The build fails if a newer monaco-editor bundles a newer DOMPurify, as a reminder to remove the pin.
 - [`src/Monaco.props`](/src/Monaco.props) runs [`build.mjs`](/src/Monaco/build.mjs) while building `FilePreviewCommon` and `RegistryPreviewUILib`. It runs `npm ci` when the lockfile changes, bundles into `src/Monaco/dist` (git-ignored), and copies the result to `Assets\Monaco`. It's a no-op when nothing changed.
 - Building requires **Node.js 20 or later** on `PATH` (`winget install OpenJS.NodeJS.LTS`, or `tools\build\setup-dev-environment.ps1`). To use a different `node.exe`, set the `PowerToysNodeExe` MSBuild property.
-- Official builds resolve npm packages through the PowerToys Azure Artifacts feed ([`steps-setup-monaco-npm.yml`](/.pipelines/v2/templates/steps-setup-monaco-npm.yml)).
+- PR CI and signed release builds restore npm packages from the PowerToys Azure Artifacts feed ([`steps-setup-monaco-npm.yml`](/.pipelines/v2/templates/steps-setup-monaco-npm.yml)). Save new lockfile versions to the feed before PR CI can restore them.
 
 ### Directory Structure
 
