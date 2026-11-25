@@ -65,6 +65,43 @@ namespace EnvironmentVariablesUILib.UnitTests.Helpers
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void GetExisting_MissingUserKeyFallsBackToMachineOrReturnsNull(bool missingMachine)
+        {
+            using var fixture = new EnvironmentVariablesFixture();
+            var environment = fixture.Environment;
+            environment.MissingHives.Add(RegistryHive.CurrentUser);
+            environment.Machine["Pilot"] = "%ROOT%;;tail;";
+            if (missingMachine)
+            {
+                environment.MissingHives.Add(RegistryHive.LocalMachine);
+            }
+
+            var result = EnvironmentVariablesHelper.GetExisting("pilot", environment);
+
+            if (missingMachine)
+            {
+                Assert.IsNull(result);
+            }
+            else
+            {
+                Assert.IsNotNull(result);
+                Assert.AreEqual("Pilot", result.Name);
+                Assert.AreEqual("%ROOT%;;tail;", result.Values);
+                Assert.AreEqual(VariablesSetType.System, result.ParentType);
+                Assert.IsTrue(environment.Keys.Single().IsDisposed);
+            }
+
+            CollectionAssert.AreEqual(
+                new[] { RegistryHive.CurrentUser, RegistryHive.LocalMachine },
+                environment.Opens.Select(open => open.Hive).ToArray());
+            Assert.IsTrue(environment.Opens.All(open => !open.Writable));
+            Assert.AreEqual(0, environment.Notifications.Count);
+            Assert.IsFalse(environment.Operations.Any(operation => operation.Operation is "Write" or "Delete"));
+        }
+
+        [TestMethod]
         [DataRow(VariablesSetType.User, RegistryHive.CurrentUser, "Environment")]
         [DataRow(VariablesSetType.Profile, RegistryHive.CurrentUser, "Environment")]
         [DataRow(VariablesSetType.System, RegistryHive.LocalMachine, @"System\CurrentControlSet\Control\Session Manager\Environment")]

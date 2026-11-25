@@ -152,7 +152,8 @@ namespace EnvironmentVariablesUILib.Helpers
             return true;
         }
 
-        private static IEnvironmentVariablesRegistryKey OpenEnvironmentKeyIfExists(bool fromMachine, bool writable, IEnvironmentVariablesEnvironment environment)
+#nullable enable annotations
+        private static IEnvironmentVariablesRegistryKey? OpenEnvironmentKeyIfExists(bool fromMachine, bool writable, IEnvironmentVariablesEnvironment environment)
         {
             RegistryHive hive;
             string keyName;
@@ -170,6 +171,7 @@ namespace EnvironmentVariablesUILib.Helpers
 
             return environment.OpenKey(hive, keyName, writable);
         }
+#nullable restore annotations
 
         // Code taken from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Environment.Win32.cs
         // Set variables directly to registry instead of using Environment API - Environment.SetEnvironmentVariable() has 1 second timeout for SendNotifyMessage(WM_SETTINGSCHANGED).

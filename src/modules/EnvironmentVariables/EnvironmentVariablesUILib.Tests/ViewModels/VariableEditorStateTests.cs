@@ -97,6 +97,32 @@ public class VariableEditorStateTests
     }
 
     [TestMethod]
+    [DataRow(null, null)]
+    [DataRow(null, "unused draft")]
+    [DataRow("invalid=unused", null)]
+    public void ExistingSelection_NullableDraftFieldsDoNotAffectIndependentClone(string? name, string? value)
+    {
+        var profile = new ProfileVariablesSet(Guid.NewGuid(), "profile");
+        var source = new Variable("Beta", "%ROOT%;;tail;", VariablesSetType.System);
+        var selection = new object[] { source };
+
+        Assert.IsTrue(VariableEditorState.CanAddProfileVariable(profile, false, name, value, selection));
+        VariableEditorState.AddProfileVariable(profile, false, name, value, selection);
+
+        var added = profile.Variables.Single();
+        Assert.AreEqual(source.Name, added.Name);
+        Assert.AreEqual("%ROOT%;;tail;", added.Values);
+        Assert.AreEqual(VariablesSetType.Profile, added.ParentType);
+        Assert.AreNotSame(source, added);
+        Assert.AreNotSame(source.ValuesList, added.ValuesList);
+        Assert.AreNotSame(source.ValuesList[0], added.ValuesList[0]);
+        added.ValuesList[0].Text = "edited clone";
+        Assert.AreEqual("%ROOT%", source.ValuesList[0].Text);
+        Assert.AreEqual("%ROOT%;;tail;", source.Values);
+        Assert.AreEqual(VariablesSetType.System, source.ParentType);
+    }
+
+    [TestMethod]
     public void ExistingSelection_GateFiltersNonVariablesButActionCastsThem()
     {
         var profile = new ProfileVariablesSet(Guid.NewGuid(), "profile");

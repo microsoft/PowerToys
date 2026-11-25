@@ -40,7 +40,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             return !hasDuplicate && draft.Validate();
         }
 
-        internal static bool CanAddProfileVariable(ProfileVariablesSet profile, bool newMode, string name, string value, IEnumerable<object> selected)
+        internal static bool CanAddProfileVariable(ProfileVariablesSet profile, bool newMode, string? name, string? value, IEnumerable<object> selected)
         {
             if (profile == null)
             {
@@ -59,7 +59,7 @@ namespace EnvironmentVariablesUILib.ViewModels
                 EnvironmentVariableComparisonHelper.NamesEqual(x.Name, variable.Name)));
         }
 
-        internal static void AddProfileVariable(ProfileVariablesSet profile, bool newMode, string name, string value, IEnumerable<object> selected)
+        internal static void AddProfileVariable(ProfileVariablesSet profile, bool newMode, string? name, string? value, IEnumerable<object> selected)
         {
             if (profile != null)
             {
