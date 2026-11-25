@@ -213,13 +213,14 @@ namespace MouseWithoutBorders.Class
                                 return;
                             }
 
-                            _settingsUtils.SaveSettings(serializedSettings, MouseWithoutBordersSettings.ModuleName);
+                            // SaveSettings swallows IO failures; the throwing variant lets sharing violations from concurrent readers reach the retry below.
+                            _settingsUtils.SaveSettingsOrThrow(serializedSettings, MouseWithoutBordersSettings.ModuleName);
                             _lastWrittenSequence = sequence;
                         }
 
                         saved = true;
                     }
-                    catch (IOException ex)
+                    catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                     {
                         EventLogger.LogEvent($"Failed to write settings: {ex.Message}", System.Diagnostics.EventLogEntryType.Error);
                     }

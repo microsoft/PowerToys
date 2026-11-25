@@ -22,6 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" />
   </ItemGroup>
 
   <ItemGroup>
