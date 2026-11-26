@@ -1,6 +1,10 @@
 parameters:
   - name: signingIdentity
     type: object
+  - name: sourceBuildId
+    type: string
+  - name: unsignedSha256
+    type: string
 
 jobs:
   - job: ProbeFileLocksmithSigning
@@ -12,6 +16,12 @@ jobs:
       os: windows
     variables:
       BuildPlatform: x64
+    templateContext:
+      outputs:
+        - output: pipelineArtifact
+          artifactName: file-locksmith-unsigned-x64
+          targetPath: $(Build.ArtifactStagingDirectory)\file-locksmith-unsigned-x64
+          condition: and(succeededOrFailed(), eq(variables['UnsignedProbePayloadStaged'], 'true'))
     steps:
       - checkout: self
         submodules: true
@@ -23,47 +33,48 @@ jobs:
           version: '6.0'
       - template: steps-ensure-dotnet-version.yml
 
-      - task: NuGetAuthenticate@1
-        displayName: Authenticate with the dependencies feed
-        inputs:
-          azureDevOpsServiceConnection: 'SHINE PowerToys Artifact Feed'
-          feedUrl: 'https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/nuget/v3/index.json'
+      - ${{ if eq(parameters.sourceBuildId, '0') }}:
+        - template: steps-build-file-locksmith-probe.yml
 
-      - template: steps-restore-nuget.yml
-      - template: steps-install-terrapin.yml
-      - template: steps-install-vcpkg.yml
-
-      - pwsh: |
-          $ErrorActionPreference = 'Stop'
-          $PSNativeCommandUseErrorActionPreference = $true
-          & .\.pipelines\verifyAndSetLatestVCToolsVersion.ps1
-          & nuget.exe restore -configFile .pipelines\release-nuget.config -PackagesDirectory . .pipelines\packages.config
-          Move-Item -Force 'Microsoft.PowerToys.Telemetry.*\build\include\TraceLoggingDefines.h' 'src\common\Telemetry\TraceLoggingDefines.h'
-          & nuget.exe restore 'src\modules\FileLocksmith\FileLocksmithLib\packages.config' -ConfigFile .pipelines\release-nuget.config -PackagesDirectory '$(Build.SourcesDirectory)\packages'
-        displayName: Prepare native build dependencies
-
-      - task: VSBuild@1
-        displayName: Build FileLocksmithExt and its native project references
-        inputs:
-          solution: 'src/modules/FileLocksmith/FileLocksmithExt/FileLocksmithExt.vcxproj'
-          vsVersion: 18.0
-          msbuildArgs: >-
-            -restore
-            /p:RestorePackagesConfig=true;CIBuild=true;SkipCppCodeAnalysis=1
-            /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
-            /p:RestoreRepositoryPath="$(Build.SourcesDirectory)\packages"
-          platform: x64
-          configuration: Release
-          msbuildArchitecture: x64
-          maximumCpuCount: true
+      - ${{ else }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download a captured unsigned DLL from this pipeline
+          inputs:
+            buildType: specific
+            project: $(System.TeamProjectId)
+            definition: $(System.DefinitionId)
+            buildVersionToDownload: specific
+            pipelineId: ${{ parameters.sourceBuildId }}
+            allowFailedBuilds: true
+            artifactName: file-locksmith-unsigned-x64
+            targetPath: $(Agent.TempDirectory)\FileLocksmithSigningInput
 
       - pwsh: |
           $ErrorActionPreference = 'Stop'
           $path = 'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
           $destination = Join-Path '$(Agent.TempDirectory)' 'FileLocksmithSigningProbe'
           $payload = Join-Path $destination $path
+          $sourceDll = if ($env:PROBE_SOURCE_BUILD_ID -eq '0') {
+            Join-Path '$(Build.SourcesDirectory)\x64\Release' $path
+          } else {
+            Join-Path '$(Agent.TempDirectory)\FileLocksmithSigningInput' $path
+          }
+          $digest = (Get-FileHash -LiteralPath $sourceDll).Hash
+          if ($env:PROBE_SOURCE_BUILD_ID -ne '0' -and
+              ($env:PROBE_UNSIGNED_SHA256 -notmatch '^[a-fA-F0-9]{64}$' -or $digest -ne $env:PROBE_UNSIGNED_SHA256)) {
+            throw 'The downloaded DLL does not match the pinned unsigned SHA-256.'
+          }
+          if ((Get-AuthenticodeSignature -LiteralPath $sourceDll).Status -ne 'NotSigned') {
+            throw 'Expected an unsigned x64 DLL for the signing probe.'
+          }
           New-Item -ItemType Directory -Path (Split-Path -Parent $payload) | Out-Null
-          Copy-Item -LiteralPath (Join-Path '$(Build.SourcesDirectory)\x64\Release' $path) -Destination $payload
+          Copy-Item -LiteralPath $sourceDll -Destination $payload
+          if ($env:PROBE_SOURCE_BUILD_ID -eq '0') {
+            $artifact = Join-Path '$(Build.ArtifactStagingDirectory)\file-locksmith-unsigned-x64' $path
+            New-Item -ItemType Directory -Path (Split-Path -Parent $artifact) | Out-Null
+            Copy-Item -LiteralPath $sourceDll -Destination $artifact
+            Write-Host '##vso[task.setvariable variable=UnsignedProbePayloadStaged]true'
+          }
           $policy = Get-Content -LiteralPath '.pipelines\ESRPSigning_core.json' -Raw | ConvertFrom-Json
           $batch = @($policy.SignBatches | Where-Object { $_.MatchedPath -contains $path })
           if ($batch.Count -ne 1) {
@@ -72,8 +83,11 @@ jobs:
           $batch[0].MatchedPath = @($path)
           $policy.SignBatches = $batch
           $policy | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $destination 'policy.json') -Encoding utf8NoBOM
-          Write-Host "Unsigned SHA256: $((Get-FileHash -LiteralPath $payload).Hash)"
+          Write-Host "Unsigned SHA256: $digest"
         displayName: Stage exactly one DLL and its release signing policy
+        env:
+          PROBE_SOURCE_BUILD_ID: ${{ parameters.sourceBuildId }}
+          PROBE_UNSIGNED_SHA256: ${{ parameters.unsignedSha256 }}
 
       - template: steps-esrp-signing.yml
         parameters:

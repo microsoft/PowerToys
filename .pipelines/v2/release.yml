@@ -53,6 +53,14 @@ parameters:
     type: boolean
     default: true
 
+  - name: probeSourceBuildId
+    type: string
+    default: '0'
+
+  - name: probeUnsignedSha256
+    type: string
+    default: ''
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
@@ -94,6 +102,8 @@ extends:
         jobs:
           - template: .pipelines/v2/templates/job-probe-file-locksmith-signing.yml@self
             parameters:
+              sourceBuildId: ${{ parameters.probeSourceBuildId }}
+              unsignedSha256: ${{ parameters.probeUnsignedSha256 }}
               signingIdentity:
                 serviceName: $(SigningServiceName)
                 appId: $(SigningAppId)
