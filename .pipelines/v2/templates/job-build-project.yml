@@ -185,6 +185,10 @@ jobs:
       artifactName: $(JobOutputArtifactName)-failure-$(System.JobAttempt)
       targetPath: $(LogOutputDirectory)
       condition: or(failed(), canceled())
+    - output: pipelineArtifact
+      artifactName: file-locksmith-unsigned-x64
+      targetPath: $(Agent.TempDirectory)\file-locksmith-unsigned-x64
+      condition: and(succeededOrFailed(), eq(variables['UnsignedProbePayloadStaged'], 'true'))
   steps:
   - ${{ if eq(parameters.prepareMwbRuntime, true) }}:
     - pwsh: |
@@ -655,6 +659,22 @@ jobs:
           -BuildRoot '$(BuildPlatform)\$(BuildConfiguration)' `
           -OutputDirectory '$(Agent.TempDirectory)\core-signing'
       displayName: Prepare smaller core signing requests
+
+    - pwsh: |
+        $ErrorActionPreference = 'Stop'
+        $relativePath = 'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
+        $source = Join-Path '$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)' $relativePath
+        $destination = Join-Path '$(Agent.TempDirectory)\file-locksmith-unsigned-x64' $relativePath
+        if ((Get-AuthenticodeSignature -LiteralPath $source).Status -ne 'NotSigned') {
+          throw 'Expected an unsigned release DLL before ESRP.'
+        }
+        New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
+        Copy-Item -LiteralPath $source -Destination $destination
+        Write-Host "Release DLL version: $((Get-Item -LiteralPath $destination).VersionInfo.FileVersion)"
+        Write-Host "Unsigned SHA256: $((Get-FileHash -LiteralPath $destination).Hash)"
+        Write-Host '##vso[task.setvariable variable=UnsignedProbePayloadStaged]true'
+      condition: and(succeeded(), eq(variables['BuildPlatform'], 'x64'))
+      displayName: Capture the exact unsigned x64 release DLL
 
     - ${{ each batch in split('core-file-locksmith,core-binaries,core-resources-1,core-resources-2', ',') }}:
       - template: steps-esrp-signing.yml
