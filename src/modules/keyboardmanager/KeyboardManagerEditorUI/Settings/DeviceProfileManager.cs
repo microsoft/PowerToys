@@ -260,7 +260,10 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 DeviceProfilesFile file = Load();
-                int removed = file.Map.RemoveAll(e => string.Equals(e.Profile, profile, StringComparison.Ordinal));
+
+                // Ignore case: the engine opens "<profile>.json" on a file system that ignores case,
+                // so "work" and "Work" are the same profile to it.
+                int removed = file.Map.RemoveAll(e => string.Equals(e.Profile, profile, StringComparison.OrdinalIgnoreCase));
                 if (removed == 0)
                 {
                     return true;

@@ -211,6 +211,19 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual(1, Directory.EnumerateFiles(_directory, "deviceProfiles*").Count());
         }
 
+        // Deleting a profile prunes the keyboards assigned to it. The engine opens "<profile>.json"
+        // on a file system that ignores case, so an assignment that differs only in case points at
+        // the same profile; left behind, a profile created later under that name would inherit it.
+        [TestMethod]
+        public void RemoveAssignmentsForProfile_AlsoRemovesAnAssignmentThatDiffersOnlyInCase()
+        {
+            WriteFile(autoSwitch: true, ("k1", "work"), ("k2", "Home"));
+
+            Assert.IsTrue(DeviceProfileManager.RemoveAssignmentsForProfile("Work"));
+
+            CollectionAssert.AreEquivalent(new List<string> { "k2=Home" }, SavedMap());
+        }
+
         private static List<DeviceAssignment> Rows(params (string Device, string Profile)[] rows) =>
             rows.Select(r => new DeviceAssignment { Device = r.Device, Profile = r.Profile, Name = r.Device }).ToList();
 
