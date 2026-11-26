@@ -159,6 +159,49 @@ Describe 'Installer Smart Cabbing media' {
         $installerFiles[0].WxsPath | Should Be $wxs
     }
 
+    It 'harvests the WinUI apphost files only from WinUI3Apps' {
+        . Import-MediaTestHarvester
+
+        $fileListRoots = @{}
+        $installerFiles = [Collections.Generic.List[object]]::new()
+        $installer = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext'
+        $source = Join-Path $TestDrive 'release'
+        $winui = Join-Path $source 'WinUI3Apps'
+        $null = New-Item -ItemType Directory -Path $winui -Force
+        $duplicateFiles = @(
+            'PowerToys.WorkspacesLauncherUI.exe'
+            'PowerToys.WorkspacesLauncherUI.deps.json'
+            'PowerToys.WorkspacesLauncherUI.runtimeconfig.json'
+            'PowerToys.ColorPickerUI.exe'
+            'PowerToys.ImageResizer.exe'
+        )
+        foreach ($name in $duplicateFiles) {
+            Set-Content -LiteralPath (Join-Path $source $name) -Value 'apphost payload'
+            Set-Content -LiteralPath (Join-Path $winui $name) -Value 'apphost payload'
+        }
+        $nativeLauncher = Join-Path $source 'PowerToys.WorkspacesLauncher.exe'
+        Set-Content -LiteralPath $nativeLauncher -Value 'native launcher payload'
+
+        $baseWxs = Join-Path $TestDrive 'BaseApplications.wxs'
+        Copy-Item -LiteralPath (Join-Path $installer 'BaseApplications.wxs') -Destination $baseWxs
+        Generate-FileList -fileDepsJson '' -fileListName BaseApplicationsFiles -wxsFilePath $baseWxs -depsPath $source
+        Generate-FileComponents -fileListName BaseApplicationsFiles -wxsFilePath $baseWxs
+
+        $winuiWxs = Join-Path $TestDrive 'WinUI3Applications.wxs'
+        Copy-Item -LiteralPath (Join-Path $installer 'WinUI3Applications.wxs') -Destination $winuiWxs
+        Generate-FileList -fileDepsJson '' -fileListName WinUI3ApplicationsFiles -wxsFilePath $winuiWxs -depsPath $winui
+        Generate-FileComponents -fileListName WinUI3ApplicationsFiles -wxsFilePath $winuiWxs
+
+        $rootFiles = @($installerFiles | Where-Object Component -EQ 'BaseApplicationsFiles_Component')
+        $rootFiles.Count | Should Be 1
+        $rootFiles[0].SourcePath | Should Be $nativeLauncher
+        $winuiFiles = @($installerFiles | Where-Object Component -EQ 'WinUI3ApplicationsFiles_Component')
+        $winuiFiles.Count | Should Be $duplicateFiles.Count
+        foreach ($name in $duplicateFiles) {
+            $winuiFiles.SourcePath -contains (Join-Path $winui $name) | Should Be $true
+        }
+    }
+
     It 'preserves both File rows, component ownership and unrelated authoring' {
         $files = @(
             New-MediaTestFile 'A' 'same'
