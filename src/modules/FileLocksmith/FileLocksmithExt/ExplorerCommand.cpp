@@ -284,12 +284,12 @@ HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer
         startupInfo.wShowWindow = SW_SHOWNORMAL;
     }
 
-    PROCESS_INFORMATION processInformation = {};
+    PROCESS_INFORMATION processInformation;
     std::wstring command_line = L"\"";
     command_line += exe_path;
     command_line += L"\"\0";
 
-    if (!CreateProcessW(
+    CreateProcessW(
         NULL,
         command_line.data(),
         NULL,
@@ -299,10 +299,7 @@ HRESULT ExplorerCommand::LaunchUI(CMINVOKECOMMANDINFO* pici, ipc::Writer* writer
         NULL,
         NULL,
         &startupInfo,
-        &processInformation))
-    {
-        return HRESULT_FROM_WIN32(GetLastError());
-    }
+        &processInformation);
 
     // Discard handles
     CloseHandle(processInformation.hProcess);
