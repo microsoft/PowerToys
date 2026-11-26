@@ -61,6 +61,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Use the Desktop WindowsBase.dll in the shared WinUI3Apps output. -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenAI" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="CommunityToolkit.WinUI.Animations" />
