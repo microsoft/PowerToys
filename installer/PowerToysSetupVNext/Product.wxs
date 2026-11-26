@@ -70,7 +70,6 @@
       <ComponentGroupRef Id="WindowsAppSDKComponentGroup" />
       <ComponentGroupRef Id="ToolComponentGroup" />
       <ComponentGroupRef Id="CliShimsComponentGroup" />
-      <ComponentGroupRef Id="MonacoSRCHeatGenerated" />
       <ComponentGroupRef Id="WorkspacesComponentGroup" />
       <ComponentGroupRef Id="CmdPalComponentGroup" />
     </Feature>

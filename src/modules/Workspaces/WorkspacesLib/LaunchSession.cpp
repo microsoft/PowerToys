@@ -141,6 +141,16 @@ namespace WorkspacesSession
         project = std::move(prepared);
     }
 
+    bool Result::CanRecapture() const
+    {
+        // A placement failure can replace a confirmed launch in the final window states.
+        return launchedAnyApplication || std::ranges::any_of(applications, [this](const auto& entry) {
+            const auto& outcome = entry.second;
+            return outcome.state == LaunchingState::Launched || outcome.state == LaunchingState::LaunchedAndMoved ||
+                   (project.moveExistingWindows && outcome.HasLiveExistingWindow());
+        });
+    }
+
     json::JsonObject SerializeResult(const Result& result)
     {
         json::JsonObject message;
@@ -151,7 +161,7 @@ namespace WorkspacesSession
         json::JsonArray applications;
         for (const auto& [app, state] : result.applications)
         {
-            auto item = WorkspacesData::AppLaunchInfoJSON::ToJson(state);
+            auto item = WorkspacesData::AppLaunchInfoJSON::ToResultJson(state);
             if (const auto error = result.applicationErrors.find(app.id); error != result.applicationErrors.end())
                 item.SetNamedValue(L"nativeError", json::value(error->second));
             if (const auto approval = result.approvals.find(app.id); approval != result.approvals.end())
@@ -160,6 +170,8 @@ namespace WorkspacesSession
         }
         message.SetNamedValue(L"applications", applications);
         message.SetNamedValue(L"loggingAvailable", json::value(result.loggingAvailable));
+        if (result.launchedAnyApplication)
+            message.SetNamedValue(L"launchedAnyApplication", json::value(true));
         if (result.persistence)
             message.SetNamedValue(L"persistence", json::value(static_cast<int>(*result.persistence)));
         return message;
@@ -234,6 +246,7 @@ namespace WorkspacesSession
             }
         }
         result.loggingAvailable = message.GetNamedBoolean(L"loggingAvailable");
+        result.launchedAnyApplication = message.GetNamedBoolean(L"launchedAnyApplication", false);
         if (message.HasKey(L"persistence"))
         {
             const auto value = message.GetNamedNumber(L"persistence");

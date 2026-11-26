@@ -252,7 +252,9 @@ public sealed class ScreenRecording : IDisposable
             if (finished is not null)
             {
                 // Bound the wait so a stuck encoder never hangs test teardown.
-                var completed = await Task.WhenAny(finished.Task, Task.Delay(FinalizeTimeout)).ConfigureAwait(false);
+                using var timeoutCts = new CancellationTokenSource();
+                var completed = await Task.WhenAny(finished.Task, Task.Delay(FinalizeTimeout, timeoutCts.Token)).ConfigureAwait(false);
+                timeoutCts.Cancel();
                 if (completed != finished.Task)
                 {
                     FailureReason = "Timed out waiting for the recording to finalize.";

@@ -223,13 +223,13 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
             }
 
-            if (result.Contains("WinGet Client module detected."))
-            {
-                IsWinGetClientModuleDetected = true;
-            }
-            else if (result.Contains("WinGet Client module not detected.") || result.Contains("WinGet Client module needs to be updated."))
+            if (result.Contains("WinGet Client module not detected.") || result.Contains("WinGet Client module needs to be updated."))
             {
                 IsWinGetClientModuleDetected = false;
+            }
+            else if (result.Contains("WinGet Client module detected."))
+            {
+                IsWinGetClientModuleDetected = true;
             }
 
             if (result.Contains("Command Not Found module is registered in the profile file."))
@@ -269,7 +269,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             {
                 IsWinGetClientModuleDetected = true;
             }
-            else if (result.Contains("WinGet Client module not detected."))
+            else if (result.Contains("WinGet Client module not detected.") || result.Contains("WinGet Client module needs to be updated."))
             {
                 IsWinGetClientModuleDetected = false;
             }

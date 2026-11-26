@@ -26,23 +26,23 @@ internal sealed partial class StopAwakeCommand : InvokableCommand
             if (result.Success)
             {
                 _onSuccess?.Invoke();
-                return ShowToastKeepOpen("Awake switched to Off.");
+                return ShowToastDismiss("Awake switched to Off.");
             }
 
-            return ShowToastKeepOpen(result.Error ?? "Awake does not appear to be running.");
+            return ShowToastDismiss(result.Error ?? "Awake does not appear to be running.");
         }
         catch (Exception ex)
         {
-            return ShowToastKeepOpen($"Failed to switch Awake off: {ex.Message}");
+            return ShowToastDismiss($"Failed to switch Awake off: {ex.Message}");
         }
     }
 
-    private static CommandResult ShowToastKeepOpen(string message)
+    private static CommandResult ShowToastDismiss(string message)
     {
         return CommandResult.ShowToast(new ToastArgs()
         {
             Message = message,
-            Result = CommandResult.KeepOpen(),
+            Result = CommandResult.Dismiss(),
         });
     }
 }

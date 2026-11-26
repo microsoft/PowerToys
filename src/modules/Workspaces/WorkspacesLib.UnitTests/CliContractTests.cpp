@@ -82,6 +82,88 @@ namespace WorkspacesLibUnitTests
             }
         }
 
+        TEST_METHOD (RecaptureRequiresAConfirmedLaunchOrPlacement)
+        {
+            WorkspacesSession::Result result;
+            const auto app = Project().apps.front();
+            auto& outcome = result.applications[app];
+            for (const auto state : { LaunchingState::Waiting, LaunchingState::Failed, LaunchingState::Skipped, LaunchingState::Canceled })
+            {
+                outcome.state = state;
+                Assert::IsFalse(result.CanRecapture());
+            }
+            for (const auto state : { LaunchingState::Launched, LaunchingState::LaunchedAndMoved })
+            {
+                outcome.state = state;
+                Assert::IsTrue(result.CanRecapture());
+            }
+
+            outcome.state = LaunchingState::Failed;
+            result.launchedAnyApplication = true;
+            Assert::IsTrue(result.CanRecapture());
+        }
+
+        TEST_METHOD (WorkerPreservesConfirmedLaunchWhenArrangementFails)
+        {
+            WorkspacesSession::Result result;
+            result.operationId = L"operation";
+            result.project = Project();
+            result.project.apps.resize(1);
+            result.project.monitors.push_back({ .number = 1, .dpi = 96 });
+            auto& app = result.project.apps.front();
+            app.monitor = 1;
+            app.position = { 10, 20, 640, 400 };
+            result.applications.emplace(app, WorkspacesData::LaunchingAppState{ app, nullptr, LaunchingState::Failed });
+            result.launchedAnyApplication = true;
+
+            const auto wire = WorkspacesSession::SerializeResult(result);
+            const auto decoded = WorkspacesSession::DeserializeResult(wire, result.operationId);
+            Assert::IsTrue(decoded.CanRecapture());
+            Assert::IsTrue(decoded.applications.at(app).state == LaunchingState::Failed);
+
+            // Older session hosts supplied only the terminal window state.
+            wire.Remove(L"launchedAnyApplication");
+            Assert::IsFalse(WorkspacesSession::DeserializeResult(wire, result.operationId).CanRecapture());
+        }
+
+        TEST_METHOD (FailedMoveWindowReferenceIsLimitedToResultMessages)
+        {
+            auto project = Project();
+            project.apps.resize(1);
+            auto arranger = FinalResult(project, { LaunchingState::Failed });
+            auto item = arranger.GetNamedArray(L"applications").GetObjectAt(0);
+            item.SetNamedValue(L"existingWindow", json::value(123));
+            item.SetNamedValue(L"existingWindowProcessId", json::value(456));
+
+            LaunchingStatus expected(project);
+            const auto applications = WorkspacesCli::ParseArrangerResult(arranger, expected.Get(), L"operation");
+            const auto& outcome = applications.at(project.apps.front());
+            Assert::IsTrue(outcome.state == LaunchingState::Failed);
+            Assert::AreEqual(123UL, HandleToULong(outcome.window));
+            Assert::AreEqual(456UL, outcome.existingWindowProcessId);
+
+            const auto progress = WorkspacesData::AppLaunchInfoJSON::ToJson(outcome);
+            Assert::IsFalse(progress.HasKey(L"existingWindow"));
+            Assert::IsFalse(progress.HasKey(L"existingWindowProcessId"));
+        }
+
+        TEST_METHOD (RejectsIncompleteOrInvalidExistingWindowReferences)
+        {
+            const auto project = Project();
+            const auto wire = WorkspacesData::AppLaunchInfoJSON::ToJson({ project.apps.front(), nullptr, LaunchingState::Failed });
+            Assert::IsTrue(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
+            wire.SetNamedValue(L"existingWindow", json::value(123));
+            Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
+            for (double invalid : { 0., -1., 1.5, 4294967296. })
+            {
+                wire.SetNamedValue(L"existingWindowProcessId", json::value(invalid));
+                Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
+            }
+            wire.SetNamedValue(L"existingWindowProcessId", json::value(123));
+            wire.SetNamedValue(L"state", json::value(static_cast<int>(LaunchingState::Skipped)));
+            Assert::IsFalse(WorkspacesData::AppLaunchInfoJSON::FromJson(wire).has_value());
+        }
+
         TEST_METHOD (CliAdapterPreservesSessionPersistenceAndProgress)
         {
             auto project = Project();

@@ -1,6 +1,6 @@
 # Azure DevOps UI-test CI agentic loop
 
-This is an internal post-local-validation workflow. It assumes the selected UITest project already
+This is a post-local-validation workflow. It assumes the selected UITest project already
 passed the complete local matrix required by
 [ui-tests-local-vm](../../ui-tests-local-vm/SKILL.md), including default and constrained profiles.
 
@@ -25,7 +25,9 @@ Do not proceed unless it exits `0`, reports `Ready: true`, and every required ch
 default probe uses `refs/heads/main`, module `FancyZones.UITests.Next`, and dynamically selects one
 of the ten newest completed pipeline builds for build/log/artifact checks plus the first test-bearing
 build in that set for Azure Test checks. The JSON reports these separately as `ProbeBuildId` and
-`ProbeTestBuildId`. It creates no build and changes no Azure or repository state.
+`ProbeTestBuildId`. It creates no build and changes no Azure or repository state. The setup preview
+checks that Azure can expand the request, not which jobs or suites it would run. Inspect the actual
+run's expanded YAML separately before queueing (section 4).
 
 Use explicit probe inputs when diagnosing a particular branch or known build:
 
@@ -36,6 +38,10 @@ pwsh -NoLogo -NoProfile -File `
   -ProbeModule <Module.UITests> `
   -ProbeBuildId <KNOWN_COMPLETED_BUILD_ID>
 ```
+
+  The default target is `shine-oss/PowerToys`. For a Dart run, pass `-Organization microsoft -Project Dart`
+  to the preflight, REST helper calls, and waiter. Keep those identifiers with the build ID; build IDs
+  alone do not identify a run across organizations.
 
 For the check inventory, precise capability claims, and first-time remediation, read
 [setup-preflight.md](setup-preflight.md) only when setup fails or the user asks about readiness.
@@ -166,7 +172,12 @@ active. Use the same pushed SHA and modules, select only the failed architecture
 build IDs. The supplemental run remains part of the attempt ledger and never erases the original
 failure.
 
-## 3. Choose `buildNow` or `specificBuildId`
+## 3. Choose the build source
+
+On OSS, use `buildNow` to run the fresh build in place, or `buildNowSlim` to validate the fresh
+installer and selected test payloads. Do not select `latestMainOfficialBuild` or `specificBuildId`
+in OSS: the installer download currently targets the Dart signed-release pipeline. Use Dart
+explicitly when that artifact path is needed. The reuse rules below apply to Dart only.
 
 | Situation | `buildSource` | `specificBuildId` |
 |---|---|---|
@@ -203,6 +214,18 @@ Default parameters:
 
 Do not silently remove a platform. `x64` expands to Windows 10 and Windows 11 jobs; `arm64` expands
 to the ARM64 job.
+
+For the manual OSS cutover, preview these current-source requests separately, on the same pushed
+revision. Keep the default Windows 10 lane enabled and use one worker per requested OS:
+
+| Request | `buildPlatforms` | `buildSource` | `uiTestModules` |
+|---|---|---|---|
+| x64 installer validation | `[x64]` | `buildNowSlim` | `[GrabAndMove.UITests, PowerDisplay.UITests, Microsoft.CmdPal.UITests.Next, MouseWithoutBorders.UITests]` |
+| ARM64 driver-backed suites | `[arm64]` | `buildNowSlim` | `[GrabAndMove.UITests, PowerDisplay.UITests]` |
+
+Set `umdfHidArm64Image` to `SHINE-W11-Preview-Testing-arm64-TestSigning` for the ARM64 request
+and verify the two dedicated jobs have that exact demand. Do not change PR or ordinary ARM64
+image routing. Neither a preview nor an ARM64 transport smoke substitutes for the full suites.
 
 Preview first with the exact branch and string-valued template parameters:
 
@@ -255,23 +278,24 @@ including a reconciled duplicate, counts in the ledger.
 Store in session/task state, never the repository:
 
 ```text
-Pipeline: UI Test Automation / <definition ID>
+Pipeline: <organization>/<project> / UI Test Automation / <definition ID>
 Build: <build ID> / <build number> / <web link>
 Branch: <exact refs/heads/... ref>
 Source SHA: <40-character commit>
 Attempt: <n>/3
-Build source: <buildNow|specificBuildId> [reused build ID]
+Build source: <buildNow|buildNowSlim|specificBuildId> [reused build ID]
 Platforms: <selected platforms>
 Modules: [<exact project stems>]
 State: <notStarted|inProgress|...>
 ```
 
-After any interruption or user turn, query every exact checkpointed build ID before other Azure
-work. Never rediscover by adopting the newest run.
+After an interruption, resume the existing attached waiter if it is still running. If it stopped,
+query every exact checkpointed build ID before other Azure work. Never rediscover by adopting the
+newest run.
 
-### Agent-owned foreground completion waiter
+### Agent-owned completion watcher
 
-After queueing and checkpointing, invoke the bundled waiter synchronously in the foreground:
+After queueing and checkpointing, start the bundled waiter once:
 
 ```pwsh
 pwsh -NoLogo -NoProfile -File `
@@ -281,27 +305,32 @@ pwsh -NoLogo -NoProfile -File `
   -ExpectedSourceVersion <40_CHARACTER_SOURCE_SHA>
 ```
 
-For an explicitly authorized supplemental architecture run, pass both checkpointed IDs to one
-invocation, for example `-BuildId 123456789,123456790`. Every ID must share the expected branch and
-source SHA.
+Pass the checkpoint's organization and project explicitly when watching a non-default target.
 
-Run the setup preflight first. Keep the waiter attached to the active agent turn; do not use an
-async/background mode, end the response, or call `task_complete` while it runs. The waiter validates
-identity on every read, polls every 120 seconds, requests system sleep prevention, and returns on
-terminal status, timeout, or a genuine query failure.
+For an explicitly authorized supplemental architecture run, invoke the script directly in PowerShell
+with both checkpointed IDs (`-BuildId 123456789,123456790`), rather than passing the array through
+`pwsh -File`. Every ID must share the expected branch and source SHA.
+
+Run the setup preflight first. In Copilot CLI, start the command in async mode without detaching,
+and record its shell ID alongside the build checkpoint. Verify startup once. The waiter validates
+identity on every read, checks immediately and then every 20 minutes (`-PollIntervalSeconds 1200`),
+and requests system sleep prevention. The default wait is bounded to six hours (`-TimeoutMinutes 360`).
+Wait for the shell completion notification and collect its output once. Do not periodically read
+the shell to keep the agent turn alive or issue redundant build-status queries while the waiter runs.
+Keep the CI task open until the terminal result is verified.
 
 Read the waiter's JSON-lines `Event`: `progress` is a successful nonterminal read, `query-error` is a
 retryable read failure, `terminal` means every build completed, and `timeout` ends the bounded wait.
 Require at least one `progress` or `terminal` record before attributing a nonzero exit to Azure DevOps;
 otherwise diagnose the waiter invocation itself. On `terminal`, immediately query timeline, logs,
 tests, and artifacts and apply the completion standard. If it times out while builds are progressing,
-invoke another bounded foreground wait. For authentication or repeated query errors, rerun the setup
+start another bounded wait for the same IDs. For authentication or repeated query errors, rerun the setup
 preflight and follow its blocker rules. After a failed terminal run, diagnose, fix, rerun local gates,
 queue the next authorized attempt, and invoke a new waiter.
 
-This mechanism relies on a client that keeps a synchronous shell tool call attached to the active
-agent turn. Copilot CLI in autopilot mode supports that execution model. If the current client cannot
-do so, state that limitation before queueing.
+If the client has no completion notifications but can sustain a foreground command for the whole
+wait, run the same script in the foreground. If neither is supported, state the limitation before
+queueing. Stopping the local waiter does not cancel the pipeline.
 
 ## 5. Monitor exact builds
 
@@ -376,8 +405,8 @@ Download a useful failure artifact to a temporary directory with the already-ins
 
 ```pwsh
 az pipelines runs artifact download `
-  --organization https://dev.azure.com/microsoft `
-  --project Dart `
+  --organization https://dev.azure.com/<ORGANIZATION> `
+  --project <PROJECT> `
   --run-id <BUILD_ID> `
   --artifact-name <FAILURE_ARTIFACT_NAME> `
   --path <TEMP_DIRECTORY> `
@@ -398,7 +427,7 @@ available Structured Log Viewer.
 Construct an attachments-pane link for every failed result:
 
 ```text
-https://microsoft.visualstudio.com/Dart/_build/results?buildId=<BUILD_ID>&view=ms.vss-test-web.build-test-results-tab&runId=<RUN_ID>&resultId=<RESULT_ID>&paneView=attachments
+https://dev.azure.com/<ORGANIZATION>/<PROJECT>/_build/results?buildId=<BUILD_ID>&view=ms.vss-test-web.build-test-results-tab&runId=<RUN_ID>&resultId=<RESULT_ID>&paneView=attachments
 ```
 
 ### Download result attachments without browser help
