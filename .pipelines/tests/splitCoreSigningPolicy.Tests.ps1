@@ -12,7 +12,8 @@ Describe 'Core ESRP signing requests' {
             'WinUI3Apps/de-DE/Example.resources.dll'
             'WinUI3Apps/fr-FR/Example.resources.dll'
         )
-        foreach ($path in ($paths + 'NotAResource.dll')) {
+        $fileLocksmithPath = 'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
+        foreach ($path in ($paths + 'NotAResource.dll' + $fileLocksmithPath)) {
             $file = Join-Path $root $path
             New-Item -ItemType Directory -Force -Path (Split-Path -Parent $file) | Out-Null
             New-Item -ItemType File -Path $file | Out-Null
@@ -23,6 +24,7 @@ Describe 'Core ESRP signing requests' {
         $binaries = Get-Content -LiteralPath (Join-Path $output 'core-binaries.json') -Raw | ConvertFrom-Json
         $first = Get-Content -LiteralPath (Join-Path $output 'core-resources-1.json') -Raw | ConvertFrom-Json
         $second = Get-Content -LiteralPath (Join-Path $output 'core-resources-2.json') -Raw | ConvertFrom-Json
+        $fileLocksmith = Get-Content -LiteralPath (Join-Path $output 'core-file-locksmith.json') -Raw | ConvertFrom-Json
         $resourceBatch = $originalPolicy.SignBatches | Where-Object { $_.MatchedPath -contains '*.resources.dll' }
         $expectedSigning = $resourceBatch.SigningInfo | ConvertTo-Json -Depth 20 -Compress
 
@@ -30,12 +32,18 @@ Describe 'Core ESRP signing requests' {
         for ($i = 0; $i -lt $originalPolicy.SignBatches.Count; $i++) {
             $expected = $originalPolicy.SignBatches[$i]
             ($binaries.SignBatches[$i].MatchedPath -join ';') |
-                Should Be (($expected.MatchedPath | Where-Object { $_ -ne '*.resources.dll' }) -join ';')
+                Should Be (($expected.MatchedPath | Where-Object { $_ -notin '*.resources.dll', $fileLocksmithPath }) -join ';')
             ($binaries.SignBatches[$i].SigningInfo | ConvertTo-Json -Depth 20 -Compress) |
                 Should Be ($expected.SigningInfo | ConvertTo-Json -Depth 20 -Compress)
         }
         $first.SignBatches[0].MatchedPath.Count | Should Be 3
         $second.SignBatches[0].MatchedPath.Count | Should Be 2
+        $fileLocksmith.UseMinimatch | Should Be $false
+        $fileLocksmith.SignBatches[0].MatchedPath.Count | Should Be 1
+        $fileLocksmith.SignBatches[0].MatchedPath[0] | Should Be $fileLocksmithPath
+        $fileLocksmithBatch = $originalPolicy.SignBatches | Where-Object { $_.MatchedPath -contains $fileLocksmithPath }
+        ($fileLocksmith.SignBatches[0].SigningInfo | ConvertTo-Json -Depth 20 -Compress) |
+            Should Be ($fileLocksmithBatch.SigningInfo | ConvertTo-Json -Depth 20 -Compress)
         foreach ($policy in $first, $second) {
             $policy.UseMinimatch | Should Be $true
             ($policy.SignBatches[0].SigningInfo | ConvertTo-Json -Depth 20 -Compress) | Should Be $expectedSigning

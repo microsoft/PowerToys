@@ -656,7 +656,7 @@ jobs:
           -OutputDirectory '$(Agent.TempDirectory)\core-signing'
       displayName: Prepare smaller core signing requests
 
-    - ${{ each batch in split('core-binaries,core-resources-1,core-resources-2', ',') }}:
+    - ${{ each batch in split('core-file-locksmith,core-binaries,core-resources-1,core-resources-2', ',') }}:
       - template: steps-esrp-signing.yml
         parameters:
           displayName: Sign Core PowerToys (${{ batch }})
@@ -664,6 +664,7 @@ jobs:
           inputs:
             FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
             signType: batchSigning
+            UseMinimatch: ${{ startsWith(batch, 'core-resources-') }}
             batchSignPolicyFile: '$(Agent.TempDirectory)\core-signing\${{ batch }}.json'
             ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 

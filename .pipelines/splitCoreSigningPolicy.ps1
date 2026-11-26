@@ -11,6 +11,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $policy = Get-Content -LiteralPath (Join-Path $PSScriptRoot 'ESRPSigning_core.json') -Raw | ConvertFrom-Json
 $resourcePattern = '*.resources.dll'
+$fileLocksmithPath = 'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
 $resourceBatches = @($policy.SignBatches | Where-Object { $_.MatchedPath -contains $resourcePattern })
 if ($policy.UseMinimatch -or $resourceBatches.Count -ne 1 -or
     @($resourceBatches[0].MatchedPath | Where-Object { $_ -eq $resourcePattern }).Count -ne 1) {
@@ -26,13 +27,29 @@ if ($resources.Count -lt 2 -or @($resources | Where-Object { $_ -match '[\[\]{}(
 }
 
 $resourceSigningInfo = $resourceBatches[0].SigningInfo
+$fileLocksmithBatches = @($policy.SignBatches | Where-Object { $_.MatchedPath -contains $fileLocksmithPath })
+if ($fileLocksmithBatches.Count -ne 1 -or
+    @($fileLocksmithBatches[0].MatchedPath | Where-Object { $_ -eq $fileLocksmithPath }).Count -ne 1 -or
+    -not (Test-Path -LiteralPath (Join-Path $root $fileLocksmithPath) -PathType Leaf)) {
+    throw 'Expected one File Locksmith extension signing pattern and its corresponding DLL.'
+}
+$fileLocksmithSigningInfo = $fileLocksmithBatches[0].SigningInfo
 $resourceBatches[0].MatchedPath = @($resourceBatches[0].MatchedPath | Where-Object { $_ -ne $resourcePattern })
+$fileLocksmithBatches[0].MatchedPath = @($fileLocksmithBatches[0].MatchedPath | Where-Object { $_ -ne $fileLocksmithPath })
 if ($resourceBatches[0].MatchedPath.Count -eq 0) {
     throw 'The core signing policy has no patterns left in the resource signing group.'
 }
 
 New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
 $policy | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'core-binaries.json') -Encoding utf8NoBOM
+@{
+    Version = $policy.Version
+    UseMinimatch = $false
+    SignBatches = @(@{
+        MatchedPath = @($fileLocksmithPath)
+        SigningInfo = $fileLocksmithSigningInfo
+    })
+} | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $OutputDirectory 'core-file-locksmith.json') -Encoding utf8NoBOM
 
 $midpoint = [int][Math]::Ceiling($resources.Count / 2)
 $parts = @(
