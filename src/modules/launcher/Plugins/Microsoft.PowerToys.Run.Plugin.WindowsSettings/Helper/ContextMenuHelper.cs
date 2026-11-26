@@ -4,10 +4,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Windows;
 using System.Windows.Input;
 
 using Microsoft.PowerToys.Run.Plugin.WindowsSettings.Properties;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -58,8 +58,7 @@ namespace Microsoft.PowerToys.Run.Plugin.WindowsSettings.Helper
         {
             try
             {
-                Clipboard.Clear();
-                Clipboard.SetText(text);
+                ClipboardHelper.SetText(text);
                 return true;
             }
             catch (Exception exception)

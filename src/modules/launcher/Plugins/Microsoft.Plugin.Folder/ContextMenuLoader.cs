@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
-using System.Windows;
 using System.Windows.Input;
 
 using Wox.Infrastructure;
@@ -48,7 +47,7 @@ namespace Microsoft.Plugin.Folder
                     {
                         try
                         {
-                            Clipboard.SetText(record.Path);
+                            ClipboardHelper.SetText(record.Path);
                             return true;
                         }
                         catch (Exception e)

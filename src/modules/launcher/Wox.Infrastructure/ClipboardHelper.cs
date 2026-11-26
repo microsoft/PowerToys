@@ -7,9 +7,9 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Microsoft.PowerToys.Run.Plugin.Calculator
+namespace Wox.Infrastructure
 {
-    internal static class ClipboardHelper
+    public static class ClipboardHelper
     {
         private const uint UnicodeTextFormat = 13;
         private const uint MoveableZeroInitializedMemory = 0x0042;
@@ -18,7 +18,12 @@ namespace Microsoft.PowerToys.Run.Plugin.Calculator
         private const int ClipboardRetryCount = 10;
         private const int ClipboardRetryDelay = 100;
 
-        internal static void SetText(string text)
+        /// <summary>
+        /// Places Unicode text on the clipboard, retrying while another process holds it.
+        /// </summary>
+        /// <param name="text">The text to copy.</param>
+        /// <exception cref="Win32Exception">The clipboard could not be opened or written.</exception>
+        public static void SetText(string text)
         {
             ArgumentNullException.ThrowIfNull(text);
 

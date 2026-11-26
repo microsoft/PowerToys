@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Input;
 
 using Microsoft.Plugin.Indexer.SearchHelper;
@@ -69,7 +68,7 @@ namespace Microsoft.Plugin.Indexer
                     {
                         try
                         {
-                            Clipboard.SetText(record.Path);
+                            ClipboardHelper.SetText(record.Path);
                             return true;
                         }
                         catch (Exception e)

@@ -181,7 +181,7 @@ namespace Community.PowerToys.Run.Plugin.ValueGenerator
                     {
                         try
                         {
-                            Clipboard.SetText(request.ResultToString());
+                            ClipboardHelper.SetText(request.ResultToString());
                             ret = true;
                         }
                         catch (ExternalException ex)
