@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace EnvironmentVariablesUILib.UnitTests.ViewModels;
 public class VariableEditorStateTests
 {
     private static readonly string[] OriginalPathRows = { "a", "b", "b", "c" };
+    private static readonly string[] PathEntryCommitReadOrder = { "text1", "text2", "draft" };
 
     [TestMethod]
     [DataRow(VariablesSetType.User)]
@@ -328,12 +330,81 @@ public class VariableEditorStateTests
         var draft = original.Clone();
         var rows = draft.ValuesList.ToArray();
 
-        Assert.AreEqual(expected, VariableEditorState.CommitEntryText(draft, rows[1], text));
+        Assert.AreEqual(expected, VariableEditorState.CommitEntryText(rows[1], () => text, () => draft));
         Assert.AreEqual(text, rows[1].Text);
         CollectionAssert.AreEqual(rows, draft.ValuesList.ToArray());
         Assert.AreEqual("a;b;;%ROOT%", draft.Values);
         Assert.AreEqual("a;b;;%ROOT%", original.Values);
         Assert.AreEqual("b", original.ValuesList[1].Text);
+    }
+
+    [TestMethod]
+    [DataRow("changed", "changed", "a;changed;;%ROOT%")]
+    [DataRow("changed", "b", "a;b;;%ROOT%")]
+    [DataRow("changed", null, "a;;;%ROOT%")]
+    public void CommitEntryText_AssignsSecondTextReadBeforeReadingDraft(string firstText, string? secondText, string expected)
+    {
+        var draft = new Variable("PATH", "a;b;;%ROOT%", VariablesSetType.Profile);
+        var row = draft.ValuesList[1];
+        var effects = new List<string>();
+        var reads = 0;
+        string? ReadText()
+        {
+            effects.Add($"text{++reads}");
+            return reads == 1 ? firstText : secondText;
+        }
+
+        Variable ReadDraft()
+        {
+            effects.Add("draft");
+            Assert.AreEqual(secondText, row.Text);
+            return draft;
+        }
+
+        var joined = VariableEditorState.CommitEntryText(row, ReadText, ReadDraft);
+
+        Assert.AreEqual(expected, joined);
+        CollectionAssert.AreEqual(PathEntryCommitReadOrder, effects);
+        Assert.AreEqual("a;b;;%ROOT%", draft.Values);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void CommitEntryText_EarlyExitNeverReadsDraft(bool missingSelection)
+    {
+        var row = new ValuesListItem { Text = "unchanged" };
+        var reads = 0;
+
+        var joined = VariableEditorState.CommitEntryText(
+            missingSelection ? null : row,
+            () =>
+            {
+                reads++;
+                return "unchanged";
+            },
+            () => throw new AssertFailedException("Early exit must not evaluate the dialog draft."));
+
+        Assert.IsNull(joined);
+        Assert.AreEqual(missingSelection ? 0 : 1, reads);
+        Assert.AreEqual("unchanged", row.Text);
+    }
+
+    [TestMethod]
+    public void CommitEntryText_DraftFailureOccursAfterRowAssignment()
+    {
+        var row = new ValuesListItem { Text = "original" };
+        var failure = new InvalidOperationException("scripted draft access failure");
+        var reads = 0;
+
+        var actual = Assert.ThrowsExactly<InvalidOperationException>(() => VariableEditorState.CommitEntryText(
+            row,
+            () => ++reads == 1 ? "first" : "second",
+            () => throw failure));
+
+        Assert.AreSame(failure, actual);
+        Assert.AreEqual(2, reads);
+        Assert.AreEqual("second", row.Text);
     }
 
     [TestMethod]
@@ -393,7 +464,7 @@ public class VariableEditorStateTests
         Assert.IsTrue(fixture.Work.IsQuiescent);
 
         var result = action == "commit"
-            ? VariableEditorState.CommitEntryText(draft, rows[1], "changed")
+            ? VariableEditorState.CommitEntryText(rows[1], () => "changed", () => draft)
             : VariableEditorState.MoveDown(draft, rows[1]);
 
         Assert.AreEqual(expected, result);
@@ -588,7 +659,7 @@ public class VariableEditorStateTests
             "delete" => VariableEditorState.DeleteEntry(draft, selected!),
             "before" => VariableEditorState.InsertBefore(draft, selected!),
             "after" => VariableEditorState.InsertAfter(draft, selected!),
-            "commit" => VariableEditorState.CommitEntryText(draft, selected!, "changed"),
+            "commit" => VariableEditorState.CommitEntryText(selected, () => "changed", () => draft),
             _ => throw new ArgumentException("Unknown action.", nameof(action)),
         };
     }

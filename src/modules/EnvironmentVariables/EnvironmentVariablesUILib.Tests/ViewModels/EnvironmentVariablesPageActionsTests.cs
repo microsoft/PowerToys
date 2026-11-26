@@ -2029,7 +2029,7 @@ public class EnvironmentVariablesPageActionsTests
         {
             "before" => VariableEditorState.InsertBefore(draft, draft.ValuesList[1]),
             "after" => VariableEditorState.InsertAfter(draft, draft.ValuesList[0]),
-            _ => VariableEditorState.CommitEntryText(draft, draft.ValuesList[1], "two2"),
+            _ => VariableEditorState.CommitEntryText(draft.ValuesList[1], () => "two2", () => draft),
         };
         var effects = new List<string>();
         var attached = true;

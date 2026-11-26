@@ -455,20 +455,15 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableValuesListTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as TextBox)?.DataContext as ValuesListItem;
-            if (listItem == null)
+            var newValues = VariableEditorState.CommitEntryText(
+                (sender as TextBox)?.DataContext as ValuesListItem,
+                () => (sender as TextBox)?.Text,
+                () => EditVariableDialog.DataContext as Variable);
+            if (newValues == null)
             {
                 return;
             }
 
-            if (listItem.Text == (sender as TextBox)?.Text)
-            {
-                return;
-            }
-
-            listItem.Text = (sender as TextBox)?.Text;
-            var variable = EditVariableDialog.DataContext as Variable;
-            var newValues = string.Join(";", variable.ValuesList?.Select(x => x.Text).ToArray());
             EnvironmentVariablesPageActions.SetRawTextWithHandlerSuppressed(
                 newValues,
                 () => EditVariableDialogValueTxtBox.TextChanged -= EditVariableDialogValueTxtBox_TextChanged,

@@ -4,6 +4,7 @@
 
 #nullable enable annotations
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -200,14 +201,15 @@ namespace EnvironmentVariablesUILib.ViewModels
             return string.Join(";", draft.ValuesList?.Select(x => x.Text).ToArray());
         }
 
-        internal static string? CommitEntryText(Variable draft, ValuesListItem selected, string text)
+        internal static string? CommitEntryText(ValuesListItem? selected, Func<string?> readText, Func<Variable> readDraft)
         {
-            if (selected == null || selected.Text == text)
+            if (selected == null || selected.Text == readText())
             {
                 return null;
             }
 
-            selected.Text = text;
+            selected.Text = readText();
+            var draft = readDraft();
             return string.Join(";", draft.ValuesList?.Select(x => x.Text).ToArray());
         }
     }
