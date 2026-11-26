@@ -249,6 +249,44 @@ namespace MarkdownPreviewHandlerUnitTests
             }
         }
 
+        [TestMethod]
+        public void MarkdownPreviewHandlerControlShowsErrorInfoBarWhenWebView2InitializationFails()
+        {
+            const string browserFolderVariable = "WEBVIEW2_BROWSER_EXECUTABLE_FOLDER";
+            string? originalBrowserFolder = Environment.GetEnvironmentVariable(browserFolderVariable);
+            Exception? unhandledException = null;
+            ThreadExceptionEventHandler threadExceptionHandler = (sender, args) => unhandledException = args.Exception;
+
+            // Point WebView2 at a nonexistent runtime so environment creation fails inside the async completion callback.
+            Environment.SetEnvironmentVariable(browserFolderVariable, Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+            Application.ThreadException += threadExceptionHandler;
+
+            try
+            {
+                using (var markdownPreviewHandlerControl = new MarkdownPreviewHandlerControl())
+                {
+                    markdownPreviewHandlerControl.DoPreview<string>("HelperFiles/MarkdownWithScript.txt");
+
+                    int beforeTick = Environment.TickCount;
+
+                    while (markdownPreviewHandlerControl.Controls.Count == 0 && unhandledException == null && Environment.TickCount < beforeTick + HardTimeoutInMilliseconds)
+                    {
+                        Application.DoEvents();
+                        Thread.Sleep(SleepTimeInMilliseconds);
+                    }
+
+                    Assert.IsNull(unhandledException, $"WebView2 initialization failure escaped to the UI thread: {unhandledException}");
+                    Assert.AreEqual(1, markdownPreviewHandlerControl.Controls.Count);
+                    Assert.IsInstanceOfType(markdownPreviewHandlerControl.Controls[0], typeof(RichTextBox));
+                }
+            }
+            finally
+            {
+                Application.ThreadException -= threadExceptionHandler;
+                Environment.SetEnvironmentVariable(browserFolderVariable, originalBrowserFolder);
+            }
+        }
+
         private static void WaitForBrowserControl(MarkdownPreviewHandlerControl markdownPreviewHandlerControl)
         {
             int beforeTick = Environment.TickCount;
