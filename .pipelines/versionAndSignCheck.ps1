@@ -63,6 +63,10 @@ $nullVersionExceptions = @(
     ) -join '|';
 $totalFailure = 0;
 
+$monacoFontName = 'MonacoPreviewHandlerMonacoAssetsFiles_File_codicon.ttf'
+# Raw font from the lockfile-verified monaco-editor 0.57.0 package; Windows does not verify its format with Authenticode.
+$monacoFontSha256 = '77F902557231F95C4C71AE517D09A1A842753656F5F665086B3E5AD8095538DA'
+
 Write-Host $DirPath;
 
 if (-not (Test-Path $DirPath)) {
@@ -77,6 +81,15 @@ if ($items.Count -eq 0) {
 }
 
 $items | ForEach-Object {
+    if ($_.Name -eq $monacoFontName) {
+        $digest = Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256 -ErrorAction Stop
+        if ($digest.Hash -ne $monacoFontSha256) {
+            Write-Host "Monaco font SHA256 mismatch: $($_.FullName)"
+            $totalFailure++
+        }
+        return
+    }
+
     # WinRT metadata does not require a FileVersion resource, but still needs a valid signature.
     if ($_.Extension -ne '.winmd') {
         if ($_.VersionInfo.FileVersion -eq "0.0.0.0" -and $_.Name -notmatch $versionExceptions) {

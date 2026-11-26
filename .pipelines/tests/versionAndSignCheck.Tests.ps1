@@ -202,4 +202,23 @@ Describe 'versionAndSignCheck existing binary version policy' {
         $LASTEXITCODE | Should Be 1
         Assert-MockCalled Get-AuthenticodeSignature -Times 1 -Exactly -Scope It
     }
+
+    It 'checks the specific packaged Monaco font by SHA256 and still checks binaries by signature: exit <ExpectedExit>' -TestCases @(
+        @{ Hash = '77F902557231F95C4C71AE517D09A1A842753656F5F665086B3E5AD8095538DA'; ExpectedExit = 0 }
+        @{ Hash = ('0' * 64); ExpectedExit = 1 }
+    ) {
+        param($Hash, $ExpectedExit)
+        $fixture.Files = @(
+            New-VersionedPayload -Name 'MonacoPreviewHandlerMonacoAssetsFiles_File_codicon.ttf' -FileVersion $null
+            New-VersionedPayload -Name 'PowerToys.WorkspacesLauncherUI.exe'
+        )
+        Mock Get-FileHash { [pscustomobject]@{ Hash = $Hash } }
+
+        & $scriptPath -targetDir $fixture.TargetDir
+
+        $LASTEXITCODE | Should Be $ExpectedExit
+        Assert-MockCalled Get-FileHash -Times 1 -Exactly -Scope It -ParameterFilter { $Algorithm -eq 'SHA256' }
+        Assert-MockCalled Get-AuthenticodeSignature -Times 1 -Exactly -Scope It -ParameterFilter { $LiteralPath -like '*PowerToys.WorkspacesLauncherUI.exe' }
+        Assert-MockCalled Get-AuthenticodeSignature -Times 0 -Exactly -Scope It -ParameterFilter { $LiteralPath -like '*.ttf' }
+    }
 }
