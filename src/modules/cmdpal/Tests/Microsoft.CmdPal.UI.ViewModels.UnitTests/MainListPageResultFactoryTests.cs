@@ -12,6 +12,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels.UnitTests;
@@ -250,6 +251,36 @@ public partial class MainListPageResultFactoryTests
         Assert.AreEqual("Fallbacks", result[0].Title);
         Assert.AreEqual("FB1", result[1].Title);
         Assert.AreEqual("FB3", result[2].Title);
+    }
+
+    [TestMethod]
+    public void Merge_KeepsEveryFallbackTheCallerSelected()
+    {
+        // Select each live title once. A title cleared after selection must not
+        // drop the row or leave an empty slot in the result.
+        var titleReads = 0;
+        var changingFallback = new Mock<IListItem>();
+        changingFallback.SetupGet(item => item.Title)
+            .Returns(() => titleReads++ == 0 ? "FB2" : string.Empty);
+        var fallbacks = new List<RoScored<InProcObject<IListItem>>>
+        {
+            S("FB1", 0),
+            new(score: 0, item: new(changingFallback.Object)),
+        };
+
+        var result = MainListPageResultFactory.Create(
+            null,
+            null,
+            null,
+            fallbacks,
+            _resultsSeparator,
+            _fallbacksSeparator,
+            appResultLimit: 10);
+
+        Assert.AreEqual(3, result.Length);
+        CollectionAssert.AllItemsAreNotNull(result);
+        Assert.AreSame(fallbacks[1].Item.Safe, result[2]);
+        changingFallback.VerifyGet(item => item.Title, Times.Once);
     }
 
     [TestMethod]

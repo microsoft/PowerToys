@@ -208,21 +208,73 @@ public partial class ShellViewModel : ObservableObject,
             return;
         }
 
-        PerformCommand(message);
+        if (message.Command is FallbackInvocationViewModel fallback)
+        {
+            _ = PerformFallbackAsync(message, fallback, CurrentPage);
+        }
+        else
+        {
+            PerformCommand(message);
+        }
     }
 
-    private void PerformCommand(PerformCommandMessage message)
+    private async Task PerformFallbackAsync(PerformCommandMessage message, FallbackInvocationViewModel fallback, PageViewModel sourcePage)
     {
+        try
+        {
+            // Creating the command, reading its properties and probing its interfaces can all call the extension.
+            var resolved = await Task.Run(() =>
+            {
+                var vm = ResolveRequestedCommand(fallback);
+                var command = vm?.Model.Unsafe;
+                return (ViewModel: vm, Page: command as IPage, Invokable: command as IInvokableCommand);
+            }).ConfigureAwait(false);
+            if (resolved.ViewModel is not null)
+            {
+                await Task.Factory.StartNew(
+                    () =>
+                    {
+                        if (fallback.CanInvoke && ReferenceEquals(CurrentPage, sourcePage))
+                        {
+                            PerformCommand(message, resolved.ViewModel, resolved.Page, resolved.Invokable);
+                        }
+                    },
+                    CancellationToken.None,
+                    TaskCreationOptions.None,
+                    _scheduler).ConfigureAwait(false);
+            }
+        }
+        catch (Exception ex)
+        {
+            CoreLogger.LogError("Failed to resolve fallback command", ex);
+        }
+    }
+
+    private void PerformCommand(PerformCommandMessage message, CommandViewModel? resolved = null, IPage? resolvedPage = null, IInvokableCommand? resolvedInvokable = null)
+    {
+        // QueryToken is cancelled every time the home page search changes. If it's
+        // already cancelled, the user picked a result that is no longer current.
         var fallbackContext = message.FallbackContext;
         if (fallbackContext?.CanInvoke == false)
         {
             return;
         }
 
+        // The snapshot lease keeps the extension's result objects alive while we
+        // use them. If the snapshot already closed, those objects are gone.
         IDisposable? invocationLease = null;
-        if (fallbackContext is not null && !fallbackContext.TryAcquireSnapshotLease(out invocationLease))
+        if (fallbackContext is not null &&
+            !fallbackContext.TryAcquireSnapshotLease(out invocationLease))
         {
             return;
+        }
+
+        // The selection was valid, so stop tracking the search now. Otherwise a page
+        // opened from this result (and every command on it) would stop working as
+        // soon as the main list refreshes. The lease above keeps it alive instead.
+        if (fallbackContext?.QueryToken.CanBeCanceled == true)
+        {
+            fallbackContext = fallbackContext with { QueryToken = CancellationToken.None };
         }
 
         var invocationContext = fallbackContext?.InvocationContext
@@ -246,14 +298,8 @@ public partial class ShellViewModel : ObservableObject,
 
         try
         {
-            var commandViewModel = ResolveRequestedCommand(message.Command);
-            if (commandViewModel is null)
-            {
-                return;
-            }
-
-            var command = commandViewModel.Model.Unsafe;
-            if (command is null)
+            var commandViewModel = resolved ?? message.Command;
+            if (commandViewModel.Model.Unsafe is not { } command)
             {
                 return;
             }
@@ -264,7 +310,7 @@ public partial class ShellViewModel : ObservableObject,
                 : _pageNavigation.ResolveProviderContext(message, CurrentPage);
 
             // Report page commands only after navigation preparation succeeds.
-            if (command is IPage page)
+            if ((resolved is null ? command as IPage : resolvedPage) is { } page)
             {
                 CoreLogger.LogDebug($"Navigating to page");
 
@@ -278,9 +324,6 @@ public partial class ShellViewModel : ObservableObject,
                     fallbackContext);
                 if (pageViewModel is null)
                 {
-                    // A page that came from a fallback result can go stale between the
-                    // check above and this call, because the user kept typing. That is
-                    // normal, so leave without an error.
                     if (fallbackContext is not null)
                     {
                         return;
@@ -357,13 +400,13 @@ public partial class ShellViewModel : ObservableObject,
                 // Note: Originally we set our page back in the ViewModel here, but that now happens in response to the Frame navigating triggered from the above
                 // See RootFrame_Navigated event handler.
             }
-            else if (command is IInvokableCommand invokable)
+            else if ((resolved is null ? command as IInvokableCommand : resolvedInvokable) is { } invokable)
             {
                 CoreLogger.LogDebug($"Invoking command");
 
                 _rootPageService.OnPerformCommand(invocationContext, isTopLevel, host);
                 WeakReferenceMessenger.Default.Send<TelemetryBeginInvokeMessage>();
-                StartInvoke(message, invokable, host, invocationContext, commandViewModel, invocationLease);
+                StartInvoke(message, invokable, host, invocationContext, commandViewModel, fallbackContext, invocationLease);
 
                 // StartInvoke now owns the reference and releases it when the command
                 // ends, which can be long after this method returns. Clear the local so
@@ -396,6 +439,7 @@ public partial class ShellViewModel : ObservableObject,
         AppExtensionHost? host,
         object? invocationSender,
         CommandViewModel command,
+        FallbackQueryContext? fallbackContext,
         IDisposable? invocationLease)
     {
         // Takes ownership of invocationLease. Every path through this method either
@@ -414,7 +458,7 @@ public partial class ShellViewModel : ObservableObject,
                 WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, command, invocationLease);
+                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, command, fallbackContext, invocationLease);
                 });
             }
         }
@@ -426,6 +470,7 @@ public partial class ShellViewModel : ObservableObject,
         AppExtensionHost? host,
         object? invocationSender,
         CommandViewModel command,
+        FallbackQueryContext? fallbackContext,
         IDisposable? invocationLease)
     {
         // Telemetry: Track command execution time and success
@@ -462,7 +507,7 @@ public partial class ShellViewModel : ObservableObject,
                 message.OnBeforeShowConfirmation,
                 message.ResultHandler,
                 message.Context?.Page,
-                message.FallbackContext);
+                fallbackContext);
         }
         catch (Exception ex)
         {
@@ -616,10 +661,19 @@ public partial class ShellViewModel : ObservableObject,
         }
     }
 
+    // Used when a command result should take us back to the home page.
+    // This will clear the search on the main page.
     public void GoHome(bool withAnimation = true, bool focusSearch = true)
     {
         _rootPageService.GoHome();
         GoHomeRequested?.Invoke(this, new(withAnimation, focusSearch));
+    }
+
+    // Used when the user navigates back, to the home page. This should _not_
+    // clear the search on the main page. See GH #41737
+    public void OnNavigatedHome()
+    {
+        _rootPageService.GoHome();
     }
 
     /// <summary>

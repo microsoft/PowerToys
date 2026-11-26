@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
@@ -55,19 +56,29 @@ namespace Microsoft.PowerToys.Common.UI.Controls.Window;
 public partial class TransparentWindow : WinUIEx.WindowEx
 {
     private const uint DwmwaColorNone = 0xFFFFFFFE;
-    private const int DwmwaCloak = 13;
-    private const int DwmwaWindowCornerPreference = 33;
-    private const int DwmwaBorderColor = 34;
-    private const int DwmwcpDoNotRound = 1;
+    private const uint DwmwaCloak = 13;
+    private const uint DwmwaNcRenderingPolicy = 2;
+    private const uint DwmwaWindowCornerPreference = 33;
+    private const uint DwmwaBorderColor = 34;
+    private const uint DwmncrpDisabled = 1;
+    private const uint DwmwcpDoNotRound = 1;
 
     private const int GwlpHwndParent = -8;
     private const int GwlExStyle = -20;
     private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
     private const int WsExAppWindow = 0x00040000;
+    private const int WsExDlgModalFrame = 0x00000001;
+    private const int WsExWindowEdge = 0x00000100;
+    private const int WsExClientEdge = 0x00000200;
 
     private const int SwHide = 0;
     private const int SwShowNa = 8;
+    private const uint SwpNoSize = 0x0001;
+    private const uint SwpNoMove = 0x0002;
+    private const uint SwpNoZOrder = 0x0004;
+    private const uint SwpNoActivate = 0x0010;
+    private const uint SwpFrameChanged = 0x0020;
 
     private readonly nint _hwnd;
 
@@ -108,16 +119,44 @@ public partial class TransparentWindow : WinUIEx.WindowEx
 
         HwndExtensions.ToggleWindowStyle(_hwnd, false, WindowStyle.TiledWindow);
 
-        unsafe
-        {
-            uint borderColor = DwmwaColorNone;
-            _ = DwmSetWindowAttribute(_hwnd, DwmwaBorderColor, &borderColor, sizeof(uint));
+        uint borderColor = DwmwaColorNone;
+        _ = DwmSetWindowAttribute(_hwnd, DwmwaBorderColor, ref borderColor, sizeof(uint));
 
-            int cornerPref = DwmwcpDoNotRound;
-            _ = DwmSetWindowAttribute(_hwnd, DwmwaWindowCornerPreference, &cornerPref, sizeof(int));
-        }
+        uint cornerPref = DwmwcpDoNotRound;
+        _ = DwmSetWindowAttribute(_hwnd, DwmwaWindowCornerPreference, ref cornerPref, sizeof(uint));
 
         ApplyExStyleBit(WsExToolWindow, true);
+    }
+
+    /// <summary>
+    /// Removes extended edge styles and refreshes the frame for edge-to-edge
+    /// transparent overlays where even a one-pixel frame seam would be visible.
+    /// </summary>
+    protected void ApplyFullBleedHardening()
+    {
+        if (_hwnd == 0)
+        {
+            return;
+        }
+
+        ApplyExStyleBit(WsExWindowEdge, false);
+        ApplyExStyleBit(WsExClientEdge, false);
+        ApplyExStyleBit(WsExDlgModalFrame, false);
+
+        uint renderingPolicy = DwmncrpDisabled;
+        _ = DwmSetWindowAttribute(_hwnd, DwmwaNcRenderingPolicy, ref renderingPolicy, sizeof(uint));
+
+        var margins = new Margins { CxLeftWidth = -1, CxRightWidth = -1, CyTopHeight = -1, CyBottomHeight = -1 };
+        _ = DwmExtendFrameIntoClientArea(_hwnd, ref margins);
+
+        _ = SetWindowPos(
+            _hwnd,
+            IntPtr.Zero,
+            0,
+            0,
+            0,
+            0,
+            SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpFrameChanged);
     }
 
     /// <summary>
@@ -351,11 +390,8 @@ public partial class TransparentWindow : WinUIEx.WindowEx
             return false;
         }
 
-        unsafe
-        {
-            int value = cloak ? 1 : 0;
-            return DwmSetWindowAttribute(_hwnd, DwmwaCloak, &value, sizeof(int)) == 0;
-        }
+        uint value = cloak ? 1U : 0U;
+        return DwmSetWindowAttribute(_hwnd, DwmwaCloak, ref value, sizeof(uint)) == 0;
     }
 
     private void OnActivatedForDismiss(object sender, WindowActivatedEventArgs args)
@@ -418,6 +454,22 @@ public partial class TransparentWindow : WinUIEx.WindowEx
     [return: MarshalAs(UnmanagedType.Bool)]
     private static partial bool ShowWindow(nint hWnd, int nCmdShow);
 
+    [LibraryImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool SetWindowPos(nint hWnd, nint hWndInsertAfter, int x, int y, int cx, int cy, uint flags);
+
     [LibraryImport("dwmapi.dll")]
-    private static unsafe partial int DwmSetWindowAttribute(nint hwnd, int dwAttribute, void* pvAttribute, int cbAttribute);
+    private static partial int DwmExtendFrameIntoClientArea(nint hwnd, ref Margins margins);
+
+    [LibraryImport("dwmapi.dll")]
+    private static partial int DwmSetWindowAttribute(nint hwnd, uint dwAttribute, ref uint pvAttribute, int cbAttribute);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Margins
+    {
+        public int CxLeftWidth;
+        public int CxRightWidth;
+        public int CyTopHeight;
+        public int CyBottomHeight;
+    }
 }

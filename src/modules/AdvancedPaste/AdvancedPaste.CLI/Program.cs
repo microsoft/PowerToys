@@ -665,15 +665,15 @@ public static partial class Program
 
         internal Command ProvidersList { get; } = new("list", "List configured AI provider IDs for --provider without making AI requests.");
 
-        internal IEnumerable<Option> ValueOptions =>
-        [
+        internal IEnumerable<Option> ValueOptions => new Option[]
+        {
             Action,
             CustomAction,
             Prompt,
             Provider,
             Input,
             Output,
-        ];
+        };
     }
 
     [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]

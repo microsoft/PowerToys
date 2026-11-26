@@ -31,6 +31,7 @@ public sealed class OobeSectionTests : UITestBase
         }
 
         welcome = sharedWelcome;
+        OobeTestHelper.RequireForeground(welcome);
     }
 
     [ClassCleanup(ClassCleanupBehavior.EndOfClass)]

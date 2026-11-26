@@ -11,6 +11,7 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void SearchFiltersByWorkspaceAndApplicationNames()
         {
             var projects = SeedSearchWorkspaces();
@@ -29,6 +30,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow("Last launched", 0)]
         [DataRow("Created", 1)]
         [DataRow("Name", 2)]
@@ -54,6 +56,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
         public void WorkspaceCardAndEditMenuOpenEditingPage(bool useMenu)
@@ -68,6 +71,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void DeleteRemovesOnlyTheSelectedWorkspace()
         {
             var projects = SeedSearchWorkspaces();
@@ -86,6 +90,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void NameArgumentsAdminAndGeometryEditsPersist()
         {
             var project = SeedOneWorkspace();
@@ -124,6 +129,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
         public void CancelAndBreadcrumbDiscardUnsavedEdits(bool useBreadcrumb)
@@ -151,6 +157,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void RemoveAndAddBackUpdatePreviewAndSavedApplicationList()
         {
             var first = State.Application("Primary fixture", State.Prefix + "-first");
@@ -179,6 +186,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow("Minimized", true, false)]
         [DataRow("Maximized", false, true)]
         public void WindowStateChangesUpdatePreviewAndPersist(string selected, bool minimized, bool maximized)

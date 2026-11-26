@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Look at Directory.Build.props in root for common stuff as well -->
+  <Import Project="$(RepoRoot)src\Common.Dotnet.CsWinRT.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>ManagedCommon.UnitTests</RootNamespace>
+    <AssemblyName>ManagedCommon.UnitTests</AssemblyName>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\ManagedCommon.UnitTests\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ManagedCommon\ManagedCommon.csproj" />
+  </ItemGroup>
+</Project>

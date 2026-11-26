@@ -94,6 +94,52 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public async Task PerformCommand_ConfirmationOutlivesFallbackQuery()
+    {
+        using var search = new CancellationTokenSource();
+        var host = new TestAppExtensionHost();
+        using var shell = new ShellViewModel(TaskScheduler.Default, Mock.Of<IRootPageService>(), Mock.Of<IPageViewModelFactoryService>(), CreateAppHostService(host).Object);
+        var context = new FallbackQueryContext(host, CommandProviderContext.Empty, new object(), search.Token);
+        var command = CreateCommandViewModel(new TestCommand(CommandResult.Confirm(new ConfirmationArgs()), search.Cancel), shell.CurrentPage);
+        command.InheritFallbackContext(context);
+        var confirmed = new TaskCompletionSource<ShowConfirmationMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(confirmed, (_, message) => confirmed.TrySetResult(message));
+        try
+        {
+            shell.Receive(new PerformCommandMessage(command));
+            var message = await confirmed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.IsFalse(context.CanInvoke);
+            Assert.AreEqual(context with { QueryToken = CancellationToken.None }, message.FallbackContext);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(confirmed);
+        }
+    }
+
+    [TestMethod]
+    public void PerformCommand_PageDetachesFromQueryOnlyAfterSelection()
+    {
+        using var search = new CancellationTokenSource();
+        var host = new TestAppExtensionHost();
+        var factory = new Mock<IPageViewModelFactoryService>();
+        using var shell = new ShellViewModel(TaskScheduler.Default, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object);
+        var context = new FallbackQueryContext(host, CommandProviderContext.Empty, new object(), search.Token);
+        var page = new TestPage();
+        var command = CreateCommandViewModel(page, shell.CurrentPage);
+        command.InheritFallbackContext(context);
+        var selection = new PerformCommandMessage(command);
+
+        shell.Receive(selection);
+        search.Cancel();
+        shell.Receive(selection);
+
+        factory.Verify(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty, It.Is<FallbackQueryContext?>(c => c != null && !c.QueryToken.CanBeCanceled && c.InvocationContext == context.InvocationContext)), Times.Once);
+        factory.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
     [DataRow("none")]
     [DataRow("page")]
     [DataRow("owner")]
@@ -661,6 +707,44 @@ public partial class ShellViewModelTests
         }
 
         void OnPageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e) => events.Add("navigate");
+    }
+
+    [TestMethod]
+    public void GoHome_PerformsRootCleanupAndRequestsHomeNavigation()
+    {
+        var rootPage = new Mock<IRootPageService>();
+        using var viewModel = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPage.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(new TestAppExtensionHost()).Object);
+        ShellNavigationRequestedEventArgs? navigationRequest = null;
+        viewModel.GoHomeRequested += (_, args) => navigationRequest = args;
+
+        viewModel.GoHome(withAnimation: false, focusSearch: false);
+
+        rootPage.Verify(service => service.GoHome(), Times.Once);
+        Assert.IsNotNull(navigationRequest);
+        Assert.IsFalse(navigationRequest.WithAnimation);
+        Assert.IsFalse(navigationRequest.FocusSearch);
+    }
+
+    [TestMethod]
+    public void OnNavigatedHome_PerformsRootCleanupWithoutRequestingHomeNavigation()
+    {
+        var rootPage = new Mock<IRootPageService>();
+        using var viewModel = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPage.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(new TestAppExtensionHost()).Object);
+        var navigationRequested = false;
+        viewModel.GoHomeRequested += (_, _) => navigationRequested = true;
+
+        viewModel.OnNavigatedHome();
+
+        rootPage.Verify(service => service.GoHome(), Times.Once);
+        Assert.IsFalse(navigationRequested);
     }
 
     [TestMethod]

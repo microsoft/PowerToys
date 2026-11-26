@@ -12,16 +12,18 @@ For a general overview of how Monaco is used in PowerToys, see the [Monaco Edito
 
 ### Update Monaco Editor
 
-1. Download Monaco editor with [npm](https://www.npmjs.com/): Run `npm i monaco-editor` in the command prompt.
-2. Delete everything except the `min` folder (the minimised code) from the downloaded files.
-3. Copy the `min` folder into the `/src/Monaco/monacoSRC` folder of the PowerToys project.
-4. Generate the JSON file as described in the generate [monaco_languages.json file](#monaco_languagesjson) section.
+Monaco is built from the `monaco-editor` npm package pinned in [`src/Monaco/package.json`](/src/Monaco/package.json). See [How Monaco is built](monaco-editor.md#how-monaco-is-built).
+
+1. In `src/Monaco`, run `npm install monaco-editor@<version> --save-exact`. Then check the lockfile's `resolved` URLs and `integrity` hashes as described in the [Monaco update process](monaco-editor.md#update-process).
+2. Run `npm run build` and fix any errors in [`src/Monaco/src`](/src/Monaco/src). Check the [Monaco changelog](https://github.com/microsoft/monaco-editor/blob/main/CHANGELOG.md) for renamed or removed APIs and `features/*` entry points.
+3. Update the language list as described in the [monaco_languages.json](#monaco_languagesjson) section.
+4. Build PowerToys and check the Preview Pane, Peek, and Registry Preview.
 
 ### Add a new language definition
 
-As an example on how to add a new language definition you can look at the one for [registry files](/src/Monaco/customLanguages/reg.js).
+As an example on how to add a new language definition you can look at the one for [registry files](/src/Monaco/src/customLanguages/reg.js).
 
-1. Add the new language definition (written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) as a new file to the [folder containing Monaco custom languages](/src/Monaco/customLanguages/) (Remember the file name and the string you used for "idDefinition" as you need it later.). The file should be formatted like in the example below. (Please change `idDefinition` to the name of your language.)
+1. Add the new language definition (written with [Monarch](https://microsoft.github.io/monaco-editor/monarch.html)) as a new file in [`src/Monaco/src/customLanguages`](/src/Monaco/src/customLanguages/). The file should be formatted like in the example below. (Please change `idDefinition` to the name of your language.)
 
 ```javascript
 export function idDefinition() {
@@ -31,7 +33,7 @@ export function idDefinition() {
 }
 ```
 
-2. Add the following line to the [`monacoSpecialLanguages.js`](/src/Monaco/monacoSpecialLanguages.js) file, after the other import statements:
+2. In [`src/Monaco/src/languages.js`](/src/Monaco/src/languages.js), import the definition:
 
 ```javascript
 import { idDefinition } from './customLanguages/file.js';
@@ -39,17 +41,17 @@ import { idDefinition } from './customLanguages/file.js';
 
 > Replace file.js with the name of your definition file from step 1. Please replace idDefinition with the string you used in step 1.
 
-3. In the [`monacoSpecialLanguages.js`](/src/Monaco/monacoSpecialLanguages.js) file add the following line into the `registerAdditionalLanguages` function:
+3. In the same file, add an entry to the `customLanguages` list:
 
 ```javascript
-registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
+['id', ['.fileExtension'], idDefinition()],
 ```
 
-> Replace id and idDefinition with your id and string used in step 1. Replace fileExtension with a set of file extensions you want the language to register to.
+> Replace id and idDefinition with your id and the function from step 1. Replace fileExtension with the file extensions you want the language to register to.
 
   * The id can be anything. Recommended is one of the file extensions. For example "php" or "reg".
 
-4. In case you wish to add a custom color for a token, you can do so by adding the following line to [`customTokenThemeRules.js`](/src/Monaco/customTokenThemeRules.js):
+4. In case you wish to add a custom color for a token, you can do so by adding the following line to [`customTokenThemeRules.js`](/src/Monaco/src/customTokenThemeRules.js):
 ```javascript
 {token: 'token-name', foreground: 'ff0000'}
 ```
@@ -62,25 +64,27 @@ registerAdditionalNewLanguage("id", [".fileExtension"], idDefinition(), monaco)
 
 ### Add a new file extension to an existing language
 
-1. In the [`monacoSpecialLanguages.js`](/src/Monaco/monacoSpecialLanguages.js) file add the following line to the `registerAdditionalLanguages` function. (`existingId` is the id of the language you want to add the extension to. You can find these id's in the [`monaco_languages.json`](/src/Monaco/monaco_languages.json) file):
+1. In [`src/Monaco/src/languages.js`](/src/Monaco/src/languages.js), import the existing grammar from `monaco-editor` if it isn't imported yet. The grammars live in `node_modules/monaco-editor/esm/vs/languages/definitions/<language>`:
 
 ```javascript
-registerAdditionalLanguage("id", [".fileExtension"], "existingId", monaco)
+import * as php from 'monaco-editor/languages/definitions/php/php';
 ```
 
-  * If for instance you want to add more extensions to the php language set the id to `phpExt` and the existingId to `php`.
+2. Add an entry to the `aliasLanguages` list. Use `null` instead of a grammar to show the files as plain text.
 
-2. Copy the existing language definition into the `languageDefinitions` function in the same file. You can find the existing definitions in the following folder: [`/src/Monaco/monacoSRC/min/vs/basic-languages/`](/src/Monaco/monacoSRC/min/vs/basic-languages/).
+```javascript
+['phpExt', ['.fileExtension'], php],
+```
+
+  * If for instance you want to add more extensions to the php language set the id to `phpExt`. The ids of the existing languages are in [`monaco_languages.json`](/src/Monaco/monaco_languages.json).
 
 3. Execute the steps described in the [monaco_languages.json](#monaco_languagesjson) section.
 
 ### monaco_languages.json
 
-[`monaco_languages.json`](/src/Monaco/monaco_languages.json) contains all extensions and IDs for the languages supported by Monaco. The [`MonacoHelper`](/src/common/FilePreviewCommon/MonacoHelper.cs) class and the installer are using this file to register preview handlers for the defined extensions.
+[`monaco_languages.json`](/src/Monaco/monaco_languages.json) contains all extensions and IDs for the languages supported by Monaco. The [`MonacoHelper`](/src/common/FilePreviewCommon/MonacoHelper.cs) class and the runner use this file to register preview handlers for the defined extensions.
 
-After updating Monaco Editor and/or adding a new language you should update the [`monaco_languages.json`](/src/Monaco/monaco_languages.json) file.
+After updating Monaco Editor and/or adding a new language, regenerate it:
 
-1. Run the [`generateLanguagesJson.html`](/src/Monaco/generateLanguagesJson.html) file on a local webserver (as webbrowsers will block certain needed features when running the file locally.)
-  *  This can for example be achieved by using the [Preview Server](https://marketplace.visualstudio.com/items?itemName=yuichinukiyama.vscode-preview-server) extension for Visual Studio Code: Open the file in Visual Studio Code, right click in the code editor and select `vscode-preview-server: Launch on browser`. The file will be opened in a browser.
-2. The browser will download the new `monaco_languages.json` file
-3. Replace the old file with the newly downloaded one in the source code folder.
+1. In `src/Monaco`, run `npm run gen:languages`. It runs the registrations in [`src/Monaco/src/languages.js`](/src/Monaco/src/languages.js) in Node (no browser needed) and writes the language list.
+2. Review the diff and commit the file. CI runs the same tool with `--check` (`npm run check:languages`) and fails if the file is out of date.

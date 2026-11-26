@@ -66,7 +66,7 @@ internal sealed class PasteTarget : IDisposable
     internal void Focus()
     {
         var handle = Handle;
-        TestWindow.SelectFromTaskbar(handle, "AdvancedPaste.UITests.Next");
+        TestWindow.EnsureForeground(handle, "AdvancedPaste.UITests.Next");
 
         Invoke(() =>
         {

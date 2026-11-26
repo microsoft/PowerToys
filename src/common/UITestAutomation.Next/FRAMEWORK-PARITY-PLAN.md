@@ -6,7 +6,7 @@ below are now implemented** — see the per-gap **Done** notes and the Status su
 sections are kept as the rationale/record.
 
 > Reference points:
-> - Legacy base: `src/common/UITestAutomation/UITestBase.cs`
+> - Retired legacy base: available in Git history.
 > - New base: `src/common/UITestAutomation.Next/UITestBase.cs`
 > - New launch: `src/common/UITestAutomation.Next/SessionHelper.cs`
 

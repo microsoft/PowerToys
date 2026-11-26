@@ -14,6 +14,7 @@ using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
@@ -88,6 +89,11 @@ public partial class ListViewModel : PageViewModel, IDisposable
         FilteredItems.Count == 0 &&
         !IsFetching &&
         !IsLoading;
+
+    public override bool HasContent =>
+        !ShowEmptyContent ||
+        EmptyContent.Model.HasValue ||
+        !string.IsNullOrEmpty(ErrorMessage);
 
     public bool IsGridView { get; private set; }
 
@@ -456,6 +462,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             var nextCache = new Dictionary<IListItem, ListItemViewModel>(newItems.Length, VmCacheComparer);
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+            var imageStretch = (GridProperties as GalleryGridPropertiesViewModel)?.ImageStretch ?? Stretch.UniformToFill;
             var created = 0;
             var reused = 0;
             foreach (var item in newItems)
@@ -473,6 +480,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         existing.LayoutShowsTitle = showsTitle;
                         existing.LayoutShowsSubtitle = showsSubtitle;
+                        existing.LayoutImageStretch = imageStretch;
                         newViewModels.Add(existing);
                         nextCache[item] = existing;
                         reused++;
@@ -486,6 +494,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
                     {
                         viewModel.LayoutShowsTitle = showsTitle;
                         viewModel.LayoutShowsSubtitle = showsSubtitle;
+                        viewModel.LayoutImageStretch = imageStretch;
 
                         newViewModels.Add(viewModel);
                         createdViewModels.Add(viewModel);
@@ -1166,7 +1175,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
-        SetCommandBarContext(null);
+        SetCommandBarContext(ShowEmptyContent && EmptyContent.Model.Unsafe is not null ? EmptyContent : null);
         SetDetails(null);
         SetSearchSuggestion(string.Empty);
         TextToSuggest = string.Empty;
@@ -1439,6 +1448,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null);
                 EmptyContent.SlowInitializeProperties();
+                UpdateProperty(nameof(HasContent));
                 break;
             case nameof(Filters):
                 Filters?.PropertyChanged -= FiltersPropertyChanged;
@@ -1456,7 +1466,7 @@ public partial class ListViewModel : PageViewModel, IDisposable
 
     private void UpdateEmptyContent()
     {
-        UpdateProperty(nameof(ShowEmptyContent));
+        UpdateProperty(nameof(ShowEmptyContent), nameof(HasContent));
         if (!ShowEmptyContent || EmptyContent.Model.Unsafe is null)
         {
             return;
@@ -1477,11 +1487,13 @@ public partial class ListViewModel : PageViewModel, IDisposable
         {
             var showsTitle = GridProperties?.ShowTitle ?? true;
             var showsSubtitle = GridProperties?.ShowSubtitle ?? true;
+            var imageStretch = (GridProperties as GalleryGridPropertiesViewModel)?.ImageStretch ?? Stretch.UniformToFill;
 
             foreach (var item in Items)
             {
                 item.LayoutShowsTitle = showsTitle;
                 item.LayoutShowsSubtitle = showsSubtitle;
+                item.LayoutImageStretch = imageStretch;
             }
         }
     }

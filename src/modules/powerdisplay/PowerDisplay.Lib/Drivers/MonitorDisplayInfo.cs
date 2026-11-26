@@ -35,5 +35,12 @@ namespace PowerDisplay.Common.Drivers
         /// 1-based index (paths[0] = 1, paths[1] = 2, etc.)
         /// </summary>
         public int MonitorNumber { get; init; }
+
+        /// <summary>
+        /// Gets the path's target refresh rate in Hz (DISPLAYCONFIG_PATH_TARGET_INFO.refreshRate),
+        /// or 0 if unspecified. This is the desktop (virtual) rate, the same kind of value
+        /// EnumDisplaySettings lists, not the physical signal rate of the target mode.
+        /// </summary>
+        public double RefreshRate { get; init; }
     }
 }

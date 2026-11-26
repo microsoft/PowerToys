@@ -3,7 +3,11 @@
 // See the LICENSE file in the project root for more information.
 
 using Microsoft.CmdPal.Common.Services;
+using Microsoft.CmdPal.UI.Events;
+using Microsoft.CmdPal.UI.Helpers;
 using Microsoft.CmdPal.UI.ViewModels;
+using Microsoft.CmdPal.UI.ViewModels.Services;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -12,6 +16,41 @@ namespace Microsoft.CmdPal.UI.UnitTests;
 [TestClass]
 public class PowerToysRootPageServiceTests
 {
+    [TestMethod]
+    public async Task LoadingEmitsHeartbeatAfterEachInitialPhaseOnly()
+    {
+        var events = new List<CmdPalHeartbeat>();
+        var externalLoad = new TaskCompletionSource<IEnumerable<CommandProviderWrapper>>();
+        var externalService = new Mock<IExtensionService>();
+        externalService.Setup(s => s.LoadProvidersAsync(It.IsAny<CancellationToken>())).Returns(externalLoad.Task);
+        var settings = Mock.Of<ISettingsService>(s => s.Settings == new SettingsModel());
+        using var services = new ServiceCollection()
+            .AddSingleton(TaskScheduler.Default)
+            .AddSingleton(settings)
+            .BuildServiceProvider();
+        using var manager = new TopLevelCommandManager(services, [new BuiltInExtensionService([], TaskScheduler.Default), externalService.Object]);
+        using var telemetry = new HeartbeatTelemetry(() => manager.CommandProviders.Count(), events.Add);
+        var service = new PowerToysRootPageService(manager, null!, null!, null!, null!, telemetry);
+
+        await service.PreLoadAsync();
+
+        Assert.HasCount(1, events);
+        Assert.AreEqual("BuiltInExtensionsLoaded", events[0].Trigger);
+
+        var postLoad = service.PostLoadRootPageAsync();
+        Assert.HasCount(1, events, "External loading has not finished yet.");
+        externalLoad.SetResult([]);
+        await postLoad;
+
+        Assert.HasCount(2, events);
+        Assert.AreEqual("ExternalExtensionsLoaded", events[1].Trigger);
+
+        await service.PreLoadAsync();
+        await service.PostLoadRootPageAsync();
+
+        Assert.HasCount(2, events);
+    }
+
     [TestMethod]
     [DataRow(false, true)]
     [DataRow(true, true)]
@@ -92,5 +131,5 @@ public class PowerToysRootPageServiceTests
         return extension.Object;
     }
 
-    private static PowerToysRootPageService CreateService() => new(null!, null!, null!, null!, null!);
+    private static PowerToysRootPageService CreateService() => new(null!, null!, null!, null!, null!, null!);
 }

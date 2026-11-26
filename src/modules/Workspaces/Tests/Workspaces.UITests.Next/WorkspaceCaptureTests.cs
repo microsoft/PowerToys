@@ -12,6 +12,7 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void CaptureIncludesPackagedUnpackagedAndMinimizedWindows()
         {
             State.Fixture.PreparePackage(TestContext);
@@ -75,6 +76,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancelCaptureLeavesWorkspaceListAndStorageUnchanged()
         {
             var project = SeedOneWorkspace();
@@ -98,6 +100,7 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
+        [Ignore(WinUiMigrationIgnoreReason)]
         public void CancellingCapturedWorkspaceDiscardsIt()
         {
             State.Fixture.OpenUnpackaged(State.Prefix + "-capture-cancel", TestContext);

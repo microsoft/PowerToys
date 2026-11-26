@@ -217,6 +217,9 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
             _icon.InitializeProperties();
         }
 
+        // The primary context item can exist before the icons load
+        UpdateDefaultContextItemIcon();
+
         // TODO: Do these need to go into FastInit?
         SubscribeToChanges(model);
         if (IsCleanedUp)
@@ -389,6 +392,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
         switch (propertyName)
         {
             case nameof(Command):
+                var currentIcon = Icon;
                 if (!UnsafeFetchCommand(model))
                 {
                     return;
@@ -414,7 +418,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
                 UpdateProperty(nameof(Name));
                 UpdateProperty(nameof(Title));
-                UpdateProperty(nameof(Icon));
+
+                // A needless notification restarts icon loading
+                if (!ReferenceEquals(currentIcon, Icon))
+                {
+                    UpdateProperty(nameof(Icon));
+                }
+
                 UpdateProperty(nameof(HasText));
                 UpdateProperty(nameof(CanOpenContextMenu));
                 break;
@@ -498,7 +508,13 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
 
             case nameof(Command.Icon):
                 UpdateDefaultContextItemIcon();
-                UpdateProperty(nameof(Icon));
+
+                // Our own icon have precedence over the command icon
+                if (!_icon.IsSet)
+                {
+                    UpdateProperty(nameof(Icon));
+                }
+
                 break;
         }
     }
@@ -569,7 +585,7 @@ public partial class CommandItemViewModel : ExtensionObjectViewModel, ICommandBa
     private void UpdateDefaultContextItemIcon() =>
 
         // Command icon takes precedence over our icon on the primary command
-        _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.IsSet ? Command.Icon : _icon);
+        _defaultCommandContextItemViewModel?.UpdateIcon(Command.Icon.HasAnyIcon ? Command.Icon : _icon);
 
     private void UpdateTitle(string? title)
     {

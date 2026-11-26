@@ -157,11 +157,17 @@ function Remove-UmdfTestTrust {
 function Remove-UmdfDevices {
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][object[]]$Devices,
-        [Parameter(Mandatory)][AllowEmptyCollection()][Collections.Generic.List[string]]$Errors
+        [Parameter(Mandatory)][AllowEmptyCollection()][Collections.Generic.List[string]]$Errors,
+        [switch]$RequireImmediateRemoval,
+        [ref]$RebootRequired
     )
     foreach ($device in $Devices) {
         & pnputil.exe /remove-device $device.InstanceId
-        if ($LASTEXITCODE -notin @(0, 3010)) { $Errors.Add("Device removal failed: $($device.InstanceId), exit $LASTEXITCODE") }
+        if ($RequireImmediateRemoval -and $LASTEXITCODE -eq 3010) {
+            if ($null -ne $RebootRequired) { $RebootRequired.Value = $true }
+            $Errors.Add("Device removal requires a reboot: $($device.InstanceId), exit $LASTEXITCODE")
+        }
+        elseif ($LASTEXITCODE -notin @(0, 3010)) { $Errors.Add("Device removal failed: $($device.InstanceId), exit $LASTEXITCODE") }
     }
 }
 
@@ -169,7 +175,9 @@ function Remove-UmdfPackages {
     param(
         [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$InfNames,
         [Parameter(Mandatory)][string]$HardwareId,
-        [Parameter(Mandatory)][AllowEmptyCollection()][Collections.Generic.List[string]]$Errors
+        [Parameter(Mandatory)][AllowEmptyCollection()][Collections.Generic.List[string]]$Errors,
+        [switch]$RequireImmediateRemoval,
+        [ref]$RebootRequired
     )
     foreach ($name in $InfNames) {
         if ($name -notmatch '^oem[0-9]+\.inf$') { throw 'Invalid published driver filename.' }
@@ -179,7 +187,11 @@ function Remove-UmdfPackages {
                 throw "Refusing to remove unrelated driver package: $name"
             }
             & pnputil.exe /delete-driver $name /uninstall /force
-            if ($LASTEXITCODE -notin @(0, 3010) -or (Test-Path -LiteralPath $inf)) { $Errors.Add("Package remains: $name, exit $LASTEXITCODE") }
+            if ($RequireImmediateRemoval -and $LASTEXITCODE -eq 3010) {
+                if ($null -ne $RebootRequired) { $RebootRequired.Value = $true }
+                $Errors.Add("Package removal requires a reboot: $name, exit $LASTEXITCODE")
+            }
+            elseif ($LASTEXITCODE -notin @(0, 3010) -or (Test-Path -LiteralPath $inf)) { $Errors.Add("Package remains: $name, exit $LASTEXITCODE") }
         }
     }
 }

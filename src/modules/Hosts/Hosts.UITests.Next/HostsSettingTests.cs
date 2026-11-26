@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -98,7 +99,6 @@ namespace Hosts.UITests
         public void TestWarningDialog()
         {
             var hostsSession = LaunchFromSetting(showWarning: true);
-            var settingsSession = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
 
             // Validating Warning-Dialog will be shown if 'Show a warning at startup' toggle is on.
             Assert.IsTrue(
@@ -106,39 +106,28 @@ namespace Hosts.UITests
                 "Should show warning dialog");
 
             // Quit Hosts File Editor.
-            int quitAttempts = 1;
-            hostsSession.FindExact<Button>("Quit").Invoke(msPostAction: 0);
+            using var hostsProcess = Process.GetProcessById(hostsSession.ProcessId);
+            _ = hostsProcess.Handle;
+            var quitButton = hostsSession.FindExact<Button>("Quit");
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(hostsSession.WindowHandle), timeoutMS: 5_000, requiredConsecutiveMatches: 3),
+                $"Hosts should own foreground before clicking Quit. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            quitButton.Click(msPostAction: 0);
 
-            // Validating click 'Quit' button in Warning-Dialog, the Hosts File Editor window would be closed.
+            // Quit calls Environment.Exit(0); Win10 can retain a stale HWND after process exit.
             var quitResult = WaitHelper.WaitForStable(
-                IsHostsFileEditorClosed,
-                closed => closed,
+                () => hostsProcess.HasExited,
+                exited => exited,
                 15_000,
-                requiredConsecutiveMatches: 3,
-                recover: _ =>
-                {
-                    // Quit is idempotent while the warning remains; never resend after the window closes.
-                    var buttons = hostsSession.FindAll<Button>(By.Name("Quit"), 0)
-                        .Where(button => string.Equals(button.Name, "Quit", StringComparison.Ordinal))
-                        .ToArray();
-                    Assert.IsTrue(buttons.Length <= 1, $"Expected at most one startup Quit button, found {buttons.Length}.");
-                    if (buttons.Length == 1 && buttons[0].IsEnabled)
-                    {
-                        quitAttempts++;
-                        TestContext.WriteLine($"Retrying startup Quit, attempt {quitAttempts}; PID={hostsSession.ProcessId}, HWND={hostsSession.WindowHandle}.");
-                        buttons[0].Invoke(msPostAction: 0);
-                    }
-                },
-                shouldRetryException: error => ShellMenu.IsTransientElementException(error) ||
-                    (error is AssertFailedException && IsHostsFileEditorClosed()));
+                requiredConsecutiveMatches: 3);
             Assert.IsTrue(
                 quitResult.Succeeded,
-                $"Hosts File Editor should be closed after click Quit button in Warning Dialog; attempts={quitAttempts}, windows={string.Join(", ", WindowsFinder.ListByApp("PowerToys.Hosts"))}, error={quitResult.LastException}.");
-            TestContext.WriteLine($"Startup Quit closed the editor after {quitAttempts} invocation attempt(s).");
+                $"Hosts File Editor should exit after clicking Quit in the Warning Dialog; windows={string.Join(", ", WindowsFinder.ListByApp("PowerToys.Hosts"))}.");
+            Assert.AreEqual(0, hostsProcess.ExitCode, "The startup Quit command should exit cleanly.");
+            TestContext.WriteLine("Startup Quit closed the editor.");
 
             // Re-launch Hosts File Editor from Settings.
-            settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
-            hostsSession = AttachHostsEditor();
+            hostsSession = LaunchHostsEditor();
 
             // Should show warning dialog.
             Assert.IsTrue(
@@ -528,14 +517,26 @@ namespace Hosts.UITests
             settingsSession.FindExact<ToggleSwitch>("Open as administrator").Toggle(openAsAdmin);
             settingsSession.FindExact<ToggleSwitch>("Show a warning at startup").Toggle(showWarning);
 
-            // Launch Hosts File Editor.
-            settingsSession.FindExact<Button>("Open Hosts File Editor").Click();
-
-            return AttachHostsEditor();
+            return LaunchHostsEditor();
         }
 
-        private static Session AttachHostsEditor()
+        private Session LaunchHostsEditor()
         {
+            // Settings can have visible helper windows; bind the actual main window before clicking its card.
+            const string settingsProcess = "PowerToys.Settings";
+            var settings = WindowsFinder.WaitForWindowByApp(
+                settingsProcess,
+                window => string.Equals(window.ProcessName, settingsProcess, StringComparison.OrdinalIgnoreCase) &&
+                          window.ClassName == "WinUIDesktopWin32WindowClass" &&
+                          window.Title.Contains("PowerToys Settings", StringComparison.OrdinalIgnoreCase) &&
+                          !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)));
+            Assert.IsNotNull(settings, "PowerToys Settings did not expose a visible main window.");
+            var launchCard = settings.FindExact<Button>("Open Hosts File Editor");
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(settings.WindowHandle), timeoutMS: 15_000, requiredConsecutiveMatches: 3),
+                $"Settings window {settings.WindowHandle} should own foreground before opening Hosts. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Clicking Open Hosts File Editor in Settings and waiting for the editor window.");
+            launchCard.Click(msPostAction: 0);
             var hostsSession = Session.Attach(PowerToysModule.Hosts);
             WindowHelper.MaximizeWindow(new IntPtr(hostsSession.WindowHandle));
             Thread.Sleep(200);

@@ -182,17 +182,17 @@ public sealed class CommandProviderWrapper : ICommandProviderContext
         {
             var model = _commandProvider.Unsafe!;
 
-            // Load the type stubs before any provider method returns extension objects.
-            // CsWinRT records the projected shape when it first sees an object. Loading
-            // the stubs later would leave fallback objects projected as v1.
-            if (model is ICommandProvider2 two)
+            commands = await Task.Run(() =>
             {
-                UnsafePreCacheApiAdditions(two);
-            }
+                // CsWinRT records the projected shape when it first sees an object.
+                // Load the stubs on the provider worker before retrieving any commands.
+                if (model is ICommandProvider2 two)
+                {
+                    UnsafePreCacheApiAdditions(two);
+                }
 
-            Task<ICommandItem[]> loadTopLevelCommandsTask = new(model.TopLevelCommands);
-            loadTopLevelCommandsTask.Start();
-            commands = await loadTopLevelCommandsTask.ConfigureAwait(false);
+                return model.TopLevelCommands();
+            }).ConfigureAwait(false);
 
             // On a BG thread here
             fallbacks = model.FallbackCommands();

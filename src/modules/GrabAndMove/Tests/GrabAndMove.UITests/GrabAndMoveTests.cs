@@ -66,7 +66,7 @@ public sealed class GrabAndMoveTests : UITestBase
     }
 
     [ClassCleanup]
-    public static void RestoreSettings()
+    public static void RestoreSettings(TestContext context)
     {
         try
         {
@@ -81,14 +81,44 @@ public sealed class GrabAndMoveTests : UITestBase
             finally
             {
                 originalSettings = null;
+                bool restorePointer = hidInput is not null;
                 try
                 {
-                    hidInput?.Dispose();
+                    if (restorePointer)
+                    {
+                        ReleaseFixtureInput();
+                        RecordPointerCleanup(context, "Before HID pointer restoration");
+                        MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
+                        var restored = WaitHelper.WaitForStable(
+                            MouseHelper.GetMousePosition,
+                            position => position == (originalPointer.X, originalPointer.Y),
+                            timeoutMS: 5_000,
+                            requiredConsecutiveMatches: 3);
+                        RecordPointerCleanup(context, "After HID pointer restoration");
+                        Assert.IsTrue(
+                            restored.Succeeded,
+                            $"The HID backend did not restore the pointer to {originalPointer}; observed={restored.LastObservation}; foreground={WindowControl.GetForegroundWindowInfo()}.");
+                    }
                 }
                 finally
                 {
-                    hidInput = null;
-                    MouseHelper.MoveTo(originalPointer.X, originalPointer.Y);
+                    try
+                    {
+                        hidInput?.Dispose();
+                    }
+                    finally
+                    {
+                        hidInput = null;
+                    }
+                }
+
+                if (restorePointer)
+                {
+                    RecordPointerCleanup(context, "After HID disposal");
+                    Assert.AreEqual(
+                        (originalPointer.X, originalPointer.Y),
+                        MouseHelper.GetMousePosition(),
+                        "Disposing the HID scope must preserve the restored pointer position.");
                 }
             }
         }
@@ -121,7 +151,7 @@ public sealed class GrabAndMoveTests : UITestBase
     [TestMethod]
     public void AltLeftDragMovesWindowToExpectedPosition()
     {
-        DragAndAssert(Key.Alt, resize: false);
+        DragAndAssert(Key.Alt, resize: false, retryUnclaimedMove: true);
     }
 
     [TestMethod]
@@ -240,15 +270,36 @@ public sealed class GrabAndMoveTests : UITestBase
         await CaptureFailureArtifactsBeforeCleanupAsync();
         try
         {
-            MouseHelper.LeftUp();
-            MouseHelper.RightUp();
-            KeyboardHelper.ReleaseKey(Key.Alt);
-            KeyboardHelper.ReleaseKey(Key.LWin);
+            ReleaseFixtureInput();
         }
         finally
         {
             fixture?.Dispose();
             fixture = null;
+        }
+    }
+
+    private static void ReleaseFixtureInput()
+    {
+        MouseHelper.LeftUp();
+        MouseHelper.RightUp();
+        KeyboardHelper.ReleaseKey(Key.Alt);
+        KeyboardHelper.ReleaseKey(Key.LWin);
+    }
+
+    private static void RecordPointerCleanup(TestContext context, string phase)
+    {
+        using var process = Process.GetCurrentProcess();
+        var pointer = MouseHelper.GetMousePosition();
+        var state = $"{DateTime.UtcNow:O} {phase}: expected={originalPointer}; actual={pointer}; HID active={hidInput is not null}; " +
+            $"session={process.SessionId}; elevated={ElevationHelper.IsCurrentProcessElevated()}; foreground={WindowControl.GetForegroundWindowInfo()}";
+        context.WriteLine(state);
+        var path = Path.Combine(context.TestResultsDirectory ?? Path.GetTempPath(), "GrabAndMove-pointer-cleanup.txt");
+        bool attach = !File.Exists(path);
+        File.AppendAllText(path, state + Environment.NewLine);
+        if (attach)
+        {
+            context.AddResultFile(path);
         }
     }
 
@@ -403,7 +454,7 @@ public sealed class GrabAndMoveTests : UITestBase
         fixture.Focus();
     }
 
-    private void DragAndAssert(Key modifier, bool resize, bool expectedChange = true, Action? duringDrag = null)
+    private void DragAndAssert(Key modifier, bool resize, bool expectedChange = true, Action? duringDrag = null, bool retryUnclaimedMove = false)
     {
         Assert.IsNotNull(fixture);
         FocusFixture();
@@ -420,10 +471,13 @@ public sealed class GrabAndMoveTests : UITestBase
         MouseHelper.MoveTo(start.X, start.Y);
         var cursor = WaitHelper.WaitForStable(
             MouseHelper.GetMousePosition,
-            position => position == (start.X, start.Y),
+            position => position == (start.X, start.Y) &&
+                        WindowControl.IsPointOwnedByWindow(fixture.Handle, start.X, start.Y),
             5_000,
             requiredConsecutiveMatches: 3);
-        Assert.IsTrue(cursor.Succeeded, $"The gesture cursor did not settle at {start}: {cursor.LastObservation}.");
+        Assert.IsTrue(cursor.Succeeded, $"The gesture cursor did not settle over fixture {fixture.Handle} at {start}: {cursor.LastObservation}.");
+        var clicksBeforeDrag = fixture.ClientClickCount;
+        bool boundsChanged;
         try
         {
             KeyboardHelper.PressKey(modifier);
@@ -449,6 +503,7 @@ public sealed class GrabAndMoveTests : UITestBase
                 requiredConsecutiveMatches: 3);
             Assert.IsTrue(endpoint.Succeeded, $"The gesture cursor did not reach its endpoint: {endpoint.LastObservation}.");
 
+            boundsChanged = fixture.Bounds != before;
             duringDrag?.Invoke();
         }
         finally
@@ -467,7 +522,24 @@ public sealed class GrabAndMoveTests : UITestBase
 
         if (expectedChange)
         {
-            AssertBounds(expected);
+            var result = WaitHelper.WaitForStable(
+                () => fixture.Bounds,
+                bounds =>
+                {
+                    boundsChanged |= bounds != before;
+                    return bounds == expected;
+                },
+                5_000,
+                requiredConsecutiveMatches: 3);
+            if (!result.Succeeded && retryUnclaimedMove && !boundsChanged && fixture.ClientClickCount > clicksBeforeDrag)
+            {
+                // The fixture received the button press and never moved: the module did not capture this gesture.
+                Step("The first drag reached the fixture as a client click without moving it; re-establishing focus and retrying once.");
+                DragAndAssert(modifier, resize);
+                return;
+            }
+
+            Assert.IsTrue(result.Succeeded, $"Expected exact physical bounds {expected}; last bounds={result.LastObservation}. {ForegroundDiagnostic()}");
         }
         else
         {
@@ -479,12 +551,6 @@ public sealed class GrabAndMoveTests : UITestBase
             }
             while (observation.ElapsedMilliseconds < 2_000);
         }
-    }
-
-    private void AssertBounds(Rectangle expected)
-    {
-        var result = WaitHelper.WaitForStable(() => fixture!.Bounds, bounds => bounds == expected, 5_000, requiredConsecutiveMatches: 3);
-        Assert.IsTrue(result.Succeeded, $"Expected exact physical bounds {expected}; last bounds={result.LastObservation}. {ForegroundDiagnostic()}");
     }
 
     private void Step(string message) => TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] {message}");

@@ -223,7 +223,7 @@ intermediates. Pass that directory's `PowerToys.MouseWithoutBorders.dll` to
 binaries and fingerprints the replacement before optional ReadyToRun compilation.
 Record any uncommitted source diff alongside local payload hashes.
 Use the repository build tools; do not use `dotnet test`. The UI executable is
-under `x64\Release\tests\MouseWithoutBorders.UITests\net10.0-windows10.0.26100.0`.
+under `x64\Release\tests\MouseWithoutBorders.UITests\net11.0-windows10.0.26100.0`.
 Preserve its `Payload` subdirectory. The following non-launch check works in
 Windows PowerShell 5.1 and never starts PowerToys/Sandbox or changes live settings:
 
