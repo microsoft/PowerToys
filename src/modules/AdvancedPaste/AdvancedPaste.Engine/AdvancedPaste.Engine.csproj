@@ -54,7 +54,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MessagePack" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.SemanticKernel" />
@@ -66,7 +65,6 @@
     <PackageReference Include="Microsoft.WindowsAppSDK.AI" />
     <PackageReference Include="OpenAI" />
     <PackageReference Include="ReverseMarkdown" />
-    <PackageReference Include="StreamJsonRpc" />
     <PackageReference Include="System.ClientModel" />
   </ItemGroup>
 

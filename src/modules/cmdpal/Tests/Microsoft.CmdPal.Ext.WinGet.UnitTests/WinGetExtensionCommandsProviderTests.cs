@@ -10,6 +10,7 @@ using Microsoft.CmdPal.Common.WinGet.Models;
 using Microsoft.CmdPal.Common.WinGet.Services;
 using Microsoft.CmdPal.Ext.WinGet.Properties;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 
@@ -38,6 +39,35 @@ public sealed class WinGetExtensionCommandsProviderTests : IDisposable
     {
         _provider?.Dispose();
         GC.SuppressFinalize(this);
+    }
+
+    [TestMethod]
+    public void FallbackUsesPassiveQueryFormatting()
+    {
+        var fallback = (IFallbackCommandItem3)_provider.FallbackCommands()[0];
+
+        Assert.IsInstanceOfType<FallbackPassiveItem>(fallback);
+        Assert.IsNull(fallback.QueryHandler);
+        Assert.AreEqual(Resources.winget_fallback_display_title, fallback.Name);
+        Assert.AreEqual(Resources.winget_fallback_title_template, fallback.TitleTemplate);
+        Assert.AreEqual(Resources.winget_fallback_subtitle, fallback.SubtitleTemplate);
+        Assert.AreEqual("com.microsoft.cmdpal.winget.fallback", ((IFallbackCommandItem2)fallback).Id);
+    }
+
+    [TestMethod]
+    public void FallbackCreatesIndependentPagesForEachInvocation()
+    {
+        var fallback = (IFallbackCommandItem3)_provider.FallbackCommands()[0];
+        var firstPage = (IDynamicListPage)fallback.CreateCommand(new FallbackCommandInvocationArgs("first", "query-1"));
+        using var firstLifetime = (IDisposable)firstPage;
+        var secondPage = (IDynamicListPage)fallback.CreateCommand(new FallbackCommandInvocationArgs("second", "query-2"));
+        using var secondLifetime = (IDisposable)secondPage;
+
+        Assert.AreNotSame(firstPage, secondPage);
+        Assert.AreEqual("first", firstPage.SearchText);
+        Assert.AreEqual("second", secondPage.SearchText);
+        Assert.AreEqual(Resources.winget_page_name, _page.Name);
+        Assert.AreEqual(string.Empty, ((IDynamicListPage)_page).SearchText);
     }
 
     [TestMethod]
