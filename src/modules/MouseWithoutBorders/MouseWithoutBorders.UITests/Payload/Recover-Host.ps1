@@ -19,7 +19,8 @@ param(
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\EndpointSupport.ps1"
 . "$PSScriptRoot\ModernSandboxRecovery.ps1"
-Add-Type -Path "$PSScriptRoot\NativeSupport.cs"
+Add-Type -Path ('DesktopState.cs', 'MouseTargetState.cs', 'NativeSupport.cs', 'ProcessIdentity.cs', 'WindowInfo.cs' |
+    ForEach-Object { Join-Path $PSScriptRoot $_ })
 $deadline = [DateTime]::UtcNow.AddMinutes(3)
 $failures = [Collections.Generic.List[string]]::new()
 $resultPath = ''
@@ -249,6 +250,11 @@ try {
             }
         }
         Remove-MwbPrivateTargetState $modernIdentity.TargetStateRoot
+    }
+    elseif ($provision.SandboxBackend -ceq 'WinApp') {
+        # A stopped modern instance can leave its shared OS broker running.
+        Assert-MwbHostOnlyModernSandboxIdle $journal $provision
+        $modernRecovery = $true
     }
 
     $sandbox = @()

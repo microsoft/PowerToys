@@ -347,7 +347,7 @@ public class VariableEditorStateTests
     {
         var draft = new Variable("PATH", "a;b", VariablesSetType.User);
         var rows = draft.ValuesList.ToArray();
-        var stale = new Variable.ValuesListItem { Text = "a" };
+        var stale = new ValuesListItem { Text = "a" };
 
         if (throws)
         {
@@ -579,7 +579,7 @@ public class VariableEditorStateTests
         Assert.IsTrue(fixture.Work.IsQuiescent);
     }
 
-    private static string? ActOnRow(string action, Variable draft, Variable.ValuesListItem? selected)
+    private static string? ActOnRow(string action, Variable draft, ValuesListItem? selected)
     {
         return action switch
         {

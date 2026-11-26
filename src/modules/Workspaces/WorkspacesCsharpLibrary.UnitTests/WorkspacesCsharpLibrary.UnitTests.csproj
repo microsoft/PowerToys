@@ -12,6 +12,7 @@
     <OutputPath>$(RepoRoot)$(Platform)\$(Configuration)\tests\WorkspacesCsharpLibrary.UnitTests\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="..\Assets\Workspaces\DefaultIcon.ico" Link="Assets\Workspaces\DefaultIcon.ico" CopyToOutputDirectory="PreserveNewest" />
     <PackageReference Include="MSTest" />
     <ProjectReference Include="..\WorkspacesCsharpLibrary\WorkspacesCsharpLibrary.csproj" />
   </ItemGroup>

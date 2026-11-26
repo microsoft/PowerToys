@@ -1044,10 +1044,20 @@ function Get-GuestUiResultDiagnostic {
     $diagnostic
 }
 
+function Test-GuestUiWaitTimeout {
+    param($Data)
+    $null -ne $Data -and
+        $Data.PSObject.Properties['found'] -and $Data.found -is [bool] -and -not $Data.found -and
+        $Data.PSObject.Properties['timedOut'] -and $Data.timedOut -is [bool] -and $Data.timedOut -and
+        $Data.PSObject.Properties['waitedMs'] -and ($Data.waitedMs -is [int] -or $Data.waitedMs -is [long]) -and $Data.waitedMs -ge 0 -and
+        (-not $Data.PSObject.Properties['error'] -or $null -eq $Data.error)
+}
+
 function Assert-GuestUiResult {
-    param([string]$Verb, [int]$ExitCode, $Data)
+    param([string]$Verb, [int]$ExitCode, $Data, [switch]$AllowWaitTimeout)
 
     if ($ExitCode -eq 0) { return }
+    if ($AllowWaitTimeout -and $Verb -eq 'wait-for' -and $ExitCode -eq 1 -and (Test-GuestUiWaitTimeout $Data)) { return }
     $count = if ($null -ne $Data) { $Data.PSObject.Properties['matchCount'] } else { $null }
     if ($Verb -eq 'search' -and $ExitCode -eq 1 -and $count -and $count.Value -eq 0) { return }
     # Error envelopes need not contain matchCount. Never echo their raw message or
@@ -1076,7 +1086,7 @@ function Get-GuestUiControlKind {
 }
 
 function Invoke-GuestUi {
-    param([string[]]$Arguments, [ValidateSet(90, 180)][int]$TimeoutSeconds = 90)
+    param([string[]]$Arguments, [ValidateSet(90, 180)][int]$TimeoutSeconds = 90, [switch]$AllowWaitTimeout)
     $launchWatch = [Diagnostics.Stopwatch]::StartNew()
     Write-EndpointCommandStage 'UiPreparing' $Arguments[0] $script:requestNumber
     $start = [Diagnostics.ProcessStartInfo]::new()
@@ -1153,7 +1163,8 @@ function Invoke-GuestUi {
         $responseDiagnostic.SettingsState = Get-GuestUiWaitSnapshot $process
         $responseDiagnostic.TimestampUtc = [DateTime]::UtcNow.ToString('o')
         Write-RunJson "$OutputRoot\ui-result-diagnostic.json" $responseDiagnostic
-        Assert-GuestUiResult $Arguments[0] $process.ExitCode $data
+        Assert-GuestUiResult $Arguments[0] $process.ExitCode $data `
+            -AllowWaitTimeout:($AllowWaitTimeout -and $errorJsonStatus -eq 'Empty' -and -not $responseDiagnostic.ErrorEnvelopePresent)
         Write-EndpointCommandStage 'UiResultParsed' $Arguments[0] $script:requestNumber $process.Id $watch.ElapsedMilliseconds
         return $data
     }
@@ -1205,8 +1216,17 @@ function Get-GuestElement {
 }
 
 function Wait-GuestMwbControl {
-    param([string]$AutomationId)
-    $result = Invoke-GuestUi @('wait-for', $AutomationId, '--timeout', '90000', '--property', 'IsEnabled', '--value', 'True')
+    param([string]$AutomationId, [ValidateRange(1, 90000)][int]$TimeoutMilliseconds = 90000, [switch]$AllowTimeout)
+    $arguments = @('wait-for', $AutomationId, '--timeout', "$TimeoutMilliseconds", '--property', 'IsEnabled', '--value', 'True')
+    $controlType = switch ($AutomationId) {
+        'MouseWithoutBordersShowConnectFieldsButton' { 'Button' }
+        'ConnectSecurityKeyTextBox' { 'Edit' }
+        'ConnectPCNameTextBox' { 'Edit' }
+    }
+    # Constrained CLI lookups distinguish absent controls from UIA/provider errors.
+    if ($controlType) { $arguments += @('--type', $controlType) }
+    $result = Invoke-GuestUi $arguments -AllowWaitTimeout:$AllowTimeout
+    if ($AllowTimeout -and (Test-GuestUiWaitTimeout $result)) { return $null }
     if ($null -eq $result -or -not $result.PSObject.Properties['found'] -or $result.found -ne $true -or
         -not $result.PSObject.Properties['element'] -or $null -eq $result.element -or
         -not $result.element.PSObject.Properties['automationId'] -or $result.element.automationId -cne $AutomationId -or
@@ -1272,7 +1292,19 @@ function Connect-Guest {
     $null = Wait-GuestMwbControl 'MouseWithoutBordersShowConnectFieldsButton'
     # Avoid a synchronous InvokePattern call while expanding the visible input row.
     $null = Invoke-GuestUi @('click', 'MouseWithoutBordersShowConnectFieldsButton')
-    $null = Wait-GuestMwbControl 'ConnectSecurityKeyTextBox'
+    $keyField = Wait-GuestMwbControl 'ConnectSecurityKeyTextBox' -TimeoutMilliseconds 10000 -AllowTimeout
+    if ($null -eq $keyField) {
+        $reveal = Wait-GuestMwbControl 'MouseWithoutBordersShowConnectFieldsButton' -TimeoutMilliseconds 1000 -AllowTimeout
+        $canRepeatReveal = $null -ne $reveal -and $reveal.PSObject.Properties['isOffscreen'] -and
+            $reveal.isOffscreen -is [bool] -and -not $reveal.isOffscreen
+        Write-RunJson "$OutputRoot\connect-field-readiness.json" @{
+            InitialRevealAcknowledged = $false; RepeatedReveal = [bool]$canRepeatReveal
+            TimestampUtc = [DateTime]::UtcNow.ToString('o')
+        }
+        # This command only sets visibility to true and disappears when expanded. Never replay Submit.
+        if ($canRepeatReveal) { $null = Invoke-GuestUi @('click', 'MouseWithoutBordersShowConnectFieldsButton') }
+        $null = Wait-GuestMwbControl 'ConnectSecurityKeyTextBox'
+    }
     $null = Wait-GuestMwbControl 'ConnectPCNameTextBox'
     $null = Invoke-GuestUi @('set-value', 'ConnectSecurityKeyTextBox', $Key)
     $null = Invoke-GuestUi @('set-value', 'ConnectPCNameTextBox', $PeerName)

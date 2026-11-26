@@ -110,7 +110,6 @@ public class CommandWorkflowTests : CommandPaletteTestBase
     [TestCategory("CmdPal")]
     public void InstalledAppsLaunchesPackagedSettings()
     {
-        using var diagnostics = BeginNavigationDiagnostics();
         OpenExtension("Search apps", "Search apps");
         SetSearchBox("Settings");
         var windowsBefore = SnapshotWindowsSettings();
@@ -130,11 +129,7 @@ public class CommandWorkflowTests : CommandPaletteTestBase
     public void RunCommandsExecutesLocalCommand()
     {
         var marker = Path.Combine(fixtureDirectory, "run-result.txt");
-        var scriptPath = Path.Combine(fixtureDirectory, "write-result.js");
-        var script = $"var file = new ActiveXObject('Scripting.FileSystemObject').CreateTextFile({System.Text.Json.JsonSerializer.Serialize(marker)}, true);" +
-            $"file.WriteLine({System.Text.Json.JsonSerializer.Serialize(fixtureName)});file.Close();";
-        File.WriteAllText(scriptPath, script);
-        var command = $"wscript.exe //B //NoLogo \"{scriptPath}\"";
+        var command = $"cmd.exe /d /c echo {fixtureName}>\"{marker}\"";
         OpenExtension("Run commands", "Run commands");
         SetSearchBox(command);
         InvokeResultWithEnter("Run command");

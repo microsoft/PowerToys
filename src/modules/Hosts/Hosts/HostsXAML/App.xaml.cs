@@ -6,7 +6,7 @@ using System;
 using System.IO.Abstractions;
 using System.Threading;
 
-using Common.UI;
+using Hosts.Helpers;
 using HostsEditor.Telemetry;
 using HostsUILib.Helpers;
 using HostsUILib.Settings;
@@ -14,7 +14,6 @@ using HostsUILib.ViewModels;
 using HostsUILib.Views;
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
@@ -49,31 +48,27 @@ namespace Hosts
 
             InitializeComponent();
 
-            Host.HostInstance = Microsoft.Extensions.Hosting.Host.
-                CreateDefaultBuilder().
-                UseContentRoot(AppContext.BaseDirectory).
-                ConfigureServices((context, services) =>
-                {
-                    // Core Services
-                    services.AddSingleton<IFileSystem, FileSystem>();
-                    services.AddSingleton<IBackupManager, BackupManager>();
-                    services.AddSingleton<IHostsService, HostsService>();
-                    services.AddSingleton<IUserSettings, Hosts.Settings.UserSettings>();
-                    services.AddSingleton<IElevationHelper, ElevationHelper>();
-                    services.AddSingleton<IDuplicateService, DuplicateService>();
+            var services = new ServiceCollection();
 
-                    // Views and ViewModels
-                    services.AddSingleton<ILogger, LoggerWrapper>();
-                    services.AddSingleton<IElevationHelper, ElevationHelper>();
-                    services.AddSingleton<OpenSettingsFunction>(() =>
-                    {
-                        SettingsDeepLink.OpenSettings(SettingsDeepLink.SettingsWindow.Hosts);
-                    });
+            // Core Services
+            services.AddSingleton<IFileSystem, FileSystem>();
+            services.AddSingleton<IBackupManager, BackupManager>();
+            services.AddSingleton<IHostsService, HostsService>();
+            services.AddSingleton<IUserSettings, Hosts.Settings.UserSettings>();
+            services.AddSingleton<IElevationHelper, ElevationHelper>();
+            services.AddSingleton<IDuplicateService, DuplicateService>();
 
-                    services.AddSingleton<MainViewModel, MainViewModel>();
-                    services.AddSingleton<HostsMainPage, HostsMainPage>();
-                }).
-                Build();
+            // Views and ViewModels
+            services.AddSingleton<ILogger, LoggerWrapper>();
+            services.AddSingleton<OpenSettingsFunction>(() =>
+            {
+                SettingsDeepLink.OpenSettings();
+            });
+
+            services.AddSingleton<MainViewModel, MainViewModel>();
+            services.AddSingleton<HostsMainPage, HostsMainPage>();
+
+            Host.Services = services.BuildServiceProvider();
 
             var deleteBackupThread = new Thread(() =>
             {

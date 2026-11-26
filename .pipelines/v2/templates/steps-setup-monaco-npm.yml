@@ -1,0 +1,56 @@
+# Prepares npm for the Monaco editor bundle, which src/Monaco.props builds from src/Monaco/package.json
+# during the main MSBuild build (node build.mjs -> npm ci + esbuild).
+parameters:
+  - name: official
+    type: boolean
+    default: false
+  - name: enablePackageCaching
+    type: boolean
+    default: false
+
+steps:
+  - pwsh: |-
+      $major = 0
+      $nodeVersion = ''
+      try {
+        $nodeVersion = (& node --version 2>$null)
+        if ($nodeVersion -match '^v(\d+)\.') {
+          $major = [int]$Matches[1]
+        }
+      } catch {
+        $nodeVersion = 'not found'
+      }
+      Write-Host "Node.js on agent: $nodeVersion"
+      Write-Host "##vso[task.setvariable variable=MonacoNeedsNode]$($major -lt 20)"
+      Write-Host "##vso[task.setvariable variable=npm_config_cache]$(Pipeline.Workspace)\.npm"
+      $global:LASTEXITCODE = 0
+    displayName: Check Node.js for the Monaco bundle
+
+  - task: UseNode@1
+    displayName: Install Node.js LTS for the Monaco bundle
+    condition: and(succeeded(), eq(variables['MonacoNeedsNode'], 'True'))
+    inputs:
+      version: '22.x'
+
+  - ${{ if eq(parameters.enablePackageCaching, true) }}:
+    - task: Cache@2
+      displayName: Cache npm packages (Monaco)
+      inputs:
+        key: '"npm" | "$(Agent.OS)" | src/Monaco/package-lock.json'
+        path: $(Pipeline.Workspace)\.npm
+
+  # Official builds can't reach registry.npmjs.org, so npm resolves the lockfile through the
+  # PowerToys Azure Artifacts feed (npmjs upstream) instead.
+  - ${{ if eq(parameters.official, true) }}:
+    - pwsh: |-
+        $npmrc = Join-Path '$(Agent.TempDirectory)' 'monaco.npmrc'
+        Set-Content -Path $npmrc -Value 'registry=https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/npm/registry/'
+        Write-Host "##vso[task.setvariable variable=NPM_CONFIG_USERCONFIG]$npmrc"
+      displayName: Point npm at the PowerToys dependencies feed
+
+    - task: npmAuthenticate@0
+      displayName: Authenticate npm with the PowerToys dependencies feed
+      inputs:
+        workingFile: $(Agent.TempDirectory)\monaco.npmrc
+        azureDevOpsServiceConnection: 'SHINE PowerToys Artifact Feed'
+        feedUrl: https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/npm/registry/

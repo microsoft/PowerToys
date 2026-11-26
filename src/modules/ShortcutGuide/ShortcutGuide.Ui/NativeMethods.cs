@@ -18,7 +18,9 @@ internal static partial class NativeMethods
     internal const int WS_EX_CLIENTEDGE = 0x00000200;
     internal const int WS_EX_DLGMODALFRAME = 0x00000001;
 
+    internal const uint ABM_GETSTATE = 0x00000004;
     internal const uint ABM_GETTASKBARPOS = 0x00000005;
+    internal const uint ABS_AUTOHIDE = 0x00000001;
     internal const uint ABE_LEFT = 0;
     internal const uint ABE_TOP = 1;
     internal const uint ABE_RIGHT = 2;
@@ -34,8 +36,24 @@ internal static partial class NativeMethods
     [LibraryImport("user32.dll")]
     internal static partial int SetWindowLongW(IntPtr hWnd, int nIndex, int dwNewLong);
 
-    [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16)]
-    internal static partial IntPtr FindWindowW(in string lpClassName, in string? lpWindowName);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    internal static extern IntPtr FindWindowW(string lpClassName, string? lpWindowName);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetClassNameW(IntPtr hWnd, System.Text.StringBuilder className, int maxCount);
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    internal static extern IntPtr FindWindowExW(IntPtr parent, IntPtr childAfter, string className, string? windowName);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    internal static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
+    [DllImport("dwmapi.dll", PreserveSig = true)]
+    internal static extern int DwmGetWindowAttribute(IntPtr hwnd, uint dwAttribute, out RECT pvAttribute, int cbAttribute);
+
+    internal const uint DWMWA_EXTENDED_FRAME_BOUNDS = 9;
 
     [LibraryImport("User32.dll")]
     internal static partial IntPtr MonitorFromWindow(IntPtr hwnd, int dwFlags);

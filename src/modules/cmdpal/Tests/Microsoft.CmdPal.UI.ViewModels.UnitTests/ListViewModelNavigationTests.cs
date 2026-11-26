@@ -1520,6 +1520,85 @@ public sealed partial class ListViewModelNavigationTests
         void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => contexts.Add(e.Context);
     }
 
+    [DataTestMethod]
+    [DataRow(false, false, false)]
+    [DataRow(true, false, true)]
+    [DataRow(false, true, true)]
+    public async Task ContentAvailabilityReflectsItemsAndEmptyState(
+        bool hasItems,
+        bool hasEmptyContent,
+        bool expectedHasContent)
+    {
+        var scheduler = new QueuedTaskScheduler();
+        IListItem[] items = hasItems ? [CreateItem("Item")] : [];
+        var page = new StaticPage(items);
+        if (hasEmptyContent)
+        {
+            page.EmptyContent = new CommandItem(title: "No items");
+        }
+
+        var viewModel = CreateViewModel(page, scheduler);
+
+        try
+        {
+            Assert.IsTrue(viewModel.HasContent, "A page that has not finished initializing has a loading body to show.");
+            Assert.IsTrue(await viewModel.InitializeAsync());
+            scheduler.Drain();
+            Assert.AreEqual(expectedHasContent, viewModel.HasContent);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task EmptyPageRetainsItsActionWhenSelectionIsClearedOrRestored(bool resume)
+    {
+        const string actionName = "Run action";
+        var scheduler = new QueuedTaskScheduler();
+        var action = new AnonymousCommand(() => CommandResult.KeepOpen()) { Name = actionName };
+        var page = new StaticPage([]) { EmptyContent = new CommandItem(action) };
+        var viewModel = CreateViewModel(page, scheduler);
+        ICommandBarContext? context = null;
+        viewModel.CommandBarContextChanged += (_, args) => context = args.Context;
+
+        try
+        {
+            Assert.IsTrue(await viewModel.InitializeAsync());
+            scheduler.Drain();
+            Assert.IsTrue(viewModel.ShowEmptyContent);
+            Assert.AreSame(viewModel.EmptyContent, context);
+
+            if (resume)
+            {
+                viewModel.SuspendForNavigation();
+                await viewModel.ResumeAfterNavigation();
+            }
+            else
+            {
+                viewModel.UpdateSelectedItemCommand.Execute(null);
+            }
+
+            scheduler.Drain();
+            Assert.AreSame(viewModel.EmptyContent, context);
+            Assert.IsNotNull(context);
+            Assert.AreSame(action, context.PrimaryCommand!.Command.Model.Unsafe);
+            Assert.AreEqual(actionName, context.PrimaryCommand.Name);
+            Assert.IsTrue(context.PrimaryCommand.ShouldBeVisible);
+        }
+        finally
+        {
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+    }
+
     private static ListPageWorkState GetWorkState(ListViewModel viewModel) =>
         GetPrivateField<ListPageWorkState>(viewModel, "_workState");
 

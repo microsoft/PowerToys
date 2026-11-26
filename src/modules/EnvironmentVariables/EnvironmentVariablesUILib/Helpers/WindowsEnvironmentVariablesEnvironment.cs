@@ -11,7 +11,7 @@ using Microsoft.Win32;
 
 namespace EnvironmentVariablesUILib.Helpers
 {
-    internal sealed class WindowsEnvironmentVariablesEnvironment : IEnvironmentVariablesEnvironment
+    internal sealed partial class WindowsEnvironmentVariablesEnvironment : IEnvironmentVariablesEnvironment
     {
         internal static WindowsEnvironmentVariablesEnvironment Instance { get; } = new();
 
@@ -43,7 +43,7 @@ namespace EnvironmentVariablesUILib.Helpers
             }
         }
 
-        private sealed class RegistryKeyHandle : IEnvironmentVariablesRegistryKey
+        private sealed partial class RegistryKeyHandle : IEnvironmentVariablesRegistryKey
         {
             private readonly RegistryKey key;
 

@@ -133,7 +133,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             return additions.ToArray();
         }
 
-        internal static string? MoveUp(Variable draft, Variable.ValuesListItem selected)
+        internal static string? MoveUp(Variable draft, ValuesListItem selected)
         {
             if (selected == null)
             {
@@ -149,7 +149,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             return string.Join(";", draft.ValuesList?.Select(x => x.Text).ToArray());
         }
 
-        internal static string? MoveDown(Variable draft, Variable.ValuesListItem selected)
+        internal static string? MoveDown(Variable draft, ValuesListItem selected)
         {
             if (selected == null)
             {
@@ -165,7 +165,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             return string.Join(";", draft.ValuesList?.Select(x => x.Text).ToArray());
         }
 
-        internal static string? DeleteEntry(Variable draft, Variable.ValuesListItem selected)
+        internal static string? DeleteEntry(Variable draft, ValuesListItem selected)
         {
             if (selected == null)
             {
@@ -176,7 +176,7 @@ namespace EnvironmentVariablesUILib.ViewModels
             return string.Join(";", draft.ValuesList?.Select(x => x.Text).ToArray());
         }
 
-        internal static string? InsertBefore(Variable draft, Variable.ValuesListItem selected)
+        internal static string? InsertBefore(Variable draft, ValuesListItem selected)
         {
             if (selected == null)
             {
@@ -184,11 +184,11 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
 
             var index = draft.ValuesList.IndexOf(selected);
-            draft.ValuesList.Insert(index, new Variable.ValuesListItem { Text = string.Empty });
+            draft.ValuesList.Insert(index, new ValuesListItem { Text = string.Empty });
             return string.Join(";", draft.ValuesList?.Select(x => x.Text).ToArray());
         }
 
-        internal static string? InsertAfter(Variable draft, Variable.ValuesListItem selected)
+        internal static string? InsertAfter(Variable draft, ValuesListItem selected)
         {
             if (selected == null)
             {
@@ -196,11 +196,11 @@ namespace EnvironmentVariablesUILib.ViewModels
             }
 
             var index = draft.ValuesList.IndexOf(selected);
-            draft.ValuesList.Insert(index + 1, new Variable.ValuesListItem { Text = string.Empty });
+            draft.ValuesList.Insert(index + 1, new ValuesListItem { Text = string.Empty });
             return string.Join(";", draft.ValuesList?.Select(x => x.Text).ToArray());
         }
 
-        internal static string? CommitEntryText(Variable draft, Variable.ValuesListItem selected, string text)
+        internal static string? CommitEntryText(Variable draft, ValuesListItem selected, string text)
         {
             if (selected == null || selected.Text == text)
             {

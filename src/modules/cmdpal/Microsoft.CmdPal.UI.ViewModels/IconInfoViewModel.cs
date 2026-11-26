@@ -26,6 +26,15 @@ public partial class IconInfoViewModel : ObservableObject, IIconInfo
 
     public bool HasIcon(bool light) => IconForTheme(light).HasIcon;
 
+    /// <summary>
+    /// Gets a value indicating whether the icon has an image for either theme.
+    /// </summary>
+    public bool HasAnyIcon => Light.HasIcon || Dark.HasIcon;
+
+    /// <summary>
+    /// Gets a value indicating whether the extension provided an icon object. It can still be empty,
+    /// as toolkit commands without an icon return one, so use <see cref="HasAnyIcon"/> to check for an image.
+    /// </summary>
     public bool IsSet => _model.Unsafe is not null;
 
     IIconData? IIconInfo.Dark => Dark;

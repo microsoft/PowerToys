@@ -368,7 +368,7 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonUp_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -382,7 +382,7 @@ namespace EnvironmentVariablesUILib
 
         private void ReorderButtonDown_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -397,7 +397,7 @@ namespace EnvironmentVariablesUILib
 
         private void RemoveListVariableButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = ((MenuFlyoutItem)sender).DataContext as Variable.ValuesListItem;
+            var listItem = ((MenuFlyoutItem)sender).DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -421,7 +421,7 @@ namespace EnvironmentVariablesUILib
 
         private void InsertListEntryBeforeButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            var listItem = (sender as MenuFlyoutItem)?.DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -438,7 +438,7 @@ namespace EnvironmentVariablesUILib
 
         private void InsertListEntryAfterButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as MenuFlyoutItem)?.DataContext as Variable.ValuesListItem;
+            var listItem = (sender as MenuFlyoutItem)?.DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;
@@ -455,7 +455,7 @@ namespace EnvironmentVariablesUILib
 
         private void EditVariableValuesListTextBox_LostFocus(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            var listItem = (sender as TextBox)?.DataContext as Variable.ValuesListItem;
+            var listItem = (sender as TextBox)?.DataContext as ValuesListItem;
             if (listItem == null)
             {
                 return;

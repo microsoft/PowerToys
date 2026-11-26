@@ -11,10 +11,11 @@ using EnvironmentVariablesUILib.Helpers;
 
 namespace EnvironmentVariablesUILib.Models
 {
+    [WinRT.GeneratedBindableCustomProperty]
     public partial class ProfileVariablesSet : VariablesSet
     {
         [ObservableProperty]
-        private bool _isEnabled;
+        public partial bool IsEnabled { get; set; }
 
         public ProfileVariablesSet()
             : base()

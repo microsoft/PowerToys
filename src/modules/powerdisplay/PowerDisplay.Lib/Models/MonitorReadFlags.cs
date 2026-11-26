@@ -17,5 +17,6 @@ namespace PowerDisplay.Common.Models
         InputSource = 1 << 4,
         PowerState = 1 << 5,
         Orientation = 1 << 6,
+        RefreshRate = 1 << 7,
     }
 }

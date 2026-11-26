@@ -11,7 +11,7 @@ Run it non-elevated, with a live desktop and the repository-pinned winappcli:
 
 ```powershell
 tools\build\build.cmd -Path src\modules\AltWindowCycle\Tests\AltWindowCycle.UITests -Platform x64 -Configuration Debug
-& .\x64\Debug\tests\AltWindowCycle.UITests\net10.0-windows10.0.26100.0\AltWindowCycle.UITests.exe --report-trx --results-directory .\TestResults\AltWindowCycle
+& .\x64\Debug\tests\AltWindowCycle.UITests\net11.0-windows10.0.26100.0\AltWindowCycle.UITests.exe --report-trx --results-directory .\TestResults\AltWindowCycle
 ```
 
 Build before running; use the local-VM skill to execute off the host. The same suite runs on Windows

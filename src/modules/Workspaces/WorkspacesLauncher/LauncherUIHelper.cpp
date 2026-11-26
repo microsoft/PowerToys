@@ -8,6 +8,13 @@
 
 namespace
 {
+    interop_auth::CallerPolicy LauncherUIPeer()
+    {
+        auto policy = IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncherUI.exe");
+        policy.expectedDirectory = (std::filesystem::path(policy.expectedDirectory) / L"WinUI3Apps").wstring();
+        return policy;
+    }
+
     json::JsonObject Message(const wchar_t* type)
     {
         json::JsonObject message;
@@ -21,11 +28,21 @@ LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcC
     m_operationId(std::move(operationId)),
     m_confirmationOnly(confirmationOnly),
     m_ipcHelper(IPCHelperStrings::LauncherUIPipeName + m_operationId, IPCHelperStrings::UIPipeName + m_operationId, ipcCallback,
-                m_operationId.empty() ? interop_auth::CallerPolicy{} : IPCHelper::ModulePeer(L"PowerToys.WorkspacesLauncherUI.exe"))
+                m_operationId.empty() ? interop_auth::CallerPolicy{} : LauncherUIPeer())
 {
 }
 
 LauncherUIHelper::~LauncherUIHelper()
+{
+    Close();
+}
+
+void LauncherUIHelper::SetCallback(std::function<void(const std::wstring&)> callback)
+{
+    m_ipcHelper.SetCallback(std::move(callback));
+}
+
+void LauncherUIHelper::Close()
 {
     if (m_process && WaitForSingleObject(m_process.get(), 1000) == WAIT_TIMEOUT)
     {
@@ -35,6 +52,8 @@ LauncherUIHelper::~LauncherUIHelper()
             Logger::error(L"Unable to stop the Workspaces UI process: {}", GetLastError());
         }
     }
+    m_ipcHelper.Stop();
+    m_process.reset();
 }
 
 bool LauncherUIHelper::LaunchUI(const std::function<bool()>& isCanceled)
@@ -48,7 +67,7 @@ bool LauncherUIHelper::LaunchUI(const std::function<bool()>& isCanceled)
 
     TCHAR buffer[MAX_PATH] = { 0 };
     GetModuleFileName(NULL, buffer, MAX_PATH);
-    const auto path = std::filesystem::path(buffer).parent_path() / L"PowerToys.WorkspacesLauncherUI.exe";
+    const auto path = std::filesystem::path(buffer).parent_path() / L"WinUI3Apps" / L"PowerToys.WorkspacesLauncherUI.exe";
     const auto arguments = m_operationId.empty() ? L"" :
         std::wstring(m_confirmationOnly ? L"--confirmation-only " : L"--launch-ui ") + m_operationId + L" " + std::to_wstring(GetCurrentProcessId());
     auto result = AppLauncher::LaunchApp(path.wstring(), arguments, false);
@@ -96,6 +115,11 @@ void LauncherUIHelper::DismissApproval(const std::wstring& requestId) const
         message.SetNamedValue(L"requestId", json::value(requestId));
         m_ipcHelper.send(message.Stringify().c_str());
     }
+}
+
+void LauncherUIHelper::AcknowledgeCancellation() const
+{
+    m_ipcHelper.send(Message(L"cancel-accepted").Stringify().c_str());
 }
 
 void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const

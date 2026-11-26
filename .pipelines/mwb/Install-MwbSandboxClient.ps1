@@ -327,7 +327,8 @@ finally {
         $report.DispatchError = Get-MwbDiagnosticError $_ 'SetupDispatchCleanupFailed'
     }
     try {
-        $after = Get-MwbSandboxPrerequisiteReport $Platform
+        $hasBaseline = Test-Path -LiteralPath (Join-Path $published 'image-servicing-job-start.json') -PathType Leaf
+        $after = Get-MwbSandboxPrerequisiteReport $Platform -UseJobInventory:$hasBaseline
         $after | ConvertTo-Json -Depth 10 |
             Set-Content -LiteralPath (Join-Path $published 'client-setup-admin-after.json') -Encoding utf8
     }

@@ -158,7 +158,7 @@ occlusion because it never touches coordinates.
 
 **Integrity boundaries can make foreground activation impossible.** `AttachThreadInput` does not
 override UIPI. A visible elevated helper console can permanently block a non-elevated Explorer or
-module window. Pipeline helpers must start hidden (the shared WinAppDriver uses `-WindowStyle Hidden`).
+module window. Pipeline helpers must start hidden (for example, use `-WindowStyle Hidden`).
 Log the foreground process, title, and elevation before adding more retries. Match the test host and
 runner integrity where possible; modules configured to run non-elevated still require their own
 foreground handoff.

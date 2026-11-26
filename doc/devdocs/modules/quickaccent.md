@@ -130,7 +130,7 @@ tools\build\build.cmd -Path src\modules\poweraccent\PowerAccent.UITests -Platfor
 Run the produced Microsoft Testing Platform executable with the `PowerAccent` category:
 
 ```powershell
-x64\Debug\tests\PowerAccent.UITests\net10.0-windows10.0.26100.0\PowerAccent.UITests.exe `
+x64\Debug\tests\PowerAccent.UITests\net11.0-windows10.0.26100.0\PowerAccent.UITests.exe `
   --filter "TestCategory=PowerAccent"
 ```
 

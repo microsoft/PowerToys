@@ -2,8 +2,6 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Collections.Generic;
-using System.Linq;
 using CommunityToolkit.Mvvm.Messaging;
 using ManagedCommon;
 using Microsoft.CmdPal.Ext.Apps;
@@ -61,6 +59,24 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         var succeeded = commandItem.PageContext.TryGetTarget(out page);
         if (!succeeded || page is null)
         {
+            return results;
+        }
+
+        // If this item is already on the tray menu, then we want to add a
+        // context menu entry to _unpin_ it specifically from the tray menu.
+        if (page is TrayPaletteItemPageContext trayContext)
+        {
+            // Use the saved identity, including generated top-level IDs and packaged-app aliases.
+            var pin = trayContext.Pin;
+            List<IContextItem> trayCommands = [
+                new Separator(),
+                new PinToContextItem(
+                    new PinToCommand(pin.CommandId, pin.ProviderId, false, PinLocation.Tray, _settingsService, _topLevelCommandManager),
+                    commandItem),
+            ];
+            results.AddRange(DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(trayCommands.ToArray(), commandItem));
+
+            // we don't need any other commands if we're already on the tray menu
             return results;
         }
 
@@ -126,6 +142,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                 }
 
                 TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
+                AddPinToTrayCommand(itemId, providerId, moreCommands, commandItem);
             }
         }
 
@@ -144,6 +161,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
         if (moreCommands.Count > 0)
         {
+            GroupPinCommands(moreCommands);
             moreCommands.Insert(0, new Separator());
             var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
             results.AddRange(moreResults);
@@ -190,10 +208,12 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             TryAddPinToHomeCommand(itemId, providerId, commandItem, moreCommands);
 
             TryAddPinToDockCommand(itemId, providerId, moreCommands, commandItem);
+            AddPinToTrayCommand(itemId, providerId, moreCommands, commandItem);
         }
 
         if (moreCommands.Count > 0)
         {
+            GroupPinCommands(moreCommands);
             moreCommands.Insert(0, new Separator());
 
             // var moreResults = DefaultContextMenuFactory.Instance.UnsafeBuildAndInitMoreCommands(moreCommands.ToArray(), commandItem);
@@ -338,16 +358,55 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                bandSettings.ProviderId == providerId;
     }
 
+    private void AddPinToTrayCommand(string itemId, string providerId, List<IContextItem> items, CommandItemViewModel commandItem)
+    {
+        // Don't show the pin to tray icon if the tray menu isn't available.
+        if (_settingsService.Settings.TrayIconClickAction == TrayIconClickAction.OpenCommandPalette)
+        {
+            return;
+        }
+
+        var pinned = _settingsService.Settings.TrayPalette.Commands.Contains(new(providerId, itemId));
+        items.Add(new PinToContextItem(
+            new PinToCommand(itemId, providerId, !pinned, PinLocation.Tray, _settingsService, _topLevelCommandManager),
+            commandItem));
+    }
+
+    /// <summary>
+    /// Groups pin commands into a single menu item, with all "Pin to..."
+    /// commands grouped together underneath it. Unpin commands are left in the
+    /// main menu.
+    /// </summary>
+    private static void GroupPinCommands(List<IContextItem> items)
+    {
+        var pins = items.OfType<PinToContextItem>().Where(item => item.IsPin).ToArray();
+        if (pins.Length == 0)
+        {
+            return;
+        }
+
+        items.RemoveAll(item => item is PinToContextItem { IsPin: true });
+        items.Add(new CommandContextItem(new NoOpCommand())
+        {
+            Title = RS_.GetString("PinTo_Menu"),
+            Icon = Icons.PinIcon,
+            MoreCommands = pins,
+        });
+    }
+
     internal enum PinLocation
     {
         TopLevel,
         Dock,
+        Tray,
     }
 
     private sealed partial class PinToContextItem : CommandContextItem
     {
         private readonly PinToCommand _command;
         private readonly CommandItemViewModel _commandItem;
+
+        public bool IsPin => _command.IsPin;
 
         public PinToContextItem(PinToCommand command, CommandItemViewModel commandItem)
             : base(command)
@@ -434,13 +493,23 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
         private readonly PinLocation _pinLocation;
         private readonly CommandItemViewModel? _commandItemViewModel;
 
-        private bool IsPinToDock => _pinLocation == PinLocation.Dock;
+        public bool IsPin => _pin;
 
         public override IconInfo Icon => _pin ? Icons.PinIcon : Icons.UnpinIcon;
 
-        public override string Name => _pin ?
-            (IsPinToDock ? RS_.GetString("dock_pin_command_name") : RS_.GetString("top_level_pin_command_name")) :
-            (IsPinToDock ? RS_.GetString("dock_unpin_command_name") : RS_.GetString("top_level_unpin_command_name"));
+        public override string Name => _pin
+            ? RS_.GetString(_pinLocation switch
+            {
+                PinLocation.Dock => "PinTo_Dock",
+                PinLocation.Tray => "PinTo_Tray",
+                _ => "PinTo_Home",
+            })
+            : RS_.GetString(_pinLocation switch
+            {
+                PinLocation.Dock => "dock_unpin_command_name",
+                PinLocation.Tray => "TrayPalette_Unpin",
+                _ => "top_level_unpin_command_name",
+            });
 
         internal event EventHandler? PinStateChanged;
 
@@ -478,6 +547,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
                     case PinLocation.Dock:
                         PinToDock();
                         break;
+                    case PinLocation.Tray:
+                        _settingsService.UpdateSettings(s => s with { TrayPalette = s.TrayPalette.Pin(new(_providerId, _commandId)) });
+                        break;
                 }
             }
             else
@@ -490,6 +562,9 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
 
                     case PinLocation.Dock:
                         UnpinFromDock();
+                        break;
+                    case PinLocation.Tray:
+                        _settingsService.UpdateSettings(s => s with { TrayPalette = s.TrayPalette.Unpin(new(_providerId, _commandId)) });
                         break;
                 }
             }
@@ -516,7 +591,7 @@ internal sealed partial class CommandPaletteContextMenuFactory : IContextMenuFac
             var (title, subtitle, icon) = GetDockPreview();
             var dockSettings = _settingsService.Settings.DockSettings;
             var dockSide = dockSettings.Side;
-            IReadOnlyList<MonitorInfo>? monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
+            var monitors = GetDockEnabledMonitors(_monitorService, dockSettings);
             ShowPinToDockDialogMessage message = new(_providerId, _commandId, title, subtitle, icon, dockSide, monitors);
             WeakReferenceMessenger.Default.Send(message);
         }
