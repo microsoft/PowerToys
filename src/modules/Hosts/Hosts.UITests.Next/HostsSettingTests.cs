@@ -114,15 +114,11 @@ namespace Hosts.UITests
                 $"Hosts should own foreground before clicking Quit. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
             quitButton.Click(msPostAction: 0);
 
-            // Quit calls Environment.Exit(0); Win10 can retain a stale HWND after process exit.
-            var quitResult = WaitHelper.WaitForStable(
-                () => hostsProcess.HasExited,
-                exited => exited,
-                15_000,
-                requiredConsecutiveMatches: 3);
+            // HasExited can observe the exit code before the process handle is signaled.
+            // The runner uses that signal to decide whether to start a new Hosts process.
             Assert.IsTrue(
-                quitResult.Succeeded,
-                $"Hosts File Editor should exit after clicking Quit in the Warning Dialog; windows={string.Join(", ", WindowsFinder.ListByApp("PowerToys.Hosts"))}.");
+                hostsProcess.WaitForExit(15_000),
+                $"Hosts process {hostsProcess.Id} should signal exit after clicking Quit in the Warning Dialog.");
             Assert.AreEqual(0, hostsProcess.ExitCode, "The startup Quit command should exit cleanly.");
             TestContext.WriteLine("Startup Quit closed the editor.");
 
@@ -532,34 +528,11 @@ namespace Hosts.UITests
                           !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)));
             Assert.IsNotNull(settings, "PowerToys Settings did not expose a visible main window.");
             var launchCard = settings.FindExact<Button>("Open Hosts File Editor");
-
-            Assert.IsTrue(launchCard.Width > 0 && launchCard.Height > 0, "The Open Hosts File Editor card must have visible bounds.");
-            var window = new IntPtr(settings.WindowHandle);
-            var point = (X: launchCard.X + (launchCard.Width / 2), Y: launchCard.Y + (launchCard.Height / 2));
-            if (!WindowControl.IsPointOwnedByWindow(window, point.X, point.Y))
-            {
-                // Win10 can leave the exited Hosts window covering Settings. Request activation on
-                // the Settings thread without attaching to the foreground window's input queue.
-                var previousForeground = WindowControl.GetForegroundWindowInfo();
-                var showRequested = WindowHelper.TryRequestShow(window);
-                TestContext.WriteLine($"Settings show requested: {showRequested}; previous foreground: {previousForeground}.");
-            }
-
-            var targetReady = WaitHelper.WaitForStable(
-                () => WindowControl.IsPointOwnedByWindow(window, point.X, point.Y),
-                owned => owned,
-                timeoutMS: 15_000,
-                requiredConsecutiveMatches: 3);
-            Assert.IsTrue(targetReady.Succeeded, $"Settings window {window} should own the Hosts launch point {point}. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
-            MouseHelper.MoveTo(point.X, point.Y);
-            var cursorReady = WaitHelper.WaitForStable(
-                MouseHelper.GetMousePosition,
-                position => position == point && WindowControl.IsPointOwnedByWindow(window, point.X, point.Y),
-                timeoutMS: 1_000,
-                requiredConsecutiveMatches: 2);
-            Assert.IsTrue(cursorReady.Succeeded, $"The pointer did not settle on the Hosts launch point {point} in Settings window {window}.");
+            Assert.IsTrue(
+                WindowControl.WaitForForeground(new IntPtr(settings.WindowHandle), timeoutMS: 15_000, requiredConsecutiveMatches: 3),
+                $"Settings window {settings.WindowHandle} should own foreground before opening Hosts. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
             TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Clicking Open Hosts File Editor in Settings and waiting for the editor window.");
-            MouseHelper.LeftClick();
+            launchCard.Click(msPostAction: 0);
             var hostsSession = Session.Attach(PowerToysModule.Hosts);
             WindowHelper.MaximizeWindow(new IntPtr(hostsSession.WindowHandle));
             Thread.Sleep(200);
