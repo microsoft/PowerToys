@@ -16,6 +16,13 @@ steps:
       & nuget.exe restore -configFile .pipelines\release-nuget.config -PackagesDirectory . .pipelines\packages.config
       Move-Item -Force 'Microsoft.PowerToys.Telemetry.*\build\include\TraceLoggingDefines.h' 'src\common\Telemetry\TraceLoggingDefines.h'
       & nuget.exe restore 'src\modules\FileLocksmith\FileLocksmithLib\packages.config' -ConfigFile .pipelines\release-nuget.config -PackagesDirectory '$(Build.SourcesDirectory)\packages'
+      # SettingsAPI still imports the legacy packages-directory copy despite its PackageReference.
+      [xml] $versions = Get-Content -LiteralPath 'Directory.Packages.props' -Raw
+      $wil = $versions.SelectSingleNode("//PackageVersion[@Include='Microsoft.Windows.ImplementationLibrary']")
+      if (-not $wil.Version) {
+        throw 'Missing central version for Windows Implementation Library.'
+      }
+      & nuget.exe install Microsoft.Windows.ImplementationLibrary -Version $wil.Version -ConfigFile .pipelines\release-nuget.config -OutputDirectory '$(Build.SourcesDirectory)\packages' -NonInteractive
     displayName: Prepare native build dependencies
 
   - task: VSBuild@1
