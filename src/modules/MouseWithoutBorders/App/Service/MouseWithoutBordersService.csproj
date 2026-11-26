@@ -61,8 +61,8 @@
     <None Remove="Service\**" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Use the Desktop WindowsBase.dll in the shared output. -->
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
+    <!-- Align runtime assemblies with other apps in the shared output directory. -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
   </ItemGroup>
   <ItemGroup>
     <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with Advanced Paste version (from the Semantic Kernel dependency). -->

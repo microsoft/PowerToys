@@ -61,8 +61,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Use the Desktop WindowsBase.dll in the shared WinUI3Apps output. -->
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App.WPF" />
+    <!-- Align runtime assemblies with other apps in the shared WinUI3Apps output directory. -->
+    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
   </ItemGroup>
 
   <ItemGroup>
