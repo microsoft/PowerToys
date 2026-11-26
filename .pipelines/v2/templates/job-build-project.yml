@@ -138,6 +138,8 @@ jobs:
           ${{ config }}_${{ platform }}:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
+            ${{ if eq(parameters.codeSign, true) }}:
+              CoreSigningPendingAnalysisWaitMinutes: ${{ iif(eq(platform, 'x64'), '10', '5') }}
             ${{ if eq(platform, 'x86') }}:
               OutputBuildPlatform: Win32
             ${{ elseif eq(platform, 'Any CPU') }}:
@@ -682,6 +684,7 @@ jobs:
           batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.binaries.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
           MaxConcurrency: '20'
+          PendingAnalysisWaitTimeoutMinutes: '$(CoreSigningPendingAnalysisWaitMinutes)'
 
     - template: steps-esrp-signing.yml
       parameters:

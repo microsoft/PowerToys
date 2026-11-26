@@ -45,7 +45,7 @@ parameters:
   - name: skipArm64MsiIceValidation
     displayName: "Skip ARM64 MSI ICE validation (manual private validation only)"
     type: boolean
-    default: false
+    default: true
 
   - name: useVSPreview
     type: boolean
@@ -143,7 +143,7 @@ extends:
                     if ($publishSymbolsToPublic -and -not $metadata.AllowPublicSymbols) {
                       throw "Public symbols are only supported for manually queued stable-branch releases"
                     }
-                    if ($skipArm64MsiIceValidation -and $env:BUILDPLATFORM -eq 'arm64') {
+                    if ($metadata.SkipArm64MsiIceValidation -and $env:BUILDPLATFORM -eq 'arm64') {
                       Write-Warning "Skipping WiX ICE validation for the ARM64 private validation build."
                       Write-Host '##vso[task.setvariable variable=SuppressVNextMsiValidation;isReadOnly=true]true'
                     }

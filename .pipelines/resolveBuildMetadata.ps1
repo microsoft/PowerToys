@@ -374,11 +374,6 @@ else {
     $shouldPublishPreview = $false
 }
 
-if ($SkipArm64MsiIceValidation -and
-    ($intent -ne "private-validation" -or $BuildReason -ne "Manual" -or $SourceBranch -notlike "refs/heads/*")) {
-    throw "Skipping ARM64 MSI ICE validation requires a manual private-validation branch build"
-}
-
 Test-VersionParts -Parts ($version -split "\.")
 
 Write-Host "Resolved build intent: $intent"
@@ -391,4 +386,8 @@ Write-Host "Resolved version: $version"
     Version = $version
     AllowPublicSymbols = $allowPublicSymbols
     ShouldPublishPreview = $shouldPublishPreview
+    SkipArm64MsiIceValidation = $SkipArm64MsiIceValidation -and
+        $intent -eq "private-validation" -and
+        $BuildReason -eq "Manual" -and
+        $SourceBranch -like "refs/heads/*"
 }
