@@ -845,7 +845,12 @@ void Highlighter::StartDrawing()
     if (GetCursorPos(&cursorPosition))
     {
         m_latestMousePosition = cursorPosition;
-        AddDrawingPoint(MouseButton::None, cursorPosition);
+
+        // Ripple mode never moves the legacy idle point, so adding one leaves a stuck circle at the activation position.
+        if (!m_rippleMode)
+        {
+            AddDrawingPoint(MouseButton::None, cursorPosition);
+        }
     }
 
     AcquireSRWLockExclusive(&m_mouseEventQueueLock);
