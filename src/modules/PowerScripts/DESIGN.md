@@ -1,6 +1,6 @@
 # PowerScripts design
 
-> Prototype. This describes the current contract; historical security alternatives
+> This describes the current contract; historical security alternatives
 > remain in the proposal documents linked from [security design](SECURITY-DESIGN.md).
 
 ## Architecture and ownership
@@ -51,7 +51,8 @@ Options are string, integer, boolean, string enum, or `format: "file-path"`.
 Schemas enforce defaults, presence, bounds, patterns, and file counts/restrictions.
 Omitting `maxItems` is unlimited; zero is an actual zero bound.
 File extension hints live on path strings as `x-powerscript.extensions`.
-Media and rich documents remain path strings, not special schema primitive types.
+Inline image/audio use bounded MIME/base64 objects or declared arrays.
+Rich documents, video and large media remain file paths; these are not new schema primitive types.
 
 Root `x-powerscript` contains only discovery, provenance, icon, and capability hints.
 There are no runtime, function, primary I/O, file-filter, or isolation settings there.
@@ -60,7 +61,7 @@ There are no runtime, function, primary I/O, file-filter, or isolation settings 
 ## Runtime contract
 
 Python runs the script directly, starting at top-level statements. `json.load(sys.stdin)`
-reads `text` or `files` and typed `parameters`; no callable entry or import runner exists.
+reads the declared primary input and typed `parameters`; no callable entry or import runner exists.
 PowerShell receives native `param(...)` bindings through a schema-shaped JSON request
 and native splatting. This preserves booleans, empty strings, and path arrays in
 both Windows PowerShell and PowerShell 7.
@@ -116,8 +117,13 @@ request validation remain per invocation. Catalogue/image/policy/runtime changes
 the container; execution failure invalidates it, and stale handles are recovered before
 user code starts. No execution is automatically retried after admission.
 
-The former standalone Explorer handler is removed; future file integration belongs
-to File Explorer Add-ons.
+The former standalone Explorer handler is removed. The File Explorer Add-ons adapter in
+`src\modules\previewpane` owns shell discovery, parameter prompting and exported-result presentation.
+
+Runner registers PowerScripts through its lightweight native module interface, without starting a
+persistent execution Host. General settings own `enabled.PowerScripts`, default off. The legacy
+module-config flag is used only before a general preference is recorded; it never overrides one.
+The Host rechecks effective enablement and policies for subsequent runs.
 
 ## Open decisions
 

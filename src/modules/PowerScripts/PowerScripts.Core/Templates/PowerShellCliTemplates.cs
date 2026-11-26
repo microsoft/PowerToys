@@ -9,40 +9,6 @@ using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Templates;
 
-public sealed record PowerShellCliTemplate(
-    string Id,
-    string Name,
-    string Description,
-    string Input,
-    string Output,
-    IReadOnlyList<ScriptTemplateParameter> Parameters,
-    [property: JsonIgnore] string Executable,
-    [property: JsonIgnore] string Arguments,
-    ScriptTemplateParameter? InputArgument = null,
-    string? HostExecutionNotice = null,
-    [property: JsonIgnore] string? StandardInput = null,
-    [property: JsonIgnore] string? OutputScript = null)
-{
-    public string ModuleId { get; init; } = string.Empty;
-
-    public bool SupportsFileBatch { get; init; }
-
-    public string Group { get; init; } = string.Empty;
-
-    public string IconName { get; init; } = "PowerToys";
-
-    internal string CommandSynopsis { get; init; } = string.Empty;
-
-    internal bool WritesState { get; init; }
-
-    internal bool UsesNetwork { get; init; }
-}
-
-[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public sealed record PowerShellCliBinding(
-    [property: JsonPropertyName("source")] string Source,
-    [property: JsonPropertyName("value"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] JsonElement Value = default);
-
 /// <summary>Editable PowerShell content, separate from the controlled data-only operation provider.</summary>
 public static partial class PowerShellCliTemplates
 {
@@ -363,5 +329,4 @@ public static partial class PowerShellCliTemplates
 
         return directory.FullName;
     }
-
 }

@@ -20,7 +20,8 @@ public class CliActionExecutionTests
     {
         using var package = new Package();
         var input = package.CreateInput();
-        var manifest = package.Write(Action(
+        var manifest = package.Write(
+            Action(
             ("path", Constant(input)),
             ("json", Constant(false))));
         var settings = AcceptedDirectSettings();
@@ -29,7 +30,12 @@ public class CliActionExecutionTests
         MxcSettings? launchSettings = null;
         var timeout = 0;
 
-        var result = CliActionProvider.Run(manifest, null, null, settings, package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            settings,
+            package.Installation,
             (start, context, timeoutMs, effectiveSettings) =>
             {
                 launched = start;
@@ -72,7 +78,12 @@ public class CliActionExecutionTests
         var originalPolicies = settings.DisabledPolicies.ToArray();
         var launched = false;
 
-        var result = CliActionProvider.Run(manifest, null, null, settings, package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            settings,
+            package.Installation,
             (start, context, timeout, effectiveSettings) =>
             {
                 launched = true;
@@ -98,7 +109,12 @@ public class CliActionExecutionTests
         var settings = new MxcSettings { Enabled = true };
         var launched = false;
 
-        var result = CliActionProvider.Run(manifest, null, null, settings, package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            settings,
+            package.Installation,
             (start, context, timeout, effectiveSettings) =>
             {
                 launched = true;
@@ -129,7 +145,12 @@ public class CliActionExecutionTests
         MxcSettings? launchedSettings = null;
         var launches = 0;
 
-        var result = CliActionProvider.Run(manifest, null, null, settings, package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            settings,
+            package.Installation,
             (start, context, timeout, effectiveSettings) =>
             {
                 launchedSettings = effectiveSettings;
@@ -142,7 +163,7 @@ public class CliActionExecutionTests
         Assert.AreSame(settings, launchedSettings);
         Assert.IsTrue(settings.Enabled);
         Assert.IsTrue(settings.RiskAccepted);
-        CollectionAssert.AreEqual(new[] { MxcPolicies.Ui }, settings.DisabledPolicies);
+        CollectionAssert.AreEqual((string[])[MxcPolicies.Ui], settings.DisabledPolicies);
     }
 
     [TestMethod]
@@ -157,12 +178,10 @@ public class CliActionExecutionTests
         Assert.IsNull(CliActionProvider.GetUnavailableReason(command, AcceptedDirectSettings()));
 
         var desktop = BuiltinCliCatalog.Load().Get("fancyzones.get-layouts")!;
-        Assert.IsNotNull(CliActionProvider.GetUnavailableReason(desktop, new MxcSettings
-        {
-            Enabled = true,
-            RiskAccepted = false,
-            DisabledPolicies = new List<string> { MxcPolicies.Ui },
-        }));
+        Assert.IsNotNull(
+            CliActionProvider.GetUnavailableReason(
+            desktop,
+            new MxcSettings { Enabled = true, RiskAccepted = false, DisabledPolicies = new List<string> { MxcPolicies.Ui }, }));
         Assert.IsNull(CliActionProvider.GetUnavailableReason(desktop, AcceptedDirectSettings()));
     }
 
@@ -186,9 +205,11 @@ public class CliActionExecutionTests
             },
             ["required"] = new JsonArray("file"),
         };
-        var manifest = package.Write(Action(
-            ("path", new CliActionBinding { Parameter = "file" }),
-            ("json", new CliActionBinding { Parameter = "returnJson" })), descriptor);
+        var manifest = package.Write(
+            Action(
+                ("path", new CliActionBinding { Parameter = "file" }),
+                ("json", new CliActionBinding { Parameter = "returnJson" })),
+            descriptor);
         var supplied = new Dictionary<string, string?> { ["file"] = input };
         if (suppliedJson is not null)
         {
@@ -196,7 +217,12 @@ public class CliActionExecutionTests
         }
 
         string[]? arguments = null;
-        var result = CliActionProvider.Run(manifest, null, supplied, AcceptedDirectSettings(), package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            supplied,
+            AcceptedDirectSettings(),
+            package.Installation,
             (start, context, timeout, settings) =>
             {
                 arguments = start.ArgumentList.ToArray();
@@ -215,7 +241,12 @@ public class CliActionExecutionTests
         Assert.AreEqual(0, CliActionProvider.Validate(manifest).Count);
         var launched = false;
 
-        var result = CliActionProvider.Run(manifest, null, null, AcceptedDirectSettings(), package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            AcceptedDirectSettings(),
+            package.Installation,
             (start, context, timeout, settings) =>
             {
                 launched = true;
@@ -236,7 +267,12 @@ public class CliActionExecutionTests
         File.WriteAllText(Path.Combine(package.Root, "FileLocksmithCLI.exe"), string.Empty);
         var launched = false;
 
-        var result = CliActionProvider.Run(manifest, null, null, AcceptedDirectSettings(), package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            AcceptedDirectSettings(),
+            package.Installation,
             (start, context, timeout, settings) =>
             {
                 launched = true;
@@ -257,7 +293,12 @@ public class CliActionExecutionTests
         manifest.Execute.Command = new List<string> { "cmd.exe", "/c", "echo other" };
         var launched = false;
 
-        var result = CliActionProvider.Run(manifest, null, null, AcceptedDirectSettings(), package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            AcceptedDirectSettings(),
+            package.Installation,
             (start, context, timeout, settings) =>
             {
                 launched = true;
@@ -277,11 +318,16 @@ public class CliActionExecutionTests
         var manifest = package.Write(action, descriptor);
         var launches = 0;
 
-        var result = CliActionProvider.Run(manifest, null, null, AcceptedDirectSettings(), package.Installation,
+        var result = CliActionProvider.Run(
+            manifest,
+            null,
+            null,
+            AcceptedDirectSettings(),
+            package.Installation,
             (start, context, timeout, settings) =>
             {
                 launches++;
-                CollectionAssert.AreEqual(new[] { "get-layouts" }, start.ArgumentList.ToArray());
+                CollectionAssert.AreEqual((string[])["get-layouts"], start.ArgumentList.ToArray());
                 return new ProcessRunResult(125, "diagnostic output", "sandbox refused");
             });
 
@@ -307,13 +353,11 @@ public class CliActionExecutionTests
             },
         };
         const string literal = "Unicode 中文 %PATH% \"quoted\" & ;\nnext line";
-        var start = CliActionProvider.CreateStartInfo(definition, "C:\\installed\\known.exe", "C:\\scripts", new Dictionary<string, string?>
-        {
-            ["name"] = "@snapshot",
-            ["empty"] = string.Empty,
-            ["literal"] = literal,
-            ["flag"] = "false",
-        });
+        var start = CliActionProvider.CreateStartInfo(
+            definition,
+            "C:\\installed\\known.exe",
+            "C:\\scripts",
+            new Dictionary<string, string?> { ["name"] = "@snapshot", ["empty"] = string.Empty, ["literal"] = literal, ["flag"] = "false", });
 
         Assert.IsFalse(start.UseShellExecute);
         CollectionAssert.AreEqual(new[] { "fixed subcommand", "--filename=@snapshot", "--empty", string.Empty, literal }, start.ArgumentList.ToArray());
@@ -348,7 +392,8 @@ public class CliActionExecutionTests
         return descriptor;
     }
 
-    private static CliAction Action(params (string Name, CliActionBinding Binding)[] bindings) => new()
+    private static CliAction Action(params (string Name, CliActionBinding Binding)[] bindings) => new(
+)
     {
         SchemaVersion = 1,
         CommandId = "filelocksmith.query",

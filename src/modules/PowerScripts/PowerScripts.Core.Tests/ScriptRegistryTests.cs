@@ -13,6 +13,12 @@ namespace PowerScripts.Core.Tests;
 [TestClass]
 public class ScriptRegistryTests
 {
+    private const string ScriptRegistryTestsScript = """
+            # @powerscript.id legacy
+            # @powerscript.name Legacy
+            Write-Output 'not registered'
+            """;
+
     private string _root = string.Empty;
 
     [TestInitialize]
@@ -31,8 +37,14 @@ public class ScriptRegistryTests
         }
     }
 
-    private void WriteScript(string fileName, object? metadata = null, string? id = null, string? title = null,
-        string[]? extensions = null, int minimum = 1, int? maximum = null)
+    private void WriteScript(
+        string fileName,
+        object? metadata = null,
+        string? id = null,
+        string? title = null,
+        string[]? extensions = null,
+        int minimum = 1,
+        int? maximum = null)
     {
         var entry = Path.Combine(_root, fileName + ".ps1");
         File.WriteAllText(entry, "# noop\n");
@@ -74,8 +86,9 @@ public class ScriptRegistryTests
     public void Load_ResolvesPackageRelativeIcon()
     {
         Directory.CreateDirectory(Path.Combine(_root, "assets"));
-        File.WriteAllBytes(Path.Combine(_root, "assets", "script icon.ico"), Convert.FromBase64String(
-            "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
+        File.WriteAllBytes(
+            Path.Combine(_root, "assets", "script icon.ico"),
+            Convert.FromBase64String("AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
         WriteScript("icon", new { icon = @"assets\script icon.ico" });
 
         var registry = new ScriptRegistry(_root);
@@ -157,59 +170,55 @@ public class ScriptRegistryTests
     [TestMethod]
     public void FileScriptsFor_Matches_Extension_And_Wildcard()
     {
-        WriteScript("png-only", extensions: new[] { ".png" });
-        WriteScript("any-file", extensions: new[] { "*" });
+        WriteScript("png-only", extensions: (string[])[".png"]);
+        WriteScript("any-file", extensions: (string[])["*"]);
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
 
         var forPng = registry.FileScriptsFor(".PNG").Select(s => s.Id).OrderBy(x => x).ToList();
-        CollectionAssert.AreEqual(new[] { "any-file", "png-only" }, forPng);
+        CollectionAssert.AreEqual((string[])["any-file", "png-only"], forPng);
 
         var forTxt = registry.FileScriptsFor(".txt").Select(s => s.Id).ToList();
-        CollectionAssert.AreEqual(new[] { "any-file" }, forTxt);
+        CollectionAssert.AreEqual((string[])["any-file"], forTxt);
     }
 
     [TestMethod]
     public void FileScriptsForSelection_Respects_MinMax_And_MixedExtensions()
     {
-        WriteScript("single-png", extensions: new[] { ".png" }, maximum: 1);
+        WriteScript("single-png", extensions: (string[])[".png"], maximum: 1);
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
 
         // Two files exceeds maxFiles=1.
-        Assert.AreEqual(0, registry.FileScriptsForSelection(new[] { "a.png", "b.png" }).Count());
+        Assert.AreEqual(0, registry.FileScriptsForSelection((string[])["a.png", "b.png"]).Count());
 
         // One file is fine.
-        Assert.AreEqual(1, registry.FileScriptsForSelection(new[] { "a.png" }).Count());
+        Assert.AreEqual(1, registry.FileScriptsForSelection((string[])["a.png"]).Count());
 
         // Mixed extensions: not all match .png.
-        Assert.AreEqual(0, registry.FileScriptsForSelection(new[] { "a.txt" }).Count());
+        Assert.AreEqual(0, registry.FileScriptsForSelection((string[])["a.txt"]).Count());
     }
 
     [TestMethod]
     public void SystemScripts_ExcludesFileScripts()
     {
         WriteScript("sys");
-        WriteScript("file", extensions: new[] { "*" });
+        WriteScript("file", extensions: (string[])["*"]);
 
         var registry = new ScriptRegistry(_root);
         registry.Load();
 
         // "System" is now derived: any script whose resolved input shape is not files.
         var system = registry.SystemScripts.Select(s => s.Id).ToList();
-        CollectionAssert.AreEqual(new[] { "sys" }, system);
+        CollectionAssert.AreEqual((string[])["sys"], system);
     }
 
     [TestMethod]
     public void Load_IgnoresInlineMetadataWithoutADescriptor()
     {
-        File.WriteAllText(Path.Combine(_root, "legacy.ps1"), """
-            # @powerscript.id legacy
-            # @powerscript.name Legacy
-            Write-Output 'not registered'
-            """);
+        File.WriteAllText(Path.Combine(_root, "legacy.ps1"), ScriptRegistryTestsScript);
         var registry = new ScriptRegistry(_root);
         registry.Load();
         Assert.AreEqual(0, registry.Scripts.Count);

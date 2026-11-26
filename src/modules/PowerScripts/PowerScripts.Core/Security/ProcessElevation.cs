@@ -20,10 +20,10 @@ public static class ProcessElevation
 {
     private static readonly Lazy<bool> ElevatedState = new(DetectElevated);
 
-    /// <summary>True when this process holds a full administrator token.</summary>
+    /// <summary>Gets a value indicating whether true when this process holds a full administrator token.</summary>
+    [SupportedOSPlatformGuard("windows")]
     public static bool IsElevated => ElevatedState.Value;
 
-    [SupportedOSPlatform("windows")]
     private static bool DetectElevated()
     {
         if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

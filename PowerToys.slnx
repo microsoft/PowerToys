@@ -1218,6 +1218,7 @@
     </Project>
   </Folder>
   <Folder Name="/modules/PowerScripts/">
+    <Project Path="src/modules/PowerScripts/PowerScriptsModuleInterface/PowerScriptsModuleInterface.vcxproj" Id="dd8f1d32-9636-450a-a5ab-d9cc4242dca7" />
     <Project Path="src/modules/PowerScripts/PowerScripts.Editor/PowerScripts.Editor.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />

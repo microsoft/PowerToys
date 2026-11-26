@@ -31,18 +31,30 @@ internal sealed class WorkspacesCliModule : PowerShellCliModule
 
     public override IReadOnlyList<PowerShellCliTemplate> CreateRecipes() =>
     [
-        Describe(Variant(Arguments, "workspaces-query", "Workspaces: list saved workspaces",
-            "Read workspace summaries or application details, optionally filtered by ID or name.", "text", "$Command = 'list'",
-            Text("WorkspaceId", "Optional GUID; mutually exclusive with WorkspaceName."),
-            Text("WorkspaceName", "Optional name; mutually exclusive with WorkspaceId."),
-            Flag("Details", "Include application details."),
-            Flag("Json", "Return structured JSON text.", true)),
+        Describe(
+            Variant(
+                Arguments,
+                "workspaces-query",
+                "Workspaces: list saved workspaces",
+                "Read workspace summaries or application details, optionally filtered by ID or name.",
+                "text",
+                "$Command = 'list'",
+                Text("WorkspaceId", "Optional GUID; mutually exclusive with WorkspaceName."),
+                Text("WorkspaceName", "Optional name; mutually exclusive with WorkspaceId."),
+                Flag("Details", "Include application details."),
+                Flag("Json", "Return structured JSON text.", true)),
             "list [--id | --name] [--details] [--json]"),
-        Describe(Variant(Arguments, "workspaces-launch", "Workspaces: launch a saved workspace",
-            "Launch applications and arrange windows. Choose ID or name; execution can show prompts and is not replay-safe.", "none", "$Command = 'launch'",
-            Text("WorkspaceId", "GUID; specify this or WorkspaceName."),
-            Text("WorkspaceName", "Name; specify this or WorkspaceId."),
-            Integer("TimeoutSeconds", "Native launch timeout; the Host execution budget still applies.", 120, 1, 600)),
+        Describe(
+            Variant(
+                Arguments,
+                "workspaces-launch",
+                "Workspaces: launch a saved workspace",
+                "Launch applications and arrange windows. Choose ID or name; execution can show prompts and is not replay-safe.",
+                "none",
+                "$Command = 'launch'",
+                Text("WorkspaceId", "GUID; specify this or WorkspaceName."),
+                Text("WorkspaceName", "Name; specify this or WorkspaceId."),
+                Integer("TimeoutSeconds", "Native launch timeout; the Host execution budget still applies.", 120, 1, 600)),
             "launch --id | --name [--timeout]"),
     ];
 }

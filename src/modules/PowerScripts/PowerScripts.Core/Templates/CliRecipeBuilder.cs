@@ -33,42 +33,27 @@ internal static class CliRecipeBuilder
         """;
 
     internal static PowerShellCliTemplate Template(string id, string name, string description, string input, string executable, string arguments, params ScriptTemplateParameter[] parameters)
-        => new(id, name, description, input, "text", parameters, executable, arguments,
-            input is "files" or "text" ? new(input == "files" ? "SourceFile" : "Content", new JsonSchemaProperty
-            {
-                Type = "string",
-                Format = input == "files" ? JsonSchemaProperty.FilePathFormat : null,
-                Title = input == "files" ? "Input file" : "Input text",
-                Description = input == "files"
-                    ? "Use selected files as script input, save one fixed file path, or ask for one file when the script runs."
-                    : "Use script text input, save fixed text, or ask for text when the script runs.",
-                MinLength = 1,
-            }, Required: true) : null,
-            HostExecutionNotice: "With MXC enabled, script code remains contained, but this approved CLI recipe runs on the host with your standard-user permissions. " +
-                "The host action is outside the script's filesystem, network and desktop restrictions. " +
-                (id == "settings-module-state" ? "The Settings CLI still requires PowerToys to be stopped; this does not bypass Group Policy or the Runner's settings lock." :
-                    "Review the descriptor's hostCli bindings and the action's side effects before approval."));
+        => new(
+            id,
+            name,
+            description,
+            input,
+            "text",
+            parameters,
+            executable,
+            arguments,
+            input is "files" or "text" ? new(input == "files" ? "SourceFile" : "Content", new JsonSchemaProperty { Type = "string", Format = input == "files" ? JsonSchemaProperty.FilePathFormat : null, Title = input == "files" ? "Input file" : "Input text", Description = input == "files" ? "Use selected files as script input, save one fixed file path, or ask for one file when the script runs." : "Use script text input, save fixed text, or ask for text when the script runs.", MinLength = 1, }, Required: true) : null,
+            HostExecutionNotice: "With MXC enabled, script code remains contained, but this approved CLI recipe runs on the host with your standard-user permissions. " + "The host action is outside the script's filesystem, network and desktop restrictions. " + (id == "settings-module-state" ? "The Settings CLI still requires PowerToys to be stopped; this does not bypass Group Policy or the Runner's settings lock." : "Review the descriptor's hostCli bindings and the action's side effects before approval."));
 
     internal static ScriptTemplateParameter Text(string name, string description, string value = "", params string[] choices) =>
-        new(name, new JsonSchemaProperty
-        {
-            Type = "string",
-            Title = name,
-            Description = description,
-            Default = JsonSerializer.SerializeToElement(value),
-            Enum = choices.Length == 0 ? null : choices.ToList(),
-        });
+        new(
+            name,
+            new JsonSchemaProperty { Type = "string", Title = name, Description = description, Default = JsonSerializer.SerializeToElement(value), Enum = choices.Length == 0 ? null : choices.ToList(), });
 
     internal static ScriptTemplateParameter Integer(string name, string description, int value, int minimum = 0, int maximum = int.MaxValue) =>
-        new(name, new JsonSchemaProperty
-        {
-            Type = "integer",
-            Title = name,
-            Description = description,
-            Default = JsonSerializer.SerializeToElement(value),
-            Minimum = minimum,
-            Maximum = maximum,
-        });
+        new(
+            name,
+            new JsonSchemaProperty { Type = "integer", Title = name, Description = description, Default = JsonSerializer.SerializeToElement(value), Minimum = minimum, Maximum = maximum, });
 
     internal static ScriptTemplateParameter Flag(string name, string description, bool value = false) =>
         new(name, new JsonSchemaProperty { Type = "boolean", Title = name, Description = description, Default = JsonSerializer.SerializeToElement(value) });

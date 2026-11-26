@@ -13,20 +13,6 @@ using PowerScripts.Core.Security;
 namespace PowerScripts.Core.Execution;
 
 /// <summary>
-/// The outcome of running a PowerScript.
-/// </summary>
-public sealed class ScriptExecutionResult
-{
-    public int ExitCode { get; init; }
-
-    public bool Succeeded => ExitCode == 0;
-
-    public string StdOut { get; init; } = string.Empty;
-
-    public string StdErr { get; init; } = string.Empty;
-}
-
-/// <summary>
 /// Runs a PowerScript. This is the single execution path shared by every surface (context menu,
 /// Keyboard Manager, Command Palette, agents) so behavior and security posture stay consistent.
 ///
@@ -36,6 +22,12 @@ public sealed class ScriptExecutionResult
 /// </summary>
 public sealed class ScriptExecutor
 {
+    private static readonly JsonSerializerOptions OutputJsonOptions = new(
+)
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
     /// <summary>Environment variable the script can read to get the newline-separated input files.</summary>
     public const string FilesEnvironmentVariable = "POWERSCRIPTS_FILES";
 
@@ -66,7 +58,7 @@ public sealed class ScriptExecutor
             Image = image,
             Audio = audio,
             FilePaths = files?.ToList(),
-            Params = parameters?.ToDictionary(pair => pair.Key, pair => pair.Value ?? string.Empty),
+            Params = resolved.ToDictionary(pair => pair.Key, pair => pair.Value ?? string.Empty),
         };
         var request = input.CreateRequest(manifest);
         if (manifest.Runtime == ScriptRuntime.PowerToysOperation || manifest.Execute?.Provider is not null)
@@ -115,6 +107,7 @@ public sealed class ScriptExecutor
         psi.ArgumentList.Add("-NonInteractive");
         psi.ArgumentList.Add("-ExecutionPolicy");
         psi.ArgumentList.Add("Bypass");
+
         // JSON plus native splatting preserves booleans and path arrays, including on PowerShell 5.1.
         var command = """
             [Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
@@ -140,12 +133,9 @@ public sealed class ScriptExecutor
         context.HostCli = HostCliBroker.CreateInvocation(manifest, files, parameters, text);
         var result = Security.ProcessRunner.Run(psi, context, request.ToJsonString(), mxcSettings: _mxcSettings);
 
-        return ValidateOutput(manifest, new ScriptExecutionResult
-        {
-            ExitCode = result.ExitCode,
-            StdOut = result.StdOut,
-            StdErr = result.StdErr,
-        });
+        return ValidateOutput(
+            manifest,
+            new ScriptExecutionResult { ExitCode = result.ExitCode, StdOut = result.StdOut, StdErr = result.StdErr, });
     }
 
     /// <summary>
@@ -164,7 +154,7 @@ public sealed class ScriptExecutor
             return new ScriptExecutionResult
             {
                 ExitCode = result.ExitCode,
-                StdOut = JsonSerializer.Serialize(result, new JsonSerializerOptions { DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull }),
+                StdOut = JsonSerializer.Serialize(result, OutputJsonOptions),
                 StdErr = result.StdErr,
             };
         }
@@ -203,10 +193,7 @@ public sealed class ScriptExecutor
                 PowerScriptDataFormat.Text => new PythonTransformResult { Text = result.StdOut },
                 _ => PythonTransformResult.Parse(result.StdOut, manifest.OutputFormat, manifest.OutputSchema),
             };
-            ScriptSchema.Validate(manifest.OutputSchema, JsonSerializer.SerializeToElement(output, new JsonSerializerOptions
-            {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            }), "output");
+            ScriptSchema.Validate(manifest.OutputSchema, JsonSerializer.SerializeToElement(output, OutputJsonOptions), "output");
             return result;
         }
         catch (Exception ex) when (ex is JsonException or InvalidDataException)

@@ -65,7 +65,7 @@ public class MxcTests
 
         var loaded = MxcSettings.Load(store);
         Assert.AreEqual(settings.ExecutorPath, loaded.ExecutorPath);
-        CollectionAssert.AreEqual(new[] { MxcPolicies.Network }, loaded.DisabledPolicies);
+        CollectionAssert.AreEqual((string[])[MxcPolicies.Network], loaded.DisabledPolicies);
 
         using var document = JsonDocument.Parse(store.ReadBlob(PowerScriptsPaths.ConfigFileName)!);
         Assert.AreEqual(@"C:\scripts", document.RootElement.GetProperty("scriptsRoot").GetString());
@@ -181,11 +181,14 @@ public class MxcTests
     public void Explicit_Wsl_Recipes_Never_Bypass_Enabled_Mxc(bool platformDefault)
     {
         var settings = platformDefault
-            ? MxcSettings.Load(new FileSettingsStore(_root), _ => SupportedPlatform())
+            ? MxcSettings.Load(
+                new FileSettingsStore(_root),
+                _ => SupportedPlatform())
             : new MxcSettings { Enabled = true };
         var result = ProcessRunner.Run(
             new ProcessStartInfo { FileName = "wsl.exe" },
-            new ProcessExecutionContext(), mxcSettings: settings);
+            new ProcessExecutionContext(),
+            mxcSettings: settings);
         Assert.AreEqual(ProcessRunner.UnsupportedIsolationExitCode, result.ExitCode);
         StringAssert.Contains(result.StdErr, "WSLC");
     }
@@ -215,14 +218,14 @@ public class MxcTests
                 DisabledPolicies = new List<string> { MxcPolicies.Network },
             });
         Assert.IsFalse(globalAccepted.IsEnabled(MxcPolicies.Network));
-
     }
 
     [TestMethod]
     public void RemovedScriptOverridesAreNotLoadedOrSaved()
     {
         var store = new FileSettingsStore(_root);
-        store.WriteBlob(PowerScriptsPaths.ConfigFileName,
+        store.WriteBlob(
+            PowerScriptsPaths.ConfigFileName,
             """{"mxc":{"enabled":true,"scripts":{"demo":{"enabled":false,"riskAccepted":true}}}}""");
         var settings = MxcSettings.Load(store);
         var effective = MxcPolicyResolver.Resolve(settings);
@@ -279,13 +282,17 @@ public class MxcTests
         Assert.AreEqual(1234, root.GetProperty("process").GetProperty("timeout").GetInt32());
 
         var filesystem = root.GetProperty("filesystem");
-        var readonlyPaths = filesystem.GetProperty("readonlyPaths")
+        var readonlyPaths = filesystem.GetProperty(
+            "readonlyPaths")
             .EnumerateArray()
-            .Select(value => value.GetString()!)
+            .Select(
+                value => value.GetString()!)
             .ToArray();
-        var readwritePaths = filesystem.GetProperty("readwritePaths")
+        var readwritePaths = filesystem.GetProperty(
+            "readwritePaths")
             .EnumerateArray()
-            .Select(value => value.GetString()!)
+            .Select(
+                value => value.GetString()!)
             .ToArray();
         CollectionAssert.Contains(readonlyPaths, Path.GetFullPath(scriptsRoot));
         CollectionAssert.Contains(readonlyPaths, Path.GetFullPath(package));
@@ -304,9 +311,11 @@ public class MxcTests
             "none",
             root.GetProperty("processContainer").GetProperty("ui").GetProperty("systemSettings").GetString());
 
-        var environment = root.GetProperty("process").GetProperty("env")
+        var environment = root.GetProperty("process").GetProperty(
+            "env")
             .EnumerateArray()
-            .Select(value => value.GetString()!)
+            .Select(
+                value => value.GetString()!)
             .ToArray();
         Assert.IsTrue(environment.Any(value => value.StartsWith("LOCALAPPDATA=", StringComparison.OrdinalIgnoreCase)));
         CollectionAssert.Contains(
@@ -314,7 +323,8 @@ public class MxcTests
             $"{MxcProcessRunner.WorkspaceEnvironmentVariable}={Path.GetFullPath(workspace)}");
         Assert.IsFalse(environment.Any(value => value.StartsWith("SECRET_TOKEN=", StringComparison.OrdinalIgnoreCase)));
 
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsException<InvalidOperationException>(
+            () =>
             MxcProcessRunner.BuildConfigurationJson(
                 target,
                 target.FileName,
@@ -367,13 +377,17 @@ public class MxcTests
 
         using var document = JsonDocument.Parse(json);
         var filesystem = document.RootElement.GetProperty("filesystem");
-        var readonlyPaths = filesystem.GetProperty("readonlyPaths")
+        var readonlyPaths = filesystem.GetProperty(
+            "readonlyPaths")
             .EnumerateArray()
-            .Select(value => value.GetString()!)
+            .Select(
+                value => value.GetString()!)
             .ToArray();
-        var readwritePaths = filesystem.GetProperty("readwritePaths")
+        var readwritePaths = filesystem.GetProperty(
+            "readwritePaths")
             .EnumerateArray()
-            .Select(value => value.GetString()!)
+            .Select(
+                value => value.GetString()!)
             .ToArray();
 
         CollectionAssert.Contains(readonlyPaths, Path.GetFullPath(scriptsRoot));
@@ -403,7 +417,8 @@ public class MxcTests
             });
 
         Assert.IsFalse(policy.Enabled);
-        Assert.ThrowsException<InvalidOperationException>(() =>
+        Assert.ThrowsException<InvalidOperationException>(
+            () =>
             MxcProcessRunner.BuildConfigurationJson(
                 target,
                 target.FileName,
@@ -486,9 +501,16 @@ public class MxcTests
         var workspace = Path.Combine(_root, "workspace");
         var policy = MxcPolicyResolver.Resolve(new MxcSettings());
 
-        using var unapproved = JsonDocument.Parse(MxcProcessRunner.BuildConfigurationJson(
-            target, target.FileName, context, policy, workspace, 0));
-        Assert.IsFalse(unapproved.RootElement.GetProperty("process").GetProperty("env").EnumerateArray()
+        using var unapproved = JsonDocument.Parse(
+            MxcProcessRunner.BuildConfigurationJson(
+            target,
+            target.FileName,
+            context,
+            policy,
+            workspace,
+            0));
+        Assert.IsFalse(
+            unapproved.RootElement.GetProperty("process").GetProperty("env").EnumerateArray()
             .Any(value => value.GetString()!.StartsWith(HostCliBroker.EnvironmentVariable + "=", StringComparison.Ordinal)));
 
         context.HostCli = new HostCliInvocation(
@@ -496,8 +518,14 @@ public class MxcTests
             new Dictionary<string, JsonElement>(),
             [],
             _root);
-        using var approved = JsonDocument.Parse(MxcProcessRunner.BuildConfigurationJson(
-            target, target.FileName, context, policy, workspace, 0));
+        using var approved = JsonDocument.Parse(
+            MxcProcessRunner.BuildConfigurationJson(
+            target,
+            target.FileName,
+            context,
+            policy,
+            workspace,
+            0));
         CollectionAssert.Contains(
             approved.RootElement.GetProperty("process").GetProperty("env").EnumerateArray().Select(value => value.GetString()).ToArray(),
             HostCliBroker.EnvironmentVariable + "=" + context.HostCli.Token);
@@ -584,7 +612,8 @@ public class MxcTests
     }
 
     private static MxcPlatformSupportResult SupportedPlatform() =>
-        new()
+        new(
+)
         {
             IsSupported = true,
             Reason = "supported test host",

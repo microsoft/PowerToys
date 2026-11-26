@@ -1,6 +1,11 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?include $(sys.CURRENTDIR)\Common.wxi?>
   <Fragment>
+    <ComponentGroup Id="PowerScriptsModuleInterfaceComponentGroup" Directory="INSTALLFOLDER">
+      <Component Id="PowerScriptsModuleInterface" Bitness="always64">
+        <File Source="$(var.BinDir)PowerToys.PowerScriptsModuleInterface.dll" />
+      </Component>
+    </ComponentGroup>
     <DirectoryRef Id="INSTALLFOLDER">
       <Directory Id="PowerScriptsInstallFolder" Name="PowerScripts" />
     </DirectoryRef>

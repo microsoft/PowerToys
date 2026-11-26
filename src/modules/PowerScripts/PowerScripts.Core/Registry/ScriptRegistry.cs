@@ -9,11 +9,6 @@ using PowerScripts.Core.Storage;
 namespace PowerScripts.Core.Registry;
 
 /// <summary>
-/// A manifest that failed to load or validate, kept so the UI can surface problems.
-/// </summary>
-public sealed record ScriptLoadError(string FolderPath, string Message);
-
-/// <summary>
 /// The single source of truth for installed PowerScripts. Every surface (context menu, Keyboard
 /// Manager editor, Command Palette, agents) reads from this registry rather than defining scripts
 /// of its own. The registry only reads the filesystem; it never executes anything.
@@ -23,12 +18,13 @@ public sealed class ScriptRegistry
     private readonly List<PowerScriptManifest> _scripts = new();
     private readonly List<ScriptLoadError> _errors = new();
     private readonly List<PowerScriptManifest> _unconfiguredScripts = new();
+
     public ScriptRegistry(string? root = null)
     {
         Root = Path.GetFullPath(PowerScriptsPaths.ResolveScriptsRoot(root));
     }
 
-    /// <summary>Absolute path to the scanned scripts root.</summary>
+    /// <summary>Gets absolute path to the scanned scripts root.</summary>
     public string Root { get; }
 
     public IReadOnlyList<PowerScriptManifest> Scripts => _scripts;
@@ -212,7 +208,7 @@ public sealed class ScriptRegistry
         }
     }
 
-    /// <summary>Scripts with no file input (resolved input shape is not Files) — candidates for Keyboard Manager / Command Palette.</summary>
+    /// <summary>Gets scripts with no file input (resolved input shape is not Files) — candidates for Keyboard Manager / Command Palette.</summary>
     public IEnumerable<PowerScriptManifest> SystemScripts =>
         _scripts.Where(s => s.InputFormat != PowerScriptDataFormat.Files);
 

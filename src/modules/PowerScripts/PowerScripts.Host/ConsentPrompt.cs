@@ -16,11 +16,11 @@ namespace PowerScripts.Host;
 /// </summary>
 internal static class ConsentPrompt
 {
-    private const uint MB_YESNO = 0x00000004;
-    private const uint MB_ICONWARNING = 0x00000030;
-    private const uint MB_DEFBUTTON2 = 0x00000100;
-    private const uint MB_TOPMOST = 0x00040000;
-    private const uint MB_SETFOREGROUND = 0x00010000;
+    private const uint MBYESNO = 0x00000004;
+    private const uint MBICONWARNING = 0x00000030;
+    private const uint MBDEFBUTTON2 = 0x00000100;
+    private const uint MBTOPMOST = 0x00040000;
+    private const uint MBSETFOREGROUND = 0x00010000;
     private const int IDYES = 6;
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
@@ -60,7 +60,7 @@ internal static class ConsentPrompt
             IntPtr.Zero,
             text,
             "PowerScripts — allow this script to run?",
-            MB_YESNO | MB_ICONWARNING | MB_DEFBUTTON2 | MB_TOPMOST | MB_SETFOREGROUND);
+            MBYESNO | MBICONWARNING | MBDEFBUTTON2 | MBTOPMOST | MBSETFOREGROUND);
 
         return result == IDYES;
     }

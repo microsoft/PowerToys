@@ -97,7 +97,7 @@ public class ManifestTests
 
         var p = manifest.Parameters.Single();
         Assert.IsTrue(p.IsChoice);
-        CollectionAssert.AreEqual(new[] { "Hello", "Hi" }, p.Options);
+        CollectionAssert.AreEqual((string[])["Hello", "Hi"], p.Options);
         Assert.AreEqual("Greeting", p.DisplayLabel);
     }
 

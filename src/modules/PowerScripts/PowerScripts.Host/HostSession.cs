@@ -50,6 +50,7 @@ internal static class HostSession
         internal SessionStopEvent(long handle)
         {
             SafeWaitHandle = new SafeWaitHandle(new IntPtr(handle), ownsHandle: true);
+
             // The private lifetime signal must not flow into interpreter/executor descendants.
             if (!SetHandleInformation(SafeWaitHandle, 1, 0))
             {

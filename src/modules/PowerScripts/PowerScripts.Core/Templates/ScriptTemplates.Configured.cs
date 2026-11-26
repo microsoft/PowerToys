@@ -4,14 +4,15 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Cli;
+using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Templates;
 
 public static partial class ScriptTemplates
 {
-    private static readonly HashSet<string> ReservedParameterNames = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> ReservedParameterNames = new(
+        StringComparer.OrdinalIgnoreCase)
     {
         "true", "false", "null", "args", "input", "PSItem", "this", "PSBoundParameters", "PSCmdlet",
         "ExecutionContext", "Host", "HOME", "PID", "PWD", "PSVersionTable", "PSScriptRoot", "PSCommandPath",
@@ -95,11 +96,16 @@ public static partial class ScriptTemplates
                     JsonSerializer.SerializeToNode(PowerShellCliTemplates.CreateHostPermission(options), ToolDescriptorParser.JsonOptions),
             },
         };
-        return CreatePackage(scriptsRoot, options.ProjectName, options.Description ?? string.Empty,
-            entryName, descriptor, options.CliContent is not null ? PowerShellCliTemplates.CreateScript(options) :
-                options.Runtime == "python" ? CreatePython(options) : CreatePowerShell(options),
+        return CreatePackage(
+            scriptsRoot,
+            options.ProjectName,
+            options.Description ?? string.Empty,
+            entryName,
+            descriptor,
+            options.CliContent is not null ? PowerShellCliTemplates.CreateScript(options) : options.Runtime == "python" ? CreatePython(options) : CreatePowerShell(options),
             CreateGuide(options, entryName) + (options.CliContent is not null ? PowerShellCliTemplates.CreateGuide(options.CliContent) : string.Empty),
-            iconPreset: options.IconPreset, iconSource: options.IconSource);
+            iconPreset: options.IconPreset,
+            iconSource: options.IconSource);
     }
 
     private static void AddParameters(JsonObject inputSchema, IReadOnlyList<ScriptTemplateParameter>? parameters)
@@ -302,8 +308,9 @@ public static partial class ScriptTemplates
         var parameters = string.Empty;
         if (options.Parameters is { Count: > 0 })
         {
-            var assignments = string.Join(Environment.NewLine, options.Parameters.Select(parameter =>
-                $"if ($PSBoundParameters.ContainsKey('{parameter.Name}')) {{ $__powerscriptOptions['{parameter.Name}'] = ${parameter.Name} }}"));
+            var assignments = string.Join(
+                Environment.NewLine,
+                options.Parameters.Select(parameter => $"if ($PSBoundParameters.ContainsKey('{parameter.Name}')) {{ $__powerscriptOptions['{parameter.Name}'] = ${parameter.Name} }}"));
             parameters = $$"""
                 # Options stay typed; use the named variables above in your own processing.
                 $__powerscriptOptions = [ordered]@{}

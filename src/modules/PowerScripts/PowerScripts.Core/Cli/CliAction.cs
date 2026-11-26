@@ -20,16 +20,3 @@ public sealed class CliAction
     [JsonPropertyName("bindings")]
     public Dictionary<string, CliActionBinding> Bindings { get; init; } = new(StringComparer.Ordinal);
 }
-
-/// <summary>One fixed typed value or a reference to a standard exposed script parameter.</summary>
-[JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
-public sealed class CliActionBinding
-{
-    [JsonPropertyName("constant")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonElement Constant { get; init; }
-
-    [JsonPropertyName("parameter")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? Parameter { get; init; }
-}

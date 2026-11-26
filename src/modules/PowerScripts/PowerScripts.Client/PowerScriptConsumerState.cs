@@ -9,29 +9,29 @@ namespace PowerScripts.Client;
 /// <summary>The effective preference and policy state for one PowerScripts integration.</summary>
 public sealed class PowerScriptConsumerState
 {
-    /// <summary>The caller-supplied consumer identifier.</summary>
+    /// <summary>Gets the caller-supplied consumer identifier.</summary>
     public string Id { get; init; } = string.Empty;
 
-    /// <summary>Whether the shared PowerScripts module is enabled.</summary>
+    /// <summary>Gets a value indicating whether whether the shared PowerScripts module is enabled.</summary>
     public bool IsPowerScriptsEnabled { get; init; }
 
-    /// <summary>Whether Group Policy controls the shared module's enabled state.</summary>
+    /// <summary>Gets a value indicating whether whether Group Policy controls the shared module's enabled state.</summary>
     public bool IsPowerScriptsPolicyControlled { get; init; }
 
-    /// <summary>The saved consumer preference, before Group Policy is applied.</summary>
+    /// <summary>Gets a value indicating whether the saved consumer preference, before Group Policy is applied.</summary>
     public bool UserEnabled { get; init; }
 
-    /// <summary>Whether this consumer may discover and execute scripts.</summary>
+    /// <summary>Gets a value indicating whether whether this consumer may discover and execute scripts.</summary>
     public bool IsEnabled { get; init; }
 
-    /// <summary>Whether the consumer preference may be changed in PowerScripts settings.</summary>
+    /// <summary>Gets a value indicating whether whether the consumer preference may be changed in PowerScripts settings.</summary>
     public bool CanChange { get; init; }
 
-    /// <summary>Whether Group Policy controls the consumer or disables its parent utility.</summary>
+    /// <summary>Gets a value indicating whether whether Group Policy controls the consumer or disables its parent utility.</summary>
     public bool IsPolicyControlled { get; init; }
 
     /// <summary>
-    /// The Host's reason for a disabled parent, such as <c>module-disabled</c> or
+    /// Gets the Host's reason for a disabled parent, such as <c>module-disabled</c> or
     /// <c>parent-policy-disabled</c>. The Host omits this field when it has no reason, including a
     /// disabled consumer preference or consumer policy;
     /// use <see cref="IsEnabled"/> and <see cref="IsPolicyControlled"/> to distinguish those cases.

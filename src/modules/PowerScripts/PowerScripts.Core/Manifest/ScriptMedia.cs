@@ -2,8 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using System.Text.Json;
 using System.Buffers.Binary;
+using System.Text.Json;
 
 namespace PowerScripts.Core.Manifest;
 
@@ -14,7 +14,7 @@ public static class ScriptMedia
     public const int MaxTotalBytes = 32 * 1024 * 1024;
     public const int MaxItems = 64;
     public const int MaxEncodedLength = ((MaxItemBytes + 2) / 3) * 4;
-    public const int MaxRequestCharacters = ((MaxTotalBytes + 2) / 3) * 4 + 1024 * 1024;
+    public const int MaxRequestCharacters = (((MaxTotalBytes + 2) / 3) * 4) + (1024 * 1024);
 
     public static IReadOnlyList<string> ImageMimeTypes { get; } = Array.AsReadOnly(new[] { "image/png", "image/jpeg", "image/webp" });
 

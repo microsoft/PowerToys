@@ -3,14 +3,13 @@
     <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>PowerScripts.Core.Tests</RootNamespace>
     <AssemblyName>PowerScripts.Core.Tests</AssemblyName>
+    <OutputType>Exe</OutputType>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.8.3" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.8.3" />
+    <PackageReference Include="MSTest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,28 +8,6 @@ using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core.Security;
 
-/// <summary>The stable PowerScripts policy names understood by the MXC integration.</summary>
-public static class MxcPolicies
-{
-    public const string Filesystem = "filesystem";
-    public const string Network = "network";
-    public const string Ui = "ui";
-    public const string LeastPrivilege = "leastPrivilege";
-
-    public static IReadOnlyList<string> All { get; } =
-        new[] { Filesystem, Network, Ui, LeastPrivilege };
-
-    public static bool IsKnown(string policy) =>
-        All.Contains(policy, StringComparer.OrdinalIgnoreCase);
-
-    internal static List<string> Normalize(IEnumerable<string>? policies) =>
-        (policies ?? Array.Empty<string>())
-            .Where(IsKnown)
-            .Select(p => All.First(known => known.Equals(p, StringComparison.OrdinalIgnoreCase)))
-            .Distinct(StringComparer.Ordinal)
-            .ToList();
-}
-
 /// <summary>
 /// PowerScripts' MXC configuration, stored below the module <c>config.json</c> key <c>mxc</c>.
 /// When no explicit enabled preference exists, MXC follows platform support: on for supported hosts
@@ -52,7 +30,7 @@ public sealed class MxcSettings
     [JsonIgnore]
     public MxcPlatformSupportResult? PlatformSupport { get; private set; }
 
-    /// <summary>Optional explicit path to <c>wxc-exec.exe</c>; empty means auto-discover.</summary>
+    /// <summary>Gets or sets optional explicit path to <c>wxc-exec.exe</c>; empty means auto-discover.</summary>
     [JsonPropertyName("executorPath")]
     public string ExecutorPath { get; set; } = string.Empty;
 

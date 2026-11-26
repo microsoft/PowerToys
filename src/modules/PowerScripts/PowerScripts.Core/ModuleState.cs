@@ -24,21 +24,9 @@ public static class ModuleState
     public const string IgnoreEnabledEnvironmentVariable = "POWERSCRIPTS_IGNORE_ENABLED";
 
     /// <summary>
-    /// True when scripts are allowed to run.
-    ///
-    /// Resolution order:
-    ///   - Configured utility Group Policy wins, including over the development bypass.
-    ///   - The <see cref="IgnoreEnabledEnvironmentVariable"/> bypass overrides user preferences.
-    ///   - If the PowerToys settings file is absent (no PowerToys governance — standalone/dev/test),
-    ///     execution is allowed.
-    ///   - If the settings file exists but has no <c>enabled.PowerScripts</c> key, execution is
-    ///     allowed. Because the runner strips unknown modules from settings.json on launch, an absent
-    ///     key is ambiguous rather than a deliberate "off", so the gate fails open to keep existing
-    ///     hotkey/context-menu bindings working; an explicit <c>false</c> is still honored, as is an
-    ///     explicit off recorded in the module's own config.json.
-    ///   - If the settings file is unreadable, we fail open (allow) so a transient/corrupt file does
-    ///     not silently break a user's existing hotkeys; the context-menu install/remove still tracks
-    ///     the toggle in that edge case.
+    /// Returns the policy-governed module state. Runner owns <c>enabled.PowerScripts</c> in general
+    /// settings; a legacy module preference is used only when that flag has never been recorded.
+    /// Missing preferences default off, and malformed or unreadable general settings fail closed.
     /// </summary>
     public static bool IsPowerScriptsEnabled()
     {
@@ -53,16 +41,7 @@ public static class ModuleState
             return true;
         }
 
-        // The module's own config.json is authoritative when present: it is written by the Settings
-        // toggle and, unlike settings.json, is never rewritten by the runner, so an explicit on/off
-        // survives PowerToys restarts even though the prototype is not yet a registered runner module.
-        var configOverride = PowerScriptsPaths.ReadEnabledOverride();
-        if (configOverride.HasValue)
-        {
-            return configOverride.Value;
-        }
-
-        return IsPowerScriptsEnabled(PowerScriptsPaths.PowerToysSettingsFilePath);
+        return IsPowerScriptsEnabled(PowerScriptsPaths.PowerToysSettingsFilePath, PowerScriptsPaths.ReadEnabledOverride());
     }
 
     /// <summary>
@@ -70,35 +49,42 @@ public static class ModuleState
     /// well-known PowerToys path). Split out so the gate can be unit-tested hermetically, mirroring
     /// how <c>TrustStore</c> takes its file path.
     /// </summary>
-    public static bool IsPowerScriptsEnabled(string settingsPath)
+    public static bool IsPowerScriptsEnabled(string settingsPath, bool? legacyEnabled = null)
     {
         try
         {
-            if (!File.Exists(settingsPath))
-            {
-                return true;
-            }
-
             using var stream = File.OpenRead(settingsPath);
             using var document = JsonDocument.Parse(stream);
-            if (document.RootElement.TryGetProperty("enabled", out var enabled) &&
-                enabled.ValueKind == JsonValueKind.Object &&
-                enabled.TryGetProperty("PowerScripts", out var flag))
+            if (document.RootElement.ValueKind != JsonValueKind.Object)
             {
-                return flag.ValueKind == JsonValueKind.True;
+                return false;
             }
 
-            // Settings file present but no PowerScripts entry. Because the runner strips unknown
-            // modules from settings.json on launch, an absent key is ambiguous rather than a
-            // deliberate "off"; fall back to enabled so a hotkey/context-menu binding keeps working
-            // across restarts. An explicit off is still honored via the config.json override above
-            // (and via an explicit false here).
-            return true;
+            if (!document.RootElement.TryGetProperty("enabled", out var enabled))
+            {
+                return legacyEnabled ?? false;
+            }
+
+            if (enabled.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            return enabled.TryGetProperty("PowerScripts", out var flag)
+                ? flag.ValueKind == JsonValueKind.True
+                : legacyEnabled ?? false;
+        }
+        catch (FileNotFoundException)
+        {
+            return legacyEnabled ?? false;
+        }
+        catch (DirectoryNotFoundException)
+        {
+            return legacyEnabled ?? false;
         }
         catch (Exception)
         {
-            // Unreadable settings: cannot govern, so don't break existing bindings.
-            return true;
+            return false;
         }
     }
 }

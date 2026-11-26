@@ -26,9 +26,10 @@ function Resolve-HostExe {
     param([string]$Explicit)
     if ($Explicit -and (Test-Path $Explicit)) { return (Resolve-Path $Explicit).Path }
     $candidates = @(
-        (Join-Path $env:LOCALAPPDATA "Microsoft\PowerToys\PowerScripts\PowerScripts.Host.exe"),
-        "C:\Program Files\PowerToys\modules\PowerScripts\PowerScripts.Host.exe",
-        (Join-Path $here "..\..\PowerScripts.Host\bin\Debug\net10.0-windows\PowerScripts.Host.exe")
+        (Join-Path $env:LOCALAPPDATA "PowerToys\PowerScripts\PowerScripts.Host.exe"),
+        "C:\Program Files\PowerToys\PowerScripts\PowerScripts.Host.exe",
+        (Join-Path $here "..\..\..\..\..\x64\Debug\PowerScripts\PowerScripts.Host.exe"),
+        (Join-Path $here "..\..\..\..\..\ARM64\Debug\PowerScripts\PowerScripts.Host.exe")
     )
     foreach ($c in $candidates) { if (Test-Path $c) { return (Resolve-Path $c).Path } }
     throw "Could not find PowerScripts.Host.exe. Pass -HostExe <path>."

@@ -67,7 +67,10 @@ public class MediaContractTests
         var item = descriptor["inputSchema"]!["properties"]!["image"]!.DeepClone();
         descriptor["inputSchema"]!["properties"]!["image"] = new JsonObject
         {
-            ["type"] = "array", ["minItems"] = 1, ["maxItems"] = 2, ["items"] = item,
+            ["type"] = "array",
+            ["minItems"] = 1,
+            ["maxItems"] = 2,
+            ["items"] = item,
         };
         manifest = TestTool.Parse(descriptor);
         Assert.ThrowsException<InvalidDataException>(() => PythonTransformInput.Parse(manifest, payload));
@@ -109,7 +112,7 @@ public class MediaContractTests
     {
         var exact = Convert.ToBase64String(new byte[16 * 1024 * 1024]);
         Assert.AreEqual(16 * 1024 * 1024, ScriptMedia.Decode(exact, "data").Length);
-        var oversized = Convert.ToBase64String(new byte[16 * 1024 * 1024 + 1]);
+        var oversized = Convert.ToBase64String(new byte[(16 * 1024 * 1024) + 1]);
         Assert.ThrowsException<InvalidDataException>(() => ScriptMedia.Decode(oversized, "data"));
 
         var wav = new byte[11 * 1024 * 1024];

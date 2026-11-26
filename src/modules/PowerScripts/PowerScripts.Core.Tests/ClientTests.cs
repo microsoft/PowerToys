@@ -14,6 +14,64 @@ namespace PowerScripts.Core.Tests;
 [TestClass]
 public class ClientTests
 {
+    private const string ClientTestsScript = """
+            [{"id":"media","io":{"input":"image","output":"audio"},
+              "inputSchema":{"type":"object","properties":{"image":{"type":"object"}}},
+              "outputSchema":{"type":"object","properties":{"audio":{"type":"array"}}}}]
+            """;
+
+    private const string ClientTestsScript2 = """
+                param([string[]]$Files)
+                [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+                if ($env:POWERSCRIPTS_FILES) { $Files = $env:POWERSCRIPTS_FILES -split "`n" }
+                $workspace = if ($env:POWERSCRIPTS_MXC_WORKSPACE) { $env:POWERSCRIPTS_MXC_WORKSPACE } else { $PSScriptRoot }
+                $output = Join-Path $workspace ('result ' + [char]0x6D4B + [char]0x8BD5 + '.png')
+                [IO.File]::WriteAllBytes($output, [IO.File]::ReadAllBytes($Files[0]))
+                @{ files = @($output) } | ConvertTo-Json -Compress
+                """;
+
+    private const string ClientTestsScript3 = """
+                {"name":"it_hello",
+                 "inputSchema":{"type":"object","additionalProperties":false,"properties":{
+                   "parameters":{"type":"object","additionalProperties":false,
+                     "properties":{"name":{"type":"string"}},"required":["name"]}
+                 }},
+                 "outputSchema":{"type":"object","additionalProperties":false,
+                   "properties":{"text":{"type":"string"}},"required":["text"]}}
+                """;
+
+    [DataTestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void DevelopmentHostResolutionPrefersArchitectureMatchedOutputsOverLegacyBuilds(bool deployed)
+    {
+        var root = Path.Combine(Path.GetTempPath(), "powerscripts-resolver-" + Guid.NewGuid().ToString("N"));
+        var platform = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64 ? "ARM64" : "x64";
+        var hostRoot = Path.Combine(root, "src", "modules", "PowerScripts", "PowerScripts.Host", "bin");
+        var expected = deployed
+            ? Path.Combine(root, platform, "Debug", "PowerScripts", PowerScriptsProtocol.HostExeName)
+            : Path.Combine(hostRoot, platform, "Debug", "net10.0-windows", PowerScriptsProtocol.HostExeName);
+        var legacy = Path.Combine(hostRoot, "Debug", "net10.0-windows", PowerScriptsProtocol.HostExeName);
+        var otherPlatform = platform == "x64" ? "ARM64" : "x64";
+        var other = Path.Combine(hostRoot, otherPlatform, "Debug", "net10.0-windows", PowerScriptsProtocol.HostExeName);
+        var consumerDirectory = Path.Combine(root, "consumer");
+        try
+        {
+            Directory.CreateDirectory(consumerDirectory);
+            foreach (var path in new[] { expected, legacy, other })
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllText(path, string.Empty);
+            }
+
+            Assert.AreEqual(expected, PowerScriptsClient.ResolveHostPath(consumerDirectory, Path.Combine(root, "module-data"), overridePath: null));
+        }
+        finally
+        {
+            Directory.Delete(root, recursive: true);
+        }
+    }
+
     [TestMethod]
     public async Task AsyncDiscoverySurfacesMissingHostInsteadOfAnEmptyCatalogue()
     {
@@ -264,11 +322,11 @@ public class ClientTests
         Assert.IsNull(ip.IconWarning);
         Assert.IsNull(scripts[1].IconPath, "Older Hosts and scripts without icons must remain compatible.");
         Assert.IsTrue(ip.Trusted);
-        CollectionAssert.AreEquivalent(new[] { "network" }, ip.Capabilities.ToArray());
+        CollectionAssert.AreEquivalent((string[])["network"], ip.Capabilities.ToArray());
         Assert.AreEqual(1, ip.Parameters.Count);
         Assert.AreEqual("format", ip.Parameters[0].Name);
         Assert.IsTrue(ip.Parameters[0].IsRequired);
-        CollectionAssert.AreEqual(new[] { "short", "long" }, ip.Parameters[0].Options.ToArray());
+        CollectionAssert.AreEqual((string[])["short", "long"], ip.Parameters[0].Options.ToArray());
     }
 
     [TestMethod]
@@ -300,7 +358,7 @@ public class ClientTests
         var scripts = PowerScriptInfo.ParseList(SampleJson);
 
         var file = scripts.Single(s => s.Id == "convert_md_to_txt");
-        CollectionAssert.AreEquivalent(new[] { ".md" }, file.InputExtensions.ToArray());
+        CollectionAssert.AreEquivalent((string[])[".md"], file.InputExtensions.ToArray());
         Assert.AreEqual(2, file.InputMinFiles);
         Assert.AreEqual(3, file.InputMaxFiles);
 
@@ -322,18 +380,15 @@ public class ClientTests
     [DataRow("video")]
     public void ParseList_RejectsRemovedOutputTypesInsteadOfTreatingThemAsNone(string format)
     {
-        Assert.ThrowsException<JsonException>(() => PowerScriptInfo.ParseList(
+        Assert.ThrowsException<JsonException>(
+            () => PowerScriptInfo.ParseList(
             $$$"""[{"id":"legacy","io":{"input":"none","output":"{{{format}}}"}}]"""));
     }
 
     [TestMethod]
     public void ParseListPreservesMediaTypesAndSchemasForConsumerAdaptation()
     {
-        var scripts = PowerScriptInfo.ParseList("""
-            [{"id":"media","io":{"input":"image","output":"audio"},
-              "inputSchema":{"type":"object","properties":{"image":{"type":"object"}}},
-              "outputSchema":{"type":"object","properties":{"audio":{"type":"array"}}}}]
-            """);
+        var scripts = PowerScriptInfo.ParseList(ClientTestsScript);
         Assert.AreEqual(PowerScriptIO.Image, scripts[0].Input);
         Assert.AreEqual(PowerScriptIO.Audio, scripts[0].Output);
         Assert.AreEqual("object", scripts[0].InputSchema!.Value.GetProperty("properties").GetProperty("image").GetProperty("type").GetString());
@@ -351,19 +406,19 @@ public class ClientTests
             InputMaxFiles = 1,
         };
 
-        Assert.IsTrue(script.AcceptsFiles(new[] { @"C:\Clipboard\capture.png" }));
-        Assert.IsTrue(script.AcceptsFiles(new[] { @"C:\Pictures\photo.PNG" }));
-        Assert.IsTrue(script.AcceptsFiles(new[] { @"C:\Pictures\photo.jpg" }));
+        Assert.IsTrue(script.AcceptsFiles((string[])[@"C:\Clipboard\capture.png"]));
+        Assert.IsTrue(script.AcceptsFiles((string[])[@"C:\Pictures\photo.PNG"]));
+        Assert.IsTrue(script.AcceptsFiles((string[])[@"C:\Pictures\photo.jpg"]));
         Assert.IsTrue(script.AcceptsFileExtension(" PNG "));
-        Assert.IsFalse(script.AcceptsFiles(new[] { @"C:\Pictures\photo.gif" }));
-        Assert.IsFalse(script.AcceptsFiles(new[] { "one.png", "two.png" }));
+        Assert.IsFalse(script.AcceptsFiles((string[])[@"C:\Pictures\photo.gif"]));
+        Assert.IsFalse(script.AcceptsFiles((string[])["one.png", "two.png"]));
         Assert.IsFalse(script.AcceptsFiles(Array.Empty<string>()));
 
         var batch = PowerScriptInfo.ParseList(SampleJson).Single(s => s.Id == "convert_md_to_txt");
-        Assert.IsFalse(batch.AcceptsFiles(new[] { "one.md" }));
-        Assert.IsTrue(batch.AcceptsFiles(new[] { "one.md", "two.md" }));
-        Assert.IsFalse(batch.AcceptsFiles(new[] { "one.md", "two.png" }));
-        Assert.IsFalse(batch.AcceptsFiles(new[] { "one.md", "two.md", "three.md", "four.md" }));
+        Assert.IsFalse(batch.AcceptsFiles((string[])["one.md"]));
+        Assert.IsTrue(batch.AcceptsFiles((string[])["one.md", "two.md"]));
+        Assert.IsFalse(batch.AcceptsFiles((string[])["one.md", "two.png"]));
+        Assert.IsFalse(batch.AcceptsFiles((string[])["one.md", "two.md", "three.md", "four.md"]));
     }
 
     [TestMethod]
@@ -377,13 +432,14 @@ public class ClientTests
         try
         {
             File.WriteAllText(Path.Combine(root, "action.ps1"), "throw 'Discovery must not execute this script.'");
-            File.WriteAllText(Path.Combine(root, "action.ps1.tool.json"), $$"""
+            var descriptor = $$"""
                 {
                   "name": "{{id}}",
                   "inputSchema": {"type": "object", "properties": {}, "additionalProperties": false},
                   "outputSchema": {"type": "object", "properties": {}, "additionalProperties": false}
                 }
-                """);
+                """;
+            File.WriteAllText(Path.Combine(root, "action.ps1.tool.json"), descriptor);
             var client = new PowerScriptsClient(PowerScriptConsumer.KeyboardManager, hostPath, scriptsRoot: root);
             var action = client.ListActions().Single();
             Assert.AreEqual(id, action.Id);
@@ -408,16 +464,8 @@ public class ClientTests
         string? produced = null;
         try
         {
-            File.WriteAllText(Path.Combine(root, "inspect.ps1"), """
-                param([string[]]$Files)
-                [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-                if ($env:POWERSCRIPTS_FILES) { $Files = $env:POWERSCRIPTS_FILES -split "`n" }
-                $workspace = if ($env:POWERSCRIPTS_MXC_WORKSPACE) { $env:POWERSCRIPTS_MXC_WORKSPACE } else { $PSScriptRoot }
-                $output = Join-Path $workspace ('result ' + [char]0x6D4B + [char]0x8BD5 + '.png')
-                [IO.File]::WriteAllBytes($output, [IO.File]::ReadAllBytes($Files[0]))
-                @{ files = @($output) } | ConvertTo-Json -Compress
-                """);
-            File.WriteAllText(Path.Combine(root, "inspect.ps1.tool.json"), $$"""
+            File.WriteAllText(Path.Combine(root, "inspect.ps1"), ClientTestsScript2);
+            var descriptor = $$"""
                 {
                   "name": "{{id}}",
                   "inputSchema": {
@@ -458,10 +506,12 @@ public class ClientTests
                     "additionalProperties": false
                   }
                 }
-                """);
+                """;
+            File.WriteAllText(Path.Combine(root, "inspect.ps1.tool.json"), descriptor);
             var png = Path.Combine(root, "clipboard.png");
-            File.WriteAllBytes(png, Convert.FromBase64String(
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="));
+            File.WriteAllBytes(
+                png,
+                Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="));
 
             Assert.AreEqual(id, client.ListForFiles(new[] { png }).Single().Id);
             Assert.AreEqual(0, client.ListForFiles(new[] { png, png }).Count);
@@ -520,15 +570,7 @@ public class ClientTests
             File.WriteAllText(Path.Combine(root, "it_hello.ps1"), "Write-Host hi");
             File.WriteAllText(
                 Path.Combine(root, "it_hello.ps1.tool.json"),
-                """
-                {"name":"it_hello",
-                 "inputSchema":{"type":"object","additionalProperties":false,"properties":{
-                   "parameters":{"type":"object","additionalProperties":false,
-                     "properties":{"name":{"type":"string"}},"required":["name"]}
-                 }},
-                 "outputSchema":{"type":"object","additionalProperties":false,
-                   "properties":{"text":{"type":"string"}},"required":["text"]}}
-                """);
+                ClientTestsScript3);
 
             var client = new PowerScriptsClient("test-harness", hostPath, scriptsRoot: root);
             Assert.IsTrue(client.IsAvailable);

@@ -45,7 +45,7 @@ internal static class ShellTokenProcessLauncher
                 return null;
             }
 
-            if (!DuplicateTokenEx(shellToken, MAXIMUM_ALLOWED, IntPtr.Zero, SecurityImpersonation, TokenPrimary, out primaryToken))
+            if (!DuplicateTokenEx(shellToken, MAXIMUMALLOWED, IntPtr.Zero, SecurityImpersonation, TokenPrimary, out primaryToken))
             {
                 return null;
             }
@@ -56,12 +56,12 @@ internal static class ShellTokenProcessLauncher
 
             var si = new STARTUPINFO
             {
-                cb = Marshal.SizeOf<STARTUPINFO>(),
-                dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW,
-                wShowWindow = SW_HIDE,
-                hStdInput = inPipe.ClientSafePipeHandle.DangerousGetHandle(),
-                hStdOutput = outPipe.ClientSafePipeHandle.DangerousGetHandle(),
-                hStdError = errPipe.ClientSafePipeHandle.DangerousGetHandle(),
+                Cb = Marshal.SizeOf<STARTUPINFO>(),
+                DwFlags = STARTFUSESTDHANDLES | STARTFUSESHOWWINDOW,
+                WShowWindow = SWHIDE,
+                HStdInput = inPipe.ClientSafePipeHandle.DangerousGetHandle(),
+                HStdOutput = outPipe.ClientSafePipeHandle.DangerousGetHandle(),
+                HStdError = errPipe.ClientSafePipeHandle.DangerousGetHandle(),
             };
 
             var commandLine = new StringBuilder(BuildCommandLine(startInfo));
@@ -78,7 +78,7 @@ internal static class ShellTokenProcessLauncher
                     0,
                     null,
                     commandLine,
-                    CREATE_UNICODE_ENVIRONMENT | CREATE_NO_WINDOW,
+                    CREATEUNICODEENVIRONMENT | CREATENOWINDOW,
                     environmentPtr,
                     workingDirectory,
                     ref si,
@@ -111,15 +111,19 @@ internal static class ShellTokenProcessLauncher
                 var timedOut = false;
                 if (timeoutMs > 0)
                 {
-                    if (WaitForSingleObject(pi.hProcess, (uint)timeoutMs) != WAIT_OBJECT_0)
+                    if (WaitForSingleObject(pi.HProcess, (uint)timeoutMs) != WAITOBJECT0)
                     {
                         timedOut = true;
-                        TerminateProcess(pi.hProcess, 124);
+                        TerminateProcess(pi.HProcess, 124);
                     }
                 }
                 else
                 {
-                    WaitForSingleObject(pi.hProcess, INFINITE);
+                    if (WaitForSingleObject(pi.HProcess, INFINITE) != WAITOBJECT0)
+                    {
+                        TerminateProcess(pi.HProcess, 124);
+                        timedOut = true;
+                    }
                 }
 
                 var stdout = stdoutTask.GetAwaiter().GetResult();
@@ -128,11 +132,11 @@ internal static class ShellTokenProcessLauncher
                 int exitCode = 124;
                 if (!timedOut)
                 {
-                    GetExitCodeProcess(pi.hProcess, out exitCode);
+                    GetExitCodeProcess(pi.HProcess, out exitCode);
                 }
 
-                CloseHandle(pi.hThread);
-                CloseHandle(pi.hProcess);
+                CloseHandle(pi.HThread);
+                CloseHandle(pi.HProcess);
 
                 return new ProcessRunResult(exitCode, stdout, timedOut ? "Script timed out." : stderr);
             }
@@ -179,7 +183,7 @@ internal static class ShellTokenProcessLauncher
             return IntPtr.Zero;
         }
 
-        var shellProcess = OpenProcess(PROCESS_QUERY_INFORMATION, false, shellPid);
+        var shellProcess = OpenProcess(PROCESSQUERYINFORMATION, false, shellPid);
         if (shellProcess == IntPtr.Zero)
         {
             return IntPtr.Zero;
@@ -187,7 +191,7 @@ internal static class ShellTokenProcessLauncher
 
         try
         {
-            return OpenProcessToken(shellProcess, TOKEN_DUPLICATE | TOKEN_QUERY | TOKEN_ASSIGN_PRIMARY | TOKEN_ADJUST_DEFAULT | TOKEN_ADJUST_SESSIONID, out var token)
+            return OpenProcessToken(shellProcess, TOKENDUPLICATE | TOKENQUERY | TOKENASSIGNPRIMARY | TOKENADJUSTDEFAULT | TOKENADJUSTSESSIONID, out var token)
                 ? token
                 : IntPtr.Zero;
         }
@@ -260,20 +264,20 @@ internal static class ShellTokenProcessLauncher
         return builder.ToString();
     }
 
-    private const uint MAXIMUM_ALLOWED = 0x02000000;
-    private const uint TOKEN_DUPLICATE = 0x0002;
-    private const uint TOKEN_QUERY = 0x0008;
-    private const uint TOKEN_ASSIGN_PRIMARY = 0x0001;
-    private const uint TOKEN_ADJUST_DEFAULT = 0x0080;
-    private const uint TOKEN_ADJUST_SESSIONID = 0x0100;
-    private const uint PROCESS_QUERY_INFORMATION = 0x0400;
-    private const uint CREATE_UNICODE_ENVIRONMENT = 0x00000400;
-    private const uint CREATE_NO_WINDOW = 0x08000000;
-    private const int STARTF_USESTDHANDLES = 0x00000100;
-    private const int STARTF_USESHOWWINDOW = 0x00000001;
-    private const short SW_HIDE = 0;
+    private const uint MAXIMUMALLOWED = 0x02000000;
+    private const uint TOKENDUPLICATE = 0x0002;
+    private const uint TOKENQUERY = 0x0008;
+    private const uint TOKENASSIGNPRIMARY = 0x0001;
+    private const uint TOKENADJUSTDEFAULT = 0x0080;
+    private const uint TOKENADJUSTSESSIONID = 0x0100;
+    private const uint PROCESSQUERYINFORMATION = 0x0400;
+    private const uint CREATEUNICODEENVIRONMENT = 0x00000400;
+    private const uint CREATENOWINDOW = 0x08000000;
+    private const int STARTFUSESTDHANDLES = 0x00000100;
+    private const int STARTFUSESHOWWINDOW = 0x00000001;
+    private const short SWHIDE = 0;
     private const uint INFINITE = 0xFFFFFFFF;
-    private const uint WAIT_OBJECT_0 = 0x00000000;
+    private const uint WAITOBJECT0 = 0x00000000;
 
     private enum SECURITY_IMPERSONATION_LEVEL
     {
@@ -292,33 +296,33 @@ internal static class ShellTokenProcessLauncher
     [StructLayout(LayoutKind.Sequential)]
     private struct PROCESS_INFORMATION
     {
-        public IntPtr hProcess;
-        public IntPtr hThread;
-        public int dwProcessId;
-        public int dwThreadId;
+        public IntPtr HProcess;
+        public IntPtr HThread;
+        public int DwProcessId;
+        public int DwThreadId;
     }
 
     [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
     private struct STARTUPINFO
     {
-        public int cb;
-        public string? lpReserved;
-        public string? lpDesktop;
-        public string? lpTitle;
-        public int dwX;
-        public int dwY;
-        public int dwXSize;
-        public int dwYSize;
-        public int dwXCountChars;
-        public int dwYCountChars;
-        public int dwFillAttribute;
-        public int dwFlags;
-        public short wShowWindow;
-        public short cbReserved2;
-        public IntPtr lpReserved2;
-        public IntPtr hStdInput;
-        public IntPtr hStdOutput;
-        public IntPtr hStdError;
+        public int Cb;
+        public string? LpReserved;
+        public string? LpDesktop;
+        public string? LpTitle;
+        public int DwX;
+        public int DwY;
+        public int DwXSize;
+        public int DwYSize;
+        public int DwXCountChars;
+        public int DwYCountChars;
+        public int DwFillAttribute;
+        public int DwFlags;
+        public short WShowWindow;
+        public short CbReserved2;
+        public IntPtr LpReserved2;
+        public IntPtr HStdInput;
+        public IntPtr HStdOutput;
+        public IntPtr HStdError;
     }
 
     [DllImport("user32.dll", SetLastError = true)]

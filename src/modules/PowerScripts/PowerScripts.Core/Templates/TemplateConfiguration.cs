@@ -11,6 +11,11 @@ namespace PowerScripts.Core.Templates;
 /// <summary>Reads the bounded template request without silently replacing duplicate configuration keys.</summary>
 public static class TemplateConfiguration
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(ToolDescriptorParser.JsonOptions)
+    {
+        UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
+    };
+
     public const int MaximumLength = 16_384;
 
     public static ScriptTemplateOptions Parse(string json)
@@ -28,11 +33,7 @@ public static class TemplateConfiguration
         }
 
         ValidatePropertyNames(document.RootElement);
-        var options = new JsonSerializerOptions(ToolDescriptorParser.JsonOptions)
-        {
-            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow,
-        };
-        return document.RootElement.Deserialize<ScriptTemplateOptions>(options)
+        return document.RootElement.Deserialize<ScriptTemplateOptions>(JsonOptions)
             ?? throw new InvalidDataException("Template configuration must be a JSON object.");
     }
 

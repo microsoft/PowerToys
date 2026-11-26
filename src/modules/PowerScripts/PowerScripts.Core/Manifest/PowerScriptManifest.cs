@@ -8,94 +8,6 @@ using PowerScripts.Core.Execution;
 namespace PowerScripts.Core.Manifest;
 
 /// <summary>
-/// The execution source used by a PowerScript, including language runtimes and installed operations.
-/// </summary>
-public enum ScriptRuntime
-{
-    PowerShell,
-
-    /// <summary>
-    /// A Python script executed from its top-level statements. Runs on native Windows Python or
-    /// inside WSL depending on the user's PowerScripts Python settings.
-    /// </summary>
-    Python,
-
-    /// <summary>A known installed PowerToys operation described by a trusted JSON data entry.</summary>
-    PowerToysOperation,
-}
-
-/// <summary>
-/// Declares the file input contract for a file-driven script (one whose input shape is
-/// <see cref="PowerScriptDataFormat.Files"/>).
-/// </summary>
-public sealed class ScriptInput
-{
-    /// <summary>File extensions this script accepts (e.g. ".heic"). "*" means any extension.</summary>
-    public List<string> Extensions { get; set; } = new();
-
-    /// <summary>Minimum number of files required.</summary>
-    public int MinFiles { get; set; }
-
-    /// <summary>Maximum number of files; null means unbounded.</summary>
-    public int? MaxFiles { get; set; }
-}
-
-/// <summary>
-/// A typed parameter contract exposed to consumer modules. Each consumer owns its parameter UI and
-/// passes chosen values to the Host. The runtime restores declared boolean and integer types.
-/// </summary>
-public sealed class ScriptParameter
-{
-    public const string ParameterTypeString = "string";
-    public const string ParameterTypeInt = "int";
-    public const string ParameterTypeBool = "bool";
-    public const string ParameterTypeChoice = "choice";
-    public const string ParameterTypeFile = "file";
-
-    public string Name { get; set; } = string.Empty;
-
-    /// <summary>One of: "string", "int", "bool", "choice", "file".</summary>
-    public string Type { get; set; } = ParameterTypeString;
-
-    /// <summary>Optional consumer-facing display label; falls back to <see cref="Name"/>.</summary>
-    public string? Label { get; set; }
-
-    /// <summary>Optional consumer-facing help text.</summary>
-    public string? Description { get; set; }
-
-    public string? Default { get; set; }
-
-    public bool IsRequired { get; set; }
-
-    /// <summary>Allowed values for a <see cref="ParameterTypeChoice"/> parameter.</summary>
-    public List<string> Options { get; set; } = new();
-
-    public int? Min { get; set; }
-
-    public int? Max { get; set; }
-
-    /// <summary>The display label to use in UI (label if set, otherwise the name).</summary>
-    [JsonIgnore]
-    public string DisplayLabel => string.IsNullOrWhiteSpace(Label) ? Name : Label!;
-
-    /// <summary>True when <see cref="Type"/> is the choice type (case-insensitive).</summary>
-    [JsonIgnore]
-    public bool IsChoice => string.Equals(Type, ParameterTypeChoice, StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>True when <see cref="Type"/> is the bool type (case-insensitive).</summary>
-    [JsonIgnore]
-    public bool IsBool => string.Equals(Type, ParameterTypeBool, StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>True when <see cref="Type"/> is the int type (case-insensitive).</summary>
-    [JsonIgnore]
-    public bool IsInt => string.Equals(Type, ParameterTypeInt, StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>True when <see cref="Type"/> is the file type (case-insensitive).</summary>
-    [JsonIgnore]
-    public bool IsFile => string.Equals(Type, ParameterTypeFile, StringComparison.OrdinalIgnoreCase);
-}
-
-/// <summary>
 /// The parsed description of a PowerScript, built from its sibling <c>.tool.json</c> descriptor.
 /// <see cref="Entry"/> names the script body file itself.
 /// </summary>
@@ -104,7 +16,7 @@ public sealed class PowerScriptManifest
     public int SchemaVersion { get; set; } = 1;
 
     /// <summary>
-    /// Stable, portable identifier. Intentionally decoupled from the containing folder name so a
+    /// Gets or sets stable, portable identifier. Intentionally decoupled from the containing folder name so a
     /// script can be renamed on disk (or dropped into a differently-named folder to avoid a local
     /// clash) without changing its identity. Must be unique across the catalogue.
     /// </summary>
@@ -114,28 +26,28 @@ public sealed class PowerScriptManifest
 
     public string Description { get; set; } = string.Empty;
 
-    /// <summary>Optional .ico path relative to the script folder.</summary>
+    /// <summary>Gets or sets optional .ico path relative to the script folder.</summary>
     public string? Icon { get; set; }
 
-    /// <summary>Validated package-local icon path for consumers; null when absent or invalid.</summary>
+    /// <summary>Gets validated package-local icon path for consumers; null when absent or invalid.</summary>
     [JsonIgnore]
     public string? IconPath { get; internal set; }
 
     [JsonIgnore]
     public string? IconWarning { get; internal set; }
 
-    /// <summary>Optional author/publisher, shown in the trust prompt (e.g. "contoso" or a GitHub user).</summary>
+    /// <summary>Gets or sets optional author/publisher, shown in the trust prompt (e.g. "contoso" or a GitHub user).</summary>
     public string? Publisher { get; set; }
 
-    /// <summary>Optional semantic version of the script (e.g. "1.2.0").</summary>
+    /// <summary>Gets or sets optional semantic version of the script (e.g. "1.2.0").</summary>
     public string? Version { get; set; }
 
-    /// <summary>Optional provenance, e.g. the catalogue URL the script was adopted from.</summary>
+    /// <summary>Gets or sets optional provenance, e.g. the catalogue URL the script was adopted from.</summary>
     public string? Source { get; set; }
 
     public ScriptRuntime Runtime { get; set; } = ScriptRuntime.PowerShell;
 
-    /// <summary>Script body file name, relative to the script folder (e.g. "run.ps1").</summary>
+    /// <summary>Gets or sets script body file name, relative to the script folder (e.g. "run.ps1").</summary>
     public string Entry { get; set; } = string.Empty;
 
     [JsonIgnore]
@@ -145,7 +57,7 @@ public sealed class PowerScriptManifest
     public JsonSchemaObject OutputSchema { get; set; } = new();
 
     /// <summary>
-    /// File input contract; present when the script is file-driven (its input shape is
+    /// Gets or sets file input contract; present when the script is file-driven (its input shape is
     /// <see cref="PowerScriptDataFormat.Files"/>). Carries the accepted extensions and file-count bounds.
     /// </summary>
     public ScriptInput? Input { get; set; }
@@ -153,15 +65,15 @@ public sealed class PowerScriptManifest
     public List<ScriptParameter> Parameters { get; set; } = new();
 
     /// <summary>
-    /// The primary input shape derived from inputSchema. Video remains file-backed.
+    /// Gets or sets the primary input shape derived from inputSchema. Video remains file-backed.
     /// </summary>
     public PowerScriptDataFormat InputFormat { get; set; }
 
-    /// <summary>The primary output shape derived from outputSchema.</summary>
+    /// <summary>Gets or sets the primary output shape derived from outputSchema.</summary>
     public PowerScriptDataFormat OutputFormat { get; set; }
 
     /// <summary>
-    /// Declared capabilities (e.g. "fileRead", "fileWrite", "process"). Doubles as the user-consent
+    /// Gets or sets declared capabilities (e.g. "fileRead", "fileWrite", "process"). Doubles as the user-consent
     /// string and the permission contract an agent / MCP server must respect.
     /// </summary>
     public List<string> Capabilities { get; set; } = new();
@@ -175,26 +87,26 @@ public sealed class PowerScriptManifest
     [JsonIgnore]
     public IReadOnlyList<string> ConfigurationErrors { get; internal set; } = Array.Empty<string>();
 
-    /// <summary>Prototype always runs "asInvoker" (non-elevated).</summary>
+    /// <summary>Gets or sets prototype always runs "asInvoker" (non-elevated).</summary>
     public string Elevation { get; set; } = "asInvoker";
 
     /// <summary>
-    /// The launch recipe for a script authored via an explicit <c>.tool.json</c> descriptor (see
+    /// Gets or sets the launch recipe for a script authored via an explicit <c>.tool.json</c> descriptor (see
     /// <see cref="ScriptExecute"/>). When set, the executor runs the script through this recipe
     /// (interpreter + argv / stdin) instead of the built-in PowerShell or Python runtime.
     /// </summary>
     [JsonIgnore]
     public ScriptExecute? Execute { get; set; }
 
-    /// <summary>Absolute path to the folder that contains this manifest. Populated by the registry.</summary>
+    /// <summary>Gets or sets absolute path to the folder that contains this manifest. Populated by the registry.</summary>
     [JsonIgnore]
     public string FolderPath { get; set; } = string.Empty;
 
-    /// <summary>The configured catalogue root containing this package. Populated by the registry.</summary>
+    /// <summary>Gets or sets the configured catalogue root containing this package. Populated by the registry.</summary>
     [JsonIgnore]
     public string ScriptsRoot { get; set; } = string.Empty;
 
-    /// <summary>Absolute path to the script body file.</summary>
+    /// <summary>Gets absolute path to the script body file.</summary>
     [JsonIgnore]
     public string EntryFullPath => string.IsNullOrEmpty(FolderPath) ? Entry : Path.Combine(FolderPath, Entry);
 }

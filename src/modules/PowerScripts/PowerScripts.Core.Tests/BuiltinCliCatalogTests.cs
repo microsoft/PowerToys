@@ -33,7 +33,7 @@ public sealed class BuiltinCliCatalogTests
         Assert.AreEqual("choice", file.ParameterUi["json"].Control);
         Assert.AreEqual("JSON", file.ParameterUi["json"].TrueLabel);
         Assert.AreEqual("Text", file.ParameterUi["json"].FalseLabel);
-        CollectionAssert.AreEqual(new[] { "json", "path" }, file.Bindings.Select(binding => binding.Parameter).ToArray());
+        CollectionAssert.AreEqual((string[])["json", "path"], file.Bindings.Select(binding => binding.Parameter).ToArray());
         Assert.IsTrue(file.RequiresHostProcessVisibility);
         Assert.IsFalse(file.RequiresHostDesktop);
 
@@ -51,7 +51,7 @@ public sealed class BuiltinCliCatalogTests
 
         foreach (var command in catalog.Commands)
         {
-            CollectionAssert.AreEqual(new[] { "fileRead" }, command.RequiredCapabilities.ToArray());
+            CollectionAssert.AreEqual((string[])["fileRead"], command.RequiredCapabilities.ToArray());
         }
     }
 
@@ -66,7 +66,7 @@ public sealed class BuiltinCliCatalogTests
         root["modules"]!.AsArray().Add(other);
 
         var catalog = BuiltinCliCatalog.Parse(root.ToJsonString());
-        CollectionAssert.AreEqual(new[] { "test.query", "other.query" }, catalog.Commands.Select(command => command.Id).ToArray());
+        CollectionAssert.AreEqual((string[])["test.query", "other.query"], catalog.Commands.Select(command => command.Id).ToArray());
         Assert.AreEqual("test", catalog.Commands[0].ModuleId);
         Assert.AreEqual("Test", catalog.Commands[0].Group);
         Assert.AreEqual("other", catalog.Commands[1].ModuleId);
@@ -81,10 +81,10 @@ public sealed class BuiltinCliCatalogTests
         var values = new Dictionary<string, string?> { ["path"] = "literal.txt", ["json"] = "false" };
         var start = CliActionProvider.CreateStartInfo(command, "FileLocksmithCLI.exe", Path.GetTempPath(), values);
 
-        CollectionAssert.AreEqual(new[] { "literal.txt" }, start.ArgumentList.ToArray());
+        CollectionAssert.AreEqual((string[])["literal.txt"], start.ArgumentList.ToArray());
         values["json"] = "true";
         start = CliActionProvider.CreateStartInfo(command, "FileLocksmithCLI.exe", Path.GetTempPath(), values);
-        CollectionAssert.AreEqual(new[] { "--json", "literal.txt" }, start.ArgumentList.ToArray());
+        CollectionAssert.AreEqual((string[])["--json", "literal.txt"], start.ArgumentList.ToArray());
     }
 
     [TestMethod]
@@ -133,7 +133,7 @@ public sealed class BuiltinCliCatalogTests
         Assert.AreEqual(0, parameters["count"].Min);
         Assert.AreEqual(9, parameters["count"].Max);
         Assert.IsTrue(parameters["mode"].IsChoice);
-        CollectionAssert.AreEqual(new[] { "fast", "full" }, parameters["mode"].Options);
+        CollectionAssert.AreEqual((string[])["fast", "full"], parameters["mode"].Options);
         Assert.AreEqual(string.Empty, parameters["label"].Default);
         Assert.AreEqual("false", parameters["enabled"].Default);
         Assert.IsTrue(parsed.Bindings.Single(binding => binding.Parameter == "label").AttachedValue);
@@ -220,7 +220,7 @@ public sealed class BuiltinCliCatalogTests
                 root["modules"]!.AsArray().Add(otherModule);
                 break;
             case "empty-module": Module(root)["operations"] = new JsonArray(); break;
-            case "empty-module-title": Module(root)["title"] = ""; break;
+            case "empty-module-title": Module(root)["title"] = string.Empty; break;
             case "unknown-module": Module(root)["group"] = "Test"; break;
             case "repeated-group": command["group"] = "Test"; break;
             case "unknown-operation": command["commandOverride"] = "other.exe"; break;
@@ -258,7 +258,7 @@ public sealed class BuiltinCliCatalogTests
             case "unknown-ui-control": ui["control"] = "script"; break;
             case "unknown-ui-member": ui["value"] = "--override"; break;
             case "missing-ui-label": ui.Remove("falseLabel"); break;
-            case "empty-ui-label": ui["trueLabel"] = ""; break;
+            case "empty-ui-label": ui["trueLabel"] = string.Empty; break;
             case "duplicate-ui-labels": ui["trueLabel"] = ui["falseLabel"]!.GetValue<string>(); break;
             case "wrong-ui-label-type": ui["trueLabel"] = true; break;
             case "null-ui": value["x-ui"] = null; break;

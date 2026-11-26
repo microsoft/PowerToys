@@ -9,26 +9,6 @@ using PowerScripts.Core.Storage;
 namespace PowerScripts.Core.Security;
 
 /// <summary>
-/// A single trust-on-first-use record: the user approved a script id whose content matched
-/// <see cref="Hash"/>. If the script's content or declared capabilities later change, the recomputed
-/// hash no longer matches and the user is asked to approve again.
-/// </summary>
-public sealed class TrustRecord
-{
-    public string Id { get; set; } = string.Empty;
-
-    public string Hash { get; set; } = string.Empty;
-
-    public IReadOnlyList<string> Capabilities { get; set; } = [];
-
-    public string? Source { get; set; }
-
-    public string? Publisher { get; set; }
-
-    public DateTimeOffset ApprovedUtc { get; set; }
-}
-
-/// <summary>
 /// Persists which script contents the user has explicitly allowed to run. This is the enforcement
 /// point behind the manifest's declared <c>capabilities</c>: a script only runs once the user has
 /// approved its exact current content, and re-approves whenever that content changes.
@@ -48,6 +28,7 @@ public sealed class TrustStore
     private readonly Dictionary<string, TrustRecord> _records;
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="TrustStore"/> class.
     /// Creates a trust store backed by <paramref name="store"/>, reading/writing the blob named
     /// <paramref name="key"/> (<c>trust.json</c> by default). This is the seam through which the trust
     /// store can later move into the protected settings store without changing any caller.
@@ -60,6 +41,7 @@ public sealed class TrustStore
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="TrustStore"/> class.
     /// Convenience constructor that persists to a specific file path (used by tests and any caller that
     /// wants an explicit location). Wraps a <see cref="FileSettingsStore"/> rooted at the file's
     /// directory so the on-disk behavior is identical to before this seam was introduced.
@@ -71,7 +53,7 @@ public sealed class TrustStore
     {
     }
 
-    /// <summary>All current trust records.</summary>
+    /// <summary>Gets all current trust records.</summary>
     public IReadOnlyCollection<TrustRecord> Records => _records.Values;
 
     /// <summary>Returns true if the user has approved this id with exactly this content hash.</summary>

@@ -37,7 +37,7 @@ internal sealed class PowerScriptsHostSession(Func<ProcessStartInfo> createStart
                     start.ArgumentList.Add(Environment.ProcessId.ToString(CultureInfo.InvariantCulture));
                     _process = Process.Start(start)
                         ?? throw new InvalidOperationException("Failed to start the PowerScripts Host session.");
-                    _diagnostics = _process.StandardError.ReadToEndAsync();
+                    _diagnostics = _process.StandardError.ReadToEndAsync(CancellationToken.None);
                 }
 
                 process = _process;

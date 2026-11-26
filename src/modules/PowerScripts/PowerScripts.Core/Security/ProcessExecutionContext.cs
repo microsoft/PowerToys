@@ -3,8 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Cli;
+using PowerScripts.Core.Manifest;
 
 namespace PowerScripts.Core.Security;
 

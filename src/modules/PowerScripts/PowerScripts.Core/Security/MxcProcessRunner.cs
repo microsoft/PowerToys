@@ -27,7 +27,8 @@ public static class MxcProcessRunner
     private const string SchemaVersion = "0.8.0-alpha";
     private static readonly TimeSpan RetainedOutputLifetime = TimeSpan.FromDays(1);
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new(
+)
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -55,8 +56,7 @@ public static class MxcProcessRunner
             return new ProcessRunResult(
                 UnavailableExitCode,
                 string.Empty,
-                "PowerScripts refused to run this script: MXC is enabled, but wxc-exec.exe is unavailable. " +
-                "The bundled MXC runtime is missing. Repair or reinstall PowerToys, or rebuild PowerScripts.Host.");
+                "PowerScripts refused to run this script: MXC is enabled, but wxc-exec.exe is unavailable. " + "The bundled MXC runtime is missing. Repair or reinstall PowerToys, or rebuild PowerScripts.Host.");
         }
 
         launcher ??= ProcessRunner.SecureLauncher;
@@ -103,7 +103,10 @@ public static class MxcProcessRunner
             {
                 var remaining = timeoutMs > 0 ? timeoutMs - elapsed.Elapsed.TotalMilliseconds : 0;
                 var hostResult = timeoutMs > 0 && remaining <= 0
-                    ? new ProcessRunResult(124, string.Empty, "Script timed out before the approved host CLI action could start.")
+                    ? new ProcessRunResult(
+                        124,
+                        string.Empty,
+                        "Script timed out before the approved host CLI action could start.")
                     : hostCli.Run(result.StdOut, workspace, timeoutMs > 0 ? Math.Max(1, (int)remaining) : 0);
                 result = hostResult with { StdErr = result.StdErr + hostResult.StdErr };
             }
@@ -189,7 +192,10 @@ public static class MxcProcessRunner
         config["filesystem"] = new Dictionary<string, object?>
         {
             ["readonlyPaths"] = restrictFilesystem
-                ? BuildReadonlyPaths(target, resolvedTargetPath, context)
+                ? BuildReadonlyPaths(
+                    target,
+                    resolvedTargetPath,
+                    context)
                 : BuildProtectedScriptPaths(context),
             ["readwritePaths"] = restrictFilesystem
                 ? new[] { Path.GetFullPath(workspace) }
@@ -333,9 +339,9 @@ public static class MxcProcessRunner
 
         if (Path.IsPathRooted(resolvedTargetPath))
         {
-            AddExistingPath(paths, Directory.Exists(resolvedTargetPath)
-                ? resolvedTargetPath
-                : Path.GetDirectoryName(resolvedTargetPath));
+            AddExistingPath(
+                paths,
+                Directory.Exists(resolvedTargetPath) ? resolvedTargetPath : Path.GetDirectoryName(resolvedTargetPath));
         }
 
         if (!string.IsNullOrWhiteSpace(target.WorkingDirectory))
@@ -400,7 +406,8 @@ public static class MxcProcessRunner
             environment[HostCliBroker.EnvironmentVariable] = hostCliToken;
         }
 
-        var pathDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        var pathDirectories = new HashSet<string>(
+            StringComparer.OrdinalIgnoreCase)
         {
             Environment.SystemDirectory,
         };
@@ -411,8 +418,11 @@ public static class MxcProcessRunner
 
         environment["PATH"] = string.Join(Path.PathSeparator, pathDirectories.Where(Directory.Exists));
         return environment
-            .OrderBy(entry => entry.Key, StringComparer.OrdinalIgnoreCase)
-            .Select(entry => $"{entry.Key}={entry.Value}")
+            .OrderBy(
+                entry => entry.Key,
+                StringComparer.OrdinalIgnoreCase)
+            .Select(
+                entry => $"{entry.Key}={entry.Value}")
             .ToList();
     }
 
@@ -464,7 +474,9 @@ public static class MxcProcessRunner
         }
 
         return Path.GetDirectoryName(candidate) is null
-            ? FindOnPath(candidate, pathEnvironment)
+            ? FindOnPath(
+                candidate,
+                pathEnvironment)
             : null;
     }
 
@@ -476,7 +488,9 @@ public static class MxcProcessRunner
         }
 
         return Path.GetDirectoryName(command) is null
-            ? FindOnPath(command, Environment.GetEnvironmentVariable("PATH"))
+            ? FindOnPath(
+                command,
+                Environment.GetEnvironmentVariable("PATH"))
             : null;
     }
 
@@ -487,7 +501,8 @@ public static class MxcProcessRunner
             return null;
         }
 
-        var extensions = Path.HasExtension(fileName)
+        var extensions = Path.HasExtension(
+            fileName)
             ? new[] { string.Empty }
             : (Environment.GetEnvironmentVariable("PATHEXT") ?? ".EXE;.CMD;.BAT;.COM")
                 .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);

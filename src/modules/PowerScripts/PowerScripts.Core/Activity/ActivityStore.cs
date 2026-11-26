@@ -23,7 +23,9 @@ public sealed class ActivityStore
 
     public ActivityStore(string? directory = null)
     {
-        _directory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(directory ??
+        _directory = Path.TrimEndingDirectorySeparator(
+            Path.GetFullPath(
+            directory ??
             (SettingsStore.Current as FileSettingsStore)?.BaseDirectory ??
             PowerScriptsPaths.ModuleDirectory));
         _path = Path.Combine(_directory, "activity.json");
@@ -54,34 +56,43 @@ public sealed class ActivityStore
     }
 
     public void Complete(ActivityRecord record, int exitCode) =>
-        Update(record with
-        {
-            FinishedUtc = DateTimeOffset.UtcNow,
-            Status = exitCode == 0 ? ActivityStatus.Succeeded : ActivityStatus.Failed,
-            ExitCode = exitCode,
-        }, requireExisting: true);
+        Update(
+            record with
+            {
+                FinishedUtc = DateTimeOffset.UtcNow,
+                Status = exitCode == 0 ? ActivityStatus.Succeeded : ActivityStatus.Failed,
+                ExitCode = exitCode,
+            },
+            requireExisting: true);
 
     public IReadOnlyList<ActivityRecord> List() =>
         WithLock(() => Read().Select(ResolveStatus).OrderByDescending(record => record.StartedUtc).ToArray());
 
     /// <summary>Forget finished history without losing attribution for in-flight invocations.</summary>
-    public void ClearCompleted() => WithLock(() =>
+    public void ClearCompleted() => WithLock(
+        () =>
     {
-        Write(Read().Select(ResolveStatus)
+        Write(
+            Read().Select(
+            ResolveStatus)
             .Where(record => record.Status is ActivityStatus.Running or ActivityStatus.Unknown).ToArray());
         return true;
     });
 
-    private void Update(ActivityRecord record, bool requireExisting = false) => WithLock(() =>
+    private void Update(ActivityRecord record, bool requireExisting = false) => WithLock(
+        () =>
     {
         var records = Read();
+
         // A long run may already have aged out; completing it must not resurrect cleared history.
         if (requireExisting && !records.Any(existing => existing.Id == record.Id))
         {
             return false;
         }
 
-        Write(records.Where(existing => existing.Id != record.Id).Append(record)
+        Write(
+            records.Where(existing => existing.Id != record.Id).Append(
+            record)
             .OrderByDescending(existing => existing.StartedUtc).Take(MaximumRecords).ToArray());
         return true;
     });
@@ -105,7 +116,9 @@ public sealed class ActivityStore
             return new();
         }
 
-        var records = JsonSerializer.Deserialize<List<ActivityRecord>>(json, JsonOptions)
+        var records = JsonSerializer.Deserialize<List<ActivityRecord>>(
+            json,
+            JsonOptions)
             ?? throw new InvalidDataException("PowerScripts Activity history is invalid.");
         if (records.Count > MaximumRecords || records.Any(record => record is null))
         {

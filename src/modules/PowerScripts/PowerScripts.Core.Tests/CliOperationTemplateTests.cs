@@ -45,7 +45,7 @@ public sealed class CliOperationTemplateTests
         Assert.IsTrue(path.Required);
         Assert.AreEqual("string", path.Schema.Type);
         Assert.AreEqual("file-path", path.Schema.Format);
-        var json = metadata.Parameters.Single(parameter => parameter.Name == "json");
+        var json = metadata.Parameters!.Single(parameter => parameter.Name == "json");
         Assert.AreEqual("boolean", json.Schema.Type);
         Assert.AreEqual("Output format", json.Schema.Title);
         Assert.IsTrue(json.Schema.Default.GetBoolean());
@@ -60,14 +60,17 @@ public sealed class CliOperationTemplateTests
         var request = new JsonObject
         {
             ["projectName"] = "Presentation roundtrip",
-            ["parameters"] = new JsonArray(new JsonObject
-            {
-                ["name"] = "format",
-                ["schema"] = format.DeepClone(),
-            }),
+            ["parameters"] = new JsonArray(
+                new JsonObject
+                {
+                    ["name"] = "format",
+                    ["schema"] = format.DeepClone(),
+                }),
         };
         Assert.AreEqual("Text", TemplateConfiguration.Parse(request.ToJsonString()).Parameters!.Single().Schema.Ui!.FalseLabel);
-        Assert.IsTrue(ScriptTemplates.OperationTemplates.Where(template => template.ModuleId == "fancyzones")
+        Assert.IsTrue(
+            ScriptTemplates.OperationTemplates.Where(
+            template => template.ModuleId == "fancyzones")
             .All(template => template.Group == "FancyZones"));
         Assert.IsTrue(ScriptTemplates.All.All(template => template.CommandId is null));
     }
@@ -75,13 +78,9 @@ public sealed class CliOperationTemplateTests
     [TestMethod]
     public void RuntimeBooleanPresentationRemainsAnAnnotationOnTheTypedParameter()
     {
-        var created = ScriptTemplates.Create(_root, new ScriptTemplateOptions(
-            "Choose an output format",
-            Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding>
-            {
-                ["path"] = new() { Constant = JsonSerializer.SerializeToElement("C:\\literal.txt") },
-                ["json"] = new() { Parameter = "format" },
-            })));
+        var created = ScriptTemplates.Create(
+            _root,
+            new ScriptTemplateOptions("Choose an output format", Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding> { ["path"] = new() { Constant = JsonSerializer.SerializeToElement("C:\\literal.txt") }, ["json"] = new() { Parameter = "format" }, })));
         var action = CliActionProvider.Parse(File.ReadAllText(created.EntryPath));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
         var parameter = manifest.Parameters.Single();
@@ -110,7 +109,7 @@ public sealed class CliOperationTemplateTests
             Assert.AreNotEqual(first.EntryPath, second.EntryPath);
             Assert.AreEqual("action.json", Path.GetFileName(first.EntryPath));
             CollectionAssert.AreEquivalent(
-                new[] { "action.json", "action.json.tool.json", "README.md" },
+                (string[])["action.json", "action.json.tool.json", "README.md"],
                 Directory.GetFiles(Path.GetDirectoryName(first.EntryPath)!).Select(Path.GetFileName).ToArray());
             StringAssert.Contains(File.ReadAllText(first.GuidePath), "MXC");
             Assert.AreEqual(0, settings.Writes.Count);
@@ -173,9 +172,9 @@ public sealed class CliOperationTemplateTests
     [TestMethod]
     public void DefaultBindingsExposeTheRequiredFileAndKeepTheNativeBooleanDefaultFixed()
     {
-        var created = ScriptTemplates.Create(_root, new ScriptTemplateOptions(
-            "Inspect file",
-            Operation: new PowerToysOperationTemplateOptions("filelocksmith.query")));
+        var created = ScriptTemplates.Create(
+            _root,
+            new ScriptTemplateOptions("Inspect file", Operation: new PowerToysOperationTemplateOptions("filelocksmith.query")));
         var action = CliActionProvider.Parse(File.ReadAllText(created.EntryPath));
         Assert.AreEqual("path", action.Bindings["path"].Parameter);
         Assert.AreEqual(JsonValueKind.Undefined, action.Bindings["path"].Constant.ValueKind);
@@ -190,14 +189,9 @@ public sealed class CliOperationTemplateTests
     public void FixedFalseAndLiteralFileNamesRemainTypedDataAndDoNotCreateRuntimeQuestions()
     {
         const string file = "C:\\資料\\report \"one\".txt";
-        var created = ScriptTemplates.Create(_root, new ScriptTemplateOptions(
-            "Fixed file",
-            Parameters: Array.Empty<ScriptTemplateParameter>(),
-            Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding>
-            {
-                ["path"] = new() { Constant = JsonSerializer.SerializeToElement(file) },
-                ["json"] = new() { Constant = JsonSerializer.SerializeToElement(false) },
-            })));
+        var created = ScriptTemplates.Create(
+            _root,
+            new ScriptTemplateOptions("Fixed file", Parameters: Array.Empty<ScriptTemplateParameter>(), Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding> { ["path"] = new() { Constant = JsonSerializer.SerializeToElement(file) }, ["json"] = new() { Constant = JsonSerializer.SerializeToElement(false) }, })));
         var action = CliActionProvider.Parse(File.ReadAllText(created.EntryPath));
         Assert.AreEqual(file, action.Bindings["path"].Constant.GetString());
         Assert.AreEqual(JsonValueKind.False, action.Bindings["json"].Constant.ValueKind);
@@ -210,23 +204,9 @@ public sealed class CliOperationTemplateTests
     public void RuntimeParametersRetainTheirOwnNameDefaultAndNarrowFileContract()
     {
         const string defaultFile = "C:\\Documents\\default.pdf";
-        var created = ScriptTemplates.Create(_root, new ScriptTemplateOptions(
-            "Ask for a document",
-            Parameters: new[]
-            {
-                new ScriptTemplateParameter("document", new JsonSchemaProperty
-                {
-                    Type = "string",
-                    Format = JsonSchemaProperty.FilePathFormat,
-                    Title = "Document",
-                    Default = JsonSerializer.SerializeToElement(defaultFile),
-                }, Required: true, FileExtensions: ".pdf"),
-            },
-            Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding>
-            {
-                ["path"] = new() { Parameter = "document" },
-                ["json"] = new() { Constant = JsonSerializer.SerializeToElement(true) },
-            })));
+        var created = ScriptTemplates.Create(
+            _root,
+            new ScriptTemplateOptions("Ask for a document", Parameters: new[] { new ScriptTemplateParameter("document", new JsonSchemaProperty { Type = "string", Format = JsonSchemaProperty.FilePathFormat, Title = "Document", Default = JsonSerializer.SerializeToElement(defaultFile), }, Required: true, FileExtensions: ".pdf"), }, Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding> { ["path"] = new() { Parameter = "document" }, ["json"] = new() { Constant = JsonSerializer.SerializeToElement(true) }, })));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
         Assert.AreEqual("document", manifest.Parameters.Single().Name);
         Assert.AreEqual(defaultFile, manifest.Parameters.Single().Default);
@@ -251,10 +231,10 @@ public sealed class CliOperationTemplateTests
     [TestMethod]
     public void InvalidBindingsAreRejectedBeforeAnyPackageIsPublished()
     {
-        Assert.ThrowsException<InvalidDataException>(() => ScriptTemplates.Create(_root, new ScriptTemplateOptions(
-            "Missing required file",
-            Parameters: Array.Empty<ScriptTemplateParameter>(),
-            Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding>()))));
+        Assert.ThrowsException<InvalidDataException>(
+            () => ScriptTemplates.Create(
+            _root,
+            new ScriptTemplateOptions("Missing required file", Parameters: Array.Empty<ScriptTemplateParameter>(), Operation: new PowerToysOperationTemplateOptions("filelocksmith.query", new Dictionary<string, CliActionBinding>()))));
         Assert.IsFalse(Directory.Exists(_root));
     }
 
@@ -263,19 +243,26 @@ public sealed class CliOperationTemplateTests
     [DataRow("none", "files")]
     public void OperationsCannotClaimUnsupportedPrimaryInputOrOutput(string input, string output)
     {
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(_root, new ScriptTemplateOptions(
-            "Invalid contract", Input: input, Output: output,
-            Operation: new PowerToysOperationTemplateOptions("fancyzones.get-layouts"))));
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            _root,
+            new ScriptTemplateOptions("Invalid contract", Input: input, Output: output, Operation: new PowerToysOperationTemplateOptions("fancyzones.get-layouts"))));
         Assert.IsFalse(Directory.Exists(_root));
     }
 
     [TestMethod]
     public void EducationalAndOperationTemplateConfigurationsCannotBeMixed()
     {
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create("greeting", _root, new ScriptTemplateOptions(
-            "Mixed", Operation: new PowerToysOperationTemplateOptions("filelocksmith.query"))));
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create("powertoys:filelocksmith.query", _root, new ScriptTemplateOptions(
-            "Mismatched", Operation: new PowerToysOperationTemplateOptions("fancyzones.get-layouts"))));
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            "greeting",
+            _root,
+            new ScriptTemplateOptions("Mixed", Operation: new PowerToysOperationTemplateOptions("filelocksmith.query"))));
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            "powertoys:filelocksmith.query",
+            _root,
+            new ScriptTemplateOptions("Mismatched", Operation: new PowerToysOperationTemplateOptions("fancyzones.get-layouts"))));
         Assert.IsFalse(Directory.Exists(_root));
     }
 

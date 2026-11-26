@@ -6,18 +6,6 @@ using System.Text.Json;
 
 namespace PowerScripts.Client;
 
-/// <summary>A typed parameter contract that a consumer module may render using its own UX.</summary>
-public sealed record PowerScriptParameter(
-    string Name,
-    string Type,
-    bool IsRequired,
-    string? Label,
-    string? Description,
-    string? Default,
-    IReadOnlyList<string> Options,
-    int? Min,
-    int? Max);
-
 /// <summary>
 /// A single script as reported by <c>PowerScripts.Host.exe list --json</c>. This is the read model
 /// every consuming module works from — filter it by I/O (see <see cref="Input"/>/<see cref="Output"/>
@@ -25,73 +13,73 @@ public sealed record PowerScriptParameter(
 /// </summary>
 public sealed class PowerScriptInfo
 {
-    /// <summary>Stable identity used to run the script (<c>run &lt;id&gt;</c>).</summary>
+    /// <summary>Gets stable identity used to run the script (<c>run &lt;id&gt;</c>).</summary>
     public string Id { get; init; } = string.Empty;
 
-    /// <summary>Human-readable display name.</summary>
+    /// <summary>Gets human-readable display name.</summary>
     public string Name { get; init; } = string.Empty;
 
-    /// <summary>One-line description.</summary>
+    /// <summary>Gets one-line description.</summary>
     public string Description { get; init; } = string.Empty;
 
-    /// <summary><c>PowerShell</c> or <c>Python</c>.</summary>
+    /// <summary><c>Gets powerShell</c> or <c>Python</c>.</summary>
     public string Runtime { get; init; } = string.Empty;
 
-    /// <summary>Optional author/publisher.</summary>
+    /// <summary>Gets optional author/publisher.</summary>
     public string? Publisher { get; init; }
 
-    /// <summary>Optional version string.</summary>
+    /// <summary>Gets optional version string.</summary>
     public string? Version { get; init; }
 
-    /// <summary>Optional provenance (e.g. where the script was adopted from).</summary>
+    /// <summary>Gets optional provenance (e.g. where the script was adopted from).</summary>
     public string? Source { get; init; }
 
-    /// <summary>Validated package-local .ico path, or null. Consumers may display it with a default-icon fallback.</summary>
+    /// <summary>Gets validated package-local .ico path, or null. Consumers may display it with a default-icon fallback.</summary>
     public string? IconPath { get; init; }
 
-    /// <summary>Optional diagnostic when an author-provided icon could not be used.</summary>
+    /// <summary>Gets optional diagnostic when an author-provided icon could not be used.</summary>
     public string? IconWarning { get; init; }
 
-    /// <summary>The data shape this script consumes. Filter on it to discover usable scripts (e.g. <see cref="PowerScriptIO.Text"/>).</summary>
+    /// <summary>Gets the data shape this script consumes. Filter on it to discover usable scripts (e.g. <see cref="PowerScriptIO.Text"/>).</summary>
     public PowerScriptIO Input { get; init; } = PowerScriptIO.None;
 
-    /// <summary>The data shape this script produces.</summary>
+    /// <summary>Gets the data shape this script produces.</summary>
     public PowerScriptIO Output { get; init; } = PowerScriptIO.None;
 
-    /// <summary>Authoritative input schema, including accepted media MIME types and scalar/array shape.</summary>
+    /// <summary>Gets authoritative input schema, including accepted media MIME types and scalar/array shape.</summary>
     public JsonElement? InputSchema { get; init; }
 
-    /// <summary>Authoritative output schema.</summary>
+    /// <summary>Gets authoritative output schema.</summary>
     public JsonElement? OutputSchema { get; init; }
 
-    /// <summary>The capabilities the script declares (e.g. <c>fileRead</c>, <c>network</c>).</summary>
+    /// <summary>Gets the capabilities the script declares (e.g. <c>fileRead</c>, <c>network</c>).</summary>
     public IReadOnlyList<string> Capabilities { get; init; } = [];
 
-    /// <summary>For <c>file</c> scripts, the file extensions it accepts (e.g. <c>.md</c>); empty otherwise.</summary>
+    /// <summary>Gets for <c>file</c> scripts, the file extensions it accepts (e.g. <c>.md</c>); empty otherwise.</summary>
     public IReadOnlyList<string> InputExtensions { get; init; } = [];
 
-    /// <summary>Minimum selected-file count, derived from minItems.</summary>
+    /// <summary>Gets minimum selected-file count, derived from minItems.</summary>
     public int InputMinFiles { get; init; }
 
-    /// <summary>Maximum selected-file count; null means unbounded.</summary>
+    /// <summary>Gets maximum selected-file count; null means unbounded.</summary>
     public int? InputMaxFiles { get; init; }
 
-    /// <summary>Absolute path to the script's folder (diagnostics only; do not execute directly).</summary>
+    /// <summary>Gets absolute path to the script's folder (diagnostics only; do not execute directly).</summary>
     public string? FolderPath { get; init; }
 
-    /// <summary>Absolute path to the entry file (diagnostics only; do not execute directly).</summary>
+    /// <summary>Gets absolute path to the entry file (diagnostics only; do not execute directly).</summary>
     public string? EntryFullPath { get; init; }
 
     /// <summary>
-    /// Informational snapshot of approval for the current content. Do not gate consumer selection
+    /// Gets a value indicating whether informational snapshot of approval for the current content. Do not gate consumer selection
     /// or activation on it; the Host checks current integrity and requests consent at execution.
     /// </summary>
     public bool Trusted { get; init; }
 
-    /// <summary>Typed parameters that the consumer may collect and pass to <c>Run</c>.</summary>
+    /// <summary>Gets typed parameters that the consumer may collect and pass to <c>Run</c>.</summary>
     public IReadOnlyList<PowerScriptParameter> Parameters { get; init; } = [];
 
-    /// <summary>True when this script consumes no input (a system action) — e.g. a hotkey or palette command.</summary>
+    /// <summary>Gets a value indicating whether true when this script consumes no input (a system action) — e.g. a hotkey or palette command.</summary>
     public bool IsAction => Input == PowerScriptIO.None;
 
     /// <summary>True when this script consumes <paramref name="input"/>.</summary>

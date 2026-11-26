@@ -19,7 +19,8 @@ public static class CliActionProvider
     public const int MaximumActionBytes = 256 * 1024;
     public const int DefaultTimeoutMs = 60000;
 
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new(
+)
     {
         MaxDepth = 16,
     };
@@ -89,7 +90,9 @@ public static class CliActionProvider
                 }
             }
 
-            return JsonSerializer.Deserialize<CliAction>(json, JsonOptions)
+            return JsonSerializer.Deserialize<CliAction>(
+                json,
+                JsonOptions)
                 ?? throw new InvalidDataException("A PowerToys action must be an object.");
         }
         catch (Exception ex) when (ex is JsonException or InvalidOperationException or FormatException or OverflowException)
@@ -227,7 +230,12 @@ public static class CliActionProvider
         IReadOnlyList<string>? files,
         IReadOnlyDictionary<string, string?>? parameters,
         MxcSettings? mxcSettings = null) =>
-        Run(manifest, files, parameters, mxcSettings, DefaultInstallationRoot(),
+        Run(
+            manifest,
+            files,
+            parameters,
+            mxcSettings,
+            DefaultInstallationRoot(),
             (start, context, timeout, settings) => ProcessRunner.Run(start, context, timeoutMs: timeout, mxcSettings: settings));
 
     internal static ScriptExecutionResult Run(
@@ -260,6 +268,7 @@ public static class CliActionProvider
             }
 
             var definition = BuiltinCliCatalog.Load().Get(action.CommandId)!;
+
             // Resolve once: the guard and actual launch must observe the same caller policy.
             var effectiveSettings = mxcSettings ?? MxcSettings.Load();
             if (GetUnavailableReason(definition, effectiveSettings) is { } isolationError)
@@ -311,7 +320,8 @@ public static class CliActionProvider
             }
 
             var start = CreateStartInfo(definition, executablePath!, manifest.FolderPath, values);
-            var inputPaths = definition.Parameters.Where(parameter => parameter.IsFile && values.ContainsKey(parameter.Name))
+            var inputPaths = definition.Parameters.Where(
+                parameter => parameter.IsFile && values.ContainsKey(parameter.Name))
                 .Select(parameter => values[parameter.Name]!).ToArray();
             var context = ProcessExecutionContext.FromManifest(manifest, inputPaths, exposed);
             var result = run(start, context, DefaultTimeoutMs, effectiveSettings);

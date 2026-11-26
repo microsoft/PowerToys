@@ -35,7 +35,7 @@ namespace PowerScripts.UI.ViewModels
         private readonly ISettingsRepository<GeneralSettings> _generalSettingsRepository;
         private readonly Func<string, int> _sendConfigMsg;
 
-        private bool _isEnabled;
+        private readonly PowerScriptModuleState _moduleEnabledState;
         private string _scriptsFolder;
         private int _pythonModeIndex;
         private string _pythonInterpreterPath;
@@ -60,9 +60,7 @@ namespace PowerScripts.UI.ViewModels
             _generalSettingsRepository = generalSettingsRepository;
             _sendConfigMsg = sendConfigMsg;
 
-            // The module-owned config.json override (if present) is authoritative, since the runner
-            // strips PowerScripts from settings.json on launch; fall back to the settings flag.
-            _isEnabled = ReadEnabledOverride() ?? generalSettingsRepository.SettingsConfig.Enabled.PowerScripts;
+            _moduleEnabledState = new(generalSettingsRepository.SettingsConfig.Enabled.PowerScripts);
             _scriptsFolder = ResolveScriptsFolder();
 
             Scripts = new ObservableCollection<PowerScriptListItem>();
@@ -196,12 +194,12 @@ namespace PowerScripts.UI.ViewModels
 
         public bool IsEnabled
         {
-            get => _isEnabled;
+            get => _moduleEnabledState.IsEnabled;
             set
             {
-                if (CanChangePowerScriptsEnabled && _isEnabled != value)
+                if (CanChangePowerScriptsEnabled && IsEnabled != value)
                 {
-                    _isEnabled = value;
+                    _moduleEnabledState.Request(value);
 
                     GeneralSettings generalSettings = _generalSettingsRepository.SettingsConfig;
                     generalSettings.Enabled.PowerScripts = value;
@@ -211,9 +209,6 @@ namespace PowerScripts.UI.ViewModels
                         var outgoing = new OutGoingGeneralSettings(generalSettings);
                         _sendConfigMsg(outgoing.ToString());
                     }
-
-                    // The shared Host uses this restart-durable gate independently of consumers.
-                    SaveEnabledOverride(value);
 
                     OnPropertyChanged();
                 }
@@ -762,33 +757,6 @@ namespace PowerScripts.UI.ViewModels
             }
 
             return array;
-        }
-
-        /// <summary>Reads the module-owned enabled override from config.json, or null when absent.</summary>
-        private static bool? ReadEnabledOverride()
-        {
-            try
-            {
-                var config = LoadConfigNode();
-                if (config["enabled"] is JsonValue value && value.TryGetValue<bool>(out var enabled))
-                {
-                    return enabled;
-                }
-            }
-            catch (Exception)
-            {
-                // A corrupt/unreadable config yields no override.
-            }
-
-            return null;
-        }
-
-        /// <summary>Persists the enabled override into config.json, preserving all other keys.</summary>
-        private static void SaveEnabledOverride(bool enabled)
-        {
-            var config = LoadConfigNode();
-            config["enabled"] = enabled;
-            WriteConfigNode(config);
         }
 
         private void LoadPythonSettings()

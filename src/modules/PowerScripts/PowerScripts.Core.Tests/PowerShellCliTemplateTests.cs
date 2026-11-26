@@ -15,6 +15,22 @@ namespace PowerScripts.Core.Tests;
 [TestClass]
 public sealed class PowerShellCliTemplateTests
 {
+    private const string PowerShellCliTemplateTestsScript = """
+            $Files = @($Files[0], [IO.Path]::GetDirectoryName($Files[0]))
+            $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
+            if ($arguments -contains '--kill') { throw 'A query/wait must never terminate processes.' }
+            if ($arguments[-2] -cne $Files[0] -or $arguments[-1] -cne $Files[1]) { throw 'Every requested path must remain a separate native argument.' }
+            if ($arguments -contains '--wait' -and $arguments -contains '--json') { throw 'Native wait does not support JSON output.' }
+            """;
+
+    private const string PowerDisplayProfileScript = """
+            $ProfileId = 3
+            $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
+            if ($arguments.Count -ne 2 -or $arguments[0] -cne 'apply-profile' -or $arguments[1] -cne '3') { throw 'Profile application requires one numeric selector.' }
+            $__powerscriptOutput = 'profile application status'
+            & ([ScriptBlock]::Create($env:CLI_TEMPLATE_OUTPUT_CODE))
+            """;
+
     private string _root = string.Empty;
 
     [TestInitialize]
@@ -63,7 +79,9 @@ public sealed class PowerShellCliTemplateTests
     [DataRow("powershell", "none", "text", "")]
     public void InvalidCliContractsCannotPublishPackages(string runtime, string input, string output, string content)
     {
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(_root,
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            _root,
             new("Invalid", Runtime: runtime, Input: input, Output: output, CliContent: content)));
         Assert.IsFalse(Directory.Exists(_root));
     }
@@ -72,11 +90,17 @@ public sealed class PowerShellCliTemplateTests
     public void ConflictingContentAndParameterBindingsCannotBeSilentlyIgnored()
     {
         Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create("greeting", _root, new("Invalid", CliContent: "fancyzones")));
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(_root,
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            _root,
             new("Invalid", Operation: new("fancyzones.get-layouts"), CliContent: "fancyzones")));
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(_root,
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            _root,
             new("Invalid", Parameters: [new("Command", new() { Type = "string" })], CliContent: "fancyzones")));
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(_root,
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            _root,
             new("Invalid", Input: "files", Parameters: [new("Files", new() { Type = "string" })], CliContent: "file-locksmith")));
         Assert.IsFalse(Directory.Exists(_root));
     }
@@ -105,10 +129,12 @@ public sealed class PowerShellCliTemplateTests
         var bindings = FixedDefaults("settings-module-state");
         bindings["Command"] = Fixed("disable");
         bindings["ModuleName"] = source == "fixed" ? Fixed("FancyZones") : new(source);
-        var created = ScriptTemplates.Create(_root, new("Save module state", Input: input,
-            CliContent: "settings-module-state", CliBindings: bindings));
+        var created = ScriptTemplates.Create(
+            _root,
+            new("Save module state", Input: input, CliContent: "settings-module-state", CliBindings: bindings));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
-        CollectionAssert.AreEqual(source == "parameter" ? new[] { "ModuleName" } : [],
+        CollectionAssert.AreEqual(
+            source == "parameter" ? (string[])["ModuleName"] : [],
             manifest.Parameters.Select(parameter => parameter.Name).ToArray());
         var script = File.ReadAllText(created.EntryPath);
         StringAssert.Contains(script, "$Command = 'disable'");
@@ -131,7 +157,7 @@ public sealed class PowerShellCliTemplateTests
         bindings["Monitor"] = new("parameter");
         var created = ScriptTemplates.Create(_root, new("Apply incoming layout", Input: "text", CliContent: "fancyzones", CliBindings: bindings));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
-        CollectionAssert.AreEqual(new[] { "Monitor" }, manifest.Parameters.Select(parameter => parameter.Name).ToArray());
+        CollectionAssert.AreEqual((string[])["Monitor"], manifest.Parameters.Select(parameter => parameter.Name).ToArray());
         var script = File.ReadAllText(created.EntryPath);
         StringAssert.Contains(script, "$Command = 'set-layout'");
         StringAssert.Contains(script, "$Layout = $Text");
@@ -147,8 +173,9 @@ public sealed class PowerShellCliTemplateTests
     {
         var bindings = FixedDefaults("advanced-paste-local");
         bindings["Content"] = source == "fixed" ? Fixed("Local text") : new(source);
-        var created = ScriptTemplates.Create(_root, new("Local transformation", Input: input,
-            CliContent: "advanced-paste-local", CliBindings: bindings));
+        var created = ScriptTemplates.Create(
+            _root,
+            new("Local transformation", Input: input, CliContent: "advanced-paste-local", CliBindings: bindings));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
 
         Assert.AreEqual(parameterCount, manifest.Parameters.Count);
@@ -192,7 +219,9 @@ public sealed class PowerShellCliTemplateTests
     {
         var bindings = FixedDefaults("fancyzones");
         bindings[name] = Fixed(value);
-        Assert.ThrowsException<InvalidDataException>(() => ScriptTemplates.Create(_root,
+        Assert.ThrowsException<InvalidDataException>(
+            () => ScriptTemplates.Create(
+            _root,
             new("Invalid", CliContent: "fancyzones", CliBindings: bindings)));
         Assert.IsFalse(Directory.Exists(_root));
     }
@@ -238,8 +267,9 @@ public sealed class PowerShellCliTemplateTests
             Assert.Inconclusive("This invocation check requires Windows and PowerShell 7.");
         }
 
-        var created = ScriptTemplates.Create(_root, new("Discrete arguments", CliContent: "power-display-discrete",
-            CliBindings: FixedDefaults("power-display-discrete")));
+        var created = ScriptTemplates.Create(
+            _root,
+            new("Discrete arguments", CliContent: "power-display-discrete", CliBindings: FixedDefaults("power-display-discrete")));
         var command = """
             $ErrorActionPreference = 'Stop'
             $script = [IO.File]::ReadAllText($env:CLI_TEMPLATE_ARGS_ENTRY)
@@ -259,7 +289,8 @@ public sealed class PowerShellCliTemplateTests
             }
             exit 0
             """;
-        var startInfo = new ProcessStartInfo(executable)
+        var startInfo = new ProcessStartInfo(
+            executable)
         {
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -290,19 +321,22 @@ public sealed class PowerShellCliTemplateTests
         const string sentinel = "quoted ' text; $(throw 'must not run') \" & |";
         foreach (var template in PowerShellCliTemplates.All)
         {
-            ScriptTemplates.Create(_root, new(template.Name, Input: template.Input, Output: template.Output, CliContent: template.Id,
-                Parameters: [new("LiteralValue", new() { Type = "string", Default = JsonSerializer.SerializeToElement(sentinel) })]));
+            ScriptTemplates.Create(
+                _root,
+                new(template.Name, Input: template.Input, Output: template.Output, CliContent: template.Id, Parameters: [new("LiteralValue", new() { Type = "string", Default = JsonSerializer.SerializeToElement(sentinel) })]));
         }
 
         var fixedBindings = FixedDefaults("fancyzones");
         fixedBindings["Layout"] = Fixed(sentinel);
-        ScriptTemplates.Create(_root, new("Quoted fixed values", CliContent: "fancyzones", CliBindings: fixedBindings,
-            Parameters: [new("LiteralValue", new() { Type = "string", Default = JsonSerializer.SerializeToElement(sentinel) })]));
+        ScriptTemplates.Create(
+            _root,
+            new("Quoted fixed values", CliContent: "fancyzones", CliBindings: fixedBindings, Parameters: [new("LiteralValue", new() { Type = "string", Default = JsonSerializer.SerializeToElement(sentinel) })]));
         var inputBindings = FixedDefaults("fancyzones");
         inputBindings["Monitor"] = new("input");
         inputBindings["AllMonitors"] = new("input");
-        ScriptTemplates.Create(_root, new("Typed text input", Input: "text", CliContent: "fancyzones", CliBindings: inputBindings,
-            Parameters: [new("LiteralValue", new() { Type = "string", Default = JsonSerializer.SerializeToElement(sentinel) })]));
+        ScriptTemplates.Create(
+            _root,
+            new("Typed text input", Input: "text", CliContent: "fancyzones", CliBindings: inputBindings, Parameters: [new("LiteralValue", new() { Type = "string", Default = JsonSerializer.SerializeToElement(sentinel) })]));
 
         var command = """
             $ErrorActionPreference = 'Stop'
@@ -314,7 +348,8 @@ public sealed class PowerShellCliTemplateTests
                 if ($parameter.DefaultValue.SafeGetValue() -cne $env:CLI_TEMPLATE_PARSE_VALUE) { throw 'Default value was not preserved as literal data.' }
             }
             """;
-        var startInfo = new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\powershell.exe"))
+        var startInfo = new ProcessStartInfo(
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), @"WindowsPowerShell\v1.0\powershell.exe"))
         {
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -347,8 +382,9 @@ public sealed class PowerShellCliTemplateTests
     [DataRow("image-resizer", "files", "files")]
     public void RetiredRecipesKeepExistingSavedContracts(string id, string input, string output)
     {
-        var created = ScriptTemplates.Create(_root, new("Existing " + id, Input: input, Output: output,
-            CliContent: id, CliBindings: FixedDefaults(id)));
+        var created = ScriptTemplates.Create(
+            _root,
+            new("Existing " + id, Input: input, Output: output, CliContent: id, CliBindings: FixedDefaults(id)));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
         Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
         Assert.AreEqual(id, manifest.HostCli!.Id);
@@ -368,7 +404,7 @@ public sealed class PowerShellCliTemplateTests
     [DataRow("advanced-paste-ai-files-file", true)]
     public void GeneratedFileResultsRequireAFileAndKeepNativeProgressOffStdout(string id, bool missing)
     {
-        var result = RunGeneratedFixture(id, $$"""
+        var fixture = $$"""
             $fixture = & ([ScriptBlock]::Create($builder + '; @{ arguments = $__powerscriptArguments.ToArray(); file = $__powerscriptResultFile }'))
             if ($fixture.arguments -contains '--stdout' -or $fixture.arguments -contains '--output-clipboard') { throw 'File recipes must use an explicit file output.' }
             $__powerscriptResultFile = $fixture.file
@@ -380,7 +416,8 @@ public sealed class PowerShellCliTemplateTests
             } catch {
                 if (-not ${{(missing ? "true" : "false")}} -or $_.Exception.Message -notlike '*did not produce the requested output file*') { throw }
             }
-            """);
+            """;
+        var result = RunGeneratedFixture(id, fixture);
         StringAssert.Contains(result.Stderr, "native progress, not primary output");
         if (missing)
         {
@@ -404,7 +441,7 @@ public sealed class PowerShellCliTemplateTests
     [DataRow("1,--confirm-power-off", false)]
     public void DisplayBatchesRemainOneValidatedNativeArgument(string monitors, bool valid)
     {
-        var result = RunGeneratedFixture("power-display-adjust-action", $$"""
+        var fixture = $$"""
             $MonitorNumbers = $env:CLI_TEMPLATE_MONITORS
             try {
                 $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
@@ -413,7 +450,8 @@ public sealed class PowerShellCliTemplateTests
             } catch {
                 if (${{(valid ? "true" : "false")}} -or $_.Exception.Message -notlike '*comma-separated positive monitor indices*') { throw }
             }
-            """, monitors);
+            """;
+        var result = RunGeneratedFixture("power-display-adjust-action", fixture, monitors);
         Assert.AreEqual(string.Empty, result.Stdout);
     }
 
@@ -423,7 +461,7 @@ public sealed class PowerShellCliTemplateTests
     [DataRow("preset", "invalid ignored width", "invalid ignored height", true)]
     public void ResizerSupportsAutomaticDimensionsAndPresetsWithoutPassingOriginals(string sizing, string width, string height, bool valid)
     {
-        var result = RunGeneratedFixture("image-resizer-options", $$"""
+        var fixture = $$"""
             $Sizing = '{{sizing}}'; $Width = '{{width}}'; $Height = '{{height}}'
             $JpegQuality = 80; $RemoveMetadata = $true
             try {
@@ -439,7 +477,8 @@ public sealed class PowerShellCliTemplateTests
                 if (${{(valid ? "true" : "false")}} -or $_.Exception.Message -notlike '*At least one dimension must be positive*') { throw }
             }
             if ([IO.File]::ReadAllText($Files[0]) -cne 'original fixture') { throw 'Original content changed.' }
-            """);
+            """;
+        var result = RunGeneratedFixture("image-resizer-options", fixture);
         Assert.AreEqual(string.Empty, result.Stdout);
     }
 
@@ -452,13 +491,7 @@ public sealed class PowerShellCliTemplateTests
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
         Assert.IsNull(manifest.Input!.MaxFiles, "Batch input must not be limited to one file.");
         Assert.AreEqual(0, ManifestValidator.Validate(manifest, string.Empty).Count);
-        var result = RunGeneratedFixture(id, """
-            $Files = @($Files[0], [IO.Path]::GetDirectoryName($Files[0]))
-            $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
-            if ($arguments -contains '--kill') { throw 'A query/wait must never terminate processes.' }
-            if ($arguments[-2] -cne $Files[0] -or $arguments[-1] -cne $Files[1]) { throw 'Every requested path must remain a separate native argument.' }
-            if ($arguments -contains '--wait' -and $arguments -contains '--json') { throw 'Native wait does not support JSON output.' }
-            """);
+        var result = RunGeneratedFixture(id, PowerShellCliTemplateTestsScript);
         Assert.AreEqual(string.Empty, result.Stdout);
     }
 
@@ -467,15 +500,11 @@ public sealed class PowerShellCliTemplateTests
     {
         var bindings = FixedDefaults("power-display-profile");
         bindings["ProfileId"] = Fixed(0);
-        Assert.ThrowsException<InvalidDataException>(() => ScriptTemplates.Create(_root,
+        Assert.ThrowsException<InvalidDataException>(
+            () => ScriptTemplates.Create(
+            _root,
             new("Invalid profile", Output: "none", CliContent: "power-display-profile", CliBindings: bindings)));
-        var result = RunGeneratedFixture("power-display-profile", """
-            $ProfileId = 3
-            $arguments = @(& ([ScriptBlock]::Create($builder + '; $__powerscriptArguments.ToArray()')))
-            if ($arguments.Count -ne 2 -or $arguments[0] -cne 'apply-profile' -or $arguments[1] -cne '3') { throw 'Profile application requires one numeric selector.' }
-            $__powerscriptOutput = 'profile application status'
-            & ([ScriptBlock]::Create($env:CLI_TEMPLATE_OUTPUT_CODE))
-            """);
+        var result = RunGeneratedFixture("power-display-profile", PowerDisplayProfileScript);
         Assert.AreEqual(string.Empty, result.Stdout, "Action status must not masquerade as primary text.");
         StringAssert.Contains(result.Stderr, "profile application status");
     }
@@ -516,7 +545,8 @@ public sealed class PowerShellCliTemplateTests
             foreach ($name in $values.Keys) { Set-Variable -Name $name -Value $values[$name] }
             $Files = @($env:CLI_TEMPLATE_INPUT); $Content = '<p>fixture text</p>'
             """ + Environment.NewLine + command + Environment.NewLine + "exit 0";
-        var startInfo = new ProcessStartInfo(executable)
+        var startInfo = new ProcessStartInfo(
+            executable)
         {
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -540,5 +570,4 @@ public sealed class PowerShellCliTemplateTests
         Assert.AreEqual(0, process.ExitCode, result.Stdout + result.Stderr);
         return result;
     }
-
 }

@@ -40,11 +40,16 @@ public sealed class HostCliBrokerTests
             Assert.AreEqual(definition.Id, manifest.HostCli.Id);
             Assert.AreEqual(0, HostCliBroker.Validate(manifest).Count, definition.Id);
             CollectionAssert.IsSubsetOf(PowerShellCliTemplates.HostCapabilities(definition.Id).ToArray(), manifest.Capabilities);
-            var parameters = definition.Parameters.ToDictionary(parameter => parameter.Name,
+            var parameters = definition.Parameters.ToDictionary(
+                parameter => parameter.Name,
                 parameter => (string?)parameter.Schema.Default.ToString());
-            Assert.IsNotNull(HostCliBroker.CreateInvocation(manifest,
-                definition.Input == "files" ? [Path.Combine(_root, "input.txt")] : [],
-                parameters, definition.Input == "text" ? "Input text" : null), definition.Id);
+            Assert.IsNotNull(
+                HostCliBroker.CreateInvocation(
+                    manifest,
+                    definition.Input == "files" ? [Path.Combine(_root, "input.txt")] : [],
+                    parameters,
+                    definition.Input == "text" ? "Input text" : null),
+                definition.Id);
             var descriptor = JsonNode.Parse(File.ReadAllText(manifest.EntryFullPath + ".tool.json"))!;
             Assert.IsNull(descriptor["x-powerscript"]!["mxc"], definition.Id);
         }
@@ -80,7 +85,11 @@ public sealed class HostCliBrokerTests
         var (invocation, request) = CreateInvocation();
         request[name] = value;
         var launches = 0;
-        var result = invocation.Run(request.ToJsonString(), _root, 1000, (_, _, _) =>
+        var result = invocation.Run(
+            request.ToJsonString(),
+            _root,
+            1000,
+            (_, _, _) =>
         {
             launches++;
             return new ProcessRunResult(0, "unexpected", string.Empty);
@@ -110,25 +119,29 @@ public sealed class HostCliBrokerTests
     {
         var definition = PowerShellCliTemplates.Get("advanced-paste-transform");
         var file = Path.Combine(_root, "fixed.txt");
-        var bindings = definition.Parameters.ToDictionary(parameter => parameter.Name,
+        var bindings = definition.Parameters.ToDictionary(
+            parameter => parameter.Name,
             parameter => new PowerShellCliBinding("fixed", parameter.Schema.Default));
         bindings["Action"] = new PowerShellCliBinding("input");
         bindings["SourceFile"] = new PowerShellCliBinding("fixed", JsonSerializer.SerializeToElement(file));
-        var created = ScriptTemplates.Create(_root, new(
-            "Scalar primary input", Input: "text", CliContent: definition.Id, CliBindings: bindings));
+        var created = ScriptTemplates.Create(
+            _root,
+            new("Scalar primary input", Input: "text", CliContent: definition.Id, CliBindings: bindings));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
         var invocation = HostCliBroker.CreateInvocation(manifest, [], new Dictionary<string, string?>(), "markdown")!;
         var values = definition.Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.Schema.Default);
         values["Action"] = JsonSerializer.SerializeToElement("markdown");
         values["SourceFile"] = JsonSerializer.SerializeToElement(file);
-        invocation.ValidateRequest(JsonSerializer.Serialize(new
-        {
-            protocolVersion = 1,
-            id = definition.Id,
-            token = invocation.Token,
-            values,
-            files = new[] { file },
-        }));
+        invocation.ValidateRequest(
+            JsonSerializer.Serialize(
+            new
+            {
+                protocolVersion = 1,
+                id = definition.Id,
+                token = invocation.Token,
+                values,
+                files = new[] { file },
+            }));
     }
 
     [TestMethod]
@@ -137,14 +150,15 @@ public sealed class HostCliBrokerTests
         var manifest = CreateManifest("file-locksmith");
         var source = Path.Combine(_root, "original.txt");
         var invocation = HostCliBroker.CreateInvocation(manifest, [source], new Dictionary<string, string?>(), null)!;
-        var request = JsonSerializer.SerializeToNode(new
-        {
-            protocolVersion = 1,
-            id = "file-locksmith",
-            token = invocation.Token,
-            values = new { SourceFile = source, Json = true },
-            files = new[] { source },
-        })!;
+        var request = JsonSerializer.SerializeToNode(
+            new
+            {
+                protocolVersion = 1,
+                id = "file-locksmith",
+                token = invocation.Token,
+                values = new { SourceFile = source, Json = true },
+                files = new[] { source },
+            })!;
         invocation.ValidateRequest(request.ToJsonString());
         request["files"]![0] = Path.Combine(_root, "other.txt");
         Assert.ThrowsException<InvalidDataException>(() => invocation.ValidateRequest(request.ToJsonString()));
@@ -156,7 +170,8 @@ public sealed class HostCliBrokerTests
         var definition = PowerShellCliTemplates.Get("fancyzones");
         var created = ScriptTemplates.Create(_root, new("Runtime host request", CliContent: definition.Id));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
-        var values = definition.Parameters.ToDictionary(parameter => parameter.Name,
+        var values = definition.Parameters.ToDictionary(
+            parameter => parameter.Name,
             parameter => (string?)parameter.Schema.Default.ToString());
         values["Command"] = "not-a-command";
         Assert.ThrowsException<InvalidDataException>(() => HostCliBroker.CreateInvocation(manifest, [], values, null));
@@ -175,7 +190,11 @@ public sealed class HostCliBrokerTests
         Directory.CreateDirectory(_root);
         File.WriteAllBytes(Path.Combine(_root, "FancyZonesCLI.exe"), []);
         var launches = 0;
-        var result = invocation.Run(request.ToJsonString(), _root, 1234, (start, input, timeout) =>
+        var result = invocation.Run(
+            request.ToJsonString(),
+            _root,
+            1234,
+            (start, input, timeout) =>
         {
             launches++;
             Assert.AreEqual(interpreter, start.FileName);
@@ -190,7 +209,11 @@ public sealed class HostCliBrokerTests
         });
         Assert.AreEqual(17, result.ExitCode);
         Assert.AreEqual("native failure", result.StdErr);
-        var replay = invocation.Run(request.ToJsonString(), _root, 1234, (_, _, _) =>
+        var replay = invocation.Run(
+            request.ToJsonString(),
+            _root,
+            1234,
+            (_, _, _) =>
         {
             launches++;
             return new ProcessRunResult(0, "unexpected", string.Empty);
@@ -218,8 +241,12 @@ public sealed class HostCliBrokerTests
     {
         var (invocation, request) = CreateInvocation();
         var valid = request.ToJsonString();
-        Assert.ThrowsException<InvalidDataException>(() => invocation.ValidateRequest(valid.Replace(
-            "\"protocolVersion\":1", "\"protocolVersion\":1,\"protocolVersion\":1", StringComparison.Ordinal)));
+        Assert.ThrowsException<InvalidDataException>(
+            () => invocation.ValidateRequest(
+            valid.Replace(
+            "\"protocolVersion\":1",
+            "\"protocolVersion\":1,\"protocolVersion\":1",
+            StringComparison.Ordinal)));
         Assert.ThrowsException<InvalidDataException>(() => invocation.ValidateRequest(new string(' ', HostCliBroker.MaximumRequestBytes + 1)));
         var random = new Random(0x7B10);
         for (var i = 0; i < 1024; i++)
@@ -246,10 +273,9 @@ public sealed class HostCliBrokerTests
     private PowerScriptManifest CreateManifest(string id)
     {
         var definition = PowerShellCliTemplates.Get(id);
-        var created = ScriptTemplates.Create(_root, new(
-            "Broker " + id, Input: definition.Input, Output: definition.Output, CliContent: id,
-            CliBindings: definition.Parameters.ToDictionary(parameter => parameter.Name,
-                parameter => new PowerShellCliBinding("fixed", parameter.Schema.Default))));
+        var created = ScriptTemplates.Create(
+            _root,
+            new("Broker " + id, Input: definition.Input, Output: definition.Output, CliContent: id, CliBindings: definition.Parameters.ToDictionary(parameter => parameter.Name, parameter => new PowerShellCliBinding("fixed", parameter.Schema.Default))));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
         manifest.FolderPath = Path.GetDirectoryName(created.EntryPath)!;
         return manifest;
@@ -261,14 +287,15 @@ public sealed class HostCliBrokerTests
         var values = definition.Parameters.ToDictionary(parameter => parameter.Name, parameter => parameter.Schema.Default);
         values["Layout"] = JsonSerializer.SerializeToElement(layout);
         var invocation = new HostCliInvocation(definition, values, [], _root);
-        var request = JsonSerializer.SerializeToNode(new
-        {
-            protocolVersion = 1,
-            id = definition.Id,
-            token = invocation.Token,
-            values,
-            files = Array.Empty<string>(),
-        })!.AsObject();
+        var request = JsonSerializer.SerializeToNode(
+            new
+            {
+                protocolVersion = 1,
+                id = definition.Id,
+                token = invocation.Token,
+                values,
+                files = Array.Empty<string>(),
+            })!.AsObject();
         return (invocation, request);
     }
 }

@@ -28,10 +28,9 @@ public sealed class ConsumerSettingsTests
                             foreach (var consumerPolicy in policies)
                             {
                                 var store = new MemoryStore();
-                                store.WriteBlob("config.json", new JsonObject
-                                {
-                                    ["consumers"] = new JsonObject { [id] = user },
-                                }.ToJsonString());
+                                store.WriteBlob(
+                                    "config.json",
+                                    new JsonObject { ["consumers"] = new JsonObject { [id] = user }, }.ToJsonString());
                                 var parent = id switch
                                 {
                                     "advanced-paste" => "AdvancedPaste",
@@ -84,8 +83,12 @@ public sealed class ConsumerSettingsTests
     {
         var store = new MemoryStore();
         bool? policy = null;
-        var settings = new ConsumerSettings(store, (key, name) =>
-            key == PowerScriptsPolicies.ConsumersKey && name == "file-explorer" ? policy : null, () => true, () => false);
+        var settings = new ConsumerSettings(
+            store,
+            (key, name) =>
+            key == PowerScriptsPolicies.ConsumersKey && name == "file-explorer" ? policy : null,
+            () => true,
+            () => false);
         settings.Set("file-explorer", true);
         Assert.IsTrue(settings.Get("file-explorer").IsEnabled);
         policy = false;
@@ -145,7 +148,7 @@ public sealed class ConsumerSettingsTests
         var snapshot = settings.GetSnapshot();
 
         CollectionAssert.AreEquivalent(
-            new[] { "advanced-paste", "keyboard-manager", "command-palette", "file-explorer" },
+            (string[])["advanced-paste", "keyboard-manager", "command-palette", "file-explorer"],
             snapshot.Consumers.Select(item => item.Id).ToArray());
         Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "command-palette").IsEnabled);
         Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "advanced-paste").IsEnabled);
@@ -212,10 +215,9 @@ public sealed class ConsumerSettingsTests
         try
         {
             Directory.CreateDirectory(Path.Combine(root, "AdvancedPaste"));
-            File.WriteAllText(Path.Combine(root, "AdvancedPaste", "settings.json"), new JsonObject
-            {
-                ["properties"] = new JsonObject { ["powerscripts-enabled"] = JsonNode.Parse(value) },
-            }.ToJsonString());
+            File.WriteAllText(
+                Path.Combine(root, "AdvancedPaste", "settings.json"),
+                new JsonObject { ["properties"] = new JsonObject { ["powerscripts-enabled"] = JsonNode.Parse(value) }, }.ToJsonString());
             var store = new FileSettingsStore(Path.Combine(root, "PowerScripts"));
             var settings = new ConsumerSettings(store, (_, _) => null, () => true);
             Assert.AreEqual(expected, settings.Get("advanced-paste").UserEnabled);
@@ -276,7 +278,8 @@ public sealed class ConsumerSettingsTests
         Assert.AreEqual(false, PowerScriptsPolicies.ResolveValue(machine => machine ? null : 0));
         Assert.AreEqual(true, PowerScriptsPolicies.ResolveValue(machine => machine ? null : 1));
         Assert.IsNull(PowerScriptsPolicies.ResolveValue(_ => null));
-        Assert.ThrowsException<UnauthorizedAccessException>(() =>
+        Assert.ThrowsException<UnauthorizedAccessException>(
+            () =>
             PowerScriptsPolicies.ResolveValue(_ => throw new UnauthorizedAccessException("Policy unavailable")));
     }
 
@@ -284,7 +287,7 @@ public sealed class ConsumerSettingsTests
     public void IndividualUtilityPolicyOverridesAllUtilityDefault()
     {
         bool? individual = true;
-        bool? Read(string _, string name) => name == "ConfigureEnabledUtilityPowerScripts" ? individual : false;
+        bool? Read(string path, string name) => name == "ConfigureEnabledUtilityPowerScripts" ? individual : false;
         Assert.AreEqual(true, PowerScriptsPolicies.ReadUtility("PowerScripts", Read));
         individual = null;
         Assert.AreEqual(false, PowerScriptsPolicies.ReadUtility("PowerScripts", Read));

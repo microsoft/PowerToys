@@ -16,4 +16,8 @@ No binding API is assumed. Do not edit KBM JSON or claim creation assigns a hotk
 5. Warn about conflicts/reserved shortcuts; never overwrite mappings or claim
    unchecked conflict detection. Test only with consent and verify actual effects.
 
+Current hotkey bindings allow the Host to request approval on first execution or after edits.
+Trust remains tied to exact script and descriptor bytes; saving a binding does not approve them.
+Unattended automatic triggers must use `--no-consent` and obtain approval separately.
+
 Report creation/discovery, trust/execution, and shortcut setup independently.

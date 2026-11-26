@@ -30,6 +30,7 @@ public sealed class CliCatalogueTests
             var options = PowerShellCliTemplates.Configure(new("Compatibility", Input: recipe.Input, Output: recipe.Output, CliContent: id));
             var metadata = JsonSerializer.SerializeToNode(recipe, ToolDescriptorParser.JsonOptions)!;
             metadata.AsObject().Remove("iconName");
+
             // The old module-wide batch hint was also set on a query with no files input.
             if (recipe.Input != "files")
             {
@@ -44,7 +45,9 @@ public sealed class CliCatalogueTests
 
             payload += "\n" + string.Join(",", PowerShellCliTemplates.HostCapabilities(id));
             var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload.Replace("\r\n", "\n", StringComparison.Ordinal))));
-            Assert.AreEqual(item.GetProperty("sha256").GetString(), fingerprint,
+            Assert.AreEqual(
+                item.GetProperty("sha256").GetString(),
+                fingerprint,
                 $"{id}: reviewed argument schemas, generated behavior or Host permissions changed.");
         }
     }
@@ -76,7 +79,8 @@ public sealed class CliCatalogueTests
     public void InvalidDefinitionsFailBeforeEnteringTheCatalogue(string problem)
     {
         var module = new ExampleCliModule(problem);
-        Assert.ThrowsException<InvalidOperationException>(() => PowerShellCliTemplates.CreateCatalogue(
+        Assert.ThrowsException<InvalidOperationException>(
+            () => PowerShellCliTemplates.CreateCatalogue(
             problem == "duplicate-module" ? [module, module] : [module]));
     }
 
@@ -92,7 +96,9 @@ public sealed class CliCatalogueTests
         var finish = document.IndexOf(end, StringComparison.Ordinal);
         Assert.IsTrue(start >= 0 && finish > start, "The matrix requires generated-section markers.");
         start += begin.Length;
-        Assert.AreEqual(PowerShellCliTemplates.CreateScenarioMatrix(), document[start..finish],
+        Assert.AreEqual(
+            PowerShellCliTemplates.CreateScenarioMatrix(),
+            document[start..finish],
             "Build the Host, run Update-CliTemplateMatrix.ps1, then rebuild the tests.");
     }
 
@@ -125,7 +131,7 @@ public sealed class CliCatalogueTests
         Assert.IsTrue(process.WaitForExit(30_000), "Argument fixture timed out.");
         Assert.AreEqual(0, process.ExitCode, stderr.GetAwaiter().GetResult());
         var actual = JsonSerializer.Deserialize<string[]>(stdout.GetAwaiter().GetResult())!;
-        CollectionAssert.AreEqual(new[] { "inspect", "--label", value, "--count", "7", "--json", "--", @"C:\fixtures\one file.txt", @"C:\fixtures\two.txt" }, actual);
+        CollectionAssert.AreEqual((string[])["inspect", "--label", value, "--count", "7", "--json", "--", @"C:\fixtures\one file.txt", @"C:\fixtures\two.txt"], actual);
         Assert.ThrowsException<ArgumentException>(() => CliArgument.Switch("--bad", Text("Bad", "Not boolean.")));
         Assert.ThrowsException<ArgumentException>(() => CliArgument.Option("--bad", Flag("Bad", "Not a value option.")));
     }
@@ -144,14 +150,20 @@ public sealed class CliCatalogueTests
 
         public override IReadOnlyList<PowerShellCliTemplate> CreateRecipes()
         {
-            var recipe = Describe(Query("example-inspect", "Inspect selected files", "Return a report without modifying files.", "files",
-                CliArgument.Literal("inspect"),
-                CliArgument.Option("--label", Text("Label", "Report label.")),
-                CliArgument.Option("--count", Integer("Count", "Maximum results.", 10, 1, 100)),
-                CliArgument.Switch("--json", Flag("Json", "Structured report.", true)),
-                CliArgument.Literal("--"),
-                CliArgument.InputFiles()) with
-            { SupportsFileBatch = true }, "inspect [--label] [--count] [--json] -- <files...>");
+            var recipe = Describe(
+                Query(
+                    "example-inspect",
+                    "Inspect selected files",
+                    "Return a report without modifying files.",
+                    "files",
+                    CliArgument.Literal("inspect"),
+                    CliArgument.Option("--label", Text("Label", "Report label.")),
+                    CliArgument.Option("--count", Integer("Count", "Maximum results.", 10, 1, 100)),
+                    CliArgument.Switch("--json", Flag("Json", "Structured report.", true)),
+                    CliArgument.Literal("--"),
+                    CliArgument.InputFiles()) with
+                { SupportsFileBatch = true },
+                "inspect [--label] [--count] [--json] -- <files...>");
             recipe = problem switch
             {
                 "missing-documentation" => recipe with { CommandSynopsis = string.Empty },

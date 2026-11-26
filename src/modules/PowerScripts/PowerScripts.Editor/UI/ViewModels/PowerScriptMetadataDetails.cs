@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -16,10 +18,10 @@ public static class PowerScriptMetadataDetails
 {
     private static readonly string[] PrimaryFields = { "files", "text", "image", "audio" };
 
-    public static IReadOnlyList<PowerScriptMetadataSection> Create(JsonObject descriptor, Func<string, string> getString, string entryExtension = null)
+    public static IReadOnlyList<PowerScriptMetadataSection> Create(JsonObject descriptor, Func<string, string> getString, string? entryExtension = null)
     {
         string Text(string key) => getString("PowerScripts_Details" + key);
-        string Value(JsonNode node) => node switch
+        string Value(JsonNode? node) => node switch
         {
             null => Text("Null"),
             JsonValue value when value.GetValueKind() == JsonValueKind.String =>
@@ -32,9 +34,9 @@ public static class PowerScriptMetadataDetails
             JsonObject map => string.Join(Environment.NewLine, map.Select(pair => pair.Key + ": " + Value(pair.Value))),
             _ => node.ToJsonString(),
         };
-        string Optional(JsonNode node) => node is null ? Text("NotSpecified") : Value(node);
-        string Token(JsonNode node) => node is JsonValue value && value.TryGetValue<string>(out var text) ? text : string.Empty;
-        string Shape(JsonNode node) => node?["properties"] is JsonObject properties
+        string Optional(JsonNode? node) => node is null ? Text("NotSpecified") : Value(node);
+        string Token(JsonNode? node) => node is JsonValue value && value.TryGetValue<string>(out var text) ? text : string.Empty;
+        string Shape(JsonNode? node) => node?["properties"] is JsonObject properties
             ? PrimaryFields.FirstOrDefault(properties.ContainsKey) ?? "none" : "none";
         string Io(string shape) => Text(shape switch { "files" => "Files", "text" => "Text", "image" => "Image", "audio" => "Audio", _ => "None" });
         PowerScriptMetadataRow Row(string key, string label, string value) => new(key, Text(label), value);
@@ -106,7 +108,7 @@ public static class PowerScriptMetadataDetails
             "hostPowerToysCli" => Text("HostCli"),
             _ => Value(value),
         });
-        var capabilitiesDisplay = capabilities is { Count: > 0 } ? string.Join(", ", capabilityNames) : Text("None");
+        var capabilitiesDisplay = capabilities is { Count: > 0 } ? string.Join(", ", capabilityNames!) : Text("None");
         sections.Add(new("Capabilities", Text("CapabilitiesSection"), new[]
         {
             Row("Capabilities", "Capabilities", capabilitiesDisplay),

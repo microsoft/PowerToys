@@ -24,7 +24,7 @@ public sealed class FileSettingsStore : ISettingsStore
             : baseDirectory;
     }
 
-    /// <summary>The directory blob keys are resolved against.</summary>
+    /// <summary>Gets the directory blob keys are resolved against.</summary>
     public string BaseDirectory => _baseDirectory;
 
     public string? ReadBlob(string key)

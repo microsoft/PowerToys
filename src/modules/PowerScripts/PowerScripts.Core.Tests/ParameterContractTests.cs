@@ -12,6 +12,46 @@ namespace PowerScripts.Core.Tests;
 [TestClass]
 public class ParameterContractTests
 {
+    private const string ParameterContractTestsScript = """
+                {
+                  "name": "demo",
+                  "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "parameters": {
+                        "type": "object",
+                        "properties": {
+                          "requiredValue": {
+                            "type": "string"
+                          },
+                          "optionalValue": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "requiredValue"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [],
+                    "additionalProperties": false
+                  },
+                  "outputSchema": {
+                    "type": "object",
+                    "properties": {
+                      "text": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "text"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+                """;
+
     [TestMethod]
     public void Resolver_AppliesDefaults_AndValidatesRequiredValues()
     {
@@ -25,14 +65,16 @@ public class ParameterContractTests
             ],
         };
 
-        Assert.IsFalse(ScriptParameterResolver.TryResolve(
+        Assert.IsFalse(
+            ScriptParameterResolver.TryResolve(
             manifest,
             new Dictionary<string, string?>(),
             out _,
             out var missingError));
         StringAssert.Contains(missingError, "required");
 
-        Assert.IsTrue(ScriptParameterResolver.TryResolve(
+        Assert.IsTrue(
+            ScriptParameterResolver.TryResolve(
             manifest,
             new Dictionary<string, string?> { ["required"] = "value" },
             out var resolved,
@@ -58,14 +100,16 @@ public class ParameterContractTests
             ],
         };
 
-        Assert.IsFalse(ScriptParameterResolver.TryResolve(
+        Assert.IsFalse(
+            ScriptParameterResolver.TryResolve(
             manifest,
             new Dictionary<string, string?> { ["unknown"] = "value" },
             out _,
             out var unknownError));
         StringAssert.Contains(unknownError, "Unknown parameter");
 
-        Assert.IsFalse(ScriptParameterResolver.TryResolve(
+        Assert.IsFalse(
+            ScriptParameterResolver.TryResolve(
             manifest,
             new Dictionary<string, string?> { ["mode"] = "invalid" },
             out _,
@@ -85,14 +129,16 @@ public class ParameterContractTests
             ],
         };
 
-        Assert.IsTrue(ScriptParameterResolver.TryResolve(
+        Assert.IsTrue(
+            ScriptParameterResolver.TryResolve(
             manifest,
             new Dictionary<string, string?> { ["ENABLED"] = "true" },
             out var resolved,
             out _));
         Assert.AreEqual("true", resolved["enabled"]);
 
-        Assert.IsFalse(ScriptParameterResolver.TryResolve(
+        Assert.IsFalse(
+            ScriptParameterResolver.TryResolve(
             manifest,
             new Dictionary<string, string?> { ["enabled"] = string.Empty },
             out _,
@@ -117,7 +163,8 @@ public class ParameterContractTests
             ],
         };
 
-        Assert.IsFalse(ScriptParameterResolver.TryResolve(
+        Assert.IsFalse(
+            ScriptParameterResolver.TryResolve(
             manifest,
             new Dictionary<string, string?> { ["file"] = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")) },
             out _,
@@ -127,7 +174,8 @@ public class ParameterContractTests
         var existingFile = Path.GetTempFileName();
         try
         {
-            Assert.IsTrue(ScriptParameterResolver.TryResolve(
+            Assert.IsTrue(
+                ScriptParameterResolver.TryResolve(
                 manifest,
                 new Dictionary<string, string?> { ["file"] = existingFile },
                 out var resolved,
@@ -158,11 +206,7 @@ public class ParameterContractTests
 
             var context = ProcessExecutionContext.FromManifest(
                 manifest,
-                parameters: new Dictionary<string, string?>
-                {
-                    ["file"] = file,
-                    ["label"] = Path.GetTempPath(),
-                });
+                parameters: new Dictionary<string, string?> { ["file"] = file, ["label"] = Path.GetTempPath(), });
 
             CollectionAssert.AreEqual(new[] { file }, context.InputPaths.ToArray());
         }
@@ -221,7 +265,8 @@ public class ParameterContractTests
                     new ScriptParameter { Name = "optional", Type = ScriptParameter.ParameterTypeFile },
                 ],
             };
-            Assert.IsTrue(ScriptParameterResolver.TryResolve(
+            Assert.IsTrue(
+                ScriptParameterResolver.TryResolve(
                 manifest,
                 new Dictionary<string, string?> { ["optional"] = string.Empty },
                 out var resolved,
@@ -249,7 +294,8 @@ public class ParameterContractTests
             Parameters = [new ScriptParameter { Name = "file", Type = ScriptParameter.ParameterTypeFile }],
         };
 
-        var error = Assert.ThrowsException<NotSupportedException>(() =>
+        var error = Assert.ThrowsException<NotSupportedException>(
+            () =>
             PythonRuntime.TranslateWslFileParameters(
                 manifest,
                 new Dictionary<string, string> { ["file"] = @"\\server\share\input.txt" }));
@@ -267,45 +313,7 @@ public class ParameterContractTests
             var script = Path.Combine(root, "demo.ps1");
             File.WriteAllText(script, "Write-Output ok");
             var descriptor = script + ToolDescriptorParser.DescriptorSuffix;
-            File.WriteAllText(descriptor, """
-                {
-                  "name": "demo",
-                  "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                      "parameters": {
-                        "type": "object",
-                        "properties": {
-                          "requiredValue": {
-                            "type": "string"
-                          },
-                          "optionalValue": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "requiredValue"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "required": [],
-                    "additionalProperties": false
-                  },
-                  "outputSchema": {
-                    "type": "object",
-                    "properties": {
-                      "text": {
-                        "type": "string"
-                      }
-                    },
-                    "required": [
-                      "text"
-                    ],
-                    "additionalProperties": false
-                  }
-                }
-                """);
+            File.WriteAllText(descriptor, ParameterContractTestsScript);
 
             var manifest = ToolDescriptorParser.TryParseFile(descriptor);
             Assert.IsNotNull(manifest);

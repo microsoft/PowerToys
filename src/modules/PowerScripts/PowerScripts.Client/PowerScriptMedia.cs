@@ -6,9 +6,6 @@ using System.Text.Json;
 
 namespace PowerScripts.Client;
 
-/// <summary>One image or audio item. Data contains raw bytes, not base64 or a file path.</summary>
-public sealed record PowerScriptMediaItem(string MimeType, byte[] Data);
-
 /// <summary>A single inline media item or an explicitly declared collection.</summary>
 public sealed class PowerScriptMedia
 {
@@ -18,14 +15,14 @@ public sealed class PowerScriptMedia
     /// <summary>Maximum decoded bytes across a collection.</summary>
     public const int MaxTotalBytes = 32 * 1024 * 1024;
 
-    /// <summary>Creates a scalar media value.</summary>
+    /// <summary>Initializes a new instance of the <see cref="PowerScriptMedia"/> class.Creates a scalar media value.</summary>
     public PowerScriptMedia(PowerScriptMediaItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
         Items = new[] { item };
     }
 
-    /// <summary>Creates an array value, including when it contains only one item.</summary>
+    /// <summary>Initializes a new instance of the <see cref="PowerScriptMedia"/> class.Creates an array value, including when it contains only one item.</summary>
     public PowerScriptMedia(IReadOnlyList<PowerScriptMediaItem> items)
     {
         ArgumentNullException.ThrowIfNull(items);
@@ -33,10 +30,10 @@ public sealed class PowerScriptMedia
         IsArray = true;
     }
 
-    /// <summary>The media items.</summary>
+    /// <summary>Gets the media items.</summary>
     public IReadOnlyList<PowerScriptMediaItem> Items { get; }
 
-    /// <summary>Whether the schema-shaped value is an array rather than a single object.</summary>
+    /// <summary>Gets a value indicating whether whether the schema-shaped value is an array rather than a single object.</summary>
     public bool IsArray { get; }
 
     internal void Write(Utf8JsonWriter writer, string category)

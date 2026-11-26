@@ -21,7 +21,8 @@ public sealed class EditorRunParameterTests
             Parameter("note", defaultValue: "default"),
             Parameter("omitted", defaultValue: "preserved"));
 
-        Assert.IsTrue(PowerScriptParameterValues.TryCreate(
+        Assert.IsTrue(
+            PowerScriptParameterValues.TryCreate(
             script,
             new Dictionary<string, string?> { ["flag"] = "false", ["count"] = "0", ["note"] = string.Empty },
             out var values,
@@ -37,7 +38,8 @@ public sealed class EditorRunParameterTests
     [TestMethod]
     public void RequiredValueCanBeOmittedOnlyWhenTheHostAdvertisesADefault()
     {
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("name", required: true)),
             new Dictionary<string, string?>(),
             out var missing,
@@ -45,7 +47,8 @@ public sealed class EditorRunParameterTests
         Assert.AreEqual(0, missing.Count);
         StringAssert.Contains(missingError!, "name");
 
-        Assert.IsTrue(PowerScriptParameterValues.TryCreate(
+        Assert.IsTrue(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("name", required: true, defaultValue: "World")),
             new Dictionary<string, string?>(),
             out var omitted,
@@ -60,7 +63,8 @@ public sealed class EditorRunParameterTests
     [DataRow("file", "   ")]
     public void RequiredTextOrFileCannotBeBlank(string type, string input)
     {
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("value", type, required: true)),
             new Dictionary<string, string?> { ["value"] = input },
             out _,
@@ -72,7 +76,8 @@ public sealed class EditorRunParameterTests
     public void FileValuesAreLiteralStringsAndHostOwnsFileAccessValidation()
     {
         const string file = "C:\\literal %PATH%\\\"quoted\"\\日本語.txt";
-        Assert.IsTrue(PowerScriptParameterValues.TryCreate(
+        Assert.IsTrue(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("file", "file", required: true)),
             new Dictionary<string, string?> { ["file"] = file },
             out var values,
@@ -83,7 +88,8 @@ public sealed class EditorRunParameterTests
     [TestMethod]
     public void SuppliedNamesMatchHostCaseRulesAndOutputUsesCanonicalNames()
     {
-        Assert.IsTrue(PowerScriptParameterValues.TryCreate(
+        Assert.IsTrue(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("count", "int")),
             new Dictionary<string, string?> { ["COUNT"] = "2" },
             out var values,
@@ -96,7 +102,8 @@ public sealed class EditorRunParameterTests
     public void UnknownOrRepeatedNamesAreRejectedWithoutPartialOutput()
     {
         var script = Script(Parameter("count", "int"));
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             script,
             new Dictionary<string, string?> { ["count"] = "2", ["unknown"] = "3" },
             out var unknown,
@@ -104,7 +111,8 @@ public sealed class EditorRunParameterTests
         Assert.AreEqual(0, unknown.Count);
         StringAssert.Contains(unknownError!, "Unknown parameter");
 
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             script,
             new Dictionary<string, string?> { ["count"] = "2", ["COUNT"] = "3" },
             out var repeated,
@@ -116,7 +124,8 @@ public sealed class EditorRunParameterTests
     [TestMethod]
     public void RepeatedDeclarationNamesAreRejectedUsingHostCaseRules()
     {
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("name"), Parameter("NAME")),
             new Dictionary<string, string?>(),
             out _,
@@ -133,7 +142,8 @@ public sealed class EditorRunParameterTests
     [DataRow("int", "")]
     public void InvalidPrimitiveTextIsRejected(string type, string input)
     {
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("value", type)),
             new Dictionary<string, string?> { ["value"] = input },
             out _,
@@ -148,24 +158,28 @@ public sealed class EditorRunParameterTests
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("fr-FR");
             var script = Script(Parameter("count", "int", min: -2, max: 1000));
-            Assert.IsTrue(PowerScriptParameterValues.TryCreate(
+            Assert.IsTrue(
+                PowerScriptParameterValues.TryCreate(
                 script,
                 new Dictionary<string, string?> { ["count"] = "1000" },
                 out var values,
                 out _));
             Assert.AreEqual(1000, values["count"].GetInt32());
-            Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+            Assert.IsFalse(
+                PowerScriptParameterValues.TryCreate(
                 script,
                 new Dictionary<string, string?> { ["count"] = "1,000" },
                 out _,
                 out _));
-            Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+            Assert.IsFalse(
+                PowerScriptParameterValues.TryCreate(
                 script,
                 new Dictionary<string, string?> { ["count"] = "-3" },
                 out _,
                 out var minimumError));
             StringAssert.Contains(minimumError!, "at least -2");
-            Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+            Assert.IsFalse(
+                PowerScriptParameterValues.TryCreate(
                 script,
                 new Dictionary<string, string?> { ["count"] = "1001" },
                 out _,
@@ -182,13 +196,15 @@ public sealed class EditorRunParameterTests
     public void ChoicesMatchAdvertisedValuesExactly()
     {
         var script = Script(Parameter("mode", "choice", options: ["safe", "fast"]));
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             script,
             new Dictionary<string, string?> { ["mode"] = "FAST" },
             out _,
             out var error));
         StringAssert.Contains(error!, "safe, fast");
-        Assert.IsTrue(PowerScriptParameterValues.TryCreate(
+        Assert.IsTrue(
+            PowerScriptParameterValues.TryCreate(
             script,
             new Dictionary<string, string?> { ["mode"] = "fast" },
             out var values,
@@ -199,13 +215,15 @@ public sealed class EditorRunParameterTests
     [TestMethod]
     public void NullValuesAndUnsupportedTypesAreRejected()
     {
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("name")),
             new Dictionary<string, string?> { ["name"] = null },
             out _,
             out var nullError));
         StringAssert.Contains(nullError!, "null");
-        Assert.IsFalse(PowerScriptParameterValues.TryCreate(
+        Assert.IsFalse(
+            PowerScriptParameterValues.TryCreate(
             Script(Parameter("name", "object")),
             new Dictionary<string, string?> { ["name"] = "{}" },
             out _,
@@ -245,7 +263,8 @@ public sealed class EditorRunParameterTests
     [TestMethod]
     public void ContractDetectsPrimaryInputChanges()
     {
-        Assert.IsFalse(PowerScriptParameterValues.HasSameInputContract(
+        Assert.IsFalse(
+            PowerScriptParameterValues.HasSameInputContract(
             new PowerScriptInfo { Id = "demo", Input = PowerScriptIO.None },
             new PowerScriptInfo { Id = "demo", Input = PowerScriptIO.Text }));
     }
@@ -279,10 +298,12 @@ public sealed class EditorRunParameterTests
     {
         var previous = WithSchema(
             """{"type":"object","properties":{"parameters":{"type":"object","properties":{"description":{"type":"string","maxLength":10},"title":{"type":"string"}}}}}""",
-            Parameter("description"), Parameter("title"));
+            Parameter("description"),
+            Parameter("title"));
         var changed = WithSchema(
             """{"type":"object","properties":{"parameters":{"type":"object","properties":{"description":{"type":"string","maxLength":20},"title":{"type":"string"}}}}}""",
-            Parameter("description"), Parameter("title"));
+            Parameter("description"),
+            Parameter("title"));
         Assert.IsFalse(PowerScriptParameterValues.HasSameInputContract(previous, changed));
     }
 

@@ -14,9 +14,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerScripts.Client;
 using PowerScripts.Core;
 using PowerScripts.Core.Activity;
-using PowerScripts.Core.Storage;
 using PowerScripts.Core.Manifest;
 using PowerScripts.Core.Security;
+using PowerScripts.Core.Storage;
 using PowerScripts.Core.Templates;
 
 namespace PowerScripts.Core.Tests;
@@ -32,28 +32,10 @@ namespace PowerScripts.Core.Tests;
 [TestClass]
 public class HostCliTests
 {
-    private static string _hostPath = string.Empty;
-    private string _root = string.Empty;
+    private static readonly JsonSerializerOptions EscapedJsonOptions = new() { Encoder = JavaScriptEncoder.Default };
+    private static readonly JsonSerializerOptions UnescapedJsonOptions = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
-    [ClassInitialize]
-    public static void ClassInit(TestContext _)
-    {
-        _hostPath = PowerScriptsClient.ResolveHostPath() ?? string.Empty;
-        Assert.IsFalse(
-            string.IsNullOrEmpty(_hostPath),
-            "PowerScripts.Host.exe was not found. The test project references the Host project for " +
-            "build order, so this should not happen — ensure the Host builds.");
-    }
-
-    [TestInitialize]
-    public void Init()
-    {
-        _root = Path.Combine(Path.GetTempPath(), "ps-cli-" + Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_root);
-
-        // A system action: consumes nothing, produces text (its stdout).  io = none -> text
-        Write("act_hello.ps1", "Write-Output 'hi'");
-        Write("act_hello.ps1.tool.json", """
+    private const string ActHelloPs1ToolJsonScript = """
             {
               "name": "act_hello",
               "description": "act_hello",
@@ -95,7 +77,80 @@ public class HostCliTests
                 "additionalProperties": false
               }
             }
-            """);
+            """;
+
+    private const string Md2htmlPs1Script = """
+            param([string]$Text)
+            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+            $output = Join-Path $env:POWERSCRIPTS_MXC_WORKSPACE 'result.html'
+            Set-Content -LiteralPath $output -Value "<p>$Text</p>" -Encoding UTF8
+            @{ files = @($output) } | ConvertTo-Json -Compress
+            """;
+
+    private const string RecipePyToolJsonScript = """
+            {
+              "name": "recipe",
+              "description": "Explicit Python command",
+              "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              },
+              "x-execute": {
+                "command": [
+                  "python",
+                  "recipe.py"
+                ]
+              },
+              "outputSchema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "additionalProperties": false
+              }
+            }
+            """;
+
+    private const string UnicodeTextPs1Script = """
+            param([string]$Text)
+            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+            Write-Output $Text
+            """;
+
+    private const string UnicodeFilesPs1Script = """
+            param([string[]]$Files)
+            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+            [IO.File]::ReadAllText($Files[0])
+            """;
+
+    private static string _hostPath = string.Empty;
+    private string _root = string.Empty;
+
+    [ClassInitialize]
+    public static void ClassInit(TestContext testContext)
+    {
+        _hostPath = PowerScriptsClient.ResolveHostPath() ?? string.Empty;
+        Assert.IsFalse(
+            string.IsNullOrEmpty(_hostPath),
+            "PowerScripts.Host.exe was not found. The test project references the Host project for " + "build order, so this should not happen — ensure the Host builds.");
+    }
+
+    [TestInitialize]
+    public void Init()
+    {
+        _root = Path.Combine(Path.GetTempPath(), "ps-cli-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(_root);
+
+        // A system action: consumes nothing, produces text (its stdout).  io = none -> text
+        Write("act_hello.ps1", "Write-Output 'hi'");
+        Write("act_hello.ps1.tool.json", ActHelloPs1ToolJsonScript);
 
         Write("py_upper.py", "def uppercase(text):\n    return text.upper()\n");
         Write("py_upper.py.tool.json", "{\"name\": \"py_upper\", \"description\": \"py_upper\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
@@ -105,13 +160,7 @@ public class HostCliTests
         Write("py_named.py.tool.json", "{\"name\": \"py_named\", \"description\": \"py_named\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".png\"]}}, \"minItems\": 1, \"maxItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
 
         // Rich HTML is a file output; literal markup would be a text output.
-        Write("md2html.ps1", """
-            param([string]$Text)
-            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-            $output = Join-Path $env:POWERSCRIPTS_MXC_WORKSPACE 'result.html'
-            Set-Content -LiteralPath $output -Value "<p>$Text</p>" -Encoding UTF8
-            @{ files = @($output) } | ConvertTo-Json -Compress
-            """);
+        Write("md2html.ps1", Md2htmlPs1Script);
         Write("md2html.ps1.tool.json", "{\"name\": \"md2html\", \"description\": \"md2html\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\"}}}, \"required\": [\"files\"], \"additionalProperties\": false}}");
 
         // A file script: acts on selected files (file-driven because it declares extensions).  io = files -> none
@@ -154,8 +203,14 @@ public class HostCliTests
             SettingsStore.Current = new FileSettingsStore(directory);
             PowerScriptsPaths.SaveEnabled(true);
             new ConsumerSettings().Set("advanced-paste", true);
-            var (exit, _) = RunHostInProcess(command, "act_hello", "--consumer", "advanced-paste",
-                "--no-consent", "--root", _root);
+            var (exit, _) = RunHostInProcess(
+                command,
+                "act_hello",
+                "--consumer",
+                "advanced-paste",
+                "--no-consent",
+                "--root",
+                _root);
             Assert.AreEqual(3, exit);
             var activity = new ActivityStore(directory).List().Single();
             Assert.AreEqual("advanced-paste", activity.ConsumerId);
@@ -254,36 +309,7 @@ public class HostCliTests
     public void CatalogueDistinguishesDescriptorLaunchCommandsFromBuiltInPython()
     {
         Write("recipe.py", "print('custom interpreter')");
-        Write("recipe.py.tool.json", """
-            {
-              "name": "recipe",
-              "description": "Explicit Python command",
-              "inputSchema": {
-                "type": "object",
-                "properties": {},
-                "required": [],
-                "additionalProperties": false
-              },
-              "x-execute": {
-                "command": [
-                  "python",
-                  "recipe.py"
-                ]
-              },
-              "outputSchema": {
-                "type": "object",
-                "properties": {
-                  "text": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "text"
-                ],
-                "additionalProperties": false
-              }
-            }
-            """);
+        Write("recipe.py.tool.json", RecipePyToolJsonScript);
         using var json = JsonDocument.Parse(RunHostOk("list", "--json", "--include-disabled", "--root", _root));
         var scripts = json.RootElement.EnumerateArray().ToDictionary(row => row.GetProperty("id").GetString()!);
         Assert.IsTrue(scripts["recipe"].GetProperty("hasExplicitExecution").GetBoolean());
@@ -297,17 +323,28 @@ public class HostCliTests
     {
         var (exit, stdout, error) = RunHostWithInput(
             """{"projectName":"My input files","description":"Configured from the wizard.","fileExtensions":"TXT; *.md"}""",
-            "template", "create", "file-info", "--configure", "--root", _root);
+            "template",
+            "create",
+            "file-info",
+            "--configure",
+            "--root",
+            _root);
         Assert.AreEqual(0, exit, error);
         using var created = JsonDocument.Parse(stdout);
         var entry = created.RootElement.GetProperty("entryPath").GetString()!;
         var manifest = ToolDescriptorParser.TryParseFile(entry + ".tool.json")!;
         Assert.AreEqual("My input files", manifest.Name);
-        CollectionAssert.AreEqual(new[] { ".txt", ".md" }, manifest.Input!.Extensions);
+        CollectionAssert.AreEqual((string[])[".txt", ".md"], manifest.Input!.Extensions);
 
         var before = Directory.GetDirectories(_root);
-        (exit, _, error) = RunHostWithInput("""{"projectName":"Invalid","fileExtensions":"../txt"}""",
-            "template", "create", "file-info", "--configure", "--root", _root);
+        (exit, _, error) = RunHostWithInput(
+            """{"projectName":"Invalid","fileExtensions":"../txt"}""",
+            "template",
+            "create",
+            "file-info",
+            "--configure",
+            "--root",
+            _root);
         Assert.AreNotEqual(0, exit);
         StringAssert.Contains(error, "extensions");
         CollectionAssert.AreEquivalent(before, Directory.GetDirectories(_root));
@@ -329,7 +366,8 @@ public class HostCliTests
     public void TemplateDiscoveryIncludesOperationSchemasWithoutASeparateCliCatalogueCommand()
     {
         using var document = JsonDocument.Parse(RunHostOk("template", "list"));
-        var operation = document.RootElement.EnumerateArray().Single(item =>
+        var operation = document.RootElement.EnumerateArray().Single(
+            item =>
             item.TryGetProperty("commandId", out var id) && id.GetString() == "filelocksmith.query");
         Assert.AreEqual("powertoys:filelocksmith.query", operation.GetProperty("id").GetString());
         Assert.AreEqual("File Locksmith", operation.GetProperty("group").GetString());
@@ -344,7 +382,11 @@ public class HostCliTests
     {
         var (exit, stdout, error) = RunHostWithInput(
             """{"projectName":"Inspect from template","runtime":"powertoys-cli","operation":{"commandId":"filelocksmith.query"}}""",
-            "template", "create", "--configure", "--root", _root);
+            "template",
+            "create",
+            "--configure",
+            "--root",
+            _root);
         Assert.AreEqual(0, exit, error);
         using var created = JsonDocument.Parse(stdout);
         var entry = created.RootElement.GetProperty("entryPath").GetString()!;
@@ -360,7 +402,11 @@ public class HostCliTests
         var before = Directory.GetDirectories(_root);
         (exit, _, error) = RunHostWithInput(
             """{"projectName":"first","projectName":"second","operation":{"commandId":"filelocksmith.query"}}""",
-            "template", "create", "--configure", "--root", _root);
+            "template",
+            "create",
+            "--configure",
+            "--root",
+            _root);
         Assert.AreNotEqual(0, exit);
         StringAssert.Contains(error, "duplicate");
         CollectionAssert.AreEquivalent(before, Directory.GetDirectories(_root));
@@ -372,9 +418,9 @@ public class HostCliTests
         var all = RunHostOk("list", "--json", "--include-disabled", "--root", _root);
         Assert.AreEqual(5, ParseList(all).Count);
         var text = RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--output", "text", "--root", _root);
-        CollectionAssert.AreEqual(new[] { "py_upper" }, Ids(text));
+        CollectionAssert.AreEqual((string[])["py_upper"], Ids(text));
         text = RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--root", _root);
-        CollectionAssert.AreEquivalent(new[] { "py_upper", "md2html" }, Ids(text));
+        CollectionAssert.AreEquivalent((string[])["py_upper", "md2html"], Ids(text));
         foreach (var script in ParseList(all).Values)
         {
             Assert.IsFalse(script.TryGetProperty("consumers", out _));
@@ -405,8 +451,15 @@ public class HostCliTests
         {
             SettingsStore.Current = new FileSettingsStore(directory);
             SettingsStore.Current.WriteBlob("config.json", $$"""{"enabled":true,"consumers": {"{{consumer}}":false,"advanced-paste":true} }""");
-            var (listExit, json) = RunHostInProcess("list", "--json", "--consumer", consumer,
-                "--include-disabled", "--include-unconfigured", "--root", _root);
+            var (listExit, json) = RunHostInProcess(
+                "list",
+                "--json",
+                "--consumer",
+                consumer,
+                "--include-disabled",
+                "--include-unconfigured",
+                "--root",
+                _root);
             Assert.AreEqual(0, listExit);
             Assert.AreEqual(0, ParseList(json).Count);
             var (adminExit, catalogue) = RunHostInProcess("list", "--json", "--include-disabled", "--root", _root);
@@ -497,7 +550,7 @@ public class HostCliTests
         Assert.AreEqual("Output format", parameter.GetProperty("description").GetString());
         Assert.AreEqual("short", parameter.GetProperty("default").GetString());
         CollectionAssert.AreEqual(
-            new[] { "short", "long" },
+            (string[])["short", "long"],
             parameter.GetProperty("options").EnumerateArray().Select(value => value.GetString()!).ToArray());
         Assert.AreEqual("Python", byId["py_upper"].GetProperty("runtime").GetString());
         Assert.IsFalse(byId["py_upper"].TryGetProperty("transform", out _));
@@ -537,7 +590,7 @@ public class HostCliTests
             (exit, json) = RunHostInProcess("list", "--json", "--input", "text", "--root", _root);
             Assert.AreEqual(0, exit);
             CollectionAssert.AreEquivalent(
-                pythonEnabled ? new[] { "md2html", "py_upper" } : new[] { "md2html" },
+                pythonEnabled ? (string[])["md2html", "py_upper"] : (string[])["md2html"],
                 Ids(json));
 
             var (textExit, text) = RunHostInProcess("list", "--root", _root);
@@ -555,9 +608,8 @@ public class HostCliTests
             (exit, json) = RunHostInProcess("list", "--json", "--include-disabled", "--root", _root);
             Assert.AreEqual(0, exit);
             CollectionAssert.AreEquivalent(
-                new[] { "act_hello", "md2html", "wc", "py_upper", "py_named", "py_files" },
+                (string[])["act_hello", "md2html", "wc", "py_upper", "py_named", "py_files"],
                 Ids(json));
-
         }
         finally
         {
@@ -569,8 +621,9 @@ public class HostCliTests
     public void Catalogue_ProjectsResolvedIcons_ToJsonClient()
     {
         var icon = Path.Combine(_root, "script icon.ico");
-        File.WriteAllBytes(icon, Convert.FromBase64String(
-            "AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
+        File.WriteAllBytes(
+            icon,
+            Convert.FromBase64String("AAABAAEAAQEAAAEAIAAwAAAAFgAAACgAAAABAAAAAgAAAAEAIAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAD///8AAAAAAA=="));
         Write("wc.ps1.tool.json", "{\"name\": \"wc\", \"description\": \"wc\", \"x-powerscript\": {\"icon\": \"script icon.ico\"}, \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".md\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {}, \"required\": [], \"additionalProperties\": false}}");
         var json = RunHostOk("list", "--json", "--root", _root);
         Assert.AreEqual(icon, ParseList(json)["wc"].GetProperty("iconPath").GetString());
@@ -588,13 +641,13 @@ public class HostCliTests
     public void Host_Bundles_Pinned_Mxc_Without_User_Configuration()
     {
         var hostDirectory = Path.GetDirectoryName(_hostPath)!;
-        var moduleDirectory = new DirectoryInfo(hostDirectory);
+        var moduleDirectory = new DirectoryInfo(AppContext.BaseDirectory);
         while (moduleDirectory is not null && !File.Exists(Path.Combine(moduleDirectory.FullName, "Mxc.Runtime.targets")))
         {
             moduleDirectory = moduleDirectory.Parent;
         }
 
-        Assert.IsNotNull(moduleDirectory, "The Host must be built from the PowerScripts project.");
+        Assert.IsNotNull(moduleDirectory, "The tests must run from the PowerScripts project to verify its pinned runtime.");
         var metadata = XDocument.Load(Path.Combine(moduleDirectory.FullName, "Mxc.Runtime.targets"));
         var version = metadata.Root!.Element("PropertyGroup")!.Element("MxcVersion")!.Value;
         using var hostStream = File.OpenRead(_hostPath);
@@ -636,28 +689,28 @@ public class HostCliTests
     public void List_NoInput_ReturnsOnlyActions()
     {
         var ids = Ids(RunHostOk("list", "--json", "--no-input", "--root", _root));
-        CollectionAssert.AreEquivalent(new[] { "act_hello" }, ids);
+        CollectionAssert.AreEquivalent((string[])["act_hello"], ids);
     }
 
     [TestMethod]
     public void List_InputText_FiltersToTextConsumers()
     {
         var ids = Ids(RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--root", _root));
-        CollectionAssert.AreEquivalent(new[] { "py_upper", "md2html" }, ids);
+        CollectionAssert.AreEquivalent((string[])["py_upper", "md2html"], ids);
     }
 
     [TestMethod]
     public void List_OutputFiles_FiltersToFileProducers()
     {
         var ids = Ids(RunHostOk("list", "--json", "--output", "files", "--root", _root));
-        CollectionAssert.AreEquivalent(new[] { "md2html" }, ids);
+        CollectionAssert.AreEquivalent((string[])["md2html"], ids);
     }
 
     [TestMethod]
     public void List_InputFiles_FiltersToFileScripts()
     {
         var ids = Ids(RunHostOk("list", "--json", "--include-disabled", "--input", "files", "--root", _root));
-        CollectionAssert.AreEquivalent(new[] { "wc", "py_named" }, ids);
+        CollectionAssert.AreEquivalent((string[])["wc", "py_named"], ids);
     }
 
     [TestMethod]
@@ -672,7 +725,7 @@ public class HostCliTests
     {
         // input text AND output text -> only the python transform, not the file producer.
         var ids = Ids(RunHostOk("list", "--json", "--include-disabled", "--input", "text", "--output", "text", "--root", _root));
-        CollectionAssert.AreEquivalent(new[] { "py_upper" }, ids);
+        CollectionAssert.AreEquivalent((string[])["py_upper"], ids);
     }
 
     [DataTestMethod]
@@ -701,7 +754,8 @@ public class HostCliTests
     [DataRow("audio")]
     public void MediaDiscoveryFiltersUseTheDeclaredSchemas(string category)
     {
-        var created = PowerScripts.Core.Templates.ScriptTemplates.Create(_root,
+        var created = PowerScripts.Core.Templates.ScriptTemplates.Create(
+            _root,
             new PowerScripts.Core.Templates.ScriptTemplateOptions("Media discovery", Input: category, Output: category));
         var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
         var input = PowerScriptInfo.ParseList(RunHostOk("list", "--json", "--input", category, "--root", _root));
@@ -737,7 +791,10 @@ public class HostCliTests
         try
         {
             Assert.IsTrue(client.TrustApprove("bad-output"));
-            var result = client.TransformAsync("bad-output", new PowerScriptTransformInput(), noConsent: true)
+            var result = client.TransformAsync(
+                "bad-output",
+                new PowerScriptTransformInput(),
+                noConsent: true)
                 .GetAwaiter().GetResult();
             Assert.AreEqual(PowerScriptsProtocol.ExitCode.Error, result.ExitCode);
             StringAssert.Contains(result.StdErr, "Invalid script output");
@@ -759,7 +816,10 @@ public class HostCliTests
         try
         {
             Assert.IsTrue(client.TrustApprove("no-output"));
-            var result = client.TransformAsync("no-output", new PowerScriptTransformInput(), noConsent: true)
+            var result = client.TransformAsync(
+                "no-output",
+                new PowerScriptTransformInput(),
+                noConsent: true)
                 .GetAwaiter().GetResult();
             Assert.IsTrue(result.Succeeded, result.StdErr);
             Assert.IsNull(result.Text);
@@ -777,17 +837,12 @@ public class HostCliTests
     [DataRow(true)]
     public void Transform_Utf8TextPreservesUnicode(bool escapeUnicode)
     {
-        Write("unicode-text.ps1", """
-            param([string]$Text)
-            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-            Write-Output $Text
-            """);
+        Write("unicode-text.ps1", UnicodeTextPs1Script);
         Write("unicode-text.ps1.tool.json", "{\"name\": \"unicode-text\", \"description\": \"unicode-text\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
         const string text = "\u6D4B\u8BD5 caf\u00E9 \U0001F600";
-        var payload = JsonSerializer.Serialize(new { text }, new JsonSerializerOptions
-        {
-            Encoder = escapeUnicode ? JavaScriptEncoder.Default : JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        });
+        var payload = JsonSerializer.Serialize(
+            new { text },
+            escapeUnicode ? EscapedJsonOptions : UnescapedJsonOptions);
         var client = new PowerScriptsClient("test-harness", _hostPath, _root);
         try
         {
@@ -808,19 +863,14 @@ public class HostCliTests
     [DataRow(true)]
     public void Transform_Utf8FilePathsRemainReadable(bool escapeUnicode)
     {
-        Write("unicode-files.ps1", """
-            param([string[]]$Files)
-            [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-            [IO.File]::ReadAllText($Files[0])
-            """);
+        Write("unicode-files.ps1", UnicodeFilesPs1Script);
         Write("unicode-files.ps1.tool.json", "{\"name\": \"unicode-files\", \"description\": \"unicode-files\", \"inputSchema\": {\"type\": \"object\", \"properties\": {\"files\": {\"type\": \"array\", \"items\": {\"type\": \"string\", \"x-powerscript\": {\"extensions\": [\".txt\"]}}, \"minItems\": 1}}, \"required\": [\"files\"], \"additionalProperties\": false}, \"outputSchema\": {\"type\": \"object\", \"properties\": {\"text\": {\"type\": \"string\"}}, \"required\": [\"text\"], \"additionalProperties\": false}}");
         var path = Path.Combine(_root, "input \u6D4B\u8BD5 \U0001F600.txt");
         const string content = "selected Unicode file";
         File.WriteAllText(path, content);
-        var payload = JsonSerializer.Serialize(new { files = new[] { path } }, new JsonSerializerOptions
-        {
-            Encoder = escapeUnicode ? JavaScriptEncoder.Default : JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        });
+        var payload = JsonSerializer.Serialize(
+            new { files = new[] { path } },
+            escapeUnicode ? EscapedJsonOptions : UnescapedJsonOptions);
         var client = new PowerScriptsClient("test-harness", _hostPath, _root);
         try
         {
@@ -846,14 +896,14 @@ public class HostCliTests
     }
 
     // ---- helpers ----
-
     private void Write(string name, string body) => File.WriteAllText(Path.Combine(_root, name), body);
 
     private (int Exit, string StdOut, string StdErr) RunHost(params string[] args) => RunHostWithInput(null, args);
 
     private (int Exit, string StdOut, string StdErr) RunHostWithInput(string? stdin, params string[] args)
     {
-        var psi = new ProcessStartInfo(_hostPath)
+        var psi = new ProcessStartInfo(
+            _hostPath)
         {
             RedirectStandardInput = stdin is not null,
             StandardInputEncoding = stdin is null ? null : new UTF8Encoding(false),

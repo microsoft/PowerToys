@@ -194,7 +194,7 @@ public static class DescriptorExecutor
             return result.StdErr;
         }
 
-        if (!execute.ExitCodes.TryGetValue(result.ExitCode.ToString(), out var meaning) || string.IsNullOrWhiteSpace(meaning))
+        if (!execute.ExitCodes.TryGetValue(result.ExitCode.ToString(System.Globalization.CultureInfo.InvariantCulture), out var meaning) || string.IsNullOrWhiteSpace(meaning))
         {
             return result.StdErr;
         }

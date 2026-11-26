@@ -9,39 +9,6 @@ using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core;
 
-/// <summary>How Python PowerScripts are executed.</summary>
-public enum PythonRuntimeMode
-{
-    /// <summary>Python PowerScripts are not run.</summary>
-    Disabled,
-
-    /// <summary>Run using native Windows Python (auto-detected or a configured interpreter path).</summary>
-    Windows,
-
-    /// <summary>Run in WSLC when global MXC is enabled, or in the configured WSL distribution otherwise.</summary>
-    Wsl,
-}
-
-/// <summary>Windows-mode Python settings.</summary>
-public sealed class PythonWindowsSettings
-{
-    /// <summary>Optional explicit interpreter path; empty means auto-detect (python.exe / python3.exe / py.exe).</summary>
-    [JsonPropertyName("interpreterPath")]
-    public string InterpreterPath { get; set; } = string.Empty;
-}
-
-/// <summary>WSL-mode Python settings.</summary>
-public sealed class PythonWslSettings
-{
-    /// <summary>The WSL distribution to run scripts in; empty means the default distribution.</summary>
-    [JsonPropertyName("distribution")]
-    public string Distribution { get; set; } = string.Empty;
-
-    /// <summary>The user-provided managed Linux image; required when MXC is enabled.</summary>
-    [JsonPropertyName("containerImage")]
-    public string ContainerImage { get; set; } = string.Empty;
-}
-
 /// <summary>
 /// The Python runtime configuration for PowerScripts, persisted in the module's <c>config.json</c>
 /// (alongside <c>scriptsRoot</c>). Mirrors the Advanced Paste Python settings (mode + Windows/WSL
@@ -59,7 +26,7 @@ public sealed class PythonSettings
     [JsonPropertyName("wsl")]
     public PythonWslSettings Wsl { get; set; } = new();
 
-    /// <summary>Hard timeout for a single Python run, in seconds.</summary>
+    /// <summary>Gets or sets hard timeout for a single Python run, in seconds.</summary>
     [JsonPropertyName("timeoutSeconds")]
     public int TimeoutSeconds { get; set; } = 30;
 

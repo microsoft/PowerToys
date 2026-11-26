@@ -11,44 +11,11 @@ using PowerScripts.Core.Registry;
 
 namespace PowerScripts.Core.Templates;
 
-public sealed record ScriptTemplate(
-    string Id,
-    string Name,
-    string Description,
-    bool AcceptsFiles = false,
-    string? Group = null,
-    string? CommandId = null,
-    IReadOnlyList<ScriptTemplateParameter>? Parameters = null,
-    string? UnavailableReason = null,
-    string? ModuleId = null);
-
-public sealed record ScriptTemplateOptions(
-    string ProjectName,
-    string? Description = null,
-    string? FileExtensions = null,
-    string Runtime = "powershell",
-    string Input = "none",
-    string Output = "text",
-    int MinFiles = 1,
-    int MaxFiles = 0,
-    IReadOnlyList<ScriptTemplateParameter>? Parameters = null,
-    string? IconPreset = null,
-    string? IconSource = null,
-    PowerToysOperationTemplateOptions? Operation = null,
-    string? CliContent = null,
-    IReadOnlyDictionary<string, PowerShellCliBinding>? CliBindings = null);
-
-public sealed record ScriptTemplateParameter(
-    string Name,
-    JsonSchemaProperty Schema,
-    bool Required = false,
-    string? FileExtensions = null);
-
-public sealed record CreatedScriptTemplate(string EntryPath, string GuidePath);
-
 /// <summary>Creates editable packages, never trust approvals or policy exceptions.</summary>
 public static partial class ScriptTemplates
 {
+    private static readonly char[] FileExtensionSeparators = [',', ';', ' ', '\t', '\r', '\n'];
+
     public static IReadOnlyList<ScriptTemplate> All { get; } = Array.AsReadOnly(new[]
     {
         new ScriptTemplate("greeting", "Greeting with parameters", "No primary input → text. Learn identity, typed parameters, defaults and discovery. Runs with all MXC restrictions enabled."),
@@ -210,7 +177,7 @@ public static partial class ScriptTemplates
             throw new ArgumentException("The file extension list is too long.", nameof(text));
         }
 
-        var extensions = text.Split(new[] { ',', ';', ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        var extensions = text.Split(FileExtensionSeparators, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(value => value.StartsWith("*.", StringComparison.Ordinal) ? value[1..] : value)
             .Select(value => value == "*" || value.StartsWith('.') ? value : "." + value)
             .Select(value => value.ToLowerInvariant())

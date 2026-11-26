@@ -16,11 +16,7 @@ namespace PowerScripts.Core.Tests;
 [TestClass]
 public class DescriptorTests
 {
-    [TestMethod]
-    public void SchemasResolvePrimaryIoAndNestedTypedParametersWithoutRuntimeOrFunctionMetadata()
-    {
-        var descriptor = TestTool.Descriptor("text", "files");
-        descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse("""
+    private const string DescriptorTestsScript = """
             {
               "type":"object", "additionalProperties":false,
               "properties":{
@@ -31,7 +27,46 @@ public class DescriptorTests
               },
               "required":["file"]
             }
-            """);
+            """;
+
+    private const string DescriptorTestsScript2 = """
+            {"type":"object","additionalProperties":false,"properties":{
+              "count":{"type":"integer","default":0}, "enabled":{"type":"boolean","default":false},
+              "text":{"type":"string","default":""}
+            }}
+            """;
+
+    private const string DescriptorTestsScript3 = """
+            {"type":"object","additionalProperties":false,"properties":{
+              "name":{"type":"string","minLength":2,"maxLength":4,"pattern":"^[a-z]+$"},
+              "count":{"type":"integer","minimum":1,"maximum":3},
+              "file":{"type":"string","format":"file-path","x-powerscript":{"extensions":[".csv"]}}
+            },"required":["name"]}
+            """;
+
+    private const string DescriptorTestsScript4 = """
+                {"type":"object","additionalProperties":false,"properties":{
+                  "enabled":{"type":"boolean","default":false},
+                  "count":{"type":"integer","default":0},
+                  "label":{"type":"string","default":""}
+                },"required":["label"]}
+                """;
+
+    private const string DescriptorTestsScript5 = """
+                param([string[]]$Files, [bool]$Enabled, [int]$Count, [string]$Label)
+                [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+                @{ files = @($Files); enabled = $Enabled; count = $Count; label = $Label } | ConvertTo-Json -Compress
+                """;
+
+    private const string DescriptorTestsScript6 = """
+                {"command":["powershell","-NoProfile","-NonInteractive","-File","script.ps1"],"argMap":{"text":"-Value"}}
+                """;
+
+    [TestMethod]
+    public void SchemasResolvePrimaryIoAndNestedTypedParametersWithoutRuntimeOrFunctionMetadata()
+    {
+        var descriptor = TestTool.Descriptor("text", "files");
+        descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse(DescriptorTestsScript);
         var manifest = TestTool.Parse(descriptor, "script.py");
         Assert.AreEqual(ScriptRuntime.Python, manifest.Runtime);
         Assert.AreEqual((PowerScriptDataFormat.Text, PowerScriptDataFormat.Files), ScriptIo.Resolve(manifest));
@@ -47,21 +82,18 @@ public class DescriptorTests
     public void InputValidationAppliesDefaultsAndPreservesJsonTypes()
     {
         var descriptor = TestTool.Descriptor();
-        descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse("""
-            {"type":"object","additionalProperties":false,"properties":{
-              "count":{"type":"integer","default":0}, "enabled":{"type":"boolean","default":false},
-              "text":{"type":"string","default":""}
-            }}
-            """);
+        descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse(DescriptorTestsScript2);
         var manifest = TestTool.Parse(descriptor);
         var input = PythonTransformInput.Parse(manifest, """{"parameters":{}}""");
         var request = input.CreateRequest(manifest);
         Assert.AreEqual(0, request["parameters"]!["count"]!.GetValue<int>());
         Assert.IsFalse(request["parameters"]!["enabled"]!.GetValue<bool>());
         Assert.AreEqual(string.Empty, request["parameters"]!["text"]!.GetValue<string>());
-        Assert.ThrowsException<InvalidDataException>(() =>
+        Assert.ThrowsException<InvalidDataException>(
+            () =>
             PythonTransformInput.Parse(manifest, """{"parameters":{"count":"0"}}"""));
-        Assert.ThrowsException<InvalidDataException>(() =>
+        Assert.ThrowsException<InvalidDataException>(
+            () =>
             PythonTransformInput.Parse(manifest, """{"parameters":{"other":true}}"""));
     }
 
@@ -77,7 +109,7 @@ public class DescriptorTests
         }
 
         var manifest = TestTool.Parse(descriptor);
-        CollectionAssert.AreEqual(new[] { ".txt" }, manifest.Input!.Extensions);
+        CollectionAssert.AreEqual((string[])[".txt"], manifest.Input!.Extensions);
         Assert.AreEqual(1, manifest.Input.MinFiles);
         Assert.AreEqual(2, manifest.Input.MaxFiles);
         _ = PythonTransformInput.Parse(manifest, """{"files":["a.TXT"]}""");
@@ -93,13 +125,7 @@ public class DescriptorTests
     public void SchemaConstraintsCannotBeBypassedByScalarOrFileParameters()
     {
         var descriptor = TestTool.Descriptor();
-        descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse("""
-            {"type":"object","additionalProperties":false,"properties":{
-              "name":{"type":"string","minLength":2,"maxLength":4,"pattern":"^[a-z]+$"},
-              "count":{"type":"integer","minimum":1,"maximum":3},
-              "file":{"type":"string","format":"file-path","x-powerscript":{"extensions":[".csv"]}}
-            },"required":["name"]}
-            """);
+        descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse(DescriptorTestsScript3);
         var manifest = TestTool.Parse(descriptor);
         _ = PythonTransformInput.Parse(manifest, """{"parameters":{"name":"good","count":2,"file":"data.csv"}}""");
         foreach (var json in new[]
@@ -220,22 +246,13 @@ public class DescriptorTests
         try
         {
             var descriptor = TestTool.Descriptor("files");
-            descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse("""
-                {"type":"object","additionalProperties":false,"properties":{
-                  "enabled":{"type":"boolean","default":false},
-                  "count":{"type":"integer","default":0},
-                  "label":{"type":"string","default":""}
-                },"required":["label"]}
-                """);
+            descriptor["inputSchema"]!["properties"]!["parameters"] = JsonNode.Parse(DescriptorTestsScript4);
             var manifest = TestTool.Parse(descriptor);
             manifest.FolderPath = root;
-            File.WriteAllText(manifest.EntryFullPath, """
-                param([string[]]$Files, [bool]$Enabled, [int]$Count, [string]$Label)
-                [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-                @{ files = @($Files); enabled = $Enabled; count = $Count; label = $Label } | ConvertTo-Json -Compress
-                """);
+            File.WriteAllText(manifest.EntryFullPath, DescriptorTestsScript5);
             var paths = new[] { Path.Combine(root, "a 'quote'.txt"), Path.Combine(root, "b space.txt") };
-            var result = new ScriptExecutor(new MxcSettings { Enabled = false, RiskAccepted = true })
+            var result = new ScriptExecutor(
+                new MxcSettings { Enabled = false, RiskAccepted = true })
                 .Execute(manifest, paths);
             Assert.AreEqual(0, result.ExitCode, result.StdErr);
             using var output = JsonDocument.Parse(result.StdOut);
@@ -258,13 +275,12 @@ public class DescriptorTests
         try
         {
             var descriptor = TestTool.Descriptor("text");
-            descriptor["x-execute"] = JsonNode.Parse("""
-                {"command":["powershell","-NoProfile","-NonInteractive","-File","script.ps1"],"argMap":{"text":"-Value"}}
-                """);
+            descriptor["x-execute"] = JsonNode.Parse(DescriptorTestsScript6);
             var manifest = TestTool.Parse(descriptor);
             manifest.FolderPath = root;
             File.WriteAllText(manifest.EntryFullPath, "param([string]$Value)\nWrite-Output $Value\n");
-            var result = new ScriptExecutor(new MxcSettings { Enabled = false, RiskAccepted = true })
+            var result = new ScriptExecutor(
+                new MxcSettings { Enabled = false, RiskAccepted = true })
                 .Execute(manifest, text: "literal 'value' with spaces");
             Assert.AreEqual(0, result.ExitCode, result.StdErr);
             Assert.AreEqual("literal 'value' with spaces", result.StdOut.Trim());

@@ -26,13 +26,15 @@ public sealed class BuiltinCliCatalog
     /// <summary>The catalogue is part of the installed assembly; scripts cannot replace its launch recipes.</summary>
     public static BuiltinCliCatalog Load()
     {
-        using var stream = typeof(BuiltinCliCatalog).Assembly.GetManifestResourceStream(ResourceName)
+        using var stream = typeof(BuiltinCliCatalog).Assembly.GetManifestResourceStream(
+            ResourceName)
             ?? throw new InvalidDataException("The built-in PowerToys operation catalogue is unavailable.");
         using var reader = new StreamReader(stream, new UTF8Encoding(false, true));
         return Parse(reader.ReadToEnd());
     }
 
-    public BuiltinCliDefinition? Get(string id) => Commands.FirstOrDefault(command =>
+    public BuiltinCliDefinition? Get(string id) => Commands.FirstOrDefault(
+        command =>
         string.Equals(command.Id, id, StringComparison.OrdinalIgnoreCase));
 
     internal static BuiltinCliCatalog Parse(string json)
@@ -99,8 +101,17 @@ public sealed class BuiltinCliCatalog
 
     private static BuiltinCliDefinition ReadCommand(JsonElement item, string moduleId, string group)
     {
-        CheckMembers(item, "operation", "id", "title", "description", "inputSchema", "x-execute",
-            "requiredCapabilities", "requiresHostProcessVisibility", "requiresHostDesktop");
+        CheckMembers(
+            item,
+            "operation",
+            "id",
+            "title",
+            "description",
+            "inputSchema",
+            "x-execute",
+            "requiredCapabilities",
+            "requiresHostProcessVisibility",
+            "requiresHostDesktop");
         var id = RequiredText(item, "id");
         if (!IsIdentifier(id))
         {
@@ -349,6 +360,7 @@ public sealed class BuiltinCliCatalog
         return result;
     }
 
-    private static bool IsIdentifier(string value) => value.Length > 0 && value.All(character =>
+    private static bool IsIdentifier(string value) => value.Length > 0 && value.All(
+        character =>
         character is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' or '.' or '_' or '-');
 }

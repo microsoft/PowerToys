@@ -35,11 +35,28 @@ public class ModuleStateTests
     }
 
     [TestMethod]
-    public void Missing_SettingsFile_Allows()
+    public void Missing_SettingsFile_DefaultsOff()
     {
-        // No PowerToys governance (standalone/dev/test) -> allow.
         var path = Path.Combine(_folder, "does-not-exist.json");
-        Assert.IsTrue(ModuleState.IsPowerScriptsEnabled(path));
+        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(path));
+    }
+
+    [DataTestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void MissingSettingsFileUsesLegacyPreference(bool legacyEnabled)
+    {
+        Assert.AreEqual(legacyEnabled, ModuleState.IsPowerScriptsEnabled(Path.Combine(_folder, "missing.json"), legacyEnabled));
+        Assert.AreEqual(legacyEnabled, ModuleState.IsPowerScriptsEnabled(Path.Combine(_folder, "missing-directory", "settings.json"), legacyEnabled));
+    }
+
+    [TestMethod]
+    public void UnreadableSettingsPathRefusesEvenWithLegacyPreference()
+    {
+        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(_folder, legacyEnabled: true));
+        var path = WriteSettings("""{"enabled":{"PowerScripts":false}}""");
+        using var locked = File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(path, legacyEnabled: true));
     }
 
     [TestMethod]
@@ -57,20 +74,45 @@ public class ModuleStateTests
     }
 
     [TestMethod]
-    public void KeyAbsent_Allows_BecauseRunnerStripsUnknownModules()
+    public void KeyAbsent_DefaultsOff()
     {
-        // The runner rewrites settings.json and drops entries for modules it does not itself host,
-        // so an absent PowerScripts key is ambiguous rather than a deliberate "off". The settings-file
-        // overload therefore falls back to enabled; a deliberate "off" is expressed either as an
-        // explicit false here or via the module-owned config.json override.
         var path = WriteSettings("{ \"enabled\": { \"Keyboard Manager\": true } }");
-        Assert.IsTrue(ModuleState.IsPowerScriptsEnabled(path));
+        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(path));
     }
 
     [TestMethod]
-    public void Corrupt_SettingsFile_Allows_ToNotBreakBindings()
+    public void Corrupt_SettingsFile_RefusesEvenWithLegacyPreference()
     {
         var path = WriteSettings("{ this is not valid json");
-        Assert.IsTrue(ModuleState.IsPowerScriptsEnabled(path));
+        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(path, legacyEnabled: true));
+    }
+
+    [DataTestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void GeneralPreferenceWinsOverLegacyPreference(bool enabled, bool legacyEnabled)
+    {
+        var path = WriteSettings($$"""{ "enabled": { "PowerScripts": {{enabled.ToString().ToLowerInvariant()}} } }""");
+        Assert.AreEqual(enabled, ModuleState.IsPowerScriptsEnabled(path, legacyEnabled));
+    }
+
+    [DataTestMethod]
+    [DataRow("{}")]
+    [DataRow("""{"enabled":{"Keyboard Manager":true}}""")]
+    public void MissingGeneralPreferencePreservesLegacyPreference(string settings)
+    {
+        var path = WriteSettings(settings);
+        Assert.IsTrue(ModuleState.IsPowerScriptsEnabled(path, legacyEnabled: true));
+        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(path, legacyEnabled: false));
+    }
+
+    [DataTestMethod]
+    [DataRow("[]")]
+    [DataRow("""{"enabled":null}""")]
+    [DataRow("""{"enabled":{"PowerScripts":"true"}}""")]
+    public void MalformedGeneralPreferenceRefusesInsteadOfUsingLegacyPreference(string settings)
+    {
+        var path = WriteSettings(settings);
+        Assert.IsFalse(ModuleState.IsPowerScriptsEnabled(path, legacyEnabled: true));
     }
 }

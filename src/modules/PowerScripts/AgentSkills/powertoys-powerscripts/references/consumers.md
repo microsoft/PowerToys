@@ -14,7 +14,7 @@ PowerScripts app > Consumer modules.
 | `advanced-paste` | Clipboard text/files/image/audio; never none | Pasteable text/files/image/audio; typed prompts, automatic discovery |
 | `keyboard-manager` | Ordinary action: none | Prefer none; manual saved shortcut, required options need defaults/saved arguments |
 | `command-palette` | No primary input: none | None/text; no-parameter explicit activation runs and opens results; declared parameters use a form and Run |
-| `file-explorer` (integration builds only) | Selected files; one compatible image/audio file | None/text/files/image/audio; typed prompts and separate exported results |
+| `file-explorer` | Selected files; one compatible image/audio file | None/text/files/image/audio; typed prompts and separate exported results |
 | `command-line` | Explicit authorized Host test | Any supported contract; does not test another consumer's UI/binding |
 
 ## Advanced Paste
@@ -35,6 +35,9 @@ returned text/media. Prefer `none` to `none`; options are still allowed.
 Verify host-action/sandbox feasibility, then use [manual setup](keyboard-manager.md).
 Check the actual picker; older prototypes may not support current descriptors.
 Do not revive removed fields or edit KBM JSON.
+Current saved hotkey bindings permit the Host to request exact-content consent on first execution
+or after script edits. This is not a parameter prompt or an automatic approval.
+Legacy `--no-consent` bindings fail instead of prompting until re-saved.
 
 ## Command Palette
 
@@ -67,7 +70,11 @@ not enable the parent module or approve a script. Clipboard, primary file/media 
 file/media output, rich markup, and result saving are not supported by this adapter.
 An auxiliary file-path option does not change primary input to `files`.
 
-## File Explorer (separate integration builds)
+## File Explorer
+
+The adapter is included in this branch under `src\modules\previewpane`.
+Check installation/registration in older or partial builds rather than assuming a Host command
+proves that the shell adapter is available.
 
 Primary `files` accepts 1-1024 local regular files matching extensions/count.
 Primary `image`/`audio` accepts one locally available PNG/JPEG/WebP/WAV/MP3/FLAC,

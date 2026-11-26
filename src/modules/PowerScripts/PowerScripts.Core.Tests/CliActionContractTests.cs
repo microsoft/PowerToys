@@ -20,7 +20,7 @@ public class CliActionContractTests
     {
         var catalog = BuiltinCliCatalog.Load();
         CollectionAssert.AreEquivalent(
-            new[] { "filelocksmith.query", "fancyzones.get-layouts", "fancyzones.get-monitors" },
+            (string[])["filelocksmith.query", "fancyzones.get-layouts", "fancyzones.get-monitors"],
             catalog.Commands.Select(command => command.Id).ToArray());
         Assert.IsNull(catalog.Get("image-resizer.resize"));
         Assert.IsNull(catalog.Get("powerscripts.inspect-arguments"));

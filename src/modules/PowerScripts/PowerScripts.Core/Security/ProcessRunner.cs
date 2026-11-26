@@ -6,9 +6,6 @@ using System.Diagnostics;
 
 namespace PowerScripts.Core.Security;
 
-/// <summary>The exit code, standard output and standard error captured from a launched process.</summary>
-public readonly record struct ProcessRunResult(int ExitCode, string StdOut, string StdErr);
-
 /// <summary>
 /// The single process-launch chokepoint for <b>every</b> PowerScript execution path (PowerShell,
 /// Python, WSL, and descriptor-driven). It resolves MXC policy in one place and, whether launching

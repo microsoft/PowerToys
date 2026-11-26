@@ -29,18 +29,36 @@ internal sealed class LightSwitchCliModule : PowerShellCliModule
 
     public override IReadOnlyList<PowerShellCliTemplate> CreateRecipes() =>
     [
-        Describe(Variant(Arguments, "light-switch-status", "Light Switch: query theme and schedule",
-            "Read the current theme/schedule from the running host module.", "text", "$Command = 'status'",
-            Flag("Json", "Return structured JSON text.", true)),
+        Describe(
+            Variant(
+                Arguments,
+                "light-switch-status",
+                "Light Switch: query theme and schedule",
+                "Read the current theme/schedule from the running host module.",
+                "text",
+                "$Command = 'status'",
+                Flag("Json", "Return structured JSON text.", true)),
             "status [--json]"),
-        Describe(Variant(Arguments, "light-switch-theme", "Light Switch: change the theme",
-            "Select light/dark or toggle the host desktop theme.", "none", string.Empty,
-            Text("Command", "Theme action.", "toggle", "light", "dark", "toggle")),
+        Describe(
+            Variant(
+                Arguments,
+                "light-switch-theme",
+                "Light Switch: change the theme",
+                "Select light/dark or toggle the host desktop theme.",
+                "none",
+                string.Empty,
+                Text("Command", "Theme action.", "toggle", "light", "dark", "toggle")),
             "light | dark | toggle"),
-        Describe(Variant(Arguments, "light-switch-schedule", "Light Switch: enable or disable scheduling",
-            "Change saved theme scheduling. Fixed hours/location remain configured in module Settings.", "none", string.Empty,
-            Text("Command", "Schedule action.", "schedule-enable", "schedule-enable", "schedule-disable"),
-            Text("ScheduleMode", "Used by schedule-enable.", "fixed-hours", "fixed-hours", "sunset-to-sunrise", "follow-night-light")),
+        Describe(
+            Variant(
+                Arguments,
+                "light-switch-schedule",
+                "Light Switch: enable or disable scheduling",
+                "Change saved theme scheduling. Fixed hours/location remain configured in module Settings.",
+                "none",
+                string.Empty,
+                Text("Command", "Schedule action.", "schedule-enable", "schedule-enable", "schedule-disable"),
+                Text("ScheduleMode", "Used by schedule-enable.", "fixed-hours", "fixed-hours", "sunset-to-sunrise", "follow-night-light")),
             "schedule enable --mode fixed-hours|sunset-to-sunrise|follow-night-light | schedule disable"),
     ];
 }

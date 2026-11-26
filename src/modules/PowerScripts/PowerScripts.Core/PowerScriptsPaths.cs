@@ -14,6 +14,8 @@ namespace PowerScripts.Core;
 /// </summary>
 public static class PowerScriptsPaths
 {
+    private static readonly JsonSerializerOptions ConfigJsonOptions = new() { WriteIndented = true };
+
     /// <summary>Environment variable that overrides the default scripts root.</summary>
     public const string RootEnvironmentVariable = "POWERSCRIPTS_ROOT";
 
@@ -21,7 +23,7 @@ public static class PowerScriptsPaths
     public const string ConfigFileName = "config.json";
 
     /// <summary>
-    /// The module's data directory: <c>%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts</c>.
+    /// Gets the module's data directory: <c>%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts</c>.
     /// </summary>
     public static string ModuleDirectory
     {
@@ -33,7 +35,7 @@ public static class PowerScriptsPaths
     }
 
     /// <summary>
-    /// The PowerToys settings file (<c>%LOCALAPPDATA%\Microsoft\PowerToys\settings.json</c>) that
+    /// Gets the PowerToys settings file (<c>%LOCALAPPDATA%\Microsoft\PowerToys\settings.json</c>) that
     /// records which modules are enabled. Read by <see cref="ModuleState"/> to gate execution.
     /// </summary>
     public static string PowerToysSettingsFilePath
@@ -46,7 +48,7 @@ public static class PowerScriptsPaths
     }
 
     /// <summary>
-    /// File-mode physical path of the module config blob (<c>config.json</c>). Persistence goes through
+    /// Gets file-mode physical path of the module config blob (<c>config.json</c>). Persistence goes through
     /// <see cref="Storage.SettingsStore.Current"/>; this path is the location the default file-backed
     /// store writes to, kept for diagnostics and callers that read the file directly.
     /// </summary>
@@ -56,7 +58,7 @@ public static class PowerScriptsPaths
     public const string TrustFileName = "trust.json";
 
     /// <summary>
-    /// File-mode physical path of the trust blob (<c>trust.json</c>): which (script id, content hash)
+    /// Gets file-mode physical path of the trust blob (<c>trust.json</c>): which (script id, content hash)
     /// pairs the user has approved to run. Persistence goes through
     /// <see cref="Storage.SettingsStore.Current"/>; this path is where the default file-backed store
     /// writes, kept for diagnostics.
@@ -64,7 +66,7 @@ public static class PowerScriptsPaths
     public static string TrustFilePath => Path.Combine(ModuleDirectory, TrustFileName);
 
     /// <summary>
-    /// Default scripts root:
+    /// Gets default scripts root:
     /// <c>%LOCALAPPDATA%\Microsoft\PowerToys\PowerScripts\scripts</c>.
     /// </summary>
     public static string DefaultScriptsRoot => Path.Combine(ModuleDirectory, "scripts");
@@ -131,11 +133,8 @@ public static class PowerScriptsPaths
     }
 
     /// <summary>
-    /// Reads the module's own enabled override from <see cref="ConfigFilePath"/>, or <c>null</c> when
-    /// it is missing/unreadable. This is written by Settings and, unlike the PowerToys
-    /// <c>settings.json</c> <c>enabled.PowerScripts</c> flag, it is owned solely by this module so it
-    /// survives the runner rewriting <c>settings.json</c> (which drops entries for modules the runner
-    /// does not itself host — as the prototype is not yet a registered runner module).
+    /// Reads the prototype's enabled preference for migration when general settings do not yet
+    /// contain <c>enabled.PowerScripts</c>. It never overrides a recorded general preference.
     /// </summary>
     public static bool? ReadEnabledOverride()
     {
@@ -168,7 +167,6 @@ public static class PowerScriptsPaths
     /// <summary>Merges a single top-level key into the module config blob without clobbering the rest.</summary>
     private static void MergeConfigValue(string key, JsonElement value)
     {
-        var options = new JsonSerializerOptions { WriteIndented = true };
         var merged = new Dictionary<string, JsonElement>(StringComparer.Ordinal);
         try
         {
@@ -188,6 +186,6 @@ public static class PowerScriptsPaths
         }
 
         merged[key] = value;
-        SettingsStore.Current.WriteBlob(ConfigFileName, JsonSerializer.Serialize(merged, options));
+        SettingsStore.Current.WriteBlob(ConfigFileName, JsonSerializer.Serialize(merged, ConfigJsonOptions));
     }
 }

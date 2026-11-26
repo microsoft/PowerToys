@@ -28,7 +28,7 @@ public static class SettingsStore
     private static ISettingsStore? _current;
 
     /// <summary>
-    /// The active settings store. Assignable so a future protected-store implementation (or tests) can
+    /// Gets or sets the active settings store. Assignable so a future protected-store implementation (or tests) can
     /// inject an alternative; defaults to the file-backed store when never set.
     /// </summary>
     public static ISettingsStore Current

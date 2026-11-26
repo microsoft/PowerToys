@@ -90,6 +90,7 @@ public static class MxcLinuxProcessRunner
             {
                 return ready;
             }
+
             // The pinned WSLC executor ignores process.cwd, so set it explicitly in the shell.
             var command = $"cd {Quote(ToContainerPath(workspace))} && " +
                 $"env -i PATH=/usr/local/bin:/usr/bin:/bin HOME=/tmp PYTHONDONTWRITEBYTECODE=1 PYTHONNOUSERSITE=1 PYTHONUNBUFFERED=1 " +
@@ -157,8 +158,12 @@ public static class MxcLinuxProcessRunner
                 return MissingRuntime();
             }
 
-            using var session = new MxcLinuxSession(sessionDirectory ?? MxcLinuxSession.DefaultDirectory,
-                executor, launcher, maintenance: false, waitForLock: false);
+            using var session = new MxcLinuxSession(
+                sessionDirectory ?? MxcLinuxSession.DefaultDirectory,
+                executor,
+                launcher,
+                maintenance: false,
+                waitForLock: false);
             if (session.ProbeExisting(image) is { } existing)
             {
                 return existing;
@@ -202,8 +207,12 @@ public static class MxcLinuxProcessRunner
 
         try
         {
-            using var session = new MxcLinuxSession(sessionDirectory ?? MxcLinuxSession.DefaultDirectory,
-                executor, launcher, maintenance: false, waitForLock: false);
+            using var session = new MxcLinuxSession(
+                sessionDirectory ?? MxcLinuxSession.DefaultDirectory,
+                executor,
+                launcher,
+                maintenance: false,
+                waitForLock: false);
             return session.Recover();
         }
         catch (IOException exception) when ((exception.HResult & 0xffff) is 32 or 33)
@@ -243,7 +252,8 @@ public static class MxcLinuxProcessRunner
     }
 
     private static string? GetImageError(string image) =>
-        string.IsNullOrWhiteSpace(image) || image.StartsWith('-') || image.Any(character => char.IsWhiteSpace(character) || char.IsControl(character))
+        string.IsNullOrWhiteSpace(image) || image.StartsWith('-') || image.Any(
+            character => char.IsWhiteSpace(character) || char.IsControl(character))
             ? "A managed Linux container image reference is required, without whitespace or command-line options."
             : null;
 
@@ -254,17 +264,18 @@ public static class MxcLinuxProcessRunner
         IEnumerable<string> readonlyPaths,
         bool restrictNetwork,
         int timeoutMs) =>
-        JsonSerializer.Serialize(new
-        {
-            version = "0.8.0-alpha",
-            containerId = "powerscripts-linux-" + Guid.NewGuid().ToString("N"),
-            containment = "wslc",
-            process = new { commandLine = command, cwd = ToContainerPath(workspace), timeout = timeoutMs },
-            filesystem = new { readonlyPaths, readwritePaths = new[] { Path.GetFullPath(workspace) } },
-            network = new { defaultPolicy = restrictNetwork ? "block" : "allow" },
-            lifecycle = new { destroyOnExit = true, preservePolicy = false },
-            experimental = new { wslc = new { image, storagePath = ImageStorePath } },
-        });
+        JsonSerializer.Serialize(
+            new
+            {
+                version = "0.8.0-alpha",
+                containerId = "powerscripts-linux-" + Guid.NewGuid().ToString("N"),
+                containment = "wslc",
+                process = new { commandLine = command, cwd = ToContainerPath(workspace), timeout = timeoutMs },
+                filesystem = new { readonlyPaths, readwritePaths = new[] { Path.GetFullPath(workspace) } },
+                network = new { defaultPolicy = restrictNetwork ? "block" : "allow" },
+                lifecycle = new { destroyOnExit = true, preservePolicy = false },
+                experimental = new { wslc = new { image, storagePath = ImageStorePath } },
+            });
 
     internal static string ToContainerPath(string path)
     {
@@ -353,7 +364,9 @@ public static class MxcLinuxProcessRunner
         {
             for (var index = 0; index < files.Count; index++)
             {
-                files[index] = mappings.TryGetValue(files[index]!.GetValue<string>(), out var path)
+                files[index] = mappings.TryGetValue(
+                    files[index]!.GetValue<string>(),
+                    out var path)
                     ? path
                     : throw new InvalidDataException("A managed Linux input file was not authorized for this invocation.");
             }
@@ -365,7 +378,9 @@ public static class MxcLinuxProcessRunner
             {
                 if (parameters[name] is JsonValue value)
                 {
-                    parameters[name] = mappings.TryGetValue(value.GetValue<string>(), out var path)
+                    parameters[name] = mappings.TryGetValue(
+                        value.GetValue<string>(),
+                        out var path)
                         ? path
                         : throw new InvalidDataException("A managed Linux file parameter was not authorized for this invocation.");
                 }
@@ -396,7 +411,8 @@ public static class MxcLinuxProcessRunner
         return launcher.Run(start, null, checked(timeoutMs + 5000));
     }
 
-    private static ProcessStartInfo NewExecutor(string executor) => new(executor)
+    private static ProcessStartInfo NewExecutor(string executor) => new(
+        executor)
     {
         StandardOutputEncoding = Encoding.UTF8,
         StandardErrorEncoding = Encoding.UTF8,
@@ -407,7 +423,8 @@ public static class MxcLinuxProcessRunner
         var executor = MxcProcessRunner.ResolveExecutor(settings);
         return executor is not null &&
             File.Exists(Path.Combine(Path.GetDirectoryName(executor)!, "wslcsdk.dll")) &&
-            File.Exists(Path.Combine(Path.GetDirectoryName(executor)!, "wxc-wslc-daemon.exe"))
+            File.Exists(
+                Path.Combine(Path.GetDirectoryName(executor)!, "wxc-wslc-daemon.exe"))
                 ? executor
                 : null;
     }

@@ -45,7 +45,7 @@ public sealed class ActivityTests
         Assert.IsTrue(completed.DurationMilliseconds >= 0);
         using var json = JsonDocument.Parse(File.ReadAllText(Path.Combine(_directory, "activity.json")));
         CollectionAssert.AreEquivalent(
-            new[] { "id", "scriptId", "scriptName", "consumerId", "startedUtc", "finishedUtc", "status", "exitCode", "hostProcessId", "hostStartTimeUtcTicks", "durationMilliseconds" },
+            (string[])["id", "scriptId", "scriptName", "consumerId", "startedUtc", "finishedUtc", "status", "exitCode", "hostProcessId", "hostStartTimeUtcTicks", "durationMilliseconds"],
             json.RootElement[0].EnumerateObject().Select(property => property.Name).ToArray());
     }
 
@@ -71,7 +71,8 @@ public sealed class ActivityTests
     {
         var store = new ActivityStore(_directory);
         var run = store.Start("interrupted", "Interrupted", "advanced-paste");
-        File.WriteAllText(Path.Combine(_directory, "activity.json"),
+        File.WriteAllText(
+            Path.Combine(_directory, "activity.json"),
             JsonSerializer.Serialize(new[] { run with { HostStartTimeUtcTicks = 0 } }, ActivityStore.JsonOptions));
         var interrupted = new ActivityStore(_directory).List().Single();
         Assert.AreEqual(ActivityStatus.Interrupted, interrupted.Status);
@@ -87,7 +88,8 @@ public sealed class ActivityTests
     {
         var store = new ActivityStore(_directory);
         var run = store.Start("retry", "Retry", "test-harness");
-        File.WriteAllText(Path.Combine(_directory, "activity.json"),
+        File.WriteAllText(
+            Path.Combine(_directory, "activity.json"),
             JsonSerializer.Serialize(new[] { run with { Status = ActivityStatus.Unknown } }, ActivityStore.JsonOptions));
         Assert.AreEqual(ActivityStatus.Running, store.List().Single().Status);
     }
@@ -98,7 +100,7 @@ public sealed class ActivityTests
         await Task.WhenAll(Enumerable.Range(0, 24).Select(index => Task.Run(() =>
         {
             var store = new ActivityStore(index % 2 == 0 ? _directory : _directory + Path.DirectorySeparatorChar);
-            var run = store.Start(index.ToString(), "Concurrent", "test-harness");
+            var run = store.Start(index.ToString(System.Globalization.CultureInfo.InvariantCulture), "Concurrent", "test-harness");
             store.Complete(run, index % 2);
         })));
         var records = new ActivityStore(_directory).List();
@@ -114,7 +116,7 @@ public sealed class ActivityTests
         var oldest = store.Start("oldest", "Oldest", "test-harness");
         for (var index = 0; index < ActivityStore.MaximumRecords; index++)
         {
-            var recent = store.Start(index.ToString(), "Recent", "test-harness");
+            var recent = store.Start(index.ToString(System.Globalization.CultureInfo.InvariantCulture), "Recent", "test-harness");
             store.Complete(recent, 0);
         }
 

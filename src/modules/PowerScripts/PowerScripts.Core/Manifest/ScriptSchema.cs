@@ -2,9 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Buffers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace PowerScripts.Core.Manifest;
@@ -12,6 +13,8 @@ namespace PowerScripts.Core.Manifest;
 /// <summary>Validates the supported schema profile and invocation data without executing code.</summary>
 public static class ScriptSchema
 {
+    private static readonly SearchValues<char> InvalidExtensionCharacters = SearchValues.Create("\\/*?\0");
+
     public static void ValidateDefinition(JsonSchemaObject? schema, string path)
     {
         if (schema is null)
@@ -64,7 +67,7 @@ public static class ScriptSchema
             (schema.Type != "string" || extensions.Count == 0 ||
                 extensions.Any(extension => extension is null || (extension != "*" &&
                     (!extension.StartsWith('.') || extension.Length < 2 ||
-                        extension.IndexOfAny(new[] { '\\', '/', '*', '?', '\0' }) >= 0)))))
+                        extension.AsSpan().IndexOfAny(InvalidExtensionCharacters) >= 0)))))
         {
             throw new InvalidDataException($"'{path}.x-powerscript.extensions' must contain '*' or filename extensions such as '.txt'.");
         }

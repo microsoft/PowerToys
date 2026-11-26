@@ -4,19 +4,6 @@
 
 namespace PowerScripts.Core.Security;
 
-/// <summary>The globally resolved MXC enforcement decision for a process launch.</summary>
-public sealed class MxcEffectivePolicy
-{
-    public bool Enabled { get; init; } = true;
-
-    public IReadOnlyList<string> EnabledPolicies { get; init; } = MxcPolicies.All;
-
-    public IReadOnlyList<string> DisabledPolicies { get; init; } = Array.Empty<string>();
-
-    public bool IsEnabled(string policy) =>
-        Enabled && EnabledPolicies.Contains(policy, StringComparer.Ordinal);
-}
-
 public static class MxcPolicyResolver
 {
     public static MxcEffectivePolicy Resolve(MxcSettings? settings)

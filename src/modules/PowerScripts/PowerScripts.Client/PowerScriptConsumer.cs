@@ -7,12 +7,22 @@ namespace PowerScripts.Client;
 /// <summary>Stable, caller-supplied attribution, not an authenticated security identity.</summary>
 public static class PowerScriptConsumer
 {
+    /// <summary>Attribution for Advanced Paste.</summary>
     public const string AdvancedPaste = "advanced-paste";
+
+    /// <summary>Attribution for Keyboard Manager.</summary>
     public const string KeyboardManager = "keyboard-manager";
+
+    /// <summary>Attribution for Command Palette.</summary>
     public const string CommandPalette = "command-palette";
+
+    /// <summary>Attribution for command-line invocations.</summary>
     public const string CommandLine = "command-line";
+
+    /// <summary>Attribution for the PowerScripts editor.</summary>
     public const string Editor = "powerscripts-editor";
 
+    /// <summary>Checks whether a consumer ID has the supported bounded syntax.</summary>
     public static bool IsValid(string? id) =>
         id is { Length: > 0 and <= 64 } &&
         id[0] is >= 'a' and <= 'z' &&

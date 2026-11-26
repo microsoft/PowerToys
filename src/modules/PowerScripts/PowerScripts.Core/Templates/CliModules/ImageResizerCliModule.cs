@@ -8,31 +8,7 @@ namespace PowerScripts.Core.Templates.CliModules;
 
 internal sealed class ImageResizerCliModule : PowerShellCliModule
 {
-    public override string Id => "image-resizer";
-
-    public override string Name => "Image Resizer";
-
-    public override string IconName => "ImageResizer";
-
-    public override string Executable => @"WinUI3Apps\PowerToys.ImageResizerCLI.exe";
-
-    public override int Order => 50;
-
-    public override IReadOnlyList<PowerShellCliTemplate> CreateRecipes() =>
-    [
-        Describe(Query("image-resizer-config", "Image Resizer: inspect saved configuration",
-            "Read saved presets and resize/encoding defaults; does not resize or replace files.", "none",
-            CliArgument.Literal("--show-config")),
-            "--show-config"),
-        Describe(ImageResizerOptions(),
-            "--width/--height --fit --unit | --size; --shrink-only --ignore-orientation --remove-metadata --keep-date-modified --quality --filename; copy-only destination"),
-    ];
-
-    private PowerShellCliTemplate ImageResizerOptions() =>
-        Template("image-resizer-options", "Image Resizer: resize files using dimensions or a saved preset",
-            "Resize copies and return new workspace files. Choose dimensions (one can be zero for automatic sizing) or a saved preset. Quality, metadata and orientation options apply to copies; originals and host destinations are never replaced.",
-            "files",
-            """
+    private const string ImageResizerOptionsScript = """
                 if (-not @($Files).Count) { throw 'Choose image files.' }
                 $__powerscriptResizeOptions = [Collections.Generic.List[string]]::new()
                 if ($Sizing -eq 'preset') {
@@ -75,7 +51,40 @@ internal sealed class ImageResizerCliModule : PowerShellCliModule
                     [IO.File]::Copy([IO.Path]::GetFullPath($__powerscriptFile), $__powerscriptCopy, $false)
                     $__powerscriptArguments.Add($__powerscriptCopy)
                 }
-                """,
+                """;
+
+    public override string Id => "image-resizer";
+
+    public override string Name => "Image Resizer";
+
+    public override string IconName => "ImageResizer";
+
+    public override string Executable => @"WinUI3Apps\PowerToys.ImageResizerCLI.exe";
+
+    public override int Order => 50;
+
+    public override IReadOnlyList<PowerShellCliTemplate> CreateRecipes() =>
+    [
+        Describe(
+            Query(
+                "image-resizer-config",
+                "Image Resizer: inspect saved configuration",
+                "Read saved presets and resize/encoding defaults; does not resize or replace files.",
+                "none",
+                CliArgument.Literal("--show-config")),
+            "--show-config"),
+        Describe(
+            ImageResizerOptions(),
+            "--width/--height --fit --unit | --size; --shrink-only --ignore-orientation --remove-metadata --keep-date-modified --quality --filename; copy-only destination"),
+    ];
+
+    private PowerShellCliTemplate ImageResizerOptions() =>
+        Template(
+            "image-resizer-options",
+            "Image Resizer: resize files using dimensions or a saved preset",
+            "Resize copies and return new workspace files. Choose dimensions (one can be zero for automatic sizing) or a saved preset. Quality, metadata and orientation options apply to copies; originals and host destinations are never replaced.",
+            "files",
+            ImageResizerOptionsScript,
             Text("Sizing", "Preset preserves its saved dimensions, fit and unit.", "dimensions", "dimensions", "preset"),
             Integer("PresetIndex", "Zero-based saved preset index, used only by preset sizing.", 0),
             Text("Width", "Nonnegative invariant decimal; zero means automatic.", "1024"),

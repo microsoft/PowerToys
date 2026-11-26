@@ -7,10 +7,6 @@ using PowerScripts.Core.Storage;
 
 namespace PowerScripts.Core;
 
-public sealed record ConsumerState(string Id, bool UserEnabled, bool IsEnabled, bool CanChange, bool IsPolicyControlled, string? DisabledReason);
-
-public sealed record ConsumerSettingsSnapshot(bool IsPowerScriptsEnabled, bool IsPowerScriptsPolicyControlled, IReadOnlyList<ConsumerState> Consumers);
-
 /// <summary>Shared preference and policy resolution. Consumer identity is not authentication.</summary>
 public sealed class ConsumerSettings
 {

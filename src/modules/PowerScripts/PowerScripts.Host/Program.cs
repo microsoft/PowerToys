@@ -2,11 +2,12 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Runtime.ExceptionServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text;
-using PowerScripts.Core;
 using PowerScripts.Client;
+using PowerScripts.Core;
 using PowerScripts.Core.Activity;
 using PowerScripts.Core.Execution;
 using PowerScripts.Core.Manifest;
@@ -32,6 +33,12 @@ namespace PowerScripts.Host;
 /// </summary>
 internal static class Program
 {
+    private static readonly JsonSerializerOptions DisplayJsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+
     [STAThread]
     private static int Main(string[] args)
     {
@@ -325,11 +332,7 @@ internal static class Program
 
             Console.WriteLine(JsonSerializer.Serialize(
                 projection,
-                new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                }));
+                DisplayJsonOptions));
             return 0;
         }
 
@@ -361,7 +364,8 @@ internal static class Program
 
         if (asJson)
         {
-            Console.WriteLine(JsonSerializer.Serialize(new
+            Console.WriteLine(JsonSerializer.Serialize(
+                new
             {
                 support.IsSupported,
                 support.Reason,
@@ -369,11 +373,8 @@ internal static class Program
                 support.ExecutorPath,
                 support.Tier,
                 support.Warnings,
-            }, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            }));
+            },
+                DisplayJsonOptions));
         }
         else
         {
@@ -428,30 +429,36 @@ internal static class Program
         var store = new ActivityStore();
         var record = store.Start(manifest.Id, manifest.Name, consumers[0]);
         var exitCode = 2;
+        ExceptionDispatchInfo? executionFailure = null;
         try
         {
             if (!new ConsumerSettings().Get(consumers[0]).IsEnabled)
             {
                 Console.Error.WriteLine($"PowerScripts is disabled for consumer '{consumers[0]}' by settings or Group Policy.");
                 exitCode = 4;
-                return exitCode;
             }
-
-            exitCode = execute();
-            return exitCode;
+            else
+            {
+                exitCode = execute();
+            }
         }
-        finally
+        catch (Exception exception)
         {
-            // A killed Host cannot execute finally; Activity resolves its stale record as interrupted.
-            try
-            {
-                store.Complete(record, exitCode);
-            }
-            catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or JsonException or TimeoutException)
-            {
-                throw new IOException("Unable to persist PowerScripts Activity completion. The invocation may already have executed; do not retry automatically.", exception);
-            }
+            executionFailure = ExceptionDispatchInfo.Capture(exception);
         }
+
+        // A killed Host cannot complete the record; Activity resolves it as interrupted.
+        try
+        {
+            store.Complete(record, exitCode);
+        }
+        catch (Exception exception) when (exception is IOException or InvalidDataException or UnauthorizedAccessException or JsonException or TimeoutException)
+        {
+            throw new IOException("Unable to persist PowerScripts Activity completion. The invocation may already have executed; do not retry automatically.", exception);
+        }
+
+        executionFailure?.Throw();
+        return exitCode;
     }
 
     private static int RunScript(

@@ -82,7 +82,7 @@ launch behavior. Native sessions observe owner exit and a private inherited stop
 an enclosing job, which would otherwise capture the Linux daemon shared across consumers.
 
 ```csharp
-var client = new PowerScriptsClient("my-module");
+using var client = new PowerScriptsClient("my-module");
 if (!client.IsAvailable)
 {
     return;
@@ -139,9 +139,19 @@ Keyboard Manager PowerScript bindings to regenerate their command line.
 
 ### Central integration settings and Group Policy
 
+PowerScripts is a registered Runner module. Runner and PowerToys Settings own the canonical
+`settings.json` flag `enabled.PowerScripts`; a new installation defaults off. The Host reads that
+flag on every discovery/execution request, without requiring a persistent Runner-owned Host.
+The prototype's `PowerScripts\config.json` `enabled` value is a migration fallback only when the
+general flag is absent. An explicit general preference always wins, including an explicit disable.
+Missing preferences default off; unreadable or malformed general settings refuse execution.
+The development `POWERSCRIPTS_IGNORE_ENABLED=1` bypass is for isolated tests, not consumer code,
+and cannot override Group Policy. Disabling the module blocks subsequent runs without deleting
+scripts, trust or bindings; it does not cancel already-running work.
+
 Put each consumer's integration switch in **PowerScripts app > Consumer modules**, not
 in the consumer's settings page. PowerScripts owns `config.json`'s
-`consumers: { "advanced-paste": true, "keyboard-manager": true, "command-palette": true }`
+`consumers: { "advanced-paste": true, "keyboard-manager": true, "command-palette": true, "file-explorer": false }`
 preferences. Advanced Paste uses
 its legacy `properties.powerscripts-enabled` value until a central preference exists (default off).
 The first central edit copies the legacy choice; subsequent legacy writes cannot override it.
@@ -178,9 +188,9 @@ Malformed or inaccessible policies are reported as errors, not treated as permis
 The PowerScripts app shows effective integration values and locks policy-managed controls.
 
 The generic per-consumer policy resolver accepts stable consumer IDs, so adding a consumer needs no
-new execution gate. Register its parent utility/default in `ConsumerSettings`, add its central
-app card in `PowerScripts.Editor\Views\ConsumerModulesPage.xaml` and ADMX/ADML policy, and use
-the same ID in discovery, execution, and policy values. Module enablement, runtime, and sandbox
+new execution gate, but its preference, parent policy and UI still require explicit registration.
+Follow [Register a new consumer](#register-a-new-consumer); do not assume a valid ID alone adds a
+switch or makes its adapter available. Module enablement, runtime, and sandbox
 controls remain in PowerToys Settings. Relocating integration controls changes no Host commands, consumer IDs, preferences,
 default values, policies, or module-owned bindings.
 Refresh discovery when presenting actions; do not cache enablement as an authorization decision.
@@ -340,8 +350,9 @@ var actions = scripts.Where(script => script.Input == PowerScriptIO.None
 
 Adapt the predicate to the consumer's capabilities. Persist only the chosen ID and any
 consumer-collected parameter values, using the module's normal IPC/save path. Review trust during
-configuration; automatic execution must refuse an untrusted or changed script rather than silently
-approving it. Revalidate parameters and contracts through the Host when invoking.
+configuration. Unattended automatic execution must refuse an untrusted or changed script rather
+than open consent UI or silently approve it. A user-invoked Keyboard Manager hotkey is interactive:
+current bindings permit the Host to request exact-content consent on the first run or after edits. Revalidate parameters and contracts through the Host when invoking.
 
 Do not duplicate the installed catalogue or turn a local Remove action into a global uninstall.
 Keep an unavailable binding with an explicit warning until the user replaces or removes it; Cancel
@@ -381,6 +392,33 @@ do not reference the Settings executable from a runtime module or add UI depende
    capability schema. Update related handoff guidance and bump `bundle.json` so agents can identify
    the updated bundle when the setup instructions are copied again. Keep unavailable/separate-branch
    integrations explicitly conditional.
+
+### Register a new consumer
+
+All paths below are relative to `src\modules\PowerScripts` unless stated otherwise.
+The four built-in adapters are present in this branch; installation checks still matter for
+custom, older or partial builds.
+
+| Registration point | Required change |
+| --- | --- |
+| `PowerScripts.Client\PowerScriptConsumer.cs` | Add a stable ID constant if shared by managed consumers. Valid attribution is not authentication. |
+| `PowerScripts.Core\ConsumerSettings.cs` | Add the ID to `KnownConsumers`, explicitly choose its saved-preference default, and map its parent utility's policy name in `Get`. Update first-edit migration in `Set` when needed; preserve unknown preferences. |
+| `PowerScripts.Client\PowerScriptConsumerGuidance.cs` | Describe the adapter's supported primary input/output intersection for creation guidance. This is not an execution gate. |
+| `PowerScripts.Editor\UI\ViewModels\PowerScriptsViewModel.Consumers.cs` | Add the consumer item, snapshot mapping, catalogue refresh and compatibility presentation. These collections are explicitly registered, not generated from the ID. |
+| `PowerScripts.Editor\Views\ConsumerModulesPage.xaml` and `.xaml.cs` | Add the localized integration card and ID-to-item toggle handling, preserving managed/disabled states and actionable failures. |
+| `src\gpo\assets\PowerToys.admx` and `en-US\PowerToys.adml` (repository-relative) | Add the integration policy under `PowerScripts\Consumers`; use the same ID and the existing 0/1 registry contract. |
+| Adapter project, `PowerToys.slnx`, installer and `.pipelines\ESRPSigning_core.json` (repository-relative) | Reference the headless client, register build/deployment and sign any new product payload. Do not ship a UI switch without its adapter. |
+| `AgentSkills\powertoys-powerscripts\references\consumers.md` and `bundle.json` | Record actual I/O, parameter UI, setup, result ownership, timeout/cancellation and availability; bump the bundle version in the same change. |
+
+Use `ConsumerSettingsTests` for module/parent-policy precedence, defaults and preference retention,
+and `ConsumerGuidanceTests` for creation compatibility. Add adapter tests for input filtering,
+typed parameters, stale bindings, renewed consent, cancellation and result lifetime.
+Representative adapters are `src\modules\AdvancedPaste\AdvancedPaste\Services\PowerScriptsService.cs`,
+`src\modules\keyboardmanager\KeyboardManagerEditorUI\Helpers\PowerScriptsCatalog.cs`,
+`src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.PowerScripts`, and
+`src\modules\previewpane\FileExplorerScripts.Core` (repository-relative).
+Build the changed projects with the repository build scripts on x64 and ARM64; core tests participate
+in the standard `Build;Test` target. Validate the installed adapter, not just a standalone Host run.
 
 ## Script presentation and icons
 
@@ -440,7 +478,11 @@ scalar file parameters in WSL.
 ## Trust and automatic invocation
 
 An interactive consumer normally lets the Host request consent when untrusted content is run.
-Automatic consumers must never trigger consent or parameter UI during the event they handle:
+This includes an explicitly pressed Keyboard Manager hotkey: current bindings collect arguments
+during configuration and permit Host consent at invocation. Legacy `--no-consent` bindings retain
+their noninteractive behavior until re-saved.
+
+Unattended automatic consumers must never trigger consent or parameter UI during the event they handle:
 
 1. Approve the selected script during configuration with `TrustApprove`.
 2. Persist its ID and any configured parameter values.

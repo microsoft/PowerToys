@@ -20,7 +20,8 @@ internal sealed class MxcLinuxSession : IDisposable
     private SessionState? _state;
 
     internal static string DefaultDirectory => Path.Combine(
-        SettingsStore.Current is FileSettingsStore files ? files.BaseDirectory : PowerScriptsPaths.ModuleDirectory, "linux-session");
+        SettingsStore.Current is FileSettingsStore files ? files.BaseDirectory : PowerScriptsPaths.ModuleDirectory,
+        "linux-session");
 
     internal string DaemonDirectory => Path.Combine(_directory, "daemon");
 
@@ -53,9 +54,12 @@ internal sealed class MxcLinuxSession : IDisposable
 
         try
         {
-            _state = File.Exists(StatePath)
-                ? JsonSerializer.Deserialize<SessionState>(File.ReadAllText(StatePath))
-                    ?? throw new InvalidDataException("The shared Linux session state is empty.")
+            _state = File.Exists(
+                StatePath)
+                ? JsonSerializer.Deserialize<SessionState>(
+                    File.ReadAllText(StatePath))
+                    ?? throw new InvalidDataException(
+                        "The shared Linux session state is empty.")
                 : null;
             if (_state is not null && !IsSandboxId(_state.SandboxId))
             {
@@ -91,13 +95,9 @@ internal sealed class MxcLinuxSession : IDisposable
             throw new DirectoryNotFoundException("The managed Linux script catalogue does not exist.");
         }
 
-        var identity = string.Join("\n", new[]
-        {
-            image, root.ToUpperInvariant(), restrictNetwork.ToString(),
-            RuntimeIdentity(_executor),
-            RuntimeIdentity(Path.Combine(Path.GetDirectoryName(_executor)!, "wxc-wslc-daemon.exe")),
-            RuntimeIdentity(Path.Combine(Path.GetDirectoryName(_executor)!, "wslcsdk.dll")),
-        });
+        var identity = string.Join(
+            "\n",
+            new[] { image, root.ToUpperInvariant(), restrictNetwork.ToString(), RuntimeIdentity(_executor), RuntimeIdentity(Path.Combine(Path.GetDirectoryName(_executor)!, "wxc-wslc-daemon.exe")), RuntimeIdentity(Path.Combine(Path.GetDirectoryName(_executor)!, "wslcsdk.dll")), });
         var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)));
         if (_state is not null && (_state.Key != key || !_state.Reusable || _state.DaemonDirectory is null))
         {
@@ -111,13 +111,15 @@ internal sealed class MxcLinuxSession : IDisposable
         if (_state is not null)
         {
             // Start is not idempotent. Check the handle before user code, never by retrying its stdout.
-            var check = Invoke(new
-            {
-                version = "0.8.0-alpha",
-                phase = "exec",
-                sandboxId = _state.SandboxId,
-                process = new { commandLine = ":", timeout = 5000 },
-            }, 10000);
+            var check = Invoke(
+                new
+                {
+                    version = "0.8.0-alpha",
+                    phase = "exec",
+                    sandboxId = _state.SandboxId,
+                    process = new { commandLine = ":", timeout = 5000 },
+                },
+                10000);
             if (check.ExitCode == 0)
             {
                 return check;
@@ -141,19 +143,21 @@ internal sealed class MxcLinuxSession : IDisposable
 
         Directory.CreateDirectory(RequestsDirectory);
         Directory.CreateDirectory(WorkspacesDirectory);
-        var provision = Invoke(new
-        {
-            version = "0.8.0-alpha",
-            phase = "provision",
-            containment = "wslc",
-            filesystem = new
+        var provision = Invoke(
+            new
             {
-                readonlyPaths = new[] { root, RequestsDirectory },
-                readwritePaths = new[] { WorkspacesDirectory },
+                version = "0.8.0-alpha",
+                phase = "provision",
+                containment = "wslc",
+                filesystem = new
+                {
+                    readonlyPaths = new[] { root, RequestsDirectory },
+                    readwritePaths = new[] { WorkspacesDirectory },
+                },
+                network = new { defaultPolicy = restrictNetwork ? "block" : "allow" },
+                experimental = new { wslc = new { provision = new { image } } },
             },
-            network = new { defaultPolicy = restrictNetwork ? "block" : "allow" },
-            experimental = new { wslc = new { provision = new { image } } },
-        }, 60000);
+            60000);
         if (provision.ExitCode != 0)
         {
             return Failure("provision", provision);
@@ -176,13 +180,15 @@ internal sealed class MxcLinuxSession : IDisposable
     {
         _state = _state! with { Reusable = false };
         SaveState();
-        var result = Invoke(new
-        {
-            version = "0.8.0-alpha",
-            phase = "exec",
-            sandboxId = _state.SandboxId,
-            process = new { commandLine = command, timeout = timeoutMs },
-        }, timeoutMs > 0 ? checked(timeoutMs + 5000) : 0);
+        var result = Invoke(
+            new
+            {
+                version = "0.8.0-alpha",
+                phase = "exec",
+                sandboxId = _state.SandboxId,
+                process = new { commandLine = command, timeout = timeoutMs },
+            },
+            timeoutMs > 0 ? checked(timeoutMs + 5000) : 0);
         if (result.ExitCode == 0)
         {
             _state = _state with { Reusable = true };
@@ -232,13 +238,15 @@ internal sealed class MxcLinuxSession : IDisposable
             return new ProcessRunResult(2, string.Empty, MxcLinuxRecovery.RecoveryRequired);
         }
 
-        var result = Invoke(new
-        {
-            version = "0.8.0-alpha",
-            phase = "exec",
-            sandboxId = _state.SandboxId,
-            process = new { commandLine = MxcLinuxProcessRunner.ProbeCommand, timeout = 30000 },
-        }, 35000);
+        var result = Invoke(
+            new
+            {
+                version = "0.8.0-alpha",
+                phase = "exec",
+                sandboxId = _state.SandboxId,
+                process = new { commandLine = MxcLinuxProcessRunner.ProbeCommand, timeout = 30000 },
+            },
+            35000);
         return result.ExitCode == 0 ? result : Failure("readiness check", result);
     }
 
@@ -251,13 +259,15 @@ internal sealed class MxcLinuxSession : IDisposable
 
         // An admitted constant check completes on the SDK worker after any queued exec.
         // Busy, timeout and unrelated failures never authorize cleanup.
-        var check = Invoke(new
-        {
-            version = "0.8.0-alpha",
-            phase = "exec",
-            sandboxId = _state.SandboxId,
-            process = new { commandLine = ":", timeout = 5000 },
-        }, 10000);
+        var check = Invoke(
+            new
+            {
+                version = "0.8.0-alpha",
+                phase = "exec",
+                sandboxId = _state.SandboxId,
+                process = new { commandLine = ":", timeout = 5000 },
+            },
+            10000);
         if (check.ExitCode != 0 && !HasError(check, "not_provisioned") &&
             !HasError(check, "not_started") && !MxcLinuxRecovery.IsRpcUnavailable(check))
         {
@@ -307,12 +317,14 @@ internal sealed class MxcLinuxSession : IDisposable
         File.Move(temporary, StatePath, overwrite: true);
     }
 
-    private ProcessRunResult Phase(string phase) => Invoke(new
-    {
-        version = "0.8.0-alpha",
-        phase,
-        sandboxId = _state!.SandboxId,
-    }, 60000);
+    private ProcessRunResult Phase(string phase) => Invoke(
+        new
+        {
+            version = "0.8.0-alpha",
+            phase,
+            sandboxId = _state!.SandboxId,
+        },
+        60000);
 
     private ProcessRunResult Invoke(object configuration, int timeoutMs)
     {
@@ -320,13 +332,15 @@ internal sealed class MxcLinuxSession : IDisposable
         File.WriteAllText(path, JsonSerializer.Serialize(configuration), new UTF8Encoding(false));
         try
         {
-            var start = new ProcessStartInfo(_executor)
+            var start = new ProcessStartInfo(
+                _executor)
             {
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8,
             };
             start.ArgumentList.Add("--experimental");
             start.ArgumentList.Add(path);
+
             // Live containers stay warm. Once released, promptly unlock the SDK image store for setup/checks.
             start.Environment["MXC_WSLC_DAEMON_IDLE_TIMEOUT_SECS"] = "1";
             start.Environment["MXC_WSLC_DAEMON_IDLE_POLL_SECS"] = "1";

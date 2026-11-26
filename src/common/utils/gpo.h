@@ -64,6 +64,7 @@ namespace powertoys_gpo
     const std::wstring POLICY_CONFIGURE_ENABLED_SHORTCUT_GUIDE = L"ConfigureEnabledUtilityShortcutGuide";
     const std::wstring POLICY_CONFIGURE_ENABLED_TEXT_EXTRACTOR = L"ConfigureEnabledUtilityTextExtractor";
     const std::wstring POLICY_CONFIGURE_ENABLED_ADVANCED_PASTE = L"ConfigureEnabledUtilityAdvancedPaste";
+    const std::wstring POLICY_CONFIGURE_ENABLED_POWER_SCRIPTS = L"ConfigureEnabledUtilityPowerScripts";
     const std::wstring POLICY_CONFIGURE_ENABLED_CMD_PAL = L"ConfigureEnabledUtilityCmdPal";
     const std::wstring POLICY_CONFIGURE_ENABLED_ZOOM_IT = L"ConfigureEnabledUtilityZoomIt";
     const std::wstring POLICY_CONFIGURE_ENABLED_REGISTRY_PREVIEW = L"ConfigureEnabledUtilityRegistryPreview";
@@ -301,6 +302,11 @@ namespace powertoys_gpo
     inline gpo_rule_configured_t getConfiguredAwakeEnabledValue()
     {
         return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_AWAKE);
+    }
+
+    inline gpo_rule_configured_t getConfiguredPowerScriptsEnabledValue()
+    {
+        return getUtilityEnabledValue(POLICY_CONFIGURE_ENABLED_POWER_SCRIPTS);
     }
 
     inline gpo_rule_configured_t getConfiguredCmdNotFoundEnabledValue()

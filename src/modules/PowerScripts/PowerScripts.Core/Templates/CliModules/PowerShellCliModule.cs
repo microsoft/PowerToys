@@ -24,7 +24,12 @@ internal abstract class PowerShellCliModule
 
     protected PowerShellCliTemplate Query(
         string id, string name, string description, string input, params CliArgument[] arguments) =>
-        Template(id, name, description, input, string.Join("\n", arguments.Select(argument => argument.Script)),
+        Template(
+            id,
+            name,
+            description,
+            input,
+            string.Join("\n", arguments.Select(argument => argument.Script)),
             arguments.Where(argument => argument.Parameter is not null).Select(argument => argument.Parameter!).ToArray());
 
     protected PowerShellCliTemplate Variant(

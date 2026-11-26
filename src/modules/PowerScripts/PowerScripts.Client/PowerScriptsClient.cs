@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 
@@ -39,6 +40,7 @@ public sealed class PowerScriptsClient : IDisposable
     private readonly PowerScriptsHostPool? _executionSessions;
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="PowerScriptsClient"/> class.
     /// Creates a client attributed to the required, stable <paramref name="consumerId"/> module ID.
     /// Attribution is informational, not authentication. Pass <paramref name="hostPath"/> to point at a specific
     /// <c>PowerScripts.Host.exe</c> (otherwise it is auto-discovered), and <paramref name="scriptsRoot"/>
@@ -51,6 +53,7 @@ public sealed class PowerScriptsClient : IDisposable
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="PowerScriptsClient"/> class.
     /// Optionally retains consumer-owned Hosts for discovery and execution, including ordinary consent.
     /// Dispose a reusable client when its owner exits. Discovery stays separate from execution and
     /// concurrent executions use independent Hosts. Cancellation terminates only the affected Host
@@ -81,10 +84,10 @@ public sealed class PowerScriptsClient : IDisposable
         _executionSessions?.Dispose();
     }
 
-    /// <summary>The resolved host path, or null when the host could not be found.</summary>
+    /// <summary>Gets the resolved host path, or null when the host could not be found.</summary>
     public string? HostPath => _hostPath;
 
-    /// <summary>True when a usable host executable was found.</summary>
+    /// <summary>Gets a value indicating whether true when a usable host executable was found.</summary>
     public bool IsAvailable => !string.IsNullOrEmpty(_hostPath) && File.Exists(_hostPath);
 
     /// <summary>
@@ -674,54 +677,56 @@ public sealed class PowerScriptsClient : IDisposable
     /// Resolves <c>PowerScripts.Host.exe</c>, or null when it cannot be found. Search order matches
     /// every existing surface: the <c>POWERSCRIPTS_HOST</c> override, next to the calling app, a
     /// <c>PowerScripts</c> subfolder or sibling, the per-user module directory, then (for in-repo dev builds) a
-    /// walk up to the host project's <c>bin\Debug|Release</c> output.
+    /// walk up to the architecture-matched deployment or host project output.
     /// </summary>
     public static string? ResolveHostPath() => ResolveHostPath(AppContext.BaseDirectory);
 
-    internal static string? ResolveHostPath(string baseDirectory)
+    internal static string? ResolveHostPath(string baseDirectory) => ResolveHostPath(
+        baseDirectory,
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Microsoft", "PowerToys", "PowerScripts"),
+        Environment.GetEnvironmentVariable(PowerScriptsProtocol.HostPathEnvironmentVariable));
+
+    internal static string? ResolveHostPath(string baseDirectory, string moduleDirectory, string? overridePath)
     {
-        var overridePath = Environment.GetEnvironmentVariable(PowerScriptsProtocol.HostPathEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(overridePath) && File.Exists(overridePath))
         {
             return overridePath;
         }
-
-        var moduleDir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "Microsoft",
-            "PowerToys",
-            "PowerScripts");
 
         var candidates = new List<string>
         {
             Path.Combine(baseDirectory, PowerScriptsProtocol.HostExeName),
             Path.Combine(baseDirectory, "PowerScripts", PowerScriptsProtocol.HostExeName),
             Path.GetFullPath(Path.Combine(baseDirectory, "..", "PowerScripts", PowerScriptsProtocol.HostExeName)),
-            Path.Combine(moduleDir, PowerScriptsProtocol.HostExeName),
+            Path.Combine(moduleDirectory, PowerScriptsProtocol.HostExeName),
         };
 
+        var platform = RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "ARM64" : "x64";
         var dir = new DirectoryInfo(baseDirectory);
         while (dir is not null)
         {
             foreach (var config in new[] { "Debug", "Release" })
             {
-                var hostBin = Path.Combine(
-                    dir.FullName, "src", "modules", "PowerScripts", "PowerScripts.Host", "bin", config);
-                if (Directory.Exists(hostBin))
+                candidates.Add(Path.Combine(dir.FullName, platform, config, "PowerScripts", PowerScriptsProtocol.HostExeName));
+                var hostRoot = Path.Combine(dir.FullName, "src", "modules", "PowerScripts", "PowerScripts.Host", "bin");
+                foreach (var hostBin in new[] { Path.Combine(hostRoot, platform, config), Path.Combine(hostRoot, config) })
                 {
-                    try
+                    if (Directory.Exists(hostBin))
                     {
-                        var found = Directory
-                            .EnumerateFiles(hostBin, PowerScriptsProtocol.HostExeName, SearchOption.AllDirectories)
-                            .FirstOrDefault();
-                        if (!string.IsNullOrEmpty(found))
+                        try
                         {
-                            candidates.Add(found);
+                            var found = Directory
+                                .EnumerateFiles(hostBin, PowerScriptsProtocol.HostExeName, SearchOption.AllDirectories)
+                                .FirstOrDefault();
+                            if (!string.IsNullOrEmpty(found))
+                            {
+                                candidates.Add(found);
+                            }
                         }
-                    }
-                    catch (Exception)
-                    {
-                        // Ignore an unreadable probe directory.
+                        catch (Exception)
+                        {
+                            // Ignore an unreadable probe directory.
+                        }
                     }
                 }
             }

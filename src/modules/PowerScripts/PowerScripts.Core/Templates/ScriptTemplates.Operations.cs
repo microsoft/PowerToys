@@ -11,16 +11,11 @@ using PowerScripts.Core.Security;
 
 namespace PowerScripts.Core.Templates;
 
-/// <summary>Instantiates a known operation without running it, checking deployment or granting trust.</summary>
-public sealed record PowerToysOperationTemplateOptions(
-    string CommandId,
-    IReadOnlyDictionary<string, CliActionBinding>? Bindings = null);
-
 public static partial class ScriptTemplates
 {
     public const string OperationTemplatePrefix = "powertoys:";
 
-    /// <summary>The operation catalogue is exposed through the existing template discovery command.</summary>
+    /// <summary>Gets the operation catalogue is exposed through the existing template discovery command.</summary>
     public static IReadOnlyList<ScriptTemplate> OperationTemplates
     {
         get
@@ -38,7 +33,7 @@ public static partial class ScriptTemplates
         }
     }
 
-    /// <summary>Includes the existing educational templates and the controlled PowerToys operations.</summary>
+    /// <summary>Gets includes the existing educational templates and the controlled PowerToys operations.</summary>
     public static IReadOnlyList<ScriptTemplate> Available => All.Concat(OperationTemplates).ToArray();
 
     private static CreatedScriptTemplate CreateOperation(string scriptsRoot, ScriptTemplateOptions options)

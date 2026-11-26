@@ -1,9 +1,11 @@
-# PowerScripts (prototype)
+# PowerScripts
 
 Write a script once and expose it to compatible PowerToys modules through
 `PowerScripts.Host.exe`. PowerScripts supplies discovery, validation, trust, and
-execution, not a standalone product launcher. Consumer integrations are developed
-separately; a future Explorer surface belongs to File Explorer Add-ons.
+execution, not a standalone product launcher. This branch includes Advanced Paste, Keyboard Manager,
+Command Palette and File Explorer Add-ons consumers. New adapters follow the
+[consumer onboarding guide](CONSUMER-INTEGRATION.md#register-a-new-consumer).
+Runner owns module enablement; a new installation defaults off.
 
 Advanced Paste has one PowerScripts master toggle. When enabled, its paste window automatically
 shows all scripts compatible with the current clipboard, such as text-input scripts for copied
@@ -35,21 +37,22 @@ Open **Settings > PowerScripts > Edit scripts** to manage PowerScripts in a
 standalone WinUI 3 window. **My scripts** contains the library, creation flow, descriptor details,
 and per-script review. **Activity** contains attributed execution history, refresh, and safe history
 clearing. PowerToys Settings owns enablement, the scripts folder, Windows/Linux runtime and sandbox
-controls and AI agent skills. The app owns integration switches in **Consumer modules**, shows
+controls. The app owns AI agent skill setup and integration switches in **Consumer modules**, shows
 effective configuration with a compact Settings button, and refreshes configuration when reactivated.
 The editor uses the existing Host and storage; moving the UI does not migrate scripts, trust, or bindings.
 
-Integration switches for Advanced Paste, Keyboard Manager, and Command Palette live in
+Integration switches for Advanced Paste, Keyboard Manager, Command Palette, and File Explorer live in
 **PowerScripts app > Consumer modules**.
 The shared Host enforces them for discovery and execution, retaining existing bindings when disabled.
-Advanced Paste's legacy preference is preserved; Keyboard Manager and Command Palette default on.
+Advanced Paste's legacy preference is preserved; Keyboard Manager and Command Palette default on,
+and File Explorer defaults off.
 Group Policy can manage the module and each integration without replacing saved preferences. A disabled PowerScripts
 module or a policy-disabled parent utility always wins over a consumer enable policy.
 See [central settings and policy precedence](CONSUMER-INTEGRATION.md#central-integration-settings-and-group-policy).
 
 ## AI agent skills
 
-**Settings > PowerScripts > Copy AI setup instructions**, next to **Edit scripts**, copies a
+The script details/settings page's **Copy AI setup instructions** action copies a
 prompt containing the installed location of the complete
 [`powertoys-powerscripts` skill](AgentSkills/powertoys-powerscripts/SKILL.md). Paste it into your
 AI agent's chat to have the agent read the instructions, set up the complete skill in its supported
@@ -63,7 +66,7 @@ Remote, cloud and WSL agents
 need separate setup. The portable skill uses existing Host commands to scaffold and validate scripts
 after planning the consumer, input/output contract, typed parameters, runtime/environment,
 dependencies and failure behavior. It documents Advanced Paste, Keyboard Manager, Command Palette,
-and conditional File Explorer integration capabilities; a profile does not mean that integration is installed.
+and File Explorer integration capabilities; a profile does not mean that integration is enabled.
 Python guidance distinguishes Windows, the user's WSL distribution, and managed Linux containers,
 including environment-specific APIs, dependencies and paths. Keyboard Manager instructions are
 optional hotkey handoff guidance, not a separate skill or a prerequisite for other consumers.
@@ -288,14 +291,13 @@ Python environment selection, not shared trust or isolation.
 
 ## Settings and templates
 
-In **My scripts**, **Create Script** opens a small menu: **Custom script** keeps the
-original authoring form, while **PowerToys operations** opens a compact, JSON-driven
-[operation form](CLI-TEMPLATES.md). Choose a module and operation, enter fixed values
-prefilled from catalogue defaults, and use **Test run** on that same configuration
-before creation. The Script details command bar also includes **Run** for an installed
-script.
+In **My scripts**, **Create Script** opens the creation page directly. Choose PowerShell, Python
+or **PowerToys CLI calling** in the runtime selector. CLI creation offers module/action selectors
+and fixed, primary-input or runtime-question argument sources; see [CLI templates](CLI-TEMPLATES.md).
+Existing data-only restricted-operation packages remain supported, but have no duplicate creation
+entry. The Script details command bar includes **Run** for an installed script.
 
-**Custom script** generates editable packages for all 50 runtime/input/output
+The creation page generates editable packages for all 50 PowerShell/Python runtime/input/output
 combinations. Creation never runs code, grants trust, or changes isolation.
 Add named parameters with string, integer, boolean, or file-path types, display
 names/descriptions, required flags and typed defaults. Strings optionally declare
@@ -308,7 +310,7 @@ ignoring case, and avoid PowerShell automatic variables and the active primary n
 For CLI creation, add `parameters` entries such as
 `{"name":"count","schema":{"type":"integer","minimum":1,"default":2},"required":true}`
 to the configuration request. File-path entries can also specify `fileExtensions`.
-Choose **Custom script** to start with a blank contract. Enter your own details and
+Choose **Create Script** to start with a blank contract. Enter your own details and
 explicitly choose the runtime, input/output types, and each parameter's name and type.
 For file input, also enter the minimum and maximum file counts. The same generator is ready for a future sentence-based
 creation UI: input maps to `input`, questions to the `parameters` list (empty
@@ -396,7 +398,7 @@ There is no fallback from requested isolation to direct or elevated execution.
 
 The Host privately bundles verified, architecture-matched MXC 0.8.0 and WSL
 Containers SDK 3.0.3 payloads, licenses, and notices via `Mxc.Runtime.targets`.
-The Windows pin preserves this prototype's least-privilege compatibility.
+The Windows pin preserves least-privilege compatibility.
 Updating it requires execution checks, not just a probe. No administrator
 host-preparation tool or host-DACL mutation is enabled.
 `mxc-support --json` reports availability; missing payloads require repair.

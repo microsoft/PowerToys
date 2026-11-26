@@ -61,6 +61,18 @@
             "WinUI3Apps\\PowerToys.AdvancedPaste.Engine.dll",
             "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.exe",
             "WinUI3Apps\\PowerToys.AdvancedPaste.Cli.dll",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.LocalCLI.exe",
+            "WinUI3Apps\\PowerToys.AdvancedPaste.LocalCLI.dll",
+
+            "PowerToys.PowerScriptsModuleInterface.dll",
+            "PowerScripts\\PowerScripts.Host.exe",
+            "PowerScripts\\PowerScripts.Host.dll",
+            "PowerScripts\\PowerScripts.Core.dll",
+            "PowerScripts\\PowerScripts.Client.dll",
+            "WinUI3Apps\\PowerScripts.Core.dll",
+            "WinUI3Apps\\PowerToys.PowerScriptsEditor.exe",
+            "WinUI3Apps\\PowerToys.PowerScriptsEditor.dll",
+            "WinUI3Apps\\PowerToys.PowerScripts.UI.dll",
 
             "PowerToys.AwakeModuleInterface.dll",
             "PowerToys.Awake.exe",
@@ -333,6 +345,25 @@
                         "ToolName": "sign",
                         "ToolVersion": "1.0"
                     },
+                    {
+                        "KeyCode": "CP-230012",
+                        "OperationSetCode": "SigntoolVerify",
+                        "Parameters": [],
+                        "ToolName": "sign",
+                        "ToolVersion": "1.0"
+                    }
+                ]
+            }
+        },
+        {
+            "MatchedPath": [
+                "PowerScripts\\wxc-exec.exe",
+                "PowerScripts\\wxc-wslc-daemon.exe",
+                "PowerScripts\\plm.exe",
+                "PowerScripts\\wslcsdk.dll"
+            ],
+            "SigningInfo": {
+                "Operations": [
                     {
                         "KeyCode": "CP-230012",
                         "OperationSetCode": "SigntoolVerify",

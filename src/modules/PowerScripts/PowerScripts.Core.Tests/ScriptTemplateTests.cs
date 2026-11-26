@@ -185,7 +185,7 @@ public class ScriptTemplateTests
             var descriptor = JsonNode.Parse(File.ReadAllText(first.EntryPath + ".tool.json"))!;
             Assert.AreEqual("My File Inspector", descriptor["title"]!.GetValue<string>());
             Assert.AreEqual(options.Description, descriptor["description"]!.GetValue<string>());
-            CollectionAssert.AreEqual(new[] { ".txt", ".md", ".png" }, descriptor["inputSchema"]!["properties"]!["files"]!["items"]!["x-powerscript"]!["extensions"]!.AsArray().Select(value => value!.GetValue<string>()).ToArray());
+            CollectionAssert.AreEqual((string[])[".txt", ".md", ".png"], descriptor["inputSchema"]!["properties"]!["files"]!["items"]!["x-powerscript"]!["extensions"]!.AsArray().Select(value => value!.GetValue<string>()).ToArray());
             StringAssert.StartsWith(Path.GetFileName(Path.GetDirectoryName(first.EntryPath))!, "my-file-inspector-");
             Assert.AreNotEqual(first.EntryPath, second.EntryPath);
             Assert.AreEqual(File.ReadAllText(first.EntryPath), File.ReadAllText(second.EntryPath));
@@ -223,9 +223,15 @@ public class ScriptTemplateTests
         var root = Path.Combine(Path.GetTempPath(), "ps-configured-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var options = new ScriptTemplateOptions("  My script  ", "Quoted \"description\"",
-                input == "files" ? "TXT; *.md" : null, runtime, input, output,
-                MinFiles: input == "files" ? 2 : 1, MaxFiles: input == "files" ? 5 : 0,
+            var options = new ScriptTemplateOptions(
+                "  My script  ",
+                "Quoted \"description\"",
+                input == "files" ? "TXT; *.md" : null,
+                runtime,
+                input,
+                output,
+                MinFiles: input == "files" ? 2 : 1,
+                MaxFiles: input == "files" ? 5 : 0,
                 Parameters: withParameters ? ExampleParameters() : null);
             var created = ScriptTemplates.Create(root, options);
             var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
@@ -241,7 +247,7 @@ public class ScriptTemplateTests
             Assert.IsFalse(File.ReadAllText(created.EntryPath).Contains("def main(", StringComparison.Ordinal));
             if (input == "files")
             {
-                CollectionAssert.AreEqual(new[] { ".txt", ".md" }, manifest.Input!.Extensions);
+                CollectionAssert.AreEqual((string[])[".txt", ".md"], manifest.Input!.Extensions);
                 Assert.AreEqual(2, manifest.Input.MinFiles);
                 Assert.AreEqual(5, manifest.Input.MaxFiles);
                 CollectionAssert.Contains(manifest.Capabilities, "fileRead");
@@ -294,15 +300,17 @@ public class ScriptTemplateTests
         List<string>? outputPaths = null;
         try
         {
-            var created = ScriptTemplates.Create(root, new("Example", Runtime: runtime, Input: input, Output: output,
-                Parameters: withParameters ? ExampleParameters() : null));
+            var created = ScriptTemplates.Create(
+                root,
+                new("Example", Runtime: runtime, Input: input, Output: output, Parameters: withParameters ? ExampleParameters() : null));
             var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
             manifest.FolderPath = Path.GetDirectoryName(created.EntryPath)!;
             var selected = Path.Combine(root, "\u6587\u4ef6 one.txt");
             File.WriteAllText(selected, "hello", new UTF8Encoding(false));
             const string text = "Hello \u4e16\u754c\nsecond line";
             var media = input == "image"
-                ? JsonSerializer.SerializeToElement(new { mimeType = "image/png", data = Convert.ToBase64String(ExampleImage()) })
+                ? JsonSerializer.SerializeToElement(
+                    new { mimeType = "image/png", data = Convert.ToBase64String(ExampleImage()) })
                 : JsonSerializer.SerializeToElement(new { mimeType = "audio/wav", data = Convert.ToBase64String(ExampleAudio()) });
             var request = new PythonTransformInput
             {
@@ -430,8 +438,9 @@ public class ScriptTemplateTests
         var root = Path.Combine(Path.GetTempPath(), "ps-template-influence-" + Guid.NewGuid().ToString("N"));
         try
         {
-            var created = ScriptTemplates.Create(root, new("Example", Runtime: runtime, Input: "text", Output: output,
-                Parameters: new[] { new ScriptTemplateParameter("label", new() { Type = "string" }) }));
+            var created = ScriptTemplates.Create(
+                root,
+                new("Example", Runtime: runtime, Input: "text", Output: output, Parameters: new[] { new ScriptTemplateParameter("label", new() { Type = "string" }) }));
             var manifest = ToolDescriptorParser.TryParseFile(created.EntryPath + ".tool.json")!;
             manifest.FolderPath = Path.GetDirectoryName(created.EntryPath)!;
             string Run(string text, string label)
@@ -481,9 +490,13 @@ public class ScriptTemplateTests
             return result;
         }
 
-        var execution = new ScriptExecutor(isolation).Execute(manifest, files: input.FilePaths, text: input.Text,
+        var execution = new ScriptExecutor(isolation).Execute(
+            manifest,
+            files: input.FilePaths,
+            text: input.Text,
             parameters: input.Params?.ToDictionary(pair => pair.Key, pair => (string?)pair.Value),
-            image: input.Image, audio: input.Audio);
+            image: input.Image,
+            audio: input.Audio);
         Assert.AreEqual(0, execution.ExitCode, execution.StdErr);
         var parsed = manifest.OutputFormat switch
         {
@@ -546,7 +559,7 @@ public class ScriptTemplateTests
         using var decompressor = new ZLibStream(compressed, CompressionMode.Decompress);
         using var pixels = new MemoryStream();
         decompressor.CopyTo(pixels);
-        Assert.AreEqual(64 * (1 + 64 * (bytes[25] == 6 ? 4 : 3)), pixels.Length);
+        Assert.AreEqual(64 * (1 + (64 * (bytes[25] == 6 ? 4 : 3))), pixels.Length);
     }
 
     private static void AssertToneWav(byte[] bytes)
@@ -561,7 +574,7 @@ public class ScriptTemplateTests
         Assert.AreEqual(16, BinaryPrimitives.ReadInt16LittleEndian(bytes.AsSpan(34)));
         Assert.AreEqual("data", Encoding.ASCII.GetString(bytes, 36, 4));
         Assert.AreEqual(8000, BinaryPrimitives.ReadInt32LittleEndian(bytes.AsSpan(40)));
-        var samples = Enumerable.Range(0, 4000).Select(i => (int)BinaryPrimitives.ReadInt16LittleEndian(bytes.AsSpan(44 + 2 * i))).ToArray();
+        var samples = Enumerable.Range(0, 4000).Select(i => (int)BinaryPrimitives.ReadInt16LittleEndian(bytes.AsSpan(44 + (2 * i)))).ToArray();
         Assert.IsTrue(samples.Any(sample => sample != 0), "Generated audio must not be a silent placeholder.");
         Assert.IsTrue(samples.All(sample => Math.Abs(sample) <= 3276), "Keep demonstration audio at a low amplitude.");
     }
@@ -580,7 +593,9 @@ public class ScriptTemplateTests
     public void InvalidConfiguredContractCreatesNothing(string runtime, string input, string output, string? extensions, int minimum, int maximum)
     {
         var root = Path.Combine(Path.GetTempPath(), "ps-configured-invalid-" + Guid.NewGuid().ToString("N"));
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(root,
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            root,
             new ScriptTemplateOptions("My script", FileExtensions: extensions, Runtime: runtime, Input: input, Output: output, MinFiles: minimum, MaxFiles: maximum)));
         Assert.IsFalse(Directory.Exists(root));
     }
@@ -636,7 +651,7 @@ public class ScriptTemplateTests
             Assert.AreEqual("Mode", manifest.Parameters.Single(p => p.Name == "mode").Label);
             CollectionAssert.Contains(manifest.Capabilities, "fileRead");
             var extensions = manifest.InputSchema.Properties!["parameters"].Properties!["source"].PowerScript!.Extensions;
-            CollectionAssert.AreEqual(new[] { ".txt", ".json" }, extensions!);
+            CollectionAssert.AreEqual((string[])[".txt", ".json"], extensions!);
             if (runtime == "powershell")
             {
                 var code = File.ReadAllText(created.EntryPath);
@@ -667,7 +682,9 @@ public class ScriptTemplateTests
     public void UnsafeParameterNamesNeverPublishPackages(string name)
     {
         var root = Path.Combine(Path.GetTempPath(), "ps-template-parameter-invalid-" + Guid.NewGuid().ToString("N"));
-        Assert.ThrowsException<ArgumentException>(() => ScriptTemplates.Create(root,
+        Assert.ThrowsException<ArgumentException>(
+            () => ScriptTemplates.Create(
+            root,
             new("Invalid", Parameters: new[] { new ScriptTemplateParameter(name, new() { Type = "string" }) })));
         Assert.IsFalse(Directory.Exists(root));
     }
@@ -720,12 +737,9 @@ public class ScriptTemplateTests
         const string literal = "$(throw 'must remain data')";
         try
         {
-            var created = ScriptTemplates.Create(root, new("Bindings", Parameters: new[]
-            {
-                new ScriptTemplateParameter("content", new() { Type = "string", Default = JsonSerializer.SerializeToElement(literal) }),
-                new ScriptTemplateParameter("count", new() { Type = "integer", Default = JsonSerializer.SerializeToElement(0) }),
-                new ScriptTemplateParameter("enabled", new() { Type = "boolean", Default = JsonSerializer.SerializeToElement(false) }),
-            }));
+            var created = ScriptTemplates.Create(
+                root,
+                new("Bindings", Parameters: new[] { new ScriptTemplateParameter("content", new() { Type = "string", Default = JsonSerializer.SerializeToElement(literal) }), new ScriptTemplateParameter("count", new() { Type = "integer", Default = JsonSerializer.SerializeToElement(0) }), new ScriptTemplateParameter("enabled", new() { Type = "boolean", Default = JsonSerializer.SerializeToElement(false) }), }));
             var code = File.ReadAllText(created.EntryPath);
             Assert.IsFalse(code.Contains(literal, StringComparison.Ordinal));
             File.WriteAllText(created.EntryPath, code.Replace("Write-Output $__powerscriptContent", "Write-Output ($content + '|' + $count.GetType().Name + '|' + $enabled.GetType().Name)", StringComparison.Ordinal));

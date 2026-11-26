@@ -37,25 +37,49 @@ internal sealed class FancyZonesCliModule : PowerShellCliModule
 
     public override IReadOnlyList<PowerShellCliTemplate> CreateRecipes() =>
     [
-        Describe(Variant(Arguments, "fancyzones-query", "FancyZones: query layouts, monitors or hotkeys",
-            "Read layout/monitor/hotkey information. Requires the running host module and any saved layout data.", "text", string.Empty,
-            Text("Command", "Read-only query.", "get-layouts", "get-layouts", "get-monitors", "get-active-layout", "get-hotkeys")),
+        Describe(
+            Variant(
+                Arguments,
+                "fancyzones-query",
+                "FancyZones: query layouts, monitors or hotkeys",
+                "Read layout/monitor/hotkey information. Requires the running host module and any saved layout data.",
+                "text",
+                string.Empty,
+                Text("Command", "Read-only query.", "get-layouts", "get-layouts", "get-monitors", "get-active-layout", "get-hotkeys")),
             "get-layouts | get-monitors | get-active-layout | get-hotkeys"),
-        Describe(Variant(Arguments, "fancyzones-layout", "FancyZones: apply a layout",
-            "Apply a saved layout by name or UUID to one or all monitors. Changes desktop layout settings.", "none", "$Command = 'set-layout'",
-            Text("Layout", "Required saved layout name or UUID."),
-            Integer("Monitor", "One-based monitor index, ignored when AllMonitors is enabled.", 1, 1),
-            Flag("AllMonitors", "Apply to every monitor.")),
+        Describe(
+            Variant(
+                Arguments,
+                "fancyzones-layout",
+                "FancyZones: apply a layout",
+                "Apply a saved layout by name or UUID to one or all monitors. Changes desktop layout settings.",
+                "none",
+                "$Command = 'set-layout'",
+                Text("Layout", "Required saved layout name or UUID."),
+                Integer("Monitor", "One-based monitor index, ignored when AllMonitors is enabled.", 1, 1),
+                Flag("AllMonitors", "Apply to every monitor.")),
             "set-layout <name-or-UUID> --monitor <n> | --all"),
-        Describe(Variant(Arguments, "fancyzones-hotkey", "FancyZones: assign or remove a layout hotkey",
-            "Change saved layout hotkeys; not a report or automatic replay.", "none", string.Empty,
-            Text("Command", "Assign a layout UUID or remove the selected digit.", "set-hotkey", "set-hotkey", "remove-hotkey"),
-            Text("Layout", "Layout UUID required by set-hotkey; ignored by remove-hotkey."),
-            Integer("Hotkey", "Hotkey digit.", 1, 0, 9)),
+        Describe(
+            Variant(
+                Arguments,
+                "fancyzones-hotkey",
+                "FancyZones: assign or remove a layout hotkey",
+                "Change saved layout hotkeys; not a report or automatic replay.",
+                "none",
+                string.Empty,
+                Text("Command", "Assign a layout UUID or remove the selected digit.", "set-hotkey", "set-hotkey", "remove-hotkey"),
+                Text("Layout", "Layout UUID required by set-hotkey; ignored by remove-hotkey."),
+                Integer("Hotkey", "Hotkey digit.", 1, 0, 9)),
             "set-hotkey <digit> <UUID> | remove-hotkey <digit>"),
-        Describe(Variant(Arguments, "fancyzones-open", "FancyZones: open editor or settings",
-            "Launch the requested UI on the host desktop.", "none", string.Empty,
-            Text("Command", "UI to open.", "open-editor", "open-editor", "open-settings")),
+        Describe(
+            Variant(
+                Arguments,
+                "fancyzones-open",
+                "FancyZones: open editor or settings",
+                "Launch the requested UI on the host desktop.",
+                "none",
+                string.Empty,
+                Text("Command", "UI to open.", "open-editor", "open-editor", "open-settings")),
             "open-editor | open-settings"),
     ];
 }

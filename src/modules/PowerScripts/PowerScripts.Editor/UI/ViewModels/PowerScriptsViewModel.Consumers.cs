@@ -67,7 +67,7 @@ public partial class PowerScriptsViewModel
             var root = ScriptsFolder;
 
             // Use normal discovery: the management catalogue also includes disabled runtimes and invalid packages.
-            var json = await InvokeHostAsync(["list", "--json", "--root", root]);
+            var json = await InvokeHostAsync((string[])["list", "--json", "--root", root]);
             var scripts = JsonSerializer.Deserialize<List<PowerScriptListItem>>(json, JsonOptions)
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             if (generation != _moduleCatalogueGeneration || !AreConsumerSettingsReady)
@@ -117,9 +117,9 @@ public partial class PowerScriptsViewModel
         foreach (var script in Scripts)
         {
             script.SetEnabledPlaces(
-                _isEnabled && AdvancedPasteConsumer.IsEnabled,
-                _isEnabled && CommandPaletteConsumer.IsEnabled,
-                _isEnabled && FileExplorerConsumer.IsEnabled);
+                IsEnabled && AdvancedPasteConsumer.IsEnabled,
+                IsEnabled && CommandPaletteConsumer.IsEnabled,
+                IsEnabled && FileExplorerConsumer.IsEnabled);
         }
     }
 
@@ -137,12 +137,25 @@ public partial class PowerScriptsViewModel
             var json = await InvokeHostAsync(arguments);
             var snapshot = JsonSerializer.Deserialize<ConsumerSettingsSnapshot>(json, JsonOptions)
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+            for (var attempt = 0; !_moduleEnabledState.ApplySnapshot(snapshot.IsPowerScriptsEnabled, snapshot.IsPowerScriptsPolicyControlled); attempt++)
+            {
+                if (attempt >= 20)
+                {
+                    throw new TimeoutException(GetResourceString("PowerScripts_SettingsTimeout"));
+                }
+
+                // Runner persists the general preference asynchronously after Settings sends IPC.
+                await Task.Delay(100);
+                json = await InvokeHostAsync(arguments);
+                snapshot = JsonSerializer.Deserialize<ConsumerSettingsSnapshot>(json, JsonOptions)
+                    ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
+            }
+
             var advancedPaste = snapshot.Consumers?.Single(item => item.Id == AdvancedPasteConsumer.Id)
                 ?? throw new InvalidOperationException(GetResourceString("PowerScripts_SettingsInvalidResponse"));
             var keyboardManager = snapshot.Consumers.Single(item => item.Id == KeyboardManagerConsumer.Id);
             var fileExplorer = snapshot.Consumers.Single(item => item.Id == FileExplorerConsumer.Id);
             var commandPalette = snapshot.Consumers.Single(item => item.Id == CommandPaletteConsumer.Id);
-            _isEnabled = snapshot.IsPowerScriptsEnabled;
             _isPowerScriptsPolicyControlled = snapshot.IsPowerScriptsPolicyControlled;
             AdvancedPasteConsumer.Update(advancedPaste);
             KeyboardManagerConsumer.Update(keyboardManager);

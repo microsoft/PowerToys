@@ -48,8 +48,15 @@ public class MxcLinuxTests
         var launcher = new RecordingLauncher(_ => throw new AssertFailedException("Unsupported execution must never start."));
 
         var result = MxcLinuxProcessRunner.Run(
-            "missing-script.py", "{}", PowerScriptDataFormat.Text,
-            context, policy, settings, new PythonWslSettings().ContainerImage, 1000, launcher);
+            "missing-script.py",
+            "{}",
+            PowerScriptDataFormat.Text,
+            context,
+            policy,
+            settings,
+            new PythonWslSettings().ContainerImage,
+            1000,
+            launcher);
 
         Assert.AreEqual(125, result.ExitCode);
         Assert.AreEqual(0, launcher.Calls);
@@ -75,7 +82,8 @@ public class MxcLinuxTests
         }
 
         settings.RiskAccepted = settings.DisabledPolicies.Count > 0;
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             Assert.IsFalse(config.RootElement.TryGetProperty("ui", out _));
@@ -119,7 +127,8 @@ public class MxcLinuxTests
         var runDirectory = Path.Combine(_root, "run");
         var context = Context(scriptDirectory, selected);
         var policy = MxcPolicyResolver.Resolve(new MxcSettings());
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             Assert.AreEqual("--experimental", start.ArgumentList[0]);
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
@@ -136,7 +145,8 @@ public class MxcLinuxTests
                     new[] { scriptDirectory, Path.Combine(runDirectory, "requests") },
                     filesystem.GetProperty("readonlyPaths").EnumerateArray().Select(path => path.GetString()!).ToArray());
                 Assert.AreEqual("block", config.RootElement.GetProperty("network").GetProperty("defaultPolicy").GetString());
-                Assert.AreEqual("registry.example:5000/team/python:3.13-slim",
+                Assert.AreEqual(
+                    "registry.example:5000/team/python:3.13-slim",
                     config.RootElement.GetProperty("experimental").GetProperty("wslc").GetProperty("provision").GetProperty("image").GetString());
                 return new ProcessRunResult(0, "{\"result\":{\"sandboxId\":\"wslc:00000000000000000000000000000001\"}}", string.Empty);
             }
@@ -154,8 +164,15 @@ public class MxcLinuxTests
         });
 
         var result = MxcLinuxProcessRunner.Run(
-            script, "{\"text\":\"input\"}", PowerScriptDataFormat.Files, context, policy,
-            new MxcSettings { ExecutorPath = executor }, "registry.example:5000/team/python:3.13-slim", 1000, launcher,
+            script,
+            "{\"text\":\"input\"}",
+            PowerScriptDataFormat.Files,
+            context,
+            policy,
+            new MxcSettings { ExecutorPath = executor },
+            "registry.example:5000/team/python:3.13-slim",
+            1000,
+            launcher,
             runDirectory);
 
         Assert.AreEqual(0, result.ExitCode, result.StdErr);
@@ -180,7 +197,8 @@ public class MxcLinuxTests
         File.WriteAllText(Path.Combine(_root, "wslcsdk.dll"), "test SDK");
         File.WriteAllText(Path.Combine(_root, "wxc-wslc-daemon.exe"), "test daemon");
         var settings = new MxcSettings { ExecutorPath = executor };
-        var setup = new RecordingLauncher(start =>
+        var setup = new RecordingLauncher(
+            start =>
         {
             CollectionAssert.AreEqual(
                 new[] { "--setup-wslc", "--image", image, "--storage-path", MxcLinuxProcessRunner.ImageStorePath },
@@ -190,7 +208,8 @@ public class MxcLinuxTests
         Assert.AreEqual(0, MxcLinuxProcessRunner.Setup(image, settings, setup, Path.Combine(_root, "session")).ExitCode);
         Assert.AreEqual(1, setup.Calls);
 
-        var probe = new RecordingLauncher(start =>
+        var probe = new RecordingLauncher(
+            start =>
         {
             Assert.AreEqual("--experimental", start.ArgumentList[0]);
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
@@ -198,8 +217,9 @@ public class MxcLinuxTests
             return new ProcessRunResult(0, "Python available", string.Empty);
         });
         var runDirectory = Path.Combine(_root, "probe");
-        Assert.AreEqual(0, MxcLinuxProcessRunner.Probe(image, settings, probe,
-            () => Directory.CreateDirectory(runDirectory).FullName, Path.Combine(_root, "session")).ExitCode);
+        Assert.AreEqual(
+            0,
+            MxcLinuxProcessRunner.Probe(image, settings, probe, () => Directory.CreateDirectory(runDirectory).FullName, Path.Combine(_root, "session")).ExitCode);
         Assert.AreEqual(1, probe.Calls);
         Assert.IsFalse(Directory.Exists(runDirectory));
     }
@@ -218,8 +238,16 @@ public class MxcLinuxTests
         {
             MxcLinuxProcessRunner.Setup(image, settings, launcher),
             MxcLinuxProcessRunner.Probe(image, settings, launcher),
-            MxcLinuxProcessRunner.Run("missing.py", "{}", PowerScriptDataFormat.Text, Context(),
-                MxcPolicyResolver.Resolve(settings), settings, image, 1000, launcher),
+            MxcLinuxProcessRunner.Run(
+                "missing.py",
+                "{}",
+                PowerScriptDataFormat.Text,
+                Context(),
+                MxcPolicyResolver.Resolve(settings),
+                settings,
+                image,
+                1000,
+                launcher),
         };
         foreach (var result in results)
         {
@@ -264,7 +292,8 @@ public class MxcLinuxTests
     [DataRow("/mnt/c/Windows/win.ini")]
     public void Output_Outside_The_Projected_Workspace_Is_Refused(string path)
     {
-        Assert.ThrowsException<InvalidDataException>(() =>
+        Assert.ThrowsException<InvalidDataException>(
+            () =>
             MxcLinuxProcessRunner.MapOutputPath(path, Path.Combine(_root, "workspace")));
     }
 
@@ -272,7 +301,8 @@ public class MxcLinuxTests
     public void Output_Path_Traversal_Is_Refused()
     {
         var workspace = Path.Combine(_root, "workspace");
-        Assert.ThrowsException<InvalidDataException>(() =>
+        Assert.ThrowsException<InvalidDataException>(
+            () =>
             MxcLinuxProcessRunner.MapOutputPath(MxcLinuxProcessRunner.ToContainerPath(workspace) + "/../secret.txt", workspace));
     }
 
@@ -313,18 +343,9 @@ public class MxcLinuxTests
         try
         {
             SettingsStore.Current = new FileSettingsStore(_root);
-            SettingsStore.Current.WriteBlob(PowerScriptsPaths.ConfigFileName, JsonSerializer.Serialize(new
-            {
-                mxc = new { enabled = true },
-                scriptsRoot = @"C:\scripts",
-                python = new
-                {
-                    mode,
-                    windows = new { interpreterPath = @"C:\Python\python.exe" },
-                    wsl = new { distribution = "Ubuntu", containerImage = "python:3.13-slim" },
-                    timeoutSeconds = 47,
-                },
-            }));
+            SettingsStore.Current.WriteBlob(
+                PowerScriptsPaths.ConfigFileName,
+                JsonSerializer.Serialize(new { mxc = new { enabled = true }, scriptsRoot = @"C:\scripts", python = new { mode, windows = new { interpreterPath = @"C:\Python\python.exe" }, wsl = new { distribution = "Ubuntu", containerImage = "python:3.13-slim" }, timeoutSeconds = 47, }, }));
             var loaded = PythonSettings.Load();
             Assert.AreEqual(PythonRuntimeMode.Wsl, loaded.Mode);
             Assert.AreEqual("Ubuntu", loaded.Wsl.Distribution);
@@ -336,7 +357,8 @@ public class MxcLinuxTests
             Assert.AreEqual("Wsl", config.RootElement.GetProperty("python").GetProperty("mode").GetString());
             Assert.IsTrue(config.RootElement.GetProperty("mxc").GetProperty("enabled").GetBoolean());
             Assert.AreEqual(@"C:\scripts", config.RootElement.GetProperty("scriptsRoot").GetString());
-            Assert.AreEqual("python:3.13-slim",
+            Assert.AreEqual(
+                "python:3.13-slim",
                 config.RootElement.GetProperty("python").GetProperty("wsl").GetProperty("containerImage").GetString());
         }
         finally
@@ -359,7 +381,8 @@ public class MxcLinuxTests
         var provisionCount = 0;
         var execCount = 0;
         var session = Path.Combine(_root, "session");
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             var phase = TestPhase(config);
@@ -381,7 +404,8 @@ public class MxcLinuxTests
                 Assert.AreEqual("selected input", File.ReadAllText(stagedPath));
                 Assert.AreEqual(staged, request.RootElement.GetProperty("parameters").GetProperty("reference").GetString());
                 Assert.AreEqual(MxcLinuxProcessRunner.ToContainerPath(input), request.RootElement.GetProperty("parameters").GetProperty("literal").GetString());
-                StringAssert.Contains(config.RootElement.GetProperty("process").GetProperty("commandLine").GetString()!,
+                StringAssert.Contains(
+                    config.RootElement.GetProperty("process").GetProperty("commandLine").GetString()!,
                     MxcLinuxProcessRunner.ToContainerPath(execCount == 1 ? first : second));
             }
 
@@ -389,17 +413,30 @@ public class MxcLinuxTests
         });
         var context = new ProcessExecutionContext
         {
-            ScriptsRoot = scripts, ScriptDirectory = scripts, InputPaths = new[] { input }, FileParameterNames = new[] { "reference" },
+            ScriptsRoot = scripts,
+            ScriptDirectory = scripts,
+            InputPaths = new[] { input },
+            FileParameterNames = new[] { "reference" },
         };
-        var payload = JsonSerializer.Serialize(new
-        {
-            files = new[] { MxcLinuxProcessRunner.ToContainerPath(input) },
-            parameters = new { reference = MxcLinuxProcessRunner.ToContainerPath(input), literal = MxcLinuxProcessRunner.ToContainerPath(input) },
-        });
+        var payload = JsonSerializer.Serialize(
+            new
+            {
+                files = new[] { MxcLinuxProcessRunner.ToContainerPath(input) },
+                parameters = new { reference = MxcLinuxProcessRunner.ToContainerPath(input), literal = MxcLinuxProcessRunner.ToContainerPath(input) },
+            });
         foreach (var script in new[] { first, second })
         {
-            var result = MxcLinuxProcessRunner.Run(script, payload, PowerScriptDataFormat.Text, context,
-                MxcPolicyResolver.Resolve(settings), settings, "python:test", 1000, launcher, session);
+            var result = MxcLinuxProcessRunner.Run(
+                script,
+                payload,
+                PowerScriptDataFormat.Text,
+                context,
+                MxcPolicyResolver.Resolve(settings),
+                settings,
+                "python:test",
+                1000,
+                launcher,
+                session);
             Assert.AreEqual(0, result.ExitCode, result.StdErr);
         }
 
@@ -418,7 +455,8 @@ public class MxcLinuxTests
     {
         var settings = RuntimeSettings();
         var phases = new List<string>();
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             var phase = TestPhase(config);
@@ -438,7 +476,7 @@ public class MxcLinuxTests
 
         var result = RunText(settings, launcher, image: change == "image" ? "python:changed" : "python:test");
         Assert.AreEqual(0, result.ExitCode, result.StdErr);
-        CollectionAssert.AreEqual(new[] { "provision", "start", "exec", "stop", "deprovision", "provision", "start", "exec" }, phases);
+        CollectionAssert.AreEqual((string[])["provision", "start", "exec", "stop", "deprovision", "provision", "start", "exec"], phases);
     }
 
     [TestMethod]
@@ -450,7 +488,8 @@ public class MxcLinuxTests
         var settings = RuntimeSettings();
         var phases = new List<string>();
         var expired = false;
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             var phase = TestPhase(config);
@@ -467,9 +506,11 @@ public class MxcLinuxTests
         expired = true;
         var result = RunText(settings, launcher);
         Assert.AreEqual(0, result.ExitCode, result.StdErr);
-        CollectionAssert.AreEqual(error == "not_provisioned"
-            ? new[] { "provision", "start", "exec", "check", "provision", "start", "exec" }
-            : new[] { "provision", "start", "exec", "check", "stop", "deprovision", "provision", "start", "exec" }, phases);
+        CollectionAssert.AreEqual(
+            error == "not_provisioned"
+            ? (string[])["provision", "start", "exec", "check", "provision", "start", "exec"]
+            : (string[])["provision", "start", "exec", "check", "stop", "deprovision", "provision", "start", "exec"],
+            phases);
     }
 
     [TestMethod]
@@ -479,18 +520,22 @@ public class MxcLinuxTests
     {
         var settings = RuntimeSettings();
         var phases = new List<string>();
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             var phase = TestPhase(config);
             phases.Add(phase);
             return phase == "exec"
-                ? new ProcessRunResult(exitCode, "{\"error\":{\"code\":\"not_provisioned\"}}", "Script failed.")
+                ? new ProcessRunResult(
+                    exitCode,
+                    "{\"error\":{\"code\":\"not_provisioned\"}}",
+                    "Script failed.")
                 : PhaseResult(phase);
         });
         var result = RunText(settings, launcher);
         Assert.AreEqual(exitCode, result.ExitCode);
-        CollectionAssert.AreEqual(new[] { "provision", "start", "exec", "stop", "deprovision" }, phases);
+        CollectionAssert.AreEqual((string[])["provision", "start", "exec", "stop", "deprovision"], phases);
         Assert.IsFalse(File.Exists(Path.Combine(_root, "session", "session.json")));
     }
 
@@ -501,7 +546,8 @@ public class MxcLinuxTests
         var active = 0;
         var provisions = 0;
         var executions = 0;
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             var phase = TestPhase(config);
@@ -556,7 +602,8 @@ public class MxcLinuxTests
         Directory.SetLastWriteTimeUtc(old, DateTime.UtcNow.AddDays(-2));
         var recent = Directory.CreateDirectory(Path.Combine(session, "workspaces", "mxc-" + Guid.NewGuid().ToString("N"))).FullName;
         File.WriteAllText(Path.Combine(recent, "recent.txt"), "retained");
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             return PhaseResult(TestPhase(config));
@@ -576,13 +623,25 @@ public class MxcLinuxTests
     {
         var settings = RuntimeSettings();
         var attempts = 0;
-        var launcher = new RecordingLauncher(_ => ++attempts == 1
-            ? new ProcessRunResult(1, string.Empty, "WslcListSessionImages failed: HRESULT 0x80070020")
+        var launcher = new RecordingLauncher(
+            _ => ++attempts == 1
+            ? new ProcessRunResult(
+                1,
+                string.Empty,
+                "WslcListSessionImages failed: HRESULT 0x80070020")
             : new ProcessRunResult(0, "Python available", string.Empty));
         var result = setup
-            ? MxcLinuxProcessRunner.Setup("python:test", settings, launcher, Path.Combine(_root, "session"))
-            : MxcLinuxProcessRunner.Probe("python:test", settings, launcher,
-                () => Directory.CreateDirectory(Path.Combine(_root, "probe")).FullName, Path.Combine(_root, "session"));
+            ? MxcLinuxProcessRunner.Setup(
+                "python:test",
+                settings,
+                launcher,
+                Path.Combine(_root, "session"))
+            : MxcLinuxProcessRunner.Probe(
+                "python:test",
+                settings,
+                launcher,
+                () => Directory.CreateDirectory(Path.Combine(_root, "probe")).FullName,
+                Path.Combine(_root, "session"));
         Assert.AreEqual(0, result.ExitCode, result.StdErr);
         Assert.AreEqual(2, attempts);
     }
@@ -594,7 +653,8 @@ public class MxcLinuxTests
     {
         var settings = RuntimeSettings();
         var checking = false;
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             if (!checking)
@@ -625,7 +685,8 @@ public class MxcLinuxTests
     public void Readiness_Does_Not_Reset_A_Session_That_Cannot_Be_Safely_Probed(string change)
     {
         var settings = RuntimeSettings();
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             return PhaseResult(TestPhase(config));
@@ -649,8 +710,11 @@ public class MxcLinuxTests
 
         File.WriteAllText(path, state.ToJsonString());
         var before = File.ReadAllText(path);
-        var result = MxcLinuxProcessRunner.Probe(change == "image" ? "python:other" : "python:test",
-            settings, launcher, sessionDirectory: Path.Combine(_root, "session"));
+        var result = MxcLinuxProcessRunner.Probe(
+            change == "image" ? "python:other" : "python:test",
+            settings,
+            launcher,
+            sessionDirectory: Path.Combine(_root, "session"));
         Assert.AreEqual("recovery_required", MxcLinuxRecovery.Status(result));
         Assert.AreEqual(3, launcher.Calls);
         Assert.AreEqual(before, File.ReadAllText(path));
@@ -668,7 +732,8 @@ public class MxcLinuxTests
         var settings = RuntimeSettings();
         var recovering = false;
         var phases = new List<string>();
-        var launcher = new RecordingLauncher(start =>
+        var launcher = new RecordingLauncher(
+            start =>
         {
             using var config = JsonDocument.Parse(File.ReadAllText(start.ArgumentList[1]));
             var phase = TestPhase(config);
@@ -701,8 +766,10 @@ public class MxcLinuxTests
         recovering = true;
         var result = MxcLinuxProcessRunner.Recover(settings, launcher, Path.Combine(_root, "session"));
         Assert.AreEqual(condition == "healthy", result.ExitCode == 0, result.StdErr);
-        CollectionAssert.AreEqual(condition is "busy" or "timeout" or "unrelated"
-            ? new[] { "check" } : new[] { "check", "stop", "deprovision" }, phases);
+        CollectionAssert.AreEqual(
+            condition is "busy" or "timeout" or "unrelated"
+            ? (string[])["check"] : (string[])["check", "stop", "deprovision"],
+            phases);
         if (condition == "healthy")
         {
             Assert.IsFalse(File.Exists(path));
@@ -758,16 +825,23 @@ public class MxcLinuxTests
             File.WriteAllText(script, "print('output')");
         }
 
-        return MxcLinuxProcessRunner.Run(script, "{\"text\":\"input\"}", PowerScriptDataFormat.Text, Context(scripts),
-            MxcPolicyResolver.Resolve(settings), settings, image, 1000, launcher, Path.Combine(_root, "session"));
+        return MxcLinuxProcessRunner.Run(
+            script,
+            "{\"text\":\"input\"}",
+            PowerScriptDataFormat.Text,
+            Context(scripts),
+            MxcPolicyResolver.Resolve(settings),
+            settings,
+            image,
+            1000,
+            launcher,
+            Path.Combine(_root, "session"));
     }
 
-    private static ProcessRunResult PhaseResult(string? phase) => new(0, phase switch
-    {
-        "provision" => "{\"result\":{\"sandboxId\":\"wslc:00000000000000000000000000000001\"}}",
-        "exec" => "output",
-        _ => "{\"result\":{}}",
-    }, string.Empty);
+    private static ProcessRunResult PhaseResult(string? phase) => new(
+        0,
+        phase switch { "provision" => "{\"result\":{\"sandboxId\":\"wslc:00000000000000000000000000000001\"}}", "exec" => "output", _ => "{\"result\":{}}", },
+        string.Empty);
 
     private static string TestPhase(JsonDocument config) =>
         config.RootElement.GetProperty("phase").GetString() == "exec" &&
@@ -775,7 +849,8 @@ public class MxcLinuxTests
             ? "check"
             : config.RootElement.GetProperty("phase").GetString()!;
 
-    private static ProcessExecutionContext Context(string directory = "", params string[] inputs) => new()
+    private static ProcessExecutionContext Context(string directory = "", params string[] inputs) => new(
+)
     {
         ScriptId = "demo",
         ScriptDirectory = directory,

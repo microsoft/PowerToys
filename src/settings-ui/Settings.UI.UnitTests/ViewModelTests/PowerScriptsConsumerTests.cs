@@ -13,6 +13,45 @@ namespace ViewModelTests;
 [TestClass]
 public class PowerScriptsConsumerTests
 {
+    [DataTestMethod]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public void ModuleToggleIgnoresSnapshotsBeforeRunnerPersistsTheRequestedPreference(bool initial, bool requested)
+    {
+        var state = new PowerScriptModuleState(initial);
+        state.Request(requested);
+
+        Assert.IsFalse(state.ApplySnapshot(initial, policyControlled: false));
+        Assert.AreEqual(requested, state.IsEnabled);
+        Assert.IsTrue(state.ApplySnapshot(requested, policyControlled: false));
+        Assert.IsTrue(state.ApplySnapshot(initial, policyControlled: false));
+        Assert.AreEqual(initial, state.IsEnabled, "Later authoritative changes must not remain blocked by a completed request.");
+    }
+
+    [TestMethod]
+    public void ModulePolicyOverridesAPendingUserPreference()
+    {
+        var state = new PowerScriptModuleState(false);
+        state.Request(true);
+
+        Assert.IsTrue(state.ApplySnapshot(false, policyControlled: true));
+        Assert.IsFalse(state.IsEnabled);
+        Assert.IsTrue(state.ApplySnapshot(true, policyControlled: false));
+        Assert.IsTrue(state.IsEnabled);
+    }
+
+    [TestMethod]
+    public void LatestModuleToggleSupersedesAnEarlierPendingRequest()
+    {
+        var state = new PowerScriptModuleState(false);
+        state.Request(true);
+        state.Request(false);
+
+        Assert.IsFalse(state.ApplySnapshot(true, policyControlled: false));
+        Assert.IsFalse(state.IsEnabled);
+        Assert.IsTrue(state.ApplySnapshot(false, policyControlled: false));
+    }
+
     [TestMethod]
     public void CommandPaletteConsumerWaitsForAuthoritativeHostSettings()
     {
@@ -199,7 +238,7 @@ public class PowerScriptsConsumerTests
         var activity = CreateActivity(consumerId);
 
         Assert.AreEqual(PowerScriptsViewModel.GetResourceString(resource), activity.Source);
-        StringAssert.Contains(activity.Details, activity.Source);
+        StringAssert.Contains(activity.Meta, activity.Source);
     }
 
     [TestMethod]
