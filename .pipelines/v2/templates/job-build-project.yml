@@ -652,7 +652,7 @@ jobs:
         }
       displayName: Remove tests folder before signing
 
-    # Submit resources separately, then sign the remaining files in a new ESRP session.
+    # Generate separate ESRP policies for the Core signing tasks.
     - task: PowerShell@2
       displayName: Split Core signing policy
       inputs:
@@ -661,7 +661,22 @@ jobs:
         arguments: >-
           -PolicyFile "$(Build.SourcesDirectory)\.pipelines\ESRPSigning_core.json"
           -OutputDirectory "$(Agent.TempDirectory)"
+          -Platform "$(BuildPlatform)"
+          -BuildOutputDirectory "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)"
         pwsh: true
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign File Locksmith extension (x64)
+        condition: and(succeeded(), eq(variables['BuildPlatform'], 'x64'))
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.filelocksmith.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+          MaxConcurrency: '20'
+          PendingAnalysisWaitTimeoutMinutes: '$(CoreSigningPendingAnalysisWaitMinutes)'
 
     - template: steps-esrp-signing.yml
       parameters:
