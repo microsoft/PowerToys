@@ -256,7 +256,7 @@ internal static class Receiver
                 {
                     string tip = newMachine + " saying Hello!";
                     tip += "\r\n Right Click to setup your machine Matrix";
-                    Common.ShowToolTip(tip);
+                    Common.ShowToolTip(tip, logText: Logger.MaskName(newMachine) + " saying Hello!");
                 }
 
                 break;

@@ -5,10 +5,13 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
 
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using MouseWithoutBorders.Core;
 
@@ -16,6 +19,124 @@ namespace MouseWithoutBorders.UnitTests.Core;
 
 public static class LoggerTests
 {
+    [TestClass]
+    public sealed class MaskTests
+    {
+        [TestMethod]
+        [DataRow("SampleMachineA", "SxxxxxMxxxxxxA")]
+        [DataRow("ExampleMachineA", "ExxxxxxMxxxxxxA")]
+        [DataRow("DEVBOX123", "DxxxOxxx3")]
+        [DataRow("ABCD", "ABxD")]
+        [DataRow("1234", "12x4")]
+        [DataRow("\U0001F600ABCD\U0001F600", "\U0001F600xBxx\U0001F600")]
+        [DataRow("A\U0001F600B\U0001F600C", "AxxBxxC")]
+        public void MasksNamesKeepingFirstMiddleAndLastCharacters(string original, string expected)
+        {
+            Assert.AreEqual(expected, Logger.MaskName(original));
+        }
+
+        [TestMethod]
+        [DataRow("A", "x")]
+        [DataRow("AB", "xx")]
+        [DataRow("ABC", "xxx")]
+        [DataRow("", "")]
+        [DataRow(null, null)]
+        public void DoesNotRevealShortNamesAndPreservesAbsentValues(string? original, string? expected)
+        {
+            Assert.AreEqual(expected, Logger.MaskName(original));
+        }
+
+        [TestMethod]
+        [DataRow("192.16.10.42", "xxx.xx.xx.42")]
+        [DataRow("192.168.0.67", "xxx.xxx.x.67")]
+        [DataRow("10.20.30.255", "xx.xx.xx.255")]
+        [DataRow("0.1.255.0", "x.x.xxx.0")]
+        [DataRow("::ffff:192.16.10.42", "xxx.xx.xx.42")]
+        public void MasksIpv4AddressesKeepingOnlyLastOctet(string original, string expected)
+        {
+            Assert.AreEqual(expected, Logger.MaskAddress(IPAddress.Parse(original)));
+            Assert.AreEqual(expected, Logger.MaskAddress(original));
+        }
+
+        [TestMethod]
+        [DataRow("2001:db8:1234:5678::42")]
+        [DataRow("::1")]
+        public void MasksIpv6AddressesWithoutExposingTheirPrefix(string original)
+        {
+            Assert.AreEqual("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx", Logger.MaskAddress(IPAddress.Parse(original)));
+            Assert.AreEqual("xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx", Logger.MaskAddress(original));
+        }
+
+        [TestMethod]
+        [DataRow("192.16.10.42:15100", "xxx.xx.xx.42:15100")]
+        [DataRow("[2001:db8::42]:15100", "[xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx]:15100")]
+        [DataRow("[::ffff:192.16.10.42]:15100", "xxx.xx.xx.42:15100")]
+        public void MasksSocketAddressesAndPreservesTheirPorts(string original, string expected)
+        {
+            Assert.AreEqual(expected, Logger.MaskEndpoint(IPEndPoint.Parse(original)));
+        }
+
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("", "")]
+        [DataRow("SampleMachineA", "<invalid IP address>")]
+        public void AddressTextDoesNotFallBackToNameMasking(string? original, string? expected)
+        {
+            Assert.AreEqual(expected, Logger.MaskAddress(original));
+        }
+
+        [TestMethod]
+        public void AbsentSocketValuesStayAbsent()
+        {
+            Assert.IsNull(Logger.MaskAddress((IPAddress?)null));
+            Assert.IsNull(Logger.MaskEndpoint(null));
+        }
+    }
+
+    [TestClass]
+    public sealed class FormatExceptionTests
+    {
+        [TestMethod]
+        public void SocketErrorsKeepTheirCodesWithoutTheirEndpoints()
+        {
+            var actual = Logger.FormatException(new EndpointSocketException());
+
+            Assert.IsTrue(actual.Contains(nameof(SocketError.ConnectionRefused), StringComparison.Ordinal));
+            Assert.IsFalse(actual.Contains("192.0.2.42", StringComparison.Ordinal));
+        }
+
+        [TestMethod]
+        public void NestedSocketErrorsAreMaskedInBothExceptionMessages()
+        {
+            var inner = new EndpointSocketException();
+            var exception = new IOException($"Connection failed: {inner.Message}", inner);
+
+            var actual = Logger.FormatException(exception);
+
+            Assert.IsTrue(actual.Contains("Connection failed:", StringComparison.Ordinal));
+            Assert.IsTrue(actual.Contains(nameof(SocketError.ConnectionRefused), StringComparison.Ordinal));
+            Assert.IsFalse(actual.Contains("192.0.2.42", StringComparison.Ordinal));
+        }
+
+        [TestMethod]
+        public void OtherExceptionDetailsRemainUnchanged()
+        {
+            var exception = new InvalidOperationException("The selected operation is not available.");
+
+            Assert.AreEqual(exception.ToString(), Logger.FormatException(exception));
+        }
+
+        private sealed class EndpointSocketException : SocketException
+        {
+            public EndpointSocketException()
+                : base((int)SocketError.ConnectionRefused)
+            {
+            }
+
+            public override string Message => "Connection refused by 192.0.2.42:15100";
+        }
+    }
+
     [TestClass]
     public sealed class GetStackTraceTests
     {
@@ -105,8 +226,134 @@ public static class LoggerTests
     }
 
     [TestClass]
+    [DoNotParallelize]
     public sealed class PrivateDumpTests
     {
+        [TestMethod]
+        [DataRow("myKey")]
+        [DataRow("MYKEY")]
+        [DataRow("SecurityKey")]
+        [DataRow("securitykey")]
+        [DataRow("<MyKey>k__BackingField")]
+        [DataRow("<SecurityKey>k__BackingField")]
+        [DataRow("_securityCode")]
+        [DataRow("_SECURITYCODE")]
+        [DataRow("SecurityCodeField")]
+        [DataRow("securitycodefield")]
+        public void KnownKeyFieldsAreOmittedBeforeFormatting(string fieldName)
+        {
+            var output = new StringBuilder();
+            var method = typeof(Logger).GetMethod("PrivateDump", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+            var included = (bool)method.Invoke(null, new object[] { output, new UnformattableDumpValue(), fieldName, 0, 6, true })!;
+
+            Assert.IsFalse(included);
+            Assert.AreEqual(0, output.Length);
+        }
+
+        [TestMethod]
+        public void StoredKeyIsOmittedWithoutChangingOtherSettings()
+        {
+            var previousBinaryName = Common.BinaryName;
+            try
+            {
+                Common.BinaryName = "DumpTestBinary";
+                var settings = new MouseWithoutBordersProperties
+                {
+                    SecurityKey = new StringProperty("synthetic-stored-key"),
+                    ShareClipboard = true,
+                };
+                var output = new StringBuilder();
+                var method = typeof(Logger).GetMethod("PrivateDump", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+                method.Invoke(null, new object[] { output, settings, "settings", 0, 6, true });
+
+                var dump = output.ToString();
+                Assert.IsFalse(dump.Contains("SecurityKey", StringComparison.OrdinalIgnoreCase));
+                Assert.IsFalse(dump.Contains("synthetic-stored-key", StringComparison.Ordinal));
+                StringAssert.Contains(dump, "<ShareClipboard>k__BackingField = True");
+                Assert.AreEqual("synthetic-stored-key", settings.SecurityKey.Value);
+            }
+            finally
+            {
+                Common.BinaryName = previousBinaryName;
+            }
+        }
+
+        [TestMethod]
+        public void RuntimeKeyIsOmittedWithoutChangingOtherEncryptionDiagnostics()
+        {
+            var previousBinaryName = Common.BinaryName;
+            var previousKey = Encryption.MyKey;
+            try
+            {
+                Common.BinaryName = "DumpTestBinary";
+                Encryption.MyKey = "synthetic-runtime-key";
+                var output = new StringBuilder();
+                var method = typeof(Logger).GetMethod("DumpType", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+                method.Invoke(null, new object[] { output, typeof(Encryption), 0, 2 });
+
+                var dump = output.ToString();
+                Assert.IsFalse(dump.Contains("myKey", StringComparison.OrdinalIgnoreCase));
+                Assert.IsFalse(dump.Contains("synthetic-runtime-key", StringComparison.Ordinal));
+                StringAssert.Contains(dump, "SymAlBlockSize = ");
+                Assert.AreEqual("synthetic-runtime-key", Encryption.MyKey);
+            }
+            finally
+            {
+                Encryption.MyKey = previousKey;
+                Common.BinaryName = previousBinaryName;
+            }
+        }
+
+        [TestMethod]
+        public void PendingSetupKeyIsOmittedWithoutChangingActiveKeyOrOtherSetupDiagnostics()
+        {
+            var codeField = typeof(SetupPage2a).GetField("_securityCode", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var nameField = typeof(SetupPage2a).GetField("_computerName", BindingFlags.NonPublic | BindingFlags.Static)!;
+            var previousCode = codeField.GetValue(null);
+            var previousName = nameField.GetValue(null);
+            var previousBinaryName = Common.BinaryName;
+            var previousKey = Encryption.MyKey;
+            try
+            {
+                Common.BinaryName = "DumpTestBinary";
+                Encryption.MyKey = "synthetic-active-key";
+                codeField.SetValue(null, "synthetic-pending-key");
+                nameField.SetValue(null, "SetupTestMachine");
+                var output = new StringBuilder();
+                var method = typeof(Logger).GetMethod("PrivateDump", BindingFlags.NonPublic | BindingFlags.Static)!;
+
+                foreach (var field in new[] { codeField, nameField })
+                {
+                    method.Invoke(null, new object[] { output, field.GetValue(null)!, field.Name, 0, 2, true });
+                }
+
+                var dump = output.ToString();
+                Assert.IsFalse(dump.Contains("_securityCode", StringComparison.OrdinalIgnoreCase));
+                Assert.IsFalse(dump.Contains("synthetic-pending-key", StringComparison.Ordinal));
+                StringAssert.Contains(dump, "_computerName = SetupTestMachine");
+                Assert.AreEqual("synthetic-active-key", Encryption.MyKey);
+                Assert.AreEqual("synthetic-pending-key", codeField.GetValue(null));
+            }
+            finally
+            {
+                codeField.SetValue(null, previousCode);
+                nameField.SetValue(null, previousName);
+                Encryption.MyKey = previousKey;
+                Common.BinaryName = previousBinaryName;
+            }
+        }
+
+        private sealed class UnformattableDumpValue
+        {
+            public override string ToString()
+            {
+                throw new InvalidOperationException("Known key fields must be skipped before formatting.");
+            }
+        }
+
         /*
         [TestMethod]
         public void PrivateDumpShouldGenerateExpectedOutput()
