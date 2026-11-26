@@ -8,10 +8,14 @@ parameters:
   - name: signingIdentity
     type: object
     default: {}
+  - name: retryCountOnTaskFailure
+    type: number
+    default: 0
 
 steps:
   - task: EsrpCodeSigning@6
     displayName: 🔏 ${{ parameters.displayName }}
+    retryCountOnTaskFailure: ${{ parameters.retryCountOnTaskFailure }}
     inputs:
       ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
       AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}

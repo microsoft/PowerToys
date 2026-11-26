@@ -681,6 +681,8 @@ jobs:
         parameters:
           displayName: Sign Core PowerToys (${{ batch }})
           signingIdentity: ${{ parameters.signingIdentity }}
+          ${{ if eq(batch, 'core-file-locksmith') }}:
+            retryCountOnTaskFailure: 1
           inputs:
             FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
             signType: batchSigning
