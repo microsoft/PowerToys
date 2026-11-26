@@ -1,0 +1,92 @@
+parameters:
+  - name: signingIdentity
+    type: object
+
+jobs:
+  - job: ProbeFileLocksmithSigning
+    displayName: Probe File Locksmith x64 signing
+    timeoutInMinutes: 45
+    pool:
+      name: SHINE-INT-L
+      demands: ImageOverride -equals SHINE-VS18-Latest
+      os: windows
+    variables:
+      BuildPlatform: x64
+    steps:
+      - checkout: self
+        submodules: true
+        fetchDepth: 1
+
+      - template: steps-ensure-dotnet-version.yml
+        parameters:
+          sdk: true
+          version: '6.0'
+      - template: steps-ensure-dotnet-version.yml
+
+      - task: NuGetAuthenticate@1
+        displayName: Authenticate with the dependencies feed
+        inputs:
+          azureDevOpsServiceConnection: 'SHINE PowerToys Artifact Feed'
+          feedUrl: 'https://pkgs.dev.azure.com/shine-oss/PowerToys/_packaging/PowerToysPublicDependencies/nuget/v3/index.json'
+
+      - template: steps-restore-nuget.yml
+      - template: steps-install-terrapin.yml
+      - template: steps-install-vcpkg.yml
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          & .\.pipelines\verifyAndSetLatestVCToolsVersion.ps1
+          & nuget.exe restore -configFile .pipelines\release-nuget.config -PackagesDirectory . .pipelines\packages.config
+          Move-Item -Force 'Microsoft.PowerToys.Telemetry.*\build\include\TraceLoggingDefines.h' 'src\common\Telemetry\TraceLoggingDefines.h'
+        displayName: Prepare native build dependencies
+
+      - task: VSBuild@1
+        displayName: Build FileLocksmithExt and its native project references
+        inputs:
+          solution: 'src/modules/FileLocksmith/FileLocksmithExt/FileLocksmithExt.vcxproj'
+          vsVersion: 18.0
+          msbuildArgs: >-
+            -restore
+            /p:RestorePackagesConfig=true;CIBuild=true;SkipCppCodeAnalysis=1
+            /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+          platform: x64
+          configuration: Release
+          msbuildArchitecture: x64
+          maximumCpuCount: true
+
+      - pwsh: |
+          $ErrorActionPreference = 'Stop'
+          $path = 'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
+          $destination = Join-Path '$(Agent.TempDirectory)' 'FileLocksmithSigningProbe'
+          $payload = Join-Path $destination $path
+          New-Item -ItemType Directory -Path (Split-Path -Parent $payload) | Out-Null
+          Copy-Item -LiteralPath (Join-Path '$(Build.SourcesDirectory)\x64\Release' $path) -Destination $payload
+          $policy = Get-Content -LiteralPath '.pipelines\ESRPSigning_core.json' -Raw | ConvertFrom-Json
+          $batch = @($policy.SignBatches | Where-Object { $_.MatchedPath -contains $path })
+          if ($batch.Count -ne 1) {
+            throw 'Could not identify the release signing operations for FileLocksmithExt.'
+          }
+          $batch[0].MatchedPath = @($path)
+          $policy.SignBatches = $batch
+          $policy | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath (Join-Path $destination 'policy.json') -Encoding utf8NoBOM
+          Write-Host "Unsigned SHA256: $((Get-FileHash -LiteralPath $payload).Hash)"
+        displayName: Stage exactly one DLL and its release signing policy
+
+      - template: steps-esrp-signing.yml
+        parameters:
+          displayName: Sign only PowerToys.FileLocksmithExt.dll
+          signingIdentity: ${{ parameters.signingIdentity }}
+          inputs:
+            FolderPath: '$(Agent.TempDirectory)\FileLocksmithSigningProbe'
+            signType: batchSigning
+            batchSignPolicyFile: '$(Agent.TempDirectory)\FileLocksmithSigningProbe\policy.json'
+            ciPolicyFile: '$(Build.SourcesDirectory)\.pipelines\CIPolicy.xml'
+
+      - pwsh: |
+          $payload = '$(Agent.TempDirectory)\FileLocksmithSigningProbe\WinUI3Apps\PowerToys.FileLocksmithExt.dll'
+          $signature = Get-AuthenticodeSignature -LiteralPath $payload
+          if ($signature.Status -ne 'Valid' -or -not $signature.SignerCertificate) {
+            throw "FileLocksmithExt signature was not valid: $($signature.Status)"
+          }
+        displayName: Verify the signed DLL

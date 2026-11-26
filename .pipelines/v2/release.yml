@@ -88,8 +88,25 @@ extends:
         analyzeTargetGlob: +:file|$(Build.ArtifactStagingDirectory)/**/*.dll;+:file|$(Build.ArtifactStagingDirectory)/**/*.exe;-:file:regex|tests.*\.(dll|exe)$;-:file:regex|(covrun.*)\.dll$;-:file:regex|(msdia.*)\.dll$;-:file:regex|(vcruntime.*)\.dll$
 
     stages:
+      - stage: Probe_FileLocksmith
+        displayName: File Locksmith signing probe
+        dependsOn: []
+        jobs:
+          - template: .pipelines/v2/templates/job-probe-file-locksmith-signing.yml@self
+            parameters:
+              signingIdentity:
+                serviceName: $(SigningServiceName)
+                appId: $(SigningAppId)
+                tenantId: $(SigningTenantId)
+                akvName: $(SigningAKVName)
+                authCertName: $(SigningAuthCertName)
+                signCertName: $(SigningSignCertName)
+                useManagedIdentity: $(SigningUseManagedIdentity)
+                clientId: $(SigningOriginalClientId)
+
       - stage: Build
         displayName: Build
+        condition: eq(1, 0)
         dependsOn: []
         jobs:
           - template: .pipelines/v2/templates/job-build-project.yml@self
@@ -187,6 +204,7 @@ extends:
 
       - stage: Build_SDK
         displayName: Build SDK
+        condition: eq(1, 0)
         dependsOn: []
         jobs:
           - template: .pipelines/v2/templates/job-build-sdk.yml@self
@@ -217,6 +235,7 @@ extends:
 
       - stage: Publish
         displayName: Publish
+        condition: eq(1, 0)
         dependsOn: [Build]
         jobs:
           - template: .pipelines/v2/templates/job-publish-symbols-using-symbolrequestprod-api.yml@self
