@@ -532,11 +532,27 @@ namespace Hosts.UITests
                           !WindowHelper.IsWindowCloaked(new IntPtr(window.Hwnd)));
             Assert.IsNotNull(settings, "PowerToys Settings did not expose a visible main window.");
             var launchCard = settings.FindExact<Button>("Open Hosts File Editor");
-            Assert.IsTrue(
-                WindowControl.WaitForForeground(new IntPtr(settings.WindowHandle), timeoutMS: 15_000, requiredConsecutiveMatches: 3),
-                $"Settings window {settings.WindowHandle} should own foreground before opening Hosts. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+
+            // Win10 can delay foreground handoff after Hosts exits. A visible inactive window can
+            // still receive a mouse click; guard the actual click point instead of forcing activation.
+            Assert.IsTrue(launchCard.Width > 0 && launchCard.Height > 0, "The Open Hosts File Editor card must have visible bounds.");
+            var window = new IntPtr(settings.WindowHandle);
+            var point = (X: launchCard.X + (launchCard.Width / 2), Y: launchCard.Y + (launchCard.Height / 2));
+            var targetReady = WaitHelper.WaitForStable(
+                () => WindowControl.IsPointOwnedByWindow(window, point.X, point.Y),
+                owned => owned,
+                timeoutMS: 15_000,
+                requiredConsecutiveMatches: 3);
+            Assert.IsTrue(targetReady.Succeeded, $"Settings window {window} should own the Hosts launch point {point}. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
+            MouseHelper.MoveTo(point.X, point.Y);
+            var cursorReady = WaitHelper.WaitForStable(
+                MouseHelper.GetMousePosition,
+                position => position == point && WindowControl.IsPointOwnedByWindow(window, point.X, point.Y),
+                timeoutMS: 1_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(cursorReady.Succeeded, $"The pointer did not settle on the Hosts launch point {point} in Settings window {window}.");
             TestContext.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Clicking Open Hosts File Editor in Settings and waiting for the editor window.");
-            launchCard.Click(msPostAction: 0);
+            MouseHelper.LeftClick();
             var hostsSession = Session.Attach(PowerToysModule.Hosts);
             WindowHelper.MaximizeWindow(new IntPtr(hostsSession.WindowHandle));
             Thread.Sleep(200);
