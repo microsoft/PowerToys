@@ -62,6 +62,9 @@ parameters:
   - name: buildInstallers
     type: boolean
     default: true
+  - name: skipMsiIceValidation
+    type: boolean
+    default: false
   # Internal build-plan input, derived from UI-test module selection.
   - name: prepareMwbRuntime
     type: boolean
@@ -647,15 +650,22 @@ jobs:
         }
       displayName: Remove tests folder before signing
 
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign Core PowerToys
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
-          signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+    - pwsh: |
+        .\.pipelines\splitCoreSigningPolicy.ps1 `
+          -BuildRoot '$(BuildPlatform)\$(BuildConfiguration)' `
+          -OutputDirectory '$(Agent.TempDirectory)\core-signing'
+      displayName: Prepare smaller core signing requests
+
+    - ${{ each batch in split('core-binaries,core-resources-1,core-resources-2', ',') }}:
+      - template: steps-esrp-signing.yml
+        parameters:
+          displayName: Sign Core PowerToys (${{ batch }})
+          signingIdentity: ${{ parameters.signingIdentity }}
+          inputs:
+            FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
+            signType: batchSigning
+            batchSignPolicyFile: '$(Agent.TempDirectory)\core-signing\${{ batch }}.json'
+            ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
 
     - template: steps-esrp-signing.yml
       parameters:
@@ -680,6 +690,7 @@ jobs:
         signingIdentity: ${{ parameters.signingIdentity }}
         versionNumber: $(EffectiveVersionNumber)
         additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+        skipMsiIceValidation: ${{ parameters.skipMsiIceValidation }}
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:

@@ -47,6 +47,12 @@ parameters:
     displayName: "Build Using Visual Studio Preview"
     default: false
 
+  # The signed agent image cannot run the temporary MSI used by WiX ICE checks.
+  - name: skipMsiIceValidation
+    displayName: "Skip MSI ICE validation on signed build agents"
+    type: boolean
+    default: true
+
 name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
 
 variables:
@@ -107,6 +113,7 @@ extends:
               publishArtifacts: false # 1ES PT handles publication for us.
               official: true
               codeSign: true
+              skipMsiIceValidation: ${{ parameters.skipMsiIceValidation }}
               runTests: false
               buildTests: false
               signingIdentity:
