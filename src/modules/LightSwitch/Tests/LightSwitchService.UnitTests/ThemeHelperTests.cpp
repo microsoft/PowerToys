@@ -32,6 +32,17 @@ namespace LightSwitchServiceUnitTests
                 RegDeleteTreeW(HKEY_CURRENT_USER, path.c_str());
             }
         };
+
+        void SetDword(HKEY key, const wchar_t* name, DWORD value)
+        {
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegSetValueExW(key, name, 0, REG_DWORD, reinterpret_cast<const BYTE*>(&value), sizeof(value)));
+        }
+
+        LSTATUS GetDword(HKEY key, const wchar_t* name, DWORD& value)
+        {
+            DWORD size = sizeof(value);
+            return RegGetValueW(key, nullptr, name, RRF_RT_REG_DWORD, nullptr, &value, &size);
+        }
     }
 
     TEST_CLASS (ThemeHelperTests)
@@ -78,6 +89,73 @@ namespace LightSwitchServiceUnitTests
             const auto result = LightSwitchThemeHelpers::WriteThemeValue(readOnly, L"Theme", true);
             RegCloseKey(readOnly);
             Assert::AreEqual<LSTATUS>(ERROR_ACCESS_DENIED, result);
+        }
+
+        TEST_METHOD (AccentColorIsSavedForLightAndRestoredForDark)
+        {
+            TemporaryRegistryKey personalization;
+            TemporaryRegistryKey state;
+            SetDword(personalization.key, L"ColorPrevalence", 1);
+            bool changed = false;
+            DWORD value = 0;
+
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::UpdateColorPrevalence(personalization.key, state.key, false, true, changed));
+            Assert::IsTrue(changed);
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, GetDword(personalization.key, L"ColorPrevalence", value));
+            Assert::AreEqual<DWORD>(0, value);
+
+            // Reapplying light must not replace the saved choice with the light theme's 0.
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::UpdateColorPrevalence(personalization.key, state.key, true, true, changed));
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, GetDword(state.key, SAVED_COLOR_PREVALENCE_VALUE, value));
+            Assert::AreEqual<DWORD>(1, value);
+
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::UpdateColorPrevalence(personalization.key, state.key, true, false, changed));
+            Assert::IsTrue(changed);
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, GetDword(personalization.key, L"ColorPrevalence", value));
+            Assert::AreEqual<DWORD>(1, value);
+            Assert::AreEqual<LSTATUS>(ERROR_FILE_NOT_FOUND, GetDword(state.key, SAVED_COLOR_PREVALENCE_VALUE, value));
+        }
+
+        TEST_METHOD (AccentColorIsOnlyRestoredWhenLeavingLight)
+        {
+            TemporaryRegistryKey personalization;
+            TemporaryRegistryKey state;
+            SetDword(personalization.key, L"ColorPrevalence", 0);
+            SetDword(state.key, SAVED_COLOR_PREVALENCE_VALUE, 1);
+            bool changed = true;
+            DWORD value = 1;
+
+            // Reapplying dark keeps a choice the user made while dark.
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::UpdateColorPrevalence(personalization.key, state.key, false, false, changed));
+            Assert::IsFalse(changed);
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, GetDword(personalization.key, L"ColorPrevalence", value));
+            Assert::AreEqual<DWORD>(0, value);
+
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, RegDeleteValueW(state.key, SAVED_COLOR_PREVALENCE_VALUE));
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::UpdateColorPrevalence(personalization.key, state.key, true, false, changed));
+            Assert::IsFalse(changed);
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, GetDword(personalization.key, L"ColorPrevalence", value));
+            Assert::AreEqual<DWORD>(0, value);
+        }
+
+        TEST_METHOD (UnknownPreviousThemeClearsAccentColorWithoutSaving)
+        {
+            TemporaryRegistryKey personalization;
+            TemporaryRegistryKey state;
+            SetDword(personalization.key, L"ColorPrevalence", 1);
+            SetDword(state.key, SAVED_COLOR_PREVALENCE_VALUE, 0);
+            bool changed = false;
+            DWORD value = 1;
+
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::UpdateColorPrevalence(personalization.key, state.key, std::nullopt, true, changed));
+            Assert::IsTrue(changed);
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, GetDword(personalization.key, L"ColorPrevalence", value));
+            Assert::AreEqual<DWORD>(0, value);
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, GetDword(state.key, SAVED_COLOR_PREVALENCE_VALUE, value));
+            Assert::AreEqual<DWORD>(0, value);
+
+            Assert::AreEqual<LSTATUS>(ERROR_SUCCESS, LightSwitchThemeHelpers::UpdateColorPrevalence(personalization.key, nullptr, false, true, changed));
+            Assert::IsTrue(changed);
         }
 
         TEST_METHOD (NightLightBinaryValuesDistinguishOnAndOff)
