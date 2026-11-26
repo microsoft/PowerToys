@@ -49,6 +49,10 @@
     <ClCompile Include="HotkeyConflictTests.cpp" />
     <ClCompile Include="SettingsWindowStartupTests.cpp" />
     <ClCompile Include="GeneralSettingsReaderTests.cpp" />
+    <ClCompile Include="DiagnosticPrivacyTests.cpp" />
+    <ClCompile Include="..\..\..\tools\BugReportTool\BugReportTool\ZipTools\ZipFolder.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\hotkey_conflict_detector.cpp" />
   </ItemGroup>
   <ItemGroup>
