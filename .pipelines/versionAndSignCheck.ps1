@@ -13,7 +13,9 @@ if ($WinmdOnly) {
     # MSIX payloads need the same metadata signature check without MSI version rules.
     $filePatterns = @('*.winmd')
 }
-$items = Get-ChildItem -Path $DirPath -File -Include $filePatterns -Recurse -Force -ErrorAction SilentlyContinue
+# The MSI media check verifies the extracted Monaco Codicon font against its source hash.
+$items = Get-ChildItem -Path $DirPath -File -Include $filePatterns -Recurse -Force -ErrorAction SilentlyContinue |
+    Where-Object Name -ne 'MonacoPreviewHandlerMonacoAssetsFiles_File_codicon.ttf'
 $versionExceptions = @(
     "AdaptiveCards.Templating.dll",
     "Microsoft.Windows.ApplicationModel.DynamicDependency.Projection.dll",
