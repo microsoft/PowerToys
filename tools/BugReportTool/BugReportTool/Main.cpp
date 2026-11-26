@@ -21,6 +21,7 @@
 #include "EventViewer.h"
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
+#include "ReportSanitizer.h"
 #include "TextExpanderPrivacy.h"
 
 using namespace std;
@@ -397,18 +398,42 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     ReportInstalledContextMenuPackages(reportDir);
 
+    std::vector<path> removedPaths;
+    try
+    {
+        // Check all staged files for snippets before the sanitizer can change their contents.
+        if (!TextExpanderPrivacy::ExcludeConfiguredSnippetFile(path(settingsRootPath), reportDir))
+        {
+            printf("Failed to exclude the Text Expander snippet file from the bug report\n");
+            DeleteFolder(reportDir);
+            return 1;
+        }
+
+        removedPaths = ReportSanitizer::Sanitize(reportDir);
+    }
+    catch (const std::exception& error)
+    {
+        printf("Failed to redact report data: %s\n", error.what());
+        DeleteFolder(reportDir);
+        return 1;
+    }
+    catch (...)
+    {
+        printf("Failed to redact report data\n");
+        DeleteFolder(reportDir);
+        return 1;
+    }
+
+    for (const auto& removedPath : removedPaths)
+    {
+        wprintf_s(L"Report file or folder removed because it could not be sanitized: %s\n", removedPath.lexically_relative(reportDir).c_str());
+    }
+
     // Zip folder
     auto zipPath = path::path(saveZipPath);
 
     try
     {
-        // All inputs are now staged, including LocalLow and installer logs.
-        if (!TextExpanderPrivacy::ExcludeConfiguredSnippetFile(path(settingsRootPath), reportDir))
-        {
-            printf("Failed to exclude the Text Expander snippet file from the bug report\n");
-            return 1;
-        }
-
         ZipFolder(zipPath, reportDir);
     }
     catch (...)

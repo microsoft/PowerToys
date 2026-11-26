@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.IO;
+using System.Threading;
 
 using CommunityToolkit.Mvvm.Messaging;
 
@@ -20,7 +22,11 @@ namespace WorkspacesEditor
     public partial class App : Application, IDisposable
     {
         private MainWindow _mainWindow;
+        private EventWaitHandle _moduleShutdownEvent;
+        private RegisteredWaitHandle _moduleShutdownWait;
+        private EventWaitHandle _moduleActivationEvent;
         private bool _isDisposed;
+        private bool _shuttingDown;
 
         public static DispatcherQueue DispatcherQueue { get; private set; }
 
@@ -51,21 +57,80 @@ namespace WorkspacesEditor
 
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            if (_shuttingDown)
+            {
+                return;
+            }
+
             DispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             WorkspacesEditorIO = new WorkspacesEditorIO();
             MainViewModel = new MainViewModel(WorkspacesEditorIO);
-            WorkspacesEditorIO.ParseWorkspaces(MainViewModel);
             MainViewModel.Initialize();
 
-            _mainWindow = new MainWindow();
+            _mainWindow = new MainWindow(_moduleActivationEvent);
             _mainWindow.Activate();
 
             StrongReferenceMessenger.Default.Register<CloseApplicationMessage>(this, (r, m) =>
             {
                 Logger.LogInfo("CloseApplicationMessage received. Shutting down.");
-                ((App)r).Exit();
+                ((App)r).Shutdown();
             });
+        }
+
+        internal void ListenForModuleRequests(string eventName, DispatcherQueue dispatcherQueue)
+        {
+            try
+            {
+                if (EventWaitHandle.TryOpenExisting(eventName, out _moduleShutdownEvent))
+                {
+                    _moduleShutdownWait = ThreadPool.RegisterWaitForSingleObject(
+                        _moduleShutdownEvent,
+                        (_, _) => dispatcherQueue.TryEnqueue(Shutdown),
+                        null,
+                        Timeout.Infinite,
+                        executeOnlyOnce: true);
+                    _moduleActivationEvent = new EventWaitHandle(false, EventResetMode.AutoReset, eventName + "-activate");
+                }
+            }
+            catch (Exception ex) when (ex is UnauthorizedAccessException or IOException)
+            {
+                Logger.LogError("Failed to register Workspaces Editor activation and shutdown events.", ex);
+            }
+        }
+
+        internal void Shutdown()
+        {
+            if (_shuttingDown)
+            {
+                return;
+            }
+
+            _shuttingDown = true;
+            var window = _mainWindow;
+            _mainWindow = null;
+
+            try
+            {
+                window?.CloseForShutdown();
+            }
+            finally
+            {
+                try
+                {
+                    Dispose();
+                }
+                finally
+                {
+                    Exit();
+                }
+            }
+        }
+
+        internal void OnMainWindowClosed()
+        {
+            _mainWindow = null;
+            Shutdown();
         }
 
         private void OnUnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
@@ -77,8 +142,12 @@ namespace WorkspacesEditor
         {
             if (!_isDisposed)
             {
-                MainViewModel?.Dispose();
                 _isDisposed = true;
+                _moduleShutdownWait?.Unregister(null);
+                _moduleShutdownEvent?.Dispose();
+                _moduleActivationEvent?.Dispose();
+                StrongReferenceMessenger.Default.UnregisterAll(this);
+                MainViewModel?.Dispose();
             }
 
             GC.SuppressFinalize(this);

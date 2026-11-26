@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -83,14 +84,14 @@ namespace MouseWithoutBorders.Class
                     }
                     else
                     {
-                        Logger.TelemetryLogTrace($"Error listening on: {server.LocalEndpoint}: {e.ErrorCode}/{e.Message}", SeverityLevel.Error);
+                        Logger.TelemetryLogTrace($"Error listening on: {Logger.MaskEndpoint((IPEndPoint)server.LocalEndpoint)}: {e.ErrorCode}/{e.SocketErrorCode}", SeverityLevel.Error);
                         throw;
                     }
                 }
             }
             while (true);
 
-            Thread t = new(job, Name = "Tcp Server: " + job.Method.Name + " " + server.LocalEndpoint.ToString());
+            Thread t = new(job, Name = "Tcp Server: " + job.Method.Name + " " + Logger.MaskEndpoint((IPEndPoint)server.LocalEndpoint));
             t.SetApartmentState(ApartmentState.STA);
             t.Start(server);
         }

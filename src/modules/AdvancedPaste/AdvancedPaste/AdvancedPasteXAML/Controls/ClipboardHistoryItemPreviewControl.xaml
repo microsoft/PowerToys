@@ -50,6 +50,7 @@
                 <TextBlock
                     Margin="8,0,0,0"
                     VerticalAlignment="Center"
+                    AutomationProperties.AutomationId="ClipboardPreviewText"
                     FontSize="10"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     Text="{x:Bind ClipboardItem.Content, Mode=OneWay}"

@@ -292,22 +292,18 @@ public class FileExplorerAddonsTests : UITestBase
         var explorer = OpenExplorer(Path.GetDirectoryName(filePath)!);
         EnsurePreviewPaneOpen(explorer);
         var handlerLogDirectory = LocalLowHandlerLogDirectory(handlerLogFolder);
-        DeleteDirectoryWithRetry(handlerLogDirectory);
-        Assert.IsFalse(
-            Directory.Exists(handlerLogDirectory),
-            $"Could not clear the previous {handlerName} log before previewing {extension}.");
+        var handlerLogs = new ProviderLogCursor(handlerLogDirectory);
 
         var emptyPreviewPath = CaptureStableWindow(explorer, $"{scenario}-empty");
         SelectFile(explorer, filePath);
 
-        var handlerLog = WaitForProviderLog(
-            handlerLogDirectory,
+        var handlerLogText = WaitForProviderLog(
+            handlerLogs,
             $"Starting PowerToys.{handlerName}.exe",
             ExplorerTimeoutMS);
         Assert.IsNotNull(
-            handlerLog,
+            handlerLogText,
             $"Explorer rendered {extension}, but did not invoke the PowerToys {handlerName} shim.");
-        var handlerLogText = ReadAllTextWithRetry(handlerLog!);
         Assert.IsFalse(
             handlerLogText.Contains("Failed to start", StringComparison.OrdinalIgnoreCase),
             $"The PowerToys {handlerName} shim reported a launch failure.{Environment.NewLine}{handlerLogText}");
@@ -336,10 +332,10 @@ public class FileExplorerAddonsTests : UITestBase
         var explorer = OpenExplorer(testFolder);
         var providerName = providerProcessName["PowerToys.".Length..];
         var providerLogDirectory = LocalLowHandlerLogDirectory(providerName);
-        DeleteDirectoryWithRetry(providerLogDirectory);
-        Assert.IsFalse(
-            Directory.Exists(providerLogDirectory),
-            $"Could not clear the previous {providerName} log before cold thumbnail generation.");
+
+        // A cached COM host retains the log handle. Logger::init still writes a fresh banner
+        // for each provider construction, so observe new bytes instead of deleting a live log.
+        var providerLogs = new ProviderLogCursor(providerLogDirectory);
 
         File.Copy(sourcePath, destinationPath);
         KeyboardHelper.SendKeys(Key.F5);
@@ -353,7 +349,7 @@ public class FileExplorerAddonsTests : UITestBase
             maximumItemHeight: int.MaxValue);
 
         var providerLog = WaitForProviderLog(
-            providerLogDirectory,
+            providerLogs,
             $"{providerName} logger is initialized",
             ExplorerTimeoutMS);
         Assert.IsNotNull(
@@ -379,7 +375,7 @@ public class FileExplorerAddonsTests : UITestBase
             maximumItemHeight: large.Height * 9 / 10);
         var medium = CaptureStableFileItem(explorer, assetName, $"{scenario}-medium");
 
-        var providerLogText = ReadAllTextWithRetry(providerLog!);
+        var providerLogText = providerLogs.ReadNewText();
         var persistedLogPath = ArtifactPath($"{scenario}-provider", ".log");
         File.WriteAllText(persistedLogPath, providerLogText);
         TestContext.AddResultFile(persistedLogPath);
@@ -774,14 +770,24 @@ public class FileExplorerAddonsTests : UITestBase
 
         var path = ArtifactPath(name);
         EnsureExplorerForeground(explorer);
-        using (var bitmap = new Bitmap(item!.Width, item.Height))
+        var bounds = WindowHelper.GetVisibleBounds(new IntPtr(explorer.WindowHandle));
+        var windowPath = CaptureWindow(explorer, $"{name}-window");
+        try
         {
-            using var graphics = Graphics.FromImage(bitmap);
-            graphics.CopyFromScreen(item.X, item.Y, 0, 0, bitmap.Size);
+            using var windowImage = new Bitmap(windowPath);
+            var itemBounds = new Rectangle(item!.X - bounds.Left, item.Y - bounds.Top, item.Width, item.Height);
+            Assert.IsTrue(
+                new Rectangle(0, 0, windowImage.Width, windowImage.Height).Contains(itemBounds),
+                $"The '{fileName}' item bounds did not fit the captured Explorer frame.");
+            using var bitmap = windowImage.Clone(itemBounds, windowImage.PixelFormat);
             bitmap.Save(path, System.Drawing.Imaging.ImageFormat.Png);
         }
+        finally
+        {
+            File.Delete(windowPath);
+        }
 
-        return new ThumbnailCapture(path, item.Width, item.Height);
+        return new ThumbnailCapture(path, item!.Width, item.Height);
     }
 
     private static Element? FindVisibleFileItem(Session explorer, string fileName, int timeoutMS)
@@ -916,20 +922,15 @@ public class FileExplorerAddonsTests : UITestBase
         Assert.IsTrue(colorBuckets.Count >= 6, bucketsMessage);
     }
 
-    private static string? WaitForProviderLog(string logDirectory, string expectedText, int timeoutMS)
+    private static string? WaitForProviderLog(ProviderLogCursor logs, string expectedText, int timeoutMS)
     {
         var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMS);
         while (DateTime.UtcNow < deadline)
         {
-            foreach (var path in Directory.Exists(logDirectory)
-                         ? Directory.GetFiles(logDirectory, "*.log", SearchOption.TopDirectoryOnly)
-                         : Array.Empty<string>())
+            var contents = logs.ReadNewText();
+            if (contents.Contains(expectedText, StringComparison.OrdinalIgnoreCase))
             {
-                var contents = ReadAllTextWithRetry(path);
-                if (contents.Contains(expectedText, StringComparison.OrdinalIgnoreCase))
-                {
-                    return path;
-                }
+                return contents;
             }
 
             Thread.Sleep(100);
@@ -949,29 +950,6 @@ public class FileExplorerAddonsTests : UITestBase
             "logs",
             "FileExplorer_localLow",
             handlerFolder);
-    }
-
-    private static string ReadAllTextWithRetry(string path)
-    {
-        for (var attempt = 0; attempt < 20; attempt++)
-        {
-            try
-            {
-                using var stream = new FileStream(
-                    path,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.ReadWrite | FileShare.Delete);
-                using var reader = new StreamReader(stream);
-                return reader.ReadToEnd();
-            }
-            catch (IOException) when (attempt < 19)
-            {
-                Thread.Sleep(50);
-            }
-        }
-
-        return string.Empty;
     }
 
     private string TestAssetPath(string assetName)

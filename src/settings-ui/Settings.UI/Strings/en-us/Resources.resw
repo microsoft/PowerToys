@@ -2975,6 +2975,10 @@ From there, simply click on one of the supported files in the File Explorer and 
   <data name="MouseUtils_CursorWrap_DisableOnSingleMonitor.Content" xml:space="preserve">
     <value>Disable wrapping when using a single monitor</value>
   </data>
+  <data name="MouseUtils_CursorWrap_DisableInGameMode.Content" xml:space="preserve">
+    <value>Do not activate when Game Mode is on</value>
+    <comment>"Game mode" is the Windows feature to prevent notification when playing a game.</comment>
+  </data>
   <data name="MouseUtils_CursorWrap_WrapMode.Header" xml:space="preserve">
     <value>Wrap mode</value>
   </data>
@@ -6316,6 +6320,9 @@ The break timer font matches the text font.</value>
   </data>
   <data name="PowerDisplay_Monitor_EnableRotation.Content" xml:space="preserve">
     <value>Show rotation control</value>
+  </data>
+  <data name="PowerDisplay_Monitor_EnableRefreshRate.Content" xml:space="preserve">
+    <value>Show refresh-rate control</value>
   </data>
   <data name="PowerDisplay_Monitor_EnableColorTemperature.Content" xml:space="preserve">
     <value>Show color temperature switcher</value>

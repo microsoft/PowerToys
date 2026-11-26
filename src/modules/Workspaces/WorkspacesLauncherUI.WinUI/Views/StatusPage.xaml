@@ -20,11 +20,11 @@
         </Grid.ColumnDefinitions>
 
         <ScrollViewer
+            x:Uid="LaunchStatusList"
             Grid.ColumnSpan="2"
-            AutomationProperties.Name="Application launch status list"
             TabIndex="0">
             <StackPanel AutomationProperties.AccessibilityView="Content" AutomationProperties.LiveSetting="Polite">
-                <ItemsControl AutomationProperties.Name="Applications" ItemsSource="{x:Bind ViewModel.AppsListed, Mode=OneWay}">
+                <ItemsControl x:Uid="ApplicationsList" ItemsSource="{x:Bind ViewModel.AppsListed, Mode=OneWay}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="models:AppLaunching">
                             <Grid
@@ -48,7 +48,8 @@
                                     Grid.Column="1"
                                     VerticalAlignment="Center"
                                     AutomationProperties.AccessibilityView="Raw"
-                                    Text="{x:Bind Name, Mode=OneWay}" />
+                                    Text="{x:Bind Name, Mode=OneWay}"
+                                    TextWrapping="Wrap" />
                                 <tkcontrols:SwitchPresenter
                                     Grid.Column="2"
                                     Margin="8"
@@ -68,9 +69,11 @@
                                         <tkcontrols:SwitchPresenter TargetType="x:Int32" Value="{x:Bind LaunchStateInt, Mode=OneWay}">
                                             <tkcontrols:Case Value="5">
                                                 <TextBlock
+                                                    MaxWidth="120"
                                                     AutomationProperties.AutomationId="{x:Bind StateAutomationId, Mode=OneWay}"
                                                     AutomationProperties.Name="{x:Bind StateDescription, Mode=OneWay}"
-                                                    Text="{x:Bind StateDescription, Mode=OneWay}" />
+                                                    Text="{x:Bind StateDescription, Mode=OneWay}"
+                                                    TextWrapping="Wrap" />
                                             </tkcontrols:Case>
                                             <tkcontrols:Case IsDefault="True" Value="3">
                                                 <FontIcon
@@ -110,6 +113,7 @@
             AutomationProperties.AutomationId="DismissButton"
             AutomationProperties.Name="{x:Bind DismissLabel.Text, Mode=OneWay}"
             Click="CloseButton_Click"
+            IsEnabled="{x:Bind ViewModel.IsInteractionEnabled, Mode=OneWay}"
             Style="{ThemeResource AccentButtonStyle}"
             TabIndex="1">
             <TextBlock
@@ -127,8 +131,8 @@
             HorizontalAlignment="Stretch"
             AutomationProperties.AutomationId="CancelButton"
             AutomationProperties.Name="{x:Bind CancelLabel.Text, Mode=OneWay}"
-            Click="CloseButton_Click"
             Command="{x:Bind ViewModel.CancelLaunchCommand}"
+            IsEnabled="{x:Bind ViewModel.IsInteractionEnabled, Mode=OneWay}"
             TabIndex="2">
             <TextBlock
                 x:Name="CancelLabel"

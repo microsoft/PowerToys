@@ -3,7 +3,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <Import Project="$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('$(RepoRoot)packages\Microsoft.Windows.CppWinRT.2.0.250303.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{593A1A9A-4906-4909-8CE5-9FED76D7BB47}</ProjectGuid>
+    <ProjectGuid>{92FCD720-B88B-4ED8-93EE-71F3049EFC25}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>BugReportToolUnitTests</RootNamespace>
     <ProjectName>BugReportTool.UnitTests</ProjectName>
@@ -29,7 +29,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ReportSanitizerTests.cpp" />
     <ClCompile Include="TextExpanderPrivacyTests.cpp" />
+    <ClCompile Include="..\BugReportTool\ReportSanitizer.cpp" />
+    <ClInclude Include="..\BugReportTool\ReportSanitizer.h" />
     <ClInclude Include="..\BugReportTool\TextExpanderPrivacy.h" />
   </ItemGroup>
   <ItemGroup>

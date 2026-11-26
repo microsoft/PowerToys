@@ -3,6 +3,17 @@
 
 static int s_classId = 0;
 
+// Message loop threads started by Mocks::HwndCreator. They run code from this DLL, so they have to be
+// stopped before the test host unloads it.
+struct WindowThread
+{
+    HANDLE handle;
+    DWORD id;
+};
+
+static std::mutex s_windowThreadsMutex;
+static std::vector<WindowThread> s_windowThreads;
+
 namespace Mocks
 {
     class HwndCreator
@@ -33,7 +44,6 @@ namespace Mocks
         std::mutex m_mutex;
         std::condition_variable m_conditionVar;
         bool m_conditionFlag;
-        HANDLE m_thread;
 
         HINSTANCE m_hInst{};
         HWND m_hWnd;
@@ -132,7 +142,6 @@ namespace Mocks
         m_style(style),
         m_parentWindow(parentWindow),
         m_conditionFlag(false), 
-        m_thread(nullptr), 
         m_hInst(HINSTANCE{}), 
         m_hWnd(nullptr)
     {
@@ -142,11 +151,6 @@ namespace Mocks
     {
         std::unique_lock<std::mutex> lock(m_mutex);
         m_conditionVar.wait(lock, [this] { return m_conditionFlag; });
-
-        if (m_thread)
-        {
-            CloseHandle(m_thread);
-        }
     }
 
     HWND HwndCreator::operator()(HINSTANCE hInst)
@@ -155,7 +159,14 @@ namespace Mocks
         m_conditionFlag = false;
         std::unique_lock<std::mutex> lock(m_mutex);
 
-        m_thread = CreateThread(0, NULL, ThreadProc, reinterpret_cast<LPVOID>(this), NULL, NULL);
+        DWORD threadId = 0;
+        HANDLE thread = CreateThread(0, NULL, ThreadProc, reinterpret_cast<LPVOID>(this), NULL, &threadId);
+        if (thread)
+        {
+            std::lock_guard<std::mutex> threadsLock(s_windowThreadsMutex);
+            s_windowThreads.push_back({ thread, threadId });
+        }
+
         m_conditionVar.wait(lock, [this] { return m_conditionFlag; });
 
         return m_hWnd;
@@ -172,6 +183,30 @@ namespace Mocks
         m_conditionVar.notify_one();
     }
 
+}
+
+// Quitting a message loop ends its thread, which destroys the window it owns. Wait for the threads so that
+// none is still running code from this DLL when the test host unloads it.
+TEST_MODULE_CLEANUP(StopMockWindowThreads)
+{
+    std::vector<WindowThread> threads;
+    {
+        std::lock_guard<std::mutex> lock(s_windowThreadsMutex);
+        threads.swap(s_windowThreads);
+    }
+
+    for (const auto& thread : threads)
+    {
+        PostThreadMessage(thread.id, WM_QUIT, 0, 0);
+    }
+
+    const ULONGLONG deadline = GetTickCount64() + 10'000;
+    for (const auto& thread : threads)
+    {
+        const ULONGLONG now = GetTickCount64();
+        WaitForSingleObject(thread.handle, now < deadline ? static_cast<DWORD>(deadline - now) : 0);
+        CloseHandle(thread.handle);
+    }
 }
 
 std::wstring Helpers::GuidToString(const GUID& guid)
