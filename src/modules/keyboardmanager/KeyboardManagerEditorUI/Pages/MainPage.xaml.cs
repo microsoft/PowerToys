@@ -1502,8 +1502,12 @@ namespace KeyboardManagerEditorUI.Pages
                 return false;
             }
 
+            // A turned-off row is not in the native config, so only the editor's metadata changes.
+            // Remove it from the profile the editor is showing: the engine may have auto-switched
+            // a moment ago (the editor follows after a short debounce), and the live active profile
+            // would then be another one.
             return !settings.IsActive
-                ? SettingsManager.TryRemoveShortcutKeyMapping(mappingId)
+                ? SettingsManager.TryRemoveShortcutKeyMapping(mappingId, _mappingService?.ConfigurationName)
                 : ExecuteMappingTransaction(
                     candidate => DeleteMapping(candidate, settings.Shortcut),
                     profileName => SettingsManager.TryRemoveShortcutKeyMapping(mappingId, profileName));

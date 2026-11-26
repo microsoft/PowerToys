@@ -706,19 +706,23 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId, string? profileName = null)
+        // profileName is required on the three writes below, and none of them reads the live active
+        // profile: the caller passes the profile it captured (the one its service was built against,
+        // or the one the editor is showing), so an engine auto-switch in between cannot move the
+        // change to another profile. Null means "no profile" (preview mode) and is profile-agnostic.
+        public static bool TryCommitShortcutKeyMapping(ShortcutKeyMapping shortcutKeyMapping, string? replacingId, string? profileName)
         {
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
-                MigrateBeforeWrite(updatedSettings, profileName ?? CurrentProfileName);
+                MigrateBeforeWrite(updatedSettings, profileName);
 
                 // Attribute the mapping to the profile the caller captured when it built the edit
                 // (candidateService.ConfigurationName), not the live global: the native save happens
                 // first, and if the engine auto-switches in between, re-reading CurrentProfileName here
                 // would record the mapping under the newly-active profile even though it landed in the
-                // original profile's config. Fall back to the global only when no id was captured.
-                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, profileName ?? CurrentProfileName))
+                // original profile's config.
+                if (!TryApplyShortcutKeyMapping(updatedSettings, shortcutKeyMapping, replacingId, profileName))
                 {
                     return false;
                 }
@@ -803,15 +807,16 @@ namespace KeyboardManagerEditorUI.Settings
             return true;
         }
 
-        // profileName: the profile captured by the caller's transaction (see TryCommitShortcutKeyMapping).
-        // Falls back to the live global only when nothing was captured (metadata-only removal).
-        public static bool TryRemoveShortcutKeyMapping(string guid, string? profileName = null)
+        // profileName: the profile captured by the caller (see TryCommitShortcutKeyMapping). A
+        // turned-off row is removed without a native save, so its caller passes the profile the
+        // editor is showing.
+        public static bool TryRemoveShortcutKeyMapping(string guid, string? profileName)
         {
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
-                MigrateBeforeWrite(updatedSettings, profileName ?? CurrentProfileName);
-                if (!TryApplyShortcutKeyMappingRemoval(updatedSettings, guid, profileName ?? CurrentProfileName) ||
+                MigrateBeforeWrite(updatedSettings, profileName);
+                if (!TryApplyShortcutKeyMappingRemoval(updatedSettings, guid, profileName) ||
                     !WriteSettings(updatedSettings))
                 {
                     return false;
@@ -863,17 +868,17 @@ namespace KeyboardManagerEditorUI.Settings
         }
 
         // profileName: the profile captured by the caller's transaction (see TryCommitShortcutKeyMapping).
-        public static bool TrySetShortcutKeyMappingActiveState(string guid, bool isActive, string? profileName = null)
+        public static bool TrySetShortcutKeyMappingActiveState(string guid, bool isActive, string? profileName)
         {
             try
             {
                 EditorSettings updatedSettings = CloneSettings();
-                MigrateBeforeWrite(updatedSettings, profileName ?? CurrentProfileName);
+                MigrateBeforeWrite(updatedSettings, profileName);
                 if (!TryApplyShortcutKeyMappingActiveState(
                         updatedSettings,
                         guid,
                         isActive,
-                        profileName ?? CurrentProfileName) ||
+                        profileName) ||
                     !WriteSettings(updatedSettings))
                 {
                     return false;
