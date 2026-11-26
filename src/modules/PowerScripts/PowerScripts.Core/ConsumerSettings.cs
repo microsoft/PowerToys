@@ -10,7 +10,7 @@ namespace PowerScripts.Core;
 /// <summary>Shared preference and policy resolution. Consumer identity is not authentication.</summary>
 public sealed class ConsumerSettings
 {
-    private static readonly string[] KnownConsumers = ["advanced-paste", "keyboard-manager", "command-palette", "file-explorer"];
+    private static readonly string[] KnownConsumers = ["advanced-paste", "keyboard-manager", "command-palette", "file-explorer", "light-switch"];
     private readonly ISettingsStore _store;
     private readonly Func<string, string, bool?> _readPolicy;
     private readonly Func<bool> _moduleEnabled;
@@ -43,7 +43,7 @@ public sealed class ConsumerSettings
             : consumerId switch
             {
                 "advanced-paste" => _legacyAdvancedPasteEnabled(),
-                "file-explorer" => false,
+                "file-explorer" or "light-switch" => false,
                 _ => true,
             };
         var policy = _readPolicy(PowerScriptsPolicies.ConsumersKey, consumerId);
@@ -52,6 +52,7 @@ public sealed class ConsumerSettings
             "advanced-paste" => "AdvancedPaste",
             "keyboard-manager" => "KeyboardManager",
             "command-palette" => "CmdPal",
+            "light-switch" => "LightSwitch",
             _ => null,
         };
         var parentDisabled = parent is not null && PowerScriptsPolicies.ReadUtility(parent, _readPolicy) == false;

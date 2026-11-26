@@ -31,6 +31,7 @@ namespace LightSwitchServiceUnitTests
             int settingsReads = 0;
             int sunCalculations = 0;
             std::vector<bool> notifications;
+            std::vector<std::pair<bool, LightSwitchScriptBinding>> scripts;
             std::function<void(bool)> afterWrite;
 
             Environment()
@@ -77,6 +78,7 @@ namespace LightSwitchServiceUnitTests
                 };
                 dependencies.localTime = [this]() { return now; };
                 dependencies.notifyThemeChanged = [this](bool light) { notifications.push_back(light); };
+                dependencies.queueThemeScript = [this](bool light, const LightSwitchScriptBinding& binding) { scripts.emplace_back(light, binding); };
                 dependencies.updateSunTimes = [this](const LightSwitchConfig&, const SYSTEMTIME&) {
                     ++sunCalculations;
                     return std::pair{ config.lightTime, config.darkTime };
@@ -89,6 +91,72 @@ namespace LightSwitchServiceUnitTests
     TEST_CLASS (StateManagerTests)
     {
     public:
+        TEST_METHOD (OptionalScriptQueueFailureDoesNotFailASuccessfulThemeChange)
+        {
+            Environment environment;
+            auto dependencies = environment.Dependencies();
+            dependencies.queueThemeScript = [](bool, const LightSwitchScriptBinding&) { throw std::runtime_error("Unavailable script worker"); };
+            LightSwitchStateManager manager(std::move(dependencies));
+            Assert::IsTrue(manager.SetTheme(false).success);
+            Assert::IsFalse(*environment.system);
+            Assert::IsFalse(*environment.apps);
+        }
+
+        TEST_METHOD (StartupReconciliationRetryDoesNotRunThemeBindings)
+        {
+            Environment environment;
+            environment.config.lightThemeScript = { L"light-action", {} };
+            environment.system = environment.apps = false;
+            environment.failAppsWrite = true;
+            LightSwitchStateManager manager(environment.Dependencies());
+            manager.SyncInitialThemeState();
+            Assert::IsTrue(environment.scripts.empty());
+            environment.failAppsWrite = false;
+            manager.OnTick();
+            Assert::IsTrue(environment.scripts.empty());
+        }
+
+        TEST_METHOD (ThemeBindingsRunAfterSuccessfulTransitionsNotNoOpsOrStartup)
+        {
+            Environment environment;
+            environment.config.lightThemeScript = { L"light-action", { { L"wallpaper", L"C:\\Pictures\\light image.jpg" } } };
+            environment.config.darkThemeScript = { L"dark-action", {} };
+            environment.system = environment.apps = false;
+            LightSwitchStateManager manager(environment.Dependencies());
+            manager.SyncInitialThemeState();
+            Assert::IsTrue(environment.scripts.empty());
+            manager.OnTick();
+            Assert::IsTrue(environment.scripts.empty());
+            Assert::IsTrue(manager.SetTheme(false).success);
+            Assert::AreEqual(size_t{ 1 }, environment.scripts.size());
+            Assert::IsFalse(environment.scripts[0].first);
+            Assert::AreEqual(std::wstring(L"dark-action"), environment.scripts[0].second.id);
+            Assert::IsTrue(manager.SetTheme(false).success);
+            Assert::AreEqual(size_t{ 1 }, environment.scripts.size());
+            Assert::IsTrue(manager.SetTheme(true).success);
+            Assert::AreEqual(size_t{ 2 }, environment.scripts.size());
+            Assert::AreEqual(std::wstring(L"light-action"), environment.scripts[1].second.id);
+            Assert::AreEqual(std::wstring(L"C:\\Pictures\\light image.jpg"), environment.scripts[1].second.parameters.at(L"wallpaper"));
+        }
+
+        TEST_METHOD (FailedThemeWritesDoNotRunBindingsAndBindingEditsDoNotClearOverrides)
+        {
+            Environment environment;
+            environment.config.darkThemeScript = { L"dark-action", {} };
+            LightSwitchStateManager manager(environment.Dependencies());
+            environment.failAppsWrite = true;
+            Assert::IsFalse(manager.SetTheme(false).success);
+            Assert::IsTrue(environment.scripts.empty());
+            environment.failAppsWrite = false;
+            Assert::IsTrue(manager.SetTheme(false).success);
+            Assert::AreEqual(size_t{ 1 }, environment.scripts.size());
+            Assert::IsTrue(manager.GetState().isManualOverride);
+            environment.config.darkThemeScript.id = L"replacement";
+            manager.OnSettingsChanged();
+            Assert::IsTrue(manager.GetState().isManualOverride);
+            Assert::AreEqual(size_t{ 1 }, environment.scripts.size());
+        }
+
         TEST_METHOD (ExplicitSetIsIdempotentAndHoldsUntilTheNextBoundary)
         {
             Environment environment;

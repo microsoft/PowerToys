@@ -23,6 +23,7 @@ public sealed class PowerScriptActivityItem : Observable
         "keyboard-manager",
         "command-palette",
         "file-explorer",
+        "light-switch",
         "command-line",
         "powerscripts-editor",
     });
@@ -53,6 +54,7 @@ public sealed class PowerScriptActivityItem : Observable
         "keyboard-manager" => "KeyboardManager.png",
         "command-palette" => "CmdPal.png",
         "file-explorer" => "FileExplorerPreview.png",
+        "light-switch" => "LightSwitch.png",
         _ => "PowerToys.png",
     };
 
@@ -91,6 +93,7 @@ public sealed class PowerScriptActivityItem : Observable
         "keyboard-manager" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityKeyboardManager"),
         "command-palette" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityCommandPalette"),
         "file-explorer" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityFileExplorer"),
+        "light-switch" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityLightSwitch"),
         "command-line" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityCommandLine"),
         "powerscripts-editor" => PowerScriptsViewModel.GetResourceString("PowerScripts_ActivityEditor"),
         _ => consumerId,

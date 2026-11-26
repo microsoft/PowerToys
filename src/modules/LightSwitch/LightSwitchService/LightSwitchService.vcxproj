@@ -101,6 +101,7 @@
     <ClInclude Include="ScheduleCommandQueue.h" />
     <ClInclude Include="LightSwitchSettings.h" />
     <ClInclude Include="LightSwitchStateManager.h" />
+    <ClInclude Include="PowerScriptThemeRunner.h" />
     <ClInclude Include="LightSwitchUtils.h" />
     <ClInclude Include="NightLightRegistryObserver.h" />
     <ClInclude Include="ThemeScheduler.h" />

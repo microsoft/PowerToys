@@ -4,6 +4,7 @@
 #include <logger.h>
 #include <LightSwitchUtils.h>
 #include "ThemeScheduler.h"
+#include "PowerScriptThemeRunner.h"
 #include <ThemeHelper.h>
 #include <common/interop/shared_constants.h>
 #include <stdexcept>
@@ -76,6 +77,8 @@ namespace
             return now;
         };
         dependencies.updateSunTimes = UpdateSunTimes;
+        auto scripts = std::make_shared<PowerScriptThemeRunner>();
+        dependencies.queueThemeScript = [scripts](bool light, const LightSwitchScriptBinding& binding) { scripts->Queue(light, binding); };
         return dependencies;
     }
 
@@ -120,6 +123,7 @@ bool LightSwitchStateManager::LoadSettingsLocked(std::wstring& error)
         _state.isManualOverride = false;
         _state.lastEvaluatedDate.reset();
         _pendingThemeNotification.reset();
+        _startupThemeNotification.reset();
         if (config.scheduleMode == ScheduleMode::FollowNightLight && enteringNightLight)
         {
             _hasNightLightState = false;
@@ -236,6 +240,7 @@ void LightSwitchStateManager::OnTick()
 LSTATUS LightSwitchStateManager::OnManualOverrideLocked(const LightSwitchConfig& config, const SYSTEMTIME& now, StatusSnapshot& snapshot)
 {
     _pendingThemeNotification.reset();
+    _startupThemeNotification.reset();
     UpdateEffectiveTimesLocked(config, now);
     bool crossedBoundary = false;
     bool unknownNightLight = false;
@@ -286,7 +291,8 @@ void LightSwitchStateManager::OnNightLightChange()
     if (!LoadSettingsLocked(error))
         return;
     const auto crossedBoundary = _settingsSnapshot.scheduleMode == ScheduleMode::FollowNightLight ?
-                                     RefreshNightLightStateLocked(_settingsSnapshot) : std::optional<bool>(false);
+                                     RefreshNightLightStateLocked(_settingsSnapshot) :
+                                     std::optional<bool>(false);
     if (!crossedBoundary.has_value())
         return;
     const auto now = _dependencies.localTime();
@@ -298,10 +304,13 @@ void LightSwitchStateManager::OnNightLightChange()
 void LightSwitchStateManager::SyncInitialThemeState()
 {
     std::lock_guard<std::mutex> lock(_stateMutex);
+    _initialThemeSync = true;
+    const auto cleanup = wil::scope_exit([&] { _initialThemeSync = false; });
     RecordThemeObservationsLocked(GetStatusSnapshotLocked(_settingsSnapshot));
     std::wstring error;
     if (LoadSettingsLocked(error))
         EvaluateAndApplyIfNeededLocked(_settingsSnapshot, _dependencies.localTime());
+    _startupThemeNotification = _pendingThemeNotification;
 }
 
 bool LightSwitchStateManager::CoordinatesAreValid(const std::wstring& lat, const std::wstring& lon)
@@ -449,7 +458,10 @@ LSTATUS LightSwitchStateManager::EvaluateAndApplyIfNeededLocked(const LightSwitc
         return ERROR_READ_FAULT;
     const bool light = ScheduledThemeLocked(config, now);
     if (_pendingThemeNotification != std::optional<bool>(light))
+    {
         _pendingThemeNotification.reset();
+        _startupThemeNotification.reset();
+    }
     // Night Light transitions and changed settings can bypass external detection.
     // Retain their observations before ApplyThemeLocked records the final snapshot.
     const auto previousSystemTheme = _lastObservedSystemTheme;
@@ -481,6 +493,18 @@ void LightSwitchStateManager::NotifyAppliedThemeLocked(const LightSwitchConfig& 
         _dependencies.notifyThemeChanged(*theme);
     else
         NotifyPowerDisplayThemeChanged(*theme);
+    if (!_initialThemeSync && _startupThemeNotification != theme && _dependencies.queueThemeScript)
+    {
+        try
+        {
+            _dependencies.queueThemeScript(*theme, *theme ? config.lightThemeScript : config.darkThemeScript);
+        }
+        catch (...)
+        {
+            Logger::warn(L"[LightSwitch] Could not queue the optional PowerScripts theme action.");
+        }
+    }
+    _startupThemeNotification.reset();
 }
 
 ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
@@ -533,6 +557,8 @@ ThemeCommandResult LightSwitchStateManager::SetTheme(bool light)
     // A no-op set can confirm an external choice before the minute poll sees it.
     // Acknowledge that transition once, even though no registry write was needed.
     const bool observedChange = HasObservedThemeChange(snapshot, previousSystemTheme, previousAppsTheme);
+    if (changed || observedChange)
+        _startupThemeNotification.reset();
     if (changed || observedChange || _pendingThemeNotification)
         NotifyAppliedThemeLocked(config, snapshot);
     _pendingThemeNotification.reset();

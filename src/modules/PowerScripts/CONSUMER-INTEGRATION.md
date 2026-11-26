@@ -127,7 +127,7 @@ parameter values into a command line.
 
 Consumer identity is mandatory for both `run` and `transform`, including direct/native calls.
 Use 1-64 lowercase ASCII letters, digits or hyphens, beginning with a letter. Built-in IDs are
-`advanced-paste`, `keyboard-manager`, `command-palette`, and `file-explorer`; manual CLI invocations should explicitly
+`advanced-paste`, `keyboard-manager`, `command-palette`, `file-explorer`, and `light-switch`; manual CLI invocations should explicitly
 use `command-line`.
 The managed client requires `consumerId` as its first constructor argument and supplies the Host
 option automatically for discovery and execution. Unqualified administrative discovery, trust
@@ -151,13 +151,14 @@ scripts, trust or bindings; it does not cancel already-running work.
 
 Put each consumer's integration switch in **PowerScripts app > Consumer modules**, not
 in the consumer's settings page. PowerScripts owns `config.json`'s
-`consumers: { "advanced-paste": true, "keyboard-manager": true, "command-palette": true, "file-explorer": false }`
+`consumers: { "advanced-paste": true, "keyboard-manager": true, "command-palette": true, "file-explorer": false, "light-switch": false }`
 preferences. Advanced Paste uses
 its legacy `properties.powerscripts-enabled` value until a central preference exists (default off).
 The first central edit copies the legacy choice; subsequent legacy writes cannot override it.
 Keyboard Manager defaults on to preserve existing bindings, and Command Palette defaults on.
 Disabling an integration never deletes bindings or trust approvals.
 
+Light Switch defaults off and owns separate optional light/dark script bindings in its own settings.
 File Explorer defaults off. Its global **Show parameter options before running** and
 **Show execution status after (seconds)** preferences belong to File Explorer Add-ons, not
 PowerScripts' config. The status delay defaults to 2 seconds; 0 shows it immediately, and failures
@@ -176,6 +177,7 @@ Group Policy uses the 64-bit registry view under `Software\Policies\PowerToys` i
 | Advanced Paste: Allow PowerScripts integration | `PowerScripts\Consumers\advanced-paste` |
 | Keyboard Manager: Allow PowerScripts integration | `PowerScripts\Consumers\keyboard-manager` |
 | File Explorer: Allow PowerScripts integration | `PowerScripts\Consumers\file-explorer` |
+| Light Switch: Allow PowerScripts integration | `PowerScripts\Consumers\light-switch` |
 | Command Palette: Allow PowerScripts integration | `PowerScripts\Consumers\command-palette` |
 
 Each value is `REG_DWORD`: 0 disables, 1 enables, absent uses the saved preference.
@@ -203,7 +205,7 @@ PowerScripts policy to prevent execution through every Host consumer, including 
 The development enabled-state bypass cannot override Group Policy.
 
 `consumers list` returns effective/managed state as JSON.
-`consumers set <advanced-paste|keyboard-manager|command-palette|file-explorer> <on|off>` changes a user preference,
+`consumers set <advanced-paste|keyboard-manager|command-palette|file-explorer|light-switch> <on|off>` changes a user preference,
 preserving unrelated configuration, and refuses edits when the module is disabled or policy controls the switch.
 
 The shared Host records the latest 200 invocations in local `activity.json`, independently of the
@@ -336,6 +338,36 @@ module, parent-utility, runtime, trust, and Group Policy gates again on each inv
 one-action runs of scripts without parameters. Browsing never approves a script. Script review and
 management remain in the PowerScripts editor.
 
+### Light Switch
+
+The native Light Switch service consumes `light-switch`, default off, with **no primary input and
+no output**. Enable **PowerScripts app > Consumer modules > Light Switch** and configure separate
+bindings in **Settings > Light Switch > PowerScripts**. Each binding persists an opaque script ID
+and named parameter text in `lightThemeScript` or `darkThemeScript` under the existing Light Switch
+settings properties. The assignment dialog discovers through the shared client, retains unavailable
+bindings, validates typed options, and rechecks the input contract before saving. Cancel and
+discovery errors never clear a binding. Saving does not approve the script.
+
+The state manager queues a binding only after verified successful theme transitions, including
+manual, scheduled, Night Light, and observed external choices. No-op requests, startup reconciliation
+(including its retry), and failed changes do not run scripts. Editing bindings does not reset a
+manual override. A serial, consumer-owned worker keeps the scheduler responsive and coalesces queued
+transitions to the latest one; an unbound transition drops pending work. Before admission it checks
+the saved binding and actual selected theme targets again, skipping stale work. Running actions
+cannot be rolled back.
+
+Execution uses the shared native stdio Host with `--consumer light-switch --no-consent`. The Host
+independently enforces the current no-input/no-output contract and unattended consent behavior,
+parameter validation, current-content approval, runtime availability, global isolation, and utility/
+consumer/parent-policy gates. Approve the exact script in the editor first; edits require approval
+again. Results are not displayed or pasted; failures remain in attributed Activity, with a
+metadata-only service diagnostic. No automatic retry occurs.
+
+The script's configured runtime limits apply. Service shutdown cancels the in-flight private Host
+and drops pending work without terminating an enclosing job or the shared Linux daemon. Changing
+the wallpaper is possible only if the script's approved runtime/host-action contract can actually
+reach that Windows setting; theme bindings do not bypass isolation or add a wallpaper API.
+
 ### Assign one script to a trigger
 
 A shortcut-based consumer owns its binding UI. Discover compatible actions through the client;
@@ -396,7 +428,7 @@ do not reference the Settings executable from a runtime module or add UI depende
 ### Register a new consumer
 
 All paths below are relative to `src\modules\PowerScripts` unless stated otherwise.
-The four built-in adapters are present in this branch; installation checks still matter for
+The five built-in adapters are present in this branch; installation checks still matter for
 custom, older or partial builds.
 
 | Registration point | Required change |
@@ -406,6 +438,8 @@ custom, older or partial builds.
 | `PowerScripts.Client\PowerScriptConsumerGuidance.cs` | Describe the adapter's supported primary input/output intersection for creation guidance. This is not an execution gate. |
 | `PowerScripts.Editor\UI\ViewModels\PowerScriptsViewModel.Consumers.cs` | Add the consumer item, snapshot mapping, catalogue refresh and compatibility presentation. These collections are explicitly registered, not generated from the ID. |
 | `PowerScripts.Editor\Views\ConsumerModulesPage.xaml` and `.xaml.cs` | Add the localized integration card and ID-to-item toggle handling, preserving managed/disabled states and actionable failures. |
+| `PowerScripts.Editor\UI\ViewModels\PowerScriptActivityItem.cs` and script creation/details pages | Add the localized Activity source/icon and the adapter's availability/compatibility rows. |
+| `PowerScripts.Editor\UI\Strings\Resources.resx` and `src\settings-ui\Settings.UI\Strings\en-us\Resources.resw` | Keep shared view-model/preview strings and WinUI labels in sync; they use separate embedded and PRI resource stores. |
 | `src\gpo\assets\PowerToys.admx` and `en-US\PowerToys.adml` (repository-relative) | Add the integration policy under `PowerScripts\Consumers`; use the same ID and the existing 0/1 registry contract. |
 | Adapter project, `PowerToys.slnx`, installer and `.pipelines\ESRPSigning_core.json` (repository-relative) | Reference the headless client, register build/deployment and sign any new product payload. Do not ship a UI switch without its adapter. |
 | `AgentSkills\powertoys-powerscripts\references\consumers.md` and `bundle.json` | Record actual I/O, parameter UI, setup, result ownership, timeout/cancellation and availability; bump the bundle version in the same change. |
@@ -417,6 +451,9 @@ Representative adapters are `src\modules\AdvancedPaste\AdvancedPaste\Services\Po
 `src\modules\keyboardmanager\KeyboardManagerEditorUI\Helpers\PowerScriptsCatalog.cs`,
 `src\modules\cmdpal\ext\Microsoft.CmdPal.Ext.PowerScripts`, and
 `src\modules\previewpane\FileExplorerScripts.Core` (repository-relative).
+Light Switch provides a saved, unattended native adapter in
+`src\modules\LightSwitch\LightSwitchService\PowerScriptThemeRunner.h`, with configuration in
+`src\settings-ui\Settings.UI\SettingsXAML\Views\LightSwitchPage.PowerScripts.cs`.
 Build the changed projects with the repository build scripts on x64 and ARM64; core tests participate
 in the standard `Build;Test` target. Validate the installed adapter, not just a standalone Host run.
 

@@ -15,7 +15,7 @@ public sealed class ConsumerSettingsTests
     public void EffectiveConsumerStateHonorsEveryParentPolicyAndPreferenceCombination()
     {
         bool?[] policies = [null, false, true];
-        foreach (var id in new[] { "advanced-paste", "keyboard-manager", "command-palette" })
+        foreach (var id in new[] { "advanced-paste", "keyboard-manager", "command-palette", "light-switch" })
         {
             foreach (var moduleUser in new[] { false, true })
             {
@@ -36,6 +36,7 @@ public sealed class ConsumerSettingsTests
                                     "advanced-paste" => "AdvancedPaste",
                                     "keyboard-manager" => "KeyboardManager",
                                     "command-palette" => "CmdPal",
+                                    "light-switch" => "LightSwitch",
                                     _ => throw new InvalidOperationException(),
                                 };
                                 bool? Read(string key, string name) =>
@@ -69,6 +70,7 @@ public sealed class ConsumerSettingsTests
         var settings = new ConsumerSettings(store, (_, _) => null, () => true, () => false);
         Assert.IsFalse(settings.Get("advanced-paste").IsEnabled);
         Assert.IsFalse(settings.Get("file-explorer").IsEnabled);
+        Assert.IsFalse(settings.Get("light-switch").IsEnabled);
         Assert.IsTrue(settings.Get("keyboard-manager").IsEnabled);
         Assert.IsTrue(settings.Get("command-palette").IsEnabled);
         Assert.IsTrue(settings.Get("future-module").IsEnabled);
@@ -148,12 +150,13 @@ public sealed class ConsumerSettingsTests
         var snapshot = settings.GetSnapshot();
 
         CollectionAssert.AreEquivalent(
-            (string[])["advanced-paste", "keyboard-manager", "command-palette", "file-explorer"],
+            (string[])["advanced-paste", "keyboard-manager", "command-palette", "file-explorer", "light-switch"],
             snapshot.Consumers.Select(item => item.Id).ToArray());
         Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "command-palette").IsEnabled);
         Assert.IsTrue(snapshot.Consumers.Single(item => item.Id == "advanced-paste").IsEnabled);
         Assert.IsFalse(snapshot.Consumers.Single(item => item.Id == "keyboard-manager").IsEnabled);
         Assert.IsFalse(snapshot.Consumers.Single(item => item.Id == "file-explorer").IsEnabled);
+        Assert.IsFalse(snapshot.Consumers.Single(item => item.Id == "light-switch").IsEnabled);
         Assert.AreEqual(configuration, store.ReadBlob("config.json"), "Reading an old configuration must not rewrite it.");
     }
 

@@ -439,6 +439,40 @@ public class HostCliTests
 
     [TestMethod]
     [DoNotParallelize]
+    public void LightSwitchEnforcesUnattendedApprovalAndCurrentActionContract()
+    {
+        Write("theme.ps1", "throw 'An unapproved theme action must not run'");
+        Write("theme.ps1.tool.json", """{"name":"theme","inputSchema":{"type":"object","properties":{},"additionalProperties":false},"outputSchema":{"type":"object","properties":{},"additionalProperties":false}}""");
+        var originalStore = SettingsStore.Current;
+        var directory = Directory.CreateDirectory(Path.Combine(_root, "theme-consumer-settings")).FullName;
+        try
+        {
+            SettingsStore.Current = new FileSettingsStore(directory);
+            SettingsStore.Current.WriteBlob("config.json", """{"enabled":true,"consumers":{"light-switch":true}}""");
+            foreach (var command in new[] { "run", "transform" })
+            {
+                var (exit, _) = RunHostInProcess(command, "theme", "--consumer", PowerScriptConsumer.LightSwitch, "--root", _root);
+                Assert.AreEqual(PowerScriptsProtocol.ExitCode.UntrustedNoConsent, exit, "The consumer must never prompt, even without an explicit --no-consent flag.");
+            }
+
+            new ConsumerSettings().Set(PowerScriptConsumer.LightSwitch, false);
+            var (disabled, _) = RunHostInProcess("run", "theme", "--consumer", PowerScriptConsumer.LightSwitch, "--root", _root);
+            Assert.AreEqual(PowerScriptsProtocol.ExitCode.Disabled, disabled);
+            new ConsumerSettings().Set(PowerScriptConsumer.LightSwitch, true);
+            var (incompatible, _) = RunHostInProcess("run", "act_hello", "--consumer", PowerScriptConsumer.LightSwitch, "--root", _root);
+            Assert.AreEqual(PowerScriptsProtocol.ExitCode.Usage, incompatible, "Changing a bound script to return data must not silently execute it.");
+            var records = new ActivityStore(directory).List();
+            Assert.AreEqual(4, records.Count);
+            Assert.IsTrue(records.All(record => record.ConsumerId == PowerScriptConsumer.LightSwitch));
+        }
+        finally
+        {
+            SettingsStore.Current = originalStore;
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
     [DataRow("run", "keyboard-manager")]
     [DataRow("transform", "keyboard-manager")]
     [DataRow("run", "command-palette")]

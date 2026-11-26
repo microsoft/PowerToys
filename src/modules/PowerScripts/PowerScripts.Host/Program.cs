@@ -101,7 +101,7 @@ internal static class Program
                     return 0;
                 }
 
-                Console.Error.WriteLine("consumers: use list or set <advanced-paste|keyboard-manager|command-palette> <on|off>.");
+                Console.Error.WriteLine("consumers: use list or set <advanced-paste|keyboard-manager|command-palette|file-explorer|light-switch> <on|off>.");
                 return 1;
             }
 
@@ -437,6 +437,12 @@ internal static class Program
                 Console.Error.WriteLine($"PowerScripts is disabled for consumer '{consumers[0]}' by settings or Group Policy.");
                 exitCode = 4;
             }
+            else if (consumers[0] == PowerScriptConsumer.LightSwitch &&
+                (manifest.InputFormat != PowerScriptDataFormat.None || manifest.OutputFormat != PowerScriptDataFormat.None))
+            {
+                Console.Error.WriteLine("Light Switch requires an action with no primary input or output. Reconfigure the theme binding after changing its contract.");
+                exitCode = 1;
+            }
             else
             {
                 exitCode = execute();
@@ -581,6 +587,7 @@ internal static class Program
         }
 
         var nonInteractive = options.ContainsKey("no-consent")
+            || (options.TryGetValue("consumer", out var consumers) && consumers.Contains(PowerScriptConsumer.LightSwitch, StringComparer.Ordinal))
             || string.Equals(Environment.GetEnvironmentVariable("POWERSCRIPTS_NO_CONSENT"), "1", StringComparison.Ordinal);
 
         if (nonInteractive)
@@ -942,7 +949,7 @@ internal static class Program
         Console.WriteLine("  transform <id> --consumer <module-id> [--no-consent] (JSON payload on stdin, JSON result on stdout)");
         Console.WriteLine("  session                            (consumer-owned framed stdio; list and non-interactive transforms)");
         Console.WriteLine("  activity list | clear              (local metadata-only history; clear preserves in-flight runs)");
-        Console.WriteLine("  consumers list | set <advanced-paste|keyboard-manager|command-palette> <on|off> (central preferences and effective policy state)");
+        Console.WriteLine("  consumers list | set <advanced-paste|keyboard-manager|command-palette|file-explorer|light-switch> <on|off> (central preferences and effective policy state)");
         Console.WriteLine("  mxc-support [--json]                (probe whether MXC is available on this host)");
         Console.WriteLine("  linux-container-status             (check the managed Python image without downloading)");
         Console.WriteLine("  linux-container-recover            (safely reset only the idle PowerScripts Linux runtime, then check Python)");

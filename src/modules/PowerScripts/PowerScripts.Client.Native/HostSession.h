@@ -19,6 +19,7 @@
 #include <mutex>
 #include <optional>
 #include <string>
+#include <stop_token>
 #include <thread>
 #include <vector>
 
@@ -124,13 +125,16 @@ namespace PowerScripts
             }
         }
 
-        HostResult Invoke(const std::vector<std::wstring>& arguments)
+        HostResult Invoke(const std::vector<std::wstring>& arguments, std::stop_token cancellation = {})
         {
             using namespace winrt::Windows::Data::Json;
+            THROW_HR_IF(HRESULT_FROM_WIN32(ERROR_CANCELLED), cancellation.stop_requested());
             if (!m_process)
             {
                 Start();
             }
+            // Register after Start publishes the handle; a pending stop fires immediately.
+            std::stop_callback stop(cancellation, [this] { SetEvent(m_stopEvent.get()); });
 
             JsonArray values;
             for (const auto& argument : arguments)

@@ -111,6 +111,7 @@ public class PowerScriptsConsumerTests
     [DataRow("advanced-paste", "text-text,files-text,image-text,audio-text,text-files,text-image,text-audio")]
     [DataRow("keyboard-manager", "none-none,none-text,none-files,none-image,none-audio")]
     [DataRow("command-palette", "none-none,none-text")]
+    [DataRow("light-switch", "none-none")]
     [DataRow("file-explorer", "files-text,image-text,audio-text")]
     public void ModulesListOnlyCompatibleScriptContracts(string consumerId, string expectedIds)
     {
@@ -138,6 +139,7 @@ public class PowerScriptsConsumerTests
 
         CollectionAssert.AreEquivalent(expectedIds.Split(','), consumer.ApplicableScripts.Select(script => script.Id).ToArray());
         Assert.IsFalse(consumer.HasCatalogueStatus);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(consumer.Description));
     }
 
     [DataTestMethod]
@@ -232,6 +234,7 @@ public class PowerScriptsConsumerTests
     [DataRow("keyboard-manager", "PowerScripts_ActivityKeyboardManager")]
     [DataRow("command-palette", "PowerScripts_ActivityCommandPalette")]
     [DataRow("file-explorer", "PowerScripts_ActivityFileExplorer")]
+    [DataRow("light-switch", "PowerScripts_ActivityLightSwitch")]
     [DataRow("command-line", "PowerScripts_ActivityCommandLine")]
     public void ScriptActivityUsesLocalizedConsumerName(string consumerId, string resource)
     {
@@ -239,6 +242,10 @@ public class PowerScriptsConsumerTests
 
         Assert.AreEqual(PowerScriptsViewModel.GetResourceString(resource), activity.Source);
         StringAssert.Contains(activity.Meta, activity.Source);
+        if (consumerId == "light-switch")
+        {
+            Assert.AreEqual("ms-appx:///Assets/Settings/Icons/LightSwitch.png", activity.SourceIconPath);
+        }
     }
 
     [TestMethod]

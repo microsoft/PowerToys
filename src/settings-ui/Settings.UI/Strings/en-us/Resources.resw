@@ -7601,4 +7601,27 @@ This can expose files, network access, the desktop, or elevated capabilities to 
   <data name="MouseWithoutBorders_PairingUpdateFailed.Message" xml:space="preserve">
     <value>Pairing could not be loaded or updated. Try again.</value>
   </data>
+  <data name="PowerScripts_LightSwitchConsumer.Header" xml:space="preserve"><value>Light Switch</value></data>
+  <data name="PowerScripts_LightSwitchScriptsDescription" xml:space="preserve"><value>Run previously approved actions after theme changes. Configure separate light and dark theme bindings in Light Switch settings.</value></data>
+  <data name="PowerScripts_ActivityLightSwitch" xml:space="preserve"><value>Light Switch</value></data>
+  <data name="PowerScripts_NewScript_Place_LightSwitch" xml:space="preserve"><value>Light Switch</value></data>
+  <data name="PowerScripts_NewScript_PlaceDetail_LightSwitch" xml:space="preserve"><value>Bind a previously approved action to a light or dark theme transition.</value></data>
+  <data name="PowerScripts_NewScript_PlaceWhy_LightSwitch" xml:space="preserve"><value>Light Switch requires no primary input and no output. Options are configured before the theme changes.</value></data>
+  <data name="LightSwitch_ThemeScripts.Header" xml:space="preserve"><value>PowerScripts</value></data>
+  <data name="LightSwitch_ThemeScriptsDescription.Text" xml:space="preserve"><value>Optionally run approved scripts after switching themes. Enable Light Switch in PowerScripts &gt; Consumer modules first.</value></data>
+  <data name="LightSwitch_LightThemeScript.Header" xml:space="preserve"><value>After switching to light theme</value></data>
+  <data name="LightSwitch_DarkThemeScript.Header" xml:space="preserve"><value>After switching to dark theme</value></data>
+  <data name="LightSwitch_ChooseThemeScript.Content" xml:space="preserve"><value>Configure script</value></data>
+  <data name="LightSwitch_NoThemeScript" xml:space="preserve"><value>No script selected</value></data>
+  <data name="LightSwitch_ThemeScriptSelector" xml:space="preserve"><value>Script</value></data>
+  <data name="LightSwitch_ThemeScriptSave" xml:space="preserve"><value>Save</value></data>
+  <data name="LightSwitch_ThemeScriptClear" xml:space="preserve"><value>Remove binding</value></data>
+  <data name="LightSwitch_ThemeScriptCancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="LightSwitch_ThemeScriptSupplyValue" xml:space="preserve"><value>Supply a value instead of using the default</value></data>
+  <data name="LightSwitch_ThemeScriptsHelp" xml:space="preserve"><value>Choose an action with no primary input or output and configure its options now. Automatic theme switching never prompts for values or approval. Scripts run asynchronously; failures appear in PowerScripts Activity. Startup reconciliation does not run scripts.</value></data>
+  <data name="LightSwitch_ThemeScriptsEnable" xml:space="preserve"><value>Enable PowerScripts and its Light Switch consumer integration first. Group Policy can prevent this. Existing bindings are kept.</value></data>
+  <data name="LightSwitch_ThemeScriptsUnavailable" xml:space="preserve"><value>PowerScripts could not be loaded. Check its installation and settings, then retry. Existing bindings are kept.</value></data>
+  <data name="LightSwitch_ThemeScriptApproval" xml:space="preserve"><value>Approve this exact script in the PowerScripts editor before automatic execution. Script changes require approval again. Saving this binding does not approve it.</value></data>
+  <data name="LightSwitch_ThemeScriptMissing" xml:space="preserve"><value>The saved script is unavailable, disabled, or incompatible. Its binding is kept; restore it, select another script, or remove the binding.</value></data>
+  <data name="LightSwitch_ThemeScriptChanged" xml:space="preserve"><value>The script or its options changed. Reopen this dialog and review the current contract before saving.</value></data>
 </root>

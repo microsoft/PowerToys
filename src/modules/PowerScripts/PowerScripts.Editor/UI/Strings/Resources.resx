@@ -1817,4 +1817,22 @@ Once ready, ask what I want to automate and use the skill to help author and val
   <data name="PowerScripts_Script_IconWarning.Title" xml:space="preserve">
     <value>Script icon unavailable</value>
   </data>
+  <data name="PowerScripts_LightSwitchConsumer.Header" xml:space="preserve">
+    <value>Light Switch</value>
+  </data>
+  <data name="PowerScripts_LightSwitchScriptsDescription" xml:space="preserve">
+    <value>Run previously approved actions after theme changes. Configure separate light and dark theme bindings in Light Switch settings.</value>
+  </data>
+  <data name="PowerScripts_ActivityLightSwitch" xml:space="preserve">
+    <value>Light Switch</value>
+  </data>
+  <data name="PowerScripts_NewScript_Place_LightSwitch" xml:space="preserve">
+    <value>Light Switch</value>
+  </data>
+  <data name="PowerScripts_NewScript_PlaceDetail_LightSwitch" xml:space="preserve">
+    <value>Bind a previously approved action to a light or dark theme transition.</value>
+  </data>
+  <data name="PowerScripts_NewScript_PlaceWhy_LightSwitch" xml:space="preserve">
+    <value>Light Switch requires no primary input and no output. Options are configured before the theme changes.</value>
+  </data>
 </root>

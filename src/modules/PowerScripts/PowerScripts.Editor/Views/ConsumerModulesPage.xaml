@@ -172,6 +172,34 @@
                         Tag="command-palette"
                         Toggled="ConsumerEnabledToggle_Toggled" />
                 </tkcontrols:SettingsExpander>
+                <tkcontrols:SettingsExpander
+                    x:Uid="PowerScripts_LightSwitchConsumer"
+                    AutomationProperties.AutomationId="PowerScriptsLightSwitchScripts"
+                    Description="{x:Bind ViewModel.LightSwitchConsumer.Description, Mode=OneWay}"
+                    IsEnabled="{x:Bind ViewModel.AreModuleCataloguesReady, Mode=OneWay}"
+                    IsExpanded="{x:Bind ViewModel.LightSwitchConsumer.IsExpanded, Mode=TwoWay}"
+                    ItemContainerStyleSelector="{x:Null}"
+                    ItemTemplate="{StaticResource ModuleScriptTemplate}"
+                    ItemsSource="{x:Bind ViewModel.LightSwitchConsumer.ApplicableScripts, Mode=OneWay}">
+                    <tkcontrols:SettingsExpander.HeaderIcon>
+                        <BitmapIcon ShowAsMonochrome="False" UriSource="ms-appx:///Assets/Settings/Icons/LightSwitch.png" />
+                    </tkcontrols:SettingsExpander.HeaderIcon>
+                    <tkcontrols:SettingsExpander.ItemsFooter>
+                        <TextBlock
+                            Margin="48,12,16,12"
+                            Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                            Text="{x:Bind ViewModel.LightSwitchConsumer.CatalogueStatus, Mode=OneWay}"
+                            TextWrapping="Wrap"
+                            Visibility="{x:Bind local:ConsumerModulesPage.BoolToVisibility(ViewModel.LightSwitchConsumer.HasCatalogueStatus), Mode=OneWay}" />
+                    </tkcontrols:SettingsExpander.ItemsFooter>
+                    <ToggleSwitch
+                        AutomationProperties.AutomationId="PowerScriptsLightSwitchEnabled"
+                        AutomationProperties.Name="Light Switch"
+                        IsEnabled="{x:Bind ViewModel.LightSwitchConsumer.CanChange, Mode=OneWay}"
+                        IsOn="{x:Bind ViewModel.LightSwitchConsumer.IsEnabled, Mode=OneWay}"
+                        Tag="light-switch"
+                        Toggled="ConsumerEnabledToggle_Toggled" />
+                </tkcontrols:SettingsExpander>
                 <tkcontrols:SettingsCard x:Uid="PowerScripts_TerminalConnection">
                     <tkcontrols:SettingsCard.HeaderIcon>
                         <FontIcon Glyph="&#xE756;" />

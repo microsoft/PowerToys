@@ -3,7 +3,7 @@
 Write a script once and expose it to compatible PowerToys modules through
 `PowerScripts.Host.exe`. PowerScripts supplies discovery, validation, trust, and
 execution, not a standalone product launcher. This branch includes Advanced Paste, Keyboard Manager,
-Command Palette and File Explorer Add-ons consumers. New adapters follow the
+Command Palette, File Explorer Add-ons, and Light Switch consumers. New adapters follow the
 [consumer onboarding guide](CONSUMER-INTEGRATION.md#register-a-new-consumer).
 Runner owns module enablement; a new installation defaults off.
 
@@ -41,11 +41,18 @@ controls. The app owns AI agent skill setup and integration switches in **Consum
 effective configuration with a compact Settings button, and refreshes configuration when reactivated.
 The editor uses the existing Host and storage; moving the UI does not migrate scripts, trust, or bindings.
 
-Integration switches for Advanced Paste, Keyboard Manager, Command Palette, and File Explorer live in
+Light Switch supports separate optional light/dark theme action bindings in
+**Settings > Light Switch > PowerScripts**. Select a no-input, no-output script and configure its
+options before the transition. Enable its integration and approve the exact script in the
+PowerScripts editor first. Successful theme transitions enqueue actions without blocking theme
+switching; startup reconciliation, no-op requests, and failed changes do not run scripts.
+Automatic runs never request consent. See [Light Switch integration](CONSUMER-INTEGRATION.md#light-switch).
+
+Integration switches for Advanced Paste, Keyboard Manager, Command Palette, File Explorer, and Light Switch live in
 **PowerScripts app > Consumer modules**.
 The shared Host enforces them for discovery and execution, retaining existing bindings when disabled.
 Advanced Paste's legacy preference is preserved; Keyboard Manager and Command Palette default on,
-and File Explorer defaults off.
+and File Explorer and Light Switch default off.
 Group Policy can manage the module and each integration without replacing saved preferences. A disabled PowerScripts
 module or a policy-disabled parent utility always wins over a consumer enable policy.
 See [central settings and policy precedence](CONSUMER-INTEGRATION.md#central-integration-settings-and-group-policy).
@@ -66,7 +73,7 @@ Remote, cloud and WSL agents
 need separate setup. The portable skill uses existing Host commands to scaffold and validate scripts
 after planning the consumer, input/output contract, typed parameters, runtime/environment,
 dependencies and failure behavior. It documents Advanced Paste, Keyboard Manager, Command Palette,
-and File Explorer integration capabilities; a profile does not mean that integration is enabled.
+File Explorer, and Light Switch integration capabilities; a profile does not mean that integration is enabled.
 Python guidance distinguishes Windows, the user's WSL distribution, and managed Linux containers,
 including environment-specific APIs, dependencies and paths. Keyboard Manager instructions are
 optional hotkey handoff guidance, not a separate skill or a prerequisite for other consumers.

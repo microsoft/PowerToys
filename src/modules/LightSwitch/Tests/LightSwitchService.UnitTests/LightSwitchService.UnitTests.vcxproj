@@ -41,6 +41,7 @@
     <ClCompile Include="LocalizedStringsTests.cpp" />
     <ClCompile Include="ScheduleCommandQueueTests.cpp" />
     <ClCompile Include="StateManagerTests.cpp" />
+    <ClCompile Include="PowerScriptThemeRunnerTests.cpp" />
     <ClCompile Include="SettingsTests.cpp" />
     <ClCompile Include="ThemeHelperTests.cpp" />
     <ClCompile Include="..\..\LightSwitchService\CliIdentity.cpp" />

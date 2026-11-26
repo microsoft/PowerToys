@@ -29,6 +29,8 @@ public partial class PowerScriptsViewModel
 
     public PowerScriptConsumerItem CommandPaletteConsumer { get; } = new("command-palette");
 
+    public PowerScriptConsumerItem LightSwitchConsumer { get; } = new("light-switch");
+
     public bool CanChangePowerScriptsEnabled => AreConsumerSettingsReady && !_isPowerScriptsPolicyControlled;
 
     public bool AreConsumerSettingsReady => _consumerSettingsLoaded && !_consumerSettingsBusy;
@@ -47,7 +49,7 @@ public partial class PowerScriptsViewModel
     public async Task RefreshModuleScriptsAsync()
     {
         var generation = ++_moduleCatalogueGeneration;
-        PowerScriptConsumerItem[] consumers = [AdvancedPasteConsumer, KeyboardManagerConsumer, CommandPaletteConsumer, FileExplorerConsumer];
+        PowerScriptConsumerItem[] consumers = [AdvancedPasteConsumer, KeyboardManagerConsumer, CommandPaletteConsumer, FileExplorerConsumer, LightSwitchConsumer];
         foreach (var consumer in consumers)
         {
             consumer.ClearApplicableScripts("PowerScripts_ModuleScriptsLoading");
@@ -161,6 +163,7 @@ public partial class PowerScriptsViewModel
             KeyboardManagerConsumer.Update(keyboardManager);
             FileExplorerConsumer.Update(fileExplorer);
             CommandPaletteConsumer.Update(commandPalette);
+            LightSwitchConsumer.Update(snapshot.Consumers.Single(item => item.Id == LightSwitchConsumer.Id));
             _consumerSettingsLoaded = true;
             ApplyScriptPlaces();
             OnPropertyChanged(nameof(IsEnabled));
@@ -174,6 +177,7 @@ public partial class PowerScriptsViewModel
             KeyboardManagerConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             CommandPaletteConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             FileExplorerConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
+            LightSwitchConsumer.ClearApplicableScripts("PowerScripts_ModuleScriptsUnavailable");
             throw;
         }
         finally
@@ -246,6 +250,7 @@ public partial class PowerScriptsViewModel
                     "keyboard-manager" => "PowerScripts_KeyboardManagerScriptsDescription",
                     "command-palette" => "PowerScripts_CommandPaletteScriptsDescription",
                     "file-explorer" => "PowerScripts_FileExplorerScriptsDescription",
+                    "light-switch" => "PowerScripts_LightSwitchScriptsDescription",
                     _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
                 });
                 return !string.IsNullOrEmpty(_state?.DisabledReason) || _state?.IsPolicyControlled == true
@@ -319,6 +324,7 @@ public partial class PowerScriptsViewModel
                 "keyboard-manager" => input == "none",
                 "command-palette" => input == "none" && output is "none" or "text",
                 "file-explorer" => input is "files" or "image" or "audio",
+                "light-switch" => input == "none" && output == "none",
                 _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
             };
         }

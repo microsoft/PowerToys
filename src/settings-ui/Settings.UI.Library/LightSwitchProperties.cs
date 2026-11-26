@@ -100,5 +100,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("lightModeProfileId")]
         public IntProperty LightModeProfileId { get; set; }
+
+        [JsonPropertyName("lightThemeScript")]
+        public LightSwitchScriptBinding LightThemeScript { get; set; } = new();
+
+        [JsonPropertyName("darkThemeScript")]
+        public LightSwitchScriptBinding DarkThemeScript { get; set; } = new();
     }
 }

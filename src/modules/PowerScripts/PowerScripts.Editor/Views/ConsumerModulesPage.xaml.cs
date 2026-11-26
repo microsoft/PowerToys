@@ -75,6 +75,7 @@ public sealed partial class ConsumerModulesPage : Page
             "keyboard-manager" => ViewModel.KeyboardManagerConsumer,
             "file-explorer" => ViewModel.FileExplorerConsumer,
             "command-palette" => ViewModel.CommandPaletteConsumer,
+            "light-switch" => ViewModel.LightSwitchConsumer,
             _ => throw new InvalidOperationException("Unknown PowerScripts consumer."),
         };
         if (!consumer.CanChange || toggle.IsOn == consumer.IsEnabled)

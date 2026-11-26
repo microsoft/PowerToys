@@ -12,6 +12,7 @@ public static class PowerScriptConsumerGuidance
     {
         PowerScriptConsumer.KeyboardManager => input == "none" && IsShape(output),
         PowerScriptConsumer.CommandPalette => input == "none" && output is "none" or "text",
+        PowerScriptConsumer.LightSwitch => input == "none" && output == "none",
         PowerScriptConsumer.AdvancedPaste => input is "text" or "files" or "image" or "audio" &&
             output is "text" or "files" or "image" or "audio",
         "file-explorer" => input is "files" or "image" or "audio" && IsShape(output),

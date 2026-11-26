@@ -16,6 +16,9 @@ public static class PowerScriptConsumer
     /// <summary>Attribution for Command Palette.</summary>
     public const string CommandPalette = "command-palette";
 
+    /// <summary>Attribution for unattended Light Switch theme actions.</summary>
+    public const string LightSwitch = "light-switch";
+
     /// <summary>Attribution for command-line invocations.</summary>
     public const string CommandLine = "command-line";
 

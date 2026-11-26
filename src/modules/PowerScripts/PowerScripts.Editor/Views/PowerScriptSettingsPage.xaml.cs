@@ -564,6 +564,13 @@ public sealed partial class PowerScriptSettingsPage : Page
             () => Resource("PowerScripts_NewScript_PlaceDetail_CommandPalette"),
             hasInput ? "PlaceWhy_CommandPalette" : "PlaceWhy_CommandPaletteOutput");
         AddPlace(
+            "LightSwitch",
+            "LightSwitch",
+            viewModel.LightSwitchConsumer,
+            !hasInput && output == "none",
+            () => Resource("PowerScripts_NewScript_PlaceDetail_LightSwitch"),
+            "PlaceWhy_LightSwitch");
+        AddPlace(
             "FileExplorer",
             "FileExplorerPreview",
             viewModel.FileExplorerConsumer,

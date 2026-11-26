@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <map>
 #include <vector>
 #include <memory>
 #include <windows.h>
@@ -47,6 +48,13 @@ inline ScheduleMode FromString(const std::wstring& str)
         return ScheduleMode::Off;
 }
 
+struct LightSwitchScriptBinding
+{
+    std::wstring id;
+    std::map<std::wstring, std::wstring> parameters;
+    bool operator==(const LightSwitchScriptBinding&) const = default;
+};
+
 struct LightSwitchConfig
 {
     ScheduleMode scheduleMode = ScheduleMode::FixedHours;
@@ -63,6 +71,8 @@ struct LightSwitchConfig
 
     bool changeSystem = false;
     bool changeApps = false;
+    LightSwitchScriptBinding lightThemeScript;
+    LightSwitchScriptBinding darkThemeScript;
 };
 
 enum class SunTimesSaveResult

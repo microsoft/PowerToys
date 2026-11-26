@@ -101,6 +101,35 @@ namespace LightSwitchServiceUnitTests
     TEST_CLASS (SettingsTests)
     {
     public:
+        TEST_METHOD (OptionalScriptBindingsRoundTripAndSchedulePatchesPreserveThem)
+        {
+            auto document = json::JsonObject::Parse(ValidSettings);
+            auto binding = json::JsonObject::Parse(LR"({"id":"theme-action","parameters":{"wallpaper":"C:\\Pictures\\light image.jpg","enabled":"false"}})");
+            document.GetNamedObject(L"properties").SetNamedValue(L"lightThemeScript", binding);
+            const auto config = ParseConfig(document);
+            Assert::AreEqual(std::wstring(L"theme-action"), config.lightThemeScript.id);
+            Assert::AreEqual(std::wstring(L"false"), config.lightThemeScript.parameters.at(L"enabled"));
+            Assert::IsTrue(config.darkThemeScript.id.empty());
+            TemporarySettings file;
+            file.Write(document.Stringify().c_str());
+            LightSwitchConfig updated;
+            std::wstring error;
+            Assert::IsTrue(TryPatchLightSwitchScheduleMode(file.path, ScheduleMode::Off, updated, error));
+            Assert::IsTrue(config.lightThemeScript == updated.lightThemeScript);
+            auto changedBinding = config;
+            changedBinding.lightThemeScript.id = L"other-action";
+            Assert::IsTrue(HasSameEffectiveLightSwitchSettings(config, changedBinding));
+        }
+
+        TEST_METHOD (MalformedOptionalBindingIsDisabledWithoutBreakingThemeSettings)
+        {
+            auto document = json::JsonObject::Parse(ValidSettings);
+            document.GetNamedObject(L"properties").SetNamedValue(L"lightThemeScript", json::JsonObject::Parse(LR"({"id":"theme-action","parameters":{"enabled":false}})"));
+            const auto config = ParseConfig(document);
+            Assert::IsTrue(config.lightThemeScript.id.empty());
+            Assert::IsTrue(config.changeSystem);
+        }
+
         TEST_METHOD (FileWatcherNotifiesTheFirstSettingsWrite)
         {
             TemporarySettingsDirectory file;
@@ -159,7 +188,9 @@ namespace LightSwitchServiceUnitTests
             Assert::AreEqual(L"LightSwitch", document->GetNamedString(L"name").c_str());
             Assert::IsFalse(document->GetNamedString(L"version").empty());
             const auto properties = document->GetNamedObject(L"properties");
-            Assert::AreEqual(16u, properties.Size());
+            Assert::AreEqual(18u, properties.Size());
+            Assert::IsTrue(properties.GetNamedObject(L"lightThemeScript").GetNamedString(L"id").empty());
+            Assert::IsTrue(properties.GetNamedObject(L"darkThemeScript").GetNamedString(L"id").empty());
             const auto hotkey = properties.GetNamedObject(L"toggle-theme-hotkey").GetNamedObject(L"value");
             Assert::IsTrue(hotkey.GetNamedBoolean(L"win"));
             Assert::IsTrue(hotkey.GetNamedBoolean(L"ctrl"));
@@ -279,7 +310,8 @@ namespace LightSwitchServiceUnitTests
                     if (!TryInitializeLightSwitchSettings(file.path, config, error))
                         return error.empty() ? std::wstring{ L"Initialization failed without an error message." } : error;
                     return config.scheduleMode == ScheduleMode::Off && config.changeSystem && config.changeApps ?
-                               std::wstring{} : std::wstring{ L"The published default configuration is inconsistent." };
+                               std::wstring{} :
+                               std::wstring{ L"The published default configuration is inconsistent." };
                 }));
             }
             start.set_value();

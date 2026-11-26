@@ -11,6 +11,15 @@ namespace PowerScripts.Core.Tests;
 public sealed class ConsumerGuidanceTests
 {
     [TestMethod]
+    public void ThemeActionsAcceptOnlyNoInputNoOutputAndCanShareHotkeyBindings()
+    {
+        Assert.IsTrue(PowerScriptConsumerGuidance.Allows([PowerScriptConsumer.LightSwitch, PowerScriptConsumer.KeyboardManager], "none", "none"));
+        Assert.IsFalse(PowerScriptConsumerGuidance.Supports(PowerScriptConsumer.LightSwitch, "text", "none"));
+        Assert.IsFalse(PowerScriptConsumerGuidance.Supports(PowerScriptConsumer.LightSwitch, "none", "text"));
+        Assert.IsFalse(PowerScriptConsumerGuidance.Supports(PowerScriptConsumer.LightSwitch, "none", "files"));
+    }
+
+    [TestMethod]
     public void OptionalGuidanceDoesNotRestrictCustomContracts()
     {
         Assert.IsTrue(PowerScriptConsumerGuidance.Allows([], "audio", "none"));

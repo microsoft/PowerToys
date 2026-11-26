@@ -23,6 +23,38 @@ namespace ViewModelTests;
 public class LightSwitch
 {
     [TestMethod]
+    public void ThemeBindingsAreIndependentPersistOptionsAndRefreshWithoutSaving()
+    {
+        var messages = new List<string>();
+        using var viewModel = CreateViewModel(new LightSwitchSettings(), message =>
+        {
+            messages.Add(message);
+            return 0;
+        });
+        var binding = new LightSwitchScriptBinding
+        {
+            Id = "wallpaper-light",
+            Parameters = new Dictionary<string, string> { ["wallpaper"] = @"C:\Pictures\light image.jpg", ["enabled"] = "false" },
+        };
+        viewModel.SetThemeScript(true, binding);
+        binding.Parameters["enabled"] = "true";
+        viewModel.SetThemeScript(false, new LightSwitchScriptBinding { Id = "wallpaper-dark" });
+        Assert.AreEqual(2, messages.Count);
+        using var message = JsonDocument.Parse(messages[0]);
+        var saved = message.RootElement.GetProperty("powertoys").GetProperty("LightSwitch").GetProperty("properties").GetProperty("lightThemeScript");
+        Assert.AreEqual("wallpaper-light", saved.GetProperty("id").GetString());
+        Assert.AreEqual("false", saved.GetProperty("parameters").GetProperty("enabled").GetString());
+        var reloaded = JsonSerializer.Deserialize<LightSwitchSettings>(viewModel.ModuleSettings.ToJsonString());
+        viewModel.ModuleSettings = reloaded;
+        Assert.AreEqual(2, messages.Count);
+        Assert.AreEqual("wallpaper-light", viewModel.ModuleSettings.Properties.LightThemeScript.Id);
+        Assert.AreEqual("wallpaper-dark", viewModel.ModuleSettings.Properties.DarkThemeScript.Id);
+        viewModel.SetThemeScript(true, new LightSwitchScriptBinding());
+        Assert.AreEqual("wallpaper-dark", viewModel.ModuleSettings.Properties.DarkThemeScript.Id);
+        Assert.AreEqual(0, viewModel.ModuleSettings.Properties.LightThemeScript.Parameters.Count);
+    }
+
+    [TestMethod]
     [DataRow("FixedHours")]
     [DataRow("Off")]
     [DataRow("FollowNightLight")]

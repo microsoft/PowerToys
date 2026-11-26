@@ -15,6 +15,7 @@ PowerScripts app > Consumer modules.
 | `keyboard-manager` | Ordinary action: none | Prefer none; manual saved shortcut, required options need defaults/saved arguments |
 | `command-palette` | No primary input: none | None/text; no-parameter explicit activation runs and opens results; declared parameters use a form and Run |
 | `file-explorer` | Selected files; one compatible image/audio file | None/text/files/image/audio; typed prompts and separate exported results |
+| `light-switch` | No primary input: none | None only; separate saved light/dark theme bindings and options, previously approved unattended actions |
 | `command-line` | Explicit authorized Host test | Any supported contract; does not test another consumer's UI/binding |
 
 ## Advanced Paste
@@ -97,6 +98,28 @@ Enable in **PowerScripts app > Consumer modules > File Explorer**.
 File Explorer Add-ons owns parameter prompting and status delay (0-600 seconds,
 default 2). Errors appear immediately; closing a running window hides, not cancels.
 Scripts report stderr/nonzero failures, not their own status UI.
+
+## Light Switch
+
+The adapter is included in this branch in the native Light Switch service. It defaults off in
+**PowerScripts app > Consumer modules > Light Switch**. Configure separate optional scripts in
+**Settings > Light Switch > PowerScripts**. Only `none` input and `none` output are supported.
+Auxiliary string/integer/boolean/choice/file-path options are configured beforehand; omitted values
+receive descriptor defaults. The current Host validates them again on each run.
+
+Approve the exact script in the editor first. Automatic theme changes never show consent or option
+prompts, and saving a binding does not grant trust. Changed, unavailable, disabled, or incompatible
+scripts fail closed; saved bindings remain until explicitly replaced or removed.
+
+Verified successful transitions queue actions off the scheduler/registry thread. No-op requests,
+startup reconciliation/retries, and failed changes do not trigger scripts. Rapid pending transitions
+coalesce to the latest theme; stale bindings/themes are skipped before execution. Running actions
+are not rolled back. Runtime-configured limits apply; service shutdown cancels its private Host and
+drops pending work. No automatic retry, result UI, clipboard handling, or output saving is added.
+Check **PowerScripts Activity > Light Switch** for failures.
+
+A wallpaper example must use an approved execution contract that can reach the actual Windows
+wallpaper setting. Do not promise host changes from an isolated guest or bypass isolation.
 
 ## Maintainers
 

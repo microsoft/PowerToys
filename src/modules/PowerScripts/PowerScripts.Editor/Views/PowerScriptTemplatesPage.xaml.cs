@@ -109,6 +109,7 @@ public sealed partial class PowerScriptTemplatesPage : Page
         ViewModel.KeyboardManagerConsumer,
         ViewModel.FileExplorerConsumer,
         ViewModel.CommandPaletteConsumer,
+        ViewModel.LightSwitchConsumer,
     };
 
     public static Thickness DividerThickness(bool hasDivider) => hasDivider ? new Thickness(0, 1, 0, 0) : new Thickness(0);
@@ -656,6 +657,13 @@ public sealed partial class PowerScriptTemplatesPage : Page
             !hasInput && _output is "none" or "text",
             GetString("PowerScripts_NewScript_PlaceDetail_CommandPalette"),
             hasInput ? "PlaceWhy_CommandPalette" : "PlaceWhy_CommandPaletteOutput");
+        AddPlace(
+            "LightSwitch",
+            "LightSwitch",
+            ViewModel.LightSwitchConsumer,
+            !hasInput && _output == "none",
+            GetString("PowerScripts_NewScript_PlaceDetail_LightSwitch"),
+            "PlaceWhy_LightSwitch");
         AddPlace(
             "FileExplorer",
             "FileExplorerPreview",

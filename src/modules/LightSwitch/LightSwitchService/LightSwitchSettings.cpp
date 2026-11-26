@@ -178,7 +178,35 @@ namespace
         values.add_property(L"lightModeProfile", L"");
         values.add_property(L"darkModeProfileId", 0);
         values.add_property(L"lightModeProfileId", 0);
-        return winrt::to_string(values.serialize());
+        auto document = json::JsonObject::Parse(values.serialize());
+        const auto properties = document.GetNamedObject(L"properties");
+        json::JsonObject binding;
+        binding.SetNamedValue(L"id", json::value(L""));
+        binding.SetNamedValue(L"parameters", json::JsonObject{});
+        properties.SetNamedValue(L"lightThemeScript", binding);
+        properties.SetNamedValue(L"darkThemeScript", binding);
+        return winrt::to_string(document.Stringify());
+    }
+
+    LightSwitchScriptBinding ReadScriptBinding(const json::JsonObject& properties, const wchar_t* name)
+    {
+        try
+        {
+            if (!properties.HasKey(name))
+                return {};
+            const auto value = properties.GetNamedObject(name);
+            LightSwitchScriptBinding binding;
+            binding.id = value.GetNamedString(L"id").c_str();
+            const auto parameters = value.GetNamedObject(L"parameters");
+            for (const auto& parameter : parameters)
+                binding.parameters.emplace(parameter.Key().c_str(), parameter.Value().GetString().c_str());
+            return binding;
+        }
+        catch (...)
+        {
+            // Invalid optional bindings fail closed without disabling theme switching.
+            return {};
+        }
     }
 }
 
@@ -327,6 +355,8 @@ bool TryParseLightSwitchConfig(const json::JsonObject& values, LightSwitchConfig
         readInteger(L"darkTime", parsed.darkTime);
         readInteger(L"sunrise_offset", parsed.sunrise_offset);
         readInteger(L"sunset_offset", parsed.sunset_offset);
+        parsed.lightThemeScript = ReadScriptBinding(properties, L"lightThemeScript");
+        parsed.darkThemeScript = ReadScriptBinding(properties, L"darkThemeScript");
         config = std::move(parsed);
         error.clear();
         return true;

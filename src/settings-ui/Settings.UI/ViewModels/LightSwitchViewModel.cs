@@ -14,6 +14,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -107,6 +108,34 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         internal bool IsRefreshingModuleSettings => _refreshingModuleSettings;
+
+        public string LightThemeScriptSummary => ThemeScriptSummary(ModuleSettings.Properties.LightThemeScript);
+
+        public string DarkThemeScriptSummary => ThemeScriptSummary(ModuleSettings.Properties.DarkThemeScript);
+
+        private static string ThemeScriptSummary(LightSwitchScriptBinding? binding) =>
+            string.IsNullOrEmpty(binding?.Id) ? ResourceLoaderInstance.ResourceLoader.GetString("LightSwitch_NoThemeScript") : binding.Id;
+
+        public void SetThemeScript(bool light, LightSwitchScriptBinding binding)
+        {
+            ArgumentNullException.ThrowIfNull(binding);
+            var saved = new LightSwitchScriptBinding
+            {
+                Id = binding.Id,
+                Parameters = new Dictionary<string, string>(binding.Parameters, StringComparer.Ordinal),
+            };
+            if (light)
+            {
+                ModuleSettings.Properties.LightThemeScript = saved;
+            }
+            else
+            {
+                ModuleSettings.Properties.DarkThemeScript = saved;
+            }
+
+            OnPropertyChanged(light ? nameof(LightThemeScriptSummary) : nameof(DarkThemeScriptSummary));
+            SaveSettings();
+        }
 
         public bool IsEnabled
         {
@@ -798,6 +827,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 }
 
                 OnPropertyChanged(nameof(ModuleSettings));
+                OnPropertyChanged(nameof(LightThemeScriptSummary));
+                OnPropertyChanged(nameof(DarkThemeScriptSummary));
                 OnPropertyChanged(nameof(ChangeSystem));
                 OnPropertyChanged(nameof(ChangeApps));
                 OnPropertyChanged(nameof(LightTime));

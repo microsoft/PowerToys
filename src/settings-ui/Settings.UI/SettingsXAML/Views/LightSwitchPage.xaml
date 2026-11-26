@@ -267,6 +267,37 @@
                             </tkcontrols:SettingsExpander.Items>
                         </tkcontrols:SettingsExpander>
                     </controls:SettingsGroup>
+                    <controls:SettingsGroup x:Uid="LightSwitch_ThemeScripts" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                        <TextBlock
+                            x:Uid="LightSwitch_ThemeScriptsDescription"
+                            Margin="0,0,0,8"
+                            TextWrapping="Wrap" />
+                        <InfoBar
+                            x:Name="ThemeScriptError"
+                            AutomationProperties.AutomationId="LightSwitchThemeScriptError"
+                            IsClosable="False"
+                            Severity="Error" />
+                        <tkcontrols:SettingsCard
+                            x:Uid="LightSwitch_LightThemeScript"
+                            Description="{x:Bind ViewModel.LightThemeScriptSummary, Mode=OneWay}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE706;}">
+                            <Button
+                                x:Uid="LightSwitch_ChooseThemeScript"
+                                AutomationProperties.AutomationId="LightSwitchLightThemeScript"
+                                Click="ThemeScript_Click"
+                                Tag="light" />
+                        </tkcontrols:SettingsCard>
+                        <tkcontrols:SettingsCard
+                            x:Uid="LightSwitch_DarkThemeScript"
+                            Description="{x:Bind ViewModel.DarkThemeScriptSummary, Mode=OneWay}"
+                            HeaderIcon="{ui:FontIcon Glyph=&#xE708;}">
+                            <Button
+                                x:Uid="LightSwitch_ChooseThemeScript"
+                                AutomationProperties.AutomationId="LightSwitchDarkThemeScript"
+                                Click="ThemeScript_Click"
+                                Tag="dark" />
+                        </tkcontrols:SettingsCard>
+                    </controls:SettingsGroup>
                     <ContentDialog
                         x:Name="LocationDialog"
                         x:Uid="LightSwitch_LocationDialog"

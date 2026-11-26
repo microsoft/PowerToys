@@ -125,6 +125,13 @@ persistent execution Host. General settings own `enabled.PowerScripts`, default 
 module-config flag is used only before a general preference is recorded; it never overrides one.
 The Host rechecks effective enablement and policies for subsequent runs.
 
+Light Switch is a native unattended consumer (`light-switch`, opt-in). Its existing service owns
+a cancellable serial theme-action worker and its Settings page owns separate light/dark bindings
+and parameter configuration. Only successful transitions trigger no-input/no-output actions;
+startup reconciliation is excluded. The shared Host enforces the current contract and prior approval
+without prompting. Pending transitions coalesce, stale bindings/themes are skipped, and shutdown
+cancels only the consumer's Host. See the [integration contract](CONSUMER-INTEGRATION.md#light-switch).
+
 ## Open decisions
 
 - Version the CLI and JSON response contract.

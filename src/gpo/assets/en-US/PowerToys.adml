@@ -45,6 +45,14 @@ Enabled forces this integration on. Disabled prevents attributed discovery and e
 Disabling PowerScripts takes precedence. Enabling this policy does not enable runtimes, approve scripts, relax isolation, or grant scripts permission to modify selected originals. File Explorer Add-ons owns menu registration and the parameter-options preference.
 
 Machine policy takes precedence over user policy. Consumer identity is caller-supplied, not authentication. Use the PowerScripts utility policy to prevent execution by every consumer.</string>
+      <string id="ConfigurePowerScriptsLightSwitch">Light Switch: Allow PowerScripts integration</string>
+      <string id="ConfigurePowerScriptsLightSwitchDescription">Controls whether Light Switch can discover and run PowerScripts after theme transitions.
+
+Enabled forces this integration on. Disabled prevents discovery and execution without deleting saved theme bindings. Not configured uses the central preference, which defaults off.
+
+Disabling PowerScripts or applying a policy that disables Light Switch takes precedence. Enabling this integration does not enable either utility, approve scripts, enable runtimes, or weaken isolation. Theme actions are unattended: the exact current script must already be approved; consent prompts never appear during theme switching.
+
+Machine policy takes precedence over user policy. Consumer identity is caller-supplied, not authentication. Use the PowerScripts utility policy to prevent execution by every consumer.</string>
       <string id="MouseWithoutBorders">Mouse Without Borders</string>
       <string id="GeneralSettings">General settings</string>
       <string id="NewPlus">New+</string>

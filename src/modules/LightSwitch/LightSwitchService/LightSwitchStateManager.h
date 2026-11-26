@@ -42,6 +42,7 @@ struct LightSwitchStateManagerDependencies
     std::function<std::optional<bool>()> readNightLight;
     std::function<SYSTEMTIME()> localTime;
     std::function<void(bool light)> notifyThemeChanged;
+    std::function<void(bool light, const LightSwitchScriptBinding& binding)> queueThemeScript;
     std::function<std::pair<int, int>(const LightSwitchConfig&, const SYSTEMTIME&)> updateSunTimes;
 };
 
@@ -68,8 +69,10 @@ private:
     LightSwitchConfig _settingsSnapshot;
     bool _hasSettingsSnapshot = false;
     bool _hasNightLightState = false;
+    bool _initialThemeSync = false;
     // Invalidated by effective configuration changes and successful manual choices.
     std::optional<bool> _pendingThemeNotification;
+    std::optional<bool> _startupThemeNotification;
     std::optional<bool> _lastObservedSystemTheme;
     std::optional<bool> _lastObservedAppsTheme;
     std::optional<std::uint64_t> _lastTickTime;
