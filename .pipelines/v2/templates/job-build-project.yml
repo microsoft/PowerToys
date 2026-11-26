@@ -211,7 +211,8 @@ jobs:
         Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
         $result = Invoke-Pester -Script @(
             '.pipelines/tests/versionAndSignCheck.Tests.ps1',
-            '.pipelines/tests/winmdSigningPolicy.Tests.ps1'
+            '.pipelines/tests/winmdSigningPolicy.Tests.ps1',
+            '.pipelines/tests/splitCoreSigningPolicy.Tests.ps1'
         ) -PassThru
         if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
             throw 'Release signing regression tests failed.'
@@ -647,6 +648,28 @@ jobs:
         }
       displayName: Remove tests folder before signing
 
+    # Submit resources separately, then sign the remaining files in a new ESRP session.
+    - task: PowerShell@2
+      displayName: Split Core signing policy
+      inputs:
+        targetType: filePath
+        filePath: '$(Build.SourcesDirectory)\.pipelines\splitCoreSigningPolicy.ps1'
+        arguments: >-
+          -PolicyFile "$(Build.SourcesDirectory)\.pipelines\ESRPSigning_core.json"
+          -OutputDirectory "$(Agent.TempDirectory)"
+        pwsh: true
+
+    - template: steps-esrp-signing.yml
+      parameters:
+        displayName: Sign Core PowerToys resource DLLs
+        signingIdentity: ${{ parameters.signingIdentity }}
+        inputs:
+          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
+          signType: batchSigning
+          batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.resources.json'
+          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+          MaxConcurrency: '20'
+
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys
@@ -654,8 +677,9 @@ jobs:
         inputs:
           FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
           signType: batchSigning
-          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
+          batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.binaries.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
+          MaxConcurrency: '20'
 
     - template: steps-esrp-signing.yml
       parameters:
