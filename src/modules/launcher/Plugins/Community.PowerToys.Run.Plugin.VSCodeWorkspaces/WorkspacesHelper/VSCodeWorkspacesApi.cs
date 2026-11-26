@@ -6,7 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.VSCodeHelper;
 using Microsoft.Data.Sqlite;
@@ -16,6 +19,17 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
 {
     public class VSCodeWorkspacesApi
     {
+        // Periodically refresh even if the storage files are unchanged, e.g. to drop folders that were deleted.
+        private static readonly TimeSpan MaxCacheAge = TimeSpan.FromMinutes(1);
+
+        private readonly Lock _cacheLock = new();
+        private readonly Lock _refreshLock = new();
+
+        private List<VSCodeWorkspace> _cachedWorkspaces;
+        private string _cachedSignature;
+        private DateTime _cachedAtUtc;
+        private bool _isBackgroundRefreshRunning;
+
         public VSCodeWorkspacesApi()
         {
         }
@@ -108,47 +122,175 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces.WorkspacesHelper
             return true;
         }
 
+        /// <summary>
+        /// Gets the recently opened workspaces of all VS Code instances.
+        /// </summary>
+        /// <remarks>
+        /// Reading and parsing the VS Code storage files can be slow, and this property is read on every query.
+        /// The first read loads the workspaces synchronously. Later reads return the cached workspaces immediately
+        /// and refresh them in the background when the storage files changed or the cache is older than <see cref="MaxCacheAge"/>.
+        /// </remarks>
         public List<VSCodeWorkspace> Workspaces
         {
             get
             {
-                var results = new List<VSCodeWorkspace>();
+                var currentSignature = GetStorageFilesSignature();
+                List<VSCodeWorkspace> cachedWorkspaces;
 
-                foreach (var vscodeInstance in VSCodeInstances.Instances)
+                lock (_cacheLock)
                 {
-                    // storage.json contains opened Workspaces
-                    var vscode_storage = Path.Combine(vscodeInstance.AppData, "storage.json");
+                    cachedWorkspaces = _cachedWorkspaces;
 
-                    // User/globalStorage/state.vscdb - history.recentlyOpenedPathsList - vscode v1.64 or later
-                    var vscode_storage_db = Path.Combine(vscodeInstance.AppData, "User/globalStorage/state.vscdb");
-                    var vscode_shared_storage_db = vscodeInstance.SharedStorageDbPath;
-
-                    if (File.Exists(vscode_storage))
+                    if (cachedWorkspaces != null
+                        && !_isBackgroundRefreshRunning
+                        && (currentSignature != _cachedSignature || DateTime.UtcNow - _cachedAtUtc > MaxCacheAge))
                     {
-                        var storageResults = GetWorkspacesInJson(vscodeInstance, vscode_storage);
-                        results.AddRange(storageResults);
-                    }
-
-                    var storageDbPaths = new[] { vscode_storage_db, vscode_shared_storage_db }
-                        .Where(filePath => !string.IsNullOrEmpty(filePath))
-                        .Distinct(StringComparer.OrdinalIgnoreCase);
-
-                    foreach (var storageDbPath in storageDbPaths)
-                    {
-                        if (File.Exists(storageDbPath))
-                        {
-                            var storageDbResults = GetWorkspacesInVscdb(vscodeInstance, storageDbPath);
-                            results.AddRange(storageDbResults);
-                        }
+                        _isBackgroundRefreshRunning = true;
+                        Task.Run(RefreshInBackground);
                     }
                 }
 
-                return results
-                    .Where(workspace => workspace != null)
-                    .GroupBy(GetWorkspaceKey, StringComparer.OrdinalIgnoreCase)
-                    .Select(workspaceGroup => workspaceGroup.First())
-                    .ToList();
+                cachedWorkspaces ??= LoadIfNotCached();
+
+                // Return a copy so callers can't modify the cached list.
+                return new List<VSCodeWorkspace>(cachedWorkspaces);
             }
+        }
+
+        private List<VSCodeWorkspace> LoadIfNotCached()
+        {
+            lock (_refreshLock)
+            {
+                lock (_cacheLock)
+                {
+                    if (_cachedWorkspaces != null)
+                    {
+                        return _cachedWorkspaces;
+                    }
+                }
+
+                return Refresh();
+            }
+        }
+
+        private void RefreshInBackground()
+        {
+            try
+            {
+                lock (_refreshLock)
+                {
+                    Refresh();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Exception("Failed to refresh VS Code workspaces", ex, GetType());
+            }
+            finally
+            {
+                lock (_cacheLock)
+                {
+                    _isBackgroundRefreshRunning = false;
+                }
+            }
+        }
+
+        // Must be called while holding _refreshLock.
+        private List<VSCodeWorkspace> Refresh()
+        {
+            // Take the signature before loading, so changes made while loading trigger another refresh.
+            var signature = GetStorageFilesSignature();
+            var workspaces = LoadWorkspaces();
+
+            lock (_cacheLock)
+            {
+                _cachedWorkspaces = workspaces;
+                _cachedSignature = signature;
+                _cachedAtUtc = DateTime.UtcNow;
+            }
+
+            return workspaces;
+        }
+
+        private static string GetStorageFilesSignature()
+        {
+            var signature = new StringBuilder();
+
+            foreach (var vscodeInstance in VSCodeInstances.Instances)
+            {
+                foreach (var storageFilePath in GetStorageFilePaths(vscodeInstance))
+                {
+                    var fileInfo = new FileInfo(storageFilePath);
+                    signature.Append(storageFilePath).Append('|');
+
+                    if (fileInfo.Exists)
+                    {
+                        signature.Append(fileInfo.LastWriteTimeUtc.Ticks).Append('|').Append(fileInfo.Length);
+                    }
+
+                    signature.Append(';');
+                }
+            }
+
+            return signature.ToString();
+        }
+
+        private static IEnumerable<string> GetStorageFilePaths(VSCodeInstance vscodeInstance)
+        {
+            yield return GetStorageJsonPath(vscodeInstance);
+
+            foreach (var storageDbPath in GetStorageDbPaths(vscodeInstance))
+            {
+                yield return storageDbPath;
+
+                // SQLite may write changes to the write-ahead log without touching the database file.
+                yield return storageDbPath + "-wal";
+            }
+        }
+
+        // storage.json contains opened Workspaces
+        private static string GetStorageJsonPath(VSCodeInstance vscodeInstance) => Path.Combine(vscodeInstance.AppData, "storage.json");
+
+        private static IEnumerable<string> GetStorageDbPaths(VSCodeInstance vscodeInstance)
+        {
+            // User/globalStorage/state.vscdb - history.recentlyOpenedPathsList - vscode v1.64 or later
+            var vscode_storage_db = Path.Combine(vscodeInstance.AppData, "User/globalStorage/state.vscdb");
+            var vscode_shared_storage_db = vscodeInstance.SharedStorageDbPath;
+
+            return new[] { vscode_storage_db, vscode_shared_storage_db }
+                .Where(filePath => !string.IsNullOrEmpty(filePath))
+                .Distinct(StringComparer.OrdinalIgnoreCase);
+        }
+
+        private List<VSCodeWorkspace> LoadWorkspaces()
+        {
+            var results = new List<VSCodeWorkspace>();
+
+            foreach (var vscodeInstance in VSCodeInstances.Instances)
+            {
+                var vscode_storage = GetStorageJsonPath(vscodeInstance);
+
+                if (File.Exists(vscode_storage))
+                {
+                    var storageResults = GetWorkspacesInJson(vscodeInstance, vscode_storage);
+                    results.AddRange(storageResults);
+                }
+
+                foreach (var storageDbPath in GetStorageDbPaths(vscodeInstance))
+                {
+                    if (File.Exists(storageDbPath))
+                    {
+                        var storageDbResults = GetWorkspacesInVscdb(vscodeInstance, storageDbPath);
+                        results.AddRange(storageDbResults);
+                    }
+                }
+            }
+
+            return results
+                .Where(workspace => workspace != null)
+                .GroupBy(GetWorkspaceKey, StringComparer.OrdinalIgnoreCase)
+                .Select(workspaceGroup => workspaceGroup.First())
+                .ToList();
         }
 
         private static string GetWorkspaceKey(VSCodeWorkspace workspace)
