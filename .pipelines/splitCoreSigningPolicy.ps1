@@ -20,26 +20,38 @@ $ErrorActionPreference = 'Stop'
 $policy = Get-Content -LiteralPath $PolicyFile -Raw | ConvertFrom-Json
 $batches = $policy.SignBatches
 if ($Platform -eq 'x64') {
-    $fileLocksmithPath = 'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
-    $fileLocksmithBatches = @($batches | Where-Object { $_.MatchedPath -contains $fileLocksmithPath })
-    if ($fileLocksmithBatches.Count -ne 1 -or
-        @($fileLocksmithBatches[0].MatchedPath | Where-Object { $_ -eq $fileLocksmithPath }).Count -ne 1) {
-        throw "Expected one Core signing rule for '$fileLocksmithPath'."
-    }
-
-    $fileLocksmithDll = Join-Path $BuildOutputDirectory $fileLocksmithPath
-    if (!(Test-Path -LiteralPath $fileLocksmithDll -PathType Leaf)) {
-        throw "Required x64 signing file not found: $fileLocksmithDll"
+    $fileLocksmithPaths = @(
+        'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
+        'WinUI3Apps\PowerToys.FileLocksmithLib.Interop.dll'
+        'WinUI3Apps\PowerToys.FileLocksmithUI.exe'
+        'WinUI3Apps\PowerToys.FileLocksmithUI.dll'
+    )
+    $fileLocksmithBatches = @($batches | Where-Object {
+        @($_.MatchedPath | Where-Object { $_ -in $fileLocksmithPaths }).Count -gt 0
+    })
+    if ($fileLocksmithBatches.Count -ne 1) {
+        throw 'Expected one Core signing batch for the x64 File Locksmith files.'
     }
 
     $fileLocksmithBatch = $fileLocksmithBatches[0]
-    $otherFileLocksmithPaths = @($fileLocksmithBatch.MatchedPath | Where-Object { $_ -ne $fileLocksmithPath })
-    $fileLocksmithBatch.MatchedPath = @($fileLocksmithPath)
+    foreach ($path in $fileLocksmithPaths) {
+        if (@($fileLocksmithBatch.MatchedPath | Where-Object { $_ -eq $path }).Count -ne 1) {
+            throw "Expected one Core signing rule for '$path'."
+        }
+
+        $file = Join-Path $BuildOutputDirectory $path
+        if (!(Test-Path -LiteralPath $file -PathType Leaf)) {
+            throw "Required x64 signing file not found: $file"
+        }
+    }
+
+    $remainingBatchPaths = @($fileLocksmithBatch.MatchedPath | Where-Object { $_ -notin $fileLocksmithPaths })
+    $fileLocksmithBatch.MatchedPath = $fileLocksmithPaths
     $policy.SignBatches = $fileLocksmithBatches
     ConvertTo-Json -InputObject $policy -Depth 20 |
         Set-Content -LiteralPath (Join-Path $OutputDirectory 'ESRPSigning_core.filelocksmith.json') -Encoding utf8
 
-    $fileLocksmithBatch.MatchedPath = $otherFileLocksmithPaths
+    $fileLocksmithBatch.MatchedPath = $remainingBatchPaths
 }
 
 $resourcePattern = '*.resources.dll'

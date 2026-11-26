@@ -9,10 +9,17 @@ Describe 'Core ESRP signing policy split' {
         param($Platform, $IsolateFileLocksmith)
 
         $sourcePolicyFile = Join-Path $PSScriptRoot '..\ESRPSigning_core.json'
-        $fileLocksmithPath = 'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
+        $fileLocksmithPaths = @(
+            'WinUI3Apps\PowerToys.FileLocksmithExt.dll'
+            'WinUI3Apps\PowerToys.FileLocksmithLib.Interop.dll'
+            'WinUI3Apps\PowerToys.FileLocksmithUI.exe'
+            'WinUI3Apps\PowerToys.FileLocksmithUI.dll'
+        )
         $buildOutput = Join-Path $TestDrive $Platform
         New-Item -ItemType Directory -Path (Join-Path $buildOutput 'WinUI3Apps') -Force | Out-Null
-        Set-Content -LiteralPath (Join-Path $buildOutput $fileLocksmithPath) -Value 'test payload'
+        foreach ($path in $fileLocksmithPaths) {
+            Set-Content -LiteralPath (Join-Path $buildOutput $path) -Value 'test payload'
+        }
         $outputPolicy = Join-Path $TestDrive "$Platform-policies"
         New-Item -ItemType Directory -Path $outputPolicy | Out-Null
         & (Join-Path $PSScriptRoot '..\splitCoreSigningPolicy.ps1') -PolicyFile $sourcePolicyFile -OutputDirectory $outputPolicy `
@@ -38,15 +45,14 @@ Describe 'Core ESRP signing policy split' {
         (Test-Path -LiteralPath $fileLocksmithPolicyFile -PathType Leaf) | Should Be $IsolateFileLocksmith
         if ($IsolateFileLocksmith) {
             $fileLocksmith = Get-Content -LiteralPath $fileLocksmithPolicyFile -Raw | ConvertFrom-Json
-            $originalBatch = $original.SignBatches | Where-Object { $_.MatchedPath -contains $fileLocksmithPath }
+            $originalBatch = $original.SignBatches | Where-Object { $_.MatchedPath -contains $fileLocksmithPaths[0] }
             $fileLocksmith.Version | Should Be $original.Version
             $fileLocksmith.UseMinimatch | Should Be $original.UseMinimatch
             $fileLocksmith.SignBatches.Count | Should Be 1
-            $fileLocksmith.SignBatches[0].MatchedPath.Count | Should Be 1
-            $fileLocksmith.SignBatches[0].MatchedPath[0] | Should Be $fileLocksmithPath
+            ($fileLocksmith.SignBatches[0].MatchedPath -join '|') | Should Be ($fileLocksmithPaths -join '|')
             ($fileLocksmith.SignBatches[0].SigningInfo | ConvertTo-Json -Depth 20 -Compress) |
                 Should Be ($originalBatch.SigningInfo | ConvertTo-Json -Depth 20 -Compress)
-            $removedPatterns += $fileLocksmithPath
+            $removedPatterns += $fileLocksmithPaths
         }
 
         $binaries.SignBatches.Count | Should Be $original.SignBatches.Count
@@ -58,11 +64,14 @@ Describe 'Core ESRP signing policy split' {
         }
     }
 
-    It 'fails policy preparation when the x64 File Locksmith extension is missing' {
+    It 'fails policy preparation when the x64 File Locksmith batch is incomplete' {
         $sourcePolicyFile = Join-Path $PSScriptRoot '..\ESRPSigning_core.json'
+        $buildOutput = Join-Path $TestDrive 'incomplete'
+        New-Item -ItemType Directory -Path (Join-Path $buildOutput 'WinUI3Apps') -Force | Out-Null
+        Set-Content -LiteralPath (Join-Path $buildOutput 'WinUI3Apps\PowerToys.FileLocksmithExt.dll') -Value 'test payload'
         {
             & (Join-Path $PSScriptRoot '..\splitCoreSigningPolicy.ps1') -PolicyFile $sourcePolicyFile -OutputDirectory $TestDrive `
-                -Platform 'x64' -BuildOutputDirectory (Join-Path $TestDrive 'missing')
-        } | Should Throw 'Required x64 signing file not found'
+                -Platform 'x64' -BuildOutputDirectory $buildOutput
+        } | Should Throw 'PowerToys.FileLocksmithLib.Interop.dll'
     }
 }

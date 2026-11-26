@@ -667,7 +667,7 @@ jobs:
 
     - template: steps-esrp-signing.yml
       parameters:
-        displayName: Sign File Locksmith extension (x64)
+        displayName: Sign File Locksmith binaries (x64)
         condition: and(succeeded(), eq(variables['BuildPlatform'], 'x64'))
         signingIdentity: ${{ parameters.signingIdentity }}
         inputs:
