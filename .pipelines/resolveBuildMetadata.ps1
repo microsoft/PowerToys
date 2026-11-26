@@ -18,7 +18,9 @@ param(
     [AllowEmptyString()]
     [string]$DailyVersionSequence = "",
 
-    [string]$VersionPropsPath = (Join-Path $PSScriptRoot "..\src\Version.props")
+    [string]$VersionPropsPath = (Join-Path $PSScriptRoot "..\src\Version.props"),
+
+    [switch]$SkipArm64MsiIceValidation
 )
 
 $ErrorActionPreference = "Stop"
@@ -370,6 +372,11 @@ else {
     }
     $allowPublicSymbols = $false
     $shouldPublishPreview = $false
+}
+
+if ($SkipArm64MsiIceValidation -and
+    ($intent -ne "private-validation" -or $BuildReason -ne "Manual" -or $SourceBranch -notlike "refs/heads/*")) {
+    throw "Skipping ARM64 MSI ICE validation requires a manual private-validation branch build"
 }
 
 Test-VersionParts -Parts ($version -split "\.")

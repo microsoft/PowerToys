@@ -152,6 +152,37 @@ Describe "resolveBuildMetadata" {
         }
     }
 
+    It "allows skipping ARM64 MSI ICE validation for a manual private-validation branch build" {
+        $result = & $scriptPath `
+            -SourceBranch "refs/heads/user/feature" `
+            -BuildReason "Manual" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2607.30003-feature" `
+            -VersionPropsPath (New-VersionProps) `
+            -SkipArm64MsiIceValidation
+
+        $result.Intent | Should Be "private-validation"
+    }
+
+    It "rejects skipping ARM64 MSI ICE validation for <SourceBranch> (<BuildReason>)" -TestCases @(
+        @{ SourceBranch = "refs/heads/main"; BuildReason = "Manual" }
+        @{ SourceBranch = "refs/heads/stable"; BuildReason = "Manual" }
+        @{ SourceBranch = "refs/heads/user/feature"; BuildReason = "IndividualCI" }
+        @{ SourceBranch = "refs/tags/v0.100.2151"; BuildReason = "Manual" }
+        @{ SourceBranch = "refs/pull/42/merge"; BuildReason = "PullRequest" }
+    ) {
+        param($SourceBranch, $BuildReason)
+
+        {
+            & $scriptPath `
+                -SourceBranch $SourceBranch `
+                -BuildReason $BuildReason `
+                -BuildNumber "PowerToys Signed YAML Release Build_2607.30003-feature" `
+                -DailyVersionSequence "1" `
+                -VersionPropsPath (New-VersionProps) `
+                -SkipArm64MsiIceValidation
+        } | Should Throw "Skipping ARM64 MSI ICE validation requires a manual private-validation branch build"
+    }
+
     It "increments the year digit across a calendar year boundary" {
         $result = & $scriptPath `
             -SourceBranch "refs/heads/main" `

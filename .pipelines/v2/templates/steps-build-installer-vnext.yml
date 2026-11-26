@@ -93,6 +93,7 @@ steps:
         -restore
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /p:SuppressValidation=$(SuppressVNextMsiValidation)
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -109,6 +110,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /p:SuppressValidation=$(SuppressVNextMsiValidation)
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
