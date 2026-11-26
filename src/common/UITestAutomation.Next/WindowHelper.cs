@@ -59,6 +59,7 @@ public static class WindowHelper
     private const uint LWA_ALPHA = 0x00000002;
     private const int SM_CXSCREEN = 0;
     private const int SM_CYSCREEN = 1;
+    private const int SW_SHOW = 5;
     private const int SW_MAXIMIZE = 3;
     private const int SW_RESTORE = 9;
     private const int SW_MINIMIZE = 6;
@@ -87,6 +88,10 @@ public static class WindowHelper
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
 
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -152,6 +157,9 @@ public static class WindowHelper
     /// <summary>Move a window to explicit screen coordinates while preserving its current size.</summary>
     public static void MoveWindow(IntPtr hWnd, int x, int y) =>
         SetWindowPos(hWnd, IntPtr.Zero, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+
+    /// <summary>Request that a window show and activate without blocking or changing its size or position.</summary>
+    public static bool TryRequestShow(IntPtr hWnd) => ShowWindowAsync(hWnd, SW_SHOW);
 
     /// <summary>
     /// Maximize a window so it fills the monitor work area and is fully on-screen. Used as the default

@@ -533,11 +533,18 @@ namespace Hosts.UITests
             Assert.IsNotNull(settings, "PowerToys Settings did not expose a visible main window.");
             var launchCard = settings.FindExact<Button>("Open Hosts File Editor");
 
-            // Win10 can delay foreground handoff after Hosts exits. A visible inactive window can
-            // still receive a mouse click; guard the actual click point instead of forcing activation.
             Assert.IsTrue(launchCard.Width > 0 && launchCard.Height > 0, "The Open Hosts File Editor card must have visible bounds.");
             var window = new IntPtr(settings.WindowHandle);
             var point = (X: launchCard.X + (launchCard.Width / 2), Y: launchCard.Y + (launchCard.Height / 2));
+            if (!WindowControl.IsPointOwnedByWindow(window, point.X, point.Y))
+            {
+                // Win10 can leave the exited Hosts window covering Settings. Request activation on
+                // the Settings thread without attaching to the foreground window's input queue.
+                var previousForeground = WindowControl.GetForegroundWindowInfo();
+                var showRequested = WindowHelper.TryRequestShow(window);
+                TestContext.WriteLine($"Settings show requested: {showRequested}; previous foreground: {previousForeground}.");
+            }
+
             var targetReady = WaitHelper.WaitForStable(
                 () => WindowControl.IsPointOwnedByWindow(window, point.X, point.Y),
                 owned => owned,
