@@ -22,7 +22,7 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
     [DoNotParallelize]
     public class ProfileFileAdapterTests
     {
-        private static readonly string[] ActiveProfileDeleteOrder = { "TMP", "TMP_PowerToys_Test_profile_1", "PATH", "PATH_PowerToys_Test_profile_1" };
+        private static readonly string[] ActiveProfileDeleteOrder = { "TMP", "TMP_PowerToys_Test_profile_1", "PATH", "PATH_PowerToys_Test_profile_1", "profile_1_variable_1" };
 
         public TestContext TestContext { get; set; } = null!;
 
@@ -262,6 +262,10 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
             const string rawPath = @"%ROOT%\bin;;C:\Tools;C:\Tools;";
             authored.Variables.Add(new Variable("PATH", rawPath, VariablesSetType.Profile));
             authored.Variables.Add(new Variable("TMP", "%OVERRIDE%;;", VariablesSetType.Profile));
+            authored.Variables.Add(new Variable("CREATED", "profile-created", VariablesSetType.Profile));
+            var inactive = new ProfileVariablesSet(Guid.NewGuid(), "RetainedDisabled");
+            inactive.Variables.Add(new Variable("DISABLED_ONE", "not-applied-one", VariablesSetType.Profile));
+            inactive.Variables.Add(new Variable("DISABLED_TWO", "not-applied-two", VariablesSetType.Profile));
             var expectedUser = new[]
             {
                 ("PATH", rawPath),
@@ -270,6 +274,7 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
                 ("TMP_PowerToys_Persisted", "%ORIGINAL%;;"),
                 ("TMP_PowerToys_Other", "%LOOKALIKE%;"),
                 ("UNRELATED", "%USER%;"),
+                ("CREATED", "profile-created"),
             };
             foreach (var (name, value) in expectedUser)
             {
@@ -283,11 +288,11 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
                 Assert.IsFalse(Directory.Exists(ownedDirectory));
                 Directory.CreateDirectory(ownedDirectory);
                 ownsDirectory = true;
-                await service.WriteAsync(new[] { authored });
+                await service.WriteAsync(new[] { authored, inactive });
                 var originalBytes = File.ReadAllBytes(ownedFile);
                 var previous = fixture.CreateViewModel(elevated, service);
                 previous.LoadEnvironmentVariables();
-                var previousProfile = previous.Profiles.Single();
+                var previousProfile = previous.Profiles.Single(profile => profile.Id == authored.Id);
                 service.Dispose();
                 var freshFiles = new EnvironmentVariablesFixture.ScriptedProfileFileSystem();
                 using var freshService = new EnvironmentVariablesService(freshFiles);
@@ -301,15 +306,21 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
                 fresh.LoadEnvironmentVariables();
 
                 Assert.IsNotNull(fresh.AppliedProfile, "The physical saved active profile must be reconstructed.");
-                Assert.AreEqual(1, fresh.Profiles.Count);
-                var restored = fresh.Profiles.Single();
+                Assert.AreEqual(2, fresh.Profiles.Count);
+                var restored = fresh.Profiles.Single(profile => profile.Id == authored.Id);
                 Assert.AreSame(restored, fresh.AppliedProfile);
                 Assert.AreEqual((authored.Id, authored.Name, true), (restored.Id, restored.Name, restored.IsEnabled));
                 Assert.AreNotSame(previousProfile, restored);
                 Assert.AreNotSame(previous.Profiles, fresh.Profiles);
                 Assert.AreNotSame(previousProfile.Variables, restored.Variables);
                 CollectionAssert.AreEqual(authored.Variables.Select(item => item.Name).ToArray(), restored.Variables.Select(item => item.Name).ToArray());
-                CollectionAssert.AreEqual(new[] { rawPath, "%OVERRIDE%;;" }, restored.Variables.Select(item => item.Values).ToArray());
+                CollectionAssert.AreEqual(authored.Variables.Select(item => item.Values).ToArray(), restored.Variables.Select(item => item.Values).ToArray());
+                var restoredInactive = fresh.Profiles.Single(profile => profile.Id == inactive.Id);
+                Assert.AreEqual(inactive.Name, restoredInactive.Name);
+                Assert.IsFalse(restoredInactive.IsEnabled);
+                CollectionAssert.AreEqual(
+                    inactive.Variables.Select(item => (item.Name, item.Values)).ToArray(),
+                    restoredInactive.Variables.Select(item => (item.Name, item.Values)).ToArray());
                 for (var index = 0; index < restored.Variables.Count; index++)
                 {
                     var child = restored.Variables[index];
@@ -326,7 +337,7 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
                 CollectionAssert.AreEquivalent(expectedUser, fresh.UserDefaultSet.Variables.Select(item => (item.Name, item.Values)).ToArray());
                 foreach (var variable in fresh.UserDefaultSet.Variables)
                 {
-                    var owned = variable.Name is "PATH" or "TMP" or "PATH_PowerToys_Persisted" or "TMP_PowerToys_Persisted";
+                    var owned = variable.Name is "PATH" or "TMP" or "CREATED" or "PATH_PowerToys_Persisted" or "TMP_PowerToys_Persisted";
                     Assert.AreEqual(owned, variable.IsAppliedFromProfile, variable.Name);
                     Assert.AreEqual(!owned, variable.IsEditable, variable.Name);
                     Assert.AreEqual(VariablesSetType.User, variable.ParentType);
@@ -343,6 +354,8 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
                     fresh.AppliedVariables.Select(item => (item.Name, item.Values, item.ParentType, item.IsAppliedFromProfile, item.IsEditable)).ToArray());
                 Assert.AreEqual(rawPath, fresh.AppliedVariables.Single(item => item.Name == "PATH" && item.ParentType == VariablesSetType.Profile).Values);
                 Assert.AreEqual("%OVERRIDE%;;", fresh.AppliedVariables.Single(item => item.Name == "TMP").Values);
+                Assert.AreEqual("profile-created", fresh.AppliedVariables.Single(item => item.Name == "CREATED").Values);
+                Assert.IsFalse(fresh.AppliedVariables.Any(item => item.Name is "DISABLED_ONE" or "DISABLED_TWO"));
                 CollectionAssert.AreEqual(originalBytes, File.ReadAllBytes(ownedFile));
                 CollectionAssert.AreEqual(new[] { ("Exists", (string?)canonicalPath), ("ReadAllText", canonicalPath) }, freshFiles.Calls.ToArray());
                 Assert.AreEqual(1, files.Writes.Count);
@@ -894,11 +907,13 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
             var first = new ProfileVariablesSet(Guid.NewGuid(), "Test_profile_1") { IsEnabled = true };
             first.Variables.Add(new Variable("TMP", "test_TMP", VariablesSetType.Profile));
             first.Variables.Add(new Variable("PATH", "path1;path2;path3", VariablesSetType.Profile));
+            first.Variables.Add(new Variable("profile_1_variable_1", "profile_1_value_1", VariablesSetType.Profile));
             var second = new ProfileVariablesSet(Guid.NewGuid(), "Test_profile_2");
             fixture.Environment.User["TMP"] = "test_TMP";
             fixture.Environment.User["TMP_PowerToys_Test_profile_1"] = "original_TMP";
             fixture.Environment.User["PATH"] = "path1;path2;path3";
             fixture.Environment.User["PATH_PowerToys_Test_profile_1"] = "original_user_path";
+            fixture.Environment.User["profile_1_variable_1"] = "profile_1_value_1";
             fixture.Environment.User["KEEP_USER"] = "raw%USER_SENTINEL%";
             fixture.Environment.Machine["PATH"] = "machine_path";
             fixture.Environment.Machine["KEEP_MACHINE"] = "raw%MACHINE_SENTINEL%";
@@ -954,6 +969,7 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
                 Assert.AreEqual("original_user_path", fixture.Environment.User["PATH"]);
                 Assert.IsFalse(fixture.Environment.User.ContainsKey("TMP_PowerToys_Test_profile_1"));
                 Assert.IsFalse(fixture.Environment.User.ContainsKey("PATH_PowerToys_Test_profile_1"));
+                Assert.IsFalse(fixture.Environment.User.ContainsKey("profile_1_variable_1"));
                 Assert.AreEqual(3, fixture.Environment.User.Count);
                 Assert.AreEqual("raw%USER_SENTINEL%", fixture.Environment.User["KEEP_USER"]);
                 CollectionAssert.AreEquivalent(initialMachine, fixture.Environment.Machine.ToArray());
@@ -963,6 +979,7 @@ namespace EnvironmentVariablesUILib.UnitTests.Adapters
                 Assert.AreEqual(1, fixture.Environment.Notifications.Count);
                 Assert.AreEqual("machine_path;original_user_path", vm.AppliedVariables.Single(item => item.ParentType == VariablesSetType.Path).Values);
                 Assert.AreEqual("original_TMP", vm.AppliedVariables.Single(item => item.Name == "TMP").Values);
+                Assert.IsFalse(vm.AppliedVariables.Any(item => item.Name == "profile_1_variable_1"));
                 Assert.IsFalse(vm.AppliedVariables.Any(item => item.ParentType == VariablesSetType.Profile || item.IsAppliedFromProfile || item.Name.EndsWith("_PowerToys_Test_profile_1", StringComparison.Ordinal)));
                 Assert.AreEqual(initialJson, File.ReadAllText(ownedFile));
                 Assert.AreEqual(1, files.Writes.Count);

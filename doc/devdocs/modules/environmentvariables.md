@@ -7,7 +7,8 @@
 [All Issues](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3A%22Product-Environment%20Variables%22)<br>
 [Bugs](https://github.com/microsoft/PowerToys/issues?q=is%3Aopen%20label%3AIssue-Bug%20label%3A%22Product-Environment%20Variables%22)<br>
 [Pull Requests](https://github.com/microsoft/PowerToys/pulls?q=is%3Apr+is%3Aopen+label%3A%22Product-Environment+Variables%22)
-[Checklist](https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md?plain=1#L744)
+[Manual running checklist](https://github.com/microsoft/PowerToys/blob/releaseChecklist/doc/releases/tests-checklist-template.md#environment-variables)<br>
+[Full UI automation checklist](../../../.github/skills/powertoys-verification/references/release-checklist/environment-variables.md)
 
 ## Overview
 
