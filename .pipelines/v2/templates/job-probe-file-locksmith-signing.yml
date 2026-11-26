@@ -39,6 +39,7 @@ jobs:
           & .\.pipelines\verifyAndSetLatestVCToolsVersion.ps1
           & nuget.exe restore -configFile .pipelines\release-nuget.config -PackagesDirectory . .pipelines\packages.config
           Move-Item -Force 'Microsoft.PowerToys.Telemetry.*\build\include\TraceLoggingDefines.h' 'src\common\Telemetry\TraceLoggingDefines.h'
+          & nuget.exe restore 'src\modules\FileLocksmith\FileLocksmithLib\packages.config' -ConfigFile .pipelines\release-nuget.config -PackagesDirectory '$(Build.SourcesDirectory)\packages'
         displayName: Prepare native build dependencies
 
       - task: VSBuild@1
@@ -50,6 +51,7 @@ jobs:
             -restore
             /p:RestorePackagesConfig=true;CIBuild=true;SkipCppCodeAnalysis=1
             /p:RestoreConfigFile="$(Build.SourcesDirectory)\.pipelines\release-nuget.config"
+            /p:RestoreRepositoryPath="$(Build.SourcesDirectory)\packages"
           platform: x64
           configuration: Release
           msbuildArchitecture: x64
