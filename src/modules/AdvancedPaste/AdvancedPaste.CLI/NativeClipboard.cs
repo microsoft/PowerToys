@@ -15,7 +15,7 @@ using System.Threading;
 
 namespace AdvancedPaste.Cli;
 
-internal static class NativeClipboard
+internal static partial class NativeClipboard
 {
     private const uint BitmapFormat = 2;
     private const uint DibFormat = 8;
@@ -214,7 +214,7 @@ internal static class NativeClipboard
         return Encoding.UTF8.GetString(bytes, 0, terminator >= 0 ? terminator : bytes.Length);
     }
 
-    private static IReadOnlyList<string> ReadFileDrop()
+    private static unsafe IReadOnlyList<string> ReadFileDrop()
     {
         var handle = GetClipboardData(FileDropFormat);
         if (handle == IntPtr.Zero)
@@ -228,7 +228,12 @@ internal static class NativeClipboard
         {
             var length = DragQueryFile(handle, index, null, 0);
             var buffer = new char[checked((int)length + 1)];
-            var copied = DragQueryFile(handle, index, buffer, (uint)buffer.Length);
+            uint copied;
+            fixed (char* fileName = buffer)
+            {
+                copied = DragQueryFile(handle, index, fileName, (uint)buffer.Length);
+            }
+
             if (copied > 0)
             {
                 paths.Add(new string(buffer, 0, (int)copied));
@@ -300,52 +305,52 @@ internal static class NativeClipboard
         }
     }
 
-    [DllImport("user32.dll", EntryPoint = "CreateWindowExW", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
-    private static extern IntPtr CreateWindowEx(uint extendedStyle, string className, string? windowName, uint style, int x, int y, int width, int height, IntPtr parent, IntPtr menu, IntPtr instance, IntPtr parameter);
+    [LibraryImport("user32.dll", EntryPoint = "CreateWindowExW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+    private static partial IntPtr CreateWindowEx(uint extendedStyle, string className, string? windowName, uint style, int x, int y, int width, int height, IntPtr parent, IntPtr menu, IntPtr instance, IntPtr parameter);
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool DestroyWindow(IntPtr window);
+    private static partial bool DestroyWindow(IntPtr window);
 
-    [DllImport("user32.dll", SetLastError = true)]
+    [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool OpenClipboard(IntPtr window);
+    private static partial bool OpenClipboard(IntPtr window);
 
-    [DllImport("user32.dll")]
+    [LibraryImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool CloseClipboard();
+    private static partial bool CloseClipboard();
 
-    [DllImport("user32.dll", SetLastError = true)]
+    [LibraryImport("user32.dll", SetLastError = true)]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool EmptyClipboard();
+    private static partial bool EmptyClipboard();
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetClipboardData(uint format);
+    [LibraryImport("user32.dll")]
+    private static partial IntPtr GetClipboardData(uint format);
 
-    [DllImport("user32.dll", SetLastError = true)]
-    private static extern IntPtr SetClipboardData(uint format, IntPtr data);
+    [LibraryImport("user32.dll", SetLastError = true)]
+    private static partial IntPtr SetClipboardData(uint format, IntPtr data);
 
-    [DllImport("user32.dll", EntryPoint = "RegisterClipboardFormatW", CharSet = CharSet.Unicode, ExactSpelling = true, SetLastError = true)]
-    private static extern uint RegisterClipboardFormat(string format);
+    [LibraryImport("user32.dll", EntryPoint = "RegisterClipboardFormatW", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+    private static partial uint RegisterClipboardFormat(string format);
 
-    [DllImport("shell32.dll", EntryPoint = "DragQueryFileW", CharSet = CharSet.Unicode, ExactSpelling = true)]
-    private static extern uint DragQueryFile(IntPtr drop, uint index, [Out] char[]? fileName, uint fileNameSize);
+    [LibraryImport("shell32.dll", EntryPoint = "DragQueryFileW")]
+    private static unsafe partial uint DragQueryFile(IntPtr drop, uint index, char* fileName, uint fileNameSize);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr GlobalAlloc(uint flags, nuint size);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial IntPtr GlobalAlloc(uint flags, nuint size);
 
-    [DllImport("kernel32.dll")]
-    private static extern nuint GlobalSize(IntPtr handle);
+    [LibraryImport("kernel32.dll")]
+    private static partial nuint GlobalSize(IntPtr handle);
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern IntPtr GlobalLock(IntPtr handle);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    private static partial IntPtr GlobalLock(IntPtr handle);
 
-    [DllImport("kernel32.dll")]
+    [LibraryImport("kernel32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool GlobalUnlock(IntPtr handle);
+    private static partial bool GlobalUnlock(IntPtr handle);
 
-    [DllImport("kernel32.dll")]
-    private static extern IntPtr GlobalFree(IntPtr handle);
+    [LibraryImport("kernel32.dll")]
+    private static partial IntPtr GlobalFree(IntPtr handle);
 
     private readonly record struct ClipboardHandle(uint Format, IntPtr Handle);
 }
