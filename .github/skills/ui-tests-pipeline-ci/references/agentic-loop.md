@@ -1,6 +1,6 @@
 # Azure DevOps UI-test CI agentic loop
 
-This is an internal post-local-validation workflow. It assumes the selected UITest project already
+This is a post-local-validation workflow. It assumes the selected UITest project already
 passed the complete local matrix required by
 [ui-tests-local-vm](../../ui-tests-local-vm/SKILL.md), including default and constrained profiles.
 
@@ -25,7 +25,9 @@ Do not proceed unless it exits `0`, reports `Ready: true`, and every required ch
 default probe uses `refs/heads/main`, module `FancyZones.UITests.Next`, and dynamically selects one
 of the ten newest completed pipeline builds for build/log/artifact checks plus the first test-bearing
 build in that set for Azure Test checks. The JSON reports these separately as `ProbeBuildId` and
-`ProbeTestBuildId`. It creates no build and changes no Azure or repository state.
+`ProbeTestBuildId`. It creates no build and changes no Azure or repository state. The setup preview
+checks that Azure can expand the request, not which jobs or suites it would run. Inspect the actual
+run's expanded YAML separately before queueing (section 4).
 
 Use explicit probe inputs when diagnosing a particular branch or known build:
 
@@ -36,6 +38,10 @@ pwsh -NoLogo -NoProfile -File `
   -ProbeModule <Module.UITests> `
   -ProbeBuildId <KNOWN_COMPLETED_BUILD_ID>
 ```
+
+  The default target is `shine-oss/PowerToys`. For a Dart run, pass `-Organization microsoft -Project Dart`
+  to the preflight, REST helper calls, and waiter. Keep those identifiers with the build ID; build IDs
+  alone do not identify a run across organizations.
 
 For the check inventory, precise capability claims, and first-time remediation, read
 [setup-preflight.md](setup-preflight.md) only when setup fails or the user asks about readiness.
@@ -166,7 +172,12 @@ active. Use the same pushed SHA and modules, select only the failed architecture
 build IDs. The supplemental run remains part of the attempt ledger and never erases the original
 failure.
 
-## 3. Choose `buildNow` or `specificBuildId`
+## 3. Choose the build source
+
+On OSS, use `buildNow` to run the fresh build in place, or `buildNowSlim` to validate the fresh
+installer and selected test payloads. Do not select `latestMainOfficialBuild` or `specificBuildId`
+in OSS: the installer download currently targets the Dart signed-release pipeline. Use Dart
+explicitly when that artifact path is needed. The reuse rules below apply to Dart only.
 
 | Situation | `buildSource` | `specificBuildId` |
 |---|---|---|
@@ -203,6 +214,18 @@ Default parameters:
 
 Do not silently remove a platform. `x64` expands to Windows 10 and Windows 11 jobs; `arm64` expands
 to the ARM64 job.
+
+For the manual OSS cutover, preview these current-source requests separately, on the same pushed
+revision. Keep the default Windows 10 lane enabled and use one worker per requested OS:
+
+| Request | `buildPlatforms` | `buildSource` | `uiTestModules` |
+|---|---|---|---|
+| x64 installer validation | `[x64]` | `buildNowSlim` | `[GrabAndMove.UITests, PowerDisplay.UITests, Microsoft.CmdPal.UITests.Next, MouseWithoutBorders.UITests]` |
+| ARM64 driver-backed suites | `[arm64]` | `buildNowSlim` | `[GrabAndMove.UITests, PowerDisplay.UITests]` |
+
+Set `umdfHidArm64Image` to `SHINE-W11-Preview-Testing-arm64-TestSigning` for the ARM64 request
+and verify the two dedicated jobs have that exact demand. Do not change PR or ordinary ARM64
+image routing. Neither a preview nor an ARM64 transport smoke substitutes for the full suites.
 
 Preview first with the exact branch and string-valued template parameters:
 
@@ -255,12 +278,12 @@ including a reconciled duplicate, counts in the ledger.
 Store in session/task state, never the repository:
 
 ```text
-Pipeline: UI Test Automation / <definition ID>
+Pipeline: <organization>/<project> / UI Test Automation / <definition ID>
 Build: <build ID> / <build number> / <web link>
 Branch: <exact refs/heads/... ref>
 Source SHA: <40-character commit>
 Attempt: <n>/3
-Build source: <buildNow|specificBuildId> [reused build ID]
+Build source: <buildNow|buildNowSlim|specificBuildId> [reused build ID]
 Platforms: <selected platforms>
 Modules: [<exact project stems>]
 State: <notStarted|inProgress|...>
@@ -281,6 +304,8 @@ pwsh -NoLogo -NoProfile -File `
   -ExpectedBranch <EXACT_REFS_HEADS_BRANCH> `
   -ExpectedSourceVersion <40_CHARACTER_SOURCE_SHA>
 ```
+
+Pass the checkpoint's organization and project explicitly when watching a non-default target.
 
 For an explicitly authorized supplemental architecture run, invoke the script directly in PowerShell
 with both checkpointed IDs (`-BuildId 123456789,123456790`), rather than passing the array through
@@ -380,8 +405,8 @@ Download a useful failure artifact to a temporary directory with the already-ins
 
 ```pwsh
 az pipelines runs artifact download `
-  --organization https://dev.azure.com/microsoft `
-  --project Dart `
+  --organization https://dev.azure.com/<ORGANIZATION> `
+  --project <PROJECT> `
   --run-id <BUILD_ID> `
   --artifact-name <FAILURE_ARTIFACT_NAME> `
   --path <TEMP_DIRECTORY> `
@@ -402,7 +427,7 @@ available Structured Log Viewer.
 Construct an attachments-pane link for every failed result:
 
 ```text
-https://microsoft.visualstudio.com/Dart/_build/results?buildId=<BUILD_ID>&view=ms.vss-test-web.build-test-results-tab&runId=<RUN_ID>&resultId=<RESULT_ID>&paneView=attachments
+https://dev.azure.com/<ORGANIZATION>/<PROJECT>/_build/results?buildId=<BUILD_ID>&view=ms.vss-test-web.build-test-results-tab&runId=<RUN_ID>&resultId=<RESULT_ID>&paneView=attachments
 ```
 
 ### Download result attachments without browser help

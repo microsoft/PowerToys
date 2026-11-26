@@ -13,10 +13,10 @@ Performs only read operations and a pipeline preview. A preview expands the sele
 creating a build. The script never initiates sign-in, prints a token, or mutates Azure DevOps.
 
 .PARAMETER Organization
-Azure DevOps organization name. Defaults to the internal `microsoft` organization.
+Azure DevOps organization name. Defaults to `shine-oss`.
 
 .PARAMETER Project
-Azure DevOps project name. Defaults to `Dart`.
+Azure DevOps project name. Defaults to `PowerToys`.
 
 .PARAMETER PipelineName
 Enabled pipeline definition to discover. Defaults to `UI Test Automation`.
@@ -42,9 +42,9 @@ pwsh .github/skills/ui-tests-pipeline-ci/scripts/Test-AzureDevOpsSetup.ps1 `
 
 [CmdletBinding()]
 param(
-    [string] $Organization = 'microsoft',
+    [string] $Organization = 'shine-oss',
 
-    [string] $Project = 'Dart',
+    [string] $Project = 'PowerToys',
 
     [string] $PipelineName = 'UI Test Automation',
 
@@ -405,34 +405,11 @@ if ($pipelineId -ne 0)
             throw 'Pipeline preview did not return id=-1 and expanded YAML.'
         }
 
-        $stages = @([regex]::Matches($preview.finalYaml, '(?m)^- stage: (.+)$') |
-                ForEach-Object { $_.Groups[1].Value.Trim() })
-        $expectedStages = @('Build_x64', 'Test_x64Win10_FullBuild', 'Test_x64Win11_FullBuild')
-        $missingStages = @($expectedStages | Where-Object { $_ -notin $stages })
-        if ($missingStages.Count -ne 0)
-        {
-            throw "Pipeline preview omitted required stages: $($missingStages -join ', '). Expanded stages: $($stages -join ', ')."
-        }
-
-        $moduleAssignments = @($preview.finalYaml -split "`n" |
-                Where-Object { $_ -match '^\s*\$modulesRaw\s*=\s*''[^'']*''\s*$' } |
-                ForEach-Object { $_.Trim() })
-        $expectedModuleAssignment = "`$modulesRaw = '$ProbeModule'"
-        if ($moduleAssignments.Count -eq 0)
-        {
-            throw 'Pipeline preview parser found no literal $modulesRaw assignments; the template quoting or line layout may have changed.'
-        }
-
-        if (@($moduleAssignments | Where-Object { $_ -ne $expectedModuleAssignment }).Count -ne 0)
-        {
-            throw "Pipeline preview did not resolve only module '$ProbeModule'. Assignments: $($moduleAssignments -join ' | ')."
-        }
-
         Add-SetupCheck `
             'PipelinePreview' `
             'PASS' `
             $true `
-            "id=$($preview.id); requestedBranch=$ProbeBranch; module=$ProbeModule; stages=$($stages -join ',')"
+            "id=$($preview.id); requestedBranch=$ProbeBranch; requestedModule=$ProbeModule; YAML expanded"
     }
     catch
     {
