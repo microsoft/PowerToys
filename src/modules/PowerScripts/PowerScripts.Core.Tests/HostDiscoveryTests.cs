@@ -24,6 +24,10 @@ public sealed class HostDiscoveryTests
             File.WriteAllBytes(host, []);
             Assert.AreEqual(host, PowerScriptsClient.ResolveHostPath(application));
 
+            var legacy = Path.Combine(Directory.CreateDirectory(Path.Combine(application, "PowerScripts")).FullName, "PowerScripts.Host.exe");
+            File.WriteAllBytes(legacy, []);
+            Assert.AreEqual(host, PowerScriptsClient.ResolveHostPath(application));
+
             var adjacent = Path.Combine(application, "PowerScripts.Host.exe");
             File.WriteAllBytes(adjacent, []);
             Assert.AreEqual(adjacent, PowerScriptsClient.ResolveHostPath(application));

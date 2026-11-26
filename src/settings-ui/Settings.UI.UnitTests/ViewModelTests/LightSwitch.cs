@@ -45,10 +45,13 @@ public class LightSwitch
         Assert.AreEqual("wallpaper-light", saved.GetProperty("id").GetString());
         Assert.AreEqual("false", saved.GetProperty("parameters").GetProperty("enabled").GetString());
         var reloaded = JsonSerializer.Deserialize<LightSwitchSettings>(viewModel.ModuleSettings.ToJsonString());
-        viewModel.ModuleSettings = reloaded;
+        viewModel.ModuleSettings = (LightSwitchSettings)reloaded.Clone();
         Assert.AreEqual(2, messages.Count);
         Assert.AreEqual("wallpaper-light", viewModel.ModuleSettings.Properties.LightThemeScript.Id);
         Assert.AreEqual("wallpaper-dark", viewModel.ModuleSettings.Properties.DarkThemeScript.Id);
+        Assert.AreEqual("false", viewModel.ModuleSettings.Properties.LightThemeScript.Parameters["enabled"]);
+        viewModel.ModuleSettings.Properties.LightThemeScript.Parameters["enabled"] = "true";
+        Assert.AreEqual("false", reloaded.Properties.LightThemeScript.Parameters["enabled"]);
         viewModel.SetThemeScript(true, new LightSwitchScriptBinding());
         Assert.AreEqual("wallpaper-dark", viewModel.ModuleSettings.Properties.DarkThemeScript.Id);
         Assert.AreEqual(0, viewModel.ModuleSettings.Properties.LightThemeScript.Parameters.Count);

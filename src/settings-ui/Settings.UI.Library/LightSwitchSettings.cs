@@ -66,6 +66,16 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     LightModeProfile = new StringProperty(Properties.LightModeProfile.Value),
                     DarkModeProfileId = new IntProperty(Properties.DarkModeProfileId.Value),
                     LightModeProfileId = new IntProperty(Properties.LightModeProfileId.Value),
+                    LightThemeScript = new LightSwitchScriptBinding
+                    {
+                        Id = Properties.LightThemeScript?.Id ?? string.Empty,
+                        Parameters = new Dictionary<string, string>(Properties.LightThemeScript?.Parameters ?? new(), StringComparer.Ordinal),
+                    },
+                    DarkThemeScript = new LightSwitchScriptBinding
+                    {
+                        Id = Properties.DarkThemeScript?.Id ?? string.Empty,
+                        Parameters = new Dictionary<string, string>(Properties.DarkThemeScript?.Parameters ?? new(), StringComparer.Ordinal),
+                    },
                 },
             };
         }

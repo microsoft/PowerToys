@@ -696,8 +696,8 @@ public sealed class PowerScriptsClient : IDisposable
         var candidates = new List<string>
         {
             Path.Combine(baseDirectory, PowerScriptsProtocol.HostExeName),
-            Path.Combine(baseDirectory, "PowerScripts", PowerScriptsProtocol.HostExeName),
             Path.GetFullPath(Path.Combine(baseDirectory, "..", "PowerScripts", PowerScriptsProtocol.HostExeName)),
+            Path.Combine(baseDirectory, "PowerScripts", PowerScriptsProtocol.HostExeName),
             Path.Combine(moduleDirectory, PowerScriptsProtocol.HostExeName),
         };
 
