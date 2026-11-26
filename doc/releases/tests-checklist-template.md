@@ -786,40 +786,42 @@ Cursor Wrap: **new**
    - [ ] Test with packaged app
 
 ## Environment Variables
- * NOTE: Make backup of USER and SYSTEM Path and TMP variables before testing so you can revert those is something goes wrong!
- * Open Environment Variables settings
-   - [ ] Launch as administrator ON - Launch Environment Variables and confirm that SYSTEM variables ARE editable and Add variable button is enabled
-   - [ ] Launch as administrator OFF - Launch Environment Variables and confirm that SYSTEM variables ARE NOT editable and Add variable button is disabled
 
- * User/System variables
-   - [ ] Add new User variable. Open OS Environment variables window and confirm that added variable is there. Also, confirm that it's added to "Applied variables" list.
-   - [ ] Edit one User variable. Open OS Environment variables window and confirm that variable is changed. Also, confirm that change is applied to "Applied variables" list.
-   - [ ] Remove one User variable. Open OS Environment variables window and confirm that variable is removed. Also, confirm that variable is removed from "Applied variables" list.
-   - Repeat the steps for System variables.
+This is the **human-run checklist only**. It does not reduce the scope of UI automation for new PRs or release sign-off.
 
- * Profiles - Basic tests
-   - [ ] Add new profile with no variables and name it "Test_profile_1" (referenced below by name)
-   - [ ] Edit "Test_profile_1": Add one new variable to profile e.g. name: "profile_1_variable_1" value: "profile_1_value_1"
-   - [ ] Add new profile "Test_profile_2": From "Add profile dialog" add two new variables (profile_2_variable_1:profile_2_value_1 and profile_2_variable_2:profile_2_value_2). Set profile to enabled and click Save. Open OS Environment variables window and confirm that all variables from the profile are applied correctly. Also, confirm that "Applied variables" list contains all variables from the profile.
-   - [ ] Apply "Test_profile_1" while "Test_profile_2" is still aplpied. Open OS Environment variables window and confirm that all variables from Test_profile_2 are unapplied and that all variables from Test_profile_1 are applied. Also, confirm that state of "Applied variables" list is updated correctly.
-   - [ ] Unapply applied profile. Open OS Environment variables window and confirm that all variables from the profile are unapplied correctly. Also, confirm that "Applied variables" list does not contain variables from the profile.
+### Automated prerequisites
 
- * Overriding existing variable
-   - [ ] To "Test_profile_1" add one existing variable from USER variables, e.g. TMP. After adding, change it's value to e.g "test_TMP" (or manually add variable named TMP with value test_TMP).
-   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variables has value "test_TMP". Confirm that there is backup variable "TMP_PowerToys_Test_profile_1" with original value of TMP var. Also, confirm that "Applied variables" list is updated correctly - there is TMP profile variable, and backup User variable..
-   - [ ] Unapply "Test_profile_1". Open OS Environment variables window and confirm that TMP variable in USER variable has original value and that there is no backup variable. Also, confirm that "Applied variables" list is updated correctly.
+Use the four manual checks below only when all of the following evidence is present for the **same release candidate**. Missing, skipped or failed cases are not covered: run the uncovered original checks or block sign-off.
 
- * PATH variable
-   - [ ] In "Applied variables" list confirm that PATH variable is shown properly: value of USER Path concatenated to the end of SYSTEM Path.
-   - [ ] To "Test_profile_1" add variable named PATH with value "path1;path2;path3" and click Save. Confirm that PATH variable in profile is shown as list (list of 3 values and not as path1;path2;path3).
-   - [ ] Edit PATH variable from "Test_profile_1". Try different options from ... menu (Delete, Move up, Move down, etc...). Click Save.
-   - [ ] Apply "Test_profile_1". Open OS Environment variables window and confirm that profile is applied correctly - Path value and backup variable. Also, in "Applied variables" list check that Path variable has correct value: value of profile PATH concatenated to the end of SYSTEM Path.
+- All six scenarios in the [checked-in Environment Variables UI suite](https://github.com/microsoft/PowerToys/blob/main/src/modules/EnvironmentVariables/EnvironmentVariables.UITests/EnvironmentVariablesTests.cs) pass, together with the required unit CI.
+- The candidate contains the mixed-profile regression coverage from [#52365](https://github.com/microsoft/PowerToys/pull/52365). Its `ProfileFileAdapterTests.PhysicalProfiles_FreshServiceReconstructsOwnershipAndEditability` must pass for both elevation rows: an active ordinary/override/PATH profile and a second disabled profile survive fresh physical-file reconstruction. `ActiveRemoveAndSaveProfiles_RestoresEnvironmentAndUsesOnlyOwnedArtifact` must pass: deleting the active mixed profile removes its ordinary variable, restores TMP/PATH originals, removes backups and preserves the other profile. `EnvironmentVariablesPageActionsTests.Confirmation_ActiveTargetSubmitsRealRestorationAndSerializesRemoval` must pass its profile-removal row (`deleteVariable=false`), covering the actual confirmation route.
+- The UI PATH scenario runs with an existing nonempty User PATH and verifies its original backup. A run starting without User PATH covers only the no-original case and does not replace the backup-creation check.
 
- * Loading profiles on startup
-   - [ ] Close the app and reopen it. Confirm that the state of the app is the same as before closing.
+Run the full UI suite on a disposable test host, not a working desktop: its PATH scenario temporarily replaces User PATH. Follow the [UI-test setup and recovery guidance](https://github.com/microsoft/PowerToys/blob/main/doc/devdocs/modules/environmentvariables.md#ui-tests).
 
- - [ ] "Test_profile_1" should still be applied (if not apply it). Delete "Test_profile_1". Confirm that profile is unapplied (both in OS Environment variables window and "Applied variables" list).
- - [ ] Delete "Test_profile_2". Check profiles.json file and confirm that both profiles are gone.
+| Automated scenario | Manual repetition no longer required after it passes |
+|---|---|
+| `StandardUserCannotEditSystemVariables` | Administrator OFF launch; User controls enabled and System Add/Edit disabled |
+| `UserVariableCrudUpdatesAppliedVariables` | User Add/Edit/Remove, persistent registry values and visible Applied rows |
+| `ProfilesCanBeCreatedEditedSwitchedAndRemoved` | Empty/edited/two-variable profiles, enabled Save, switching, explicit unapply and `profiles.json` membership; applied mixed-profile deletion additionally requires the regression cases above |
+| `ExistingVariableOverrideCreatesAndRestoresBackup` | User override, original-value backup, unapply restoration and backup removal |
+| `PathEntriesCanBeReorderedInsertedAndDeleted` | Separate PATH rows, Move/Delete/Insert operations and saved order |
+| `AppliedPathSurvivesReopenAndDeletingProfileRestoresUserPath` | System+User/profile PATH projection, existing-PATH backup and PATH-only reopen/deletion; composed reopen/deletion additionally requires the regression cases above |
+
+These scenarios use real registry readback plus the live Applied list instead of repeatedly opening the Windows Environment Variables dialog. They do not claim to test the Windows dialog itself. Unique fixture names replace example names such as TMP; the behavior being checked is unchanged.
+
+### Remaining manual checks
+
+Use a disposable test host and a unique System variable name absent from both User and System scopes. Do not edit existing TMP or PATH values. Restore the initial launch preference/settings and remove the fixture even if a check fails.
+
+- [ ] Close any existing editor. Start PowerToys non-elevated, turn **Launch as administrator ON**, launch the editor and approve UAC manually. Confirm the editor is elevated and System Add/Edit controls are enabled. An already-elevated Runner is not a test of the UAC launch path.
+- [ ] Add the uniquely named **System** variable. Confirm the value is in the System section of the Windows Environment Variables dialog and in the editor's Applied list.
+- [ ] Edit that System variable to a different value. Confirm the changed value in both places.
+- [ ] Remove that System variable. Confirm it is absent from both places and restore the initial settings.
+
+### Full requirements and fallback
+
+The [original complete human recipe](https://github.com/microsoft/PowerToys/blob/0e2ca69947294409bbbaa29eb31f82582047468e/doc/releases/tests-checklist-template.md#environment-variables) remains the fallback when the automated prerequisites are unavailable. The [full skill-driven verification checklist](https://github.com/microsoft/PowerToys/blob/main/.github/skills/powertoys-verification/references/release-checklist/environment-variables.md) is unchanged and remains the automation input; do not substitute this abbreviated manual list for it.
 
 ## Command Not Found
  * Go to Command Not Found module settings
