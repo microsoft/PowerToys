@@ -46,13 +46,18 @@ internal static class EnvironmentVariableComparisonHelper
 
     internal static string RemoveDuplicatePathEntries(string value)
     {
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        return string.Join(';', value.Split(';').Where(entry => seen.Add(NormalizePathEntry(entry))));
+        return RemoveDuplicatePathEntries(value, Environment.ExpandEnvironmentVariables);
     }
 
-    private static string NormalizePathEntry(string entry)
+    internal static string RemoveDuplicatePathEntries(string value, Func<string, string> expand)
     {
-        var expanded = Environment.ExpandEnvironmentVariables(entry.Trim());
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        return string.Join(';', value.Split(';').Where(entry => seen.Add(NormalizePathEntry(entry, expand))));
+    }
+
+    private static string NormalizePathEntry(string entry, Func<string, string> expand)
+    {
+        var expanded = expand(entry.Trim());
         var normalizedSeparators = expanded.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
         return Path.TrimEndingDirectorySeparator(normalizedSeparators);
     }

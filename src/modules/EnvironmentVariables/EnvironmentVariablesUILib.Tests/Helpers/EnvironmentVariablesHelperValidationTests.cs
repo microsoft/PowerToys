@@ -12,6 +12,56 @@ public class EnvironmentVariablesHelperValidationTests
     private static readonly string Name259Chars = new('A', 259);
     private static readonly string Name260Chars = new('A', 260);
 
+    [TestMethod]
+    [DataRow(null, false)]
+    [DataRow("Name\tValue", false)]
+    [DataRow("Name\0Value", false)]
+    [DataRow("变量_Δ", true)]
+    public void NameValidators_AdditionalInputs_ShareRulesAndErrorOutput(string? name, bool expected)
+    {
+        Assert.AreEqual(expected, EnvironmentVariablesHelper.TryValidateVariableName(name, out var variableError));
+        Assert.AreEqual(expected, EnvironmentVariablesHelper.TryValidateProfileName(name, out var profileError));
+        Assert.AreEqual(variableError, profileError);
+        if (expected)
+        {
+            Assert.IsNull(variableError);
+        }
+        else
+        {
+            Assert.IsFalse(string.IsNullOrEmpty(variableError));
+        }
+    }
+
+    [TestMethod]
+    [DataRow("line1\r\nline2")]
+    [DataRow("tab\tvalue")]
+    [DataRow("变量_%LITERAL%")]
+    public void TryValidateVariableValue_NonNullControlsAndUnicode_ArePreservedAsValid(string value)
+    {
+        Assert.IsTrue(EnvironmentVariablesHelper.TryValidateVariableValue(value, out var error));
+        Assert.IsNull(error);
+    }
+
+    [TestMethod]
+    [DataRow(32505, true)]
+    [DataRow(32506, false)]
+    public void TryValidateBackupVariable_LongName_StillEnforcesTotalBudget(int valueLength, bool expected)
+    {
+        var value = new string('V', valueLength);
+
+        Assert.IsFalse(EnvironmentVariablesHelper.TryValidateVariable(Name260Chars, value, out var authoringError));
+        StringAssert.Contains(authoringError, "Name cannot exceed");
+        Assert.AreEqual(expected, EnvironmentVariablesHelper.TryValidateBackupVariable(Name260Chars, value, out var backupError));
+        if (expected)
+        {
+            Assert.IsNull(backupError);
+        }
+        else
+        {
+            StringAssert.Contains(backupError, "total length");
+        }
+    }
+
     // Variable/Profile name
     [TestMethod]
     [DataRow("ValidName", true)]

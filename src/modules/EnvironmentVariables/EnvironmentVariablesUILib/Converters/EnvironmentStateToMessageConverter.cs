@@ -16,13 +16,18 @@ public partial class EnvironmentStateToMessageConverter : IValueConverter
     {
         var resourceLoader = ResourceLoaderInstance.ResourceLoader;
         var type = (EnvironmentState)value;
-        return type switch
+        return ConvertState(type, resourceLoader.GetString);
+    }
+
+    internal static string ConvertState(EnvironmentState state, Func<string, string> getString)
+    {
+        return state switch
         {
             EnvironmentState.Unchanged => string.Empty,
-            EnvironmentState.ChangedOnStartup => resourceLoader.GetString("StateNotUpToDateOnStartupMsg"),
-            EnvironmentState.EnvironmentMessageReceived => resourceLoader.GetString("StateNotUpToDateEnvironmentMessageReceivedMsg"),
-            EnvironmentState.ProfileNotApplicable => resourceLoader.GetString("StateProfileNotApplicableMsg"),
-            EnvironmentState.ProfileNameInvalid => resourceLoader.GetString("StateProfileNameInvalidMsg"),
+            EnvironmentState.ChangedOnStartup => getString("StateNotUpToDateOnStartupMsg"),
+            EnvironmentState.EnvironmentMessageReceived => getString("StateNotUpToDateEnvironmentMessageReceivedMsg"),
+            EnvironmentState.ProfileNotApplicable => getString("StateProfileNotApplicableMsg"),
+            EnvironmentState.ProfileNameInvalid => getString("StateProfileNameInvalidMsg"),
             _ => throw new NotImplementedException(),
         };
     }

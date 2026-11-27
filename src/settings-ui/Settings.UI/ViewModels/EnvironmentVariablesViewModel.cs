@@ -18,6 +18,8 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 {
     public partial class EnvironmentVariablesViewModel : Observable
     {
+        private readonly Func<GpoRuleConfigured> _readPolicy;
+        private readonly Action<bool> _requestLaunch;
         private bool _isElevated;
         private GpoRuleConfigured _enabledGpoRuleConfiguration;
         private bool _enabledStateIsGPOConfigured;
@@ -80,18 +82,32 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         }
 
         public EnvironmentVariablesViewModel(SettingsUtils settingsUtils, ISettingsRepository<GeneralSettings> settingsRepository, ISettingsRepository<EnvironmentVariablesSettings> moduleSettingsRepository, Func<string, int> ipcMSGCallBackFunc, bool isElevated)
+            : this(settingsUtils, settingsRepository, moduleSettingsRepository, ipcMSGCallBackFunc, isElevated, () => GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue(), RequestLaunch)
+        {
+        }
+
+        internal EnvironmentVariablesViewModel(
+            SettingsUtils settingsUtils,
+            ISettingsRepository<GeneralSettings> settingsRepository,
+            ISettingsRepository<EnvironmentVariablesSettings> moduleSettingsRepository,
+            Func<string, int> ipcMSGCallBackFunc,
+            bool isElevated,
+            Func<GpoRuleConfigured> readPolicy,
+            Action<bool> requestLaunch)
         {
             SettingsUtils = settingsUtils;
             GeneralSettingsConfig = settingsRepository.SettingsConfig;
             Settings = moduleSettingsRepository.SettingsConfig;
             SendConfigMSG = ipcMSGCallBackFunc;
             _isElevated = isElevated;
+            _readPolicy = readPolicy;
+            _requestLaunch = requestLaunch;
             InitializeEnabledValue();
         }
 
         private void InitializeEnabledValue()
         {
-            _enabledGpoRuleConfiguration = GPOWrapper.GetConfiguredEnvironmentVariablesEnabledValue();
+            _enabledGpoRuleConfiguration = _readPolicy();
             if (_enabledGpoRuleConfiguration == GpoRuleConfigured.Disabled || _enabledGpoRuleConfiguration == GpoRuleConfigured.Enabled)
             {
                 // Get the enabled state from GPO.
@@ -106,7 +122,12 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         public void Launch()
         {
-            string eventName = !_isElevated && LaunchAdministrator
+            _requestLaunch(!_isElevated && LaunchAdministrator);
+        }
+
+        private static void RequestLaunch(bool administrator)
+        {
+            string eventName = administrator
                 ? Constants.ShowEnvironmentVariablesAdminSharedEvent()
                 : Constants.ShowEnvironmentVariablesSharedEvent();
 
