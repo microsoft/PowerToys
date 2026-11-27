@@ -132,10 +132,11 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             .ConfigureAwait(true).GetAwaiter();
                     webView2EnvironmentAwaiter.OnCompleted(async () =>
                     {
-                        _loadingBar.Value = 60;
-                        this.Update();
                         try
                         {
+                            _loadingBar.Value = 60;
+                            this.Update();
+
                             if (CoreWebView2Environment.GetAvailableBrowserVersionString() == null)
                             {
                                 throw new WebView2RuntimeNotFoundException();
@@ -194,6 +195,16 @@ namespace Microsoft.PowerToys.PreviewHandler.Monaco
                             downloadLink.Height = TextRenderer.MeasureText(Resources.Download_WebView2, errorMessage.Font).Height;
                             downloadLink.ForeColor = Settings.TextColor;
                             Controls.Add(downloadLink);
+                        }
+                        catch (Exception e)
+                        {
+                            // WebView2 initialization can fail with a COMException (e.g. timeout or resource in use).
+                            // This callback is async void, so an escaping exception would crash the preview host.
+                            Logger.LogError($"WebView2 initialization failed (HRESULT 0x{e.HResult:X8})", e);
+                            if (!IsDisposed && !Disposing)
+                            {
+                                AddTextBoxControl(Resources.Exception_Occurred + e.Message);
+                            }
                         }
                     });
                 }

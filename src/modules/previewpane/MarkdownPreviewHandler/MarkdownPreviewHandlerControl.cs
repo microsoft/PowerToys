@@ -280,6 +280,15 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
                     catch (NullReferenceException)
                     {
                     }
+                    catch (Exception ex)
+                    {
+                        // WebView2 initialization can fail with a COMException (e.g. timeout or resource in use).
+                        // This callback is async void, so an escaping exception would crash the preview host.
+                        if (!IsDisposed && !Disposing)
+                        {
+                            ShowPreviewError(ex);
+                        }
+                    }
                 });
 
                 try
@@ -292,24 +301,33 @@ namespace Microsoft.PowerToys.PreviewHandler.Markdown
             }
             catch (Exception ex)
             {
-                try
-                {
-                    PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
-                }
-                catch
-                { // Should not crash if sending telemetry is failing. Ignore the exception.
-                }
-
-                Controls.Clear();
-                _infoBarDisplayed = true;
-                _infoBar = GetTextBoxControl(Resources.MarkdownNotPreviewedError);
-                Resize += FormResized;
-                Controls.Add(_infoBar);
+                ShowPreviewError(ex);
             }
             finally
             {
                 base.DoPreview(dataSource);
             }
+        }
+
+        /// <summary>
+        /// Reports a preview failure and replaces the preview with an error info bar.
+        /// </summary>
+        /// <param name="ex">The exception which occurred.</param>
+        private void ShowPreviewError(Exception ex)
+        {
+            try
+            {
+                PowerToysTelemetry.Log.WriteEvent(new MarkdownFilePreviewError { Message = ex.Message });
+            }
+            catch
+            { // Should not crash if sending telemetry is failing. Ignore the exception.
+            }
+
+            Controls.Clear();
+            _infoBarDisplayed = true;
+            _infoBar = GetTextBoxControl(Resources.MarkdownNotPreviewedError);
+            Resize += FormResized;
+            Controls.Add(_infoBar);
         }
 
         /// <summary>
