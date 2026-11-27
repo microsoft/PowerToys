@@ -94,6 +94,52 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public async Task PerformCommand_ConfirmationOutlivesFallbackQuery()
+    {
+        using var search = new CancellationTokenSource();
+        var host = new TestAppExtensionHost();
+        using var shell = new ShellViewModel(TaskScheduler.Default, Mock.Of<IRootPageService>(), Mock.Of<IPageViewModelFactoryService>(), CreateAppHostService(host).Object);
+        var context = new FallbackQueryContext(host, CommandProviderContext.Empty, new object(), search.Token);
+        var command = CreateCommandViewModel(new TestCommand(CommandResult.Confirm(new ConfirmationArgs()), search.Cancel), shell.CurrentPage);
+        command.InheritFallbackContext(context);
+        var confirmed = new TaskCompletionSource<ShowConfirmationMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        WeakReferenceMessenger.Default.Register<ShowConfirmationMessage>(confirmed, (_, message) => confirmed.TrySetResult(message));
+        try
+        {
+            shell.Receive(new PerformCommandMessage(command));
+            var message = await confirmed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.IsFalse(context.CanInvoke);
+            Assert.AreEqual(context with { QueryToken = CancellationToken.None }, message.FallbackContext);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(confirmed);
+        }
+    }
+
+    [TestMethod]
+    public void PerformCommand_PageDetachesFromQueryOnlyAfterSelection()
+    {
+        using var search = new CancellationTokenSource();
+        var host = new TestAppExtensionHost();
+        var factory = new Mock<IPageViewModelFactoryService>();
+        using var shell = new ShellViewModel(TaskScheduler.Default, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object);
+        var context = new FallbackQueryContext(host, CommandProviderContext.Empty, new object(), search.Token);
+        var page = new TestPage();
+        var command = CreateCommandViewModel(page, shell.CurrentPage);
+        command.InheritFallbackContext(context);
+        var selection = new PerformCommandMessage(command);
+
+        shell.Receive(selection);
+        search.Cancel();
+        shell.Receive(selection);
+
+        factory.Verify(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty, It.Is<FallbackQueryContext?>(c => c != null && !c.QueryToken.CanBeCanceled && c.InvocationContext == context.InvocationContext)), Times.Once);
+        factory.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
     [DataRow("none")]
     [DataRow("page")]
     [DataRow("owner")]
@@ -106,7 +152,7 @@ public partial class ShellViewModelTests
         var appHostService = CreateAppHostService(currentHost);
         var pageFactory = new Mock<IPageViewModelFactoryService>();
         var page = new TestPage();
-        pageFactory.Setup(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty))
+        pageFactory.Setup(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty, null))
             .Returns(new TestPageViewModel(page, currentHost));
         using var shell = new ShellViewModel(
             TaskScheduler.Default,
@@ -130,7 +176,7 @@ public partial class ShellViewModelTests
 
         appHostService.Verify(service => service.GetHostForCommand(item, expectedHost), Times.Once);
         appHostService.Verify(service => service.GetProviderContextForCommand(item, expectedProvider), Times.Once);
-        pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty), Times.Once);
+        pageFactory.Verify(factory => factory.TryCreatePageViewModel(page, true, currentHost, CommandProviderContext.Empty, null), Times.Once);
     }
 
     [TestMethod]
@@ -176,7 +222,7 @@ public partial class ShellViewModelTests
         var page = new TestPage();
         var viewModel = new TestPageViewModel(page, host, initialized: false);
         var factory = new Mock<IPageViewModelFactoryService>();
-        factory.Setup(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty)).Returns(viewModel);
+        factory.Setup(f => f.TryCreatePageViewModel(page, true, host, CommandProviderContext.Empty, null)).Returns(viewModel);
         var scheduler = TaskScheduler.FromCurrentSynchronizationContext();
         using var shell = new ShellViewModel(scheduler, Mock.Of<IRootPageService>(), factory.Object, CreateAppHostService(host).Object);
         var activated = new TaskCompletionSource<TaskScheduler>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -216,7 +262,7 @@ public partial class ShellViewModelTests
         rootPageService.Setup(service => service.GetRootPage()).Returns(rootPage);
         var appHostService = CreateAppHostService(host);
         var factory = new Mock<IPageViewModelFactoryService>();
-        factory.Setup(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty)).Returns(rootViewModel);
+        factory.Setup(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty, null)).Returns(rootViewModel);
         using var shell = new ShellViewModel(TaskScheduler.Default, rootPageService.Object, factory.Object, appHostService.Object);
         var nestedPage = new PageViewModel(new Page(), TaskScheduler.Default, host, provider);
 
@@ -233,7 +279,7 @@ public partial class ShellViewModelTests
             Assert.IsTrue(rootViewModel.IsRootPage);
             Assert.IsFalse(rootViewModel.HasBackButton);
             Assert.IsFalse(shell.IsNested);
-            factory.Verify(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty), Times.Once);
+            factory.Verify(f => f.TryCreatePageViewModel(rootPage, false, host, CommandProviderContext.Empty, null), Times.Once);
             appHostService.Verify(
                 service => service.GetProviderContextForCommand(It.IsAny<object?>(), It.IsAny<ICommandProviderContext?>()),
                 Times.Never);
@@ -289,7 +335,8 @@ public partial class ShellViewModelTests
                     It.IsAny<IPage>(),
                     It.IsAny<bool>(),
                     It.IsAny<AppExtensionHost>(),
-                    It.IsAny<ICommandProviderContext>()),
+                    It.IsAny<ICommandProviderContext>(),
+                    It.IsAny<FallbackQueryContext?>()),
                 Times.Never);
             rootPageService.Verify(
                 service => service.OnPerformCommand(
@@ -324,7 +371,8 @@ public partial class ShellViewModelTests
                 page,
                 true,
                 host,
-                CommandProviderContext.Empty))
+                CommandProviderContext.Empty,
+                null))
             .Returns(pageViewModel);
         var shell = new ShellViewModel(
             TaskScheduler.Default,
@@ -578,6 +626,36 @@ public partial class ShellViewModelTests
     }
 
     [TestMethod]
+    public async Task PerformCommand_UsesCachedMetadata()
+    {
+        using var shell = CreateViewModel();
+        var command = new Mock<IInvokableCommand>();
+        command.SetupGet(value => value.Id).Returns("cached.id");
+        command.SetupGet(value => value.Name).Returns("Cached name");
+        command.Setup(value => value.Invoke(It.IsAny<object?>())).Returns(CommandResult.KeepOpen());
+        var viewModel = CreateCommandViewModel(command.Object, shell.CurrentPage);
+        command.SetupGet(value => value.Id).Throws(new InvalidOperationException("Unexpected ID RPC"));
+        command.SetupGet(value => value.Name).Throws(new InvalidOperationException("Unexpected name RPC"));
+        var recipient = new object();
+        var completed = new TaskCompletionSource<TelemetryExtensionInvokedMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        WeakReferenceMessenger.Default.Register<TelemetryExtensionInvokedMessage>(recipient, (_, message) => completed.TrySetResult(message));
+        try
+        {
+            shell.Receive(new PerformCommandMessage(viewModel));
+            var invocation = await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(invocation.Success);
+            Assert.AreEqual("cached.id", invocation.CommandId);
+            Assert.AreEqual("Cached name", invocation.CommandName);
+            command.VerifyGet(value => value.Id, Times.Once);
+            command.VerifyGet(value => value.Name, Times.Once);
+        }
+        finally
+        {
+            WeakReferenceMessenger.Default.UnregisterAll(recipient);
+        }
+    }
+
+    [TestMethod]
     public void PerformCommand_PageNavigationUsesCachedMetadata()
     {
         using var shell = CreateViewModel();
@@ -629,6 +707,44 @@ public partial class ShellViewModelTests
         }
 
         void OnPageNavigationRequested(object? sender, PageNavigationRequestedEventArgs e) => events.Add("navigate");
+    }
+
+    [TestMethod]
+    public void GoHome_PerformsRootCleanupAndRequestsHomeNavigation()
+    {
+        var rootPage = new Mock<IRootPageService>();
+        using var viewModel = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPage.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(new TestAppExtensionHost()).Object);
+        ShellNavigationRequestedEventArgs? navigationRequest = null;
+        viewModel.GoHomeRequested += (_, args) => navigationRequest = args;
+
+        viewModel.GoHome(withAnimation: false, focusSearch: false);
+
+        rootPage.Verify(service => service.GoHome(), Times.Once);
+        Assert.IsNotNull(navigationRequest);
+        Assert.IsFalse(navigationRequest.WithAnimation);
+        Assert.IsFalse(navigationRequest.FocusSearch);
+    }
+
+    [TestMethod]
+    public void OnNavigatedHome_PerformsRootCleanupWithoutRequestingHomeNavigation()
+    {
+        var rootPage = new Mock<IRootPageService>();
+        using var viewModel = new ShellViewModel(
+            TaskScheduler.Default,
+            rootPage.Object,
+            Mock.Of<IPageViewModelFactoryService>(),
+            CreateAppHostService(new TestAppExtensionHost()).Object);
+        var navigationRequested = false;
+        viewModel.GoHomeRequested += (_, _) => navigationRequested = true;
+
+        viewModel.OnNavigatedHome();
+
+        rootPage.Verify(service => service.GoHome(), Times.Once);
+        Assert.IsFalse(navigationRequested);
     }
 
     [TestMethod]
@@ -697,7 +813,7 @@ public partial class ShellViewModelTests
         appHostService.Setup(service => service.GetProviderContextForCommand(It.IsAny<object?>(), It.IsAny<ICommandProviderContext?>())).Returns(CommandProviderContext.Empty);
 
         var pageFactory = new Mock<IPageViewModelFactoryService>();
-        pageFactory.Setup(factory => factory.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>()))
+        pageFactory.Setup(factory => factory.TryCreatePageViewModel(It.IsAny<IPage>(), It.IsAny<bool>(), It.IsAny<AppExtensionHost>(), It.IsAny<ICommandProviderContext>(), It.IsAny<FallbackQueryContext?>()))
             .Returns(new TestPageViewModel(null, host));
 
         return new ShellViewModel(

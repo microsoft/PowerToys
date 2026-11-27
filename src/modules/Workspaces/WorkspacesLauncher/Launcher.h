@@ -22,6 +22,7 @@ public:
     std::map<std::wstring, LaunchDecision> GetApprovalDecisions();
     DWORD GetArrangerError() const { return m_arrangerError; }
     bool HasArrangerResult() const { return m_arrangerCompleted; }
+    bool LaunchedAnyApplication() const { return m_launchedAnyApplication; }
     bool IsCanceled() const;
 
 private:
@@ -29,6 +30,7 @@ private:
     const InvokePoint m_invokePoint;
     const std::chrono::steady_clock::time_point m_start;
     std::atomic<bool> m_launchedSuccessfully{};
+    std::atomic<bool> m_launchedAnyApplication{};
     LaunchingStatus m_launchingStatus;
     PendingLaunchApproval m_approval;
     std::atomic<bool> m_launchStarted{};

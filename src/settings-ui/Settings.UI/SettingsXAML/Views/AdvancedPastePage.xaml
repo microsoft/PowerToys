@@ -654,11 +654,11 @@
                         Margin="0,12,0,0"
                         Orientation="Vertical"
                         Spacing="8"
-                        Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}">
+                        Visibility="{x:Bind GetServiceLegalVisibility(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}">
                         <TextBlock
                             Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                             Style="{StaticResource CaptionTextBlockStyle}"
-                            Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                            Text="{x:Bind GetServiceLegalDescription(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}"
                             TextWrapping="Wrap" />
                         <StackPanel
                             Margin="0,0,0,0"
@@ -666,16 +666,16 @@
                             Spacing="8">
                             <HyperlinkButton
                                 Padding="0"
-                                Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                Content="{x:Bind GetServiceTermsLabel(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}"
                                 FontSize="12"
-                                NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
-                                Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
+                                NavigateUri="{x:Bind GetServiceTermsUri(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}"
+                                Visibility="{x:Bind GetServiceTermsVisibility(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}" />
                             <HyperlinkButton
                                 Padding="0"
-                                Content="{x:Bind GetServicePrivacyLabel(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
+                                Content="{x:Bind GetServicePrivacyLabel(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}"
                                 FontSize="12"
-                                NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}"
-                                Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIProviderDraft?.ServiceType), Mode=OneWay}" />
+                                NavigateUri="{x:Bind GetServicePrivacyUri(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}"
+                                Visibility="{x:Bind GetServicePrivacyVisibility(ViewModel.PasteAIProviderDraft.ServiceType), Mode=OneWay}" />
                         </StackPanel>
                     </StackPanel>
                     <Rectangle Height="1" Fill="{ThemeResource DividerStrokeColorDefaultBrush}" />

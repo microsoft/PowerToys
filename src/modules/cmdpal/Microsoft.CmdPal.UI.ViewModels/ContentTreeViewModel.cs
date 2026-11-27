@@ -10,10 +10,10 @@ using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPageContext> context) :
-    ContentViewModel(context)
+public partial class ContentTreeViewModel(ITreeContent tree, WeakReference<IPageContext> context)
+    : ContentViewModel(context)
 {
-    public ExtensionObject<ITreeContent> Model { get; } = new(_tree);
+    public ExtensionObject<ITreeContent> Model { get; } = new(tree);
 
     // Remember - "observable" properties from the model (via PropChanged)
     // cannot be marked [ObservableProperty]
@@ -49,20 +49,10 @@ public partial class ContentTreeViewModel(ITreeContent _tree, WeakReference<IPag
         model.ItemsChanged += Model_ItemsChanged;
     }
 
-    // Theoretically, we should unify this with the one in CommandPalettePageViewModelFactory
-    // and maybe just have a ContentViewModelFactory or something
     public ContentViewModel? ViewModelFromContent(IContent content, WeakReference<IPageContext> context)
     {
-        ContentViewModel? viewModel = content switch
-        {
-            IFormContent form => new ContentFormViewModel(form, context),
-            IMarkdownContent markdown => new ContentMarkdownViewModel(markdown, context),
-            ITreeContent tree => new ContentTreeViewModel(tree, context),
-            IPlainTextContent plainText => new ContentPlainTextViewModel(plainText, context),
-            IImageContent image => new ContentImageViewModel(image, context),
-            _ => null,
-        };
-        return viewModel;
+        var viewModel = ContentViewModelFactory.Create(content, context);
+        return viewModel is null ? null : ShareFallbackContext(viewModel);
     }
 
     // TODO: Does this need to hop to a _different_ thread, so that we don't block the extension while we're fetching?

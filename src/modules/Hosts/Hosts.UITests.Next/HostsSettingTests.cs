@@ -114,15 +114,11 @@ namespace Hosts.UITests
                 $"Hosts should own foreground before clicking Quit. Foreground: {WindowControl.GetForegroundWindowInfo()}.");
             quitButton.Click(msPostAction: 0);
 
-            // Quit calls Environment.Exit(0); Win10 can retain a stale HWND after process exit.
-            var quitResult = WaitHelper.WaitForStable(
-                () => hostsProcess.HasExited,
-                exited => exited,
-                15_000,
-                requiredConsecutiveMatches: 3);
+            // HasExited can observe the exit code before the process handle is signaled.
+            // The runner uses that signal to decide whether to start a new Hosts process.
             Assert.IsTrue(
-                quitResult.Succeeded,
-                $"Hosts File Editor should exit after clicking Quit in the Warning Dialog; windows={string.Join(", ", WindowsFinder.ListByApp("PowerToys.Hosts"))}.");
+                hostsProcess.WaitForExit(15_000),
+                $"Hosts process {hostsProcess.Id} should signal exit after clicking Quit in the Warning Dialog.");
             Assert.AreEqual(0, hostsProcess.ExitCode, "The startup Quit command should exit cleanly.");
             TestContext.WriteLine("Startup Quit closed the editor.");
 

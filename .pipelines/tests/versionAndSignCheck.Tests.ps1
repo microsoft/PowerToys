@@ -191,8 +191,27 @@ Describe 'versionAndSignCheck existing binary version policy' {
         Assert-MockCalled Get-AuthenticodeSignature -Times 1 -Exactly -Scope It
     }
 
-    It 'does not let a version exception bypass the signature requirement' {
-        $fixture.Files = @(New-VersionedPayload -Name 'libSkiaSharp.dll' -FileVersion $null)
+    It 'skips code signature validation only for the extracted Monaco Codicon asset' {
+        $font = New-VersionedPayload -Name 'MonacoPreviewHandlerMonacoAssetsFiles_File_codicon.ttf' -FileVersion $null
+        $exe = New-VersionedPayload -Name 'PowerToys.exe'
+        $fixture.Files = @($font, $exe)
+        Mock Get-AuthenticodeSignature {
+            [pscustomobject]@{ Status = 'UnknownError'; SignerCertificate = $null }
+        } -ParameterFilter { $LiteralPath -eq $font.FullName }
+
+        & $scriptPath -targetDir $fixture.TargetDir
+
+        $LASTEXITCODE | Should Be 0
+        Assert-MockCalled Get-AuthenticodeSignature -Times 1 -Exactly -Scope It -ParameterFilter { $LiteralPath -eq $exe.FullName }
+        Assert-MockCalled Get-AuthenticodeSignature -Times 0 -Exactly -Scope It -ParameterFilter { $LiteralPath -eq $font.FullName }
+    }
+
+    It 'does not let a version exception bypass the signature requirement for <Name>' -TestCases @(
+        @{ Name = 'libSkiaSharp.dll' }
+        @{ Name = 'OtherAssets_File_codicon.ttf' }
+    ) {
+        param($Name)
+        $fixture.Files = @(New-VersionedPayload -Name $Name -FileVersion $null)
         Mock Get-AuthenticodeSignature {
             [pscustomobject]@{ Status = 'NotSigned'; SignerCertificate = $null }
         }

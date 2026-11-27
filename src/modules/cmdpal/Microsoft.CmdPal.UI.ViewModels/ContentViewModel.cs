@@ -4,8 +4,8 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
-public abstract partial class ContentViewModel(WeakReference<IPageContext> context) :
-    ExtensionObjectViewModel(context)
+public abstract partial class ContentViewModel(WeakReference<IPageContext> context)
+    : ExtensionObjectViewModel(context)
 {
     public bool OnlyControlOnPage { get; internal set; }
 }

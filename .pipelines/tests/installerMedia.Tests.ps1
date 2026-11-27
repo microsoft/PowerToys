@@ -159,6 +159,49 @@ Describe 'Installer Smart Cabbing media' {
         $installerFiles[0].WxsPath | Should Be $wxs
     }
 
+    It 'harvests the WinUI apphost files only from WinUI3Apps' {
+        . Import-MediaTestHarvester
+
+        $fileListRoots = @{}
+        $installerFiles = [Collections.Generic.List[object]]::new()
+        $installer = Join-Path $PSScriptRoot '..\..\installer\PowerToysSetupVNext'
+        $source = Join-Path $TestDrive 'release'
+        $winui = Join-Path $source 'WinUI3Apps'
+        $null = New-Item -ItemType Directory -Path $winui -Force
+        $duplicateFiles = @(
+            'PowerToys.WorkspacesLauncherUI.exe'
+            'PowerToys.WorkspacesLauncherUI.deps.json'
+            'PowerToys.WorkspacesLauncherUI.runtimeconfig.json'
+            'PowerToys.ColorPickerUI.exe'
+            'PowerToys.ImageResizer.exe'
+        )
+        foreach ($name in $duplicateFiles) {
+            Set-Content -LiteralPath (Join-Path $source $name) -Value 'apphost payload'
+            Set-Content -LiteralPath (Join-Path $winui $name) -Value 'apphost payload'
+        }
+        $nativeLauncher = Join-Path $source 'PowerToys.WorkspacesLauncher.exe'
+        Set-Content -LiteralPath $nativeLauncher -Value 'native launcher payload'
+
+        $baseWxs = Join-Path $TestDrive 'BaseApplications.wxs'
+        Copy-Item -LiteralPath (Join-Path $installer 'BaseApplications.wxs') -Destination $baseWxs
+        Generate-FileList -fileDepsJson '' -fileListName BaseApplicationsFiles -wxsFilePath $baseWxs -depsPath $source
+        Generate-FileComponents -fileListName BaseApplicationsFiles -wxsFilePath $baseWxs
+
+        $winuiWxs = Join-Path $TestDrive 'WinUI3Applications.wxs'
+        Copy-Item -LiteralPath (Join-Path $installer 'WinUI3Applications.wxs') -Destination $winuiWxs
+        Generate-FileList -fileDepsJson '' -fileListName WinUI3ApplicationsFiles -wxsFilePath $winuiWxs -depsPath $winui
+        Generate-FileComponents -fileListName WinUI3ApplicationsFiles -wxsFilePath $winuiWxs
+
+        $rootFiles = @($installerFiles | Where-Object Component -EQ 'BaseApplicationsFiles_Component')
+        $rootFiles.Count | Should Be 1
+        $rootFiles[0].SourcePath | Should Be $nativeLauncher
+        $winuiFiles = @($installerFiles | Where-Object Component -EQ 'WinUI3ApplicationsFiles_Component')
+        $winuiFiles.Count | Should Be $duplicateFiles.Count
+        foreach ($name in $duplicateFiles) {
+            $winuiFiles.SourcePath -contains (Join-Path $winui $name) | Should Be $true
+        }
+    }
+
     It 'preserves both File rows, component ownership and unrelated authoring' {
         $files = @(
             New-MediaTestFile 'A' 'same'
@@ -295,6 +338,10 @@ Describe 'Installer Smart Cabbing media' {
         [xml]$msiProject = Get-Content -LiteralPath "$installer\PowerToysSetupVNext\PowerToysInstallerVNext.wixproj"
         $nativeEvent = $nativeProject.SelectSingleNode('//*[local-name()="PreBuildEvent"]/*[local-name()="Command"]').InnerText
         $msiEvents = @($msiProject.Project.PropertyGroup | Where-Object { $_.PreBuildEvent } | ForEach-Object PreBuildEvent)
+        if ($msiEvents.Count -eq 0) {
+            # The MSI project has no pre-build step of its own; still exercise the native event.
+            $msiEvents = @('')
+        }
         $pipeline = Get-Content -LiteralPath (Join-Path $PSScriptRoot '..\v2\templates\steps-build-installer-vnext.yml') -Raw
         $supportStep = [regex]::Match($pipeline, '(?ms)^  - task: VSBuild@1\r?\n    displayName: Build Shared Support DLLs.*?(?=^  - |\z)').Value
         $pipelineFlag = [regex]::Match($supportStep, '(?m)^\s+IsPipeline:\s*[''"]?(\w+)').Groups[1].Value
@@ -317,7 +364,6 @@ Describe 'Installer Smart Cabbing media' {
                 $commands = $commands -replace '(?m)^.*call cmd /C "copy .*$', 'rem template backup'
                 $commands = $commands -replace '(?m)^.*call .*publish\.cmd.*$', "call `"$fixture\publish.cmd`""
                 $commands = $commands -replace '(?m)^.*call .*generateAllFileComponents\.ps1.*$', "call `"$fixture\harvest.cmd`""
-                $commands = $commands -replace '(?m)^.*call .*generateMonacoWxs\.ps1.*$', 'rem Monaco authoring'
                 $commands = $commands.Replace('$(CIBuild)', $case.CIBuild).Replace('$(Platform)', 'x64')
                 $commands = $commands.Replace('$(ProjectDir)', "$fixture\").Replace('$(SolutionDir)', "$fixture\")
                 Set-Content -LiteralPath "$fixture\events.cmd" -Value "@echo off`r`nset IsPipeline=$($case.IsPipeline)`r`n$commands"
