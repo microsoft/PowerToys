@@ -216,22 +216,27 @@ internal static class Event
 
                 Common.DesMachineID = newDesMachineID;
 
-                if (MachineStuff.desMachineID == Common.MachineID)
-                {
-                    if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
-                    {
-                        Clipboard.clipboardCopiedTime = 0;
-                        Clipboard.GetRemoteClipboard("PrepareToSwitchToMachine");
-                    }
-                }
-                else
-                {
-                    // Ask the new active machine to get clipboard data (if the data is too big)
-                    Common.SendPackage(MachineStuff.desMachineID, PackageType.MachineSwitched);
-                }
+                GetClipboardDataAfterSwitch("PrepareToSwitchToMachine");
 
                 _ = Interlocked.Increment(ref Common.switchCount);
             }
+        }
+    }
+
+    internal static void GetClipboardDataAfterSwitch(string postAction)
+    {
+        if (MachineStuff.desMachineID == Common.MachineID)
+        {
+            if (Common.GetTick() - Clipboard.clipboardCopiedTime < Clipboard.BIG_CLIPBOARD_DATA_TIMEOUT)
+            {
+                Clipboard.clipboardCopiedTime = 0;
+                Clipboard.GetRemoteClipboard(postAction);
+            }
+        }
+        else
+        {
+            // Ask the new active machine to get clipboard data (if the data is too big)
+            Common.SendPackage(MachineStuff.desMachineID, PackageType.MachineSwitched);
         }
     }
 
