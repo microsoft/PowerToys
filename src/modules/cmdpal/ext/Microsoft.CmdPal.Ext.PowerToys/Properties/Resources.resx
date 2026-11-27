@@ -455,6 +455,16 @@
   <data name="MouseUtils_MouseJump_Subtitle" xml:space="preserve">
     <value>Jump the pointer to a target</value>
   </data>
+  <data name="MouseUtils_SeamlessCursor_CalibrateFailed_Format" xml:space="preserve">
+    <value>Failed to open the monitor calibration: {0}</value>
+    <comment>{0} is the error message.</comment>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_Title" xml:space="preserve">
+    <value>Calibrate Seamless Multi-Screen Cursor</value>
+  </data>
+  <data name="MouseUtils_SeamlessCursor_Subtitle" xml:space="preserve">
+    <value>Align monitors so the pointer moves smoothly between them</value>
+  </data>
   <data name="MouseUtils_Settings_Subtitle" xml:space="preserve">
     <value>Open Mouse Utilities settings</value>
   </data>

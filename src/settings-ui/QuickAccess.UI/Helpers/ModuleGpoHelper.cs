@@ -44,6 +44,7 @@ internal static class ModuleGpoHelper
             ModuleType.Workspaces => GPOWrapper.GetConfiguredWorkspacesEnabledValue(),
             ModuleType.RegistryPreview => GPOWrapper.GetConfiguredRegistryPreviewEnabledValue(),
             ModuleType.MeasureTool => GPOWrapper.GetConfiguredScreenRulerEnabledValue(),
+            ModuleType.SeamlessCursor => GPOWrapper.GetConfiguredSeamlessCursorEnabledValue(),
             ModuleType.ShortcutGuide => GPOWrapper.GetConfiguredShortcutGuideEnabledValue(),
             ModuleType.PowerOCR => GPOWrapper.GetConfiguredTextExtractorEnabledValue(),
             ModuleType.ZoomIt => GPOWrapper.GetConfiguredZoomItEnabledValue(),

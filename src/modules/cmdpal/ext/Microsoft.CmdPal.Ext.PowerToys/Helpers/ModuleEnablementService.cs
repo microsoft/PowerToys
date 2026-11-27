@@ -134,6 +134,7 @@ internal static class ModuleEnablementService
         "CropAndLock" => "ConfigureEnabledUtilityCropAndLock",
         "AutoHideCursor" => "ConfigureEnabledUtilityAutoHideCursor",
         "CursorWrap" => "ConfigureEnabledUtilityCursorWrap",
+        "SeamlessCursor" => "ConfigureEnabledUtilitySeamlessCursor",
         "EnvironmentVariables" => "ConfigureEnabledUtilityEnvironmentVariables",
         "FancyZones" => "ConfigureEnabledUtilityFancyZones",
         "FileLocksmith" => "ConfigureEnabledUtilityFileLocksmith",
