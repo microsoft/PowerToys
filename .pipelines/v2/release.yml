@@ -16,7 +16,7 @@ parameters:
     default: false
 
   - name: versionNumber
-    displayName: "Version Override ('auto': release train + .1.0 on main, date-based on stable)"
+    displayName: "Version Override ('auto' generates a release-train version)"
     type: string
     default: 'auto'
 

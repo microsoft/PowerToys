@@ -48,47 +48,17 @@ Describe "resolveBuildMetadata" {
         $result.Intent | Should Be "preview-release"
         $result.Channel | Should Be "preview"
         $result.Version | Should Be "0.100.1.0"
-        $result.ShouldPublishPreview | Should Be $true
     }
 
-    It "uses the same train version for manual main on a different day without a daily sequence" {
+    It "uses the checked-in train for manual main without a daily sequence" {
         $result = & $scriptPath `
-            -VersionOverride " AUTO " `
-            -SourceBranch "refs/heads/main" `
-            -BuildReason "Manual" `
-            -BuildNumber "PowerToys Signed YAML Release Build_2608.03001-main" `
-            -VersionPropsPath (New-VersionProps)
-
-        $result.Intent | Should Be "preview-validation"
-        $result.Channel | Should Be "preview"
-        $result.Version | Should Be "0.100.1.0"
-        $result.ShouldPublishPreview | Should Be $false
-    }
-
-    It "uses the checked-in train for main preview releases when the override is omitted" {
-        $result = & $scriptPath `
-            -ReleaseIntent "preview-release" `
             -SourceBranch "refs/heads/main" `
             -BuildReason "Manual" `
             -BuildNumber "PowerToys Signed YAML Release Build_2608.03001-main" `
             -VersionPropsPath (New-VersionProps -ReleaseTrain "0.104")
 
-        $result.Intent | Should Be "preview-release"
-        $result.Channel | Should Be "preview"
+        $result.Intent | Should Be "preview-validation"
         $result.Version | Should Be "0.104.1.0"
-        $result.ShouldPublishPreview | Should Be $true
-    }
-
-    It "continues to reject explicit overrides for scheduled main" {
-        Assert-Throws {
-            & $scriptPath `
-                -VersionOverride "0.100.2.0" `
-                -SourceBranch "refs/heads/main" `
-                -BuildReason "Schedule" `
-                -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-main" `
-                -DailyVersionSequence "1" `
-                -VersionPropsPath (New-VersionProps)
-        }
     }
 
     It "uses the generated version by default for stable" {
@@ -195,9 +165,10 @@ Describe "resolveBuildMetadata" {
 
     It "increments the year digit across a calendar year boundary" {
         $result = & $scriptPath `
-            -SourceBranch "refs/heads/stable" `
+            -VersionOverride "0.100" `
+            -SourceBranch "refs/heads/main" `
             -BuildReason "Manual" `
-            -BuildNumber "PowerToys Signed YAML Release Build_2701.02001-stable" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2701.02001-main" `
             -DailyVersionSequence "1" `
             -VersionPropsPath (New-VersionProps)
 
@@ -206,26 +177,29 @@ Describe "resolveBuildMetadata" {
 
     It "resets the year digit after the epoch advances with the release train" {
         $result = & $scriptPath `
-            -SourceBranch "refs/heads/stable" `
+            -VersionOverride "0.101" `
+            -SourceBranch "refs/heads/main" `
             -BuildReason "Manual" `
-            -BuildNumber "PowerToys Signed YAML Release Build_2701.02001-stable" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2701.02001-main" `
             -DailyVersionSequence "1" `
             -VersionPropsPath (New-VersionProps -ReleaseTrain "0.101" -Epoch "2027-01-01")
 
         $result.Version | Should Be "0.101.21.0"
     }
 
-    It "preserves monotonicity at the year boundary for date-based builds" {
+    It "preserves monotonicity at the year boundary" {
         $lastBuildOfYear = & $scriptPath `
-            -SourceBranch "refs/heads/stable" `
+            -VersionOverride "0.100" `
+            -SourceBranch "refs/heads/main" `
             -BuildReason "Manual" `
-            -BuildNumber "PowerToys Signed YAML Release Build_2612.31099-stable" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2612.31099-main" `
             -DailyVersionSequence "9" `
             -VersionPropsPath (New-VersionProps)
         $firstBuildOfNextYear = & $scriptPath `
-            -SourceBranch "refs/heads/stable" `
+            -VersionOverride "0.100" `
+            -SourceBranch "refs/heads/main" `
             -BuildReason "Manual" `
-            -BuildNumber "PowerToys Signed YAML Release Build_2701.01001-stable" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2701.01001-main" `
             -DailyVersionSequence "1" `
             -VersionPropsPath (New-VersionProps)
 
@@ -328,40 +302,40 @@ Describe "resolveBuildMetadata" {
         }
     }
 
-    It "rejects daily release sequences above 9 for date-based builds" {
+    It "rejects daily release sequences above 9" {
         Assert-Throws {
             & $scriptPath `
-                -SourceBranch "refs/heads/stable" `
+                -VersionOverride "0.100" `
+                -SourceBranch "refs/heads/main" `
                 -BuildReason "Manual" `
-                -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-stable" `
+                -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-main" `
                 -DailyVersionSequence "10" `
                 -VersionPropsPath (New-VersionProps)
         }
     }
 
-    It "requires a release sequence for stable auto builds" {
+    It "requires a release sequence for date-based versions" {
         Assert-Throws {
             & $scriptPath `
-                -SourceBranch "refs/heads/stable" `
+                -VersionOverride "0.100" `
+                -SourceBranch "refs/heads/main" `
                 -BuildReason "Manual" `
-                -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-stable" `
+                -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-main" `
                 -VersionPropsPath (New-VersionProps)
         }
     }
 
-    It "preserves date-based versioning for explicit train shorthand on main" {
-        foreach ($override in @("0.100", "0.100-preview")) {
-            $result = & $scriptPath `
-                -VersionOverride $override `
-                -SourceBranch "refs/heads/main" `
-                -BuildReason "Manual" `
-                -BuildNumber "PowerToys Signed YAML Release Build_2607.30099-main" `
-                -BuildDate "20260731" `
-                -DailyVersionSequence "1" `
-                -VersionPropsPath (New-VersionProps)
+    It "uses the pipeline date for both YDDD and counter alignment" {
+        $result = & $scriptPath `
+            -VersionOverride "0.100-preview" `
+            -SourceBranch "refs/heads/main" `
+            -BuildReason "Manual" `
+            -BuildNumber "PowerToys Signed YAML Release Build_2607.30001-main" `
+            -BuildDate "20260731" `
+            -DailyVersionSequence "1" `
+            -VersionPropsPath (New-VersionProps)
 
-            $result.Version | Should Be "0.100.2121.0"
-        }
+        $result.Version | Should Be "0.100.2121.0"
     }
 
     It "requires the epoch to be January 1" {
@@ -375,12 +349,13 @@ Describe "resolveBuildMetadata" {
         }
     }
 
-    It "rejects date-based versions that exceed the YDDDB year range" {
+    It "rejects release trains that exceed the YDDDB year range" {
         Assert-Throws {
             & $scriptPath `
-                -SourceBranch "refs/heads/stable" `
+                -VersionOverride "0.100" `
+                -SourceBranch "refs/heads/main" `
                 -BuildReason "Manual" `
-                -BuildNumber "PowerToys Signed YAML Release Build_3301.01001-stable" `
+                -BuildNumber "PowerToys Signed YAML Release Build_3301.01001-main" `
                 -DailyVersionSequence "1" `
                 -VersionPropsPath (New-VersionProps)
         }

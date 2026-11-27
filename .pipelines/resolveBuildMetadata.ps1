@@ -184,7 +184,7 @@ function Get-ReleaseDailySequence {
     param([AllowEmptyString()][string]$Sequence)
 
     if ([string]::IsNullOrWhiteSpace($Sequence)) {
-        throw "DailyVersionSequence is required for date-based release versions"
+        throw "DailyVersionSequence is required for main and stable builds"
     }
 
     if ($Sequence -notmatch "^\d+$") {
@@ -322,19 +322,20 @@ if ($isMain) {
 
     $intent = if ($isScheduled -or $ReleaseIntent -eq "preview-release") { "preview-release" } else { "preview-validation" }
     $channel = "preview"
-    if ([string]::IsNullOrWhiteSpace($VersionOverride)) {
-        $version = "$releaseTrain.1.0"
+    $version = if ([string]::IsNullOrWhiteSpace($VersionOverride)) {
+        "$releaseTrain.1.0"
     }
     else {
-        $version = Get-PreviewVersionOverride -ReleaseTrain $releaseTrain -Override $VersionOverride
-        if ($null -eq $version) {
-            $version = Get-AutomaticReleaseVersion `
-                -ReleaseTrain $releaseTrain `
-                -Epoch $releaseMetadata.Epoch `
-                -BuildStamp $buildStamp `
-                -DateOverride $BuildDate `
-                -DailySequence $DailyVersionSequence
-        }
+        Get-PreviewVersionOverride -ReleaseTrain $releaseTrain -Override $VersionOverride
+    }
+
+    if ($null -eq $version) {
+        $version = Get-AutomaticReleaseVersion `
+            -ReleaseTrain $releaseTrain `
+            -Epoch $releaseMetadata.Epoch `
+            -BuildStamp $buildStamp `
+            -DateOverride $BuildDate `
+            -DailySequence $DailyVersionSequence
     }
     $allowPublicSymbols = $false
     $shouldPublishPreview = $intent -eq "preview-release"
