@@ -11,6 +11,9 @@ parameters:
   - name: additionalBuildOptions
     type: string
     default: ''
+  - name: skipMsiIceValidation
+    type: boolean
+    default: false
 
 steps:
   # Install WiX 5.0.2 tools needed for VNext installer (matching project SDK)
@@ -93,6 +96,7 @@ steps:
         -restore
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
+        ${{ iif(parameters.skipMsiIceValidation, '/p:SuppressValidation=true', '') }}
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -109,6 +113,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
+        ${{ iif(parameters.skipMsiIceValidation, '/p:SuppressValidation=true', '') }}
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)

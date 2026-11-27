@@ -2,6 +2,9 @@ parameters:
   - name: additionalBuildOptions
     type: string
     default: ''
+  - name: skipMsiIceValidation
+    type: boolean
+    default: false
   - name: buildConfigurations
     type: object
     default:
@@ -617,6 +620,7 @@ jobs:
       signingIdentity: ${{ parameters.signingIdentity }}
       versionNumber: $(EffectiveVersionNumber)
       additionalBuildOptions: ${{ parameters.additionalBuildOptions }}
+      skipMsiIceValidation: ${{ parameters.skipMsiIceValidation }}
 
   # This saves ~1GiB per architecture. We won't need these later.
   # Removes:
