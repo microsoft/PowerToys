@@ -84,6 +84,7 @@ public record SettingsModel
 
     public bool ShowSystemTrayIcon { get; init; } = true;
 
+    public bool ShowThemeAdaptiveTrayIcon { get; init; }
     public string Language { get; init; } = string.Empty;
 
     public TrayIconClickAction TrayIconClickAction { get; init; } = TrayIconClickAction.OpenQuickActions;
