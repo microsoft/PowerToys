@@ -64,7 +64,8 @@ stages:
           prepareUmdfHid: ${{ and(or(eq(parameters.platform, 'x64'), and(eq(parameters.platform, 'arm64'), ne(parameters.umdfHidArm64Image, ''))), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'GrabAndMove.UITests'))) }}
           prepareUmdfDisplay: ${{ and(or(eq(parameters.platform, 'x64'), and(eq(parameters.platform, 'arm64'), ne(parameters.umdfHidArm64Image, ''))), or(eq(length(parameters.uiTestModules), 0), containsValue(parameters.uiTestModules, 'PowerDisplay.UITests'))) }}
           useVSPreview: ${{ parameters.useVSPreview }}
-          timeoutInMinutes: 90
+          # Leave time for the optional driver fixtures and post-build CodeQL finalization.
+          timeoutInMinutes: 120
 
   # Stage 2: run the selected suites on each applicable Windows test image.
   - ${{ if eq(parameters.platform, 'x64') }}:
