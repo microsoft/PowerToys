@@ -40,7 +40,9 @@ namespace KeyboardEventHandlers
     // Function to handle an "Alone" single key remap (dual-key / Karabiner to_if_alone): applies the
     // remapped action only when the source key is tapped alone; in combination the original key passes
     // through. Must run before HandleSingleKeyRemapEvent in the hook dispatch chain.
-    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+    // promotedKeys, if given, receives the alone keys whose original key-down was injected in this
+    // call because another key went down (see PromotePendingAloneKeysToCombination).
+    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, std::vector<DWORD>* promotedKeys = nullptr) noexcept;
 
     // Function to handle a single-key-to-sequence remap (#5679): pressing the source key sends an
     // ordered list of key taps (down+up each), in order, once per press. The source key's own key-down
@@ -87,15 +89,17 @@ namespace KeyboardEventHandlers
     // Handles the first key-down of a press: if the key (the virtual key of this key-down) has a
     // sequence remap, sends the sequence. Records the outcome for the rest of the press and returns
     // it: Suppress, Forwarded (no sequence remap), or PassThrough (the injection failed).
-    SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+    // keysJustPressed: keys that Keyboard Manager pressed earlier in this same hook call (the
+    // "Alone" remap's promoted keys); they count as down although the key state may not show them yet.
+    SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::vector<DWORD>& keysJustPressed = {}) noexcept;
 
     // Promote every currently-pending ("tap candidate") "Alone" key into a started combination by
     // injecting its original key-down as a real key/modifier, so in-combination behavior works (e.g.
     // Right Ctrl acting as Ctrl for Ctrl+H, Ctrl+Click or Ctrl+Wheel). Shared by the keyboard
     // combination path (another key was pressed) and the low-level mouse hook (a click/scroll while an
     // alone key is held). `exceptKey` is left pending (used to skip the alone key's own auto-repeat);
-    // pass 0 to promote all pending keys.
-    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey = 0) noexcept;
+    // pass 0 to promote all pending keys. pressedKeys, if given, receives each key whose key-down was injected.
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey = 0, std::vector<DWORD>* pressedKeys = nullptr) noexcept;
 
     // Append a key event that re-injects an "Alone" key's ORIGINAL (source) key while preserving its
     // numpad origin. Alone keys are tracked by the numpad-origin-encoded value of

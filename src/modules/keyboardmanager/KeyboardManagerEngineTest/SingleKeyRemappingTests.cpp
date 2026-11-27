@@ -598,7 +598,9 @@ namespace RemappingLogicTests
             TestHelpers::ResetTestEnv(mockedInputHandler, testState);
 
             // Bind the alone-remap handler under test as the hook procedure.
-            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = std::bind(&KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent, std::ref(mockedInputHandler), std::placeholders::_1, std::ref(testState));
+            std::function<intptr_t(LowlevelKeyboardEvent*)> currentHookProc = [this](LowlevelKeyboardEvent* data) {
+                return KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(mockedInputHandler, data, testState);
+            };
             mockedInputHandler.SetHookProc(currentHookProc);
         }
 
@@ -2235,6 +2237,53 @@ namespace RemappingLogicTests
             TargetJustPressedByTheAloneRemap(false);
         }
 
+        // Right Ctrl has an "Alone" remap, and Right Ctrl+X -> Z. Right Ctrl is held and X pressed:
+        // the Alone remap makes Right Ctrl a real Ctrl, and the shortcut remap then releases it and
+        // presses Z. The Alone remap still has Right Ctrl as part of a combination, but the system
+        // sees it up. F1 -> Right Ctrl, A must tap Right Ctrl (down and up), not press it only and
+        // leave Ctrl down for A and for everything after.
+        void TargetPressedByTheAloneRemapButReleasedSince(const bool queuedDelivery)
+        {
+            testState.AddSingleKeyAloneRemap(VK_RCONTROL, static_cast<DWORD>(VK_ESCAPE));
+            Shortcut src;
+            src.SetKey(VK_RCONTROL);
+            src.SetKey(0x58);
+            testState.AddOSLevelShortcut(src, static_cast<DWORD>(0x5A));
+            ReloadSequenceRemaps({ { VK_F1, { VK_RCONTROL, 0x41 } } });
+            mockedInputHandler.SetQueuedDelivery(queuedDelivery);
+
+            // With queued injection the shortcut handler does not see the promoted Right Ctrl yet at
+            // the first X key-down; it takes the shortcut at the auto-repeat.
+            SendKey(VK_RCONTROL, false);
+            SendKey(0x58, false);
+            SendKey(0x58, false);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL), ToText(DeliveredFrom(0)).c_str());
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(0x5A), ToText(DeliveredFrom(0)).c_str());
+
+            const size_t first = mockedInputHandler.GetDeliveredEvents().size();
+            SendKey(VK_F1, false);
+            const KeyTrace expected = { { VK_RCONTROL, false }, { VK_RCONTROL, true }, { 0x41, false }, { 0x41, true } };
+            Assert::IsTrue(DeliveredFrom(first, { VK_RCONTROL, 0x41 }) == expected, ToText(DeliveredFrom(first)).c_str());
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+
+            SendKey(VK_F1, true);
+            SendKey(0x58, true);
+            SendKey(VK_RCONTROL, true);
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(VK_RCONTROL));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x5A));
+            Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(0x41));
+        }
+
+        TEST_METHOD (SequenceRemap_TargetPressedByTheAloneRemapButReleasedSince_IsTapped_QueuedInjection)
+        {
+            TargetPressedByTheAloneRemapButReleasedSince(true);
+        }
+
+        TEST_METHOD (SequenceRemap_TargetPressedByTheAloneRemapButReleasedSince_IsTapped_NestedInjection)
+        {
+            TargetPressedByTheAloneRemapButReleasedSince(false);
+        }
+
         // The same target is tapped as before when it is not down.
         TEST_METHOD (SequenceRemap_TargetNotHeld_IsTapped)
         {
@@ -2519,6 +2568,61 @@ namespace RemappingLogicTests
             SendKey(0x58, true);
             SendKey(VK_LCONTROL, true);
             Assert::IsTrue(testState.SequencePresses().Empty());
+        }
+
+        // Left Ctrl+X -> Left Shift for every app, and Left Shift+A -> Left Alt+B for one app, both
+        // invoked (the second fed by the first). F1 -> C puts the app remap back, which presses Left
+        // Shift again. The OS-level remap is judged after that: its target is down then, so it stays
+        // invoked, as when the same events go through the hook one at a time, and its own release
+        // lifts Left Shift. Judged on the key state from before the batch, it was reset as well and
+        // nothing released Left Shift.
+        void TwoChainedShortcutRemapsPutBack(const bool queuedDelivery)
+        {
+            const std::wstring app = L"testprocess1.exe";
+            Shortcut global;
+            global.SetKey(VK_LCONTROL);
+            global.SetKey(0x58);
+            testState.AddOSLevelShortcut(global, static_cast<DWORD>(VK_LSHIFT));
+            Shortcut appSrc;
+            appSrc.SetKey(VK_LSHIFT);
+            appSrc.SetKey(0x41);
+            Shortcut appDest;
+            appDest.SetKey(VK_LMENU);
+            appDest.SetKey(0x42);
+            testState.AddAppSpecificShortcut(app, appSrc, appDest);
+            mockedInputHandler.SetForegroundProcess(app);
+            ReloadSequenceRemaps({ { VK_F1, { 0x43 } } });
+            mockedInputHandler.SetQueuedDelivery(queuedDelivery);
+
+            SendKey(VK_LCONTROL, false);
+            SendKey(0x58, false);
+            SendKey(0x41, false);
+            Assert::IsTrue(testState.GetShortcutRemapTable(std::nullopt)[global].isShortcutInvoked, ToText(DeliveredFrom(0)).c_str());
+            Assert::IsTrue(testState.GetShortcutRemapTable(app)[appSrc].isShortcutInvoked, ToText(DeliveredFrom(0)).c_str());
+
+            SendKey(VK_F1, false);
+            Assert::IsTrue(testState.GetShortcutRemapTable(std::nullopt)[global].isShortcutInvoked, ToText(DeliveredFrom(0)).c_str());
+            Assert::AreEqual(true, mockedInputHandler.GetVirtualKeyState(VK_LSHIFT), ToText(DeliveredFrom(0)).c_str());
+
+            SendKey(VK_F1, true);
+            SendKey(0x41, true);
+            SendKey(0x58, true);
+            SendKey(VK_LCONTROL, true);
+            const std::vector<int> keys = { VK_LSHIFT, VK_LMENU, VK_LCONTROL, 0x41, 0x42, 0x43 };
+            for (const int key : keys)
+            {
+                Assert::AreEqual(false, mockedInputHandler.GetVirtualKeyState(key), (std::to_wstring(key) + L" left down: " + ToText(DeliveredFrom(0))).c_str());
+            }
+        }
+
+        TEST_METHOD (SequenceRemap_TwoChainedShortcutRemapsPutBack_LeaveNoKeyDown_QueuedInjection)
+        {
+            TwoChainedShortcutRemapsPutBack(true);
+        }
+
+        TEST_METHOD (SequenceRemap_TwoChainedShortcutRemapsPutBack_LeaveNoKeyDown_NestedInjection)
+        {
+            TwoChainedShortcutRemapsPutBack(false);
         }
 
         // A shortcut remapped to a key, with the original action key released: the shortcut remap is

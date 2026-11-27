@@ -249,11 +249,6 @@ public:
     // candidate) or already promoted to a combination. Used on a key-down to tell that the key was
     // pressed while another alone key was down, so it is part of a combination and not a solo tap.
     bool HasOtherHeldAloneKey(const DWORD except) const;
-    // True if the "Alone" remap holds this key down for the system: an alone key that was promoted
-    // to a combination, so its real key-down was injected and its key-up was not yet. `key` is a
-    // plain virtual key (the alone keys are recorded numpad-origin encoded). The key state may
-    // not show such a key as down yet, when its key-down was injected a moment ago.
-    bool IsKeyHeldDownByAloneCombination(const DWORD key) const;
 
     bool CheckShortcutRemapInvoked(const std::optional<std::wstring>& appName);
 
