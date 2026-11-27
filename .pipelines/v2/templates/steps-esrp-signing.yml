@@ -8,14 +8,10 @@ parameters:
   - name: signingIdentity
     type: object
     default: {}
-  - name: condition
-    type: string
-    default: succeeded()
 
 steps:
   - task: EsrpCodeSigning@6
     displayName: 🔏 ${{ parameters.displayName }}
-    condition: ${{ parameters.condition }}
     inputs:
       ConnectedServiceName: ${{ parameters.signingIdentity.serviceName }}
       AppRegistrationClientId: ${{ parameters.signingIdentity.appId }}

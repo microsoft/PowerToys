@@ -138,8 +138,6 @@ jobs:
           ${{ config }}_${{ platform }}:
             BuildConfiguration: ${{ config }}
             BuildPlatform: ${{ platform }}
-            ${{ if eq(parameters.codeSign, true) }}:
-              CoreSigningPendingAnalysisWaitMinutes: ${{ iif(eq(platform, 'x64'), '10', '5') }}
             ${{ if eq(platform, 'x86') }}:
               OutputBuildPlatform: Win32
             ${{ elseif eq(platform, 'Any CPU') }}:
@@ -215,7 +213,6 @@ jobs:
         $result = Invoke-Pester -Script @(
             '.pipelines/tests/versionAndSignCheck.Tests.ps1',
             '.pipelines/tests/winmdSigningPolicy.Tests.ps1',
-            '.pipelines/tests/splitCoreSigningPolicy.Tests.ps1',
             '.pipelines/tests/resolveBuildMetadata.Tests.ps1'
         ) -PassThru
         if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
@@ -652,43 +649,6 @@ jobs:
         }
       displayName: Remove tests folder before signing
 
-    # Generate separate ESRP policies for the Core signing tasks.
-    - task: PowerShell@2
-      displayName: Split Core signing policy
-      inputs:
-        targetType: filePath
-        filePath: '$(Build.SourcesDirectory)\.pipelines\splitCoreSigningPolicy.ps1'
-        arguments: >-
-          -PolicyFile "$(Build.SourcesDirectory)\.pipelines\ESRPSigning_core.json"
-          -OutputDirectory "$(Agent.TempDirectory)"
-          -Platform "$(BuildPlatform)"
-          -BuildOutputDirectory "$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)"
-        pwsh: true
-
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign File Locksmith binaries (x64)
-        condition: and(succeeded(), eq(variables['BuildPlatform'], 'x64'))
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
-          signType: batchSigning
-          batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.filelocksmith.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-          MaxConcurrency: '20'
-          PendingAnalysisWaitTimeoutMinutes: '$(CoreSigningPendingAnalysisWaitMinutes)'
-
-    - template: steps-esrp-signing.yml
-      parameters:
-        displayName: Sign Core PowerToys resource DLLs
-        signingIdentity: ${{ parameters.signingIdentity }}
-        inputs:
-          FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
-          signType: batchSigning
-          batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.resources.json'
-          ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-          MaxConcurrency: '20'
-
     - template: steps-esrp-signing.yml
       parameters:
         displayName: Sign Core PowerToys
@@ -696,10 +656,8 @@ jobs:
         inputs:
           FolderPath: '$(BuildPlatform)/$(BuildConfiguration)'
           signType: batchSigning
-          batchSignPolicyFile: '$(Agent.TempDirectory)\ESRPSigning_core.binaries.json'
+          batchSignPolicyFile: '$(build.sourcesdirectory)\.pipelines\ESRPSigning_core.json'
           ciPolicyFile: '$(build.sourcesdirectory)\.pipelines\CIPolicy.xml'
-          MaxConcurrency: '20'
-          PendingAnalysisWaitTimeoutMinutes: '$(CoreSigningPendingAnalysisWaitMinutes)'
 
     - template: steps-esrp-signing.yml
       parameters:
