@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.Win32;
 using Forms = System.Windows.Forms;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
@@ -169,6 +170,44 @@ public sealed partial class ZoomItTests
     }
 
     [TestMethod]
+    public void DemoTypeFileCanBeClearedAndSelectedAgain()
+    {
+        const string script = "The source file survives Clear.[end]";
+        const string cardId = "ZoomItDemoTypeFile";
+        var path = PrepareDemoScript(script);
+        ui.WaitForCardText(cardId, path);
+        var shortcut = ZoomItState.Read("DemoTypeToggleKey");
+        var speed = ZoomItState.Read("DemoTypeSpeedSlider");
+        var userDrivenMode = ZoomItState.Read("DemoTypeUserDrivenMode");
+        var clear = ui.Control<Button>(cardId, "Button", ZoomItUi.DemoTypeClearButtonId);
+        Assert.IsTrue(clear.WaitForProperty("IsEnabled", "True", 10_000), "Clear must be enabled after selecting a file.");
+        clear.Invoke(msPostAction: 0);
+
+        ui.WaitForSetting("DemoTypeFile", string.Empty);
+        ui.WaitForCardText(cardId, "No input file selected");
+        clear = ui.Control<Button>(cardId, "Button", ZoomItUi.DemoTypeClearButtonId);
+        Assert.IsTrue(clear.WaitForProperty("IsEnabled", "False", 10_000), "Clear must be disabled when no file is selected.");
+        Assert.IsTrue(ui.Control<Button>(cardId, "Button", ZoomItUi.DemoTypeBrowseButtonId).IsEnabled, "Browse must remain available after Clear.");
+        using (var key = Registry.CurrentUser.OpenSubKey(ZoomItState.RegistryPath))
+        {
+            Assert.IsNotNull(key);
+            Assert.AreEqual(RegistryValueKind.String, key.GetValueKind("DemoTypeFile"), "Clear must persist an empty REG_SZ, not delete the value.");
+        }
+
+        Assert.AreEqual(script, File.ReadAllText(path), "Clear must not modify or delete the source file.");
+        Assert.AreEqual(shortcut, ZoomItState.Read("DemoTypeToggleKey"), "Clear must preserve the shortcut.");
+        Assert.AreEqual(speed, ZoomItState.Read("DemoTypeSpeedSlider"), "Clear must preserve typing speed.");
+        Assert.AreEqual(userDrivenMode, ZoomItState.Read("DemoTypeUserDrivenMode"), "Clear must preserve manual mode.");
+        SaveDesktop("demo-type-cleared");
+
+        var replacement = PrepareDemoScript("A newly selected file.[end]");
+        ui.WaitForCardText(cardId, replacement);
+        clear = ui.Control<Button>(cardId, "Button", ZoomItUi.DemoTypeClearButtonId);
+        Assert.IsTrue(clear.WaitForProperty("IsEnabled", "True", 10_000), "Selecting another file must enable Clear again.");
+        SaveDesktop("demo-type-reselected");
+    }
+
+    [TestMethod]
     [DataRow("")]
     [DataRow("    ")]
     [DataRow("prefix ")]
@@ -285,12 +324,13 @@ public sealed partial class ZoomItTests
         TestContext.WriteLine("Checklist 18: sound selection and real timer expiration are automated. Audible playback requires an audio-output-equipped machine; these VMs cannot establish that signal.");
     }
 
-    private void PrepareDemoScript(string script)
+    private string PrepareDemoScript(string script)
     {
         Directory.CreateDirectory(fixtureDirectory);
         var path = Path.Combine(fixtureDirectory, Guid.NewGuid().ToString("N") + ".txt");
         File.WriteAllText(path, script, Encoding.Unicode);
-        ui.PickFile("ZoomItDemoTypeFile", path, "DemoTypeFile");
+        ui.PickFile("ZoomItDemoTypeFile", path, "DemoTypeFile", ZoomItUi.DemoTypeBrowseButtonId);
+        return path;
     }
 
     private Element OpenNotepad()
