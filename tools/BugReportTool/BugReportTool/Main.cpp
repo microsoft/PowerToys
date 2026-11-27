@@ -224,6 +224,16 @@ bool DeleteFolder(wstring path)
     return true;
 }
 
+// The report is stopped before it is zipped: delete the working copy, which may still hold data that was not hidden
+// yet. If that fails, the file that could not be cleaned is probably what stops the delete: say where the copy is.
+void DeleteReportCopyOrSayWhere(const path& reportDir)
+{
+    if (!DeleteFolder(reportDir))
+    {
+        wprintf_s(L"The report's working copy was left in %s; delete it by hand\n", reportDir.c_str());
+    }
+}
+
 // A Keyboard Manager file whose private data could not be hidden must not stay in the report as it is: either it
 // could not be parsed, so it cannot be searched for private data, or the result could not be written back. Leave a
 // short note in its place, worded for both cases: that the file could not be processed is useful for diagnosis.
@@ -564,7 +574,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     auto reportDir = temp_directory_path() / "PowerToys\\";
     if (!DeleteFolder(reportDir))
     {
-        printf("Failed to delete temp folder\n");
+        // A copy left by an earlier run may hold data that was never hidden: say where it is.
+        wprintf_s(L"Failed to delete the working copy left by an earlier run in %s; delete it by hand\n", reportDir.c_str());
     }
 
     try
@@ -589,6 +600,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     catch (...)
     {
         printf("Failed to copy PowerToys folder\n");
+        DeleteReportCopyOrSayWhere(reportDir);
         return 1;
     }
 
@@ -610,12 +622,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     if (!HideUserPrivateInfo(reportDir))
     {
         printf("Failed to remove private Keyboard Manager data from the report; no report was created\n");
-        if (!DeleteFolder(reportDir))
-        {
-            // The file that could not be cleaned is probably what stops the delete: say where the copy is left.
-            wprintf_s(L"The report's working copy was left in %s; delete it by hand\n", reportDir.c_str());
-        }
-
+        DeleteReportCopyOrSayWhere(reportDir);
         return 1;
     }
 
@@ -658,7 +665,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     catch (const std::exception& error)
     {
         printf("Failed to redact report data: %s\n", error.what());
-        DeleteFolder(reportDir);
+        DeleteReportCopyOrSayWhere(reportDir);
         return 1;
     }
 

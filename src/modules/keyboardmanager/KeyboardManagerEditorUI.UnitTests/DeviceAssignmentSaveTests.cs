@@ -333,9 +333,11 @@ namespace KeyboardManagerEditorUI.UnitTests
         }
 
         // A hand edit left deviceProfiles.json unparsable (or "null", or empty). It cannot name a new
-        // profile, so creating one still works; the file is left as it is.
+        // profile, so creating one still works; the file is left as it is. The name only inside a
+        // longer string (a keyboard named "Office Keyboard") does not count.
         [DataTestMethod]
         [DataRow("{ \"map\": [], \"cycleHotkey\": { \"key\": 112, }, ")]
+        [DataRow("{ \"map\": [ { \"device\": \"k1\", \"name\": \"Office Keyboard\", \"profile\": \"Home\" } ], \"cycleHotkey\": { \"key\": 112, }, ")]
         [DataRow("null")]
         [DataRow("")]
         public void CreateProfile_WhenTheFileCannotBeParsedAndDoesNotNameTheProfile_Works(string content)

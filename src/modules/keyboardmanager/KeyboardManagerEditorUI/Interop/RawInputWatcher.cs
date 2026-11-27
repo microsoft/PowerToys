@@ -222,6 +222,8 @@ namespace KeyboardManagerEditorUI.Interop
                 DispatchMessageW(ref msg);
             }
 
+            // The loop can also end without Stop() (a WM_QUIT from elsewhere): clear the id here too.
+            _threadId = 0;
             DestroyWindow(hwnd);
             UnregisterClassW(className, wc.HInstance);
         }

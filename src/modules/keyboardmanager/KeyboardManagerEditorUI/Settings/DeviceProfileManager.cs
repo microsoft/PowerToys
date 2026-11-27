@@ -297,9 +297,11 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        // For a file that could not be loaded: whether its text may name the profile, as written by
-        // hand or as the serializer escapes it (non-ASCII as \uXXXX). True when the text cannot be
-        // read at all (held open by another process), so the caller fails as it should.
+        // For a file that could not be loaded: whether its text may name the profile, as a whole JSON
+        // string, written by hand or as the serializer escapes it (non-ASCII as \uXXXX). Only a whole
+        // string counts, so a profile "HHKB" is not blocked by a keyboard named "HHKB Professional" or
+        // a profile "Map" by the key "map". True when the text cannot be read at all (held open by
+        // another process), so the caller fails as it should.
         private static bool MayNameProfile(string profile)
         {
             string text;
@@ -312,8 +314,8 @@ namespace KeyboardManagerEditorUI.Settings
                 return true;
             }
 
-            return text.Contains(profile, StringComparison.OrdinalIgnoreCase) ||
-                text.Contains(JsonEncodedText.Encode(profile).ToString(), StringComparison.OrdinalIgnoreCase);
+            return text.Contains($"\"{profile}\"", StringComparison.OrdinalIgnoreCase) ||
+                text.Contains($"\"{JsonEncodedText.Encode(profile)}\"", StringComparison.OrdinalIgnoreCase);
         }
 
         // Reads the file for a read-modify-write. Unlike Load(), a file that exists but cannot be
