@@ -13,6 +13,7 @@ using global::PowerToys.GPOWrapper;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Helpers;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using Microsoft.PowerToys.Settings.UI.SerializationContext;
@@ -171,6 +172,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     _powerOcrSettings.Properties.ActivationShortcut = value ?? _powerOcrSettings.Properties.DefaultActivationShortcut;
                     OnPropertyChanged(nameof(ActivationShortcut));
+
+                    _settingsUtils.SaveSettings(_powerOcrSettings.ToJsonString(), PowerOcrSettings.ModuleName);
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
+        public int DefaultCaptureMode
+        {
+            get => (int)_powerOcrSettings.Properties.DefaultCaptureMode;
+            set
+            {
+                var mode = (PowerOcrCaptureMode)value;
+                if (Enum.IsDefined(mode) && mode != _powerOcrSettings.Properties.DefaultCaptureMode)
+                {
+                    _powerOcrSettings.Properties.DefaultCaptureMode = mode;
+                    OnPropertyChanged(nameof(DefaultCaptureMode));
 
                     _settingsUtils.SaveSettings(_powerOcrSettings.ToJsonString(), PowerOcrSettings.ModuleName);
                     NotifySettingsChanged();

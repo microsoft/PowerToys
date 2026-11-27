@@ -4,6 +4,8 @@
 
 using System;
 
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
+
 namespace PowerOCR.Settings;
 
 public interface IUserSettings : IDisposable
@@ -11,6 +13,8 @@ public interface IUserSettings : IDisposable
     SettingItem<string> ActivationShortcut { get; }
 
     SettingItem<string> PreferredLanguage { get; }
+
+    SettingItem<PowerOcrCaptureMode> DefaultCaptureMode { get; }
 
     void SendSettingsTelemetry();
 }

@@ -46,6 +46,21 @@ Sets the preferred language for OCR recognition.
 **Type:** string  
 **Default:** System language
 
+### DefaultCaptureMode
+
+Sets the capture mode Text Extractor starts in each time it opens. Pressing S or T in the overlay still changes it for one capture.
+
+**Type:** integer  
+**Allowed values:**
+
+- `0` - Normal
+- `1` - Single line
+- `2` - Table
+
+**Default:** `0`
+
+The value must be an integer. Values outside this list are treated as `0`.
+
 ## Examples
 
 ### Example 1 - Configure activation shortcut with direct execution

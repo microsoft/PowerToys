@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 
 using ManagedCommon;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Telemetry;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -75,6 +76,11 @@ internal sealed partial class OverlayManager : IOverlayManager
         var session = new OverlaySession(viewModel);
         _session = session;
         PopulateLanguages(viewModel);
+
+        // Each session starts in the Settings default; S and T change it for this capture only.
+        var defaultCaptureMode = _userSettings.DefaultCaptureMode.Value;
+        viewModel.IsSingleLine = defaultCaptureMode == PowerOcrCaptureMode.SingleLine;
+        viewModel.IsTable = defaultCaptureMode == PowerOcrCaptureMode.Table;
 
         var displays = DisplayArea.FindAll();
         if (displays.Count == 0)

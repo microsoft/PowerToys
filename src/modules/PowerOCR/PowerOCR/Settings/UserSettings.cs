@@ -9,6 +9,7 @@ using System.Threading;
 
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
+using Microsoft.PowerToys.Settings.UI.Library.Enumerations;
 using Microsoft.PowerToys.Settings.UI.Library.Utilities;
 using PowerOCR.Helpers;
 
@@ -30,6 +31,7 @@ namespace PowerOCR.Settings
             _settingsUtils = SettingsUtils.Default;
             ActivationShortcut = new SettingItem<string>(DefaultActivationShortcut);
             PreferredLanguage = new SettingItem<string>(string.Empty);
+            DefaultCaptureMode = new SettingItem<PowerOcrCaptureMode>(PowerOcrCaptureMode.Normal);
 
             LoadSettingsFromJson();
 
@@ -40,6 +42,8 @@ namespace PowerOCR.Settings
         public SettingItem<string> ActivationShortcut { get; private set; }
 
         public SettingItem<string> PreferredLanguage { get; private set; }
+
+        public SettingItem<PowerOcrCaptureMode> DefaultCaptureMode { get; private set; }
 
         private void LoadSettingsFromJson()
         {
@@ -63,6 +67,7 @@ namespace PowerOCR.Settings
                             {
                                 ActivationShortcut.Value = settings.Properties.ActivationShortcut.ToString();
                                 PreferredLanguage.Value = settings.Properties.PreferredLanguage.ToString();
+                                DefaultCaptureMode.Value = settings.Properties.DefaultCaptureMode;
                             }
 
                             retry = false;

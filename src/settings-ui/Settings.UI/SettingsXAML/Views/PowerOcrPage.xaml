@@ -66,6 +66,16 @@
                             Loaded="TextExtractor_ComboBox_Loaded"
                             SelectedIndex="{x:Bind Path=ViewModel.LanguageIndex, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
                     </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard Name="TextExtractorDefaultCaptureMode" x:Uid="TextExtractor_DefaultCaptureMode">
+                        <ComboBox
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="TextExtractorDefaultCaptureModeComboBox"
+                            SelectedIndex="{x:Bind Path=ViewModel.DefaultCaptureMode, Mode=TwoWay}">
+                            <ComboBoxItem x:Uid="TextExtractor_DefaultCaptureMode_Normal" />
+                            <ComboBoxItem x:Uid="TextExtractor_DefaultCaptureMode_SingleLine" />
+                            <ComboBoxItem x:Uid="TextExtractor_DefaultCaptureMode_Table" />
+                        </ComboBox>
+                    </tkcontrols:SettingsCard>
                 </controls:SettingsGroup>
             </StackPanel>
         </controls:SettingsPageControl.ModuleContent>
