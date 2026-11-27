@@ -177,15 +177,25 @@ namespace RemappingLogicTests
             Assert::IsTrue(KeyboardManagerSettingsFile::NextProfileInCycle({ L"default", L"Work" }, L"default", none).empty());
 
             // The same profile listed twice in different case is not "another" profile.
-            Assert::IsTrue(KeyboardManagerSettingsFile::NextProfileInCycle({ L"Work", L"work" }, L"Work", all).empty());
+            Assert::IsTrue(KeyboardManagerSettingsFile::NextProfileInCycle({ L"Default", L"default" }, L"default", all).empty());
         }
 
-        // The active profile is not in the list (e.g. "default" when the list holds only named
-        // profiles): the cycle starts at the first entry.
+        // "default" is in the editor's picker also when the list does not name it, so the cycle
+        // can go back to it: a list of only named profiles must not be a one-way street.
+        TEST_METHOD (NextProfileInCycle_IncludesDefault_WhenTheListDoesNotNameIt)
+        {
+            const auto all = [](const std::wstring&) { return true; };
+            Assert::AreEqual(std::wstring(L"Work"), KeyboardManagerSettingsFile::NextProfileInCycle({ L"Work" }, L"default", all));
+            Assert::AreEqual(std::wstring(L"default"), KeyboardManagerSettingsFile::NextProfileInCycle({ L"Work" }, L"Work", all));
+            Assert::AreEqual(std::wstring(L"default"), KeyboardManagerSettingsFile::NextProfileInCycle({ L"Work", L"Home" }, L"Home", all));
+        }
+
+        // The active profile is not in the list (its entry was removed by hand): the cycle starts
+        // at the first entry.
         TEST_METHOD (NextProfileInCycle_FromAProfileThatIsNotListed_GoesToTheFirstEntry)
         {
             const auto all = [](const std::wstring&) { return true; };
-            Assert::AreEqual(std::wstring(L"Work"), KeyboardManagerSettingsFile::NextProfileInCycle({ L"Work", L"Home" }, L"default", all));
+            Assert::AreEqual(std::wstring(L"default"), KeyboardManagerSettingsFile::NextProfileInCycle({ L"default", L"Work", L"Home" }, L"Gone", all));
         }
 
         // Another program keeps the file open without delete sharing for the whole call (as a reader

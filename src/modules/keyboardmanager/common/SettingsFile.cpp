@@ -126,8 +126,25 @@ namespace KeyboardManagerSettingsFile
         return CompareStringOrdinal(left.c_str(), static_cast<int>(left.size()), right.c_str(), static_cast<int>(right.size()), TRUE) == CSTR_EQUAL;
     }
 
-    std::wstring NextProfileInCycle(const std::vector<std::wstring>& profiles, const std::wstring& current, const std::function<bool(const std::wstring&)>& canActivate)
+    std::wstring NextProfileInCycle(const std::vector<std::wstring>& listed, const std::wstring& current, const std::function<bool(const std::wstring&)>& canActivate)
     {
+        // "default" always exists (it needs no file) and the editor's picker always offers it, but the
+        // list holds it only once something has written it there. Without it, a list of only named
+        // profiles could be left from "default" and never come back to it.
+        std::vector<std::wstring> profiles;
+        bool defaultListed = false;
+        for (const auto& profile : listed)
+        {
+            defaultListed = defaultListed || IsSameProfile(profile, KeyboardManagerConstants::DefaultConfiguration);
+        }
+
+        if (!defaultListed)
+        {
+            profiles.emplace_back(KeyboardManagerConstants::DefaultConfiguration);
+        }
+
+        profiles.insert(profiles.end(), listed.begin(), listed.end());
+
         const size_t count = profiles.size();
         size_t start = 0; // the entry after `current`; the first entry when `current` is not listed
         for (size_t i = 0; i < count; ++i)

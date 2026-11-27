@@ -30,9 +30,10 @@ namespace KeyboardManagerSettingsFile
     bool IsSameProfile(const std::wstring& left, const std::wstring& right) noexcept;
 
     // The profile the cycle hotkey goes to from `current`: the next entry of `profiles` after it
-    // (wrapping around) for which `canActivate` is true. An entry that cannot be activated (its file
-    // is gone) is skipped, so that it does not stop the cycle in front of the profiles after it.
-    // A `current` that is not in the list counts as standing before the first entry. Returns an
-    // empty string when there is no other profile to go to.
+    // (wrapping around) for which `canActivate` is true. "default" is part of the cycle also when
+    // the list does not name it (it then comes first), as it is in the editor's picker. An entry
+    // that cannot be activated (its file is gone) is skipped, so that it does not stop the cycle in
+    // front of the profiles after it. A `current` that is not in the list counts as standing before
+    // the first entry. Returns an empty string when there is no other profile to go to.
     std::wstring NextProfileInCycle(const std::vector<std::wstring>& profiles, const std::wstring& current, const std::function<bool(const std::wstring&)>& canActivate);
 }

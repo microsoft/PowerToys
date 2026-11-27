@@ -997,7 +997,7 @@ namespace RemappingLogicTests
             Assert::IsTrue((KeyboardManagerConstants::KEYBOARDMANAGER_REPROCESS_FLAG & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG) == 0);
         }
 
-        // Review item 1 for input injected by another program (e.g. Mouse Without Borders): X is held
+        // The same for input injected by another program (e.g. Mouse Without Borders): X is held
         // through it under A (unmapped), B (X->Y) is staged, and the user types on a real keyboard. X's
         // injected key-up must still be resolved under A, or B would turn it into a Y-up and leave X down.
         TEST_METHOD (ForeignInjectedKey_IsReleasedUnderProfileItWasPressedUnder)
