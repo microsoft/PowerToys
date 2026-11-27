@@ -53,8 +53,8 @@ jobs:
         autoSelectUiTests: ${{ parameters.autoSelectUiTests }}
         routeUmdfHidArm64: ${{ ne(parameters.umdfHidArm64Image, '') }}
         dependsOn: ${{ parameters.dependsOn }}
-        ${{ if and(parameters.autoSelectUiTests, ne(parameters.umdfHidArm64Image, '')) }}:
-          condition: and(${{ coalesce(parameters.condition, 'succeeded()') }}, eq(dependencies.Resolve.outputs['resolve.hasNonUmdfHidUiTests'], 'true'))
+        ${{ if parameters.autoSelectUiTests }}:
+          condition: and(${{ coalesce(parameters.condition, 'succeeded()') }}, eq(dependencies.Resolve.outputs['resolve.hasOrdinaryArm64UiTests'], 'true'))
         ${{ else }}:
           condition: ${{ parameters.condition }}
         installMode: ${{ parameters.installMode }}

@@ -68,7 +68,12 @@ jobs:
   condition: ${{ parameters.condition }}
   timeoutInMinutes: 300
   cancelTimeoutInMinutes: 15
-  ${{ if gt(parameters.uiTestShardCount, 1) }}:
+  ${{ if parameters.autoSelectUiTests }}:
+    strategy:
+      # Resolve skips non-PR builds. Give the strategy a valid leg even when the job condition skips it.
+      matrix: >-
+        $[ coalesce(dependencies.Resolve.outputs['resolve.uiTestMatrix${{ parameters.platform }}'], '{"Unselected":{"AutoUiTestModules":""}}') ]
+  ${{ elseif gt(parameters.uiTestShardCount, 1) }}:
     strategy:
       parallel: ${{ parameters.uiTestShardCount }}
   variables:
@@ -84,12 +89,9 @@ jobs:
     UiTestArtifactSeparator: |-
       /**
       **/tests/
-    ${{ if eq(parameters.autoSelectUiTests, true) }}:
-      AutoUiTestModules: $[ dependencies.Resolve.outputs['resolve.uiTestModules'] ]
-      UiTestArtifactPattern: $[ format('**/tests/{0}/**', replace(variables.AutoUiTestModules, ';', variables.UiTestArtifactSeparator)) ]
-    ${{ elseif gt(length(parameters.uiTestModules), 0) }}:
+    ${{ if and(not(parameters.autoSelectUiTests), gt(length(parameters.uiTestModules), 0)) }}:
       UiTestArtifactPattern: ${{ format('**/tests/{0}/**', join(variables.UiTestArtifactSeparator, parameters.uiTestModules)) }}
-    ${{ else }}:
+    ${{ elseif not(parameters.autoSelectUiTests) }}:
       UiTestArtifactPattern: '**/tests/*UITest*/**'
   pool:
     ${{ if eq(parameters.umdfHidArm64Dedicated, true) }}:
@@ -126,6 +128,7 @@ jobs:
       $modules = @($env:SELECTED_UI_TEST_MODULES -split ';' | Where-Object { $_ })
       if ('${{ parameters.autoSelectUiTests }}' -eq 'True') {
         $modules = @($env:AUTO_UI_TEST_MODULES -split ';' | Where-Object { $_ })
+        if (-not $modules) { throw 'No UI-test suites were assigned to this PR shard.' }
       }
       Assert-UiTestProjectStems $modules
       if ($env:UI_TEST_EXECUTION_MODULES) { Assert-UiTestProjectStems ($env:UI_TEST_EXECUTION_MODULES -split ';') }
