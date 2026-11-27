@@ -36,7 +36,11 @@ namespace KeyboardManagerEditorUI.Pages
         private const string VkDisabledString = "256";
 
         private DispatcherTimer? _serviceCheckTimer;
-        private FileSystemWatcher? _settingsWatcher;
+        private FileReplacementWatcher? _settingsWatcher;
+
+        // Live reloads of the active profile that failed in a row (a file was locked or half-written).
+        // Each failure schedules another try, up to a limit (see ScheduleActiveProfileReloadRetry).
+        private int _activeProfileReloadRetries;
         private DispatcherTimer? _activeProfileDebounce;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
@@ -311,11 +315,18 @@ namespace KeyboardManagerEditorUI.Pages
             _suppressProfileSelection = true;
             try
             {
+                // The picker shows the profile whose rows are loaded, which is the active one except
+                // while a reload is still being retried (see TryShowActiveProfile).
                 IReadOnlyList<string> profiles = ProfileManager.GetProfiles();
-                string active = ProfileManager.GetActiveProfile();
+                string loaded = _mappingService?.ConfigurationName ?? ProfileManager.GetActiveProfile();
+                string? match = profiles.FirstOrDefault(p => string.Equals(p, loaded, StringComparison.OrdinalIgnoreCase));
 
-                ProfileSelector.ItemsSource = profiles;
-                ProfileSelector.SelectedItem = profiles.Contains(active) ? active : (profiles.Count > 0 ? profiles[0] : null);
+                if (ProfileSelector.ItemsSource is not IReadOnlyList<string> shown || !shown.SequenceEqual(profiles))
+                {
+                    ProfileSelector.ItemsSource = profiles;
+                }
+
+                ProfileSelector.SelectedItem = match ?? (profiles.Count > 0 ? profiles[0] : null);
                 UpdateDeleteProfileButtonState();
             }
             catch (Exception ex)
@@ -351,12 +362,33 @@ namespace KeyboardManagerEditorUI.Pages
 
             UpdateDeleteProfileButtonState();
 
-            if (string.Equals(profile, ProfileManager.GetActiveProfile(), StringComparison.OrdinalIgnoreCase))
+            // Compare with the profile whose rows are loaded, not with the one active on disk: the
+            // two differ when the engine has just switched and the editor has not followed yet.
+            string? activeOnDisk = ProfileManager.TryGetActiveProfile(out string active) ? active : null;
+            switch (ProfileReloadDecision.OnPickerSelection(_mappingService.ConfigurationName, profile, activeOnDisk))
             {
-                return;
-            }
+                case ProfileReloadAction.SwitchTo:
+                    SwitchToActiveProfile(profile);
+                    break;
+                case ProfileReloadAction.ShowActive:
+                    if (!TryShowActiveProfile())
+                    {
+                        QueuePickerReset();
+                    }
 
-            SwitchToActiveProfile(profile);
+                    break;
+            }
+        }
+
+        // Puts the picker back on the loaded profile. Deferred so the picker is not reset from inside
+        // its own SelectionChanged handler.
+        private void QueuePickerReset()
+        {
+            if (!DispatcherQueue.TryEnqueue(LoadProfiles))
+            {
+                // Only happens while the window is shutting down.
+                Logger.LogWarning("Could not queue the profile picker reset.");
+            }
         }
 
         private void SwitchToActiveProfile(string profile)
@@ -365,8 +397,15 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 if (ProfileManager.SetActiveProfile(profile))
                 {
-                    RebuildForActiveProfile();
-                    UpdateDeleteProfileButtonState();
+                    // The switch is saved and the engine was told. If the editor cannot load the
+                    // profile right now (a file is locked or half-written), it keeps showing the one
+                    // it has loaded, puts the picker back on it, and tries again shortly; the
+                    // "couldn't be activated" message below would be wrong here.
+                    if (!TryShowActiveProfile())
+                    {
+                        QueuePickerReset();
+                    }
+
                     return;
                 }
 
@@ -415,16 +454,69 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        // Points the page at the now-active profile: a fresh native service reads that profile's
-        // configuration, and reconciling the editor settings against it re-tags the mappings so the
-        // list shows this profile's remappings and only those.
-        private void RebuildForActiveProfile()
+        // Points the page at the now-active profile, all at once or not at all. The new profile's
+        // native configuration and the editor settings reconciled against it are loaded first
+        // (SettingsManager.TryLoadActiveProfile); only when that succeeded are the mapping service,
+        // the picker and the rows changed, together. When it failed (a file is locked or
+        // half-written, e.g. during a Settings restore) the page keeps its last good state: the old
+        // service stays in use, nothing on disk is rebuilt, and another try is scheduled.
+        private bool TryShowActiveProfile()
         {
-            _mappingService?.Dispose();
-            _mappingService = new KeyboardMappingService();
-            SettingsManager.ReloadForActiveProfile();
-            LoadAllMappings();
-            RevalidateOpenRemappingDialog();
+            if (_mappingService == null || _disposed)
+            {
+                return false;
+            }
+
+            try
+            {
+                KeyboardMappingService? loaded = SettingsManager.TryLoadActiveProfile();
+                if (loaded == null)
+                {
+                    ScheduleActiveProfileReloadRetry();
+                    return false;
+                }
+
+                KeyboardMappingService previous = _mappingService;
+                _mappingService = loaded;
+                previous.Dispose();
+
+                _activeProfileReloadRetries = 0;
+                _isReloadPending = false;
+                LoadProfiles();
+                LoadAllMappings();
+                RevalidateOpenRemappingDialog();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Failed to show the active profile: " + ex.Message);
+                ScheduleActiveProfileReloadRetry();
+                return false;
+            }
+        }
+
+        // Tries the live reload again after the debounce interval. After too many failures in a row it
+        // stops and leaves the reload to the next window activation (ReloadIfChangedOnDisk).
+        private void ScheduleActiveProfileReloadRetry()
+        {
+            if (_activeProfileDebounce == null || _disposed)
+            {
+                return;
+            }
+
+            // 25 tries at the 200 ms debounce interval: about five seconds.
+            const int MaxRetries = 25;
+            if (_activeProfileReloadRetries >= MaxRetries)
+            {
+                Logger.LogWarning("The active profile could not be loaded after several tries; it will be tried again when the window is activated.");
+                _activeProfileReloadRetries = 0;
+                _isReloadPending = true;
+                return;
+            }
+
+            _activeProfileReloadRetries++;
+            _activeProfileDebounce.Stop();
+            _activeProfileDebounce.Start();
         }
 
         // The engine rewrites settings.json's activeConfiguration when it auto-switches profiles (or
@@ -447,13 +539,9 @@ namespace KeyboardManagerEditorUI.Pages
                     RefreshActiveProfileFromDisk();
                 };
 
-                _settingsWatcher = new FileSystemWatcher(dir, "settings.json")
-                {
-                    NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.Size,
-                    EnableRaisingEvents = true,
-                };
-                _settingsWatcher.Changed += OnSettingsFileChanged;
-                _settingsWatcher.Created += OnSettingsFileChanged;
+                // settings.json is saved by replacing it (temporary file + rename), which a watcher
+                // on LastWrite/Size alone does not see; FileReplacementWatcher also listens for renames.
+                _settingsWatcher = new FileReplacementWatcher(dir, "settings.json", OnSettingsFileChanged);
             }
             catch (Exception ex)
             {
@@ -463,7 +551,7 @@ namespace KeyboardManagerEditorUI.Pages
 
         // Raised on a thread-pool thread, often several times per write; hop to the UI thread and
         // debounce so the reload happens at most once per settle.
-        private void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
+        private void OnSettingsFileChanged()
         {
             DispatcherQueue.TryEnqueue(() =>
             {
@@ -472,9 +560,9 @@ namespace KeyboardManagerEditorUI.Pages
             });
         }
 
-        // If the on-disk active profile differs from what the picker shows (engine auto-switched
-        // under us), move the picker and reload the mapping view to match. Guarded with
-        // _suppressProfileSelection so it can't loop with the editor's own profile switches.
+        // If the profile active on disk is not the one this page has loaded (the engine auto-switched
+        // under us, or an earlier load failed), load it and move the picker and the rows with it.
+        // The loaded profile decides, not the picker.
         private void RefreshActiveProfileFromDisk()
         {
             if (_mappingService == null || _disposed)
@@ -482,33 +570,23 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            string active = ProfileManager.GetActiveProfile();
-            if (ProfileSelector.SelectedItem is string current &&
-                string.Equals(current, active, StringComparison.OrdinalIgnoreCase))
+            // An unreadable settings.json says nothing about the active profile (it is not "default").
+            if (!ProfileManager.TryGetActiveProfile(out string active))
             {
+                ScheduleActiveProfileReloadRetry();
                 return;
             }
 
-            _suppressProfileSelection = true;
-            try
+            if (ProfileReloadDecision.OnDiskChange(_mappingService.ConfigurationName, active) == ProfileReloadAction.None)
             {
-                IReadOnlyList<string> profiles = ProfileManager.GetProfiles();
-                if (ProfileSelector.ItemsSource is not IReadOnlyList<string> shown || !shown.SequenceEqual(profiles))
-                {
-                    ProfileSelector.ItemsSource = profiles;
-                }
+                _activeProfileReloadRetries = 0;
 
-                ProfileSelector.SelectedItem = profiles.Contains(active)
-                    ? active
-                    : (profiles.Count > 0 ? profiles[0] : null);
-                UpdateDeleteProfileButtonState();
-            }
-            finally
-            {
-                _suppressProfileSelection = false;
+                // Loaded and active agree; make sure the picker does too (and lists new profiles).
+                LoadProfiles();
+                return;
             }
 
-            RebuildForActiveProfile();
+            TryShowActiveProfile();
         }
 
         private async void NewProfileBtn_Click(object sender, RoutedEventArgs e)
@@ -575,8 +653,8 @@ namespace KeyboardManagerEditorUI.Pages
             if (result == ProfileManager.ProfileDeleteResult.Deleted)
             {
                 // DeleteProfile only falls back to "default" when the deleted profile was the active
-                // one; rebuild against whatever is active now and refresh the picker.
-                RebuildForActiveProfile();
+                // one; load whatever is active now and refresh the picker.
+                TryShowActiveProfile();
                 LoadProfiles();
                 return;
             }
@@ -1638,6 +1716,7 @@ namespace KeyboardManagerEditorUI.Pages
                 KeyboardMappingService previousService = _mappingService;
                 _mappingService = new KeyboardMappingService();
                 previousService.Dispose();
+                LoadProfiles();
                 LoadAllMappings();
                 _isReloadPending = false;
                 RevalidateOpenRemappingDialog();
@@ -1646,6 +1725,15 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 Logger.LogError("Failed to reload Keyboard Manager mappings after activation: " + ex.Message);
             }
+        }
+
+        // The rows shown are those of the profile this page has loaded, which the editor settings
+        // were last reconciled against. That is the active profile except while a live reload is
+        // being retried, and then the rows must stay those of the loaded one.
+        private string? LoadedProfileForFiltering()
+        {
+            string? loaded = _mappingService?.ConfigurationName;
+            return string.IsNullOrWhiteSpace(loaded) ? SettingsManager.ResolveActiveProfileForFiltering() : loaded;
         }
 
         private void LoadAllMappings()
@@ -1684,7 +1772,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
+            string? activeProfile = LoadedProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
@@ -1738,7 +1826,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
+            string? activeProfile = LoadedProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
@@ -1777,7 +1865,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
+            string? activeProfile = LoadedProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
@@ -1821,7 +1909,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            string? activeProfile = SettingsManager.ResolveActiveProfileForFiltering();
+            string? activeProfile = LoadedProfileForFiltering();
             foreach (var id in remapShortcutIds)
             {
                 if (!SettingsManager.EditorSettings.ShortcutSettingsDictionary.TryGetValue(id, out ShortcutSettings? shortcutSettings) ||
@@ -2231,9 +2319,6 @@ namespace KeyboardManagerEditorUI.Pages
                 _activeProfileDebounce = null;
                 if (_settingsWatcher != null)
                 {
-                    _settingsWatcher.EnableRaisingEvents = false;
-                    _settingsWatcher.Changed -= OnSettingsFileChanged;
-                    _settingsWatcher.Created -= OnSettingsFileChanged;
                     _settingsWatcher.Dispose();
                     _settingsWatcher = null;
                 }

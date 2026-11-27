@@ -339,6 +339,28 @@ namespace KeyboardManagerEditorUI.Settings
         }
 
         /// <summary>
+        /// Reads the active profile for callers that must not act on a guess (a live reload):
+        /// returns false when settings.json exists but cannot be read or parsed right now, where
+        /// <see cref="GetActiveProfile"/> would answer "default". No settings.json at all means
+        /// "default" is active, as it does there.
+        /// </summary>
+        internal static bool TryGetActiveProfile(out string profile)
+        {
+            try
+            {
+                string? active = ReadSettingsRoot()?["properties"]?["activeConfiguration"]?["value"]?.GetValue<string>();
+                profile = string.IsNullOrEmpty(active) ? DefaultProfile : active;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogWarning($"ProfileManager.TryGetActiveProfile: {ex.Message}");
+                profile = DefaultProfile;
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Makes <paramref name="profile"/> the active profile and signals the engine to reload.
         /// Returns false if the profile's config file does not exist (an empty one is created for
         /// the built-in "default" profile).

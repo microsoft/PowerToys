@@ -163,12 +163,31 @@ namespace KeyboardManagerEditorUI.Settings
             return null;
         }
 
-        internal static bool TryReloadSettings()
+        /// <summary>What a read of editorSettings.json found.</summary>
+        internal enum SettingsReadResult
+        {
+            /// <summary>The file was read and is now the loaded settings.</summary>
+            Loaded,
+
+            /// <summary>There is no file. Nothing can be lost by creating one.</summary>
+            Missing,
+
+            /// <summary>
+            /// The file exists but could not be read or parsed right now (locked or half-written by
+            /// another writer such as a Settings restore, or damaged). The loaded settings are unchanged.
+            /// </summary>
+            Unreadable,
+        }
+
+        internal static bool TryReloadSettings() => TryReloadSettings(out _);
+
+        internal static bool TryReloadSettings(out SettingsReadResult result)
         {
             try
             {
                 if (!File.Exists(SettingsFilePath))
                 {
+                    result = SettingsReadResult.Missing;
                     return false;
                 }
 
@@ -176,13 +195,25 @@ namespace KeyboardManagerEditorUI.Settings
                 EditorSettings settings = JsonSerializer.Deserialize<EditorSettings>(json, _jsonOptions) ?? new EditorSettings();
                 NormalizeSettings(settings);
                 EditorSettings = settings;
+                result = SettingsReadResult.Loaded;
                 return true;
             }
             catch (Exception)
             {
+                result = SettingsReadResult.Unreadable;
                 return false;
             }
         }
+
+        /// <summary>
+        /// Whether the editor settings may be created again from the active profile's native mappings
+        /// after a read that did not load them. Doing so loses every turned-off row and every other
+        /// profile's rows, which exist only in that file, so it is allowed for a file that is not
+        /// there, and for an unreadable one only where the caller says so (startup, after retries).
+        /// A live reload never allows it: it keeps the last good state and tries again.
+        /// </summary>
+        internal static bool ShouldRegenerateSettings(SettingsReadResult read, bool regenerateUnreadableSettings) =>
+            read == SettingsReadResult.Missing || (read == SettingsReadResult.Unreadable && regenerateUnreadableSettings);
 
         internal static bool HasSettingsChangedOnDisk() =>
             !File.Exists(SettingsFilePath) || DiffersFromLoadedSettings(File.ReadAllText(SettingsFilePath));
@@ -203,21 +234,52 @@ namespace KeyboardManagerEditorUI.Settings
         }
 
         /// <summary>
-        /// Brings the editor settings in line with whatever profile is now active — call after
+        /// Loads the profile that is active now, for a live reload — after
         /// <see cref="ProfileManager.SetActiveProfile"/>, or after the engine switched profiles on its
-        /// own (device auto-switch, cycle hotkey). Reconciling against a freshly loaded configuration
-        /// tags that profile's mappings and leaves the other profiles' entries inactive, so
-        /// <see cref="IsMappingInActiveProfile"/> filters them out of the list without the settings
-        /// having to be split per profile. No-op when the native service is unavailable (preview mode).
+        /// own (device auto-switch, cycle hotkey). Under the transaction lock it reads that profile's
+        /// native configuration into a new service and reconciles the editor settings against it,
+        /// which tags that profile's mappings and leaves the other profiles' entries inactive.
+        /// Returns the new service (the caller owns it) only when both succeeded. Otherwise it returns
+        /// null and nothing has changed: in particular an editorSettings.json that cannot be read
+        /// right now is not rebuilt from the active mappings, so the caller keeps showing its last
+        /// good state and tries again. Null as well when the native service is unavailable (preview mode).
         /// </summary>
-        public static void ReloadForActiveProfile()
+        internal static KeyboardMappingService? TryLoadActiveProfile()
         {
             if (_mappingService is null)
             {
-                return;
+                return null;
             }
 
-            CorrelateServiceAndEditorMappings();
+            using FileStream? transactionLock = TryAcquireMappingTransactionLock();
+            if (transactionLock == null)
+            {
+                ManagedCommon.Logger.LogError("Could not acquire the Keyboard Manager editor transaction lock while loading the active profile.");
+                return null;
+            }
+
+            KeyboardMappingService? service = null;
+            try
+            {
+                service = new KeyboardMappingService();
+                if (ReconcileFromDisk(GetActiveMappings(service), service.ConfigurationName, regenerateUnreadableSettings: false))
+                {
+                    KeyboardMappingService loaded = service;
+                    service = null;
+                    return loaded;
+                }
+
+                return null;
+            }
+            catch (Exception exception)
+            {
+                ManagedCommon.Logger.LogError("Failed to load the active Keyboard Manager profile: " + exception.Message);
+                return null;
+            }
+            finally
+            {
+                service?.Dispose();
+            }
         }
 
         /// <summary>
@@ -380,51 +442,50 @@ namespace KeyboardManagerEditorUI.Settings
             return true;
         }
 
-        private static EditorSettings CreateSettingsFromKeyboardManagerService(KeyboardMappingService service)
+        private static EditorSettings CreateSettingsFromKeyboardManagerService(KeyboardMappingService service) =>
+            CreateSettingsFromMappings(GetActiveMappings(service), service.ConfigurationName);
+
+        // Every row created here is tagged with the given profile, so there is nothing to migrate.
+        private static EditorSettings CreateSettingsFromMappings(IEnumerable<ShortcutKeyMapping> activeMappings, string? profileName)
         {
-            // Every row created here is tagged with the active profile, so there is nothing to migrate.
             EditorSettings settings = new EditorSettings
             {
-                ActiveProfile = service.ConfigurationName,
-                SchemaVersion = string.IsNullOrWhiteSpace(service.ConfigurationName) ? 0 : EditorSettings.CurrentSchemaVersion,
+                ActiveProfile = profileName ?? string.Empty,
+                SchemaVersion = string.IsNullOrWhiteSpace(profileName) ? 0 : EditorSettings.CurrentSchemaVersion,
             };
 
-            // Process all shortcut mappings (RunProgram, OpenUri, RemapShortcut, RemapText)
-            foreach (ShortcutKeyMapping mapping in service.GetShortcutMappings())
+            foreach (ShortcutKeyMapping mapping in activeMappings)
             {
                 AddShortcutMapping(settings, mapping, settings.ActiveProfile);
             }
 
-            // Process single key to key mappings
-            foreach (var mapping in service.GetSingleKeyMappings())
-            {
-                var shortcutMapping = new ShortcutKeyMapping
-                {
-                    OperationType = ShortcutOperationType.RemapShortcut,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetKeys = mapping.TargetKey,
-
-                    // GetSingleKeyMappings surfaces both the regular and the "alone" (dual-key) tables,
-                    // tagging the latter with IsAlone; preserve that as the per-entry Condition so an
-                    // alone remap round-trips instead of loading back as an unconditional (Always) one.
-                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
-                };
-                AddShortcutMapping(settings, shortcutMapping, settings.ActiveProfile);
-            }
-
-            // Process single key to text mappings
-            foreach (var mapping in service.GetKeyToTextMappings())
-            {
-                var shortcutMapping = new ShortcutKeyMapping
-                {
-                    OperationType = ShortcutOperationType.RemapText,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetText = mapping.TargetText,
-                };
-                AddShortcutMapping(settings, shortcutMapping, settings.ActiveProfile);
-            }
-
             return settings;
+        }
+
+        // The native mappings of the profile a service has loaded, in the editor's own form: shortcut
+        // mappings (RunProgram, OpenUri, RemapShortcut, RemapText), then single key to key, then
+        // single key to text.
+        private static List<ShortcutKeyMapping> GetActiveMappings(KeyboardMappingService service)
+        {
+            List<ShortcutKeyMapping> activeMappings = service.GetShortcutMappings();
+            activeMappings.AddRange(service.GetSingleKeyMappings().Select(mapping => new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RemapShortcut,
+                OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
+                TargetKeys = mapping.TargetKey,
+
+                // GetSingleKeyMappings surfaces both the regular and the "alone" (dual-key) tables,
+                // tagging the latter with IsAlone; preserve that as the per-entry Condition so an
+                // alone remap round-trips instead of loading back as an unconditional (Always) one.
+                Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
+            }));
+            activeMappings.AddRange(service.GetKeyToTextMappings().Select(mapping => new ShortcutKeyMapping
+            {
+                OperationType = ShortcutOperationType.RemapText,
+                OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
+                TargetText = mapping.TargetText,
+            }));
+            return activeMappings;
         }
 
         /// <summary>
@@ -433,6 +494,7 @@ namespace KeyboardManagerEditorUI.Settings
         /// <param name="regenerateUnreadableSettings">
         /// Whether to rebuild unreadable metadata from the active native mappings. Pass false when the file
         /// may be mid-write (e.g. during a Settings restore) so a failed read does not drop disabled rows.
+        /// When true (startup), the read is first tried a few times, since rebuilding loses those rows.
         /// </param>
         /// <returns>Whether the loaded metadata is now current.</returns>
         public static bool CorrelateServiceAndEditorMappings(bool regenerateUnreadableSettings = true)
@@ -452,39 +514,25 @@ namespace KeyboardManagerEditorUI.Settings
             try
             {
                 using var service = new KeyboardMappingService();
-                if (!TryReloadSettings())
+                List<ShortcutKeyMapping> activeMappings = GetActiveMappings(service);
+                if (regenerateUnreadableSettings)
                 {
-                    if (!regenerateUnreadableSettings)
+                    // An editorSettings.json that exists but cannot be read may only be held by
+                    // another writer for a moment: try for about half a second before rebuilding it.
+                    const int Attempts = 5;
+                    const int RetryDelayMS = 100;
+                    for (int attempt = 1; attempt < Attempts; attempt++)
                     {
-                        return false;
-                    }
+                        if (ReconcileFromDisk(activeMappings, service.ConfigurationName, regenerateUnreadableSettings: false))
+                        {
+                            return true;
+                        }
 
-                    EditorSettings createdSettings = CreateSettingsFromKeyboardManagerService(service);
-                    if (!WriteSettings(createdSettings))
-                    {
-                        return false;
+                        Thread.Sleep(RetryDelayMS);
                     }
-
-                    EditorSettings = createdSettings;
-                    return true;
                 }
 
-                var activeMappings = service.GetShortcutMappings();
-                activeMappings.AddRange(service.GetSingleKeyMappings().Select(mapping => new ShortcutKeyMapping
-                {
-                    OperationType = ShortcutOperationType.RemapShortcut,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetKeys = mapping.TargetKey,
-                    Condition = mapping.IsAlone ? SingleKeyRemapCondition.Alone : SingleKeyRemapCondition.Always,
-                }));
-                activeMappings.AddRange(service.GetKeyToTextMappings().Select(mapping => new ShortcutKeyMapping
-                {
-                    OperationType = ShortcutOperationType.RemapText,
-                    OriginalKeys = mapping.OriginalKey.ToString(CultureInfo.InvariantCulture),
-                    TargetText = mapping.TargetText,
-                }));
-
-                return ReconcileLoadedSettings(activeMappings, service.ConfigurationName);
+                return ReconcileFromDisk(activeMappings, service.ConfigurationName, regenerateUnreadableSettings);
             }
             catch (Exception exception)
             {
@@ -494,7 +542,37 @@ namespace KeyboardManagerEditorUI.Settings
         }
 
         /// <summary>
-        /// The part of <see cref="CorrelateServiceAndEditorMappings"/> after the native mappings and
+        /// The part of a reconciliation after the native mappings have been read (the caller holds the
+        /// transaction lock): reads editorSettings.json and reconciles it against
+        /// <paramref name="activeMappings"/> of <paramref name="profileName"/>. When the file could not
+        /// be loaded it is created again from those mappings only where
+        /// <see cref="ShouldRegenerateSettings"/> allows; otherwise this returns false, and neither
+        /// the file nor the loaded settings have changed.
+        /// </summary>
+        internal static bool ReconcileFromDisk(IReadOnlyList<ShortcutKeyMapping> activeMappings, string? profileName, bool regenerateUnreadableSettings)
+        {
+            if (!TryReloadSettings(out SettingsReadResult read))
+            {
+                if (!ShouldRegenerateSettings(read, regenerateUnreadableSettings))
+                {
+                    return false;
+                }
+
+                EditorSettings createdSettings = CreateSettingsFromMappings(activeMappings, profileName);
+                if (!WriteSettings(createdSettings))
+                {
+                    return false;
+                }
+
+                EditorSettings = createdSettings;
+                return true;
+            }
+
+            return ReconcileLoadedSettings(activeMappings, profileName);
+        }
+
+        /// <summary>
+        /// The part of <see cref="ReconcileFromDisk"/> after the native mappings and
         /// the editor settings have been loaded (the caller holds the transaction lock): reconciles
         /// the loaded settings against <paramref name="activeMappings"/> of
         /// <paramref name="profileName"/>, migrating a file from the single-profile editor on the
