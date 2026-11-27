@@ -260,6 +260,9 @@
                                     SpinButtonPlacementMode="Compact"
                                     Value="{x:Bind ViewModel.FindMyMouseAnimationDurationMs, Mode=TwoWay}" />
                             </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left" Visibility="{x:Bind ViewModel.IsHapticsAvailable, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <CheckBox x:Uid="MouseUtils_FindMyMouse_Haptics" IsChecked="{x:Bind ViewModel.FindMyMouseHapticsEnabled, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
                         </tkcontrols:SettingsExpander.Items>
                     </tkcontrols:SettingsExpander>
                     <InfoBar

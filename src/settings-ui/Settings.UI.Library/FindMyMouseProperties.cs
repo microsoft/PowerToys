@@ -52,6 +52,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         [JsonPropertyName("shaking_factor")]
         public IntProperty ShakingFactor { get; set; }
 
+        [JsonPropertyName("haptics_enabled")]
+        public BoolProperty HapticsEnabled { get; set; }
+
         public FindMyMouseProperties()
         {
             ActivationMethod = new IntProperty(0);
@@ -67,6 +70,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             ShakingMinimumDistance = new IntProperty(1000);
             ShakingIntervalMs = new IntProperty(1000);
             ShakingFactor = new IntProperty(400);
+            HapticsEnabled = new BoolProperty(true);
         }
     }
 }
