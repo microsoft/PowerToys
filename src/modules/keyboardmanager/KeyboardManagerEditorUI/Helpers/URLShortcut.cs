@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation
+// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -24,6 +24,34 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string AppName { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets a display-friendly label for the URL(s). Shows the first URL and a count of additional URLs.
+        /// </summary>
+        public string DisplayUrl
+        {
+            get
+            {
+                var urls = URL.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                if (urls.Length <= 1)
+                {
+                    return URL.Trim();
+                }
+
+                return $"{urls[0].Trim()} (+{urls.Length - 1} more)";
+            }
+        }
+
+        /// <summary>
+        /// Gets the full list of URLs formatted for a tooltip (one per line).
+        /// </summary>
+        public string TooltipText
+        {
+            get
+            {
+                var urls = URL.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                return string.Join(Environment.NewLine, urls.Select(u => u.Trim()));
+            }
+        }
         public IReadOnlyList<int> TriggerKeyCodes { get; set; } = Array.Empty<int>();
 
         public string SearchableText { get; set; } = string.Empty;
