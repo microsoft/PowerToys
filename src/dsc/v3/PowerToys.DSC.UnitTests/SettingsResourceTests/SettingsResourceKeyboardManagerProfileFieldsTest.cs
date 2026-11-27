@@ -9,6 +9,7 @@ using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using PowerToys.DSC.Commands;
 using PowerToys.DSC.DSCResources;
+using PowerToys.DSC.Models;
 using PowerToys.DSC.Models.ResourceObjects;
 
 namespace PowerToys.DSC.UnitTests.SettingsResourceTests;
@@ -88,6 +89,12 @@ public sealed class SettingsResourceKeyboardManagerProfileFieldsTest : BaseDscTe
         Assert.IsFalse(stored.Properties.UseNewEditor);
         Assert.AreEqual("work", stored.Properties.ActiveConfiguration.Value);
         CollectionAssert.AreEqual(new List<string> { "default", "work", "home" }, stored.Properties.KeyboardConfigurations.Value);
+
+        // Not silently: one warning for each of the two fields
+        var warnings = result.Messages().FindAll(message => message.Level == DscMessageLevel.Warning);
+        Assert.AreEqual(2, warnings.Count);
+        StringAssert.Contains(warnings[0].Message, "activeConfiguration");
+        StringAssert.Contains(warnings[1].Message, "keyboardConfigurations");
     }
 
     [TestMethod]

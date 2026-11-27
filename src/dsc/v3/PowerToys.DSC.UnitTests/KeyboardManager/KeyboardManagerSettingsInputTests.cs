@@ -23,7 +23,7 @@ public sealed class KeyboardManagerSettingsInputTests
 {
     private const string OnlyUseNewEditor = "{\"settings\":{\"properties\":{\"useNewEditor\":false}}}";
 
-    // The reviewer's case: the input leaves both out.
+    // The input leaves both out.
     [TestMethod]
     public void OnlyUseNewEditor_KeepsTheActiveProfileAndTheProfileList()
     {
@@ -68,6 +68,41 @@ public sealed class KeyboardManagerSettingsInputTests
         Assert.AreEqual("work", desired.Properties.ActiveConfiguration.Value);
         CollectionAssert.AreEqual(new List<string> { "default", "work", "home" }, desired.Properties.KeyboardConfigurations.Value);
         Assert.IsFalse(desired.Properties.UseNewEditor);
+    }
+
+    // The caller is told which of the two the input named with another value.
+    [TestMethod]
+    public void GetProfileFieldsNotApplied_NamesTheFieldsThatDiffer()
+    {
+        var current = CreateCurrent();
+
+        const string both = "{\"settings\":{\"properties\":{\"activeConfiguration\":{\"value\":\"office\"},\"keyboardConfigurations\":{\"value\":[\"default\",\"office\"]},\"useNewEditor\":false}}}";
+        CollectionAssert.AreEqual(
+            new List<string> { "activeConfiguration", "keyboardConfigurations" },
+            new List<string>(KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(both, current)));
+
+        const string activeOnly = "{\"settings\":{\"properties\":{\"activeConfiguration\":{\"value\":\"office\"}}}}";
+        CollectionAssert.AreEqual(
+            new List<string> { "activeConfiguration" },
+            new List<string>(KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(activeOnly, current)));
+    }
+
+    // Nothing to report: the input leaves them out, repeats the current
+    // values (an export applied to the same state), or has no values.
+    [TestMethod]
+    public void GetProfileFieldsNotApplied_IsEmpty_WhenTheInputDoesNotDiffer()
+    {
+        var current = CreateCurrent();
+
+        Assert.AreEqual(0, KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(OnlyUseNewEditor, current).Count);
+        Assert.AreEqual(0, KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(null, current).Count);
+        Assert.AreEqual(0, KeyboardManagerSettingsInput.GetProfileFieldsNotApplied("not json", current).Count);
+
+        const string same = "{\"settings\":{\"properties\":{\"activeConfiguration\":{\"value\":\"Work\"},\"keyboardConfigurations\":{\"value\":[\"default\",\"work\",\"home\"]}}}}";
+        Assert.AreEqual(0, KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(same, current).Count);
+
+        const string empty = "{\"settings\":{\"properties\":{\"activeConfiguration\":{},\"keyboardConfigurations\":{}}}}";
+        Assert.AreEqual(0, KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(empty, current).Count);
     }
 
     // A member without a value would otherwise be written as "value": null.

@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Text.Json.Nodes;
 using PowerToys.DSC.Models.ResourceObjects;
 
@@ -21,6 +22,12 @@ public interface ISettingsFunctionData
     /// Gets the output settings resource object.
     /// </summary>
     public ISettingsResourceObject Output { get; }
+
+    /// <summary>
+    /// Gets the warnings collected by <see cref="GetState"/>: parts of the
+    /// input that the resource does not apply.
+    /// </summary>
+    public IReadOnlyList<string> Warnings => [];
 
     /// <summary>
     /// Gets the current settings.

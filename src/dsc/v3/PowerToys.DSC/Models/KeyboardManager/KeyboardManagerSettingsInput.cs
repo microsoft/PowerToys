@@ -2,6 +2,11 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.Settings.UI.Library;
 
 namespace PowerToys.DSC.Models.KeyboardManager;
@@ -36,5 +41,50 @@ public static class KeyboardManagerSettingsInput
 
         desired.Properties.ActiveConfiguration = current.Properties.ActiveConfiguration;
         desired.Properties.KeyboardConfigurations = current.Properties.KeyboardConfigurations;
+    }
+
+    /// <summary>
+    /// The names of the profile fields that the input gives with a value other
+    /// than the current one. <see cref="UseCurrentProfileFields"/> does not
+    /// apply them, and the caller is told so with a warning instead of
+    /// silently reporting the input as applied.
+    /// </summary>
+    /// <param name="input">The JSON input of the settings resource.</param>
+    /// <param name="current">The current settings.</param>
+    public static IReadOnlyList<string> GetProfileFieldsNotApplied(string? input, KeyboardManagerSettings current)
+    {
+        var notApplied = new List<string>();
+        if (string.IsNullOrEmpty(input) || current?.Properties == null)
+        {
+            return notApplied;
+        }
+
+        try
+        {
+            JsonNode? properties = JsonNode.Parse(input)?["settings"]?["properties"];
+
+            if (properties?["activeConfiguration"]?["value"] is JsonValue active &&
+                active.TryGetValue(out string? activeName) &&
+                !string.Equals(activeName, current.Properties.ActiveConfiguration?.Value, StringComparison.OrdinalIgnoreCase))
+            {
+                notApplied.Add("activeConfiguration");
+            }
+
+            if (properties?["keyboardConfigurations"]?["value"] is JsonArray list)
+            {
+                var given = list.Select(item => item is JsonValue value && value.TryGetValue(out string? name) ? name : null);
+                IEnumerable<string?> now = current.Properties.KeyboardConfigurations?.Value ?? [];
+                if (!given.SequenceEqual(now, StringComparer.OrdinalIgnoreCase))
+                {
+                    notApplied.Add("keyboardConfigurations");
+                }
+            }
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+        {
+            // Not the shape this looks for: nothing to report here.
+        }
+
+        return notApplied;
     }
 }

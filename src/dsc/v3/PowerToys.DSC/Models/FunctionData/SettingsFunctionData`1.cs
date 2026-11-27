@@ -2,13 +2,17 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using PowerToys.DSC.Models.KeyboardManager;
 using PowerToys.DSC.Models.ResourceObjects;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Models.FunctionData;
 
@@ -19,6 +23,8 @@ namespace PowerToys.DSC.Models.FunctionData;
 public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, ISettingsFunctionData
     where TSettingsConfig : ISettingsConfig, new()
 {
+    private static readonly CompositeFormat KeyboardManagerProfileFieldNotApplied = CompositeFormat.Parse(Resources.KeyboardManagerProfileFieldNotApplied);
+
     private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private static readonly TSettingsConfig _settingsConfig = new();
 
@@ -27,6 +33,12 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
 
     // Whether a desired state was given (Set, Test) or not (Get, Export).
     private readonly bool _hasInput;
+
+    private readonly string? _inputJson;
+    private readonly List<string> _warnings = [];
+
+    /// <inheritdoc/>
+    public IReadOnlyList<string> Warnings => _warnings;
 
     /// <inheritdoc/>
     public ISettingsResourceObject Input => _input;
@@ -39,6 +51,7 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
         _output = new();
         _input = string.IsNullOrEmpty(input) ? new() : JsonSerializer.Deserialize<SettingsResourceObject<TSettingsConfig>>(input) ?? new();
         _hasInput = !string.IsNullOrEmpty(input);
+        _inputJson = input;
     }
 
     /// <inheritdoc/>
@@ -54,6 +67,14 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
             (object?)_input.Settings is KeyboardManagerSettings desired &&
             (object?)_output.Settings is KeyboardManagerSettings current)
         {
+            // An input that names another profile or list is not applied in
+            // that part; say so instead of reporting it as the desired state.
+            _warnings.Clear();
+            foreach (var field in KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(_inputJson, current))
+            {
+                _warnings.Add(string.Format(CultureInfo.InvariantCulture, KeyboardManagerProfileFieldNotApplied, field));
+            }
+
             KeyboardManagerSettingsInput.UseCurrentProfileFields(desired, current);
         }
     }
