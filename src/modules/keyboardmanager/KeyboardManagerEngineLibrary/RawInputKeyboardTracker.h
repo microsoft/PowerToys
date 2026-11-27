@@ -44,6 +44,10 @@ public:
     // Signals the listener thread to exit and joins it. Safe to call multiple times.
     void Stop();
 
+    // Whether key events are looked at. While inactive (the default), a raw-input message is dropped
+    // without reading it or resolving its keyboard, and the callback is not called. Any thread.
+    void SetActive(bool active) noexcept { m_active.store(active); }
+
 private:
     static LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -54,6 +58,7 @@ private:
     std::thread m_thread;
     std::atomic<DWORD> m_threadId{ 0 };
     std::atomic_bool m_started{ false };
+    std::atomic_bool m_active{ false };
 
     // Manual-reset event the worker sets once its message queue exists (after CreateWindowExW),
     // or once it has bailed out. Stop() waits on it before PostThreadMessageW so WM_QUIT is never

@@ -149,6 +149,45 @@ namespace RemappingLogicTests
             Assert::IsFalse(KeyboardManagerSettingsFile::IsSameProfile(L"Work", L""));
         }
 
+        // The cycle hotkey: the next listed profile, wrapping around, compared without letter case.
+        TEST_METHOD (NextProfileInCycle_GoesToTheNextEntry_AndWrapsAround)
+        {
+            const std::vector<std::wstring> profiles{ L"default", L"Work", L"Home" };
+            const auto all = [](const std::wstring&) { return true; };
+            Assert::AreEqual(std::wstring(L"Work"), KeyboardManagerSettingsFile::NextProfileInCycle(profiles, L"default", all));
+            Assert::AreEqual(std::wstring(L"Home"), KeyboardManagerSettingsFile::NextProfileInCycle(profiles, L"work", all));
+            Assert::AreEqual(std::wstring(L"default"), KeyboardManagerSettingsFile::NextProfileInCycle(profiles, L"Home", all));
+        }
+
+        // A listed profile whose file is gone must not stop the cycle in front of the ones after it.
+        TEST_METHOD (NextProfileInCycle_SkipsAProfileThatCannotBeActivated)
+        {
+            const std::vector<std::wstring> profiles{ L"default", L"Work", L"Home" };
+            const auto workIsGone = [](const std::wstring& profile) { return profile != L"Work"; };
+            Assert::AreEqual(std::wstring(L"Home"), KeyboardManagerSettingsFile::NextProfileInCycle(profiles, L"default", workIsGone));
+            Assert::AreEqual(std::wstring(L"default"), KeyboardManagerSettingsFile::NextProfileInCycle(profiles, L"Home", workIsGone));
+        }
+
+        TEST_METHOD (NextProfileInCycle_WithNoOtherProfileToGoTo_ReturnsEmpty)
+        {
+            const auto all = [](const std::wstring&) { return true; };
+            const auto none = [](const std::wstring&) { return false; };
+            Assert::IsTrue(KeyboardManagerSettingsFile::NextProfileInCycle({}, L"default", all).empty());
+            Assert::IsTrue(KeyboardManagerSettingsFile::NextProfileInCycle({ L"default" }, L"default", all).empty());
+            Assert::IsTrue(KeyboardManagerSettingsFile::NextProfileInCycle({ L"default", L"Work" }, L"default", none).empty());
+
+            // The same profile listed twice in different case is not "another" profile.
+            Assert::IsTrue(KeyboardManagerSettingsFile::NextProfileInCycle({ L"Work", L"work" }, L"Work", all).empty());
+        }
+
+        // The active profile is not in the list (e.g. "default" when the list holds only named
+        // profiles): the cycle starts at the first entry.
+        TEST_METHOD (NextProfileInCycle_FromAProfileThatIsNotListed_GoesToTheFirstEntry)
+        {
+            const auto all = [](const std::wstring&) { return true; };
+            Assert::AreEqual(std::wstring(L"Work"), KeyboardManagerSettingsFile::NextProfileInCycle({ L"Work", L"Home" }, L"default", all));
+        }
+
         // Another program keeps the file open without delete sharing for the whole call (as a reader
         // that never lets go): same result.
         TEST_METHOD (WhenAReaderNeverReleasesTheFile_ReturnsFalse_AndLeavesTheOldFileIntact)

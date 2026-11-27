@@ -125,4 +125,29 @@ namespace KeyboardManagerSettingsFile
     {
         return CompareStringOrdinal(left.c_str(), static_cast<int>(left.size()), right.c_str(), static_cast<int>(right.size()), TRUE) == CSTR_EQUAL;
     }
+
+    std::wstring NextProfileInCycle(const std::vector<std::wstring>& profiles, const std::wstring& current, const std::function<bool(const std::wstring&)>& canActivate)
+    {
+        const size_t count = profiles.size();
+        size_t start = 0; // the entry after `current`; the first entry when `current` is not listed
+        for (size_t i = 0; i < count; ++i)
+        {
+            if (IsSameProfile(profiles[i], current))
+            {
+                start = i + 1;
+                break;
+            }
+        }
+
+        for (size_t step = 0; step < count; ++step)
+        {
+            const std::wstring& candidate = profiles[(start + step) % count];
+            if (!IsSameProfile(candidate, current) && canActivate(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return {};
+    }
 }

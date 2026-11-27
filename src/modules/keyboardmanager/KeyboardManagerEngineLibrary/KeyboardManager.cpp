@@ -32,7 +32,7 @@ namespace
     // break an exact-path match. Match on the stable prefix instead: everything up to the instance
     // (the 2nd '#'). This keeps distinct keyboards apart while tolerating instance-id churn.
     //
-    // Known, intentional limitation (SPEC §7): the dropped <instanceId> is also what tells two
+    // Known, intentional limitation: the dropped <instanceId> is also what tells two
     // keyboards of the SAME model apart, so an identical pair collapses to one identity and shares
     // one profile. Accepted for the MVP — the churn this fixes is common, a second identical
     // keyboard is rare. The editor's NormalizeDevicePath applies the exact same rule so both sides
@@ -75,6 +75,11 @@ KeyboardManager::KeyboardManager()
     // pointer too, so the pointer must not change after that.
     profileCycleHotkey = std::make_unique<ProfileCycleHotkey>([this] { CycleActiveProfile(); });
 
+    // The same goes for the keyboard tracker (per-keyboard profile switching): LoadSettings tells it
+    // whether any keyboard is assigned, and it looks at key events only then.
+    rawInputTracker = std::make_unique<RawInputKeyboardTracker>(
+        [this](const RawInputKeyboardTracker::KeyEvent& keyEvent) { OnRawKeyEvent(keyEvent); });
+
     // Load the initial settings.
     LoadSettings();
 
@@ -103,8 +108,6 @@ KeyboardManager::KeyboardManager()
     settingsEventWaiter.start(KeyboardManagerConstants::SettingsEventName, changeSettingsCallback);
 
     // Start detecting which physical keyboard is being typed on (for per-keyboard profile switching).
-    rawInputTracker = std::make_unique<RawInputKeyboardTracker>(
-        [this](const RawInputKeyboardTracker::KeyEvent& keyEvent) { OnRawKeyEvent(keyEvent); });
     rawInputTracker->Start();
 
     // Start the global profile-cycle hotkey last: its thread registers the hotkey that LoadSettings
@@ -346,12 +349,21 @@ void KeyboardManager::LoadDeviceProfiles()
         return;
     }
 
+    // While auto-switch is off, or no keyboard is assigned, there is nothing to decide per key: the
+    // tracker then drops each raw-input message without reading it or resolving its keyboard.
+    const bool trackKeys = enabled && !map.empty();
+
     {
         std::lock_guard<std::mutex> lock(deviceMapMutex);
         deviceProfileMap = std::move(map);
     }
 
     autoSwitchEnabled.store(enabled);
+
+    if (rawInputTracker)
+    {
+        rawInputTracker->SetActive(trackKeys);
+    }
 
     if (profileCycleHotkey)
     {
@@ -383,22 +395,24 @@ void KeyboardManager::CycleActiveProfile()
             }
         }
 
-        if (profiles.size() < 2)
+        // A listed profile whose file is gone cannot be activated (SwitchActiveProfile refuses it).
+        // Skip it: stopping there would keep the hotkey from ever reaching the profiles after it.
+        const std::wstring folder = PTSettingsHelper::get_module_save_folder_location(moduleName);
+        const std::wstring next = KeyboardManagerSettingsFile::NextProfileInCycle(profiles, current, [&folder](const std::wstring& profile) {
+            if (KeyboardManagerSettingsFile::IsSameProfile(profile, KeyboardManagerConstants::DefaultConfiguration))
+            {
+                return true;
+            }
+
+            std::error_code ec;
+            return std::filesystem::exists(folder + L"\\" + profile + L".json", ec);
+        });
+
+        if (next.empty())
         {
             return; // nothing to cycle to
         }
 
-        size_t currentIndex = 0;
-        for (size_t i = 0; i < profiles.size(); ++i)
-        {
-            if (KeyboardManagerSettingsFile::IsSameProfile(profiles[i], current))
-            {
-                currentIndex = i;
-                break;
-            }
-        }
-
-        const std::wstring& next = profiles[(currentIndex + 1) % profiles.size()];
         Logger::trace(L"CycleActiveProfile: '{}' -> '{}'", current, next);
 
         // Audible feedback that the profile changed (no UI surface in the engine): only once the

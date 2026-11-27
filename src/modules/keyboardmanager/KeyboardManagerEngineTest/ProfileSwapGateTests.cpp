@@ -162,7 +162,7 @@ namespace RemappingLogicTests
             mockedInputHandler.SetDeferInjectedInput(false);
         }
 
-        // The reviewer's scenario: A leaves X unmapped, B maps X to Y. X is held when B is staged and
+        // Scenario: A leaves X unmapped, B maps X to Y. X is held when B is staged and
         // another key is typed; X's key-up must be resolved under A (X-up delivered, Y never pressed).
         TEST_METHOD (HeldKey_IsReleasedUnderProfileItWasPressedUnder)
         {
@@ -1321,7 +1321,7 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
-        // N-1: while a shortcut is invoked, another key-down is re-sent by the handlers so that they
+        // While a shortcut is invoked, another key-down is re-sent by the handlers so that they
         // process it again. The re-send uses MapVirtualKey's scan code: for the numpad Enter (real E0 1C)
         // that is 1C without E0, a different key id. It must not become a held key of its own (its
         // key-up never comes: the physical key-up has the physical id), or it would block every later
@@ -1367,7 +1367,7 @@ namespace RemappingLogicTests
             Release('Q');
         }
 
-        // N-2: an orphan made by a forced swap carries the real id of its key. Another physical key with
+        // An orphan made by a forced swap carries the real id of its key. Another physical key with
         // the same virtual key (the NumLock-off numpad 4 is VK_LEFT, scan 4B, while the arrow key is
         // E0 4B) must not be taken for it, or that key's key-up would remove the orphan and the arrow's
         // real key-up would then be resolved by the new profile.
@@ -1396,7 +1396,7 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
-        // N-2: a seeded orphan's estimated id is settled by the key's own first event (here an
+        // A seeded orphan's estimated id is settled by the key's own first event (here an
         // auto-repeat with the exact id). From then on it is matched by id only, like any other record.
         TEST_METHOD (SeededOrphan_ConfirmedByOwnEvent_NotMatchedBySameVirtualKeyOfOtherKey)
         {
@@ -1418,7 +1418,7 @@ namespace RemappingLogicTests
             Assert::IsTrue(gate->HeldKeyCount() == 0);
         }
 
-        // L-1 (gate side): a switch that fails before any reload reports the staged profile, or empty
+        // Gate side of a failed switch: a switch that fails before any reload reports the staged profile, or empty
         // once the stage has been applied by a key-down. KeyboardManager::SwitchActiveProfile's use of
         // this is not covered (KeyboardManager cannot be constructed in tests).
         TEST_METHOD (ReportPendingProfile_FollowsStage)

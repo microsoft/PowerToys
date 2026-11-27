@@ -39,14 +39,14 @@
 // Known limitations (bounded by the stale-key and forced-swap rules below, not fixed):
 //  - a held key is identified by scan code + extended flag only, so the same key held at once from
 //    two sources (two keyboards, or a keyboard and another program's injection) shares one record:
-//    the first key-up releases it while the other is still down (review L-3 / N-3). One exception:
+//    the first key-up releases it while the other is still down. One exception:
 //    another program's key-up never ends a press made on a keyboard, because the handlers may not
 //    take it as a release (the single-key handlers ignore odd-tagged input); such a key stays held
 //    until its own key-up, or until the forced swap if that is lost;
 //  - a key-up that is lost after the hook suppressed its key-down keeps the key "held" until the
-//    forced swap (L-4);
+//    forced swap;
 //  - on a forced swap, the key-ups that release the old profile's output reach the hook after the
-//    swap; they carry KBM's shortcut tag, which every handler leaves alone (was L-5). They also reach
+//    swap; they carry KBM's shortcut tag, which every handler leaves alone. They also reach
 //    the system after the key-down that triggered the swap, so that one key-down is still combined
 //    with a held output modifier (e.g. Win+L for a lost X -> Win key-up), as every key typed during
 //    the 30 s before it was. No dummy key is sent before a modifier is released either. Both are
@@ -58,7 +58,7 @@
 //    while it was held and had stopped repeating) whose virtual key is one EncodeKeyNumpadOrigin
 //    distinguishes (Enter, arrows, Home/End, PgUp/PgDn, Ins/Del, numpad /) is matched by virtual key until its own
 //    event arrives, so the first event of the other key with that virtual key takes its record over;
-//    the seeded key's key-up is then resolved by the new profile (same family as L-3; review R-1);
+//    the seeded key's key-up is then resolved by the new profile (the same kind of shared record as in the first item);
 //  - a modifier that was already down when a profile took effect without a hook (or when the hook
 //    was installed) does not start a shortcut of the new profile: while it is held, the shortcut
 //    handlers are skipped, so e.g. Ctrl+A stays Ctrl+A until Ctrl is released and pressed again.
@@ -66,12 +66,13 @@
 // KBM's re-sent key-downs (KEYBOARDMANAGER_REPROCESS_FLAG, matched by exact value, sent by KBM on
 // key-downs only) are not tracked as held keys, but count as KBM's output when they reach the system
 // (a forced swap releases them); a program that copies GetMessageExtraInfo() into its own injection
-// could carry that value over, as it could KBM's other flags (review Nit-B).
+// could carry that value over, as it could KBM's other flags.
 //
-// An auto-repeat is recognised as a key-down of a key already in the held set. A held key that stops
-// repeating (assumed: Windows repeats only the most recently pressed key) stays in the set until its
-// key-up; GetAsyncKeyState is assumed not to reflect keys the hook suppressed. Neither assumption has
-// been measured on a real machine yet.
+// An auto-repeat is recognised as a key-down of a key already in the held set. Measured on a real
+// machine: a keyboard repeats only its most recently pressed key (modifiers repeat too), and two
+// keyboards repeat independently of each other. A held key that has stopped repeating stays in the
+// set until its key-up. GetAsyncKeyState is assumed not to reflect keys the hook suppressed; that has
+// not been measured.
 //
 // Held keys whose key-up is lost (secure desktop, sleep, unplug, a later hook swallowing it, an
 // injecting program that exits mid-press) would otherwise block the swap forever, so:

@@ -121,6 +121,11 @@ LRESULT CALLBACK RawInputKeyboardTracker::WndProc(HWND hwnd, UINT msg, WPARAM wP
 
 void RawInputKeyboardTracker::HandleRawInput(HRAWINPUT hRawInput)
 {
+    if (!m_active.load())
+    {
+        return;
+    }
+
     UINT size = 0;
     if (GetRawInputData(hRawInput, RID_INPUT, nullptr, &size, sizeof(RAWINPUTHEADER)) != 0 || size == 0)
     {
