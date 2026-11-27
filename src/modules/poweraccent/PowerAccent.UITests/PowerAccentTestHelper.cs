@@ -55,7 +55,8 @@ internal static class PowerAccentTestHelper
         string SelectedLanguage = "ALL",
         string ExcludedApps = "",
         bool SortByUsageFrequency = false,
-        bool StartSelectionFromTheLeft = false);
+        bool StartSelectionFromTheLeft = false,
+        bool ShowUnicodeDescription = false);
 
     private sealed record OverlayObservation(
         WindowControl.ProcessWindow Window,
@@ -599,6 +600,34 @@ internal static class PowerAccentTestHelper
         return list!.Height / dpiScale;
     }
 
+    internal static void AssertDescriptionVerticallyCentered(UITestBase testBase, Session toolbar)
+    {
+        MeasureCharacterListHeightDip(testBase, toolbar);
+        var bounds = GetStableVisibleBounds(toolbar);
+        var dpiScale = GetDpiForWindow(new IntPtr(toolbar.WindowHandle)) / 96d;
+        Assert.IsTrue(dpiScale > 0, "Could not determine Quick Accent window DPI.");
+        var list = toolbar.Find<Element>(By.AccessibilityId("QuickAccentCharacterList"), 5_000);
+        var description = toolbar.Find<Element>(By.AccessibilityId("QuickAccentDescription"), 5_000);
+        Assert.IsTrue(description.Width > 0 && description.Height > 0, "The Unicode description should be visible.");
+
+        // Exclude the transparent bottom margin and surface border.
+        const double bottomChromeDip = 16 + 1;
+        const double roundingToleranceDip = 2;
+        var topGap = (description.Y - list.Y - list.Height) / dpiScale;
+        var bottomGap = ((bounds.Bottom - description.Y - description.Height) / dpiScale) - bottomChromeDip;
+        var details = $"Unicode description spacing: top={topGap} DIPs, bottom={bottomGap} DIPs.";
+        Step(testBase, details);
+        Assert.AreEqual(topGap, bottomGap, roundingToleranceDip, details);
+
+        const double expectedToolbarHeightDip = 92 + 36;
+        var toolbarHeightDip = (bounds.Bottom - bounds.Top) / dpiScale;
+        Assert.AreEqual(
+            expectedToolbarHeightDip,
+            toolbarHeightDip,
+            roundingToleranceDip,
+            "Centering a one-line description should preserve the existing toolbar height.");
+    }
+
     internal static void AssertKeyboardNavigationScrollsIntoView(
         UITestBase testBase,
         Session toolbar,
@@ -757,7 +786,7 @@ internal static class PowerAccentTestHelper
                 ["hold_duration_ms"] = Value(settings.HoldDurationMs),
                 ["selected_lang"] = Value(settings.SelectedLanguage),
                 ["excluded_apps"] = Value(settings.ExcludedApps),
-                ["show_description"] = false,
+                ["show_description"] = settings.ShowUnicodeDescription,
                 ["sort_by_usage_frequency"] = settings.SortByUsageFrequency,
                 ["start_selection_from_the_left"] = settings.StartSelectionFromTheLeft,
             },

@@ -171,6 +171,7 @@
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.TimeDate\Microsoft.CmdPal.Ext.TimeDate.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsServices\Microsoft.CmdPal.Ext.WindowsServices.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsSettings\Microsoft.CmdPal.Ext.WindowsSettings.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsPalettes\Microsoft.CmdPal.Ext.WindowsPalettes.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowsTerminal\Microsoft.CmdPal.Ext.WindowsTerminal.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WindowWalker\Microsoft.CmdPal.Ext.WindowWalker.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WinGet\Microsoft.CmdPal.Ext.WinGet.csproj" />

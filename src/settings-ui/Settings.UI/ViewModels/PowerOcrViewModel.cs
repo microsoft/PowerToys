@@ -180,16 +180,22 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
 
         internal void UpdateLanguages()
         {
+            UpdateLanguages(OcrEngine.AvailableRecognizerLanguages);
+        }
+
+        internal void UpdateLanguages(IEnumerable<Language> ocrLanguages)
+        {
             int preferredLanguageIndex = -1;
             int systemLanguageIndex = -1;
             CultureInfo systemCulture = CultureInfo.CurrentUICulture;
 
             // get the list of all installed OCR languages. While processing them, search for the previously preferred language and also for the current ui language
-            possibleOcrLanguages = OcrEngine.AvailableRecognizerLanguages.OrderBy(x => x.NativeName).ToList();
+            possibleOcrLanguages = ocrLanguages.OrderBy(x => x.NativeName).ToList();
             AvailableLanguages.Clear();
             foreach (Language language in possibleOcrLanguages)
             {
-                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.DisplayName, StringComparison.Ordinal) == true)
+                // PreferredLanguage is persisted as NativeName (see LanguageIndex) and matched the same way by Text Extractor.
+                if (_powerOcrSettings.Properties.PreferredLanguage?.Equals(language.NativeName, StringComparison.OrdinalIgnoreCase) == true)
                 {
                     preferredLanguageIndex = AvailableLanguages.Count;
                 }

@@ -31,6 +31,15 @@ properties:
         productId: Microsoft.VisualStudio.Product.Professional
         channelId: VisualStudio.18.Release
         vsConfigFile: '${WinGetConfigRoot}\..\.vsconfig'
+    - resource: Microsoft.WinGet.DSC/WinGetPackage
+      id: nodePackage
+      directives:
+        description: Install Node.js LTS (builds the Monaco editor bundle in src\Monaco)
+        # Requires elevation for the set operation
+        securityContext: elevated
+      settings:
+        id: OpenJS.NodeJS.LTS
+        source: winget
   configurationVersion: 0.2.0
 
   # Next steps:

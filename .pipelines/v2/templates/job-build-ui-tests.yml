@@ -70,6 +70,8 @@ jobs:
 
   - template: .\steps-restore-nuget.yml
 
+  - template: .\steps-setup-monaco-npm.yml
+
   - task: MSBuild@1
     displayName: Restore solution-level NuGet packages
     inputs:

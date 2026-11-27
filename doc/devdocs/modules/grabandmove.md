@@ -104,7 +104,7 @@ They do not require a PowerToys installer.
 ### 1. Build a matching runtime and tests
 
 On the build host, install the repository's [build prerequisites](../README.md#getting-started),
-Visual Studio C++ tools for the target architecture, PowerShell 7 and .NET 10 SDK. The native
+Visual Studio C++ tools for the target architecture, PowerShell 7 and .NET 11 SDK. The native
 driver projects currently select Windows SDK `10.0.26100.0`; `Build-Smoke.ps1` acquires and verifies
 its pinned Microsoft SDK/WDK NuGet packages separately. A first driver build requires network access.
 
@@ -133,7 +133,7 @@ See [build guidelines](../../../tools/build/BUILD-GUIDELINES.md) for first-time 
 error logs. The test executable is:
 
 ```text
-<repo>\<platform>\Debug\tests\GrabAndMove.UITests\net10.0-windows10.0.26100.0\GrabAndMove.UITests.exe
+<repo>\<platform>\Debug\tests\GrabAndMove.UITests\net11.0-windows10.0.26100.0\GrabAndMove.UITests.exe
 ```
 
 **Runtime configuration and test configuration are separate.** A Release test executable can
@@ -177,7 +177,7 @@ If the certificate expires, clean up the old installation before rebuilding and 
 
 ### 3. Stage the execution machine
 
-Inside the target VM, install architecture-matched .NET 10 Desktop Runtime and the pinned winappcli
+Inside the target VM, install architecture-matched .NET 11 Desktop Runtime and the pinned winappcli
 from the [shared UI-test guide](../development/ui-tests.md#before-running-tests). WinAppDriver is
 not required for this suite. Make `winapp.exe` available to the non-elevated test user, not just
 the administrator account. For a standalone CLI outside PATH, set `WINAPP_CLI_PATH` below to its
@@ -189,7 +189,7 @@ Copy the **complete** product/test output and driver artifact into this layout:
 C:\PTGrabMoveTest\runtime\PowerToys.exe
 C:\PTGrabMoveTest\runtime\PowerToys.GrabAndMove.exe
 C:\PTGrabMoveTest\runtime\WinUI3Apps\PowerToys.Settings.exe
-C:\PTGrabMoveTest\runtime\tests\GrabAndMove.UITests\net10.0-windows10.0.26100.0\...
+C:\PTGrabMoveTest\runtime\tests\GrabAndMove.UITests\net11.0-windows10.0.26100.0\...
 C:\PTGrabMoveTest\driver-artifact\driver-hashes.json
 C:\PTGrabMoveTest\driver-artifact\driver\...
 C:\PTGrabMoveTest\Manage-SmokeDriver.ps1
@@ -263,7 +263,7 @@ $ErrorActionPreference = 'Stop'
 $env:POWERTOYS_INSTALL_DIR = 'C:\PTGrabMoveTest\runtime'
 $env:WINAPP_CLI_PATH = (Get-Command winapp.exe -ErrorAction Stop).Source
 $env:useInstallerForTest = 'false'
-$exe = 'C:\PTGrabMoveTest\runtime\tests\GrabAndMove.UITests\net10.0-windows10.0.26100.0\GrabAndMove.UITests.exe'
+$exe = 'C:\PTGrabMoveTest\runtime\tests\GrabAndMove.UITests\net11.0-windows10.0.26100.0\GrabAndMove.UITests.exe'
 $results = Join-Path $env:LOCALAPPDATA 'PowerToys\UITestResults\GrabAndMove'
 
 & $exe --report-trx --report-trx-filename GrabAndMove.trx `
@@ -329,7 +329,7 @@ if ($LASTEXITCODE) { throw 'Probe restore failed.' }
 if ($LASTEXITCODE) { throw 'Probe build failed.' }
 ```
 
-Copy the complete `<repo>\<platform>\Release\tests\GrabAndMove.HidSmoke.Probe\net10.0-windows10.0.26100.0`
+Copy the complete `<repo>\<platform>\Release\tests\GrabAndMove.HidSmoke.Probe\net11.0-windows10.0.26100.0`
 directory to `C:\PTGrabMoveTest\probe`. While the driver is installed, run in the **non-elevated
 console** terminal:
 

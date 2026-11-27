@@ -139,6 +139,7 @@ namespace GuiErrorProbe
     std::wstring commandLine;
     std::wstring message;
     unsigned int dialogs{};
+    std::vector<WorkspacesSession::Request> requests;
 
     namespace Session
     {
@@ -151,6 +152,9 @@ namespace GuiErrorProbe
 
         WorkspacesSession::Result Start(const Request& request)
         {
+            requests.push_back(request);
+            if (folder.empty())
+                return {};
             WorkspacesCli::ReadJson(folder / (request.invokePoint == InvokePoint::LaunchAndEdit ? L"temp-workspaces.json" : L"workspaces.json"));
             throw std::runtime_error("Expected a fixture file read error.");
         }
@@ -205,6 +209,8 @@ std::wstring GuiErrorProbe::Resource(UINT id)
         return L"Localized invalid file: {}";
     case IDS_WORKSPACES:
         return L"Workspaces";
+    case IDS_INCORRECT_ARGS:
+        return L"Incorrect arguments";
     default:
         throw std::runtime_error("Unexpected GUI error resource.");
     }
@@ -212,10 +218,51 @@ std::wstring GuiErrorProbe::Resource(UINT id)
 
 namespace
 {
-    void Check(bool value)
+    void Check(bool value, const char* message = "CLI runtime fixture assertion failed.")
     {
         if (!value)
-            throw std::runtime_error("CLI runtime fixture assertion failed.");
+            throw std::runtime_error(message);
+    }
+
+    void CheckExistingWindowRecapture()
+    {
+        wil::unique_hwnd window{ CreateWindowExW(WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW, L"STATIC", nullptr, WS_POPUP,
+                                                 -32000, -32000, 1, 1, nullptr, nullptr, nullptr, nullptr) };
+        Check(window.get() != nullptr, "Could not create the fixture window.");
+        ShowWindow(window.get(), SW_SHOWNOACTIVATE);
+        Check(IsWindowVisible(window.get()) != FALSE, "The fixture window must be visible on the interactive desktop.");
+
+        WorkspacesSession::Result session;
+        session.operationId = L"existing-window-recapture";
+        session.project.id = L"{6CF910A2-D2E0-436D-A50E-41432A88452A}";
+        session.project.moveExistingWindows = true;
+        session.project.monitors.push_back({ .number = 1, .dpi = 96 });
+        auto& app = session.project.apps.emplace_back();
+        app.id = L"{49330ECB-5917-4DF3-B70A-1F2D7FE4899B}";
+        app.monitor = 1;
+        app.position = { 10, 20, 640, 400 };
+        const DWORD owner = GetCurrentProcessId();
+        session.applications.emplace(app, WorkspacesData::LaunchingAppState{ app, window.get(), LaunchingState::Failed, owner });
+
+        auto decoded = WorkspacesSession::DeserializeResult(WorkspacesSession::SerializeResult(session), session.operationId);
+        auto& outcome = decoded.applications.at(app);
+        Check(!decoded.launchedAnyApplication && outcome.state == LaunchingState::Failed, "The failed move was reported as a launch.");
+        Check(outcome.window == window.get() && outcome.existingWindowProcessId == owner, "The result lost the original window or its owner.");
+        Check(decoded.CanRecapture(), "The visible original window should allow recapture after a failed move.");
+
+        decoded.project.moveExistingWindows = false;
+        Check(!decoded.CanRecapture(), "Recapture should require the move-existing-windows option.");
+        decoded.project.moveExistingWindows = true;
+        outcome.existingWindowProcessId = owner + 1;
+        Check(!decoded.CanRecapture(), "Recapture should reject a different window owner.");
+        outcome.existingWindowProcessId = owner;
+
+        ShowWindow(window.get(), SW_HIDE);
+        Check(!decoded.CanRecapture(), "Recapture should reject a hidden window.");
+        ShowWindow(window.get(), SW_SHOWNOACTIVATE);
+        Check(decoded.CanRecapture(), "The original window should allow recapture when shown again.");
+        window.reset();
+        Check(!decoded.CanRecapture(), "Recapture should reject a destroyed window.");
     }
 
     void CheckGuiFileErrors()
@@ -248,6 +295,46 @@ namespace
                 const auto resource = malformed ? IDS_INCORRECT_FILE_ERROR : IDS_FILE_READING_ERROR;
                 Check(GuiErrorProbe::message == fmt::format(GuiErrorProbe::Resource(resource), file.wstring()));
             }
+        }
+    }
+
+    void CheckGuiSelectors()
+    {
+        const std::wstring id = L"01234567-89ab-cdef-0123-456789abcdef";
+        const std::wstring braced = L"{" + id + L"}";
+        // A path component that looks like another workspace ID must never become a selector.
+        const std::wstring executable = L"\"C:\\Tools {DEADBEEF-1234-5678-9ABC-DEF012345678} 2 Bin\\Launcher.exe\"";
+        struct Case
+        {
+            std::wstring arguments;
+            std::wstring expectedId;
+            InvokePoint invoke;
+        };
+        const Case cases[] = {
+            { id, id, InvokePoint::EditorButton },
+            { braced + L" 1", braced, InvokePoint::Shortcut },
+            { L"restarted\t\"1\"\t\"" + id + L"\"", id, InvokePoint::Shortcut },
+            { L"\"" + braced + L"\" restarted 2", braced, InvokePoint::LaunchAndEdit },
+            { L"2 " + id + L" restarted", id, InvokePoint::LaunchAndEdit },
+        };
+        for (const auto& test : cases)
+        {
+            GuiErrorProbe::commandLine = executable + L" " + test.arguments;
+            GuiErrorProbe::requests.clear();
+            GuiErrorProbe::dialogs = 0;
+            // The empty result from the fixture also exercises LaunchAndEdit's no-progress return.
+            Check(GuiMainForReadErrorTest(nullptr, nullptr, nullptr, 0) == (test.invoke == InvokePoint::LaunchAndEdit ? 1 : 0));
+            Check(GuiErrorProbe::dialogs == 0 && GuiErrorProbe::requests.size() == 1);
+            Check(GuiErrorProbe::requests.front().id == test.expectedId);
+            Check(GuiErrorProbe::requests.front().invokePoint == test.invoke);
+        }
+        for (const auto* invalid : { L"", L"restarted 1", L"01234567-89ab-cdef-0123-456789abcdef0", L"{01234567-89ab-cdef-0123-456789abcdeZ}" })
+        {
+            GuiErrorProbe::commandLine = executable + L" " + invalid;
+            GuiErrorProbe::requests.clear();
+            GuiErrorProbe::dialogs = 0;
+            Check(GuiMainForReadErrorTest(nullptr, nullptr, nullptr, 0) == 1);
+            Check(GuiErrorProbe::requests.empty() && GuiErrorProbe::dialogs == 1);
         }
     }
 
@@ -785,9 +872,21 @@ int wmain(int argc, wchar_t** argv)
             std::cout << "{\"passed\":true}\n";
             return 0;
         }
+        if (std::wstring_view(argv[1]) == L"existing-window-recapture")
+        {
+            CheckExistingWindowRecapture();
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
         if (std::wstring_view(argv[1]) == L"gui-file-errors")
         {
             CheckGuiFileErrors();
+            std::cout << "{\"passed\":true}\n";
+            return 0;
+        }
+        if (std::wstring_view(argv[1]) == L"gui-selectors")
+        {
+            CheckGuiSelectors();
             std::cout << "{\"passed\":true}\n";
             return 0;
         }

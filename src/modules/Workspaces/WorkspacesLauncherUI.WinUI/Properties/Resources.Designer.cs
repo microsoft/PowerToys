@@ -178,6 +178,15 @@ namespace WorkspacesLauncherUI.Properties {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        public static string SignatureWarningCopyDetailsAcknowledgement {
+            get {
+                return ResourceManager.GetString("SignatureWarningCopyDetailsAcknowledgement", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Could not copy the details to the clipboard. Try again..
         /// </summary>
         public static string SignatureWarningCopyDetailsError {

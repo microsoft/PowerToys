@@ -12,11 +12,11 @@ check proves. The normal CI workflow needs only the invocation and pass criterio
 | `AzureCLI` | `az` is installed, executable, and reports a parseable version. |
 | `AzureDevOpsExtension` | The `azure-devops` CLI extension is installed, so artifact-download commands are available. |
 | `CachedSignInAndToken` | The existing account can mint an Azure DevOps resource token without prompting. |
-| `ProjectRead` | The identity can access organization `microsoft` and project `Dart`. |
+| `ProjectRead` | The identity can access the selected organization and project (`shine-oss/PowerToys` by default). |
 | `PipelineDefinitionRead` | The enabled `UI Test Automation` definition is visible and uniquely resolved. |
 | `BuildRead`, `TimelineRead`, `BuildLogsRead`, `ArtifactsRead` | Build diagnostics and pipeline artifacts are readable. |
 | `TestRunsRead`, `TestResultsRead`, `TestAttachmentsRead` | Azure Test evidence endpoints are readable. An attachment count of zero is still a successful permission check. |
-| `PipelinePreview` | The Run Pipeline API accepts the identity, branch, parameters, and template expansion. `id=-1` proves no build was created. |
+| `PipelinePreview` | Azure accepts the preview request and returns expanded YAML with `id=-1` (no build created). Preflight does not interpret the YAML; check the expanded stages and suite selection for the actual request before queueing. |
 | `RepeatedPromptFreeRead` | A second token-backed call completes without another authentication prompt. |
 
 The preflight deliberately does **not** create a run, cancel a build, or retry/cancel a stage. Those
@@ -43,10 +43,10 @@ the same preflight.
 | `AzureCLI` | Install Azure CLI and open a new shell where `az version` succeeds. |
 | `AzureDevOpsExtension` | User runs `az extension add --name azure-devops`, then reruns preflight. |
 | `CachedSignInAndToken` | User signs into the Microsoft tenant with Azure CLI outside the agent. Never pass credentials through chat or run `az login` from the agent. |
-| `ProjectRead` | Confirm the signed-in identity is a Microsoft FTE with access to `microsoft/Dart`. A valid token alone is insufficient. |
+| `ProjectRead` | Confirm the signed-in identity is a Microsoft FTE with access to the selected project. A valid token alone is insufficient. |
 | `PipelineDefinitionRead` | Confirm project access and that `UI Test Automation` still exists and is enabled. |
 | Build/log/artifact/test read | Request the missing Azure DevOps project/build/test permission; do not weaken evidence requirements. |
-| `PipelinePreview` | Confirm the branch exists, the probe module is valid, and the identity can use/queue pipeline `UI Test Automation`. No run was created. |
+| `PipelinePreview` | Confirm the branch exists, the probe module is valid, and the identity can preview `UI Test Automation`. |
 
 No `az devops configure` defaults, PAT, `AZURE_DEVOPS_EXT_PAT`, service connection secret, or local
 credential file is required. Every helper call supplies organization/project explicitly and obtains

@@ -21,6 +21,7 @@
 #include "EventViewer.h"
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
+#include "ReportSanitizer.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -399,6 +400,23 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     ReportInstallerLogs(tempDir, reportDir);
 
     ReportInstalledContextMenuPackages(reportDir);
+
+    std::vector<path> removedPaths;
+    try
+    {
+        removedPaths = ReportSanitizer::Sanitize(reportDir);
+    }
+    catch (const std::exception& error)
+    {
+        printf("Failed to redact report data: %s\n", error.what());
+        DeleteFolder(reportDir);
+        return 1;
+    }
+
+    for (const auto& removedPath : removedPaths)
+    {
+        wprintf_s(L"Report file or folder removed because it could not be sanitized: %s\n", removedPath.lexically_relative(reportDir).c_str());
+    }
 
     // Zip folder
     auto zipPath = path::path(saveZipPath);
