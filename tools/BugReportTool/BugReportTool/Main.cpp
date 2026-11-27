@@ -43,35 +43,34 @@ map<wstring, vector<wstring>> escapeInfo = {
 const wstring configBackupFolder = L"ConfigBackup";
 
 // Keyboard Manager files are handled by HideKeyboardManagerPrivateInfo, which also covers the updater's copy and
-// takes out a file whose private data could not be hidden. Every json file in the folder is handled: the ones
-// named below with their own paths, settings.json and profileMetadata.json as they are, and every other one as a
-// profile (one file per profile, named by the user).
+// takes out a file whose private data could not be hidden. Every json file in the folder is handled, except
+// settings.json and profileMetadata.json, which are kept as they are. A file of any other type in the folder
+// (not in its subfolders, which hold the logs) is taken out: it cannot be searched for private data.
 const wstring keyboardManagerFolder = L"Keyboard Manager";
 const vector<wstring> keyboardManagerFilesKeptAsIs = {
     L"settings.json",
     L"profileMetadata.json",
 };
-const map<wstring, vector<wstring>> keyboardManagerFileEscapeInfo = {
-    // Keyboard instance paths and names.
-    { L"deviceProfiles.json", { L"map/device", L"map/name" } },
 
-    // The editor keeps every row of every profile here, keyed by row id ("*" stands for any key), turned-off rows
-    // included: the same private data as in the profiles.
-    { L"editorSettings.json", {
-        L"ShortcutSettingsDictionary/*/Shortcut/TargetText",
-        L"ShortcutSettingsDictionary/*/Shortcut/ProgramPath",
-        L"ShortcutSettingsDictionary/*/Shortcut/ProgramArgs",
-        L"ShortcutSettingsDictionary/*/Shortcut/StartInDirectory",
-        L"ShortcutSettingsDictionary/*/Shortcut/UriToOpen",
-        } },
-};
+// Applied to every other json file in the folder, whatever its name: a profile is one file named by the user,
+// and a hand-made copy such as "editorSettings - Copy.json" holds the same private data as the original. The
+// paths of the three kinds of file do not overlap, and a path that a file does not have is skipped.
+const vector<wstring> keyboardManagerEscapeInfo = {
+    // deviceProfiles.json: keyboard instance paths and names.
+    L"map/device",
+    L"map/name",
 
-// Applied to every Keyboard Manager profile, not only default.json: avoid leaking personal information from
-// text, URI or application mappings, and from key sequences (a sequence of letter keys can spell out text).
-const vector<wstring> keyboardManagerProfileEscapeInfo = {
+    // editorSettings.json: the editor keeps every row of every profile here, keyed by row id ("*" stands for any
+    // key), turned-off rows included: the same private data as in the profiles.
+    L"ShortcutSettingsDictionary/*/Shortcut/TargetText",
+    L"ShortcutSettingsDictionary/*/Shortcut/ProgramPath",
+    L"ShortcutSettingsDictionary/*/Shortcut/ProgramArgs",
+    L"ShortcutSettingsDictionary/*/Shortcut/StartInDirectory",
+    L"ShortcutSettingsDictionary/*/Shortcut/UriToOpen",
+
+    // Profiles (default.json and every named one): text, URI and application mappings.
     L"remapKeysToText",
     L"remapShortcutsToText",
-    L"remapKeys/inProcessSequence/newRemapKeys",
     L"remapShortcuts/global/runProgramFilePath",
     L"remapShortcuts/global/runProgramArgs",
     L"remapShortcuts/global/runProgramStartInDir",
@@ -250,7 +249,7 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
 {
     // Keyboard Manager keeps one file per profile, named by the user. List the files first: they are rewritten below.
     vector<path> files;
-    vector<path> temporaryFiles;
+    vector<path> otherFiles;
     const path folder = dir / keyboardManagerFolder;
     error_code err;
     if (!exists(folder, err))
@@ -268,12 +267,13 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
 
         const auto filename = it->path().filename();
         const auto extension = filename.extension();
-        if (_wcsicmp(extension.c_str(), L".tmp") == 0)
+        if (_wcsicmp(extension.c_str(), L".json") != 0)
         {
-            // Left behind when a save was interrupted: it holds a whole profile.
-            temporaryFiles.push_back(it->path());
+            // Not a file Keyboard Manager reads: a temporary file left behind when a save was interrupted, or a
+            // copy made by hand ("Work.json.bak"). Either can hold a whole profile.
+            otherFiles.push_back(it->path());
         }
-        else if (_wcsicmp(extension.c_str(), L".json") == 0)
+        else
         {
             bool keptAsIs = false;
             for (const auto& name : keyboardManagerFilesKeptAsIs)
@@ -303,20 +303,10 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
     // One file at a time, so that a failure does not leave the other files as they are.
     for (const auto& file : files)
     {
-        const vector<wstring>* escapePaths = &keyboardManagerProfileEscapeInfo;
-        for (const auto& [name, paths] : keyboardManagerFileEscapeInfo)
-        {
-            if (_wcsicmp(file.filename().c_str(), name.c_str()) == 0)
-            {
-                escapePaths = &paths;
-                break;
-            }
-        }
-
         bool hidden = false;
         try
         {
-            hidden = HideForFile(dir, (path(keyboardManagerFolder) / file.filename()).wstring(), *escapePaths);
+            hidden = HideForFile(dir, (path(keyboardManagerFolder) / file.filename()).wstring(), keyboardManagerEscapeInfo);
         }
         catch (...)
         {
@@ -329,9 +319,9 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
         }
     }
 
-    for (const auto& temporaryFile : temporaryFiles)
+    for (const auto& otherFile : otherFiles)
     {
-        DeleteFolder(temporaryFile.wstring());
+        DeleteFolder(otherFile.wstring());
     }
 }
 
