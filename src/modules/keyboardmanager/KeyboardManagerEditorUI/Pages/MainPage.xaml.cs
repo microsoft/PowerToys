@@ -39,9 +39,11 @@ namespace KeyboardManagerEditorUI.Pages
         private FileReplacementWatcher? _settingsWatcher;
 
         // Live reloads of the active profile that failed in a row (a file was locked or half-written).
-        // Each failure schedules another try, up to a limit (see ScheduleActiveProfileReloadRetry).
+        // Each failure schedules another try: quickly at first, then every few seconds for as long as
+        // the editor is open (see ScheduleActiveProfileReloadRetry).
         private int _activeProfileReloadRetries;
         private DispatcherTimer? _activeProfileDebounce;
+        private DispatcherTimer? _activeProfileSlowRetry;
         private KeyboardMappingService? _mappingService;
         private bool _disposed;
         private bool _isEditMode;
@@ -490,6 +492,7 @@ namespace KeyboardManagerEditorUI.Pages
                 previous.Dispose();
 
                 _activeProfileReloadRetries = 0;
+                _activeProfileSlowRetry?.Stop();
                 _isReloadPending = false;
                 LoadProfiles();
                 LoadAllMappings();
@@ -504,22 +507,30 @@ namespace KeyboardManagerEditorUI.Pages
             }
         }
 
-        // Tries the live reload again after the debounce interval. After too many failures in a row it
-        // stops and leaves the reload to the next window activation (ReloadIfChangedOnDisk).
+        // Tries the live reload again: at the 200 ms debounce interval for about five seconds, then
+        // every two seconds until it succeeds or the editor closes. It never gives up: once the file
+        // is readable again the page must catch up by itself, without waiting for the user to switch
+        // windows (a click on a window that is already in front does not activate it). A window
+        // activation (ReloadIfChangedOnDisk) and a new change on disk still try at once.
         private void ScheduleActiveProfileReloadRetry()
         {
-            if (_activeProfileDebounce == null || _disposed)
+            if (_activeProfileDebounce == null || _activeProfileSlowRetry == null || _disposed)
             {
                 return;
             }
 
-            // 25 tries at the 200 ms debounce interval: about five seconds.
-            const int MaxRetries = 25;
-            if (_activeProfileReloadRetries >= MaxRetries)
+            const int FastRetries = 25;
+            if (_activeProfileReloadRetries >= FastRetries)
             {
-                Logger.LogWarning("The active profile could not be loaded after several tries; it will be tried again when the window is activated.");
-                _activeProfileReloadRetries = 0;
+                if (_activeProfileReloadRetries == FastRetries)
+                {
+                    Logger.LogWarning("The active profile could not be loaded after several tries; still trying every two seconds.");
+                    _activeProfileReloadRetries++;
+                }
+
                 _isReloadPending = true;
+                _activeProfileSlowRetry.Stop();
+                _activeProfileSlowRetry.Start();
                 return;
             }
 
@@ -545,6 +556,13 @@ namespace KeyboardManagerEditorUI.Pages
                 _activeProfileDebounce.Tick += (s, e) =>
                 {
                     _activeProfileDebounce!.Stop();
+                    RefreshActiveProfileFromDisk();
+                };
+
+                _activeProfileSlowRetry = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                _activeProfileSlowRetry.Tick += (s, e) =>
+                {
+                    _activeProfileSlowRetry!.Stop();
                     RefreshActiveProfileFromDisk();
                 };
 
@@ -589,6 +607,7 @@ namespace KeyboardManagerEditorUI.Pages
             if (ProfileReloadDecision.OnDiskChange(_mappingService.ConfigurationName, active) == ProfileReloadAction.None)
             {
                 _activeProfileReloadRetries = 0;
+                _activeProfileSlowRetry?.Stop();
 
                 // Loaded and active agree; make sure the picker does too (and lists new profiles).
                 LoadProfiles();
@@ -2329,6 +2348,8 @@ namespace KeyboardManagerEditorUI.Pages
                 _serviceCheckTimer = null;
                 _activeProfileDebounce?.Stop();
                 _activeProfileDebounce = null;
+                _activeProfileSlowRetry?.Stop();
+                _activeProfileSlowRetry = null;
                 if (_settingsWatcher != null)
                 {
                     _settingsWatcher.Dispose();
