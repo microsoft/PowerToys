@@ -136,7 +136,8 @@ namespace KeyboardManagerEditorUI.Settings
                     return DeviceAssignmentsSaveResult.Unreadable;
                 }
 
-                var existingProfiles = new HashSet<string>(ProfileManager.GetProfiles(), StringComparer.Ordinal);
+                // Profile ids are file names, so ids differing only in case are one profile.
+                var existingProfiles = new HashSet<string>(ProfileManager.GetProfiles(), StringComparer.OrdinalIgnoreCase);
                 List<DeviceAssignment> current = file.Map
                     .Select(e => new DeviceAssignment { Device = e.Device, Profile = e.Profile, Name = e.Name })
                     .ToList();

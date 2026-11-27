@@ -277,6 +277,15 @@ namespace KeyboardManagerEditorUI.Pages
                 LoadAllMappings();
                 LoadProfiles();
                 StartActiveProfileWatcher();
+
+                // The editor settings were reconciled at startup against a service of their own
+                // (App). If the active profile changed between that and the service created above,
+                // the two are for different profiles: load once more, as one unit.
+                if (SettingsManager.IsNativeServiceAvailable &&
+                    !string.Equals(SettingsManager.ReconciledProfile, _mappingService.ConfigurationName, StringComparison.OrdinalIgnoreCase))
+                {
+                    TryShowActiveProfile();
+                }
             }
             else
             {
@@ -1702,7 +1711,10 @@ namespace KeyboardManagerEditorUI.Pages
                 _isReloadPending = true;
 
                 // Keep the current view if the files are mid-write or locked; the next activation retries.
-                if (!SettingsManager.CorrelateServiceAndEditorMappings(regenerateUnreadableSettings: false))
+                // The service the editor settings were reconciled against is the one the page then
+                // uses: a second service created afterwards could already be for another profile.
+                KeyboardMappingService? loaded = SettingsManager.TryLoadActiveProfile();
+                if (loaded == null)
                 {
                     return;
                 }
@@ -1714,7 +1726,7 @@ namespace KeyboardManagerEditorUI.Pages
                 }
 
                 KeyboardMappingService previousService = _mappingService;
-                _mappingService = new KeyboardMappingService();
+                _mappingService = loaded;
                 previousService.Dispose();
                 LoadProfiles();
                 LoadAllMappings();

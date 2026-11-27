@@ -50,6 +50,13 @@ namespace KeyboardManagerEditorUI.Settings
 
         public static EditorSettings EditorSettings { get; set; }
 
+        /// <summary>
+        /// Gets the profile the editor settings were last reconciled against, or null when they
+        /// have not been reconciled yet. The rows shown must be read with a mapping service of the
+        /// same profile.
+        /// </summary>
+        internal static string? ReconciledProfile { get; private set; }
+
         static SettingsManager()
         {
             if (AppContext.TryGetSwitch(DisableInitializationSwitch, out bool disableInitialization) && disableInitialization)
@@ -550,6 +557,17 @@ namespace KeyboardManagerEditorUI.Settings
         /// the file nor the loaded settings have changed.
         /// </summary>
         internal static bool ReconcileFromDisk(IReadOnlyList<ShortcutKeyMapping> activeMappings, string? profileName, bool regenerateUnreadableSettings)
+        {
+            if (!ReconcileFromDiskCore(activeMappings, profileName, regenerateUnreadableSettings))
+            {
+                return false;
+            }
+
+            ReconciledProfile = profileName;
+            return true;
+        }
+
+        private static bool ReconcileFromDiskCore(IReadOnlyList<ShortcutKeyMapping> activeMappings, string? profileName, bool regenerateUnreadableSettings)
         {
             if (!TryReloadSettings(out SettingsReadResult read))
             {

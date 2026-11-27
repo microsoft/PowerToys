@@ -34,6 +34,9 @@ namespace KeyboardManagerEditorUI.Helpers
             _watcher.Created += OnEvent;
             _watcher.Deleted += OnEvent;
             _watcher.Renamed += OnEvent;
+
+            // The watcher's buffer overflowed and events were dropped: look at the file once.
+            _watcher.Error += OnError;
             _watcher.EnableRaisingEvents = true;
         }
 
@@ -44,9 +47,12 @@ namespace KeyboardManagerEditorUI.Helpers
             _watcher.Created -= OnEvent;
             _watcher.Deleted -= OnEvent;
             _watcher.Renamed -= OnEvent;
+            _watcher.Error -= OnError;
             _watcher.Dispose();
         }
 
         private void OnEvent(object sender, FileSystemEventArgs e) => _onChanged();
+
+        private void OnError(object sender, ErrorEventArgs e) => _onChanged();
     }
 }

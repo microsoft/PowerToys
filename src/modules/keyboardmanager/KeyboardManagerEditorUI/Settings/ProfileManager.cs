@@ -154,7 +154,7 @@ namespace KeyboardManagerEditorUI.Settings
                     foreach (JsonNode? item in configs)
                     {
                         string? name = item?.GetValue<string>();
-                        if (!string.IsNullOrEmpty(name) && !names.Contains(name))
+                        if (!string.IsNullOrEmpty(name) && !names.Contains(name, StringComparer.OrdinalIgnoreCase))
                         {
                             names.Add(name);
                         }
@@ -180,7 +180,8 @@ namespace KeyboardManagerEditorUI.Settings
                             continue;
                         }
 
-                        if (!names.Contains(stem))
+                        // Profile ids are file names, so ids differing only in case are one profile.
+                        if (!names.Contains(stem, StringComparer.OrdinalIgnoreCase))
                         {
                             names.Add(stem);
                         }
@@ -192,7 +193,7 @@ namespace KeyboardManagerEditorUI.Settings
                 Logger.LogWarning($"ProfileManager.GetProfiles: failed scanning config files: {ex.Message}");
             }
 
-            if (!names.Contains(DefaultProfile))
+            if (!names.Contains(DefaultProfile, StringComparer.OrdinalIgnoreCase))
             {
                 names.Insert(0, DefaultProfile);
             }
@@ -382,17 +383,29 @@ namespace KeyboardManagerEditorUI.Settings
                     EnsureDefaultProfileExists();
                 }
 
-                if (!File.Exists(ConfigPath(profile)))
+                // Under the transaction lock, like a delete: otherwise another editor window could
+                // delete this profile between the check below and the write, and the write would
+                // put the deleted profile back as registered and active.
+                using (FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock())
                 {
-                    Logger.LogWarning($"ProfileManager.SetActiveProfile: '{profile}.json' does not exist");
-                    return false;
-                }
+                    if (transactionLock == null)
+                    {
+                        Logger.LogWarning("ProfileManager.SetActiveProfile: could not acquire the editor transaction lock.");
+                        return false;
+                    }
 
-                JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
-                JsonObject properties = EnsureObject(root, "properties");
-                SetValueProperty(properties, "activeConfiguration", profile);
-                AddToConfigurationList(properties, profile);
-                WriteSettingsRoot(root);
+                    if (!File.Exists(ConfigPath(profile)))
+                    {
+                        Logger.LogWarning("ProfileManager.SetActiveProfile: the profile's file does not exist");
+                        return false;
+                    }
+
+                    JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
+                    JsonObject properties = EnsureObject(root, "properties");
+                    SetValueProperty(properties, "activeConfiguration", profile);
+                    AddToConfigurationList(properties, profile);
+                    WriteSettingsRoot(root);
+                }
 
                 SignalEngineReload();
                 return true;
@@ -499,10 +512,23 @@ namespace KeyboardManagerEditorUI.Settings
                     return false;
                 }
 
-                JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
-                JsonObject properties = EnsureObject(root, "properties");
-                AddToConfigurationList(properties, profile);
-                WriteSettingsRoot(root);
+                // Register it under the transaction lock, so that this read-modify-write of
+                // settings.json cannot interleave with another editor window's delete or switch.
+                using (FileStream? transactionLock = SettingsManager.TryAcquireMappingTransactionLock())
+                {
+                    if (transactionLock == null)
+                    {
+                        Logger.LogWarning("ProfileManager.CreateProfile: could not acquire the editor transaction lock.");
+                        RemoveCreatedProfileFile(target);
+                        return false;
+                    }
+
+                    JsonObject root = (ReadSettingsRoot() as JsonObject) ?? CreateDefaultSettingsRoot();
+                    JsonObject properties = EnsureObject(root, "properties");
+                    AddToConfigurationList(properties, profile);
+                    WriteSettingsRoot(root);
+                }
+
                 return true;
             }
             catch (Exception ex)
@@ -923,7 +949,7 @@ namespace KeyboardManagerEditorUI.Settings
                 holder["value"] = array;
             }
 
-            if (!array.Any(n => string.Equals(n?.GetValue<string>(), profile, StringComparison.Ordinal)))
+            if (!array.Any(n => string.Equals(n?.GetValue<string>(), profile, StringComparison.OrdinalIgnoreCase)))
             {
                 array.Add(profile);
             }
@@ -938,7 +964,7 @@ namespace KeyboardManagerEditorUI.Settings
 
             for (int i = array.Count - 1; i >= 0; i--)
             {
-                if (string.Equals(array[i]?.GetValue<string>(), profile, StringComparison.Ordinal))
+                if (string.Equals(array[i]?.GetValue<string>(), profile, StringComparison.OrdinalIgnoreCase))
                 {
                     array.RemoveAt(i);
                 }
