@@ -138,6 +138,18 @@
   <value>Find apps on WinGet</value>
   <comment></comment>
 </data>
+<data name="winget_fallback_display_title" xml:space="preserve">
+  <value>Search WinGet</value>
+  <comment>The name of the WinGet fallback command.</comment>
+</data>
+<data name="winget_fallback_title_template" xml:space="preserve">
+  <value>Search WinGet for &quot;{query}&quot;</value>
+  <comment>The host replaces {query} with the search text.</comment>
+</data>
+<data name="winget_fallback_subtitle" xml:space="preserve">
+  <value>Open package results in WinGet</value>
+  <comment>The description of the WinGet fallback command.</comment>
+</data>
 <data name="winget_create_catalog_error" xml:space="preserve">
   <value>Error {0}. Are you connected to the internet?</value>
   <comment></comment>

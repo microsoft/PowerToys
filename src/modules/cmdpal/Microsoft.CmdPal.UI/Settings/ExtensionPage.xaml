@@ -252,6 +252,16 @@
                                                                 Value="{x:Bind MinimumQueryLength, Mode=TwoWay}" />
                                                         </controls:SettingsCard>
 
+                                                        <controls:SettingsCard
+                                                            x:Uid="Settings_Fallback_MaximumVisibleItems"
+                                                            Visibility="{x:Bind HasResultSettings, Mode=OneTime}">
+                                                            <NumberBox
+                                                                Maximum="{x:Bind ItemCountUpperBound, Mode=OneTime}"
+                                                                Minimum="{x:Bind ItemCountLowerBound, Mode=OneTime}"
+                                                                SmallChange="1"
+                                                                SpinButtonPlacementMode="Compact"
+                                                                Value="{x:Bind MaximumVisibleItemCount, Mode=TwoWay}" />
+                                                        </controls:SettingsCard>
                                                     </controls:SettingsExpander.Items>
                                                 </controls:SettingsExpander>
                                             </DataTemplate>

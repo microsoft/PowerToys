@@ -8,6 +8,7 @@ This script automates the setup of prerequisites needed to build PowerToys local
 - Enables Windows Developer Mode (requires elevation)
 - Installs required Visual Studio workloads from .vsconfig
 - Initializes git submodules
+- Installs Node.js LTS if missing (used to build the Monaco editor bundle)
 
 Run this script once after cloning the repository to prepare your development environment.
 
@@ -22,6 +23,9 @@ Skip installing Visual Studio components from .vsconfig.
 
 .PARAMETER SkipSubmodules
 Skip initializing git submodules.
+
+.PARAMETER SkipNode
+Skip checking for Node.js.
 
 .PARAMETER VSInstallPath
 Path to Visual Studio installation. Default: auto-detected.
@@ -52,6 +56,7 @@ param (
     [switch]$SkipDevMode,
     [switch]$SkipVSComponents,
     [switch]$SkipSubmodules,
+    [switch]$SkipNode,
     [string]$VSInstallPath = '',
     [switch]$Help
 )
@@ -88,7 +93,7 @@ $isAdmin = Test-Administrator
 
 # Step 1: Enable Long Paths
 if (-not $SkipLongPaths) {
-    Write-Host "[1/4] Checking Windows long path support"
+    Write-Host "[1/5] Checking Windows long path support"
 
     $longPathsEnabled = $false
     try {
@@ -118,14 +123,14 @@ if (-not $SkipLongPaths) {
     }
 }
 else {
-    Write-Host "[1/4] Skipping long path check" -ForegroundColor DarkGray
+    Write-Host "[1/5] Skipping long path check" -ForegroundColor DarkGray
 }
 
 Write-Host ""
 
 # Step 2: Enable Developer Mode
 if (-not $SkipDevMode) {
-    Write-Host "[2/4] Checking Windows Developer Mode"
+    Write-Host "[2/5] Checking Windows Developer Mode"
 
     $devModeEnabled = $false
     try {
@@ -159,14 +164,14 @@ if (-not $SkipDevMode) {
     }
 }
 else {
-    Write-Host "[2/4] Skipping Developer Mode check" -ForegroundColor DarkGray
+    Write-Host "[2/5] Skipping Developer Mode check" -ForegroundColor DarkGray
 }
 
 Write-Host ""
 
 # Step 3: Install Visual Studio Components
 if (-not $SkipVSComponents) {
-    Write-Host "[3/4] Checking Visual Studio components"
+    Write-Host "[3/5] Checking Visual Studio components"
 
     $vsConfigPath = Join-Path $repoRoot ".vsconfig"
     if (-not (Test-Path $vsConfigPath)) {
@@ -266,14 +271,14 @@ if (-not $SkipVSComponents) {
     }
 }
 else {
-    Write-Host "[3/4] Skipping VS component check" -ForegroundColor DarkGray
+    Write-Host "[3/5] Skipping VS component check" -ForegroundColor DarkGray
 }
 
 Write-Host ""
 
 # Step 4: Initialize Git Submodules
 if (-not $SkipSubmodules) {
-    Write-Host "[4/4] Initializing git submodules"
+    Write-Host "[4/5] Initializing git submodules"
 
     Push-Location $repoRoot
     try {
@@ -302,7 +307,45 @@ if (-not $SkipSubmodules) {
     }
 }
 else {
-    Write-Host "[4/4] Skipping submodule initialization" -ForegroundColor DarkGray
+    Write-Host "[4/5] Skipping submodule initialization" -ForegroundColor DarkGray
+}
+
+Write-Host ""
+
+# Step 5: Node.js (src\Monaco.props builds the Monaco editor bundle with npm during the build)
+if (-not $SkipNode) {
+    Write-Host "[5/5] Checking Node.js"
+
+    $nodeMajor = 0
+    try {
+        $nodeVersion = & node --version 2>$null
+        if ($nodeVersion -match '^v(\d+)\.') {
+            $nodeMajor = [int]$Matches[1]
+        }
+    }
+    catch {
+        $nodeVersion = $null
+    }
+
+    if ($nodeMajor -ge 20) {
+        Write-Host "  Node.js $nodeVersion found" -ForegroundColor Green
+    }
+    elseif (Get-Command winget -ErrorAction SilentlyContinue) {
+        Write-Host "  Running: winget install --id OpenJS.NodeJS.LTS --exact --source winget" -ForegroundColor DarkGray
+        winget install --id OpenJS.NodeJS.LTS --exact --source winget --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "  Node.js LTS installed. Open a new terminal so it is on PATH." -ForegroundColor Green
+        }
+        else {
+            Write-Warning "  Node.js installation may have encountered issues (exit code: $LASTEXITCODE)"
+        }
+    }
+    else {
+        Write-Warning "  Node.js 20 or later is required. Install the LTS release from https://nodejs.org"
+    }
+}
+else {
+    Write-Host "[5/5] Skipping Node.js check" -ForegroundColor DarkGray
 }
 
 Write-Host ""

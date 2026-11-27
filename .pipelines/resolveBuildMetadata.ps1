@@ -322,7 +322,13 @@ if ($isMain) {
 
     $intent = if ($isScheduled -or $ReleaseIntent -eq "preview-release") { "preview-release" } else { "preview-validation" }
     $channel = "preview"
-    $version = Get-PreviewVersionOverride -ReleaseTrain $releaseTrain -Override $VersionOverride
+    $version = if ([string]::IsNullOrWhiteSpace($VersionOverride)) {
+        "$releaseTrain.1.0"
+    }
+    else {
+        Get-PreviewVersionOverride -ReleaseTrain $releaseTrain -Override $VersionOverride
+    }
+
     if ($null -eq $version) {
         $version = Get-AutomaticReleaseVersion `
             -ReleaseTrain $releaseTrain `

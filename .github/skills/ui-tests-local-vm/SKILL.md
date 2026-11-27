@@ -136,7 +136,7 @@ flowchart LR
     M -- No --> A
     M -- Yes --> N[Clean-profile confirmation when required]
     N --> O[ui-tests-pipeline-ci: preflight, commit, push]
-    O --> P[Scoped CI and synchronous terminal validation]
+    O --> P[Scoped CI and terminal validation]
 ```
 
 The CI continuation applies to implementation tasks; explicit local-only and setup-only tasks stop
@@ -170,7 +170,7 @@ Create and maintain this task list:
 - [ ] 13. Run the full Constrained suite on both OSes; preserve default and constrained evidence
 - [ ] 14. For implementation tasks, invoke ui-tests-pipeline-ci without another user prompt, pass
         access preflight, commit/push task-owned changes, and record the exact branch/SHA
-- [ ] 15. Queue scoped CI and wait synchronously for verified terminal results; local green alone
+- [ ] 15. Queue scoped CI and use the pipeline skill's watcher to verify terminal results; local green alone
         cannot complete the task unless the user explicitly requested local-only scope
 ```
 

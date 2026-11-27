@@ -129,6 +129,9 @@ stages:
 
         - ${{ if eq(parameters.runAffectedUiTests, true) }}:
           - template: job-resolve-ui-tests.yml
+            parameters:
+              buildPlatform: ${{ platform }}
+              routeUmdfArm64: ${{ ne(parameters.umdfHidArm64Image, 'disabled') }}
 
           - ${{ if eq(platform, 'x64') }}:
             - template: job-test-project.yml

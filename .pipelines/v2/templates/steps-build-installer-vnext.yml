@@ -84,6 +84,7 @@ steps:
   # We pass BuildProjectReferences=false so that it does not recompile the DLLs we just built.
   # We only pass -restore on the first one because the second run should already have all
   # of the dependencies.
+  # Skip ICE for both CI MSI builds while the build agents cannot reliably access Windows Installer.
   - task: VSBuild@1
     displayName: 💻 Build VNext MSI
     inputs:
@@ -93,6 +94,7 @@ steps:
         -restore
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=false;BuildProjectReferences=false;CIBuild=true
+        /p:SuppressValidation=true
         /bl:$(LogOutputDirectory)\installer-machine-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)
@@ -109,6 +111,7 @@ steps:
       msbuildArgs: >-
         /t:PowerToysInstallerVNext
         /p:RunBuildEvents=false;PerUser=true;BuildProjectReferences=false;CIBuild=true
+        /p:SuppressValidation=true
         /bl:$(LogOutputDirectory)\installer-user-msi.binlog
         ${{ parameters.additionalBuildOptions }}
       platform: $(BuildPlatform)

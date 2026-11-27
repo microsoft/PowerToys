@@ -39,6 +39,11 @@
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     </ItemGroup>
 
+    <ItemGroup>
+        <!-- Align runtime assemblies with other apps in the shared WinUI3Apps output directory. -->
+        <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
+    </ItemGroup>
+
     <!--
       GPOWrapper is a C++ WinRT component - by default these can't be accessed from C# projects.
       The CsWinRTIncludes property generates a C# projection of the C++ WinRT component so that it can be used in this project.
@@ -51,7 +56,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\common\Common.UI\Common.UI.csproj" />
         <ProjectReference Include="..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />
         <ProjectReference Include="..\..\..\common\interop\PowerToys.Interop.vcxproj" />
         <ProjectReference Include="..\..\..\common\ManagedCommon\ManagedCommon.csproj" />

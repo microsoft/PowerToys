@@ -55,7 +55,7 @@ Describe 'Dedicated ARM64 virtual HID routing' {
             $expanded | Should Match "resolve.hasUmdf${kind}UiTests'\], 'true'"
             $expanded | Should Match ("jobSuffix: \$\{\{ parameters.jobSuffix \}\}_Umdf" + $kind)
         }
-        $wrapper | Should Match "resolve.hasNonUmdfHidUiTests'\], 'true'"
+        $wrapper | Should Match "resolve.hasOrdinaryArm64UiTests'\], 'true'"
         $wrapper | Should Match 'routeUmdfHidArm64: \$\{\{ ne\(parameters.umdfHidArm64Image'
         # Preserve the producer's artifact-name casing, rather than silently forcing ARM64.
         $dedicated | Should Match 'uiTestModules: \[PowerDisplay.UITests\]'
@@ -95,23 +95,21 @@ Describe 'Dedicated ARM64 virtual HID routing' {
         $job | Should Match 'Assert-UmdfArm64TestEnvironment'
     }
 
-    It 'resolves empty, HID-only and mixed PR selections without expanding empty selections' -TestCases @(
-        @{ Modules = @(); Hid = 'false'; Other = 'false' }
-        @{ Modules = @('GrabAndMove.UITests'); Hid = 'true'; Other = 'false' }
-        @{ Modules = @('Other.UITests'); Hid = 'false'; Other = 'true' }
-        @{ Modules = @('GrabAndMove.UITests', 'Other.UITests'); Hid = 'true'; Other = 'true' }
-        @{ Modules = @('PowerDisplay.UITests'); Hid = 'false'; Other = 'false'; Display = 'true' }
-        @{ Modules = @('GrabAndMove.UITests', 'PowerDisplay.UITests'); Hid = 'true'; Other = 'false'; Display = 'true' }
+    It 'resolves the dedicated fixture jobs from the original PR selection' -TestCases @(
+        @{ Modules = @(); Hid = 'false' }
+        @{ Modules = @('GrabAndMove.UITests'); Hid = 'true' }
+        @{ Modules = @('Other.UITests'); Hid = 'false' }
+        @{ Modules = @('GrabAndMove.UITests', 'Other.UITests'); Hid = 'true' }
+        @{ Modules = @('PowerDisplay.UITests'); Hid = 'false'; Display = 'true' }
+        @{ Modules = @('GrabAndMove.UITests', 'PowerDisplay.UITests'); Hid = 'true'; Display = 'true' }
     ) {
-        param($Modules, $Hid, $Other, $Display = 'false')
+        param($Modules, $Hid, $Display = 'false')
         $resolve = Get-Content (Join-Path $templates 'job-resolve-ui-tests.yml') -Raw
-        $assignments = [regex]::Matches($resolve, '(?m)^\s+\$has(?:Non)?Umdf(?:Hid|Display)UiTests = .+$').Value
-        @($assignments).Count | Should Be 3
+        $assignments = [regex]::Matches($resolve, '(?m)^\s+\$hasUmdf(?:Hid|Display)UiTests = .+$').Value
+        @($assignments).Count | Should Be 2
         . ([scriptblock]::Create(($assignments -join "`n")))
         $hasUmdfHidUiTests | Should Be $Hid
-        $hasNonUmdfHidUiTests | Should Be $Other
         $hasUmdfDisplayUiTests | Should Be $Display
-        $resolve | Should Match 'hasNonUmdfHidUiTests;isOutput=true'
     }
 
     It 'never changes boot/signing policy and routes the ARM64 transport probe separately too' {

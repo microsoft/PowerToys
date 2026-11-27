@@ -401,7 +401,7 @@ try {
         }
     }
 
-    # Set NUGET_PACKAGES environment variable if not set, to help wixproj find heat.exe
+    # Set NUGET_PACKAGES environment variable if not set; the custom actions project links WiX native libs from it
     if (-not $env:NUGET_PACKAGES) {
         $env:NUGET_PACKAGES = Join-Path $env:USERPROFILE ".nuget\packages"
         Write-Host "[ENV] Set NUGET_PACKAGES to $env:NUGET_PACKAGES"
