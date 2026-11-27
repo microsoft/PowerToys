@@ -18,6 +18,14 @@ namespace CommonLibTest
     {
         private static readonly string[] RetainedWork = { "Work" };
 
+        private static readonly string[] StagedWithoutHome =
+        {
+            "\\Keyboard Manager\\default.json",
+            "\\Keyboard Manager\\settings.json",
+            "\\Keyboard Manager\\editorSettings.json",
+            "\\settings.json",
+        };
+
         // Mirrors the CustomRestoreSettings block in backup_restore_settings.json: an exact policy for
         // default.json (overwrite), an exact opt-out for the module settings.json (merge), and a
         // wildcard policy covering every other Keyboard Manager profile file (overwrite).
@@ -62,6 +70,68 @@ namespace CommonLibTest
         public void ShouldOverwriteOnRestore_NullPolicy_ReturnsFalse()
         {
             Assert.IsFalse(SettingsBackupAndRestoreUtils.ShouldOverwriteOnRestore(null, "\\Keyboard Manager\\Work.json"));
+        }
+
+        private static string KeyboardManagerSettings(string activeProfile) =>
+            "{\"properties\":{\"activeConfiguration\":{\"value\":\"" + activeProfile + "\"},\"keyboardConfigurations\":{\"value\":[\"default\",\"Home\"]}},\"name\":\"Keyboard Manager\",\"version\":\"1\"}";
+
+        // A backup lists the files first and reads them afterwards. A profile created and selected in
+        // between is named by the staged settings.json, but its file was never listed.
+        [TestMethod]
+        public void GetMissingKeyboardManagerActiveProfile_NamedProfileWithoutItsFile_IsReported()
+        {
+            Assert.AreEqual("Home", SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(StagedWithoutHome, KeyboardManagerSettings("Home")));
+        }
+
+        [TestMethod]
+        public void GetMissingKeyboardManagerActiveProfile_NamedProfileWithItsFile_IsComplete()
+        {
+            var staged = StagedWithoutHome.Append("\\Keyboard Manager\\Home.json");
+
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(staged, KeyboardManagerSettings("Home")));
+        }
+
+        // File names do not distinguish case, and neither do profile ids.
+        [TestMethod]
+        public void GetMissingKeyboardManagerActiveProfile_FileNameDiffersOnlyInCase_IsComplete()
+        {
+            var staged = StagedWithoutHome.Append("\\Keyboard Manager\\home.json");
+
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(staged, KeyboardManagerSettings("Home")));
+        }
+
+        // The built-in default profile has no remappings when it has no file; that is a valid backup.
+        [TestMethod]
+        public void GetMissingKeyboardManagerActiveProfile_FilelessDefault_IsValid()
+        {
+            string[] staged = { "\\Keyboard Manager\\settings.json", "\\settings.json" };
+
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(staged, KeyboardManagerSettings("default")));
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(staged, KeyboardManagerSettings("Default")));
+        }
+
+        [TestMethod]
+        public void GetMissingKeyboardManagerActiveProfile_NoActiveConfiguration_IsValid()
+        {
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(StagedWithoutHome, "{\"properties\":{}}"));
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(StagedWithoutHome, KeyboardManagerSettings(string.Empty)));
+        }
+
+        // The backup has no Keyboard Manager settings at all (or they cannot be parsed).
+        [TestMethod]
+        public void GetMissingKeyboardManagerActiveProfile_NoKeyboardManagerSettingsStaged_IsValid()
+        {
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(StagedWithoutHome, null));
+            Assert.IsNull(SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(StagedWithoutHome, "{ \"properties\": "));
+        }
+
+        // A file of the same name in another module's folder is not the profile's file.
+        [TestMethod]
+        public void GetMissingKeyboardManagerActiveProfile_SameNameInAnotherFolder_DoesNotCount()
+        {
+            var staged = StagedWithoutHome.Append("\\FancyZones\\Home.json");
+
+            Assert.AreEqual("Home", SettingsBackupAndRestoreUtils.GetMissingKeyboardManagerActiveProfile(staged, KeyboardManagerSettings("Home")));
         }
 
         // Keyboard Manager profiles that exist only on this machine are not in the backup, so the

@@ -643,6 +643,31 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </returns>
         private (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) BackupSettingsInternal(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun)
         {
+            // The files are listed first and read afterwards. A Keyboard Manager profile created and
+            // selected in between shows up in the staged settings.json without its own file, and such
+            // a backup would restore to an active profile with no remappings. Take the whole backup
+            // again then (the new list has the file); if the file is still missing, fail.
+            const int Attempts = 3;
+            for (int attempt = 1; ; attempt++)
+            {
+                var results = BackupSettingsOnce(appBasePath, settingsBackupAndRestoreDir, dryRun, out string missingKeyboardManagerProfile);
+                if (missingKeyboardManagerProfile == null || attempt >= Attempts)
+                {
+                    return results;
+                }
+
+                Logger.LogInfo($"BackupSettings, the file of the selected Keyboard Manager profile was not in the backup (attempt {attempt}); taking the backup again.");
+            }
+        }
+
+        /// <summary>
+        /// One attempt of <see cref="BackupSettingsInternal"/>. <paramref name="missingKeyboardManagerProfile"/>
+        /// is set, and the attempt fails without leaving a backup, when the staged Keyboard Manager
+        /// settings select a named profile whose file is not part of the staged set.
+        /// </summary>
+        private (bool Success, string Message, string Severity, bool LastBackupExists, string OptionalMessage) BackupSettingsOnce(string appBasePath, string settingsBackupAndRestoreDir, bool dryRun, out string missingKeyboardManagerProfile)
+        {
+            missingKeyboardManagerProfile = null;
             var lastBackupExists = false;
 
             lock (backupSettingsInternalLock)
@@ -704,6 +729,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     var anyFileBackedUp = false;
                     var skippedSettingsFiles = new Dictionary<string, (string Path, string Settings)>();
                     var updatedSettingsFiles = new Dictionary<string, string>();
+                    string stagedKeyboardManagerSettings = null;
 
                     foreach (var currentFile in currentSettingsFiles)
                     {
@@ -711,6 +737,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                         // need to check and back this up;
                         var currentSettingsFileToBackup = GetExportVersion(backupRestoreSettings, currentFile.Key, currentFile.Value);
+                        if (string.Equals(currentFile.Key, KeyboardManagerSettingsKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            stagedKeyboardManagerSettings = currentSettingsFileToBackup;
+                        }
 
                         var doBackup = false;
                         if (lastBackupSettingsFiles.TryGetValue(currentFile.Key, out string value))
@@ -763,6 +793,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     {
                         // nothing was done!
                         return (false, $"General_SettingsBackupAndRestore_NothingToBackup", "Informational", lastBackupExists, "\n" + tempFile.Value);
+                    }
+
+                    // The staged set must hold the file of the Keyboard Manager profile it selects.
+                    missingKeyboardManagerProfile = GetMissingKeyboardManagerActiveProfile(currentSettingsFiles.Keys, stagedKeyboardManagerSettings);
+                    if (missingKeyboardManagerProfile != null)
+                    {
+                        Logger.LogError($"BackupSettings, the Keyboard Manager settings select the profile '{missingKeyboardManagerProfile}', but its file is not among the files to back up.");
+                        if (!dryRun)
+                        {
+                            TryDeleteDirectory(fullBackupDir);
+                        }
+
+                        return (false, $"General_SettingsBackupAndRestore_BackupError", "Error", lastBackupExists, "\n" + appBasePath + KeyboardManagerFolderKey + missingKeyboardManagerProfile + ".json");
                     }
 
                     // add skipped.
@@ -881,6 +924,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         }
 
         private const string KeyboardManagerFolderKey = "\\Keyboard Manager\\";
+        private const string KeyboardManagerSettingsKey = "\\Keyboard Manager\\settings.json";
         private const string KeyboardManagerEditorSettingsKey = "\\Keyboard Manager\\editorSettings.json";
         private const string KeyboardManagerDeviceProfilesKey = "\\Keyboard Manager\\deviceProfiles.json";
         private const string KeyboardManagerProfileMetadataKey = "\\Keyboard Manager\\profileMetadata.json";
@@ -907,6 +951,42 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 stem.Equals("deviceProfiles", StringComparison.OrdinalIgnoreCase) ||
                 stem.Equals("profileMetadata", StringComparison.OrdinalIgnoreCase);
             return reserved ? null : stem;
+        }
+
+        /// <summary>
+        /// Checks that a set of files staged for a backup holds the file of the Keyboard Manager
+        /// profile that the staged module settings select. Returns that profile when its
+        /// "{id}.json" is not among <paramref name="stagedFileKeys"/>, and null when the set is
+        /// complete. The built-in "default" profile needs no file (without one it has no
+        /// remappings), and a set without Keyboard Manager settings has nothing to check.
+        /// </summary>
+        /// <param name="stagedFileKeys">The staged files, as keys like "\Keyboard Manager\Work.json".</param>
+        /// <param name="stagedKeyboardManagerSettingsJson">The staged content of "\Keyboard Manager\settings.json", or null.</param>
+        public static string GetMissingKeyboardManagerActiveProfile(IEnumerable<string> stagedFileKeys, string stagedKeyboardManagerSettingsJson)
+        {
+            if (string.IsNullOrWhiteSpace(stagedKeyboardManagerSettingsJson))
+            {
+                return null;
+            }
+
+            string active;
+            try
+            {
+                active = JsonNode.Parse(stagedKeyboardManagerSettingsJson)?["properties"]?["activeConfiguration"]?["value"]?.GetValue<string>();
+            }
+            catch (Exception)
+            {
+                // Not a readable settings object: nothing in it selects a profile.
+                return null;
+            }
+
+            if (string.IsNullOrEmpty(active) || active.Equals("default", StringComparison.OrdinalIgnoreCase))
+            {
+                return null;
+            }
+
+            string profileFileKey = KeyboardManagerFolderKey + active + ".json";
+            return stagedFileKeys.Any(key => string.Equals(key, profileFileKey, StringComparison.OrdinalIgnoreCase)) ? null : active;
         }
 
         // Whether the file is one of the Keyboard Manager stores shared by all profiles.
