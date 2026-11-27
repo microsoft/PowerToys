@@ -12,7 +12,8 @@ internal sealed partial class SystemData
     public static SystemData Shared { get; } = new();
 
     private readonly Lazy<MemoryStats> _memoryStats = new(() => CreateGuarded("Memory.Initialize", static () => new MemoryStats()));
-    private readonly Lazy<NetworkStats> _networkStats = new(() => CreateGuarded("Network.Initialize", static () => new NetworkStats()));
+    private readonly NetworkInterfaceSnapshotProvider _networkSnapshotProvider = new();
+    private readonly Lazy<NetworkStats> _networkStats;
     private readonly Lazy<DiskStats> _diskStats = new(() => CreateGuarded("Disk.Initialize", static () => new DiskStats()));
     private readonly Lazy<GPUStats> _gpuStats = new(() => CreateGuarded("GPU.Initialize", static () => new GPUStats()));
     private readonly Lazy<CPUStats> _cpuStats = new(() => CreateGuarded("CPU.Initialize", static () => new CPUStats()));
@@ -32,6 +33,14 @@ internal sealed partial class SystemData
 
     private SystemData()
     {
+        _networkStats = new(() => CreateGuarded("Network.Initialize", () => new NetworkStats(_networkSnapshotProvider)));
+    }
+
+    // This method is used to configure the network snapshot provider with the settings manager.
+    // TODO: replace this with a more elegant solution; that needs a separate PR.
+    public void ConfigureNetwork(SettingsManager settingsManager)
+    {
+        _networkSnapshotProvider.Configure(settingsManager);
     }
 
     private static T CreateGuarded<T>(string blockSuffix, Func<T> factory)
