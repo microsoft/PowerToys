@@ -4,10 +4,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.Settings.UI.Library;
+using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Models.KeyboardManager;
 
@@ -27,6 +30,15 @@ namespace PowerToys.DSC.Models.KeyboardManager;
 /// </summary>
 public static class KeyboardManagerSettingsInput
 {
+    private static readonly CompositeFormat ProfileFieldNotApplied = CompositeFormat.Parse(Resources.KeyboardManagerProfileFieldNotApplied);
+
+    /// <summary>
+    /// The warning for a profile field of the input that is not applied.
+    /// </summary>
+    /// <param name="field">The name of the settings property.</param>
+    public static string FormatProfileFieldNotApplied(string field) =>
+        string.Format(CultureInfo.InvariantCulture, ProfileFieldNotApplied, field);
+
     /// <summary>
     /// Copies the active profile and the profile list from
     /// <paramref name="current"/> into <paramref name="desired"/>, whatever
@@ -80,9 +92,11 @@ public static class KeyboardManagerSettingsInput
                 }
             }
         }
-        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
+        catch (Exception)
         {
-            // Not the shape this looks for: nothing to report here.
+            // Not the shape this looks for (the typed read of the same input decides whether it
+            // is valid): nothing to report here, and a warning must never fail the operation.
+            notApplied.Clear();
         }
 
         return notApplied;

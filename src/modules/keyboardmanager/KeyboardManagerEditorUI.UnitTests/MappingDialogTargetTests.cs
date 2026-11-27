@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace KeyboardManagerEditorUI.UnitTests
 {
     /// <summary>
-    /// S1: the add/edit dialog saves only into the profile it was opened for. A profile switch
+    /// The add/edit dialog saves only into the profile it was opened for. A profile switch
     /// while it is open (picker in another editor, cycle hotkey, device auto-switch) must make the
     /// save stop instead of landing in, or briefly rewriting, the newly active profile.
     /// </summary>

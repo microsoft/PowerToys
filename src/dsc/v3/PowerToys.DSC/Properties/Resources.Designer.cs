@@ -214,7 +214,7 @@ namespace PowerToys.DSC.Properties {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Keyboard Manager settings: &apos;{0}&apos; in the input differs from the current value and was not applied. Keyboard Manager manages it itself; the current value is kept..
+        ///   Looks up a localized string similar to Keyboard Manager settings: &apos;{0}&apos; in the input differs from the current value. This resource does not apply it: Keyboard Manager manages it itself, and the current value is kept..
         /// </summary>
         internal static string KeyboardManagerProfileFieldNotApplied {
             get {

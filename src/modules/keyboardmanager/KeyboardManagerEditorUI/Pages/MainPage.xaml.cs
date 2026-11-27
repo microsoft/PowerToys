@@ -564,17 +564,20 @@ namespace KeyboardManagerEditorUI.Pages
                     return;
                 }
 
-                _activeProfileDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
-                _activeProfileDebounce.Tick += (s, e) =>
+                // The handlers stop their own timer through a local: Dispose clears the fields.
+                var debounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
+                _activeProfileDebounce = debounce;
+                debounce.Tick += (s, e) =>
                 {
-                    (s as DispatcherTimer)?.Stop();
+                    debounce.Stop();
                     RefreshActiveProfileFromDisk();
                 };
 
-                _activeProfileSlowRetry = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
-                _activeProfileSlowRetry.Tick += (s, e) =>
+                var slowRetry = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+                _activeProfileSlowRetry = slowRetry;
+                slowRetry.Tick += (s, e) =>
                 {
-                    (s as DispatcherTimer)?.Stop();
+                    slowRetry.Stop();
                     RefreshActiveProfileFromDisk();
                 };
 
@@ -610,8 +613,9 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             // An unreadable settings.json says nothing about the active profile (it is not "default").
-            // This runs from the two timers, possibly many times in a row: only the first failure of
-            // a row is logged, and the editor's lock is tried without waiting, so that a lock which
+            // This runs from the two timers, possibly many times in a row: a settings.json that cannot
+            // be read is logged for the first failure of a row only, and the editor's lock is tried
+            // without waiting (a lock that is taken is not logged per try; the row is, once), so that a lock which
             // another editor process keeps holding does not freeze this window at every try.
             if (!ProfileManager.TryGetActiveProfile(out string active, logFailure: _activeProfileReloadRetries == 0))
             {

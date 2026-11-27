@@ -470,7 +470,7 @@ namespace KeyboardManagerEditorUI.Settings
                 if (copyFromProfile != null)
                 {
                     bool isDefault = copyFromProfile.Equals(DefaultProfile, StringComparison.OrdinalIgnoreCase);
-                    if (!isDefault && !IsValidProfileName(copyFromProfile))
+                    if (!isDefault && !IsValidProfileName(copyFromProfile, allowReservedDeviceName: true))
                     {
                         Logger.LogWarning($"ProfileManager.CreateProfile: invalid profile to copy '{copyFromProfile}'");
                         return false;
@@ -822,7 +822,7 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
-        private static bool IsValidProfileName(string profile)
+        private static bool IsValidProfileName(string profile, bool allowReservedDeviceName = false)
         {
             if (string.IsNullOrWhiteSpace(profile))
             {
@@ -838,7 +838,9 @@ namespace KeyboardManagerEditorUI.Settings
 
             // A reserved device name ("NUL", "CON", "COM1", ...) is not a file on every Windows version:
             // "NUL.json" can open the NUL device, so the profile would be registered without a file.
-            return !IsReservedDeviceName(profile);
+            // Only a new name is refused: a profile that already exists under such a name (possible
+            // on Windows versions where it is an ordinary file) can still be copied.
+            return allowReservedDeviceName || !IsReservedDeviceName(profile);
         }
 
         internal static bool IsReservedDeviceName(string name)

@@ -164,7 +164,7 @@ namespace CommonLibTest
                 SettingsBackupAndRestoreUtils.GetRetainedKeyboardManagerProfiles(current, backup).ToList());
         }
 
-        // The reviewer's scenario: the backup's editorSettings.json replaces this machine's, but Work
+        // Scenario: the backup's editorSettings.json replaces this machine's, but Work
         // is kept. Work's turned-off row exists only in the editor metadata, so it must be carried
         // over; Work's membership of a row also in the backup is kept; default's rows come from the
         // backup.

@@ -328,7 +328,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.DoesNotContain(new List<string>(ProfileManager.GetProfiles()), "NUL");
         }
 
-        // S1 (New profile): "copy the current profile" copies the profile shown when the dialog
+        // New profile: "copy the current profile" copies the profile shown when the dialog
         // opened, even if an auto-switch made another profile active before the user confirmed.
         [TestMethod]
         public void CreateProfile_CopiesTheProfileCapturedWhenTheDialogOpened()

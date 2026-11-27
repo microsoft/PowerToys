@@ -4,15 +4,12 @@
 
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
 using PowerToys.DSC.Models.KeyboardManager;
 using PowerToys.DSC.Models.ResourceObjects;
-using PowerToys.DSC.Properties;
 
 namespace PowerToys.DSC.Models.FunctionData;
 
@@ -23,8 +20,6 @@ namespace PowerToys.DSC.Models.FunctionData;
 public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, ISettingsFunctionData
     where TSettingsConfig : ISettingsConfig, new()
 {
-    private static readonly CompositeFormat KeyboardManagerProfileFieldNotApplied = CompositeFormat.Parse(Resources.KeyboardManagerProfileFieldNotApplied);
-
     private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private static readonly TSettingsConfig _settingsConfig = new();
 
@@ -72,7 +67,7 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
             _warnings.Clear();
             foreach (var field in KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(_inputJson, current))
             {
-                _warnings.Add(string.Format(CultureInfo.InvariantCulture, KeyboardManagerProfileFieldNotApplied, field));
+                _warnings.Add(KeyboardManagerSettingsInput.FormatProfileFieldNotApplied(field));
             }
 
             KeyboardManagerSettingsInput.UseCurrentProfileFields(desired, current);

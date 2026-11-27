@@ -103,6 +103,10 @@ public sealed class KeyboardManagerSettingsInputTests
 
         const string empty = "{\"settings\":{\"properties\":{\"activeConfiguration\":{},\"keyboardConfigurations\":{}}}}";
         Assert.AreEqual(0, KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(empty, current).Count);
+
+        // A shape the node reader rejects (a property given twice) must not make the warning throw.
+        const string twice = "{\"settings\":{\"properties\":{\"activeConfiguration\":{\"value\":\"office\"},\"activeConfiguration\":{\"value\":\"office\"}}}}";
+        Assert.AreEqual(0, KeyboardManagerSettingsInput.GetProfileFieldsNotApplied(twice, current).Count);
     }
 
     // A member without a value would otherwise be written as "value": null.
