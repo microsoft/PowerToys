@@ -45,6 +45,7 @@ namespace PowerToys
             static GpoRuleConfigured GetConfiguredAutoHideCursorEnabledValue();
             static GpoRuleConfigured GetConfiguredCursorWrapEnabledValue();
             static GpoRuleConfigured GetConfiguredMouseButtonLockEnabledValue();
+            static GpoRuleConfigured GetConfiguredCursorBrakeEnabledValue();
             static GpoRuleConfigured GetConfiguredMouseWithoutBordersEnabledValue();
             static GpoRuleConfigured GetConfiguredPowerRenameEnabledValue();
             static GpoRuleConfigured GetConfiguredPowerLauncherEnabledValue();

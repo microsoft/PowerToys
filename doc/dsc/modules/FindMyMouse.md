@@ -280,11 +280,13 @@ resources:
 
 - [Settings Resource][01]
 - [PowerToys DSC Overview][02]
-- [MouseButtonLock][03]
-- [MouseHighlighter][04]
+- [CursorBrake][03]
+- [MouseButtonLock][04]
+- [MouseHighlighter][05]
 
 <!-- Link reference definitions -->
 [01]: ../settings-resource.md
 [02]: ../overview.md
-[03]: ./MouseButtonLock.md
-[04]: ./MouseHighlighter.md
+[03]: ./CursorBrake.md
+[04]: ./MouseButtonLock.md
+[05]: ./MouseHighlighter.md

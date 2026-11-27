@@ -24,6 +24,7 @@ public static class SettingsConfigHelper
         "CmdPal",
         "ColorPicker",
         "CropAndLock",
+        "CursorBrake",
         "CursorWrap",
         "EnvironmentVariables",
         "FancyZones",

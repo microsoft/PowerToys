@@ -1,0 +1,33 @@
+{
+  "configVersion": 3,
+  "entries": [
+    {
+      "Fuzzer": {
+        "$type": "libfuzzer",
+        "FuzzingHarnessExecutableName": "CursorBrake.FuzzTests.exe"
+      },
+      "adoTemplate": {
+        "org": "microsoft",
+        "project": "OS",
+        "AssignedTo": "leilzh@microsoft.com",
+        "AreaPath": "OS\\Windows Client and Services\\WinPD\\DFX-Developer Fundamentals and Experiences\\DEFT\\SALT",
+        "IterationPath": "OS\\Future"
+      },
+      "jobNotificationEmail": "PowerToys@microsoft.com",
+      "skip": false,
+      "rebootAfterSetup": false,
+      "oneFuzzJobs": [
+        {
+          "projectName": "PowerToys.CursorBrake",
+          "targetName": "CursorBrake_Fuzzer"
+        }
+      ],
+      "jobDependencies": [
+        "CursorBrake.FuzzTests.exe",
+        "CursorBrake.FuzzTests.pdb",
+        "CursorBrake.FuzzTests.lib",
+        "clang_rt.asan_dynamic-x86_64.dll"
+      ]
+    }
+  ]
+}

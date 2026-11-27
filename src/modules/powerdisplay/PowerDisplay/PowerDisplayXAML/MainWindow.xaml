@@ -6,6 +6,7 @@
     xmlns:helpers="using:PowerDisplay.Helpers"
     xmlns:local="using:PowerDisplay"
     xmlns:models="using:PowerDisplay.Models"
+    xmlns:ptcontrols="using:Microsoft.PowerToys.Common.UI.Controls"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:vm="using:PowerDisplay.ViewModels"
     xmlns:winuiex="using:WinUIEx"
@@ -310,7 +311,7 @@
                                                         <ColumnDefinition Width="*" />
                                                         <ColumnDefinition Width="Auto" />
                                                     </Grid.ColumnDefinitions>
-                                                    <local:MonitorIcon
+                                                    <ptcontrols:MonitorIcon
                                                         VerticalAlignment="Center"
                                                         IsBuiltIn="{x:Bind IsInternal, Mode=OneWay}"
                                                         MonitorNumber="{x:Bind MonitorNumber, Mode=OneWay}" />

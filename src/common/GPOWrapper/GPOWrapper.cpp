@@ -140,6 +140,10 @@ namespace winrt::PowerToys::GPOWrapper::implementation
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredMouseButtonLockEnabledValue());
     }
+    GpoRuleConfigured GPOWrapper::GetConfiguredCursorBrakeEnabledValue()
+    {
+        return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredCursorBrakeEnabledValue());
+    }
     GpoRuleConfigured GPOWrapper::GetConfiguredPowerRenameEnabledValue()
     {
         return static_cast<GpoRuleConfigured>(powertoys_gpo::getConfiguredPowerRenameEnabledValue());

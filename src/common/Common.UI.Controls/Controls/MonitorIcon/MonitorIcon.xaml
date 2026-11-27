@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <UserControl
-    x:Class="PowerDisplay.MonitorIcon"
+    x:Class="Microsoft.PowerToys.Common.UI.Controls.MonitorIcon"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -18,7 +18,7 @@
 
     <Grid>
         <!--  Decorative badge: keep fixed text scaling for the glyph overlay and rely on adjacent DisplayName text for accessible monitor numbering.  -->
-        <Viewbox Width="16">
+        <Viewbox Width="{x:Bind IconSize, Mode=OneWay}">
             <Grid>
                 <Grid x:Name="MonitorGrid" x:Uid="ExternalMonitorTooltip">
                     <FontIcon

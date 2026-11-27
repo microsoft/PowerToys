@@ -12,19 +12,384 @@
     xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
     xmlns:tkconverters="using:CommunityToolkit.WinUI.Converters"
     xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
     AutomationProperties.LandmarkType="Main"
     mc:Ignorable="d">
     <local:NavigablePage.Resources>
         <converters:IndexBitFieldToVisibilityConverter x:Key="IndexBitFieldToVisibilityConverter" />
         <converters:MillisecondsLabelConverter x:Key="MillisecondsLabelConverter" />
+        <converters:PixelsLabelConverter x:Key="PixelsLabelConverter" />
         <tkconverters:BoolToVisibilityConverter
             x:Key="BoolToInvertedVisibilityConverter"
             FalseValue="Visible"
             TrueValue="Collapsed" />
+        <converters:CursorBrakeEdgeTemplateSelector x:Key="CursorBrakeEdgeTemplateSelector">
+            <converters:CursorBrakeEdgeTemplateSelector.MapTemplate>
+                <DataTemplate x:DataType="viewmodels:CursorBrakeEdgesViewModel">
+                    <tkcontrols:SettingsCard ContentAlignment="Left">
+                        <StackPanel Orientation="Horizontal" Spacing="32">
+                            <controls:CursorBrakeEdgeMap Editor="{x:Bind}" />
+                            <StackPanel VerticalAlignment="Center" Spacing="10">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Line
+                                        VerticalAlignment="Center"
+                                        Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                                        StrokeEndLineCap="Round"
+                                        StrokeStartLineCap="Round"
+                                        StrokeThickness="4"
+                                        X1="2"
+                                        X2="26"
+                                        Y1="5"
+                                        Y2="5" />
+                                    <TextBlock x:Uid="MouseUtils_CursorBrake_Edges_Legend_Default" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Line
+                                        VerticalAlignment="Center"
+                                        Stroke="{ThemeResource AccentFillColorDefaultBrush}"
+                                        StrokeEndLineCap="Round"
+                                        StrokeStartLineCap="Round"
+                                        StrokeThickness="5"
+                                        X1="2"
+                                        X2="26"
+                                        Y1="5"
+                                        Y2="5" />
+                                    <TextBlock x:Uid="MouseUtils_CursorBrake_Edges_Legend_Custom" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Line
+                                        VerticalAlignment="Center"
+                                        Stroke="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                                        StrokeDashArray="2,2"
+                                        StrokeThickness="2"
+                                        X1="2"
+                                        X2="26"
+                                        Y1="5"
+                                        Y2="5" />
+                                    <TextBlock x:Uid="MouseUtils_CursorBrake_Edges_Legend_Off" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Grid VerticalAlignment="Center">
+                                        <Line
+                                            Stroke="{ThemeResource TextFillColorPrimaryBrush}"
+                                            StrokeThickness="8"
+                                            X1="2"
+                                            X2="26"
+                                            Y1="5"
+                                            Y2="5" />
+                                        <Line
+                                            Stroke="{ThemeResource SolidBackgroundFillColorBaseBrush}"
+                                            StrokeDashArray="0.25,0.75"
+                                            StrokeDashOffset="-0.375"
+                                            StrokeThickness="8"
+                                            X1="2"
+                                            X2="26"
+                                            Y1="5"
+                                            Y2="5" />
+                                    </Grid>
+                                    <TextBlock Text="{x:Bind WallLegend, Mode=OneWay}" />
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Border
+                                        Height="20"
+                                        Padding="6,0"
+                                        VerticalAlignment="Center"
+                                        BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="10">
+                                        <StackPanel Orientation="Horizontal" Spacing="3">
+                                            <TextBlock
+                                                VerticalAlignment="Center"
+                                                FontSize="11"
+                                                FontWeight="SemiBold"
+                                                Text="C" />
+                                            <FontIcon
+                                                VerticalAlignment="Center"
+                                                FontSize="10"
+                                                Glyph="&#xEDDA;"
+                                                RenderTransformOrigin="0.5,0.5">
+                                                <FontIcon.RenderTransform>
+                                                    <RotateTransform Angle="-90" />
+                                                </FontIcon.RenderTransform>
+                                            </FontIcon>
+                                        </StackPanel>
+                                    </Border>
+                                    <TextBlock x:Uid="MouseUtils_CursorBrake_Edges_Legend_OneWay" />
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                </DataTemplate>
+            </converters:CursorBrakeEdgeTemplateSelector.MapTemplate>
+            <converters:CursorBrakeEdgeTemplateSelector.EdgeTemplate>
+                <DataTemplate x:DataType="viewmodels:CursorBrakeEdgeRowViewModel">
+                    <tkcontrols:SettingsCard
+                        AutomationProperties.HelpText="{x:Bind Description, Mode=OneWay}"
+                        AutomationProperties.Name="{x:Bind AutomationName}"
+                        IsEnabled="{x:Bind IsEditable}">
+                        <tkcontrols:SettingsCard.Header>
+                            <RichTextBlock
+                                converters:CursorBrakeText.Parts="{x:Bind TitleParts}"
+                                IsTextSelectionEnabled="False"
+                                TextWrapping="Wrap" />
+                        </tkcontrols:SettingsCard.Header>
+                        <tkcontrols:SettingsCard.Description>
+                            <RichTextBlock
+                                converters:CursorBrakeText.Parts="{x:Bind DescriptionParts, Mode=OneWay}"
+                                IsTextSelectionEnabled="False"
+                                TextWrapping="Wrap" />
+                        </tkcontrols:SettingsCard.Description>
+                        <tkcontrols:SettingsCard.HeaderIcon>
+                            <FontIcon
+                                Width="20"
+                                Height="20"
+                                converters:CursorBrakeLetterBrush.IsSelected="{x:Bind IsSelected, Mode=OneWay}"
+                                converters:CursorBrakeLetterBrush.NormalBrush="{ThemeResource TextFillColorSecondaryBrush}"
+                                converters:CursorBrakeLetterBrush.SelectedBrush="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                AutomationProperties.AccessibilityView="Raw"
+                                FontFamily="{ThemeResource ContentControlThemeFontFamily}"
+                                FontSize="15"
+                                FontWeight="SemiBold"
+                                Glyph="{x:Bind Letter}" />
+                        </tkcontrols:SettingsCard.HeaderIcon>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Slider
+                                MinWidth="160"
+                                AutomationProperties.AutomationId="{x:Bind SliderAutomationId}"
+                                LargeChange="100"
+                                Maximum="1000"
+                                Minimum="0"
+                                SmallChange="25"
+                                SnapsTo="StepValues"
+                                StepFrequency="25"
+                                ThumbToolTipValueConverter="{StaticResource PixelsLabelConverter}"
+                                Visibility="{x:Bind IsCustom, Mode=OneWay}"
+                                Value="{x:Bind PushDistance, Mode=TwoWay}" />
+                            <ComboBox
+                                MinWidth="200"
+                                AutomationProperties.AutomationId="{x:Bind ModeAutomationId}"
+                                GotFocus="{x:Bind Select}"
+                                SelectedIndex="{x:Bind SelectedIndex, Mode=TwoWay}">
+                                <ComboBoxItem AutomationProperties.Name="{x:Bind DefaultText, Mode=OneWay}" Content="{x:Bind DefaultText, Mode=OneWay}" />
+                                <ComboBoxItem Content="{x:Bind CustomText, Mode=OneWay}" />
+                                <ComboBoxItem Content="{x:Bind OffText, Mode=OneWay}" />
+                                <ComboBoxItem Content="{x:Bind WallText, Mode=OneWay}" />
+                                <ComboBoxItem Content="{x:Bind DifferentEachWayText, Mode=OneWay}" />
+                            </ComboBox>
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                </DataTemplate>
+            </converters:CursorBrakeEdgeTemplateSelector.EdgeTemplate>
+            <converters:CursorBrakeEdgeTemplateSelector.DirectionTemplate>
+                <DataTemplate x:DataType="viewmodels:CursorBrakeEdgeDirectionViewModel">
+                    <tkcontrols:SettingsCard Padding="100,8,44,8" AutomationProperties.Name="{x:Bind Header}">
+                        <tkcontrols:SettingsCard.Header>
+                            <RichTextBlock
+                                converters:CursorBrakeText.Parts="{x:Bind HeaderParts}"
+                                IsTextSelectionEnabled="False"
+                                TextWrapping="Wrap" />
+                        </tkcontrols:SettingsCard.Header>
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Slider
+                                MinWidth="160"
+                                AutomationProperties.AutomationId="{x:Bind SliderAutomationId}"
+                                LargeChange="100"
+                                Maximum="1000"
+                                Minimum="0"
+                                SmallChange="25"
+                                SnapsTo="StepValues"
+                                StepFrequency="25"
+                                ThumbToolTipValueConverter="{StaticResource PixelsLabelConverter}"
+                                Visibility="{x:Bind IsCustom, Mode=OneWay}"
+                                Value="{x:Bind PushDistance, Mode=TwoWay}" />
+                            <ComboBox
+                                MinWidth="200"
+                                AutomationProperties.AutomationId="{x:Bind AutomationId}"
+                                SelectedIndex="{x:Bind SelectedIndex, Mode=TwoWay}">
+                                <ComboBoxItem AutomationProperties.Name="{x:Bind DefaultText, Mode=OneWay}" Content="{x:Bind DefaultText, Mode=OneWay}" />
+                                <ComboBoxItem Content="{x:Bind CustomText, Mode=OneWay}" />
+                                <ComboBoxItem Content="{x:Bind OffText, Mode=OneWay}" />
+                                <ComboBoxItem Content="{x:Bind WallText, Mode=OneWay}" />
+                            </ComboBox>
+                        </StackPanel>
+                    </tkcontrols:SettingsCard>
+                </DataTemplate>
+            </converters:CursorBrakeEdgeTemplateSelector.DirectionTemplate>
+            <converters:CursorBrakeEdgeTemplateSelector.HeadingTemplate>
+                <DataTemplate x:DataType="x:String">
+                    <TextBlock
+                        Margin="16,12,16,4"
+                        AutomationProperties.AutomationId="MouseUtils_CursorBrakeDisconnectedId"
+                        AutomationProperties.HeadingLevel="Level2"
+                        Style="{StaticResource BodyStrongTextBlockStyle}"
+                        Text="{x:Bind}" />
+                </DataTemplate>
+            </converters:CursorBrakeEdgeTemplateSelector.HeadingTemplate>
+            <converters:CursorBrakeEdgeTemplateSelector.DisconnectedTemplate>
+                <DataTemplate x:DataType="viewmodels:CursorBrakeDisconnectedEdgeViewModel">
+                    <tkcontrols:SettingsCard Description="{x:Bind Description}" Header="{x:Bind Title}">
+                        <Button AutomationProperties.AutomationId="MouseUtils_CursorBrakeForgetId" Click="{x:Bind Forget}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <FontIcon FontSize="16" Glyph="&#xE74D;" />
+                                <TextBlock x:Uid="MouseUtils_CursorBrake_Edges_Forget" />
+                            </StackPanel>
+                        </Button>
+                    </tkcontrols:SettingsCard>
+                </DataTemplate>
+            </converters:CursorBrakeEdgeTemplateSelector.DisconnectedTemplate>
+        </converters:CursorBrakeEdgeTemplateSelector>
     </local:NavigablePage.Resources>
     <controls:SettingsPageControl x:Uid="MouseUtils" ModuleImageSource="ms-appx:///Assets/Settings/Modules/MouseUtils.png">
         <controls:SettingsPageControl.ModuleContent>
             <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:SettingsGroup x:Uid="MouseUtils_CursorBrake" AutomationProperties.AutomationId="MouseUtils_CursorBrakeTestId">
+                    <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsCursorBrakeEnabledGpoConfigured, Mode=OneWay}">
+                        <tkcontrols:SettingsCard
+                            Name="MouseUtilsEnableCursorBrake"
+                            x:Uid="MouseUtils_Enable_CursorBrake"
+                            HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/CursorBrake.png}"
+                            IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabledGpoConfigured, Mode=OneWay, Converter={StaticResource BoolNegationConverter}}">
+                            <ToggleSwitch
+                                x:Uid="ToggleSwitch"
+                                AutomationProperties.AutomationId="MouseUtils_CursorBrakeToggleId"
+                                IsOn="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=TwoWay}" />
+                        </tkcontrols:SettingsCard>
+                    </controls:GPOInfoControl>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorBrakeSettingsExpander"
+                        x:Uid="MouseUtils_CursorBrake_Options"
+                        AutomationProperties.AutomationId="MouseUtils_CursorBrakeOptionsId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE962;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakePushDistance" x:Uid="MouseUtils_CursorBrake_PushDistance">
+                                <Slider
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakePushDistanceId"
+                                    LargeChange="100"
+                                    Maximum="1000"
+                                    Minimum="0"
+                                    SmallChange="25"
+                                    SnapsTo="StepValues"
+                                    StepFrequency="25"
+                                    ThumbToolTipValueConverter="{StaticResource PixelsLabelConverter}"
+                                    Value="{x:Bind ViewModel.CursorBrakePushDistance, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeFreeReturn" ContentAlignment="Left">
+                                <ptcontrols:CheckBoxWithDescriptionControl
+                                    x:Uid="MouseUtils_CursorBrake_FreeReturn"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeFreeReturnId"
+                                    IsChecked="{x:Bind ViewModel.CursorBrakeFreeReturn, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeEdgeFilter" x:Uid="MouseUtils_CursorBrake_EdgeFilter">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeEdgeFilterId"
+                                    SelectedIndex="{x:Bind Path=ViewModel.CursorBrakeEdgeFilter, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_EdgeFilter_All" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_EdgeFilter_SideBySide" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_EdgeFilter_Stacked" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard ContentAlignment="Left">
+                                <CheckBox
+                                    x:Uid="MouseUtils_CursorBrake_DisableWhileDragging"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeDisableWhileDraggingId"
+                                    IsChecked="{x:Bind ViewModel.CursorBrakeDisableWhileDragging, Mode=TwoWay}" />
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeCrossModifier" x:Uid="MouseUtils_CursorBrake_CrossModifier">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeCrossModifierId"
+                                    SelectedIndex="{x:Bind Path=ViewModel.CursorBrakeCrossModifier, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_CrossModifier_HoldingCtrl" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_CrossModifier_HoldingShift" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                            <tkcontrols:SettingsCard Name="MouseUtilsCursorBrakeFullscreenBehavior" x:Uid="MouseUtils_CursorBrake_FullscreenBehavior">
+                                <ComboBox
+                                    MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeFullscreenBehaviorId"
+                                    SelectedIndex="{x:Bind Path=ViewModel.CursorBrakeFullscreenBehavior, Mode=TwoWay}">
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_FullscreenBehavior_Same" />
+                                    <ComboBoxItem AutomationProperties.Name="{x:Bind ViewModel.CursorBrakeFullscreenWallText, Mode=OneWay}" Content="{x:Bind ViewModel.CursorBrakeFullscreenWallText, Mode=OneWay}" />
+                                    <ComboBoxItem x:Uid="MouseUtils_CursorBrake_FullscreenBehavior_NoResistance" />
+                                </ComboBox>
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorBrakeEdgesExpander"
+                        x:Uid="MouseUtils_CursorBrake_Edges"
+                        AutomationProperties.AutomationId="MouseUtils_CursorBrakeEdgesId"
+                        Description="{x:Bind ViewModel.CursorBrakeEdges.EditorDescription, Mode=OneWay}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=OneWay}"
+                        ItemTemplate="{StaticResource CursorBrakeEdgeTemplateSelector}"
+                        ItemsSource="{x:Bind ViewModel.CursorBrakeEdges.ListItems, Mode=OneWay}">
+                        <Button
+                            x:Uid="MouseUtils_CursorBrake_Edges_ShowOnScreens"
+                            AutomationProperties.AutomationId="MouseUtils_CursorBrakeShowOnScreensId"
+                            Click="{x:Bind ViewModel.CursorBrakeEdges.ShowOnScreens}"
+                            IsEnabled="{x:Bind ViewModel.CursorBrakeEdges.HasDetectedEdges, Mode=OneWay}" />
+                        <tkcontrols:SettingsExpander.ItemsHeader>
+                            <StackPanel>
+                                <InfoBar
+                                    Title="{x:Bind ViewModel.CursorBrakeEdges.TrapTitle, Mode=OneWay}"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeTrapId"
+                                    BorderThickness="0"
+                                    CornerRadius="0"
+                                    IsClosable="False"
+                                    IsOpen="{x:Bind ViewModel.CursorBrakeEdges.IsTrapVisible, Mode=OneWay}"
+                                    Message="{x:Bind ViewModel.CursorBrakeEdges.TrapMessage, Mode=OneWay}"
+                                    Severity="Informational" />
+                                <InfoBar
+                                    x:Uid="MouseUtils_CursorBrake_Edges_Unidentified"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeUnidentifiedId"
+                                    BorderThickness="0"
+                                    CornerRadius="0"
+                                    IsClosable="False"
+                                    IsOpen="{x:Bind ViewModel.CursorBrakeEdges.IsUnidentified, Mode=OneWay}"
+                                    Severity="Informational" />
+                                <InfoBar
+                                    x:Uid="MouseUtils_CursorBrake_Edges_SingleDisplay"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeSingleDisplayId"
+                                    BorderThickness="0"
+                                    CornerRadius="0"
+                                    IsClosable="False"
+                                    IsOpen="{x:Bind ViewModel.CursorBrakeEdges.IsSingleDisplay, Mode=OneWay}"
+                                    Severity="Informational" />
+                            </StackPanel>
+                        </tkcontrols:SettingsExpander.ItemsHeader>
+                    </tkcontrols:SettingsExpander>
+
+                    <tkcontrols:SettingsExpander
+                        Name="MouseUtilsCursorBrakeExcludedApps"
+                        x:Uid="MouseUtils_CursorBrake_ExcludedApps"
+                        AutomationProperties.AutomationId="MouseUtils_CursorBrakeExcludedAppsId"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xECE4;}"
+                        IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=OneWay}">
+                        <tkcontrols:SettingsExpander.Items>
+                            <tkcontrols:SettingsCard HorizontalContentAlignment="Stretch" ContentAlignment="Vertical">
+                                <TextBox
+                                    x:Uid="MouseUtils_CursorBrake_ExcludedApps_TextBoxControl"
+                                    MinWidth="240"
+                                    MinHeight="160"
+                                    AcceptsReturn="True"
+                                    AutomationProperties.AutomationId="MouseUtils_CursorBrakeExcludedAppsTextBoxId"
+                                    IsEnabled="{x:Bind ViewModel.IsCursorBrakeEnabled, Mode=OneWay}"
+                                    ScrollViewer.IsVerticalRailEnabled="True"
+                                    ScrollViewer.VerticalScrollBarVisibility="Visible"
+                                    ScrollViewer.VerticalScrollMode="Enabled"
+                                    Text="{x:Bind ViewModel.CursorBrakeExcludedApps, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    TextWrapping="Wrap" />
+                            </tkcontrols:SettingsCard>
+                        </tkcontrols:SettingsExpander.Items>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
                 <controls:SettingsGroup x:Uid="MouseUtils_AutoHideCursor" AutomationProperties.AutomationId="MouseUtils_AutoHideCursorTestId">
                     <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsAutoHideCursorEnabledGpoConfigured, Mode=OneWay}">
                         <tkcontrols:SettingsCard

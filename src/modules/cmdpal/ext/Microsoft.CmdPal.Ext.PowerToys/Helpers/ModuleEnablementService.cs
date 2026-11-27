@@ -133,6 +133,7 @@ internal static class ModuleEnablementService
         "ColorPicker" => "ConfigureEnabledUtilityColorPicker",
         "CropAndLock" => "ConfigureEnabledUtilityCropAndLock",
         "AutoHideCursor" => "ConfigureEnabledUtilityAutoHideCursor",
+        "CursorBrake" => "ConfigureEnabledUtilityCursorBrake",
         "CursorWrap" => "ConfigureEnabledUtilityCursorWrap",
         "EnvironmentVariables" => "ConfigureEnabledUtilityEnvironmentVariables",
         "FancyZones" => "ConfigureEnabledUtilityFancyZones",
