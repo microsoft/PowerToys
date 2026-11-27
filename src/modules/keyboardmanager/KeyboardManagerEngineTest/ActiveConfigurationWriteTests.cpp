@@ -99,6 +99,56 @@ namespace RemappingLogicTests
             Assert::AreEqual(size_t{ 0 }, TemporaryFileCount());
         }
 
+        // A read-only file cannot be replaced by trying again, so it is not waited for.
+        TEST_METHOD (ReadOnlyFile_FailsWithoutWaiting)
+        {
+            Assert::IsTrue(SetFileAttributesW(settingsPath.c_str(), FILE_ATTRIBUTE_READONLY) != 0);
+
+            const ULONGLONG before = GetTickCount64();
+            Assert::IsFalse(KeyboardManagerSettingsFile::WriteActiveConfiguration(settingsPath.wstring(), L"Work"));
+
+            // Ten tries 50 ms apart would take about 450 ms.
+            Assert::IsTrue(GetTickCount64() - before < 300);
+        }
+
+        // While the engine waits for a busy file, the editor may save a change to it (a new profile
+        // in the list). The engine must then write that newer file with only the active profile
+        // changed, not the copy it read before waiting.
+        TEST_METHOD (ChangeSavedWhileWaiting_IsKept)
+        {
+            const HANDLE reader = CreateFileW(settingsPath.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+            Assert::IsTrue(reader != INVALID_HANDLE_VALUE);
+            const std::filesystem::path path = settingsPath;
+            std::thread other([reader, path] {
+                Sleep(90);
+
+                // Written in place through a second handle (the reader blocks only the rename).
+                std::ofstream stream(path, std::ios::binary | std::ios::trunc);
+                stream << R"({"name":"Keyboard Manager","properties":{"activeConfiguration":{"value":"default"},"keyboardConfigurations":{"value":["default","Work","Home"]},"useNewEditor":{"value":true}},"version":"1"})";
+                stream.close();
+                CloseHandle(reader);
+            });
+
+            const bool saved = KeyboardManagerSettingsFile::WriteActiveConfiguration(settingsPath.wstring(), L"Work");
+            other.join();
+
+            Assert::IsTrue(saved);
+            const auto parsed = json::from_file(settingsPath.wstring());
+            Assert::IsTrue(parsed.has_value());
+            const auto properties = parsed.value().GetNamedObject(L"properties");
+            Assert::AreEqual(std::wstring(L"Work"), std::wstring(properties.GetNamedObject(L"activeConfiguration").GetNamedString(L"value")));
+            Assert::AreEqual(3u, properties.GetNamedObject(L"keyboardConfigurations").GetNamedArray(L"value").Size());
+        }
+
+        TEST_METHOD (IsSameProfile_IgnoresLetterCase)
+        {
+            Assert::IsTrue(KeyboardManagerSettingsFile::IsSameProfile(L"Work", L"work"));
+            Assert::IsTrue(KeyboardManagerSettingsFile::IsSameProfile(L"default", L"Default"));
+            Assert::IsTrue(KeyboardManagerSettingsFile::IsSameProfile(L"", L""));
+            Assert::IsFalse(KeyboardManagerSettingsFile::IsSameProfile(L"Work", L"Work2"));
+            Assert::IsFalse(KeyboardManagerSettingsFile::IsSameProfile(L"Work", L""));
+        }
+
         // Another program keeps the file open without delete sharing for the whole call (as a reader
         // that never lets go): same result.
         TEST_METHOD (WhenAReaderNeverReleasesTheFile_ReturnsFalse_AndLeavesTheOldFileIntact)

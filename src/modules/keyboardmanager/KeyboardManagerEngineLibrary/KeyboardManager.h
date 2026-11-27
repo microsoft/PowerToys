@@ -167,6 +167,12 @@ private:
     std::wstring pendingTarget;
     int pendingCount = 0;
 
+    // Tracker-thread-only: the profile an auto-switch last failed for, and the tick (GetTickCount64)
+    // before which it is not tried again for that profile.
+    static constexpr uint64_t FailedSwitchRetryDelayMs = 5000;
+    std::wstring failedSwitchTarget;
+    uint64_t failedSwitchRetryTick = 0;
+
     // The profile the engine is heading to but has not adopted yet: set when the tracker requests a
     // switch and when a reload stages a profile change; cleared once that profile is adopted and when a
     // same-profile reload is applied. When a reload fails it is reset to the pending stage's profile,

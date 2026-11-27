@@ -561,6 +561,74 @@ namespace RemappingLogicTests
             Assert::IsFalse(IsDown(VK_CONTROL));
         }
 
+        // The same for a shortcut that applies to one app only.
+        TEST_METHOD (ApplyWithoutHook_HeldModifierDoesNotStartAppSpecificShortcut)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('A');
+            Shortcut dest;
+            dest.SetKey(VK_SHIFT);
+            dest.SetKey('B');
+            const std::wstring testApp = L"testapp.exe";
+            mockedInputHandler.SetForegroundProcess(testApp);
+
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+            auto b = MakeProfile(L"B");
+            b->AddAppSpecificShortcut(testApp, src, dest);
+            Offer(std::move(b));
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_LCONTROL, ScanOf(VK_LCONTROL), IsExtended(VK_LCONTROL) } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+
+            Press('A');
+            Assert::IsTrue(IsDown('A'));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown('B'));
+            Release('A');
+            Release(VK_LCONTROL);
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+
+            // From the next press it works.
+            Press(VK_LCONTROL);
+            Press('A');
+            Assert::IsTrue(IsDown(VK_SHIFT));
+            Assert::IsTrue(IsDown('B'));
+            Release('A');
+            Release(VK_LCONTROL);
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown('B'));
+        }
+
+        // An orphan modifier that the system reports up (its key-up was lost while no hook was there)
+        // cannot take part in a shortcut, so it must not keep shortcuts off: the record can stay for a
+        // long time.
+        TEST_METHOD (ApplyWithoutHook_OrphanModifierTheSystemReportsUp_DoesNotHoldShortcutsBack)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('A');
+            Shortcut dest;
+            dest.SetKey(VK_MENU);
+            dest.SetKey('V');
+
+            // Right Shift was in the snapshot, but the system no longer reports it down.
+            auto b = MakeProfile(L"B");
+            b->AddOSLevelShortcut(src, dest);
+            Offer(std::move(b));
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_RSHIFT, ScanOf(VK_RSHIFT), IsExtended(VK_RSHIFT) } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+            Assert::IsFalse(IsDown(VK_RSHIFT));
+
+            Press(VK_LCONTROL);
+            Press('A');
+            Assert::IsTrue(IsDown(VK_MENU));
+            Assert::IsTrue(IsDown('V'));
+            Release('A');
+            Release(VK_LCONTROL);
+            Assert::IsFalse(IsDown(VK_MENU));
+            Assert::IsFalse(IsDown('V'));
+        }
+
         // While a held orphan modifier holds shortcuts back, a single-key remap of the new profile
         // still applies to keys pressed after the switch.
         TEST_METHOD (ApplyWithoutHook_HeldModifier_SingleKeyRemapStillApplies)

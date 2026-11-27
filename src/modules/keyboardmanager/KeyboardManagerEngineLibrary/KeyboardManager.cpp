@@ -193,7 +193,18 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
     // is pending does not match, so it requests the live profile again, which supersedes the pending
     // stage (with the same hysteresis as any other switch).
     const std::wstring& heading = requested.empty() ? current : requested;
-    if (target == heading)
+    if (KeyboardManagerSettingsFile::IsSameProfile(target, heading))
+    {
+        pendingTarget.clear();
+        pendingCount = 0;
+        return;
+    }
+
+    // A switch to this profile failed a moment ago (settings.json could not be saved, or the
+    // profile's file is gone). Without a pause, every second keystroke on this keyboard would try
+    // again, block this thread for up to half a second and add an error line to the log.
+    const uint64_t nowTick = GetTickCount64();
+    if (nowTick < failedSwitchRetryTick && KeyboardManagerSettingsFile::IsSameProfile(target, failedSwitchTarget))
     {
         pendingTarget.clear();
         pendingCount = 0;
@@ -225,7 +236,16 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
     }
 
     Logger::trace(L"Auto-switch: requesting profile '{}'", target);
-    SwitchActiveProfile(target);
+    if (SwitchActiveProfile(target))
+    {
+        failedSwitchTarget.clear();
+        failedSwitchRetryTick = 0;
+    }
+    else
+    {
+        failedSwitchTarget = target;
+        failedSwitchRetryTick = nowTick + FailedSwitchRetryDelayMs;
+    }
 }
 
 void KeyboardManager::LoadDeviceProfiles()
@@ -238,8 +258,40 @@ void KeyboardManager::LoadDeviceProfiles()
     try
     {
         const auto path = PTSettingsHelper::get_module_save_folder_location(moduleName) + L"\\deviceProfiles.json";
-        auto parsed = json::from_file(path);
-        if (parsed.has_value())
+
+        // A file that is not there means the feature was never set up: everything off. A file that
+        // is there but cannot be read right now (another program has it open, or it is damaged) says
+        // nothing, so the values loaded last stay in effect. Treating it as empty would turn
+        // auto-switch off and unregister the cycle hotkey, and neither could ask for a reload again.
+        std::optional<json::JsonObject> parsed;
+        bool absent = false;
+        constexpr int Attempts = 5;
+        constexpr DWORD RetryDelayMs = 50;
+        for (int attempt = 1;; ++attempt)
+        {
+            parsed = json::from_file(path);
+            if (parsed.has_value())
+            {
+                break;
+            }
+
+            std::error_code ec;
+            if (!std::filesystem::exists(path, ec) && !ec)
+            {
+                absent = true;
+                break;
+            }
+
+            if (attempt >= Attempts)
+            {
+                Logger::error(L"deviceProfiles.json could not be read; keeping the keyboard assignments and the cycle hotkey loaded before");
+                return;
+            }
+
+            Sleep(RetryDelayMs);
+        }
+
+        if (!absent)
         {
             const json::JsonObject& obj = parsed.value();
             if (obj.HasKey(L"autoSwitchEnabled"))
@@ -289,7 +341,9 @@ void KeyboardManager::LoadDeviceProfiles()
     }
     catch (...)
     {
-        Logger::error(L"Failed to load deviceProfiles.json");
+        // A member of the wrong type. Applying what was parsed before it would be a half-read file.
+        Logger::error(L"Failed to load deviceProfiles.json; keeping the keyboard assignments and the cycle hotkey loaded before");
+        return;
     }
 
     {
@@ -337,7 +391,7 @@ void KeyboardManager::CycleActiveProfile()
         size_t currentIndex = 0;
         for (size_t i = 0; i < profiles.size(); ++i)
         {
-            if (profiles[i] == current)
+            if (KeyboardManagerSettingsFile::IsSameProfile(profiles[i], current))
             {
                 currentIndex = i;
                 break;
@@ -371,7 +425,7 @@ bool KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     // engine unable to load it, its old mappings stranded. Validate at commit time and drop the stale
     // request instead. "default" is exempt: it is the protected fallback (never deletable) and is
     // created on demand by the editor, so it must always be switchable to.
-    if (profile != KeyboardManagerConstants::DefaultConfiguration)
+    if (!KeyboardManagerSettingsFile::IsSameProfile(profile, KeyboardManagerConstants::DefaultConfiguration))
     {
         const auto configPath = PTSettingsHelper::get_module_save_folder_location(moduleName) + L"\\" + profile + L".json";
         std::error_code ec;
@@ -410,7 +464,11 @@ bool KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     }
     else
     {
-        Logger::error(L"Auto-switch: failed to signal settings event");
+        // The switch is saved but the reload was not asked for, so it has not happened: report it as
+        // failed (no tone), and undo the request so that it can be tried again.
+        Logger::error(L"Switch: failed to signal the settings event");
+        ResetFailedProfileRequest(profile);
+        return false;
     }
 
     return true;
@@ -425,7 +483,7 @@ void KeyboardManager::ResetFailedProfileRequest(const std::wstring& failedProfil
 
         // Only the failed request itself: a request for another profile (e.g. a successful switch whose
         // reload is still in flight, while this failure came from the cycle hotkey) is left alone.
-        if (requestedProfile == failedProfile)
+        if (KeyboardManagerSettingsFile::IsSameProfile(requestedProfile, failedProfile))
         {
             requestedProfile = pending;
         }
@@ -528,20 +586,27 @@ void KeyboardManager::OnSettingsChanged()
         return;
     }
 
-    try
-    {
-        // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
-        Trace::SendKeyAndShortcutRemapLoadedConfiguration(*loaded);
-    }
-    catch (...)
+    // Telemetry about the configured remappings (one event per remapping) is sent when the profile
+    // that is applied was loaded again, i.e. after an edit, as it was before profiles existed. A
+    // reload that only switches to another profile sends none: with auto-switch that happens every
+    // time the user moves to another keyboard, and would repeat the same events many times a day.
+    if (KeyboardManagerSettingsFile::IsSameProfile(loaded->currentConfig, profileSwapGate.AppliedProfile()))
     {
         try
         {
-            Logger::error("Failed to send telemetry for the configured remappings.");
-            Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration();
+            // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
+            Trace::SendKeyAndShortcutRemapLoadedConfiguration(*loaded);
         }
         catch (...)
         {
+            try
+            {
+                Logger::error("Failed to send telemetry for the configured remappings.");
+                Trace::ErrorSendingKeyAndShortcutRemapLoadedConfiguration();
+            }
+            catch (...)
+            {
+            }
         }
     }
 

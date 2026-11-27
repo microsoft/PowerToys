@@ -315,8 +315,8 @@ private:
     // to the event's id; either way the virtual-key fallback no longer applies to that record.
     std::unordered_map<uint32_t, HeldKey>::iterator FindHeldKey(uint32_t id, DWORD rawVkCode);
 
-    // False while a pass-through orphan modifier is held (see HandleFunction).
-    bool ShortcutsAllowed() const noexcept;
+    // False while a pass-through orphan modifier is held and the system reports it down (see HandleFunction).
+    bool ShortcutsAllowed() const;
 
     void PruneStaleKeys(TimePoint now, uint32_t keepId);
     void TryApplyStage(TimePoint now, const AdoptFunction& adopt);

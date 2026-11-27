@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ProfileSwapGate.h"
 
+#include <keyboardmanager/common/SettingsFile.h>
+
 #include <algorithm>
 
 #include <keyboardmanager/common/Helpers.h>
@@ -70,11 +72,11 @@ ProfileSwapGate::OfferResult ProfileSwapGate::Offer(const MappingConfiguration::
     std::unique_ptr<State> cancelled;
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        const bool sameProfile = configuration->currentConfig == m_appliedProfile;
+        const bool sameProfile = KeyboardManagerSettingsFile::IsSameProfile(configuration->currentConfig, m_appliedProfile);
 
         // A stage of the applied profile itself (a switch away that was superseded by a switch back)
         // changes nothing a held key could depend on, so a reload of that profile does not wait for it.
-        const bool stagedIsApplied = m_staged && m_staged->currentConfig == m_appliedProfile;
+        const bool stagedIsApplied = m_staged && KeyboardManagerSettingsFile::IsSameProfile(m_staged->currentConfig, m_appliedProfile);
         if (sameProfile && (!m_staged || stagedIsApplied))
         {
             // Same profile, no switch to another profile pending: an edit of the live profile. Keep the
@@ -444,13 +446,15 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
     return result;
 }
 
-bool ProfileSwapGate::ShortcutsAllowed() const noexcept
+bool ProfileSwapGate::ShortcutsAllowed() const
 {
-    // A pass-through orphan modifier is down in the system, so the shortcut handlers (which read the
-    // system's key state) would count it, yet they never see its key-up. A suppressed orphan is not
-    // down in the system and cannot start a shortcut.
-    return std::none_of(m_heldKeys.begin(), m_heldKeys.end(), [](const auto& entry) {
-        return entry.second.orphan && !entry.second.suppressed && Helpers::IsModifierKey(entry.second.vkCode);
+    // A pass-through orphan modifier that is down in the system would be counted by the shortcut
+    // handlers (they read the system's key state), yet they never see its key-up. A suppressed orphan
+    // is not down in the system and cannot start a shortcut. Neither can one the system reports up
+    // (its key-up was lost, or KBM released it while invoking a shortcut of the old profile): such a
+    // record can stay for a long time, and must not keep shortcuts off meanwhile.
+    return std::none_of(m_heldKeys.begin(), m_heldKeys.end(), [this](const auto& entry) {
+        return entry.second.orphan && !entry.second.suppressed && Helpers::IsModifierKey(entry.second.vkCode) && m_asyncKeyDown && m_asyncKeyDown(entry.second.vkCode);
     });
 }
 
