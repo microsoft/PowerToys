@@ -328,13 +328,25 @@ bool HideKeyboardManagerFiles(const path& dir, const path& folder)
         return false;
     }
 
-    // The json files in subfolders. Keyboard Manager writes only logs there, so one is a copy made by hand.
+    // The files in subfolders. Keyboard Manager writes only logs (.log) there, so any other file is a copy made by
+    // hand (a folder of backups: "Work.json", "Work.json.bak") or left behind: a json file is cleaned like the ones
+    // above, and a file of another kind is taken out.
     for (recursive_directory_iterator it{ folder, err }; !err && it != recursive_directory_iterator{}; it.increment(err))
     {
         error_code entryErr;
-        if (it.depth() > 0 && it->is_regular_file(entryErr) && _wcsicmp(it->path().extension().c_str(), L".json") == 0)
+        if (it.depth() == 0 || !it->is_regular_file(entryErr))
+        {
+            continue;
+        }
+
+        const auto extension = it->path().extension();
+        if (_wcsicmp(extension.c_str(), L".json") == 0)
         {
             files.push_back(it->path());
+        }
+        else if (_wcsicmp(extension.c_str(), L".log") != 0)
+        {
+            otherFiles.push_back(it->path());
         }
     }
 

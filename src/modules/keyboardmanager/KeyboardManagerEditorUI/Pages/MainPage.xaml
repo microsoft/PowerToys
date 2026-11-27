@@ -143,6 +143,7 @@
                             x:Name="ProfileSelector"
                             x:Uid="ProfileSelector"
                             MinWidth="160"
+                            MaxWidth="280"
                             SelectionChanged="ProfileSelector_SelectionChanged" />
                         <Button
                             x:Name="NewProfileBtn"

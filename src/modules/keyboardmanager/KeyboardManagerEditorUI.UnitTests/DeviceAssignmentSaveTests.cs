@@ -367,6 +367,18 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsTrue(ProfileManager.CreateProfile(profile, copyFromActive: false));
         }
 
+        // A hand edit left "map": null or a null entry. Both parse; the assignments read as empty (or
+        // without the null entry) instead of throwing, so Auto-switch can still be opened to fix them.
+        [DataTestMethod]
+        [DataRow("{ \"map\": null }", "")]
+        [DataRow("{ \"map\": [ null, { \"device\": \"k1\", \"profile\": \"Office\" } ] }", "k1=Office")]
+        public void GetSavedAssignments_WithANullMapOrEntry_DoesNotThrow(string content, string expected)
+        {
+            File.WriteAllText(DeviceProfilesPath, content);
+
+            Assert.AreEqual(expected, string.Join(",", SavedMap()));
+        }
+
         private static List<DeviceAssignment> Rows(params (string Device, string Profile)[] rows) =>
             rows.Select(r => new DeviceAssignment { Device = r.Device, Profile = r.Profile, Name = r.Device }).ToList();
 

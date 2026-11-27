@@ -180,6 +180,10 @@ void RawInputKeyboardTracker::ThreadMain()
     {
         Logger::error(L"RawInputKeyboardTracker: CreateWindow failed ({})", GetLastError());
         UnregisterClassW(RawInputWindowClassName, wc.hInstance);
+
+        // Ending before the message loop: clear the id first, so Stop() posts nothing. Once this
+        // thread has ended, Windows may give its id to another thread.
+        m_threadId.store(0);
         if (m_readyEvent != nullptr)
         {
             SetEvent(m_readyEvent);
@@ -197,6 +201,7 @@ void RawInputKeyboardTracker::ThreadMain()
         Logger::error(L"RawInputKeyboardTracker: RegisterRawInputDevices failed ({})", GetLastError());
         DestroyWindow(hwnd);
         UnregisterClassW(RawInputWindowClassName, wc.hInstance);
+        m_threadId.store(0); // as above
         if (m_readyEvent != nullptr)
         {
             SetEvent(m_readyEvent);
@@ -220,6 +225,8 @@ void RawInputKeyboardTracker::ThreadMain()
         DispatchMessageW(&msg);
     }
 
+    // The loop can also end without Stop() (a WM_QUIT from elsewhere): clear the id here too.
+    m_threadId.store(0);
     DestroyWindow(hwnd);
     UnregisterClassW(RawInputWindowClassName, wc.hInstance);
     Logger::trace(L"RawInputKeyboardTracker: stopped");

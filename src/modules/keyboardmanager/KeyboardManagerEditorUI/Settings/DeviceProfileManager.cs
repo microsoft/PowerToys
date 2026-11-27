@@ -337,7 +337,7 @@ namespace KeyboardManagerEditorUI.Settings
                     return false;
                 }
 
-                loaded.Map ??= new List<DeviceProfileEntry>();
+                NormalizeMap(loaded);
                 file = loaded;
                 return true;
             }
@@ -346,6 +346,14 @@ namespace KeyboardManagerEditorUI.Settings
                 Logger.LogWarning("Failed to read deviceProfiles.json for an update: " + ex.Message);
                 return false;
             }
+        }
+
+        // A hand edit can leave "map": null or a null entry ("map": [null]); both deserialize, and the
+        // callers expect a list of entries. A null entry assigns nothing, so it is dropped.
+        private static void NormalizeMap(DeviceProfilesFile file)
+        {
+            file.Map ??= new List<DeviceProfileEntry>();
+            file.Map.RemoveAll(e => e == null);
         }
 
         // Replaces the file atomically (write a temporary file, then move it over), so the engine
@@ -378,8 +386,11 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 if (File.Exists(FilePath))
                 {
-                    return JsonSerializer.Deserialize<DeviceProfilesFile>(File.ReadAllText(FilePath), _jsonOptions)
+                    DeviceProfilesFile file = JsonSerializer.Deserialize<DeviceProfilesFile>(File.ReadAllText(FilePath), _jsonOptions)
                            ?? new DeviceProfilesFile();
+
+                    NormalizeMap(file);
+                    return file;
                 }
             }
             catch (Exception ex)

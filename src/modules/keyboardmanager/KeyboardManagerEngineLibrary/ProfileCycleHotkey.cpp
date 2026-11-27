@@ -153,6 +153,10 @@ void ProfileCycleHotkey::ThreadMain()
     {
         Logger::error(L"ProfileCycleHotkey: CreateWindow failed ({})", GetLastError());
         UnregisterClassW(HotkeyWindowClassName, wc.hInstance);
+
+        // Ending before the message loop: clear the id first, so Stop() posts nothing. Once this
+        // thread has ended, Windows may give its id to another thread.
+        m_threadId.store(0);
         if (m_readyEvent != nullptr)
         {
             SetEvent(m_readyEvent);
@@ -177,6 +181,8 @@ void ProfileCycleHotkey::ThreadMain()
         DispatchMessageW(&msg);
     }
 
+    // The loop can also end without Stop() (a WM_QUIT from elsewhere): clear the id here too.
+    m_threadId.store(0);
     if (m_registered)
     {
         UnregisterHotKey(hwnd, HotkeyId);
