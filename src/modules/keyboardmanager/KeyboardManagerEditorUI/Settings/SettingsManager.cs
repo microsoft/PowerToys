@@ -250,18 +250,25 @@ namespace KeyboardManagerEditorUI.Settings
         /// null and nothing has changed: in particular an editorSettings.json that cannot be read
         /// right now is not rebuilt from the active mappings, so the caller keeps showing its last
         /// good state and tries again. Null as well when the native service is unavailable (preview mode).
+        /// A caller that tries again on a timer passes <paramref name="waitForLock"/> = false: the
+        /// lock is then tried once, so a lock that another editor process keeps holding does not
+        /// block the UI thread at every try.
         /// </summary>
-        internal static KeyboardMappingService? TryLoadActiveProfile()
+        internal static KeyboardMappingService? TryLoadActiveProfile(bool waitForLock = true)
         {
             if (_mappingService is null)
             {
                 return null;
             }
 
-            using FileStream? transactionLock = TryAcquireMappingTransactionLock();
+            using FileStream? transactionLock = waitForLock ? TryAcquireMappingTransactionLock() : TryAcquireMappingTransactionLock(timeoutMS: 0);
             if (transactionLock == null)
             {
-                ManagedCommon.Logger.LogError("Could not acquire the Keyboard Manager editor transaction lock while loading the active profile.");
+                if (waitForLock)
+                {
+                    ManagedCommon.Logger.LogError("Could not acquire the Keyboard Manager editor transaction lock while loading the active profile.");
+                }
+
                 return null;
             }
 

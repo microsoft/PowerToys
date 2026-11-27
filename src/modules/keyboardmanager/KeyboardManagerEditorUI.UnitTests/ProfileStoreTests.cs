@@ -279,6 +279,55 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual("Work", ProfileManager.GetDisplayName("Work"));
         }
 
+        // profileMetadata.json is held by another process at the moment of a rename: the rename
+        // fails, and the names already stored are still there afterwards (a read that failed must
+        // not be saved back as an empty file with one entry).
+        [TestMethod]
+        public void SetDisplayName_WhileTheFileIsHeldByAnotherProcess_FailsAndKeepsTheOtherNames()
+        {
+            Assert.IsTrue(ProfileMetadataManager.SetDisplayName("Work", "Office"));
+            string path = Path.Combine(_directory, "profileMetadata.json");
+
+            using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+            {
+                Assert.IsFalse(ProfileMetadataManager.SetDisplayName("Home", "House"));
+            }
+
+            Assert.AreEqual("Office", ProfileMetadataManager.GetDisplayName("Work"));
+            Assert.AreEqual("Home", ProfileMetadataManager.GetDisplayName("Home"));
+            AssertNoLeftoverFiles();
+        }
+
+        // Profile ids are compared without letter case, also after the file was read back.
+        [TestMethod]
+        public void DisplayName_IsFoundWithoutLetterCase_AfterTheFileIsReadBack()
+        {
+            Assert.IsTrue(ProfileMetadataManager.SetDisplayName("Work", "Office"));
+
+            Assert.AreEqual("Office", ProfileMetadataManager.GetDisplayName("work"));
+            Assert.IsTrue(ProfileMetadataManager.Remove("WORK"));
+            Assert.AreEqual("Work", ProfileMetadataManager.GetDisplayName("Work"));
+        }
+
+        // "NUL.json" and the like are not files on every Windows version, so such a profile could
+        // be registered without a file.
+        [TestMethod]
+        public void CreateProfile_RejectsReservedDeviceNames()
+        {
+            foreach (string name in new[] { "NUL", "Con", "AUX", "PRN", "COM1", "LPT9", "NUL.backup" })
+            {
+                Assert.IsTrue(ProfileManager.IsReservedDeviceName(name), name);
+                Assert.IsFalse(ProfileManager.CreateProfile(name, copyFromActive: false), name);
+            }
+
+            foreach (string name in new[] { "null", "console", "COM", "COM10", "Work" })
+            {
+                Assert.IsFalse(ProfileManager.IsReservedDeviceName(name), name);
+            }
+
+            CollectionAssert.DoesNotContain(new List<string>(ProfileManager.GetProfiles()), "NUL");
+        }
+
         // S1 (New profile): "copy the current profile" copies the profile shown when the dialog
         // opened, even if an auto-switch made another profile active before the user confirmed.
         [TestMethod]

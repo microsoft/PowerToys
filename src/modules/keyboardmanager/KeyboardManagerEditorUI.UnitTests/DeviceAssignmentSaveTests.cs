@@ -49,7 +49,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             }
         }
 
-        // The reviewer's scenario: two dialogs open on the same file. A assigns a new keyboard and
+        // Scenario: two dialogs open on the same file. A assigns a new keyboard and
         // saves; B changes only the auto-switch toggle and saves. A's assignment must survive.
         [TestMethod]
         public void SecondDialog_ChangingOnlyTheToggle_KeepsTheFirstDialogsNewAssignment()
@@ -169,6 +169,23 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEqual(
                 new List<string> { "k1=Work", "k2=Office" },
                 merged.Select(a => a.Device + "=" + a.Profile).ToList());
+        }
+
+        // The file names the profile in another letter case than the dialog shows ("work" / "Work"):
+        // that is the same profile, so the row is unchanged, and its refreshed keyboard name is kept.
+        [TestMethod]
+        public void MergeAssignments_ProfileInAnotherLetterCase_IsUnchanged_AndTheNameIsRefreshed()
+        {
+            var current = new List<DeviceAssignment> { new() { Device = "k1", Profile = "work", Name = "Old name" } };
+            var edited = new List<DeviceAssignment> { new() { Device = "k1", Profile = "Work", Name = "New name" } };
+
+            List<DeviceAssignment> merged = DeviceProfileManager.MergeAssignments(
+                current, current, edited, profile => true, out List<string> dropped);
+
+            Assert.AreEqual(0, dropped.Count);
+            Assert.AreEqual(1, merged.Count);
+            Assert.AreEqual("work", merged[0].Profile);
+            Assert.AreEqual("New name", merged[0].Name);
         }
 
         // If the keyboard's old profile is gone too, nothing valid is left to keep.

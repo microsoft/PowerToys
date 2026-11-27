@@ -471,7 +471,7 @@ namespace KeyboardManagerEditorUI.Pages
         // the picker and the rows changed, together. When it failed (a file is locked or
         // half-written, e.g. during a Settings restore) the page keeps its last good state: the old
         // service stays in use, nothing on disk is rebuilt, and another try is scheduled.
-        private bool TryShowActiveProfile()
+        private bool TryShowActiveProfile(bool waitForLock = true)
         {
             if (_mappingService == null || _disposed)
             {
@@ -480,7 +480,7 @@ namespace KeyboardManagerEditorUI.Pages
 
             try
             {
-                KeyboardMappingService? loaded = SettingsManager.TryLoadActiveProfile();
+                KeyboardMappingService? loaded = SettingsManager.TryLoadActiveProfile(waitForLock);
                 if (loaded == null)
                 {
                     ScheduleActiveProfileReloadRetry();
@@ -528,6 +528,12 @@ namespace KeyboardManagerEditorUI.Pages
                     _activeProfileReloadRetries++;
                     _activeProfileSlowRetry.Interval = TimeSpan.FromSeconds(2);
                 }
+                else if (_activeProfileSlowRetry.IsEnabled)
+                {
+                    // Not the slow timer's own try (its tick stops it first): a change on disk or a
+                    // window activation tried in between. The wait already running stays as it is.
+                    return;
+                }
                 else if (_activeProfileSlowRetry.Interval < TimeSpan.FromSeconds(30))
                 {
                     TimeSpan doubled = _activeProfileSlowRetry.Interval * 2;
@@ -561,14 +567,14 @@ namespace KeyboardManagerEditorUI.Pages
                 _activeProfileDebounce = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(200) };
                 _activeProfileDebounce.Tick += (s, e) =>
                 {
-                    _activeProfileDebounce!.Stop();
+                    (s as DispatcherTimer)?.Stop();
                     RefreshActiveProfileFromDisk();
                 };
 
                 _activeProfileSlowRetry = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
                 _activeProfileSlowRetry.Tick += (s, e) =>
                 {
-                    _activeProfileSlowRetry!.Stop();
+                    (s as DispatcherTimer)?.Stop();
                     RefreshActiveProfileFromDisk();
                 };
 
@@ -604,13 +610,20 @@ namespace KeyboardManagerEditorUI.Pages
             }
 
             // An unreadable settings.json says nothing about the active profile (it is not "default").
-            if (!ProfileManager.TryGetActiveProfile(out string active))
+            // This runs from the two timers, possibly many times in a row: only the first failure of
+            // a row is logged, and the editor's lock is tried without waiting, so that a lock which
+            // another editor process keeps holding does not freeze this window at every try.
+            if (!ProfileManager.TryGetActiveProfile(out string active, logFailure: _activeProfileReloadRetries == 0))
             {
                 ScheduleActiveProfileReloadRetry();
                 return;
             }
 
-            if (ProfileReloadDecision.OnDiskChange(_mappingService.ConfigurationName, active) == ProfileReloadAction.None)
+            // The editor settings must be the ones reconciled for that profile too: after a failed
+            // load at startup the service can already be the active profile's while they are not.
+            bool settingsMatch = !SettingsManager.IsNativeServiceAvailable ||
+                string.Equals(SettingsManager.ReconciledProfile, active, StringComparison.OrdinalIgnoreCase);
+            if (settingsMatch && ProfileReloadDecision.OnDiskChange(_mappingService.ConfigurationName, active) == ProfileReloadAction.None)
             {
                 _activeProfileReloadRetries = 0;
                 _activeProfileSlowRetry?.Stop();
@@ -620,7 +633,7 @@ namespace KeyboardManagerEditorUI.Pages
                 return;
             }
 
-            TryShowActiveProfile();
+            TryShowActiveProfile(waitForLock: false);
         }
 
         private async void NewProfileBtn_Click(object sender, RoutedEventArgs e)

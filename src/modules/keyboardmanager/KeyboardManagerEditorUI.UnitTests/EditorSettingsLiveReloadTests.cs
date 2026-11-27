@@ -121,7 +121,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.IsFalse(SettingsManager.ShouldRegenerateSettings(SettingsManager.SettingsReadResult.Loaded, regenerateUnreadableSettings: true));
         }
 
-        // The reviewer's case: the file is held by another writer (a Settings restore) at the moment of
+        // The case: the file is held by another writer (a Settings restore) at the moment of
         // the live reload. Nothing is rewritten and the turned-off row is still there afterwards.
         [TestMethod]
         public void LiveReconcile_WhileTheFileIsHeldByAWriter_ChangesNothing()

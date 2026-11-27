@@ -345,7 +345,7 @@ namespace KeyboardManagerEditorUI.Settings
         /// <see cref="GetActiveProfile"/> would answer "default". No settings.json at all means
         /// "default" is active, as it does there.
         /// </summary>
-        internal static bool TryGetActiveProfile(out string profile)
+        internal static bool TryGetActiveProfile(out string profile, bool logFailure = true)
         {
             try
             {
@@ -355,7 +355,12 @@ namespace KeyboardManagerEditorUI.Settings
             }
             catch (Exception ex)
             {
-                Logger.LogWarning($"ProfileManager.TryGetActiveProfile: {ex.Message}");
+                // A caller that tries again on a timer logs the first failure only.
+                if (logFailure)
+                {
+                    Logger.LogWarning($"ProfileManager.TryGetActiveProfile: {ex.Message}");
+                }
+
                 profile = DefaultProfile;
                 return false;
             }
@@ -831,7 +836,31 @@ namespace KeyboardManagerEditorUI.Settings
                 return false;
             }
 
-            return true;
+            // A reserved device name ("NUL", "CON", "COM1", ...) is not a file on every Windows version:
+            // "NUL.json" can open the NUL device, so the profile would be registered without a file.
+            return !IsReservedDeviceName(profile);
+        }
+
+        internal static bool IsReservedDeviceName(string name)
+        {
+            string stem = name.TrimEnd(' ', '.');
+            int dot = stem.IndexOf('.', StringComparison.Ordinal);
+            if (dot >= 0)
+            {
+                stem = stem[..dot].TrimEnd(' ');
+            }
+
+            if (stem.Length == 3)
+            {
+                return stem.Equals("CON", StringComparison.OrdinalIgnoreCase) ||
+                    stem.Equals("PRN", StringComparison.OrdinalIgnoreCase) ||
+                    stem.Equals("AUX", StringComparison.OrdinalIgnoreCase) ||
+                    stem.Equals("NUL", StringComparison.OrdinalIgnoreCase);
+            }
+
+            return stem.Length == 4 &&
+                (stem.StartsWith("COM", StringComparison.OrdinalIgnoreCase) || stem.StartsWith("LPT", StringComparison.OrdinalIgnoreCase)) &&
+                (char.IsAsciiDigit(stem[3]) || stem[3] is '¹' or '²' or '³');
         }
 
         // The ids listed in settings.json's "keyboardConfigurations" (case-insensitive). Throws when

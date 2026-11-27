@@ -212,7 +212,9 @@ namespace KeyboardManagerEditorUI.Settings
                 string editedProfile = row.Profile ?? string.Empty;
                 int index = result.FindIndex(a => string.Equals(a.Device, row.Device, StringComparison.OrdinalIgnoreCase));
 
-                if (!string.Equals(shownProfile, editedProfile, StringComparison.Ordinal))
+                // Profile ids are compared without letter case: "work" in the file and "Work" in the
+                // dialog are the same profile, so such a row was not changed by the user.
+                if (!string.Equals(shownProfile, editedProfile, StringComparison.OrdinalIgnoreCase))
                 {
                     // Check the new profile before touching the keyboard's entry: a change that is
                     // rejected must leave the assignment the file has (e.g. a valid "Work") in place.
@@ -238,7 +240,7 @@ namespace KeyboardManagerEditorUI.Settings
                 }
                 else if (index >= 0 &&
                     editedProfile.Length > 0 &&
-                    string.Equals(result[index].Profile, editedProfile, StringComparison.Ordinal) &&
+                    string.Equals(result[index].Profile, editedProfile, StringComparison.OrdinalIgnoreCase) &&
                     !string.IsNullOrEmpty(row.Name))
                 {
                     result[index].Name = row.Name;

@@ -52,7 +52,7 @@ namespace KeyboardManagerEditorUI.Settings
                 return id;
             }
 
-            if (Load().Profiles.TryGetValue(id, out ProfileMetadataEntry? entry) && !string.IsNullOrWhiteSpace(entry.Name))
+            if (Load(forUpdate: false).Profiles.TryGetValue(id, out ProfileMetadataEntry? entry) && !string.IsNullOrWhiteSpace(entry.Name))
             {
                 return entry.Name;
             }
@@ -70,7 +70,7 @@ namespace KeyboardManagerEditorUI.Settings
 
             try
             {
-                ProfileMetadataFile file = Load();
+                ProfileMetadataFile file = Load(forUpdate: true);
 
                 // Storing a name identical to the id is just the fallback, so drop the entry to keep
                 // the file minimal rather than persisting a redundant record.
@@ -109,7 +109,7 @@ namespace KeyboardManagerEditorUI.Settings
 
             try
             {
-                ProfileMetadataFile file = Load();
+                ProfileMetadataFile file = Load(forUpdate: true);
                 if (file.Profiles.Remove(id))
                 {
                     Save(file);
@@ -124,28 +124,83 @@ namespace KeyboardManagerEditorUI.Settings
             }
         }
 
+        // Written like the other Keyboard Manager files: a whole temporary file, then one replace,
+        // so a reader never sees half a file and a failed write leaves the old one as it was.
         private static void Save(ProfileMetadataFile file)
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(FilePath)!);
-            File.WriteAllText(FilePath, JsonSerializer.Serialize(file, _jsonOptions));
-        }
-
-        private static ProfileMetadataFile Load()
-        {
+            string directory = Path.GetDirectoryName(FilePath)!;
+            Directory.CreateDirectory(directory);
+            string temporaryPath = Path.Combine(directory, $"profileMetadata.{Guid.NewGuid():N}.tmp");
             try
             {
-                if (File.Exists(FilePath))
+                File.WriteAllText(temporaryPath, JsonSerializer.Serialize(file, _jsonOptions));
+                SettingsFileReplacer.Replace(temporaryPath, FilePath);
+            }
+            finally
+            {
+                try
                 {
-                    return JsonSerializer.Deserialize<ProfileMetadataFile>(File.ReadAllText(FilePath), _jsonOptions)
-                           ?? new ProfileMetadataFile();
+                    File.Delete(temporaryPath);
+                }
+                catch (Exception)
+                {
                 }
             }
-            catch (Exception ex)
-            {
-                Logger.LogWarning($"ProfileMetadataManager: failed to read profileMetadata.json: {ex.Message}");
-            }
+        }
 
-            return new ProfileMetadataFile();
+        // A file that cannot be opened right now (another process has it) must not be taken for an
+        // empty one by a caller that writes the result back: every other display name would be
+        // lost. With forUpdate that read error is thrown instead, after a short retry. A file that
+        // can be read but is not valid JSON has no names left to lose and counts as empty.
+        private static ProfileMetadataFile Load(bool forUpdate)
+        {
+            const int Attempts = 5;
+            const int RetryDelayMS = 50;
+            for (int attempt = 1; ; attempt++)
+            {
+                try
+                {
+                    if (!File.Exists(FilePath))
+                    {
+                        return new ProfileMetadataFile();
+                    }
+
+                    ProfileMetadataFile? file = JsonSerializer.Deserialize<ProfileMetadataFile>(File.ReadAllText(FilePath), _jsonOptions);
+
+                    // Ids are compared without case; a deserialized dictionary is not.
+                    var result = new ProfileMetadataFile();
+                    foreach (KeyValuePair<string, ProfileMetadataEntry> entry in file?.Profiles ?? new())
+                    {
+                        if (entry.Value != null)
+                        {
+                            result.Profiles[entry.Key] = entry.Value;
+                        }
+                    }
+
+                    return result;
+                }
+                catch (JsonException ex)
+                {
+                    Logger.LogWarning($"ProfileMetadataManager: profileMetadata.json is not valid JSON: {ex.Message}");
+                    return new ProfileMetadataFile();
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    if (attempt < Attempts)
+                    {
+                        System.Threading.Thread.Sleep(RetryDelayMS);
+                        continue;
+                    }
+
+                    Logger.LogWarning($"ProfileMetadataManager: failed to read profileMetadata.json: {ex.Message}");
+                    if (forUpdate)
+                    {
+                        throw;
+                    }
+
+                    return new ProfileMetadataFile();
+                }
+            }
         }
     }
 }

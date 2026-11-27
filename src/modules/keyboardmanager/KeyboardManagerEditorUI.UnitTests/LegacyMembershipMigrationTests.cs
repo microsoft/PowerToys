@@ -147,7 +147,7 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual(EditorSettings.CurrentSchemaVersion, Load(JsonSerializer.Serialize(settings)).SchemaVersion);
         }
 
-        // The reviewer's scenario: upgrade, create an empty Work profile, switch to it.
+        // Scenario: upgrade, create an empty Work profile, switch to it.
         [TestMethod]
         public void LegacyDisabledRow_IsNotInAnEmptyWorkProfile_AndWorkCannotRemoveOrClaimIt()
         {

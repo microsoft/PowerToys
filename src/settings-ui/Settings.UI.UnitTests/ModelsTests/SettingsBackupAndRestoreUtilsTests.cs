@@ -102,7 +102,7 @@ namespace CommonLibTest
 
         // The built-in default profile has no remappings when it has no file; that is a valid backup.
         [TestMethod]
-        public void GetMissingKeyboardManagerActiveProfile_FilelessDefault_IsValid()
+        public void GetMissingKeyboardManagerActiveProfile_DefaultWithoutAFile_IsValid()
         {
             string[] staged = { "\\Keyboard Manager\\settings.json", "\\settings.json" };
 
