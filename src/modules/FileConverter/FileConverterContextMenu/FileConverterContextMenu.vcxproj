@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Globals">
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{f3610647-6f9f-45ee-987f-c9a89c23f7f0}</ProjectGuid>
+    <RootNamespace>FileConverterContextMenu</RootNamespace>
+    <ProjectName>FileConverterContextMenu</ProjectName>
+    <TargetName>PowerToys.FileConverterContextMenu</TargetName>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Windows.CppWinRT" GeneratePathProperty="true" />
+  </ItemGroup>
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <OutDir>$(RepoRoot)$(Platform)\$(Configuration)\WinUI3Apps\</OutDir>
+    <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\TemporaryBuild\obj\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\FileConverterLib;$(RepoRoot)src\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>Source.def</ModuleDefinitionFile>
+      <AdditionalDependencies>runtimeobject.lib;shell32.lib;shlwapi.lib;windowscodecs.lib;ole32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="pch.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(UsePrecompiledHeaders)' != 'false'">Create</PrecompiledHeader>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\common\SettingsAPI\SettingsAPI.vcxproj">
+      <Project>{6955446d-23f7-4023-9bb3-8657f904af99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\FileConverterLib\FileConverterLib.vcxproj">
+      <Project>{2d6e2c29-43ce-4be9-b0fd-2f6240d04ef4}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\Strings\FileConverter.rc" />
+    <None Include="Source.def" />
+    <FileConverterPackageAsset Include="Assets\FileConverter\*.png" PackagePath="FileConverter.%(Filename)%(Extension)" />
+    <FileConverterPackageFile Include="AppxManifest.xml" PackagePath="AppxManifest.xml" />
+    <FileConverterPackageFile Include="@(FileConverterPackageAsset)" />
+    <None Include="@(FileConverterPackageFile)" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <Target Name="BuildFileConverterContextMenuPackage"
+          AfterTargets="Link"
+          Condition="'$(Configuration)' == 'Release'"
+          Inputs="$(MSBuildProjectFullPath);$(TargetPath);@(FileConverterPackageFile)"
+          Outputs="$(OutDir)FileConverterContextMenuPackage.msix;@(FileConverterPackageAsset->'$(OutDir)%(PackagePath)')">
+    <!-- Windows resolves visual assets from the external location during registration. The installer harvests these files from WinUI3Apps. -->
+    <Copy SourceFiles="@(FileConverterPackageAsset)"
+          DestinationFiles="@(FileConverterPackageAsset->'$(OutDir)%(PackagePath)')" />
+    <WriteLinesToFile File="$(IntDir)FileConverterPackage.map"
+                      Lines="[Files];@(FileConverterPackageFile->'&quot;%(FullPath)&quot; &quot;%(PackagePath)&quot;')"
+                      Overwrite="true" />
+    <Exec Command="MakeAppx.exe pack /f &quot;$(IntDir)FileConverterPackage.map&quot; /p &quot;$(OutDir)FileConverterContextMenuPackage.msix&quot; /nv /o" />
+    <ItemGroup>
+      <FileWrites Include="$(IntDir)FileConverterPackage.map;$(OutDir)FileConverterContextMenuPackage.msix" />
+      <FileWrites Include="@(FileConverterPackageAsset->'$(OutDir)%(PackagePath)')" />
+    </ItemGroup>
+  </Target>
+</Project>

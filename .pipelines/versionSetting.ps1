@@ -119,6 +119,13 @@ $imageResizerContextMenuAppManifest.Package.Identity.Version = $manifestVersionN
 Write-Host "ImageResizerContextMenu version" $imageResizerContextMenuAppManifest.Package.Identity.Version
 $imageResizerContextMenuAppManifest.Save($imageResizerContextMenuAppManifestWriteFileLocation);
 
+# Set FileConverterContextMenu package version in AppxManifest.xml
+$fileConverterContextMenuManifestPath = Join-Path $PSScriptRoot '../src/modules/FileConverter/FileConverterContextMenu/AppxManifest.xml'
+[xml]$fileConverterContextMenuManifest = Get-Content -LiteralPath $fileConverterContextMenuManifestPath
+$fileConverterContextMenuManifest.Package.Identity.Version = $manifestVersionNumber
+Write-Host "FileConverterContextMenu version" $fileConverterContextMenuManifest.Package.Identity.Version
+$fileConverterContextMenuManifest.Save($fileConverterContextMenuManifestPath)
+
 # Set FileLocksmithContextMenu package version in AppManifest.xml
 $fileLocksmithContextMenuAppManifestWriteFileLocation = $PSScriptRoot + '/../src/modules/FileLocksmith/FileLocksmithContextMenu/AppxManifest.xml';
 $fileLocksmithContextMenuAppManifestReadFileLocation = $fileLocksmithContextMenuAppManifestWriteFileLocation;
