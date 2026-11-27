@@ -86,6 +86,7 @@ public:
             PowerToysSettings::PowerToyValues values =
                 PowerToysSettings::PowerToyValues::from_json_string(config, get_key());
 
+            m_confirm_only_for_others = values.get_bool_value(L"bool_confirm_only_for_others").value_or(false);
             toggle_extended_only(values.get_bool_value(L"bool_show_extended_menu").value());
             save_settings();
         }
@@ -145,11 +146,13 @@ public:
 private:
     bool m_enabled = false;
     bool m_extended_only;
+    bool m_confirm_only_for_others{ false };
 
     void init_settings()
     {
         m_enabled = FileLocksmithSettingsInstance().GetEnabled();
         m_extended_only = FileLocksmithSettingsInstance().GetShowInExtendedContextMenu();
+        m_confirm_only_for_others = FileLocksmithSettingsInstance().GetConfirmOnlyForOthers();
         UpdateRegistration(m_enabled);
         Trace::EnableFileLocksmith(m_enabled);
     }
@@ -159,6 +162,7 @@ private:
         auto& settings = FileLocksmithSettingsInstance();
         m_enabled = FileLocksmithSettingsInstance().GetEnabled();
         settings.SetExtendedContextMenuOnly(m_extended_only);
+        settings.SetConfirmOnlyForOthers(m_confirm_only_for_others);
 
         settings.Save();
         Trace::EnableFileLocksmith(m_enabled);

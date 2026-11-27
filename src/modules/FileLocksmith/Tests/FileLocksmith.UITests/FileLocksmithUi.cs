@@ -4,6 +4,7 @@
 
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -36,6 +37,23 @@ internal static class FileLocksmithUi
         SettingsConfigHelper.PowerToysSettingsRoot,
         FileLocksmithConstants.ModuleName,
         "last-run.log");
+
+    /// <summary>The module-owned settings file the window reads once at startup.</summary>
+    public static string SettingsFilePath => Path.Combine(
+        SettingsConfigHelper.PowerToysSettingsRoot,
+        FileLocksmithConstants.ModuleName,
+        "file-locksmith-settings.json");
+
+    /// <summary>Set whether End task asks only for system and other users' processes, keeping the other keys.</summary>
+    public static void SetConfirmOnlyForOthers(bool value)
+    {
+        var settings = File.Exists(SettingsFilePath)
+            ? JsonNode.Parse(File.ReadAllText(SettingsFilePath)) as JsonObject ?? new JsonObject()
+            : new JsonObject();
+        settings["confirmOnlyForOthers"] = value;
+        Directory.CreateDirectory(Path.GetDirectoryName(SettingsFilePath)!);
+        File.WriteAllText(SettingsFilePath, settings.ToJsonString());
+    }
 
     /// <summary>Start File Locksmith on <paramref name="paths"/> and wait until its list has loaded.</summary>
     public static Session Launch(params string[] paths) => Launch(LaunchTimeoutMS, elevated: false, paths);
@@ -108,6 +126,17 @@ internal static class FileLocksmithUi
     /// process name, which the paths header also displays.
     /// </summary>
     public static int CountRows(Session ui, int timeoutMS = 5_000) => EndTaskLabels(ui, timeoutMS).Count;
+
+    /// <summary>
+    /// Press End task in the confirmation dialog. True once the dialog has closed; until then its own
+    /// "End task" button text could be counted as a row, so count rows only after this returns.
+    /// </summary>
+    public static bool ConfirmEndTask(Session ui) =>
+        AnswerEndTaskDialog(ui, FileLocksmithConstants.EndTaskConfirmAutomationId);
+
+    /// <summary>Press Cancel in the confirmation dialog. True once the dialog has closed.</summary>
+    public static bool CancelEndTask(Session ui) =>
+        AnswerEndTaskDialog(ui, FileLocksmithConstants.EndTaskCancelAutomationId);
 
     /// <summary>True when at least one row is headed by <paramref name="processName"/>.</summary>
     public static bool HasProcessRow(Session ui, string processName, int timeoutMS = 5_000) =>
@@ -192,6 +221,14 @@ internal static class FileLocksmithUi
         while (DateTime.UtcNow < deadline);
 
         return false;
+    }
+
+    private static bool AnswerEndTaskDialog(Session ui, string buttonAutomationId)
+    {
+        // Find polls until the dialog has animated in.
+        var button = ui.Find<Button>(By.AccessibilityId(buttonAutomationId), timeoutMS: 10_000);
+        button.Invoke(msPostAction: 0);
+        return button.WaitForGone(10_000);
     }
 
     /// <summary>

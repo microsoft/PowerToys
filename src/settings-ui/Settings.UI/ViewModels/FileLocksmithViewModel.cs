@@ -53,6 +53,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             SendConfigMSG = ipcMSGCallBackFunc;
 
             _fileLocksmithEnabledOnContextExtendedMenu = Settings.Properties.ExtendedContextMenuOnly.Value;
+            _confirmOnlyForOthers = Settings.Properties.ConfirmOnlyForOthers.Value;
         }
 
         public string GetSettingsSubPath()
@@ -122,6 +123,26 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool ConfirmOnlyForOthers
+        {
+            get
+            {
+                return _confirmOnlyForOthers;
+            }
+
+            set
+            {
+                if (value != _confirmOnlyForOthers)
+                {
+                    _confirmOnlyForOthers = value;
+                    Settings.Properties.ConfirmOnlyForOthers.Value = value;
+                    OnPropertyChanged(nameof(ConfirmOnlyForOthers));
+
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public bool IsEnabledGpoConfigured
         {
             get => _enabledStateIsGPOConfigured;
@@ -144,6 +165,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         private bool _enabledStateIsGPOConfigured;
         private bool _isFileLocksmithEnabled;
         private bool _fileLocksmithEnabledOnContextExtendedMenu;
+        private bool _confirmOnlyForOthers;
 
         public void RefreshEnabledState()
         {

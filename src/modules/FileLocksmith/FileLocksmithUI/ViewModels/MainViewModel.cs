@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
+using Microsoft.PowerToys.Settings.UI.Library;
 using PowerToys.FileLocksmithLib.Interop;
 
 namespace PowerToys.FileLocksmithUI.ViewModels
@@ -30,6 +31,8 @@ namespace PowerToys.FileLocksmithUI.ViewModels
         private CancellationTokenSource _cancelProcessWatching;
 
         public ObservableCollection<ProcessResult> Processes { get; } = new();
+
+        public bool ConfirmOnlyForOthers { get; }
 
         public bool IsLoading
         {
@@ -82,6 +85,17 @@ namespace PowerToys.FileLocksmithUI.ViewModels
             paths = NativeMethods.ReadPathsFromFile();
             Logger.LogInfo($"Starting FileLocksmith with {paths.Length} files selected.");
             LoadProcessesCommand = new AsyncRelayCommand(LoadProcessesAsync);
+
+            try
+            {
+                // Read only: the module interface owns this file.
+                ConfirmOnlyForOthers = SettingsUtils.Default.GetSettingsOrDefaultReadOnly<FileLocksmithLocalProperties>(FileLocksmithSettings.ModuleName, "file-locksmith-settings.json").ConfirmOnlyForOthers;
+            }
+            catch (Exception ex)
+            {
+                // Keep the default (ask for every process).
+                Logger.LogError("Couldn't read File Locksmith settings.", ex);
+            }
         }
 
         private async Task LoadProcessesAsync()

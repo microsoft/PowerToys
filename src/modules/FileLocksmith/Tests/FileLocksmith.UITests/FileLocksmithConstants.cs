@@ -27,4 +27,8 @@ internal static class FileLocksmithConstants
     public const string RestartAsAdminAutomationId = "RestartAsAdminBtn";
     public const string EndTaskCaption = "End task";
     public const string EmptyListCaption = "No results";
+
+    /// <summary>ContentDialog template part names of the End task confirmation buttons.</summary>
+    public const string EndTaskConfirmAutomationId = "PrimaryButton";
+    public const string EndTaskCancelAutomationId = "CloseButton";
 }

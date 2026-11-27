@@ -23,6 +23,9 @@ namespace constants::nonlocalizable
     // JSON key used to store extended menu enabled
     constexpr WCHAR JsonKeyShowInExtendedContextMenu[] = L"showInExtendedContextMenu";
 
+    // JSON key used to store whether to ask for confirmation only for system and other users' processes
+    constexpr WCHAR JsonKeyConfirmOnlyForOthers[] = L"confirmOnlyForOthers";
+
     // Path of the JSON file used to store settings
     constexpr WCHAR DataFilePath[] = L"\\file-locksmith-settings.json";
 

@@ -6,6 +6,7 @@ using System;
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
+using PowerToys.FileLocksmithUI.Helpers;
 
 namespace PowerToys.FileLocksmithUI.Converters
 {
@@ -13,15 +14,7 @@ namespace PowerToys.FileLocksmithUI.Converters
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            string user = ((string)value).ToUpperInvariant().Trim();
-            if (user.Equals("SYSTEM", StringComparison.Ordinal) || user.Equals("LOCALSYSTEM", StringComparison.Ordinal))
-            {
-                return Visibility.Visible;
-            }
-            else
-            {
-                return Visibility.Collapsed;
-            }
+            return ProcessOwner.IsSystem((string)value) ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, string language)

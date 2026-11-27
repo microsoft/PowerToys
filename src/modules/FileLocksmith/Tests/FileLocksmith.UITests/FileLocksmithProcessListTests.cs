@@ -25,6 +25,8 @@ public sealed class FileLocksmithProcessListTests : UITestBase
 
     private static readonly string[] FileLocksmithModule = { FileLocksmithConstants.ModuleName };
 
+    private static IDisposable? settingsSnapshot;
+
     private readonly List<LockingProcessFixture> fixtures = new();
 
     public FileLocksmithProcessListTests()
@@ -41,10 +43,30 @@ public sealed class FileLocksmithProcessListTests : UITestBase
         FileLocksmithConstants.UiProcessName,
     };
 
+    [ClassInitialize]
+    public static void PreserveSettings(TestContext testContext)
+    {
+        _ = testContext;
+        settingsSnapshot = SettingsConfigHelper.PreserveFile(FileLocksmithUi.SettingsFilePath);
+    }
+
+    [ClassCleanup]
+    public static void RestoreSettings()
+    {
+        settingsSnapshot?.Dispose();
+        settingsSnapshot = null;
+    }
+
     [TestInitialize]
-    public void PrepareTest() => Assert.IsTrue(
-        FileLocksmithUi.Close(),
-        "A stale File Locksmith window could not be closed before the test.");
+    public void PrepareTest()
+    {
+        Assert.IsTrue(
+            FileLocksmithUi.Close(),
+            "A stale File Locksmith window could not be closed before the test.");
+
+        // Every test starts from the default: End task always asks for confirmation.
+        FileLocksmithUi.SetConfirmOnlyForOthers(false);
+    }
 
     [TestCleanup]
     public async Task CleanupTest()
@@ -79,6 +101,9 @@ public sealed class FileLocksmithProcessListTests : UITestBase
             var endTaskLabels = FileLocksmithUi.EndTaskLabels(ui);
             Assert.AreEqual(remaining, endTaskLabels.Count, "Every listed process must offer its own End task button.");
             endTaskLabels[0].Click();
+            Assert.IsTrue(
+                FileLocksmithUi.ConfirmEndTask(ui),
+                "The confirmation dialog did not close after End task.");
 
             Assert.IsTrue(
                 fixture.WaitForRunningCount(remaining - 1, timeoutMS: 15_000),
@@ -93,6 +118,54 @@ public sealed class FileLocksmithProcessListTests : UITestBase
         Assert.IsTrue(
             ui.Has(By.Name(FileLocksmithConstants.EmptyListCaption), timeoutMS: 10_000),
             "File Locksmith did not fall back to its empty-list state after every process was ended.");
+    }
+
+    /// <summary>
+    /// Checklist: cancelling the End task confirmation leaves the process running and its row listed.
+    /// </summary>
+    [TestMethod("FileLocksmith.List.EndTaskCancel")]
+    [TestCategory("File Locksmith")]
+    public void CancelledEndTaskKeepsProcessAndRow()
+    {
+        var fixture = CreateFixture();
+        fixture.Start();
+
+        var ui = FileLocksmithUi.Launch(fixture.TargetPath);
+        AssertRowCount(ui, expected: 1, timeoutMS: 30_000, "File Locksmith did not list the locking process.");
+
+        FileLocksmithUi.EndTaskLabels(ui)[0].Click();
+        Assert.IsTrue(
+            ui.Has<Button>(By.AccessibilityId(FileLocksmithConstants.EndTaskCancelAutomationId), timeoutMS: 10_000),
+            "End task did not ask for confirmation.");
+        Assert.IsTrue(FileLocksmithUi.CancelEndTask(ui), "The confirmation dialog did not close after Cancel.");
+
+        // Waiting (not a one-off read) also catches a kill that lands just after the dialog closed.
+        Assert.IsFalse(fixture.WaitForRunningCount(0, timeoutMS: 3_000), "Cancel ended the process anyway.");
+        Assert.AreEqual(1, FileLocksmithUi.CountRows(ui), "The row must stay listed after Cancel.");
+    }
+
+    /// <summary>
+    /// Checklist: with "ask only for system and other users' processes" on, End task on the current
+    /// user's own process ends it without a confirmation dialog.
+    /// </summary>
+    [TestMethod("FileLocksmith.List.EndTaskSkipsConfirmationForOwnProcess")]
+    [TestCategory("File Locksmith")]
+    public void EndTaskSkipsConfirmationForOwnProcess()
+    {
+        FileLocksmithUi.SetConfirmOnlyForOthers(true);
+        var fixture = CreateFixture();
+        fixture.Start();
+
+        var ui = FileLocksmithUi.Launch(fixture.TargetPath);
+        AssertRowCount(ui, expected: 1, timeoutMS: 30_000, "File Locksmith did not list the locking process.");
+
+        FileLocksmithUi.EndTaskLabels(ui)[0].Click();
+        Assert.IsTrue(
+            fixture.WaitForRunningCount(0, timeoutMS: 15_000),
+            "End task did not end the current user's process without confirmation.");
+        Assert.IsFalse(
+            ui.Has<Button>(By.AccessibilityId(FileLocksmithConstants.EndTaskCancelAutomationId), timeoutMS: 1_000),
+            "End task asked for confirmation for the current user's own process.");
     }
 
     /// <summary>
