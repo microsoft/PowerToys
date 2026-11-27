@@ -379,6 +379,20 @@ namespace KeyboardManagerEditorUI.UnitTests
             Assert.AreEqual(expected, string.Join(",", SavedMap()));
         }
 
+        // The same files on the update path: deleting another profile's assignments still works, keeps
+        // k1 = Office and drops only the null entry.
+        [DataTestMethod]
+        [DataRow("{ \"map\": null }", "")]
+        [DataRow("{ \"map\": [ null, { \"device\": \"k1\", \"profile\": \"Office\" }, { \"device\": \"k2\", \"profile\": \"Home\" } ] }", "k1=Office")]
+        public void RemoveAssignmentsForProfile_WithANullMapOrEntry_Works(string content, string expected)
+        {
+            File.WriteAllText(DeviceProfilesPath, content);
+
+            Assert.IsTrue(DeviceProfileManager.RemoveAssignmentsForProfile("Home"));
+
+            Assert.AreEqual(expected, string.Join(",", SavedMap()));
+        }
+
         private static List<DeviceAssignment> Rows(params (string Device, string Profile)[] rows) =>
             rows.Select(r => new DeviceAssignment { Device = r.Device, Profile = r.Profile, Name = r.Device }).ToList();
 

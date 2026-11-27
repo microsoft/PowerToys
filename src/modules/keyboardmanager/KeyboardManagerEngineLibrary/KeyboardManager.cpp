@@ -302,11 +302,18 @@ void KeyboardManager::LoadDeviceProfiles()
                 enabled = obj.GetNamedBoolean(L"autoSwitchEnabled", false);
             }
 
-            if (obj.HasKey(L"map"))
+            // "map": null and a null entry assign nothing, as in the editor (DeviceProfileManager), so
+            // both sides read a hand-edited file the same way. Any other wrong type is a load failure.
+            if (obj.HasKey(L"map") && obj.GetNamedValue(L"map").ValueType() != json::JsonValueType::Null)
             {
                 const auto arr = obj.GetNamedArray(L"map");
                 for (uint32_t i = 0; i < arr.Size(); ++i)
                 {
+                    if (arr.GetAt(i).ValueType() == json::JsonValueType::Null)
+                    {
+                        continue;
+                    }
+
                     const auto entry = arr.GetObjectAt(i);
                     std::wstring device{ entry.GetNamedString(L"device", L"") };
                     std::wstring profile{ entry.GetNamedString(L"profile", L"") };
