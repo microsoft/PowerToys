@@ -268,6 +268,31 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         Assert.AreEqual(0, GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys.Count);
     }
 
+    // The active profile can change between the pretest and the write (device
+    // auto-switch, the cycle hotkey). The write must go to the profile that
+    // was read and compared, not to whichever profile is active by then.
+    [TestMethod]
+    public void Set_WritesTheProfileResolvedForThePretest_WhenTheActiveProfileChangesInBetween()
+    {
+        // Arrange: "default" is active; both profiles are empty
+        SaveProfile(new KeyboardManagerProfile(), WorkProfileFileName);
+        var data = new ProfileFunctionData(CreateInputResourceObject(CreateSampleProfileModel()), () => false);
+        data.GetState();
+        Assert.IsFalse(data.TestState());
+
+        // The active profile changes to "work" before the write
+        var settings = new KeyboardManagerSettings();
+        settings.Properties.ActiveConfiguration.Value = Path.GetFileNameWithoutExtension(WorkProfileFileName);
+        _settingsUtils.SaveSettings(settings.ToJsonString(), KeyboardManagerSettings.ModuleName);
+
+        // Act
+        data.SetState();
+
+        // Assert: the compared profile was written, the other one is untouched
+        Assert.AreEqual("20", GetProfile(DefaultProfileFileName).RemapKeys.InProcessRemapKeys[0].OriginalKeys);
+        Assert.AreEqual(0, GetProfile(WorkProfileFileName).RemapKeys.InProcessRemapKeys.Count);
+    }
+
     [TestMethod]
     public void Set_SignalsSettingsChangedEvent()
     {

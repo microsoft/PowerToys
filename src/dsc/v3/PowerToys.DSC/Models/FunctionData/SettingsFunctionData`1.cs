@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
+using PowerToys.DSC.Models.KeyboardManager;
 using PowerToys.DSC.Models.ResourceObjects;
 
 namespace PowerToys.DSC.Models.FunctionData;
@@ -24,6 +25,10 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
     private readonly SettingsResourceObject<TSettingsConfig> _input;
     private readonly SettingsResourceObject<TSettingsConfig> _output;
 
+    // The input as given, to tell a member that was omitted from one that
+    // was set to its default value (the typed model cannot).
+    private readonly JsonNode? _inputNode;
+
     /// <inheritdoc/>
     public ISettingsResourceObject Input => _input;
 
@@ -34,12 +39,24 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
     {
         _output = new();
         _input = string.IsNullOrEmpty(input) ? new() : JsonSerializer.Deserialize<SettingsResourceObject<TSettingsConfig>>(input) ?? new();
+        _inputNode = string.IsNullOrEmpty(input) ? null : JsonNode.Parse(input);
     }
 
     /// <inheritdoc/>
     public void GetState()
     {
         _output.Settings = GetSettings();
+
+        // Keyboard Manager keeps which profile is active, and the list of
+        // profiles, in its settings. An input that leaves them out (e.g. only
+        // "useNewEditor") must not reset them to "default": complete the
+        // desired state from the current one, before Test and Set use it.
+        if (_inputNode != null &&
+            (object?)_input.Settings is KeyboardManagerSettings desired &&
+            (object?)_output.Settings is KeyboardManagerSettings current)
+        {
+            KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(_inputNode, desired, current);
+        }
     }
 
     /// <inheritdoc/>

@@ -35,6 +35,13 @@ public sealed class ProfileFunctionData : BaseFunctionData
     // members) detected before the model is materialized.
     private readonly IList<string> _inputErrors;
 
+    // The profile file this instance works on, resolved from the active
+    // configuration once, on first use. Get, Test and Set of one operation
+    // must all work on the same file: the active profile can change in
+    // between (device auto-switch, the cycle hotkey), and a Set that resolved
+    // it again would overwrite a profile that was never compared.
+    private string? _profileFileName;
+
     // The stored profile is serialized without null properties to match the
     // shape written by the C++ editor; the engine's JSON reader throws on
     // null-valued properties, which would make it skip the entry.
@@ -57,6 +64,8 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// Gets the warnings collected while reading the current profile.
     /// </summary>
     public IList<string> Warnings { get; } = [];
+
+    private string ProfileFileName => _profileFileName ??= GetProfileFileName();
 
     /// <summary>
     /// Gets or sets the check used to decide whether the current process is
@@ -104,7 +113,7 @@ public sealed class ProfileFunctionData : BaseFunctionData
     public void GetState()
     {
         var profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(
-            KeyboardManagerSettings.ModuleName, GetProfileFileName());
+            KeyboardManagerSettings.ModuleName, ProfileFileName);
         Output.Profile = KbmProfileConverter.FromProfile(profile, Warnings);
     }
 
@@ -131,7 +140,7 @@ public sealed class ProfileFunctionData : BaseFunctionData
 
         var profile = KbmProfileConverter.ToProfile(Input.Profile);
         var profileJson = JsonSerializer.Serialize(profile, _profileSerializerOptions);
-        _settingsUtils.SaveSettings(profileJson, KeyboardManagerSettings.ModuleName, GetProfileFileName());
+        _settingsUtils.SaveSettings(profileJson, KeyboardManagerSettings.ModuleName, ProfileFileName);
 
         return SignalSettingsChangedEvent();
     }
