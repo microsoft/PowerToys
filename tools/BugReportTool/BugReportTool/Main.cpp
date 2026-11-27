@@ -44,8 +44,9 @@ const wstring configBackupFolder = L"ConfigBackup";
 
 // Keyboard Manager files are handled by HideKeyboardManagerPrivateInfo, which also covers the updater's copy and
 // takes out a file whose private data could not be hidden. Every json file in the folder is handled, except
-// settings.json and profileMetadata.json, which are kept as they are. A file of any other type in the folder
-// (not in its subfolders, which hold the logs) is taken out: it cannot be searched for private data.
+// settings.json and profileMetadata.json, which are kept as they are; that includes a json file in a subfolder
+// (a copy of the folder made by hand). A file of any other type in the folder itself (not in its subfolders,
+// which hold the logs) is taken out: it cannot be searched for private data.
 const wstring keyboardManagerFolder = L"Keyboard Manager";
 const vector<wstring> keyboardManagerFilesKeptAsIs = {
     L"settings.json",
@@ -292,6 +293,16 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
         }
     }
 
+    // The json files in subfolders. Keyboard Manager writes only logs there, so one is a copy made by hand.
+    for (recursive_directory_iterator it{ folder, err }; !err && it != recursive_directory_iterator{}; it.increment(err))
+    {
+        error_code entryErr;
+        if (it.depth() > 0 && it->is_regular_file(entryErr) && _wcsicmp(it->path().extension().c_str(), L".json") == 0)
+        {
+            files.push_back(it->path());
+        }
+    }
+
     if (err)
     {
         // The files that were not listed cannot be handled one by one.
@@ -306,7 +317,7 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
         bool hidden = false;
         try
         {
-            hidden = HideForFile(dir, (path(keyboardManagerFolder) / file.filename()).wstring(), keyboardManagerEscapeInfo);
+            hidden = HideForFile(dir, file.lexically_relative(dir).wstring(), keyboardManagerEscapeInfo);
         }
         catch (...)
         {
