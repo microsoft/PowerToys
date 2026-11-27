@@ -342,6 +342,20 @@ explicit tool/runtime paths and are excluded from this fast gate.
 
 For automated queueing and monitoring, use the [UI-test pipeline CI skill](../../../.github/skills/ui-tests-pipeline-ci/SKILL.md).
 
+### Automatic PR sharding
+
+PR CI resolves the affected suites and plans each platform separately, including for large PRs
+from `main` to `stable`. With up to 45 estimated minutes of suite work, it uses one worker. Larger
+selections get up to three workers per platform, never more than the number of eligible suites.
+The [duration estimates](../../../.pipelines/uiTestDurations.json) balance whole suites, and
+each worker downloads its assigned test payloads and installs the same current-source build.
+The **Resolve affected UI test projects** log shows the assignments and estimates. These estimates
+exclude agent startup and installation.
+
+Non-PR CI does not schedule affected-suite jobs. Dedicated ARM64 fixture jobs stay separate and
+unsharded on their existing image route. Manual pipelines still use the explicit 1-6 worker
+settings above; automatic sharding does not change them.
+
 ## How to add the first UI tests for your modules
 
 Use the [UI-tests migration skill](../../../.github/skills/ui-tests-migration/SKILL.md) for new
