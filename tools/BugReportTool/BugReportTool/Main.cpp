@@ -70,8 +70,9 @@ const vector<wstring> keyboardManagerEscapeInfo = {
     L"ShortcutSettingsDictionary/*/Shortcut/StartInDirectory",
     L"ShortcutSettingsDictionary/*/Shortcut/UriToOpen",
 
-    // An older editor also kept the text of a text row in TargetKeys. The key codes of the other rows are in the
-    // profiles, so nothing is lost for diagnosis.
+    // An older editor also kept the text of a text row in TargetKeys. Which rows are such text rows cannot be told
+    // here, so it is hidden for every row: the key targets of turned-off rows, which only this file has, are hidden
+    // too. Those of the rows in use are still in the profiles.
     L"ShortcutSettingsDictionary/*/Shortcut/TargetKeys",
 
     // Profiles (default.json and every named one): text, URI and application mappings.
@@ -608,8 +609,13 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     // Hide sensitive information
     if (!HideUserPrivateInfo(reportDir))
     {
-        printf("Failed to remove private Keyboard Manager data from the report\n");
-        DeleteFolder(reportDir);
+        printf("Failed to remove private Keyboard Manager data from the report; no report was created\n");
+        if (!DeleteFolder(reportDir))
+        {
+            // The file that could not be cleaned is probably what stops the delete: say where the copy is left.
+            wprintf_s(L"The report's working copy was left in %s; delete it by hand\n", reportDir.c_str());
+        }
+
         return 1;
     }
 

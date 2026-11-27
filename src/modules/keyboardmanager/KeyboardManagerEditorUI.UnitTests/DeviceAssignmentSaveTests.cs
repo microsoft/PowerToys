@@ -332,6 +332,39 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEquivalent(new List<string> { "k1=Office" }, SavedMap());
         }
 
+        // A hand edit left deviceProfiles.json unparsable (or "null", or empty). It cannot name a new
+        // profile, so creating one still works; the file is left as it is.
+        [DataTestMethod]
+        [DataRow("{ \"map\": [], \"cycleHotkey\": { \"key\": 112, }, ")]
+        [DataRow("null")]
+        [DataRow("")]
+        public void CreateProfile_WhenTheFileCannotBeParsedAndDoesNotNameTheProfile_Works(string content)
+        {
+            File.WriteAllText(DeviceProfilesPath, content);
+
+            Assert.IsTrue(ProfileManager.CreateProfile("Office", copyFromActive: false));
+
+            Assert.AreEqual(content, File.ReadAllText(DeviceProfilesPath));
+        }
+
+        // The unparsable file may still hold an assignment to that id, in any letter case or with the
+        // name escaped: creation fails rather than letting the new profile inherit it later.
+        [DataTestMethod]
+        [DataRow("Office", "{ \"map\": [ { \"device\": \"k1\", \"profile\": \"office\" }, ")]
+        [DataRow("仕事", "{ \"map\": [ { \"device\": \"k1\", \"profile\": \"\\u4ED5\\u4E8B\" }, ")]
+        public void CreateProfile_WhenTheFileCannotBeParsedAndMayNameTheProfile_Fails(string profile, string content)
+        {
+            File.WriteAllText(DeviceProfilesPath, content);
+
+            Assert.IsFalse(ProfileManager.CreateProfile(profile, copyFromActive: false));
+
+            Assert.IsFalse(ProfileManager.GetProfiles().Contains(profile, StringComparer.OrdinalIgnoreCase));
+
+            // It was the file: without it the same name is created.
+            File.Delete(DeviceProfilesPath);
+            Assert.IsTrue(ProfileManager.CreateProfile(profile, copyFromActive: false));
+        }
+
         private static List<DeviceAssignment> Rows(params (string Device, string Profile)[] rows) =>
             rows.Select(r => new DeviceAssignment { Device = r.Device, Profile = r.Profile, Name = r.Device }).ToList();
 

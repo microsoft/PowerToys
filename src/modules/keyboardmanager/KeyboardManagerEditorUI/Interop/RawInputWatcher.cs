@@ -186,7 +186,7 @@ namespace KeyboardManagerEditorUI.Interop
             if (RegisterClassW(ref wc) == 0)
             {
                 Logger.LogError("RawInputWatcher: RegisterClass failed");
-                _workerReady.Set();
+                ExitBeforeTheMessageLoop();
                 return;
             }
 
@@ -195,7 +195,7 @@ namespace KeyboardManagerEditorUI.Interop
             {
                 Logger.LogError("RawInputWatcher: CreateWindow failed");
                 UnregisterClassW(className, wc.HInstance);
-                _workerReady.Set();
+                ExitBeforeTheMessageLoop();
                 return;
             }
 
@@ -208,7 +208,7 @@ namespace KeyboardManagerEditorUI.Interop
                 Logger.LogError("RawInputWatcher: RegisterRawInputDevices failed");
                 DestroyWindow(hwnd);
                 UnregisterClassW(className, wc.HInstance);
-                _workerReady.Set();
+                ExitBeforeTheMessageLoop();
                 return;
             }
 
@@ -224,6 +224,14 @@ namespace KeyboardManagerEditorUI.Interop
 
             DestroyWindow(hwnd);
             UnregisterClassW(className, wc.HInstance);
+        }
+
+        // The worker is about to end without a message loop. Clear its thread id first, so Stop()
+        // posts nothing: once this thread has ended, Windows may give its id to another thread.
+        private void ExitBeforeTheMessageLoop()
+        {
+            _threadId = 0;
+            _workerReady.Set();
         }
 
         private IntPtr WndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam)

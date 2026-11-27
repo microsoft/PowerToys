@@ -270,10 +270,12 @@ namespace KeyboardManagerEditorUI.Settings
             {
                 // A file that exists but cannot be read is a failure, not "nothing to remove": the
                 // caller would go on (e.g. create the profile) and the assignments would come back
-                // once the file is readable again.
+                // once the file is readable again. A file that can be read but not parsed (a hand
+                // edit of the cycle hotkey gone wrong) fails only if it may name the profile:
+                // otherwise every new profile would fail until the file is fixed.
                 if (!TryLoadForUpdate(out DeviceProfilesFile file))
                 {
-                    return false;
+                    return !MayNameProfile(profile);
                 }
 
                 // Ignore case: the engine opens "<profile>.json" on a file system that ignores case,
@@ -293,6 +295,25 @@ namespace KeyboardManagerEditorUI.Settings
                 Logger.LogError($"Failed to prune deviceProfiles.json for '{profile}': {ex.Message}");
                 return false;
             }
+        }
+
+        // For a file that could not be loaded: whether its text may name the profile, as written by
+        // hand or as the serializer escapes it (non-ASCII as \uXXXX). True when the text cannot be
+        // read at all (held open by another process), so the caller fails as it should.
+        private static bool MayNameProfile(string profile)
+        {
+            string text;
+            try
+            {
+                text = File.ReadAllText(FilePath);
+            }
+            catch (Exception)
+            {
+                return true;
+            }
+
+            return text.Contains(profile, StringComparison.OrdinalIgnoreCase) ||
+                text.Contains(JsonEncodedText.Encode(profile).ToString(), StringComparison.OrdinalIgnoreCase);
         }
 
         // Reads the file for a read-modify-write. Unlike Load(), a file that exists but cannot be
