@@ -268,7 +268,13 @@ namespace KeyboardManagerEditorUI.Settings
 
             try
             {
-                DeviceProfilesFile file = Load();
+                // A file that exists but cannot be read is a failure, not "nothing to remove": the
+                // caller would go on (e.g. create the profile) and the assignments would come back
+                // once the file is readable again.
+                if (!TryLoadForUpdate(out DeviceProfilesFile file))
+                {
+                    return false;
+                }
 
                 // Ignore case: the engine opens "<profile>.json" on a file system that ignores case,
                 // so "work" and "Work" are the same profile to it.

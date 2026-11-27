@@ -300,6 +300,38 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEquivalent(new List<string> { "k2=Home" }, SavedMap());
         }
 
+        // A file that exists but cannot be read (held open by another process) is not "nothing to
+        // remove": the prune reports failure and the file is left as it is.
+        [TestMethod]
+        public void RemoveAssignmentsForProfile_WhenTheFileCannotBeRead_FailsAndLeavesTheFile()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Work"));
+            string before = File.ReadAllText(DeviceProfilesPath);
+
+            using (new FileStream(DeviceProfilesPath, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                Assert.IsFalse(DeviceProfileManager.RemoveAssignmentsForProfile("Work"));
+            }
+
+            Assert.AreEqual(before, File.ReadAllText(DeviceProfilesPath));
+        }
+
+        // Creating a profile whose id an earlier profile left assignments for: if those cannot be
+        // checked, creation fails instead of letting the new profile inherit them later.
+        [TestMethod]
+        public void CreateProfile_WhenLeftoverAssignmentsCannotBeChecked_Fails()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Office"));
+
+            using (new FileStream(DeviceProfilesPath, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                Assert.IsFalse(ProfileManager.CreateProfile("Office", copyFromActive: false));
+            }
+
+            Assert.IsFalse(ProfileManager.GetProfiles().Contains("Office", StringComparer.OrdinalIgnoreCase));
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Office" }, SavedMap());
+        }
+
         private static List<DeviceAssignment> Rows(params (string Device, string Profile)[] rows) =>
             rows.Select(r => new DeviceAssignment { Device = r.Device, Profile = r.Profile, Name = r.Device }).ToList();
 

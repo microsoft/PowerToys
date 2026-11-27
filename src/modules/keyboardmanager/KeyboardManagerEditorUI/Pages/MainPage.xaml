@@ -997,6 +997,7 @@
                                         <ComboBox
                                             Grid.Column="2"
                                             MinWidth="150"
+                                            AutomationProperties.Name="{x:Bind DisplayName, Mode=OneWay}"
                                             DisplayMemberPath="Display"
                                             ItemsSource="{x:Bind Profiles}"
                                             SelectedValue="{x:Bind SelectedProfileId, Mode=TwoWay}"

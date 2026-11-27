@@ -179,12 +179,22 @@ namespace KeyboardManagerEditorUI.Interop
                 HInstance = GetModuleHandleW(null),
                 LpszClassName = className,
             };
-            RegisterClassW(ref wc);
+
+            // Each watcher registers the class with its own callback and unregisters it on every exit
+            // path. If the class is still registered (a watcher that did not clean up), a window
+            // created now would use that watcher's callback, which may no longer exist: give up.
+            if (RegisterClassW(ref wc) == 0)
+            {
+                Logger.LogError("RawInputWatcher: RegisterClass failed");
+                _workerReady.Set();
+                return;
+            }
 
             IntPtr hwnd = CreateWindowExW(0, className, string.Empty, 0, 0, 0, 0, 0, IntPtr.Zero, IntPtr.Zero, wc.HInstance, IntPtr.Zero);
             if (hwnd == IntPtr.Zero)
             {
                 Logger.LogError("RawInputWatcher: CreateWindow failed");
+                UnregisterClassW(className, wc.HInstance);
                 _workerReady.Set();
                 return;
             }
