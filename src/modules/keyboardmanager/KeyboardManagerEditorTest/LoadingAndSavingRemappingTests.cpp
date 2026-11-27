@@ -775,6 +775,50 @@ namespace RemappingUITests
             }
         }
 
+        // Saving after an ordinary remapping was changed writes the key-sequence list back exactly as the
+        // file had it: there is no editor UI for sequences, so entries the loader skipped (a typo, a
+        // duplicate), the generic Win source key 260, the order and extra members must all survive.
+        TEST_METHOD (Save_AfterChangingAnOrdinaryRemap_KeepsTheSequenceListAsStored)
+        {
+            const std::wstring sequences = LR"([{"originalKeys":"260","newRemapKeys":"27;26"},{"originalKeys":"113","newRemapKeys":"27;0x1A","note":"typo"},{"originalKeys":"27","newRemapKeys":"65"},{"originalKeys":"27","newRemapKeys":"66"}])";
+            const auto root = json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[{"originalKeys":"65","newRemapKeys":"66"}],"inProcessSequence":)" + sequences + L"}}");
+
+            MappingConfiguration config;
+            Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+            config.ClearSingleKeyRemaps();
+            Assert::IsTrue(config.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x43)));
+
+            const auto saved = config.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+            Assert::AreEqual(std::wstring(json::JsonArray::Parse(sequences).Stringify()), std::wstring(saved.GetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName).Stringify()));
+            Assert::AreEqual(std::wstring(L"67"), std::wstring(saved.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName).GetObjectAt(0).GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName)));
+        }
+
+        // A value of another type is kept as it is too; a file without the list gets none.
+        TEST_METHOD (Save_KeepsASequenceValueOfAnyType_AndAddsNoneWhenAbsent)
+        {
+            MappingConfiguration withString;
+            withString.LoadSingleKeyRemaps(json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[],"inProcessSequence":"27;26"}})"));
+            Assert::AreEqual(std::wstring(L"27;26"), std::wstring(withString.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName).GetNamedString(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName)));
+
+            MappingConfiguration without;
+            without.LoadSingleKeyRemaps(json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[]}})"));
+            Assert::IsFalse(without.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName).HasKey(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName));
+        }
+
+        // Once code changes the sequence table itself, the table is what is saved.
+        TEST_METHOD (Save_AfterTheSequenceTableIsChangedInCode_WritesTheTable)
+        {
+            MappingConfiguration config;
+            config.LoadSingleKeyRemaps(json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[],"inProcessSequence":[{"originalKeys":"27","newRemapKeys":"27;26"}]}})"));
+            config.ClearSingleKeyToSequenceRemaps();
+            Assert::IsTrue(config.AddSingleKeyToSequenceRemap(112, { 65, 66 }));
+
+            const auto list = config.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName).GetNamedArray(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+            Assert::AreEqual(1u, list.Size());
+            Assert::AreEqual(std::wstring(L"112"), std::wstring(list.GetObjectAt(0).GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName)));
+            Assert::AreEqual(std::wstring(L"65;66"), std::wstring(list.GetObjectAt(0).GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName)));
+        }
+
         // Test if the ApplyShortcutRemappings method resets the keyboard manager state's os level and app specific shortcut remappings on passing an empty buffer
         TEST_METHOD (ApplyShortcutRemappings_ShouldResetShortcutRemappings_OnPassingEmptyBuffer)
         {

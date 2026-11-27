@@ -27,6 +27,10 @@ public:
     // Save the updated configuration.
     bool SaveSettingsToFile();
 
+    // The settings JSON that SaveSettingsToFile writes for this configuration. Public so what a save
+    // writes can be unit tested without touching disk.
+    json::JsonObject ToSettingsJson() const;
+
     // Function to clear the OS Level shortcut remapping table
     void ClearOSLevelShortcuts();
 
@@ -79,6 +83,13 @@ public:
     // In the engine this is the table the settings are loaded into; the keyboard hook uses a
     // finished copy of it that the hook thread publishes (see State::StageSequenceTable).
     SingleKeyToSequenceRemapTable singleKeyToSequenceReMap;
+
+    // The inProcessSequence value exactly as the settings file had it (any type), or null when the file
+    // had none. There is no editor UI for sequences, so saving writes this value back unchanged instead
+    // of a list rebuilt from singleKeyToSequenceReMap: entries the loader skipped (a typo, a duplicate),
+    // their order and any extra members are kept. Changing the table in code (Clear/Add) drops it, so
+    // the table is written from then on.
+    json::IJsonValue storedSequenceRemaps{ nullptr };
 
     std::unordered_map<DWORD, DWORD> scanMap;
 

@@ -66,6 +66,7 @@ void MappingConfiguration::ClearSingleKeyAloneRemaps()
 void MappingConfiguration::ClearSingleKeyToSequenceRemaps()
 {
     singleKeyToSequenceReMap.clear();
+    storedSequenceRemaps = nullptr;
 }
 
 // Function to clear the Keys remapping table.
@@ -148,6 +149,7 @@ bool MappingConfiguration::AddSingleKeyToSequenceRemap(const DWORD& originalKey,
     }
 
     singleKeyToSequenceReMap[originalKey] = sequence;
+    storedSequenceRemaps = nullptr; // the table is the one to save from now on
     return true;
 }
 
@@ -398,6 +400,9 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
             sequenceValue = remapKeysData.GetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
         }
 
+        // Kept as read (set again after the entries are added below, which drop it).
+        const json::IJsonValue storedValue = sequenceValue;
+
         // The array is optional, so a value of the wrong type (null, an object, ...) is ignored with a
         // warning instead of failing the load, which would also hide the valid ordinary remaps above.
         if (sequenceValue && sequenceValue.ValueType() != json::JsonValueType::Array)
@@ -436,6 +441,8 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
                 }
             }
         }
+
+        storedSequenceRemaps = storedValue;
     }
     catch (...)
     {
@@ -731,10 +738,9 @@ bool MappingConfiguration::IsConfigurationNameResolved() const
     return configurationNameResolved;
 }
 
-// Save the updated configuration.
-bool MappingConfiguration::SaveSettingsToFile()
+// Builds the settings JSON of the current configuration (what SaveSettingsToFile writes).
+json::JsonObject MappingConfiguration::ToSettingsJson() const
 {
-    bool result = true;
     json::JsonObject configJson;
     json::JsonObject remapShortcuts;
     json::JsonObject remapShortcutsToText;
@@ -950,9 +956,14 @@ bool MappingConfiguration::SaveSettingsToFile()
     remapShortcutsToText.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsToTextArray);
 
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
-    // Only write the key-sequence array when there is something in it, so files without sequences
-    // stay exactly as before.
-    if (inProcessSequenceRemapKeysArray.Size() > 0)
+    // The key-sequence list as the file had it is written back unchanged (see storedSequenceRemaps).
+    // Otherwise the list is written from the table, and only when there is something in it, so files
+    // without sequences stay exactly as before.
+    if (storedSequenceRemaps)
+    {
+        remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, storedSequenceRemaps);
+    }
+    else if (inProcessSequenceRemapKeysArray.Size() > 0)
     {
         remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequenceRemapKeysArray);
     }
@@ -961,6 +972,14 @@ bool MappingConfiguration::SaveSettingsToFile()
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysToTextSettingName, remapKeysToText);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
+    return configJson;
+}
+
+// Save the updated configuration.
+bool MappingConfiguration::SaveSettingsToFile()
+{
+    bool result = true;
+    const json::JsonObject configJson = ToSettingsJson();
 
     const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
     if (!WriteJsonAtomically(settingsFilePath, configJson))

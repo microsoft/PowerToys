@@ -17,6 +17,7 @@ using PowerToys.DSC.Models;
 using PowerToys.DSC.Models.FunctionData;
 using PowerToys.DSC.Models.KeyboardManager;
 using PowerToys.DSC.Models.ResourceObjects;
+using PowerToys.DSC.UnitTests.Models;
 
 namespace PowerToys.DSC.UnitTests.ProfileResourceTests;
 
@@ -282,6 +283,82 @@ public sealed class ProfileResourceKeyboardManagerTest : BaseDscTest
         // Assert
         Assert.IsTrue(result.Success);
         Assert.IsTrue(settingsEvent.WaitOne(TimeSpan.FromSeconds(5)), "The Keyboard Manager settings event was not signaled");
+    }
+
+    // Remappings that send a sequence of keys are written by hand and this
+    // resource does not model them: changing an ordinary remapping must keep
+    // the stored list exactly as it was, entries the engine skips included.
+    [TestMethod]
+    public void Set_KeepsTheStoredSequenceRemapsUnchanged()
+    {
+        // Arrange: A -> B, and a hand-written list (one valid entry, one the engine skips)
+        const string sequences = "[{\"originalKeys\":\"112\",\"newRemapKeys\":\"65;66\"},{\"originalKeys\":\"113\",\"newRemapKeys\":\"27;0x1A\",\"note\":\"typo\"}]";
+        WriteProfileText(DefaultProfileFileName, "{\"remapKeys\":{\"inProcess\":[{\"originalKeys\":\"65\",\"newRemapKeys\":\"66\"}],\"inProcessSequence\":" + sequences + "},\"remapKeysToText\":{\"inProcess\":[]},\"remapShortcuts\":{\"global\":[],\"appSpecific\":[]},\"remapShortcutsToText\":{\"global\":[],\"appSpecific\":[]}}");
+        var input = CreateInputResourceObject(new KbmProfileModel { Keys = [new() { From = "A", To = "C" }] });
+
+        // Act: A -> C
+        var result = ExecuteDscCommand<SetCommand>("--resource", ProfileResource.ResourceName, "--module", Module, "--input", input);
+
+        // Assert
+        Assert.IsTrue(result.Success);
+        var stored = ReadProfileNode(DefaultProfileFileName);
+        Assert.AreEqual("67", stored["remapKeys"]["inProcess"][0]["newRemapKeys"].GetValue<string>());
+        Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(sequences), stored["remapKeys"]["inProcessSequence"]), stored.ToJsonString());
+    }
+
+    // A value of another type is not this resource's to judge: it is kept as it is.
+    [TestMethod]
+    public void Set_KeepsAStoredSequenceValueOfAnyType()
+    {
+        WriteProfileText(DefaultProfileFileName, "{\"remapKeys\":{\"inProcess\":[],\"inProcessSequence\":\"not a list\"}}");
+        var input = CreateInputResourceObject(new KbmProfileModel { Keys = [new() { From = "A", To = "C" }] });
+
+        var result = ExecuteDscCommand<SetCommand>("--resource", ProfileResource.ResourceName, "--module", Module, "--input", input);
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual("not a list", ReadProfileNode(DefaultProfileFileName)["remapKeys"]["inProcessSequence"].GetValue<string>());
+    }
+
+    // No list before, no list after: nothing is added.
+    [TestMethod]
+    public void Set_WithoutStoredSequenceRemaps_AddsNone()
+    {
+        var input = CreateInputResourceObject(CreateSampleProfileModel());
+
+        var result = ExecuteDscCommand<SetCommand>("--resource", ProfileResource.ResourceName, "--module", Module, "--input", input);
+
+        Assert.IsTrue(result.Success);
+        Assert.IsFalse(ReadProfileNode(DefaultProfileFileName)["remapKeys"].AsObject().ContainsKey("inProcessSequence"));
+    }
+
+    // A profile file that cannot be opened right now must not be replaced
+    // without its list: the operation fails and the file stays as it was.
+    [TestMethod]
+    public void Set_WhenTheProfileCannotBeRead_FailsAndLeavesTheFile()
+    {
+        const string original = "{\"remapKeys\":{\"inProcess\":[],\"inProcessSequence\":[{\"originalKeys\":\"112\",\"newRemapKeys\":\"65;66\"}]}}";
+        WriteProfileText(DefaultProfileFileName, original);
+        var input = CreateInputResourceObject(new KbmProfileModel { Keys = [new() { From = "A", To = "C" }] });
+        var path = _settingsUtils.GetSettingsFilePath(KeyboardManagerSettings.ModuleName, DefaultProfileFileName);
+
+        DscExecuteResult result;
+        using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+        {
+            result = ExecuteDscCommand<SetCommand>("--resource", ProfileResource.ResourceName, "--module", Module, "--input", input);
+        }
+
+        Assert.IsFalse(result.Success);
+        Assert.AreEqual(original, File.ReadAllText(path));
+    }
+
+    private static void WriteProfileText(string fileName, string json)
+    {
+        File.WriteAllText(_settingsUtils.GetSettingsFilePath(KeyboardManagerSettings.ModuleName, fileName), json);
+    }
+
+    private static JsonNode ReadProfileNode(string fileName)
+    {
+        return JsonNode.Parse(File.ReadAllText(_settingsUtils.GetSettingsFilePath(KeyboardManagerSettings.ModuleName, fileName)));
     }
 
     /// <summary>
