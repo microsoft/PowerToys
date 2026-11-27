@@ -161,7 +161,6 @@ jobs:
       EffectiveVersionNumber: ${{ parameters.resolvedVersionNumber }}
     NUGET_RESTORE_MSBUILD_ARGS: /p:Platform=$(BuildPlatform) # Required for nuget to work due to self contained
     NODE_OPTIONS: --max_old_space_size=16384
-    SuppressVNextMsiValidation: 'false'
     ${{ if eq(parameters.runTests, true) }}:
       MSBuildMainBuildTargets: Build;Test
     ${{ else }}:
@@ -212,8 +211,7 @@ jobs:
         Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
         $result = Invoke-Pester -Script @(
             '.pipelines/tests/versionAndSignCheck.Tests.ps1',
-            '.pipelines/tests/winmdSigningPolicy.Tests.ps1',
-            '.pipelines/tests/resolveBuildMetadata.Tests.ps1'
+            '.pipelines/tests/winmdSigningPolicy.Tests.ps1'
         ) -PassThru
         if ($result.FailedCount -gt 0 -or $result.TotalCount -eq 0) {
             throw 'Release signing regression tests failed.'

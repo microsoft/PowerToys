@@ -124,7 +124,6 @@ Describe "resolveBuildMetadata" {
             -VersionPropsPath (New-VersionProps)
 
         $result.Version | Should Be "0.0.21103.0"
-        $result.SkipArm64MsiIceValidation | Should Be $false
     }
 
     It "allows an explicit MSI-safe version for private validation" {
@@ -151,38 +150,6 @@ Describe "resolveBuildMetadata" {
                 -BuildNumber "PowerToys Signed YAML Release Build_2608.03001-preview-version" `
                 -VersionPropsPath (New-VersionProps)
         }
-    }
-
-    It "allows skipping ARM64 MSI ICE validation for a manual private-validation branch build" {
-        $result = & $scriptPath `
-            -SourceBranch "refs/heads/user/feature" `
-            -BuildReason "Manual" `
-            -BuildNumber "PowerToys Signed YAML Release Build_2607.30003-feature" `
-            -VersionPropsPath (New-VersionProps) `
-            -SkipArm64MsiIceValidation
-
-        $result.Intent | Should Be "private-validation"
-        $result.SkipArm64MsiIceValidation | Should Be $true
-    }
-
-    It "keeps ARM64 MSI ICE validation enabled for <SourceBranch> (<BuildReason>)" -TestCases @(
-        @{ SourceBranch = "refs/heads/main"; BuildReason = "Manual" }
-        @{ SourceBranch = "refs/heads/stable"; BuildReason = "Manual" }
-        @{ SourceBranch = "refs/heads/user/feature"; BuildReason = "IndividualCI" }
-        @{ SourceBranch = "refs/tags/v0.100.2151"; BuildReason = "Manual" }
-        @{ SourceBranch = "refs/pull/42/merge"; BuildReason = "PullRequest" }
-    ) {
-        param($SourceBranch, $BuildReason)
-
-        $result = & $scriptPath `
-            -SourceBranch $SourceBranch `
-            -BuildReason $BuildReason `
-            -BuildNumber "PowerToys Signed YAML Release Build_2607.30003-feature" `
-            -DailyVersionSequence "1" `
-            -VersionPropsPath (New-VersionProps) `
-            -SkipArm64MsiIceValidation
-
-        $result.SkipArm64MsiIceValidation | Should Be $false
     }
 
     It "increments the year digit across a calendar year boundary" {

@@ -18,9 +18,7 @@ param(
     [AllowEmptyString()]
     [string]$DailyVersionSequence = "",
 
-    [string]$VersionPropsPath = (Join-Path $PSScriptRoot "..\src\Version.props"),
-
-    [switch]$SkipArm64MsiIceValidation
+    [string]$VersionPropsPath = (Join-Path $PSScriptRoot "..\src\Version.props")
 )
 
 $ErrorActionPreference = "Stop"
@@ -386,8 +384,4 @@ Write-Host "Resolved version: $version"
     Version = $version
     AllowPublicSymbols = $allowPublicSymbols
     ShouldPublishPreview = $shouldPublishPreview
-    SkipArm64MsiIceValidation = $SkipArm64MsiIceValidation -and
-        $intent -eq "private-validation" -and
-        $BuildReason -eq "Manual" -and
-        $SourceBranch -like "refs/heads/*"
 }

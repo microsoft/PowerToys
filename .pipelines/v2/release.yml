@@ -42,11 +42,6 @@ parameters:
       - x64
       - arm64
 
-  - name: skipArm64MsiIceValidation
-    displayName: "Skip x64 and ARM64 MSI ICE validation (manual private validation only)"
-    type: boolean
-    default: true
-
   - name: useVSPreview
     type: boolean
     displayName: "Build Using Visual Studio Preview"
@@ -132,20 +127,14 @@ extends:
 
                 # Sets versions for all PowerToy created DLLs
                 - pwsh: |-
-                    $skipArm64MsiIceValidation = $${{ parameters.skipArm64MsiIceValidation }}
                     $metadata = .pipelines/resolveBuildMetadata.ps1 `
                       -VersionOverride '${{ parameters.versionNumber }}' `
                       -ReleaseIntent '${{ parameters.releaseIntent }}' `
                       -BuildDate '$(versionDate)' `
-                      -DailyVersionSequence '$(dailyVersionSequence)' `
-                      -SkipArm64MsiIceValidation:$skipArm64MsiIceValidation
+                      -DailyVersionSequence '$(dailyVersionSequence)'
                     $publishSymbolsToPublic = $${{ parameters.publishSymbolsToPublic }}
                     if ($publishSymbolsToPublic -and -not $metadata.AllowPublicSymbols) {
                       throw "Public symbols are only supported for manually queued stable-branch releases"
-                    }
-                    if ($metadata.SkipArm64MsiIceValidation -and $env:BUILDPLATFORM -in @('x64', 'arm64')) {
-                      Write-Warning "Skipping WiX ICE validation for the $env:BUILDPLATFORM private validation build."
-                      Write-Host '##vso[task.setvariable variable=SuppressVNextMsiValidation;isReadOnly=true]true'
                     }
 
                     .pipelines/versionSetting.ps1 -versionNumber $metadata.Version -DevEnvironment '' -Channel $metadata.Channel
