@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 
 using Microsoft.PowerToys.Run.Plugin.TimeDate.Properties;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -50,7 +51,7 @@ namespace Microsoft.PowerToys.Run.Plugin.TimeDate.Components
         {
             try
             {
-                Clipboard.SetText(text);
+                ClipboardHelper.SetText(text);
                 return true;
             }
             catch (Exception exception)

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Windows;
 using System.Windows.Input;
 
 using Community.PowerToys.Run.Plugin.VSCodeWorkspaces.Properties;
@@ -223,7 +222,7 @@ namespace Community.PowerToys.Run.Plugin.VSCodeWorkspaces
         {
             try
             {
-                Clipboard.SetText(path);
+                ClipboardHelper.SetText(path);
                 return true;
             }
             catch (Exception ex)

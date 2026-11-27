@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Input;
 
 using ManagedCommon;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -73,7 +74,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
+                            ClipboardHelper.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException ex)
@@ -106,7 +107,7 @@ namespace Community.PowerToys.Run.Plugin.UnitConverter
                     {
                         try
                         {
-                            Clipboard.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
+                            ClipboardHelper.SetText(result.ConvertedValue.ToString(UnitConversionResult.CopyFormat, CultureInfo.CurrentCulture));
                             ret = true;
                         }
                         catch (ExternalException ex)

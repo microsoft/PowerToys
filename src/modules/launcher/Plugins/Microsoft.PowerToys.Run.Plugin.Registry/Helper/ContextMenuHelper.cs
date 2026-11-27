@@ -9,6 +9,7 @@ using System.Windows.Input;
 
 using Microsoft.PowerToys.Run.Plugin.Registry.Classes;
 using Microsoft.PowerToys.Run.Plugin.Registry.Properties;
+using Wox.Infrastructure;
 using Wox.Plugin;
 using Wox.Plugin.Logger;
 
@@ -124,8 +125,7 @@ namespace Microsoft.PowerToys.Run.Plugin.Registry.Helper
         {
             try
             {
-                Clipboard.Clear();
-                Clipboard.SetText(text);
+                ClipboardHelper.SetText(text);
                 return true;
             }
             catch (Exception exception)

@@ -9,8 +9,9 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Wox.Infrastructure;
 
-namespace Microsoft.PowerToys.Run.Plugin.Calculator.UnitTests
+namespace Wox.Test
 {
     [TestClass]
     [DoNotParallelize]
