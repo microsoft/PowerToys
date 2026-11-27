@@ -41,7 +41,7 @@ internal sealed partial class RunExeItem : FileItem
         string fullExePath,
         Action<string>? addToHistory,
         ITelemetryService? telemetryService = null)
-        : base(fullPath: fullExePath, isDirectory: false)
+        : base(fullPath: fullExePath)
     {
         FullExePath = fullExePath;
         Exe = exe;
@@ -232,8 +232,9 @@ internal sealed partial class RunCommandLineItem : FileItem
         string fullExePath,
         string commandline,
         Action<string>? addToHistory,
-        ITelemetryService? telemetryService = null)
-        : base(fullPath: fullExePath, isDirectory: null)
+        ITelemetryService? telemetryService = null,
+        bool showFileIcon = true)
+        : base(fullPath: fullExePath, showFileIcon)
     {
         _addToHistory = addToHistory;
         _telemetryService = telemetryService;

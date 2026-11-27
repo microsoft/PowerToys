@@ -128,6 +128,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
 
         var couldResolvePath = false;
         var isFile = false;
+        var isFolder = false;
         ParseCommandlineResult? parseResult = null;
 
         // Create a timeout for file system operations (200ms)
@@ -143,7 +144,7 @@ public sealed partial class RunListPage : AsyncDynamicListPage
                 parseResult = _historyService.ParseCommandline(expanded, string.Empty);
                 if (parseResult is ParseCommandlineResult res && res.Result == 0)
                 {
-                    isFile = File.Exists(res.FilePath);
+                    (isFile, isFolder) = CheckPath(res.FilePath);
                 }
 
                 couldResolvePath = true;
@@ -281,11 +282,34 @@ public sealed partial class RunListPage : AsyncDynamicListPage
         // We however need to always have a command that will run the thing.
         if (parseResult is ParseCommandlineResult res2)
         {
-            var item = new RunCommandLineItem(res2.FilePath, newSearch, (s) => _historyService.AddRunHistoryItem(s), _telemetryService);
+            // Don't ask for the icon of a URI or a path that isn't there
+            // TODO: Protocol handlers will be dealt with in a followup PR
+            var showFileIcon = !res2.IsUri && (res2.TargetFound || (couldResolvePath && (isFile || isFolder)));
+            var item = new RunCommandLineItem(res2.FilePath, newSearch, (s) => _historyService.AddRunHistoryItem(s), _telemetryService, showFileIcon);
             _exeItem = item;
         }
 
         FilterHistoryItems(newSearch, searchText);
+    }
+
+    private static (bool IsFile, bool IsFolder) CheckPath(string path)
+    {
+        try
+        {
+            // One lookup for both. FileInfo reports -1 for a missing path.
+            var attributes = new FileInfo(path).Attributes;
+            if (attributes == (FileAttributes)(-1))
+            {
+                return (false, false);
+            }
+
+            var isFolder = attributes.HasFlag(FileAttributes.Directory);
+            return (!isFolder, isFolder);
+        }
+        catch (Exception)
+        {
+            return (false, false);
+        }
     }
 
     private async Task CreatePathItemsAsync(
