@@ -58,7 +58,10 @@
 //    while it was held and had stopped repeating) whose virtual key is one EncodeKeyNumpadOrigin
 //    distinguishes (Enter, arrows, Home/End, PgUp/PgDn, Ins/Del, numpad /) is matched by virtual key until its own
 //    event arrives, so the first event of the other key with that virtual key takes its record over;
-//    the seeded key's key-up is then resolved by the new profile (same family as L-3; review R-1).
+//    the seeded key's key-up is then resolved by the new profile (same family as L-3; review R-1);
+//  - a modifier that was already down when a profile took effect without a hook (or when the hook
+//    was installed) does not start a shortcut of the new profile: while it is held, the shortcut
+//    handlers are skipped, so e.g. Ctrl+A stays Ctrl+A until Ctrl is released and pressed again.
 //
 // KBM's re-sent key-downs (KEYBOARDMANAGER_REPROCESS_FLAG, matched by exact value, sent by KBM on
 // key-downs only) are not tracked as held keys, but count as KBM's output when they reach the system
@@ -99,7 +102,12 @@ public:
     using AsyncKeyDownFunction = std::function<bool(DWORD vkCode)>;
 
     // Runs the active profile's remap handlers on an event; returns 1 to suppress it, 0 to pass it on.
-    using HandleFunction = std::function<intptr_t(LowlevelKeyboardEvent*)>;
+    // `shortcutsAllowed` is false while a modifier that was already down when the profile took effect
+    // is still held (a pass-through orphan): the shortcut handlers must then be skipped. They read the
+    // system's key state, so they would start a shortcut with that modifier, but its key-up never
+    // reaches them (an orphan's events are answered without the handlers) and the shortcut's output
+    // would stay down. Such a modifier takes part in shortcuts again from its next press.
+    using HandleFunction = std::function<intptr_t(LowlevelKeyboardEvent*, bool shortcutsAllowed)>;
 
     // Makes the staged configuration live (State::AdoptConfiguration). Receives ownership; after the
     // swap the object holds the previous tables, which the callee should free off the hook thread.
@@ -306,6 +314,9 @@ private:
     // by the key's first event: an exact id match confirms it, a virtual-key match re-keys the record
     // to the event's id; either way the virtual-key fallback no longer applies to that record.
     std::unordered_map<uint32_t, HeldKey>::iterator FindHeldKey(uint32_t id, DWORD rawVkCode);
+
+    // False while a pass-through orphan modifier is held (see HandleFunction).
+    bool ShortcutsAllowed() const noexcept;
 
     void PruneStaleKeys(TimePoint now, uint32_t keepId);
     void TryApplyStage(TimePoint now, const AdoptFunction& adopt);

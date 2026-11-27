@@ -39,6 +39,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="ProfileCycleHotkey.h" />
     <ClInclude Include="ProfileSwapGate.h" />
+    <ClInclude Include="RateLimitedCount.h" />
     <ClInclude Include="RawInputKeyboardTracker.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="trace.h" />

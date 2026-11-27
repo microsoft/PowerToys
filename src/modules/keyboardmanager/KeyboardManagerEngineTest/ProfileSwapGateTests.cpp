@@ -42,35 +42,11 @@ namespace RemappingLogicTests
         int tablesReplaced = 0;
         std::atomic_bool loadingSettings = false;
 
-        // Mirrors KeyboardManager::HandleKeyboardHookEvent (without the settings-loading / editor checks).
-        intptr_t HandleEvent(LowlevelKeyboardEvent* data)
+        // The chain KeyboardManager::HandleKeyboardHookEvent runs (it adds only the settings-loading and
+        // editor-open checks), with the gate's answer on whether shortcuts may run.
+        intptr_t HandleEvent(LowlevelKeyboardEvent* data, bool shortcutsAllowed)
         {
-            if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-            {
-                return 1;
-            }
-
-            if (KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(mockedInputHandler, data, testState) == 1)
-            {
-                return 1;
-            }
-
-            if (KeyboardEventHandlers::HandleSingleKeyRemapEvent(mockedInputHandler, data, testState) == 1)
-            {
-                return 1;
-            }
-
-            if (KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(mockedInputHandler, data, testState) == 1)
-            {
-                return 1;
-            }
-
-            if (KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent(mockedInputHandler, data, testState) == 1)
-            {
-                return 1;
-            }
-
-            return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(mockedInputHandler, data, testState);
+            return KeyboardEventHandlers::HandleRemapEvent(mockedInputHandler, data, testState, shortcutsAllowed);
         }
 
         void Adopt(std::unique_ptr<State> staged)
@@ -176,7 +152,7 @@ namespace RemappingLogicTests
             mockedInputHandler.SetHookProc([this](LowlevelKeyboardEvent* data) -> intptr_t {
                 return gate->OnHookEvent(
                     data,
-                    [this](LowlevelKeyboardEvent* event) { return HandleEvent(event); },
+                    [this](LowlevelKeyboardEvent* event, bool shortcutsAllowed) { return HandleEvent(event, shortcutsAllowed); },
                     [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); });
             });
         }
@@ -457,6 +433,152 @@ namespace RemappingLogicTests
             Press('X');
             Assert::IsTrue(IsDown('Y'));
             Release('X');
+        }
+
+        // A modifier that is already down when a profile takes effect without a hook is a pass-through
+        // orphan: its key-up never reaches the handlers. So it must not start a shortcut of the new
+        // profile (the shortcut's output would stay down after the modifier is released). The shortcut
+        // works from the modifier's next press. Nothing here waits for the forced swap.
+        TEST_METHOD (ApplyWithoutHook_HeldModifierDoesNotStartShortcut_NextPressDoes)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('A');
+            Shortcut dest;
+            dest.SetKey(VK_SHIFT);
+            dest.SetKey('B');
+
+            // Ctrl was pressed while the (empty) profile had no hook.
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+            auto b = MakeProfile(L"B");
+            b->AddOSLevelShortcut(src, dest);
+            Offer(std::move(b));
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_LCONTROL, ScanOf(VK_LCONTROL), IsExtended(VK_LCONTROL) } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+
+            // Full press and release with the held Ctrl: A passes through as Ctrl+A, nothing is injected.
+            mockedInputHandler.SetSendVirtualInputTestHandler([](LowlevelKeyboardEvent* data) {
+                return (data->lParam->flags & LLKHF_INJECTED) != 0;
+            });
+            Press('A');
+            Assert::IsTrue(IsDown('A'));
+            Assert::IsTrue(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown('B'));
+            Assert::IsFalse(testState.osLevelShortcutReMap.begin()->second.isShortcutInvoked);
+            Release('A');
+            Release(VK_LCONTROL);
+            Assert::AreEqual(0, mockedInputHandler.GetSendVirtualInputCallCount());
+            Assert::IsFalse(IsDown('A'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_LCONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+
+            // A key typed afterwards carries no modifier.
+            Press('Q');
+            Assert::IsTrue(IsDown('Q'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Release('Q');
+
+            // From the next press of Ctrl the shortcut works, and its release finishes it.
+            Press(VK_LCONTROL);
+            Press('A');
+            Assert::IsTrue(IsDown(VK_SHIFT));
+            Assert::IsTrue(IsDown('B'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Release('A');
+            Assert::IsFalse(IsDown('B'));
+            Release(VK_LCONTROL);
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(testState.osLevelShortcutReMap.begin()->second.isShortcutInvoked);
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // Same, with the modifier released before the action key.
+        TEST_METHOD (ApplyWithoutHook_HeldModifierDoesNotStartShortcut_ModifierReleasedFirst)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('A');
+            Shortcut dest;
+            dest.SetKey(VK_SHIFT);
+            dest.SetKey('B');
+
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+            auto b = MakeProfile(L"B");
+            b->AddOSLevelShortcut(src, dest);
+            Offer(std::move(b));
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_LCONTROL, ScanOf(VK_LCONTROL), IsExtended(VK_LCONTROL) } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+
+            Press('A');
+            Release(VK_LCONTROL);
+            Release('A');
+            Assert::IsFalse(IsDown('A'));
+            Assert::IsFalse(IsDown('B'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(testState.osLevelShortcutReMap.begin()->second.isShortcutInvoked);
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+        }
+
+        // The same hole without any profile switch: the hook is installed (engine start, or the first
+        // mapping added to an empty profile) while a modifier is held.
+        TEST_METHOD (HookReinstalled_HeldModifierDoesNotStartShortcut_NextPressDoes)
+        {
+            Shortcut src;
+            src.SetKey(VK_CONTROL);
+            src.SetKey('A');
+            Shortcut dest;
+            dest.SetKey(VK_SHIFT);
+            dest.SetKey('B');
+            testState.AddOSLevelShortcut(src, dest);
+
+            mockedInputHandler.SetKeyboardState(VK_RCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+            gate->ResetHeldKeys({ { VK_RCONTROL, ScanOf(VK_RCONTROL), IsExtended(VK_RCONTROL) } });
+
+            Press('A');
+            Assert::IsTrue(IsDown('A'));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Release('A');
+            Release(VK_RCONTROL);
+            Assert::IsFalse(IsDown(VK_CONTROL));
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsTrue(gate->HeldKeyCount() == 0);
+
+            Press(VK_RCONTROL);
+            Press('A');
+            Assert::IsTrue(IsDown(VK_SHIFT));
+            Assert::IsTrue(IsDown('B'));
+            Release('A');
+            Release(VK_RCONTROL);
+            Assert::IsFalse(IsDown(VK_SHIFT));
+            Assert::IsFalse(IsDown('B'));
+            Assert::IsFalse(IsDown(VK_CONTROL));
+        }
+
+        // While a held orphan modifier holds shortcuts back, a single-key remap of the new profile
+        // still applies to keys pressed after the switch.
+        TEST_METHOD (ApplyWithoutHook_HeldModifier_SingleKeyRemapStillApplies)
+        {
+            mockedInputHandler.SetKeyboardState(VK_LCONTROL, true);
+            mockedInputHandler.SetKeyboardState(VK_CONTROL, true);
+            auto b = MakeProfile(L"B");
+            b->AddSingleKeyRemap('X', static_cast<DWORD>('Y'));
+            Offer(std::move(b));
+            Assert::IsTrue(gate->ApplyStageWithoutHook({ { VK_LCONTROL, ScanOf(VK_LCONTROL), IsExtended(VK_LCONTROL) } }, [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); }));
+
+            Press('X');
+            Assert::IsTrue(IsDown('Y'));
+            Assert::IsFalse(IsDown('X'));
+            Release('X');
+            Assert::IsFalse(IsDown('Y'));
+            Release(VK_LCONTROL);
+            Assert::IsFalse(IsDown(VK_CONTROL));
         }
 
         // A shortcut invoked under A is finished under A; B's tables start with no invocation state.
@@ -1104,7 +1226,7 @@ namespace RemappingLogicTests
 
                 return gate->OnHookEvent(
                     data,
-                    [this](LowlevelKeyboardEvent* event) { return HandleEvent(event); },
+                    [this](LowlevelKeyboardEvent* event, bool shortcutsAllowed) { return HandleEvent(event, shortcutsAllowed); },
                     [this](std::unique_ptr<State> staged) { Adopt(std::move(staged)); });
             });
 

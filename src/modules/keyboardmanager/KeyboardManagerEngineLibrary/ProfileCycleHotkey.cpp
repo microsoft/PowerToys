@@ -129,7 +129,7 @@ void ProfileCycleHotkey::ApplyPendingRegistration(HWND hwnd)
     if (RegisterHotKey(hwnd, HotkeyId, m_pendingModifiers.load() | MOD_NOREPEAT, vk))
     {
         m_registered = true;
-        Logger::trace(L"ProfileCycleHotkey: registered (modifiers=0x{:x}, vk=0x{:x})", m_pendingModifiers.load(), vk);
+        Logger::trace(L"ProfileCycleHotkey: registered");
     }
     else
     {

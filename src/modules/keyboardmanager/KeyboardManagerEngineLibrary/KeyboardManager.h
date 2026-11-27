@@ -13,6 +13,7 @@
 #include "ProfileSwapGate.h"
 #include "RawInputKeyboardTracker.h"
 #include "ProfileCycleHotkey.h"
+#include "RateLimitedCount.h"
 
 class KeyboardManager
 {
@@ -136,7 +137,8 @@ private:
 
     // Make the given profile active by writing settings.json + signaling the settings-changed
     // event, so the existing reload path applies it (avoids a second thread mutating `state`).
-    void SwitchActiveProfile(const std::wstring& profile);
+    // Returns true only when the switch was saved; the reload is requested only then.
+    bool SwitchActiveProfile(const std::wstring& profile);
 
     // A switch to `failedProfile` failed before it reached a reload. If that switch is the request in
     // flight, the engine is still heading to the staged profile (or nowhere, when nothing is staged),
@@ -174,8 +176,9 @@ private:
     // cancel a pending switch away from it. Guarded by activeProfileMutex.
     std::wstring requestedProfile;
 
-    // Last keyboard seen, logged on change to help discover device paths for the profile map.
-    std::wstring lastSeenDevice;
+    // Tracker-thread-only: key-downs whose keyboard could not be identified, logged as a count at
+    // most once a minute (no key code or device path goes to the log; logs are part of bug reports).
+    RateLimitedCount unidentifiedKeyboardCount{ 60 * 1000 };
 
     // Hook procedure definition
     static LRESULT CALLBACK HookProc(int nCode, WPARAM wParam, LPARAM lParam);
@@ -202,6 +205,7 @@ private:
     // Keys GetAsyncKeyState reports down right now (left/right modifier variants only).
     static std::vector<ProfileSwapGate::KeySnapshot> SnapshotKeysDown();
 
-    // Function called by the hook procedure to handle the events. This is the starting point function for remapping
-    intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept;
+    // Function called by the hook procedure to handle the events. This is the starting point function for remapping.
+    // shortcutsAllowed comes from the profile-swap gate (ProfileSwapGate::HandleFunction).
+    intptr_t HandleKeyboardHookEvent(LowlevelKeyboardEvent* data, bool shortcutsAllowed) noexcept;
 };

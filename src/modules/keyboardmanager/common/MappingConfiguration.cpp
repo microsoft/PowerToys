@@ -12,37 +12,7 @@
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 #include "Helpers.h"
-
-namespace
-{
-    bool WriteJsonAtomically(const std::wstring& filePath, const json::JsonObject& object)
-    {
-        const std::wstring temporaryPath = filePath + L"." + std::to_wstring(GetCurrentProcessId()) + L"." + std::to_wstring(GetCurrentThreadId()) + L".tmp";
-
-        try
-        {
-            std::ofstream stream{ temporaryPath, std::ios::binary | std::ios::trunc };
-            stream.exceptions(std::ios::failbit | std::ios::badbit);
-
-            const std::string serialized = winrt::to_string(object.Stringify());
-            stream.write(serialized.data(), static_cast<std::streamsize>(serialized.size()));
-            stream.flush();
-            stream.close();
-
-            if (!MoveFileExW(temporaryPath.c_str(), filePath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
-            {
-                throw winrt::hresult_error(HRESULT_FROM_WIN32(GetLastError()));
-            }
-
-            return true;
-        }
-        catch (...)
-        {
-            DeleteFileW(temporaryPath.c_str());
-            return false;
-        }
-    }
-}
+#include "SettingsFile.h"
 
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
@@ -866,7 +836,7 @@ bool MappingConfiguration::SaveSettingsToFile()
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
 
     const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
-    if (!WriteJsonAtomically(settingsFilePath, configJson))
+    if (!KeyboardManagerSettingsFile::WriteJsonAtomically(settingsFilePath, configJson))
     {
         result = false;
         Logger::error(L"Failed to save the settings");

@@ -11,6 +11,7 @@
 
 #include <keyboardmanager/common/KeyboardManagerConstants.h>
 #include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/SettingsFile.h>
 #include <keyboardmanager/common/KeyboardEventHandlers.h>
 #include <ctime>
 #include <filesystem>
@@ -69,6 +70,11 @@ KeyboardManager::KeyboardManager()
 {
     mainThreadId = GetCurrentThreadId();
 
+    // Create the profile-cycle hotkey object first, not yet started. LoadSettings below hands it the
+    // hotkey from deviceProfiles.json, and once the settings listener runs, its thread reads this
+    // pointer too, so the pointer must not change after that.
+    profileCycleHotkey = std::make_unique<ProfileCycleHotkey>([this] { CycleActiveProfile(); });
+
     // Load the initial settings.
     LoadSettings();
 
@@ -101,11 +107,10 @@ KeyboardManager::KeyboardManager()
         [this](const RawInputKeyboardTracker::KeyEvent& keyEvent) { OnRawKeyEvent(keyEvent); });
     rawInputTracker->Start();
 
-    // Global profile-cycle hotkey. Re-read the config so the definition parsed before this object
-    // existed is applied (LoadDeviceProfiles guards on the pointer).
-    profileCycleHotkey = std::make_unique<ProfileCycleHotkey>([this] { CycleActiveProfile(); });
+    // Start the global profile-cycle hotkey last: its thread registers the hotkey that LoadSettings
+    // (or a later reload on the listener thread) handed to the object. The listener is started
+    // before the tracker and the hotkey because both ask for a switch by signalling its event.
     profileCycleHotkey->Start();
-    LoadDeviceProfiles();
 }
 
 void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& keyEvent)
@@ -142,23 +147,22 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
         break;
     }
 
-    // A physical keystroke whose device path can't be resolved (observed on Surface Type Cover
-    // right after idle, when its KIP device node re-enumerates). Log it so drops are visible.
-    if (keyEvent.devicePath.empty())
+    // Nothing below runs, and nothing is logged, while the feature is off.
+    if (!autoSwitchEnabled.load())
     {
-        Logger::trace(L"[autosw] keydown vk=0x{:x} with unresolvable device — skipped", keyEvent.vkey);
         return;
     }
 
-    // Log the active keyboard when it changes (helps discover device paths for the profile map).
-    if (keyEvent.devicePath != lastSeenDevice)
+    // A physical keystroke whose keyboard can't be identified (observed on Surface Type Cover right
+    // after idle, when its KIP device node re-enumerates). Engine logs go into bug reports, so no key
+    // code and no device path is logged anywhere in this function: only how often this happened.
+    if (keyEvent.devicePath.empty())
     {
-        lastSeenDevice = keyEvent.devicePath;
-        Logger::trace(L"Detected keyboard: {}", keyEvent.devicePath);
-    }
+        if (const uint64_t count = unidentifiedKeyboardCount.Add(GetTickCount64()); count != 0)
+        {
+            Logger::trace(L"Auto-switch: {} key-down(s) came from a keyboard that could not be identified", count);
+        }
 
-    if (!autoSwitchEnabled.load())
-    {
         return;
     }
 
@@ -220,7 +224,7 @@ void KeyboardManager::OnRawKeyEvent(const RawInputKeyboardTracker::KeyEvent& key
         requestedProfile = target;
     }
 
-    Logger::trace(L"Auto-switch: keyboard {} -> requesting profile '{}'", keyEvent.devicePath, target);
+    Logger::trace(L"Auto-switch: requesting profile '{}'", target);
     SwitchActiveProfile(target);
 }
 
@@ -342,10 +346,13 @@ void KeyboardManager::CycleActiveProfile()
 
         const std::wstring& next = profiles[(currentIndex + 1) % profiles.size()];
         Logger::trace(L"CycleActiveProfile: '{}' -> '{}'", current, next);
-        SwitchActiveProfile(next);
 
-        // Audible feedback that the profile changed (no UI surface in the engine).
-        MessageBeep(MB_OK);
+        // Audible feedback that the profile changed (no UI surface in the engine): only once the
+        // switch is saved. A switch that could not be saved stays silent and is logged.
+        if (SwitchActiveProfile(next))
+        {
+            MessageBeep(MB_OK);
+        }
     }
     catch (...)
     {
@@ -353,7 +360,7 @@ void KeyboardManager::CycleActiveProfile()
     }
 }
 
-void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
+bool KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
 {
     // Tracker thread and hotkey thread can both land here; serialize the read-modify-write.
     std::lock_guard<std::mutex> lock(switchProfileMutex);
@@ -372,47 +379,28 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
         {
             Logger::error(L"Switch: refusing to activate profile '{}' — its config file is missing", profile);
             ResetFailedProfileRequest(profile);
-            return;
+            return false;
         }
     }
 
-    try
+    // Save the switch first: settings.json is replaced as a whole (temporary file + rename), so a
+    // failed write leaves the previous file intact. A settings.json that cannot be read is left
+    // untouched too: writing it back as an empty object would erase every other Keyboard Manager
+    // property (e.g. keyboardConfigurations).
+    const auto path = PTSettingsHelper::get_module_save_folder_location(moduleName) + L"\\settings.json";
+    if (!KeyboardManagerSettingsFile::WriteActiveConfiguration(path, profile))
     {
-        const auto path = PTSettingsHelper::get_module_save_folder_location(moduleName) + L"\\settings.json";
-        auto parsed = json::from_file(path);
-        if (!parsed.has_value())
-        {
-            // A transient read/parse failure must NOT be treated as an empty settings object:
-            // writing that back would erase every other Keyboard Manager property (e.g.
-            // keyboardConfigurations). Abort and leave the file untouched, matching
-            // CycleActiveProfile. The next keystroke retries the switch.
-            Logger::error(L"Auto-switch: settings.json unreadable; leaving it untouched");
+        Logger::error(L"Switch: could not save the active profile to settings.json; it is unchanged");
 
-            // Undo the request so the next keystroke on this keyboard can retry: OnRawKeyEvent
-            // sets requestedProfile before calling us, and otherwise its target == requested guard
-            // would filter out all further input from that keyboard and wedge the switch. A pending
-            // stage is still where the engine is heading, so the request falls back to it.
-            ResetFailedProfileRequest(profile);
-            return;
-        }
-
-        json::JsonObject root = parsed.value();
-        json::JsonObject properties = root.HasKey(L"properties") ? root.GetNamedObject(L"properties") : json::JsonObject{};
-
-        json::JsonObject activeConfiguration;
-        activeConfiguration.SetNamedValue(L"value", json::JsonValue::CreateStringValue(profile));
-        properties.SetNamedValue(KeyboardManagerConstants::ActiveConfigurationSettingName, activeConfiguration);
-        root.SetNamedValue(L"properties", properties);
-
-        json::to_file(path, root);
-    }
-    catch (...)
-    {
-        Logger::error(L"Failed to write activeConfiguration for auto-switch");
+        // Undo the request so the next keystroke on this keyboard can retry: OnRawKeyEvent sets
+        // requestedProfile before calling us, and otherwise its target == requested guard would
+        // filter out all further input from that keyboard and wedge the switch. A pending stage is
+        // still where the engine is heading, so the request falls back to it.
         ResetFailedProfileRequest(profile);
-        return;
+        return false;
     }
 
+    // Only now that the switch is saved, ask for the reload.
     // Reuse the existing reload path: the engine's own settings watcher will apply the new profile.
     HANDLE hEvent = CreateEvent(nullptr, false, false, KeyboardManagerConstants::SettingsEventName.c_str());
     if (hEvent)
@@ -424,6 +412,8 @@ void KeyboardManager::SwitchActiveProfile(const std::wstring& profile)
     {
         Logger::error(L"Auto-switch: failed to signal settings event");
     }
+
+    return true;
 }
 
 void KeyboardManager::ResetFailedProfileRequest(const std::wstring& failedProfile)
@@ -681,7 +671,7 @@ LRESULT CALLBACK KeyboardManager::HookProc(int nCode, const WPARAM wParam, const
         // (the gate only notes injected key-ups of held keys). The unit tests drive the same function.
         const intptr_t result = keyboardManagerObjectPtr->profileSwapGate.OnHookEvent(
             &event,
-            [](LowlevelKeyboardEvent* data) { return keyboardManagerObjectPtr->HandleKeyboardHookEvent(data); },
+            [](LowlevelKeyboardEvent* data, const bool shortcutsAllowed) { return keyboardManagerObjectPtr->HandleKeyboardHookEvent(data, shortcutsAllowed); },
             [](std::unique_ptr<State> staged) { keyboardManagerObjectPtr->AdoptStagedConfiguration(std::move(staged)); });
 
         if (result == 1)
@@ -864,7 +854,7 @@ bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
     return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.aloneSingleKeyReMap.empty() && state.singleKeyToTextReMap.empty());
 }
 
-intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
+intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data, const bool shortcutsAllowed) noexcept
 {
     if (loadingSettings)
     {
@@ -877,50 +867,5 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
         return 0;
     }
 
-    // If key has suppress flag, then suppress it
-    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-    {
-        return 1;
-    }
-
-    // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
-    // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
-    intptr_t SingleKeyAloneRemapResult = KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(inputHandler, data, state);
-    if (SingleKeyAloneRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
-
-    // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
-    if (SingleKeyRemapResult == 1)
-    {
-        return 1;
-    }
-
-    /* This feature has not been enabled (code from proof of concept stage)
-        // Remap a key to behave like a modifier instead of a toggle
-        intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
-    */
-
-    // Handle an app-specific shortcut remapping
-    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, state);
-
-    // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-    if (AppSpecificShortcutRemapResult == 1)
-    {
-        return 1;
-    }
-
-    intptr_t SingleKeyToTextRemapResult = KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent(inputHandler, data, state);
-
-    if (SingleKeyToTextRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Handle an os-level shortcut remapping
-    return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, state);
+    return KeyboardEventHandlers::HandleRemapEvent(inputHandler, data, state, shortcutsAllowed);
 }

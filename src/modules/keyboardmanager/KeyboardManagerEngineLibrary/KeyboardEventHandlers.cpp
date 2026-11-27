@@ -771,8 +771,10 @@ namespace KeyboardEventHandlers
 
                     if (isRunProgram)
                     {
-                        auto threadFunction = [it]() {
-                            CreateOrShowProcessForShortcut(std::get<Shortcut>(it->second.targetShortcut));
+                        // Copy the action here, on the hook thread. The task must not keep the table
+                        // iterator: a reload or a profile switch can free the table before it runs.
+                        auto threadFunction = [shortcut = std::get<Shortcut>(it->second.targetShortcut)]() {
+                            CreateOrShowProcessForShortcut(shortcut);
                         };
 
                         std::thread myThread(threadFunction);
@@ -2298,5 +2300,41 @@ namespace KeyboardEventHandlers
         // the modifier released is always safe: the user taps it again to re-engage.
 
         return 1;
+    }
+
+    intptr_t HandleRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool shortcutsAllowed) noexcept
+    {
+        // If key has suppress flag, then suppress it
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+        {
+            return 1;
+        }
+
+        // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
+        // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
+        if (HandleSingleKeyAloneRemapEvent(ii, data, state) == 1)
+        {
+            return 1;
+        }
+
+        // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
+        if (HandleSingleKeyRemapEvent(ii, data, state) == 1)
+        {
+            return 1;
+        }
+
+        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
+        if (shortcutsAllowed && HandleAppSpecificShortcutRemapEvent(ii, data, state) == 1)
+        {
+            return 1;
+        }
+
+        if (HandleSingleKeyToTextRemapEvent(ii, data, state) == 1)
+        {
+            return 1;
+        }
+
+        // Handle an os-level shortcut remapping
+        return shortcutsAllowed ? HandleOSLevelShortcutRemapEvent(ii, data, state) : 0;
     }
 }

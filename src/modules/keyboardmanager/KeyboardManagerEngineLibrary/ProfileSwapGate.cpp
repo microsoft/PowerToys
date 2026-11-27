@@ -175,7 +175,7 @@ intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const Handle
     intptr_t result = 0;
     if (source == KeyEventSource::OwnInjected || source == KeyEventSource::OwnReprocessed)
     {
-        result = handle(event);
+        result = handle(event, ShortcutsAllowed());
     }
     else
     {
@@ -422,7 +422,7 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
     // Decided before `handle` for the same reason (nothing after it may throw).
     const bool endsPress = keyDown || found == m_heldKeys.end() || EndsPress(source, found->second);
 
-    const intptr_t result = handle(event);
+    const intptr_t result = handle(event, ShortcutsAllowed());
 
     if (keyDown)
     {
@@ -442,6 +442,16 @@ intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const 
     }
 
     return result;
+}
+
+bool ProfileSwapGate::ShortcutsAllowed() const noexcept
+{
+    // A pass-through orphan modifier is down in the system, so the shortcut handlers (which read the
+    // system's key state) would count it, yet they never see its key-up. A suppressed orphan is not
+    // down in the system and cannot start a shortcut.
+    return std::none_of(m_heldKeys.begin(), m_heldKeys.end(), [](const auto& entry) {
+        return entry.second.orphan && !entry.second.suppressed && Helpers::IsModifierKey(entry.second.vkCode);
+    });
 }
 
 void ProfileSwapGate::OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noexcept

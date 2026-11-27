@@ -45,7 +45,9 @@
     <ClCompile Include="MockedInputSanityTests.cpp" />
     <ClCompile Include="SetKeyEventTests.cpp" />
     <ClCompile Include="OSLevelShortcutRemappingTests.cpp" />
+    <ClCompile Include="ActiveConfigurationWriteTests.cpp" />
     <ClCompile Include="ProfileSwapGateTests.cpp" />
+    <ClCompile Include="RateLimitedCountTests.cpp" />
     <ClCompile Include="ProgramLauncherTests.cpp" />
     <ClCompile Include="MockedInput.cpp" />
     <ClCompile Include="pch.cpp">
