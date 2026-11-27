@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Imported by the apps that the installer ships as published builds (csProjectsToPublish in
+     .pipelines\v2\templates\job-build-project.yml). Publishing compiles them ahead of time with
+     ReadyToRun, which removes most of the JIT work at startup. It's set in the project rather than in
+     the publish profile so that restore also downloads the ReadyToRun compiler. -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PublishReadyToRun>true</PublishReadyToRun>
+  </PropertyGroup>
+
+  <!-- None of these apps loads these assemblies at startup, or the startup gain is small for the size:
+       ReadyToRun code more than doubles each one, and the Windows SDK projection alone would add ~77 MB
+       to the install across the root and WinUI3Apps folders. -->
+  <ItemGroup>
+    <PublishReadyToRunExclude Include="Microsoft.Windows.SDK.NET.dll" />
+    <PublishReadyToRunExclude Include="Microsoft.Diagnostics.Tracing.TraceEvent.dll" />
+    <PublishReadyToRunExclude Include="OpenAI.dll" />
+    <PublishReadyToRunExclude Include="UnitsNet.dll" />
+  </ItemGroup>
+</Project>
