@@ -30,23 +30,34 @@ map<wstring, vector<wstring>> escapeInfo = {
     { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } },
     { L"FancyZones\\settings.json", { L"properties/fancyzones_excluded_apps" } },
     { L"MouseWithoutBorders\\settings.json", { L"properties/SecurityKey" } }, // avoid leaking connection key
-    { L"Keyboard Manager\\default.json", {
-        L"remapKeysToText",
-        L"remapShortcutsToText",
-        L"remapShortcuts/global/runProgramFilePath",
-        L"remapShortcuts/global/runProgramArgs",
-        L"remapShortcuts/global/runProgramStartInDir",
-        L"remapShortcuts/global/openUri",
-        L"remapShortcuts/appSpecific/runProgramFilePath",
-        L"remapShortcuts/appSpecific/runProgramArgs",
-        L"remapShortcuts/appSpecific/runProgramStartInDir",
-        L"remapShortcuts/appSpecific/openUri",
-        } }, // avoid leaking personal information from text, URI or application mappings
     { L"Workspaces/workspaces.json", { L"workspaces/applications/command-line-arguments" } },
     { L"AdvancedPaste/settings.json", {
         L"properties/custom-actions/value/name",
         L"properties/custom-actions/value/prompt"
         } },
+    { L"Keyboard Manager\\deviceProfiles.json", { L"map/device", L"map/name" } }, // keyboard instance paths and names
+};
+
+// Applied to every Keyboard Manager profile, not only default.json: avoid leaking personal information from
+// text, URI or application mappings, and from key sequences (a sequence of letter keys can spell out text).
+// The profiles are the json files in the Keyboard Manager folder other than the ones listed below.
+const wstring keyboardManagerFolder = L"Keyboard Manager";
+const vector<wstring> keyboardManagerNonProfileFiles = {
+    L"settings.json",
+    L"editorSettings.json",
+};
+const vector<wstring> keyboardManagerProfileEscapeInfo = {
+    L"remapKeysToText",
+    L"remapShortcutsToText",
+    L"remapKeys/inProcessSequence/newRemapKeys",
+    L"remapShortcuts/global/runProgramFilePath",
+    L"remapShortcuts/global/runProgramArgs",
+    L"remapShortcuts/global/runProgramStartInDir",
+    L"remapShortcuts/global/openUri",
+    L"remapShortcuts/appSpecific/runProgramFilePath",
+    L"remapShortcuts/appSpecific/runProgramArgs",
+    L"remapShortcuts/appSpecific/runProgramStartInDir",
+    L"remapShortcuts/appSpecific/openUri",
 };
 
 vector<wstring> filesToDelete = {
@@ -128,7 +139,8 @@ void HideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
     }
 }
 
-void HideForFile(const path& dir, const wstring& relativePath)
+// Returns false when the file was left as it is, because it could not be parsed or written.
+bool HideForFile(const path& dir, const wstring& relativePath, const vector<wstring>& escapePaths)
 {
     path jsonPath = dir;
     jsonPath.append(relativePath);
@@ -136,17 +148,27 @@ void HideForFile(const path& dir, const wstring& relativePath)
     if (!jObject.has_value())
     {
         wprintf(L"Failed to parse file %s\n", jsonPath.c_str());
-        return;
+        return false;
     }
 
     JsonValue jValue = json::value(jObject.value());
-    for (auto xpath : escapeInfo[relativePath])
+    for (auto xpath : escapePaths)
     {
         vector<wstring> xpathArray = GetXpathArray(xpath);
         HideByXPath(jValue, xpathArray, 0);
     }
 
-    json::to_file(jsonPath.wstring(), jObject.value());
+    // Same output as json::to_file, which does not tell whether the file was written.
+    ofstream output{ jsonPath, ios::binary };
+    output << winrt::to_string(jObject.value().Stringify());
+    output.flush();
+    if (!output.good())
+    {
+        wprintf(L"Failed to write file %s\n", jsonPath.c_str());
+        return false;
+    }
+
+    return true;
 }
 
 bool DeleteFolder(wstring path)
@@ -162,13 +184,122 @@ bool DeleteFolder(wstring path)
     return true;
 }
 
+// A profile whose private data could not be hidden must not stay in the report as it is: either it could not
+// be parsed, so it cannot be searched for private data, or the result could not be written back. Leave a short
+// note in its place, worded for both cases: that the profile could not be processed is useful for diagnosis.
+void RemoveKeyboardManagerProfileContent(const path& profilePath)
+{
+    bool replaced = false;
+    try
+    {
+        ofstream note{ profilePath, ios::binary | ios::trunc };
+        note << R"({"bugReportToolNote":"The private data in this Keyboard Manager profile could not be hidden: the file could not be read as JSON, or it could not be rewritten. Its content was removed from the report."})";
+        note.flush();
+        replaced = note.good();
+    }
+    catch (...)
+    {
+    }
+
+    if (!replaced)
+    {
+        error_code err;
+        remove(profilePath, err);
+        if (err.value() != 0)
+        {
+            wprintf_s(L"Failed to delete %s. Error code: %d\n", profilePath.c_str(), err.value());
+        }
+    }
+}
+
+void HideKeyboardManagerPrivateInfo(const path& dir)
+{
+    // Keyboard Manager keeps one file per profile, named by the user. List them first: they are rewritten below.
+    vector<path> profiles;
+    vector<path> temporaryFiles;
+    const path folder = dir / keyboardManagerFolder;
+    error_code err;
+    if (!exists(folder, err))
+    {
+        return;
+    }
+
+    for (directory_iterator it{ folder, err }; !err && it != directory_iterator{}; it.increment(err))
+    {
+        error_code entryErr;
+        if (!it->is_regular_file(entryErr))
+        {
+            continue;
+        }
+
+        const auto filename = it->path().filename();
+        const auto extension = filename.extension();
+        if (_wcsicmp(extension.c_str(), L".tmp") == 0)
+        {
+            // Left behind when a save was interrupted: it holds a whole profile.
+            temporaryFiles.push_back(it->path());
+        }
+        else if (_wcsicmp(extension.c_str(), L".json") == 0)
+        {
+            bool isProfile = true;
+            for (const auto& nonProfile : keyboardManagerNonProfileFiles)
+            {
+                if (_wcsicmp(filename.c_str(), nonProfile.c_str()) == 0)
+                {
+                    isProfile = false;
+                    break;
+                }
+            }
+
+            if (isProfile)
+            {
+                profiles.push_back(it->path());
+            }
+        }
+    }
+
+    if (err)
+    {
+        // The profiles that were not listed cannot be handled one by one.
+        wprintf(L"Failed to list the Keyboard Manager profiles\n");
+        DeleteFolder(folder.wstring());
+        return;
+    }
+
+    // One profile at a time, so that a failure does not leave the other profiles as they are.
+    for (const auto& profile : profiles)
+    {
+        bool hidden = false;
+        try
+        {
+            hidden = HideForFile(dir, (path(keyboardManagerFolder) / profile.filename()).wstring(), keyboardManagerProfileEscapeInfo);
+        }
+        catch (...)
+        {
+            wprintf(L"Failed to hide private data in %s\n", profile.c_str());
+        }
+
+        if (!hidden)
+        {
+            RemoveKeyboardManagerProfileContent(profile);
+        }
+    }
+
+    for (const auto& temporaryFile : temporaryFiles)
+    {
+        DeleteFolder(temporaryFile.wstring());
+    }
+}
+
 void HideUserPrivateInfo(const filesystem::path& dir)
 {
     // Replace data in json files
     for (auto& it : escapeInfo)
     {
-        HideForFile(dir, it.first);
+        HideForFile(dir, it.first, it.second);
     }
+
+    HideKeyboardManagerPrivateInfo(dir);
 
     // Delete files
     for (auto it : filesToDelete)
