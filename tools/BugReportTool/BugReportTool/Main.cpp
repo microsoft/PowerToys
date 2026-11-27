@@ -43,7 +43,8 @@ map<wstring, vector<wstring>> escapeInfo = {
 const wstring configBackupFolder = L"ConfigBackup";
 
 // Keyboard Manager files are handled by HideKeyboardManagerPrivateInfo, which also covers the updater's copy and
-// takes out a file whose private data could not be hidden. Every json file in the folder is handled, except
+// takes out a file whose private data could not be hidden; if even that fails, the whole folder is taken out, and if
+// that fails too, no report is created. Every json file in the folder is handled, except
 // settings.json and profileMetadata.json, which are kept as they are; that includes a json file in a subfolder
 // (a copy of the folder made by hand). A file of any other type in the folder itself (not in its subfolders,
 // which hold the logs) is taken out: it cannot be searched for private data.
@@ -68,6 +69,10 @@ const vector<wstring> keyboardManagerEscapeInfo = {
     L"ShortcutSettingsDictionary/*/Shortcut/ProgramArgs",
     L"ShortcutSettingsDictionary/*/Shortcut/StartInDirectory",
     L"ShortcutSettingsDictionary/*/Shortcut/UriToOpen",
+
+    // An older editor also kept the text of a text row in TargetKeys. The key codes of the other rows are in the
+    // profiles, so nothing is lost for diagnosis.
+    L"ShortcutSettingsDictionary/*/Shortcut/TargetKeys",
 
     // Profiles (default.json and every named one): text, URI and application mappings.
     L"remapKeysToText",
@@ -221,7 +226,8 @@ bool DeleteFolder(wstring path)
 // A Keyboard Manager file whose private data could not be hidden must not stay in the report as it is: either it
 // could not be parsed, so it cannot be searched for private data, or the result could not be written back. Leave a
 // short note in its place, worded for both cases: that the file could not be processed is useful for diagnosis.
-void RemoveKeyboardManagerProfileContent(const path& profilePath)
+// Returns false when the file could neither be replaced nor deleted, so its content is still in the report.
+bool RemoveKeyboardManagerProfileContent(const path& profilePath)
 {
     bool replaced = false;
     try
@@ -235,29 +241,41 @@ void RemoveKeyboardManagerProfileContent(const path& profilePath)
     {
     }
 
-    if (!replaced)
+    if (replaced)
     {
-        error_code err;
-        remove(profilePath, err);
-        if (err.value() != 0)
-        {
-            wprintf_s(L"Failed to delete %s. Error code: %d\n", profilePath.c_str(), err.value());
-        }
+        return true;
+    }
+
+    error_code err;
+    remove(profilePath, err);
+    if (err.value() != 0)
+    {
+        wprintf_s(L"Failed to delete %s. Error code: %d\n", profilePath.c_str(), err.value());
+        return false;
+    }
+
+    return true;
+}
+
+// The report holds copies, which keep the attributes of the user's files: a profile the user made read-only would
+// otherwise be neither rewritten nor replaced. Only the copy is changed.
+void ClearReadOnlyAttribute(const path& filePath)
+{
+    const DWORD attributes = GetFileAttributesW(filePath.c_str());
+    if (attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_READONLY) != 0)
+    {
+        SetFileAttributesW(filePath.c_str(), attributes & ~FILE_ATTRIBUTE_READONLY);
     }
 }
 
-void HideKeyboardManagerPrivateInfo(const path& dir)
+// Hides the private data of every Keyboard Manager file under dir. Returns false when some of it could still be in
+// the report: then the report must not be created.
+bool HideKeyboardManagerFiles(const path& dir, const path& folder)
 {
     // Keyboard Manager keeps one file per profile, named by the user. List the files first: they are rewritten below.
     vector<path> files;
     vector<path> otherFiles;
-    const path folder = dir / keyboardManagerFolder;
     error_code err;
-    if (!exists(folder, err))
-    {
-        return;
-    }
-
     for (directory_iterator it{ folder, err }; !err && it != directory_iterator{}; it.increment(err))
     {
         error_code entryErr;
@@ -293,6 +311,12 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
         }
     }
 
+    if (err)
+    {
+        wprintf(L"Failed to list the Keyboard Manager files\n");
+        return false;
+    }
+
     // The json files in subfolders. Keyboard Manager writes only logs there, so one is a copy made by hand.
     for (recursive_directory_iterator it{ folder, err }; !err && it != recursive_directory_iterator{}; it.increment(err))
     {
@@ -305,15 +329,15 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
 
     if (err)
     {
-        // The files that were not listed cannot be handled one by one.
         wprintf(L"Failed to list the Keyboard Manager files\n");
-        DeleteFolder(folder.wstring());
-        return;
+        return false;
     }
 
     // One file at a time, so that a failure does not leave the other files as they are.
+    bool allHidden = true;
     for (const auto& file : files)
     {
+        ClearReadOnlyAttribute(file);
         bool hidden = false;
         try
         {
@@ -324,19 +348,53 @@ void HideKeyboardManagerPrivateInfo(const path& dir)
             wprintf(L"Failed to hide private data in %s\n", file.c_str());
         }
 
-        if (!hidden)
+        if (!hidden && !RemoveKeyboardManagerProfileContent(file))
         {
-            RemoveKeyboardManagerProfileContent(file);
+            allHidden = false;
         }
     }
 
     for (const auto& otherFile : otherFiles)
     {
-        DeleteFolder(otherFile.wstring());
+        ClearReadOnlyAttribute(otherFile);
+        if (!DeleteFolder(otherFile.wstring()))
+        {
+            allHidden = false;
+        }
     }
+
+    return allHidden;
 }
 
-void HideUserPrivateInfo(const filesystem::path& dir)
+// Returns false when private Keyboard Manager data could still be in the report.
+bool HideKeyboardManagerPrivateInfo(const path& dir)
+{
+    const path folder = dir / keyboardManagerFolder;
+    error_code err;
+    if (!exists(folder, err))
+    {
+        if (!err)
+        {
+            return true;
+        }
+
+        wprintf(L"Failed to check the Keyboard Manager folder %s\n", folder.c_str());
+        return false;
+    }
+
+    if (HideKeyboardManagerFiles(dir, folder))
+    {
+        return true;
+    }
+
+    // Something could not be cleaned (the files that were not listed cannot be handled one by one): take the whole
+    // folder out of the report instead.
+    wprintf(L"Removing the Keyboard Manager folder %s from the report\n", folder.c_str());
+    return DeleteFolder(folder.wstring());
+}
+
+// Returns false when private Keyboard Manager data could still be in the report.
+bool HideUserPrivateInfo(const filesystem::path& dir)
 {
     // Replace data in json files
     for (auto& it : escapeInfo)
@@ -344,10 +402,10 @@ void HideUserPrivateInfo(const filesystem::path& dir)
         HideForFile(dir, it.first, it.second);
     }
 
-    HideKeyboardManagerPrivateInfo(dir);
+    bool keyboardManagerHidden = HideKeyboardManagerPrivateInfo(dir);
 
     // The updater's copy has the same layout (ConfigBackup\Keyboard Manager\<profile>.json).
-    HideKeyboardManagerPrivateInfo(dir / configBackupFolder);
+    keyboardManagerHidden = HideKeyboardManagerPrivateInfo(dir / configBackupFolder) && keyboardManagerHidden;
 
     // Delete files
     for (auto it : filesToDelete)
@@ -356,6 +414,8 @@ void HideUserPrivateInfo(const filesystem::path& dir)
         path = path.append(it);
         DeleteFolder(path);
     }
+
+    return keyboardManagerHidden;
 }
 
 void ReportWindowsVersion(const filesystem::path& tmpDir)
@@ -546,7 +606,12 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 #endif
 
     // Hide sensitive information
-    HideUserPrivateInfo(reportDir);
+    if (!HideUserPrivateInfo(reportDir))
+    {
+        printf("Failed to remove private Keyboard Manager data from the report\n");
+        DeleteFolder(reportDir);
+        return 1;
+    }
 
     // Write windows settings to the temporary folder
     ReportWindowsSettings(reportDir);
