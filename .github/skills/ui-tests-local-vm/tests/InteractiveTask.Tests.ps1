@@ -40,7 +40,7 @@ Describe 'Local VM interactive task scheduling' {
     BeforeAll {
         $tokens = $null
         $parseErrors = $null
-        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts\Invoke-LocalVmUiTest.ps1'
+        $path = Join-Path (Split-Path $PSScriptRoot -Parent) 'scripts\LocalVmGuest.psm1'
         $ast = [Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$parseErrors)
         if ($parseErrors.Count) { throw ($parseErrors | Out-String) }
         $function = $ast.Find({
@@ -72,7 +72,7 @@ Describe 'Local VM interactive task scheduling' {
     }
 
     It 'uses normal scheduling and preserves the bounded execution time' {
-        & $script:registerInteractiveTask 'fixture-task' 'fixture.exe' 'fixture-arguments' 'fixture-user' 17
+        & $script:registerInteractiveTask 'fixture-task' 'fixture.exe' 'fixture-arguments' 'fixture-user' 1020
 
         Assert-MockCalled New-ScheduledTaskSettingsSet -Times 1 -Exactly -Scope It -ParameterFilter {
             $Priority -eq 4 -and $ExecutionTimeLimit -eq [TimeSpan]::FromMinutes(17) -and
@@ -81,7 +81,7 @@ Describe 'Local VM interactive task scheduling' {
     }
 
     It 'keeps the standard-user interactive token and exact task ownership' {
-        $result = & $script:registerInteractiveTask 'fixture-task' 'fixture.exe' 'fixture-arguments' 'fixture-user' 17
+        $result = & $script:registerInteractiveTask 'fixture-task' 'fixture.exe' 'fixture-arguments' 'fixture-user' 1020
 
         Assert-MockCalled New-ScheduledTaskPrincipal -Times 1 -Exactly -Scope It -ParameterFilter {
             $UserId -eq "$env:COMPUTERNAME\fixture-user" -and $LogonType -eq 'Interactive' -and $RunLevel -eq 'Limited'
@@ -98,7 +98,7 @@ Describe 'Local VM interactive task scheduling' {
     It 'does not start a task when registration fails' {
         Mock Register-ScheduledTask { throw 'Registration failed' }
 
-        { & $script:registerInteractiveTask 'fixture-task' 'fixture.exe' 'fixture-arguments' 'fixture-user' 17 } |
+        { & $script:registerInteractiveTask 'fixture-task' 'fixture.exe' 'fixture-arguments' 'fixture-user' 1020 } |
             Should Throw 'Registration failed'
         Assert-MockCalled Start-ScheduledTask -Times 0 -Exactly -Scope It
     }

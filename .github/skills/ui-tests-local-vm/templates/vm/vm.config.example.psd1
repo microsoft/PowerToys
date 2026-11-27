@@ -34,4 +34,27 @@
 
     # Standard checkpoints capture memory, so restoring returns to a logged-on desktop immediately.
     BaselineCheckpointName = 'provisioned-baseline'
+
+    # Optional. Read only by Initialize-LocalVmMultimon.ps1; every key has the default shown, and
+    # angle brackets stand for the VM root and the repository root. See references\multimon.md.
+    # Multimon = @{
+    #     # Host folder with the built IndirectDisplay sample driver package. Build-IddSampleDriver.ps1
+    #     # writes it here.
+    #     DriverPath = '<VmRoot>\multimon\IddSampleDriver'
+    #     # A Set-MonitorLayout.ps1 preset other than Single; references\multimon.md lists them.
+    #     Preset = 'SideBySide'
+    #     # Host folder of images, one per monitor in file-name order. Empty generates the 75%
+    #     # color-bar colors: gray, yellow, cyan, green, magenta, red, blue.
+    #     WallpaperPath = ''
+    #     # Host path of the built PowerToys.MonitorReportTool.exe. Its report is skipped when absent.
+    #     # <Platform> is ARM64 when ProcessorArchitecture is arm64, else x64.
+    #     MonitorReportToolPath = '<RepositoryRoot>\<Platform>\Release\MonitorReportTool\PowerToys.MonitorReportTool.exe'
+    #     # Letters, digits, '.', '_', and '-'. It must differ from BaselineCheckpointName, because
+    #     # the multimon checkpoint replaces any checkpoint of the same name.
+    #     CheckpointName = 'multimon-baseline'
+    #     # $true disconnects every network adapter before the checkpoint, so the baseline cannot
+    #     # reboot for Windows Update mid-run. PowerShell Direct and Copy-VMFile do not need the
+    #     # network. Only $true or $false is accepted.
+    #     DisconnectNetwork = $false
+    # }
 }
