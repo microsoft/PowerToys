@@ -629,6 +629,23 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool scrollAcceleration;
+
+        [JsonPropertyName("ScrollAcceleration")]
+        public bool ScrollAcceleration
+        {
+            get => scrollAcceleration;
+            set
+            {
+                if (scrollAcceleration != value)
+                {
+                    LogTelemetryEvent(value);
+                    scrollAcceleration = value;
+                    NotifyChange();
+                }
+            }
+        }
+
         private void NotifyChange()
         {
             notifyEnabledChangedAction?.Invoke();

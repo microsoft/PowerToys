@@ -112,6 +112,7 @@ internal static class SettingsCliHelper
             "powerdisplay" => GpoApi.GetConfiguredPowerDisplayEnabledValue(),
             "zoomit" => GpoApi.GetConfiguredZoomItEnabledValue(),
             "grabandmove" => GpoApi.GetConfiguredGrabAndMoveEnabledValue(),
+            "scrollacceleration" => GpoApi.GetConfiguredScrollAccelerationEnabledValue(),
             _ => GpoRuleConfigured.Unavailable,
         };
     }

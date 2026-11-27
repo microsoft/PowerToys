@@ -1668,10 +1668,13 @@ schedtasks
 SCID
 SCL
 Scode
+SCRA
 SCREENFONTS
 screenruler
 screensaver
 screenshots
+scrollacceleration
+SCROLLACCELERATION
 Scrollback
 scrollviewer
 sddl
