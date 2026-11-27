@@ -169,7 +169,8 @@ namespace KeyboardManagerEditorUI.Settings
         /// Applies the dialog's per-keyboard changes (<paramref name="baseline"/> to
         /// <paramref name="edited"/>; an empty profile means not assigned) to
         /// <paramref name="current"/>, the assignments as they are on disk now. A keyboard whose
-        /// profile the user changed is set or, when cleared, removed; a keyboard the user did not
+        /// profile the user changed is set or, when cleared, removed (a change to a profile that no
+        /// longer exists is rejected and leaves the keyboard's entry as it is); a keyboard the user did not
         /// change keeps whatever <paramref name="current"/> has, so another editor's newer save of it
         /// survives. A display name refreshed by typing is updated only where the assignment itself
         /// is unchanged. Entries with an empty device or profile, or naming a profile for which
@@ -212,19 +213,24 @@ namespace KeyboardManagerEditorUI.Settings
 
                 if (!string.Equals(shownProfile, editedProfile, StringComparison.Ordinal))
                 {
-                    if (index >= 0)
-                    {
-                        result.RemoveAt(index);
-                    }
-
+                    // Check the new profile before touching the keyboard's entry: a change that is
+                    // rejected must leave the assignment the file has (e.g. a valid "Work") in place.
                     if (editedProfile.Length > 0 && !profileExists(editedProfile))
                     {
                         if (!droppedChanges.Contains(editedProfile, StringComparer.Ordinal))
                         {
                             droppedChanges.Add(editedProfile);
                         }
+
+                        continue;
                     }
-                    else if (editedProfile.Length > 0)
+
+                    if (index >= 0)
+                    {
+                        result.RemoveAt(index);
+                    }
+
+                    if (editedProfile.Length > 0)
                     {
                         result.Insert(index >= 0 ? index : result.Count, new DeviceAssignment { Device = row.Device, Profile = editedProfile, Name = row.Name });
                     }

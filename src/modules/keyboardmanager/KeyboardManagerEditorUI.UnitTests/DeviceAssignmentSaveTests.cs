@@ -129,6 +129,65 @@ namespace KeyboardManagerEditorUI.UnitTests
             CollectionAssert.AreEquivalent(new List<string> { "k1=Work" }, SavedMap());
         }
 
+        // The keyboard already had a valid assignment (Work) and the user changed it to a profile
+        // (Home) that another window deleted meanwhile: the change is rejected and reported, and
+        // the Work assignment stays.
+        [TestMethod]
+        public void ChangingAnAssignmentToADeletedProfile_KeepsTheExistingAssignment()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Work"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+            Assert.IsTrue(ProfileManager.DeleteProfile("Home"));
+
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.SavedWithDroppedAssignments,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Home")), out IReadOnlyList<string> dropped));
+
+            CollectionAssert.AreEqual(new List<string> { "Home" }, dropped.ToList());
+            CollectionAssert.AreEquivalent(new List<string> { "k1=Work" }, SavedMap());
+        }
+
+        // Same, without files: the rejected keyboard's entry keeps its place and its neighbours.
+        [TestMethod]
+        public void MergeAssignments_RejectedReplacement_LeavesTheCurrentEntryInPlace()
+        {
+            var current = new List<DeviceAssignment>
+            {
+                new() { Device = "k1", Profile = "Work", Name = "One" },
+                new() { Device = "k2", Profile = "Office", Name = "Two" },
+            };
+            var edited = new List<DeviceAssignment>
+            {
+                new() { Device = "k1", Profile = "Gone", Name = "One" },
+                new() { Device = "k2", Profile = "Office", Name = "Two" },
+            };
+
+            List<DeviceAssignment> merged = DeviceProfileManager.MergeAssignments(
+                current, current, edited, profile => profile != "Gone", out List<string> dropped);
+
+            CollectionAssert.AreEqual(new List<string> { "Gone" }, dropped);
+            CollectionAssert.AreEqual(
+                new List<string> { "k1=Work", "k2=Office" },
+                merged.Select(a => a.Device + "=" + a.Profile).ToList());
+        }
+
+        // If the keyboard's old profile is gone too, nothing valid is left to keep.
+        [TestMethod]
+        public void ChangingAnAssignmentToADeletedProfile_WhenTheOldProfileIsAlsoGone_LeavesTheKeyboardUnassigned()
+        {
+            WriteFile(autoSwitch: true, ("k1", "Work"));
+            DeviceProfileManager.DeviceAssignmentsBaseline baseline = DeviceProfileManager.LoadBaseline();
+            Assert.IsTrue(ProfileManager.DeleteProfile("Home"));
+            Assert.IsTrue(ProfileManager.DeleteProfile("Work"));
+
+            Assert.AreEqual(
+                DeviceProfileManager.DeviceAssignmentsSaveResult.SavedWithDroppedAssignments,
+                DeviceProfileManager.SaveChanges(baseline, autoSwitchEnabled: true, Rows(("k1", "Home")), out IReadOnlyList<string> dropped));
+
+            CollectionAssert.AreEqual(new List<string> { "Home" }, dropped.ToList());
+            Assert.AreEqual(0, SavedMap().Count);
+        }
+
         [TestMethod]
         public void SaveWithoutDroppedAssignments_ReportsSaved_EvenWhenTheFileHadStaleEntries()
         {
