@@ -37,7 +37,12 @@ map<wstring, vector<wstring>> escapeInfo = {
         L"properties/custom-actions/value/prompt"
         } },
     { L"Keyboard Manager\\deviceProfiles.json", { L"map/device", L"map/name" } }, // keyboard instance paths and names
+    { L"ConfigBackup\\Keyboard Manager\\deviceProfiles.json", { L"map/device", L"map/name" } }, // the updater's copy, see below
 };
+
+// Before an update, the updater copies every module's json files to ConfigBackup\<module> (common\updating\configBackup.h)
+// and cleans it up after the update. If the update stops before that, the copy stays, and the report copies it too.
+const wstring configBackupFolder = L"ConfigBackup";
 
 // Applied to every Keyboard Manager profile, not only default.json: avoid leaking personal information from
 // text, URI or application mappings, and from key sequences (a sequence of letter keys can spell out text).
@@ -301,6 +306,9 @@ void HideUserPrivateInfo(const filesystem::path& dir)
     }
 
     HideKeyboardManagerPrivateInfo(dir);
+
+    // The updater's copy has the same layout (ConfigBackup\Keyboard Manager\<profile>.json).
+    HideKeyboardManagerPrivateInfo(dir / configBackupFolder);
 
     // Delete files
     for (auto it : filesToDelete)
