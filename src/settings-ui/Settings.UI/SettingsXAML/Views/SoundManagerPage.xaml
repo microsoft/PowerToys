@@ -1,0 +1,143 @@
+﻿<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.SoundManagerPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    xmlns:viewmodels="using:Microsoft.PowerToys.Settings.UI.ViewModels"
+    x:Name="RootPage"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+
+    <local:NavigablePage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ms-appx:///CommunityToolkit.WinUI.Controls.SettingsControls/SettingsExpander/SettingsExpander.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </local:NavigablePage.Resources>
+
+    <controls:SettingsPageControl x:Uid="SoundManager" ModuleImageSource="ms-appx:///Assets/Settings/Modules/SoundManager.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="SoundManagerEnableToggleControlHeaderText"
+                        x:Uid="SoundManager_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/SoundManager.png}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="Toggle_SoundManager"
+                            IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+
+                <controls:SettingsGroup x:Uid="SoundManager_Launch_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <controls:SettingsGroup.Description>
+                        <TextBlock x:Uid="SoundManager_Launch_GroupSettings_Description" />
+                    </controls:SettingsGroup.Description>
+                    <tkcontrols:SettingsCard
+                        Name="SoundManagerLaunchButtonControl"
+                        x:Uid="SoundManager_LaunchButtonControl"
+                        ActionIcon="{ui:FontIcon Glyph=&#xE8A7;}"
+                        Command="{x:Bind ViewModel.LaunchEventHandler}"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
+                        IsClickEnabled="True" />
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="SoundManager_ActivationSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <controls:SettingsGroup.Description>
+                        <TextBlock x:Uid="SoundManager_ActivationSettings_Description" />
+                    </controls:SettingsGroup.Description>
+                    <tkcontrols:SettingsCard
+                        Name="SoundManagerActivationShortcut"
+                        x:Uid="SoundManager_ActivationShortcut"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xEDA7;}">
+                        <controls:ShortcutControl
+                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                            AutomationProperties.AutomationId="Shortcut_SoundManager"
+                            HotkeySettings="{x:Bind Path=ViewModel.ActivationShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="SoundManager_MuteShortcuts_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <controls:SettingsGroup.Description>
+                        <TextBlock x:Uid="SoundManager_MuteShortcuts_GroupSettings_Description" />
+                    </controls:SettingsGroup.Description>
+                    <tkcontrols:SettingsExpander
+                        x:Uid="SoundManager_MuteShortcuts"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE74F;}"
+                        IsExpanded="True"
+                        ItemsSource="{x:Bind ViewModel.MuteShortcutItems, Mode=OneWay}">
+                        <Button
+                            x:Uid="SoundManager_MuteShortcuts_AddButton"
+                            Click="AddMuteShortcutButton_Click"
+                            Style="{ThemeResource AccentButtonStyle}" />
+                        <tkcontrols:SettingsExpander.ItemTemplate>
+                            <DataTemplate x:DataType="viewmodels:SoundManagerMuteShortcutItem">
+                                <!-- The expander leaves 44 pixels on the right of every item, so the padding puts the shortcut on the edge of the card. -->
+                                <tkcontrols:SettingsCard
+                                    Margin="0,0,0,2"
+                                    Padding="16,8,16,8"
+                                    Header="{x:Bind Name, Mode=OneWay}"
+                                    HeaderIcon="{x:Bind Icon, Mode=OneWay}"
+                                    IsActionIconVisible="False">
+                                    <StackPanel
+                                        HorizontalAlignment="Right"
+                                        Orientation="Horizontal"
+                                        Spacing="4">
+                                        <controls:ShortcutControl
+                                            MinWidth="{StaticResource SettingActionControlMinWidth}"
+                                            HotkeySettings="{x:Bind Path=Hotkey, Mode=TwoWay}" />
+                                        <Button
+                                            x:Uid="SoundManager_MuteShortcuts_RemoveButton"
+                                            Click="RemoveMuteShortcutButton_Click"
+                                            VerticalAlignment="Center"
+                                            Content="&#xE74D;"
+                                            FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                            Style="{StaticResource SubtleButtonStyle}"
+                                            Tag="{x:Bind}">
+                                            <ToolTipService.ToolTip>
+                                                <TextBlock x:Uid="SoundManager_MuteShortcuts_RemoveButtonTooltip" />
+                                            </ToolTipService.ToolTip>
+                                        </Button>
+                                    </StackPanel>
+                                </tkcontrols:SettingsCard>
+                            </DataTemplate>
+                        </tkcontrols:SettingsExpander.ItemTemplate>
+                    </tkcontrols:SettingsExpander>
+                </controls:SettingsGroup>
+
+                <controls:SettingsGroup x:Uid="SoundManager_Ducking_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <controls:SettingsGroup.Description>
+                        <TextBlock x:Uid="SoundManager_Ducking_GroupSettings_Description" />
+                    </controls:SettingsGroup.Description>
+                    <tkcontrols:SettingsCard
+                        Name="SoundManagerDuckingToggleControl"
+                        x:Uid="SoundManager_DuckingToggle"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE717;}">
+                        <ToggleSwitch
+                            x:Uid="ToggleSwitch"
+                            AutomationProperties.AutomationId="Toggle_SoundManagerDucking"
+                            IsOn="{x:Bind ViewModel.DuckingEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
+                        Name="SoundManagerDuckingAmountControl"
+                        x:Uid="SoundManager_DuckingAmount"
+                        IsEnabled="{x:Bind ViewModel.DuckingEnabled, Mode=OneWay}">
+                        <ComboBox
+                            MinWidth="200"
+                            DisplayMemberPath="DisplayName"
+                            ItemsSource="{x:Bind ViewModel.DuckingAmountChoices, Mode=OneWay}"
+                            SelectedValue="{x:Bind ViewModel.DuckingAmount, Mode=TwoWay}"
+                            SelectedValuePath="Value" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+    </controls:SettingsPageControl>
+</local:NavigablePage>

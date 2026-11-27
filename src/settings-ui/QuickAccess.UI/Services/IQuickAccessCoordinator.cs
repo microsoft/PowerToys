@@ -23,6 +23,8 @@ public interface IQuickAccessCoordinator
 
     bool UpdateModuleEnabled(ModuleType moduleType, bool isEnabled);
 
+    int SendMessage(string payload);
+
     void SendSortOrderUpdate(GeneralSettings generalSettings);
 
     void ReportBug();

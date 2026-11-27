@@ -448,6 +448,10 @@ Generate-FileComponents -fileListName "SettingsV2OOBEAssetsFluentIconsFiles" -wx
 Generate-FileComponents -fileListName "SettingsV2IconsModelsFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 Generate-FileComponents -fileListName "SettingsV2AssetsCmdPalFiles" -wxsFilePath $PSScriptRoot\Settings.wxs
 
+#SoundManager
+Generate-FileList -fileDepsJson "" -fileListName SoundManagerAssetsFiles -wxsFilePath $PSScriptRoot\SoundManager.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release\WinUI3Apps\Assets\SoundManager\"
+Generate-FileComponents -fileListName "SoundManagerAssetsFiles" -wxsFilePath $PSScriptRoot\SoundManager.wxs
+
 #Workspaces
 $workspacesAssetsOutputPath = Join-Path $PSScriptRoot "..\..\$platform\Release\WinUI3Apps\Assets\Workspaces"
 Generate-FileList -fileDepsJson "" -fileListName WorkspacesWinUIImagesComponentFiles -wxsFilePath $PSScriptRoot\Workspaces.wxs -depsPath $workspacesAssetsOutputPath
