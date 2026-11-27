@@ -211,21 +211,31 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     Settings.Properties.EditorShortcut = value == null ? Settings.Properties.DefaultEditorShortcut : value;
 
                     OnPropertyChanged(nameof(EditorShortcut));
-                    NotifySettingsChanged();
 
-                    SendConfigMSG(
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
-                            KeyboardManagerSettings.ModuleName,
-                            JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
+                    // Nothing is sent when the profile fields could not be refreshed (see NotifySettingsChanged).
+                    if (NotifySettingsChanged())
+                    {
+                        SendConfigMSG(
+                            string.Format(
+                                CultureInfo.InvariantCulture,
+                                "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
+                                KeyboardManagerSettings.ModuleName,
+                                JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
+                    }
                 }
             }
         }
 
-        private void NotifySettingsChanged()
+        // Returns whether the settings were sent to the runner (which writes them to settings.json).
+        private bool NotifySettingsChanged()
         {
-            RefreshEngineOwnedProfileFields();
+            // The message carries the whole settings object. If the current profile fields could not
+            // be read, sending it would write this page's copy of them, which may be out of date, over
+            // the file. Not saving this change is the smaller harm: the next change saves both.
+            if (!RefreshEngineOwnedProfileFields())
+            {
+                return false;
+            }
 
             // Using InvariantCulture as this is an IPC message
             SendConfigMSG(
@@ -234,6 +244,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                        "{{ \"powertoys\": {{ \"{0}\": {1} }} }}",
                        ModuleName,
                        JsonSerializer.Serialize(Settings, SourceGenerationContextContext.Default.KeyboardManagerSettings)));
+            return true;
         }
 
         /// <summary>
@@ -243,20 +254,23 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
         /// and the engine (device auto-switch, cycle hotkey) write those two fields directly while the
         /// page is open. Without this refresh, serializing the stale cached copy back over the file when
         /// the user changes an unrelated option here (editor shortcut, UseNewEditor) would revert them —
-        /// dropping cycle entries or resurrecting a deleted profile as active. A failed read leaves the
-        /// cached values untouched rather than overwriting them with defaults.
+        /// dropping cycle entries or resurrecting a deleted profile as active. The read retries for
+        /// a moment and never writes the file. Returns false when the file exists but could not be
+        /// read; the caller must then not send the settings.
         /// </summary>
-        private void RefreshEngineOwnedProfileFields()
+        private bool RefreshEngineOwnedProfileFields()
         {
             try
             {
-                KeyboardManagerSettings latest = _settingsUtils.GetSettings<KeyboardManagerSettings>(ModuleName);
+                KeyboardManagerSettings latest = _settingsUtils.GetSettingsOrDefaultReadOnly<KeyboardManagerSettings>(ModuleName);
                 Settings.Properties.ActiveConfiguration = latest.Properties.ActiveConfiguration;
                 Settings.Properties.KeyboardConfigurations = latest.Properties.KeyboardConfigurations;
+                return true;
             }
             catch (Exception ex)
             {
-                Logger.LogError("Could not refresh Keyboard Manager profile fields before saving; leaving the cached values as-is.", ex);
+                Logger.LogError("Could not read the Keyboard Manager profile fields before saving; the settings were not saved.", ex);
+                return false;
             }
         }
 

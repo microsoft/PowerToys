@@ -799,7 +799,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     missingKeyboardManagerProfile = GetMissingKeyboardManagerActiveProfile(currentSettingsFiles.Keys, stagedKeyboardManagerSettings);
                     if (missingKeyboardManagerProfile != null)
                     {
-                        Logger.LogError($"BackupSettings, the Keyboard Manager settings select the profile '{missingKeyboardManagerProfile}', but its file is not among the files to back up.");
+                        // The profile name is the user's own text; it is not logged.
+                        Logger.LogError("BackupSettings, the Keyboard Manager settings select a profile whose file is not among the files to back up.");
                         if (!dryRun)
                         {
                             TryDeleteDirectory(fullBackupDir);

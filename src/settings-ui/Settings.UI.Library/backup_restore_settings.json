@@ -12,7 +12,8 @@
   ],
   "IgnoreFiles": [
     "*PowerToys\\log_settings.json",
-    "*PowerToys\\oobe_settings.json"
+    "*PowerToys\\oobe_settings.json",
+    "*Keyboard Manager\\*.*.json"
   ],
   "IgnoredPTRunSettings": [
     {
