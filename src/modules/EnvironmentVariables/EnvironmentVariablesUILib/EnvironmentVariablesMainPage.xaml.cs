@@ -266,6 +266,11 @@ namespace EnvironmentVariablesUILib
             ViewModel.EnvironmentState = EnvironmentState.Unchanged;
         }
 
+        private void RestartAsAdministratorButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            ViewModel.RequestElevation();
+        }
+
         private void ExistingVariablesListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var profile = AddProfileDialog.DataContext as ProfileVariablesSet;

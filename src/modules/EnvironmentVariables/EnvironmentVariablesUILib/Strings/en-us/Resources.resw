@@ -211,6 +211,12 @@
   <data name="EditSystemDefaultSetInfoBar.Text" xml:space="preserve">
     <value>Administrator permissions are required to edit System variables</value>
   </data>
+  <data name="RestartAsAdministratorButton.Content" xml:space="preserve">
+    <value>Restart as administrator</value>
+  </data>
+  <data name="DisabledByPolicyInfoBar.Title" xml:space="preserve">
+    <value>Environment Variables is disabled by your organization's policy</value>
+  </data>
   <data name="No" xml:space="preserve">
     <value>No</value>
   </data>
