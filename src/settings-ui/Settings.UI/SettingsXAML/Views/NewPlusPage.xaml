@@ -109,10 +109,9 @@
                                     Padding="0"
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
-                                    Background="Transparent"
-                                    BorderBrush="Transparent"
                                     Content="&#xE946;"
-                                    FontFamily="{ThemeResource SymbolThemeFontFamily}">
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                    Style="{StaticResource SubtleButtonStyle}">
                                     <Button.Flyout>
                                         <Flyout x:Name="VariableExamplesFlyout" ShouldConstrainToRootBounds="False">
                                             <Grid>
