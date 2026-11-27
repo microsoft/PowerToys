@@ -1,6 +1,9 @@
 ﻿#include "pch.h"
 #include "MappingConfiguration.h"
 
+#include <algorithm>
+#include <filesystem>
+
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
@@ -9,37 +12,7 @@
 #include "Shortcut.h"
 #include "RemapShortcut.h"
 #include "Helpers.h"
-
-namespace
-{
-    bool WriteJsonAtomically(const std::wstring& filePath, const json::JsonObject& object)
-    {
-        const std::wstring temporaryPath = filePath + L"." + std::to_wstring(GetCurrentProcessId()) + L"." + std::to_wstring(GetCurrentThreadId()) + L".tmp";
-
-        try
-        {
-            std::ofstream stream{ temporaryPath, std::ios::binary | std::ios::trunc };
-            stream.exceptions(std::ios::failbit | std::ios::badbit);
-
-            const std::string serialized = winrt::to_string(object.Stringify());
-            stream.write(serialized.data(), static_cast<std::streamsize>(serialized.size()));
-            stream.flush();
-            stream.close();
-
-            if (!MoveFileExW(temporaryPath.c_str(), filePath.c_str(), MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
-            {
-                throw winrt::hresult_error(HRESULT_FROM_WIN32(GetLastError()));
-            }
-
-            return true;
-        }
-        catch (...)
-        {
-            DeleteFileW(temporaryPath.c_str());
-            return false;
-        }
-    }
-}
+#include "SettingsFile.h"
 
 // Function to clear the OS Level shortcut remapping table
 void MappingConfiguration::ClearOSLevelShortcuts()
@@ -472,10 +445,13 @@ bool MappingConfiguration::LoadShortcutRemaps(const json::JsonObject& jsonData, 
     return result;
 }
 
-bool MappingConfiguration::LoadSettings()
+bool MappingConfiguration::LoadSettings(LoadOutcome* outcome)
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
     configurationNameResolved = false;
+    LoadOutcome ignoredOutcome;
+    LoadOutcome& loadOutcome = outcome ? *outcome : ignoredOutcome;
+    loadOutcome = LoadOutcome::Failed;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -490,9 +466,42 @@ bool MappingConfiguration::LoadSettings()
     configurationNameResolved = true;
 
         // Read the config file and load the remaps.
-        auto configFile = json::from_file(PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json");
+        const auto configPath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + *current_config + L".json";
+        auto configFile = json::from_file(configPath);
         if (!configFile)
         {
+            // Distinguish a genuinely absent profile from a transient read failure — json::from_file
+            // returns the same falsy for both, but they need opposite handling. Clear only when the
+            // file is *confirmed* absent: std::filesystem::exists also returns false when the check
+            // itself fails (ec set, e.g. a momentary directory lock), and that uncertainty must fall to
+            // the safe side (keep the tables), never the destructive side (wipe every remap).
+            std::error_code ec;
+            const bool configExists = std::filesystem::exists(configPath, ec);
+            if (!configExists && !ec)
+            {
+                // The profile's config file does not exist — a deleted profile that another path can
+                // still make active (a cycle-hotkey step, or a fresh setup with no default.json yet).
+                // Clear every remap table so the previous profile's mappings don't stay live under the
+                // now-empty profile; without this the engine returns here with its old tables intact
+                // and strands them. Covers every switch path (the editor also guarantees the fallback
+                // file exists via ProfileManager.EnsureDefaultProfileExists).
+                ClearSingleKeyRemaps();
+                ClearSingleKeyToTextRemaps();
+                ClearSingleKeyAloneRemaps();
+                ClearOSLevelShortcuts();
+                ClearAppSpecificShortcuts();
+                loadOutcome = LoadOutcome::ConfirmedAbsent;
+            }
+            else
+            {
+                // The file exists but couldn't be read/parsed right now (a transient read while another
+                // process is mid-write), or the existence check itself failed — either way keep the
+                // current tables and let the next settings-changed event retry, rather than disabling
+                // every remap on a momentary failure (matching SwitchActiveProfile's "leave it
+                // untouched" stance).
+                Logger::error(L"MappingConfiguration::LoadSettings: '{}.json' could not be read and is not confirmed absent; keeping current remaps", *current_config);
+            }
+
             return false;
         }
 
@@ -503,6 +512,7 @@ bool MappingConfiguration::LoadSettings()
         result = LoadShortcutRemaps(*configFile, KeyboardManagerConstants::RemapShortcutsToTextSettingName) && result;
         result = LoadSingleKeyToTextRemaps(*configFile) && result;
 
+        loadOutcome = LoadOutcome::Loaded;
         return result;
     }
     catch (...)
@@ -511,6 +521,98 @@ bool MappingConfiguration::LoadSettings()
     }
 
     return false;
+}
+
+void MappingConfiguration::SwapMappings(MappingConfiguration& other) noexcept
+{
+    singleKeyReMap.swap(other.singleKeyReMap);
+    aloneSingleKeyReMap.swap(other.aloneSingleKeyReMap);
+    scanMap.swap(other.scanMap);
+    singleKeyToTextReMap.swap(other.singleKeyToTextReMap);
+    osLevelShortcutReMap.swap(other.osLevelShortcutReMap);
+    osLevelShortcutReMapSortedKeys.swap(other.osLevelShortcutReMapSortedKeys);
+    appSpecificShortcutReMap.swap(other.appSpecificShortcutReMap);
+    appSpecificShortcutReMapSortedKeys.swap(other.appSpecificShortcutReMapSortedKeys);
+    currentConfig.swap(other.currentConfig);
+    std::swap(configurationNameResolved, other.configurationNameResolved);
+}
+
+namespace
+{
+    // Every field of a Shortcut that a profile stores; chordStarted is runtime state.
+    bool SameShortcut(const Shortcut& a, const Shortcut& b)
+    {
+        return a.winKey == b.winKey && a.ctrlKey == b.ctrlKey && a.altKey == b.altKey && a.shiftKey == b.shiftKey &&
+               a.actionKey == b.actionKey && a.secondKey == b.secondKey && a.exactMatch == b.exactMatch &&
+               a.operationType == b.operationType && a.runProgramFilePath == b.runProgramFilePath &&
+               a.runProgramArgs == b.runProgramArgs && a.runProgramStartInDir == b.runProgramStartInDir &&
+               a.uriToOpen == b.uriToOpen && a.alreadyRunningAction == b.alreadyRunningAction &&
+               a.elevationLevel == b.elevationLevel && a.startWindowType == b.startWindowType;
+    }
+
+    bool SameTarget(const KeyShortcutTextUnion& a, const KeyShortcutTextUnion& b)
+    {
+        if (a.index() != b.index())
+        {
+            return false;
+        }
+
+        if (const Shortcut* shortcut = std::get_if<Shortcut>(&a))
+        {
+            return SameShortcut(*shortcut, std::get<Shortcut>(b));
+        }
+
+        return a == b;
+    }
+
+    bool SameSingleKeyTable(const SingleKeyRemapTable& a, const SingleKeyRemapTable& b)
+    {
+        if (a.size() != b.size())
+        {
+            return false;
+        }
+
+        for (const auto& [key, target] : a)
+        {
+            const auto other = b.find(key);
+            if (other == b.end() || !SameTarget(target, other->second))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool SameShortcutVector(const std::vector<Shortcut>& a, const std::vector<Shortcut>& b)
+    {
+        return std::equal(a.begin(), a.end(), b.begin(), b.end(), SameShortcut);
+    }
+
+    // Both maps are ordered by the same key comparison, so equal tables list their entries in the same
+    // order.
+    bool SameShortcutTable(const ShortcutRemapTable& a, const ShortcutRemapTable& b)
+    {
+        return std::equal(a.begin(), a.end(), b.begin(), b.end(), [](const auto& x, const auto& y) {
+            return SameShortcut(x.first, y.first) && SameTarget(x.second.targetShortcut, y.second.targetShortcut);
+        });
+    }
+}
+
+bool MappingConfiguration::HasSameBindings(const MappingConfiguration& other) const
+{
+    return SameSingleKeyTable(singleKeyReMap, other.singleKeyReMap) &&
+           SameSingleKeyTable(aloneSingleKeyReMap, other.aloneSingleKeyReMap) &&
+           SameSingleKeyTable(singleKeyToTextReMap, other.singleKeyToTextReMap) &&
+           scanMap == other.scanMap &&
+           SameShortcutTable(osLevelShortcutReMap, other.osLevelShortcutReMap) &&
+           SameShortcutVector(osLevelShortcutReMapSortedKeys, other.osLevelShortcutReMapSortedKeys) &&
+           std::equal(appSpecificShortcutReMap.begin(), appSpecificShortcutReMap.end(), other.appSpecificShortcutReMap.begin(), other.appSpecificShortcutReMap.end(), [](const auto& x, const auto& y) {
+               return x.first == y.first && SameShortcutTable(x.second, y.second);
+           }) &&
+           std::equal(appSpecificShortcutReMapSortedKeys.begin(), appSpecificShortcutReMapSortedKeys.end(), other.appSpecificShortcutReMapSortedKeys.begin(), other.appSpecificShortcutReMapSortedKeys.end(), [](const auto& x, const auto& y) {
+               return x.first == y.first && SameShortcutVector(x.second, y.second);
+           });
 }
 
 bool MappingConfiguration::IsConfigurationNameResolved() const
@@ -734,7 +836,7 @@ bool MappingConfiguration::SaveSettingsToFile()
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
 
     const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
-    if (!WriteJsonAtomically(settingsFilePath, configJson))
+    if (!KeyboardManagerSettingsFile::WriteJsonAtomically(settingsFilePath, configJson))
     {
         result = false;
         Logger::error(L"Failed to save the settings");

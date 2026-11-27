@@ -2,6 +2,43 @@
 #include "State.h"
 #include <optional>
 
+void State::AdoptConfiguration(MappingConfiguration& configuration, const bool resetRuntimeState) noexcept
+{
+    SwapMappings(configuration);
+
+    if (resetRuntimeState)
+    {
+        activatedAppSpecificShortcutTarget.clear();
+        singleKeyRemapInjectionFailedKeys.clear();
+        ClearAllAloneKeyState();
+        numpadKeyPressed.clear();
+    }
+}
+
+bool State::ApplyReloadInPlace(MappingConfiguration& configuration, std::atomic_bool& loading) noexcept
+{
+    // Nothing to replace (e.g. only the keyboard assignments were saved): keep the live tables, so a
+    // shortcut being held stays invoked, a pending "Alone" key keeps its tap, and a started chord
+    // continues. Replacing them would reset that state while the keys are still down.
+    try
+    {
+        if (HasSameBindings(configuration))
+        {
+            return false;
+        }
+    }
+    catch (...)
+    {
+        // Comparison failed (out of memory): replace the tables, as before.
+    }
+
+    loading = true;
+    AdoptConfiguration(configuration, false);
+    ClearAllAloneKeyState();
+    loading = false;
+    return true;
+}
+
 // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
 std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWORD& originalKey)
 {

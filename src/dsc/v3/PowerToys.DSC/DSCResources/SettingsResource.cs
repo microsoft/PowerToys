@@ -99,6 +99,7 @@ public sealed class SettingsResource : BaseResource
 
         var data = CreateFunctionData(input);
         data.GetState();
+        WriteWarnings(data);
 
         // Capture the diff before updating the output
         var diff = data.GetDiffJson();
@@ -127,11 +128,25 @@ public sealed class SettingsResource : BaseResource
 
         var data = CreateFunctionData(input);
         data.GetState();
+        WriteWarnings(data);
         data.Output.InDesiredState = data.TestState();
 
         WriteJsonOutputLine(data.Output.ToJson());
         WriteJsonOutputLine(data.GetDiffJson());
         return true;
+    }
+
+    /// <summary>
+    /// Writes the parts of the input that were not applied to the DSC warning
+    /// channel, so that leaving them out is never silent.
+    /// </summary>
+    /// <param name="data">The function data whose state was read.</param>
+    private void WriteWarnings(ISettingsFunctionData data)
+    {
+        foreach (var warning in data.Warnings)
+        {
+            WriteMessageOutputLine(DscMessageLevel.Warning, warning);
+        }
     }
 
     /// <inheritdoc/>

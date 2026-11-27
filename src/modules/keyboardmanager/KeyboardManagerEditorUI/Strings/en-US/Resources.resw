@@ -619,4 +619,138 @@
   <data name="NoResultsClearBtn.Content" xml:space="preserve">
     <value>Clear filters</value>
   </data>
+  <data name="ProfileLabel.Text" xml:space="preserve">
+    <value>Profile</value>
+  </data>
+  <data name="ProfileSelector.AutomationProperties.Name" xml:space="preserve">
+    <value>Active profile</value>
+  </data>
+  <data name="NewProfileBtnTooltip.Text" xml:space="preserve">
+    <value>Create a new profile</value>
+  </data>
+  <data name="NewProfileBtn.AutomationProperties.Name" xml:space="preserve">
+    <value>Create a new profile</value>
+  </data>
+  <data name="DeleteProfileBtnTooltip.Text" xml:space="preserve">
+    <value>Delete the current profile</value>
+  </data>
+  <data name="DeleteProfileBtn.AutomationProperties.Name" xml:space="preserve">
+    <value>Delete the current profile</value>
+  </data>
+  <data name="NewProfileDialog.Title" xml:space="preserve">
+    <value>New profile</value>
+  </data>
+  <data name="NewProfileDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Create</value>
+  </data>
+  <data name="NewProfileDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="NewProfileNameBox.Header" xml:space="preserve">
+    <value>Profile name</value>
+  </data>
+  <data name="NewProfileNameBox.PlaceholderText" xml:space="preserve">
+    <value>e.g., Mac keyboard</value>
+  </data>
+  <data name="CopyCurrentProfileCheckBox_Format" xml:space="preserve">
+    <value>Start from a copy of "{0}" (turned-off remappings aren't copied)</value>
+    <comment>{0} is the profile that will be copied: the one shown when this dialog opened.</comment>
+  </data>
+  <data name="DeleteProfileDialog.Title" xml:space="preserve">
+    <value>Delete profile?</value>
+  </data>
+  <data name="DeleteProfileDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="DeleteProfileDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="DeleteProfileDialogContent.Text" xml:space="preserve">
+    <value>This profile and all of its mappings will be permanently deleted. This cannot be undone:</value>
+  </data>
+  <data name="RemappingDialogProfile_Format" xml:space="preserve">
+    <value>Profile: {0}</value>
+    <comment>Shown in the add/edit remapping dialog. {0} is the profile the remapping is saved to.</comment>
+  </data>
+  <data name="Error_ProfileChanged_Title" xml:space="preserve">
+    <value>Profile changed</value>
+  </data>
+  <data name="Error_ProfileChanged_Format" xml:space="preserve">
+    <value>This remapping is for the profile "{0}", but "{1}" is active now, so it wasn't saved. Switch back to "{0}" and save again, or cancel.</value>
+    <comment>{0} is the profile the dialog was opened for; {1} is the profile that is active now.</comment>
+  </data>
+  <data name="ProfileErrorDialog.CloseButtonText" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ProfileSwitchFailed_Title" xml:space="preserve">
+    <value>Couldn't switch profiles</value>
+  </data>
+  <data name="ProfileSwitchFailed_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be activated. "{1}" is still the active profile, and your changes will be saved to it.</value>
+    <comment>{0} is the profile that could not be activated; {1} is the profile that is still active.</comment>
+  </data>
+  <data name="ProfileCreateFailed_Title" xml:space="preserve">
+    <value>Couldn't create profile</value>
+  </data>
+  <data name="ProfileCreateFailed_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be created. Check that the name is allowed and not used by another profile, and that the profile to copy still exists. If it still fails, another Keyboard Manager window might be saving changes; try again in a moment. The Keyboard Manager log has the details.</value>
+    <comment>{0} is the profile name the user entered.</comment>
+  </data>
+  <data name="ProfileDeleteFailed_Title" xml:space="preserve">
+    <value>Couldn't delete profile</value>
+  </data>
+  <data name="ProfileDeleteFailed_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be deleted, so it was kept with all of its mappings. Try again in a moment. The Keyboard Manager log has the details.</value>
+    <comment>{0} is the profile that could not be deleted.</comment>
+  </data>
+  <data name="ProfileDeleteNotFullyRestored_Format" xml:space="preserve">
+    <value>The profile "{0}" couldn't be deleted, and some of the changes made while trying couldn't be undone. The profile or some of its turned-off remappings might be missing. The Keyboard Manager log has the details.</value>
+    <comment>{0} is the profile that could not be deleted.</comment>
+  </data>
+  <data name="AutoSwitchBtn_Text.Text" xml:space="preserve">
+    <value>Auto-switch</value>
+  </data>
+  <data name="AutoSwitchDialog.Title" xml:space="preserve">
+    <value>Per-keyboard auto-switch</value>
+  </data>
+  <data name="AutoSwitchDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="AutoSwitchDialog.CloseButtonText" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="AutoSwitchToggle.Header" xml:space="preserve">
+    <value>Automatically switch the active profile based on the keyboard being used</value>
+  </data>
+  <data name="AutoSwitchKeyboardsHeader.Text" xml:space="preserve">
+    <value>Assign a profile to each keyboard</value>
+  </data>
+  <data name="AutoSwitchHint.Text" xml:space="preserve">
+    <value>When enabled, typing on a keyboard switches to its assigned profile. Unassigned keyboards keep the current profile. Note: some virtual/remote input layers may prevent reliable per-keyboard detection.</value>
+  </data>
+  <data name="AutoSwitch_NotAssigned" xml:space="preserve">
+    <value>(not assigned)</value>
+  </data>
+  <data name="AutoSwitchSaveFailed_Title" xml:space="preserve">
+    <value>Keyboard assignments not saved</value>
+  </data>
+  <data name="AutoSwitchSaveFailed_Busy" xml:space="preserve">
+    <value>Another Keyboard Manager window is saving changes. Open the keyboard assignments again and retry.</value>
+  </data>
+  <data name="AutoSwitchSaveFailed_Unreadable" xml:space="preserve">
+    <value>The saved keyboard assignments couldn't be read, so they were left as they are. Open the keyboard assignments again and retry.</value>
+  </data>
+  <data name="AutoSwitchSaveFailed_Message" xml:space="preserve">
+    <value>The keyboard assignments couldn't be saved. Open them again and retry.</value>
+  </data>
+  <data name="AutoSwitchSaveDropped_Title" xml:space="preserve">
+    <value>Some keyboard assignments not saved</value>
+  </data>
+  <data name="AutoSwitchSaveDropped_Format" xml:space="preserve">
+    <value>These profiles were deleted in another Keyboard Manager window while the keyboard assignments were open, so the keyboards you assigned to them weren't saved: {0}. Your other changes were saved.</value>
+    <comment>{0} is a comma-separated list of quoted profile names.</comment>
+  </data>
+  <data name="AutoSwitchIdentifyHint.Title" xml:space="preserve">
+    <value>Press a key on a keyboard to highlight its row (and add it if it isn't listed).</value>
+  </data>
 </root>

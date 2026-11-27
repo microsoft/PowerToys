@@ -34,6 +34,12 @@ namespace KeyboardEventHandlers
         bool AnyChordStarted;
     };
 
+    // Runs every remap handler on one hook event, in priority order, and returns 1 to suppress the
+    // event. This is the whole chain the engine's hook uses (KeyboardManager::HandleKeyboardHookEvent
+    // adds only its settings-loading and editor-open checks); the unit tests call it too.
+    // `shortcutsAllowed` false skips the two shortcut handlers (see ProfileSwapGate::HandleFunction).
+    intptr_t HandleRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool shortcutsAllowed) noexcept;
+
     // Function to handle a single key remap
     intptr_t HandleSingleKeyRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
 

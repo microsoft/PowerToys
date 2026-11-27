@@ -35,6 +35,13 @@ public sealed class ProfileFunctionData : BaseFunctionData
     // members) detected before the model is materialized.
     private readonly IList<string> _inputErrors;
 
+    // The profile file this instance works on, resolved from the active
+    // configuration once, on first use. Get, Test and Set of one operation
+    // must all work on the same file: the active profile can change in
+    // between (device auto-switch, the cycle hotkey), and a Set that resolved
+    // it again would overwrite a profile that was never compared.
+    private string? _profileFileName;
+
     // The stored profile is serialized without null properties to match the
     // shape written by the C++ editor; the engine's JSON reader throws on
     // null-valued properties, which would make it skip the entry.
@@ -57,6 +64,8 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// Gets the warnings collected while reading the current profile.
     /// </summary>
     public IList<string> Warnings { get; } = [];
+
+    private string ProfileFileName => _profileFileName ??= GetProfileFileName();
 
     /// <summary>
     /// Gets or sets the check used to decide whether the current process is
@@ -103,8 +112,11 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// </summary>
     public void GetState()
     {
-        var profile = _settingsUtils.GetSettingsOrDefault<KeyboardManagerProfile>(
-            KeyboardManagerSettings.ModuleName, GetProfileFileName());
+        // Read without writing: GetSettingsOrDefault would replace a profile
+        // file it cannot parse (e.g. one that is being written) with an empty
+        // profile, and a read must never erase the remappings.
+        var profile = _settingsUtils.GetSettingsOrDefaultReadOnly<KeyboardManagerProfile>(
+            KeyboardManagerSettings.ModuleName, ProfileFileName);
         Output.Profile = KbmProfileConverter.FromProfile(profile, Warnings);
     }
 
@@ -131,7 +143,7 @@ public sealed class ProfileFunctionData : BaseFunctionData
 
         var profile = KbmProfileConverter.ToProfile(Input.Profile);
         var profileJson = JsonSerializer.Serialize(profile, _profileSerializerOptions);
-        _settingsUtils.SaveSettings(profileJson, KeyboardManagerSettings.ModuleName, GetProfileFileName());
+        _settingsUtils.SaveSettings(profileJson, KeyboardManagerSettings.ModuleName, ProfileFileName);
 
         return SignalSettingsChangedEvent();
     }
@@ -189,9 +201,29 @@ public sealed class ProfileFunctionData : BaseFunctionData
     /// <returns>The profile file name.</returns>
     private static string GetProfileFileName()
     {
-        var settings = _settingsUtils.GetSettingsOrDefault<KeyboardManagerSettings>(KeyboardManagerSettings.ModuleName);
-        var activeConfiguration = settings.Properties?.ActiveConfiguration?.Value;
-        return $"{(string.IsNullOrEmpty(activeConfiguration) ? "default" : activeConfiguration)}.json";
+        // Read without writing, for the same reason as in GetState: a read
+        // that meets a half-written settings.json must not reset the active
+        // profile and the profile list to their defaults.
+        var settings = _settingsUtils.GetSettingsOrDefaultReadOnly<KeyboardManagerSettings>(KeyboardManagerSettings.ModuleName);
+        return GetProfileFileName(settings.Properties?.ActiveConfiguration?.Value);
+    }
+
+    /// <summary>
+    /// Gets the profile file name for an active configuration value. The
+    /// value becomes a file name, so one that is empty or is not a plain file
+    /// name (it has a path separator or another character a file name cannot
+    /// have) selects "default.json" instead of a file somewhere else.
+    /// </summary>
+    /// <param name="activeConfiguration">The active configuration value from the module settings.</param>
+    /// <returns>The profile file name.</returns>
+    public static string GetProfileFileName(string? activeConfiguration)
+    {
+        const string DefaultProfile = "default";
+        var isPlainFileName = !string.IsNullOrWhiteSpace(activeConfiguration) &&
+            activeConfiguration.IndexOfAny(System.IO.Path.GetInvalidFileNameChars()) < 0 &&
+            activeConfiguration != "." &&
+            activeConfiguration != "..";
+        return $"{(isPlainFileName ? activeConfiguration : DefaultProfile)}.json";
     }
 
     /// <summary>

@@ -1,0 +1,572 @@
+#include "pch.h"
+#include "ProfileSwapGate.h"
+
+#include <keyboardmanager/common/SettingsFile.h>
+
+#include <algorithm>
+
+#include <keyboardmanager/common/Helpers.h>
+#include <keyboardmanager/common/KeyboardManagerConstants.h>
+
+ProfileSwapGate::ProfileSwapGate(NowFunction now, AsyncKeyDownFunction asyncKeyDown, InjectFunction inject) :
+    m_now(std::move(now)), m_asyncKeyDown(std::move(asyncKeyDown)), m_inject(std::move(inject))
+{
+}
+
+bool ProfileSwapGate::IsSameKey(const DWORD vkCode, const DWORD otherVkCode) noexcept
+{
+    if (vkCode == otherVkCode)
+    {
+        return true;
+    }
+
+    // A generic modifier stands for both of its left/right keys.
+    switch (vkCode)
+    {
+    case VK_CONTROL:
+        return otherVkCode == VK_LCONTROL || otherVkCode == VK_RCONTROL;
+    case VK_MENU:
+        return otherVkCode == VK_LMENU || otherVkCode == VK_RMENU;
+    case VK_SHIFT:
+        return otherVkCode == VK_LSHIFT || otherVkCode == VK_RSHIFT;
+    case VK_LCONTROL:
+    case VK_RCONTROL:
+        return otherVkCode == VK_CONTROL;
+    case VK_LMENU:
+    case VK_RMENU:
+        return otherVkCode == VK_MENU;
+    case VK_LSHIFT:
+    case VK_RSHIFT:
+        return otherVkCode == VK_SHIFT;
+    default:
+        return false;
+    }
+}
+
+void ProfileSwapGate::SetAppliedProfile(const std::wstring& profile)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_appliedProfile = profile;
+}
+
+std::wstring ProfileSwapGate::AppliedProfile() const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_appliedProfile;
+}
+
+ProfileSwapGate::OfferResult ProfileSwapGate::Offer(const MappingConfiguration::LoadOutcome outcome, std::unique_ptr<State> configuration, const ApplyInPlaceFunction& applyInPlace, const std::function<void(const std::wstring&)>& onRequested)
+{
+    // A transient failure says nothing about what the file holds: keep the live tables and leave any
+    // pending stage alone (the caller arranges a retry). The engine is still heading to the staged
+    // profile if there is one, so report that (not "nothing requested"): otherwise the tracker would
+    // compare keyboards with the applied profile while the stage is still waiting to be applied.
+    if (outcome == MappingConfiguration::LoadOutcome::Failed || !configuration)
+    {
+        ReportPendingProfile(onRequested);
+        return OfferResult::Discarded;
+    }
+
+    // Objects released below hold tables; destroy them after the lock is dropped.
+    std::unique_ptr<State> replaced;
+    std::unique_ptr<State> cancelled;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        const bool sameProfile = KeyboardManagerSettingsFile::IsSameProfile(configuration->currentConfig, m_appliedProfile);
+
+        // A stage of the applied profile itself (a switch away that was superseded by a switch back)
+        // changes nothing a held key could depend on, so a reload of that profile does not wait for it.
+        const bool stagedIsApplied = m_staged && KeyboardManagerSettingsFile::IsSameProfile(m_staged->currentConfig, m_appliedProfile);
+        if (sameProfile && (!m_staged || stagedIsApplied))
+        {
+            // Same profile, no switch to another profile pending: an edit of the live profile. Keep the
+            // existing behaviour and apply it right away (in place) instead of waiting for an idle
+            // key-down, cancelling the pending same-profile stage if there is one.
+            cancelled = std::move(m_staged);
+            m_hasStage.store(false);
+            applyInPlace(*configuration);
+            replaced = std::move(configuration);
+            if (onRequested)
+            {
+                onRequested(std::wstring{});
+            }
+        }
+        else
+        {
+            // A profile change, or a reload that supersedes a pending switch (including a switch back
+            // to the applied profile, which must cancel the pending switch through the same gate).
+            if (!m_staged)
+            {
+                m_stagedSince = m_now();
+            }
+
+            replaced = std::move(m_staged);
+            m_staged = std::move(configuration);
+            m_hasStage.store(true);
+            if (onRequested)
+            {
+                onRequested(m_staged->currentConfig);
+            }
+
+            return OfferResult::Staged;
+        }
+    }
+
+    return OfferResult::AppliedInPlace;
+}
+
+void ProfileSwapGate::ReportPendingProfile(const std::function<void(const std::wstring&)>& onRequested) const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (onRequested)
+    {
+        onRequested(m_staged ? m_staged->currentConfig : std::wstring{});
+    }
+}
+
+bool ProfileSwapGate::HasStage() const noexcept
+{
+    return m_hasStage.load();
+}
+
+std::wstring ProfileSwapGate::StagedProfile() const
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    return m_staged ? m_staged->currentConfig : std::wstring{};
+}
+
+ProfileSwapGate::KeyEventSource ProfileSwapGate::ClassifyKeyEvent(const DWORD flags, const ULONG_PTR extraInfo) noexcept
+{
+    if (!(flags & LLKHF_INJECTED))
+    {
+        return KeyEventSource::Physical;
+    }
+
+    // Only KBM's exact tags. Other software also sets bit 0 (AutoHotkey's default tag, other PowerToys
+    // modules' 0x5555 / 0x5557), and the shortcut handlers remap such input (they skip only the exact
+    // shortcut tag), so it must be tracked like any other foreign input.
+    if (extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SINGLEKEY_FLAG ||
+        extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG ||
+        extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+    {
+        return KeyEventSource::OwnInjected;
+    }
+
+    // Bit 0 is clear, so the handlers reprocess it like any other input; it is only not a new key.
+    if (extraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_REPROCESS_FLAG)
+    {
+        return KeyEventSource::OwnReprocessed;
+    }
+
+    return KeyEventSource::ForeignInjected;
+}
+
+intptr_t ProfileSwapGate::OnHookEvent(LowlevelKeyboardEvent* event, const HandleFunction& handle, const AdoptFunction& adopt) noexcept
+{
+    // Read before the numpad-origin encoding below changes vkCode (and before the handlers may rewrite it).
+    const KeyEventSource source = ClassifyKeyEvent(event->lParam->flags, event->lParam->dwExtraInfo);
+    const DWORD rawVkCode = event->lParam->vkCode;
+    const bool keyDown = event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN;
+    event->lParam->vkCode = Helpers::EncodeKeyNumpadOrigin(event->lParam->vkCode, event->lParam->flags & LLKHF_EXTENDED);
+
+    if (source != KeyEventSource::Physical)
+    {
+        OnInjectedKeyEvent(event);
+    }
+
+    intptr_t result = 0;
+    if (source == KeyEventSource::OwnInjected || source == KeyEventSource::OwnReprocessed)
+    {
+        result = handle(event, ShortcutsAllowed());
+    }
+    else
+    {
+        try
+        {
+            result = OnTrackedKeyEvent(event, source, handle, adopt);
+        }
+        catch (...)
+        {
+            // Bookkeeping failed (e.g. out of memory). OnTrackedKeyEvent does everything that can throw
+            // before it hands the event to `handle`, so `handle` has not run for this event: passing it on
+            // cannot deliver it twice.
+            result = 0;
+        }
+    }
+
+    NoteDeliveredKeyEvent(source, rawVkCode, keyDown, result);
+    return result;
+}
+
+void ProfileSwapGate::NoteDeliveredKeyEvent(const KeyEventSource source, const DWORD rawVkCode, const bool keyDown, const intptr_t result) noexcept
+{
+    // A suppressed event never reaches the system, so it changes nothing there.
+    if (result != 0)
+    {
+        return;
+    }
+
+    if (keyDown)
+    {
+        // Only KBM's own output: physical and foreign keys are released by their own key-ups, which an
+        // orphan passes through or suppresses as its key-down was. A re-sent key-down (reprocess tag)
+        // is KBM's output too: the physical key-down it stands for was suppressed, so that key's own
+        // key-up is suppressed for an orphan and cannot release it.
+        if (source == KeyEventSource::OwnInjected || source == KeyEventSource::OwnReprocessed)
+        {
+            try
+            {
+                m_ownKeysDown.insert(rawVkCode);
+            }
+            catch (...)
+            {
+                // Out of memory: this key is not released by a forced swap (as before this set existed).
+            }
+        }
+
+        return;
+    }
+
+    // Any key-up that reaches the system releases the key, whoever pressed it.
+    std::erase_if(m_ownKeysDown, [rawVkCode](const DWORD down) { return IsSameKey(rawVkCode, down); });
+}
+
+std::vector<INPUT> ProfileSwapGate::BuildOwnKeyReleases() const
+{
+    // Plain keys first, then modifiers, so no key is released into a different modifier state than it
+    // was pressed with. Tagged as KBM's shortcut output: every handler (the old profile's, or the new
+    // one's when the key-ups arrive after the swap) leaves such input alone.
+    std::vector<DWORD> keys(m_ownKeysDown.begin(), m_ownKeysDown.end());
+    std::stable_partition(keys.begin(), keys.end(), [](const DWORD key) { return !Shortcut::IsModifier(key); });
+
+    std::vector<INPUT> inputs;
+    for (const DWORD key : keys)
+    {
+        Helpers::SetKeyEvent(inputs, INPUT_KEYBOARD, static_cast<WORD>(key), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+    }
+
+    return inputs;
+}
+
+uint32_t ProfileSwapGate::MakeKeyId(const DWORD scanCode, const bool extended, const DWORD vkCode) noexcept
+{
+    if (scanCode != 0)
+    {
+        return (extended ? 0x10000u : 0u) | (scanCode & 0xFFFFu);
+    }
+
+    return 0x80000000u | (vkCode & 0xFFFFu);
+}
+
+void ProfileSwapGate::PruneStaleKeys(const TimePoint now, const uint32_t keepId)
+{
+    for (auto it = m_heldKeys.begin(); it != m_heldKeys.end();)
+    {
+        const HeldKey& key = it->second;
+
+        // Only a key whose key-down reached the system can be checked with GetAsyncKeyState; a key the
+        // hook suppressed is assumed not to be reflected there, so it is never dropped as stale (a lost
+        // key-up for such a key is bounded by the forced swap instead). Neither is a key for which an
+        // injected key-up was seen while it was held. The key of the current event is kept: it just
+        // produced an event, so it is not silent.
+        const bool canDrop = it->first != keepId && !key.suppressed && !key.asyncStateUnreliable && now - key.lastEvent >= HeldKeyStaleTimeout && !m_asyncKeyDown(key.vkCode);
+        it = canDrop ? m_heldKeys.erase(it) : std::next(it);
+    }
+}
+
+void ProfileSwapGate::TryApplyStage(const TimePoint now, const AdoptFunction& adopt)
+{
+    std::unique_ptr<State> staged;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (!m_staged)
+        {
+            return;
+        }
+
+        bool forced = false;
+        if (!m_heldKeys.empty())
+        {
+            if (now - m_stagedSince < ForcedSwapTimeout)
+            {
+                return;
+            }
+
+            for (const auto& [id, key] : m_heldKeys)
+            {
+                if (now - key.lastEvent < ForcedSwapTimeout)
+                {
+                    return;
+                }
+            }
+
+            forced = true;
+        }
+
+        if (forced)
+        {
+            // Every held key's key-up was lost (each has been silent for ForcedSwapTimeout). Release
+            // what KBM's output left down (the old profile's targets) without running any handler: a
+            // replayed key-up would be taken for a real one (an "Alone" key would fire its tap action, a
+            // shortcut would restore its other source modifiers). Each held key becomes an orphan whose
+            // later events are answered as its key-down was: suppressed if the old profile suppressed
+            // it (its output is released here), passed through if the system saw it.
+            // Build the key-ups first: if that throws (out of memory), nothing has changed yet and the
+            // swap is tried again at the next fresh key-down.
+            const std::vector<INPUT> releases = BuildOwnKeyReleases();
+            for (auto& [id, key] : m_heldKeys)
+            {
+                key.orphan = true;
+            }
+
+            if (!releases.empty() && m_inject)
+            {
+                m_inject(releases);
+            }
+
+            m_ownKeysDown.clear();
+        }
+
+        staged = std::move(m_staged);
+        m_hasStage.store(false);
+        m_appliedProfile = staged->currentConfig;
+        adopt(std::move(staged));
+    }
+}
+
+std::unordered_map<uint32_t, ProfileSwapGate::HeldKey>::iterator ProfileSwapGate::FindHeldKey(const uint32_t id, const DWORD rawVkCode)
+{
+    auto found = m_heldKeys.find(id);
+    if (found != m_heldKeys.end())
+    {
+        // The key's own event: its id is now known to be right.
+        found->second.estimatedScanCode = false;
+        return found;
+    }
+
+    // No record has this id. Only a seeded orphan's id may be wrong, so only such a record may stand
+    // for a key with another id.
+    found = std::find_if(m_heldKeys.begin(), m_heldKeys.end(), [rawVkCode](const auto& entry) {
+        return entry.second.orphan && entry.second.estimatedScanCode && entry.second.vkCode == rawVkCode;
+    });
+    if (found == m_heldKeys.end())
+    {
+        return found;
+    }
+
+    // Re-key it to the real id, so its later events match exactly and the fallback no longer applies.
+    auto node = m_heldKeys.extract(found);
+    node.key() = id;
+    node.mapped().estimatedScanCode = false;
+    return m_heldKeys.insert(std::move(node)).position;
+}
+
+bool ProfileSwapGate::EndsPress(const KeyEventSource source, const HeldKey& key) noexcept
+{
+    // Another program's key-up does not end a press made on a keyboard: the physical key is still
+    // down, and its own key-up is still to come. The handlers may not even take such a key-up as a
+    // release (the single-key handlers ignore odd-tagged input), so dropping the record here would let
+    // the key's next auto-repeat apply a stage and the new profile resolve its real key-up. The
+    // injected key-up has already marked the record (OnInjectedKeyEvent), so it is not dropped as stale.
+    return !(source == KeyEventSource::ForeignInjected && key.pressedPhysically);
+}
+
+intptr_t ProfileSwapGate::OnTrackedKeyEvent(LowlevelKeyboardEvent* event, const KeyEventSource source, const HandleFunction& handle, const AdoptFunction& adopt)
+{
+    const bool keyDown = event->wParam == WM_KEYDOWN || event->wParam == WM_SYSKEYDOWN;
+    const TimePoint now = m_now();
+    const DWORD rawVkCode = Helpers::ClearKeyNumpadOrigin(event->lParam->vkCode);
+    const uint32_t id = MakeKeyId(event->lParam->scanCode, (event->lParam->flags & LLKHF_EXTENDED) != 0, rawVkCode);
+
+    PruneStaleKeys(now, id);
+
+    auto found = FindHeldKey(id, rawVkCode);
+    if (found != m_heldKeys.end() && found->second.orphan)
+    {
+        // Pressed under an earlier profile: never consult the current one. Its auto-repeats and its
+        // key-up get the action recorded for it.
+        const intptr_t result = found->second.suppressed ? 1 : 0;
+        if (keyDown)
+        {
+            found->second.lastEvent = now;
+        }
+        else if (EndsPress(source, found->second))
+        {
+            m_heldKeys.erase(found);
+        }
+
+        return result;
+    }
+
+    // A key-down of a key that is not held is a fresh press (an auto-repeat is a key-down of a key
+    // already in the set). Only a fresh press may apply a pending stage.
+    if (keyDown && found == m_heldKeys.end() && m_hasStage.load())
+    {
+        TryApplyStage(now, adopt);
+    }
+
+    // Record the key-down before the handlers run, so nothing after `handle` can throw (see the catch in
+    // OnHookEvent). The entry is complete except for `suppressed`, which needs the handlers' answer.
+    bool inserted = false;
+    if (keyDown)
+    {
+        auto [it, isNew] = m_heldKeys.try_emplace(id);
+        inserted = isNew;
+        if (inserted)
+        {
+            it->second.vkCode = rawVkCode;
+            it->second.pressedPhysically = source == KeyEventSource::Physical;
+        }
+
+        it->second.lastEvent = now;
+    }
+
+    // Decided before `handle` for the same reason (nothing after it may throw).
+    const bool endsPress = keyDown || found == m_heldKeys.end() || EndsPress(source, found->second);
+
+    const intptr_t result = handle(event, ShortcutsAllowed());
+
+    if (keyDown)
+    {
+        // Look it up again rather than keep the iterator: a test hook that delivers injected input
+        // synchronously can re-enter the gate from `handle` and rehash the set.
+        if (inserted)
+        {
+            if (auto it = m_heldKeys.find(id); it != m_heldKeys.end())
+            {
+                it->second.suppressed = result == 1;
+            }
+        }
+    }
+    else if (endsPress)
+    {
+        m_heldKeys.erase(id);
+    }
+
+    return result;
+}
+
+bool ProfileSwapGate::ShortcutsAllowed() const
+{
+    // A pass-through orphan modifier that is down in the system would be counted by the shortcut
+    // handlers (they read the system's key state), yet they never see its key-up. A suppressed orphan
+    // is not down in the system and cannot start a shortcut. Neither can one the system reports up
+    // (its key-up was lost, or KBM released it while invoking a shortcut of the old profile): such a
+    // record can stay for a long time, and must not keep shortcuts off meanwhile.
+    return std::none_of(m_heldKeys.begin(), m_heldKeys.end(), [this](const auto& entry) {
+        return entry.second.orphan && !entry.second.suppressed && Helpers::IsModifierKey(entry.second.vkCode) && m_asyncKeyDown && m_asyncKeyDown(entry.second.vkCode);
+    });
+}
+
+void ProfileSwapGate::OnInjectedKeyEvent(const LowlevelKeyboardEvent* event) noexcept
+{
+    if (m_heldKeys.empty() || (event->wParam != WM_KEYUP && event->wParam != WM_SYSKEYUP))
+    {
+        return;
+    }
+
+    const DWORD injectedVkCode = Helpers::ClearKeyNumpadOrigin(event->lParam->vkCode);
+    for (auto& [id, key] : m_heldKeys)
+    {
+        if (IsSameKey(injectedVkCode, key.vkCode))
+        {
+            key.asyncStateUnreliable = true;
+        }
+    }
+}
+
+void ProfileSwapGate::SeedOrphans(const std::vector<KeySnapshot>& keysDown, const TimePoint now)
+{
+    // Events were not seen while unhooked, so neither set says anything reliable any more.
+    m_ownKeysDown.clear();
+    m_heldKeys.clear();
+    for (const KeySnapshot& snapshot : keysDown)
+    {
+        HeldKey key;
+        key.vkCode = snapshot.vkCode;
+        key.suppressed = false; // pass through: no hook was there to remap its key-down
+        key.orphan = true;
+        // The scan code is MapVirtualKey's guess, which can differ from what the hook reports for this
+        // key: the numpad/non-numpad pairs (Enter, arrows, Home/End, PgUp/PgDn, Ins/Del, numpad /) and
+        // also keys such as PrintScreen, Pause and NumLock. So every seeded key may be matched by
+        // virtual key until its own event settles the id (see FindHeldKey, and the seeded-key limitation in the header).
+        key.estimatedScanCode = true;
+        key.lastEvent = now;
+        m_heldKeys[MakeKeyId(snapshot.scanCode, snapshot.extended, snapshot.vkCode)] = key;
+    }
+}
+
+bool ProfileSwapGate::ApplyStageWithoutHook(const std::vector<KeySnapshot>& keysDown, const AdoptFunction& adopt)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    if (!m_staged)
+    {
+        return false;
+    }
+
+    SeedOrphans(keysDown, m_now());
+
+    std::unique_ptr<State> staged = std::move(m_staged);
+    m_hasStage.store(false);
+    m_appliedProfile = staged->currentConfig;
+    adopt(std::move(staged));
+    return true;
+}
+
+void ProfileSwapGate::ResetHeldKeys(const std::vector<KeySnapshot>& keysDown)
+{
+    SeedOrphans(keysDown, m_now());
+}
+
+void ProfileSwapGate::ReconcileHooks(const HookControl& hooks, const AdoptFunction& adopt)
+{
+    // The live tables, read under the gate lock: an in-place reload replaces them one by one under the
+    // same lock (Offer's applyInPlace), so they are never seen half-replaced. Half-replaced tables can
+    // all look empty (the last single-key remap replaced by a shortcut), which would remove the hook,
+    // and the hook installed again for the next message would forget the held keys and KBM's output.
+    const auto readTables = [this, &hooks] {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        const bool remapped = hooks.hasRemappings();
+        return std::make_pair(remapped, remapped && hooks.hasAloneRemappings());
+    };
+
+    for (;;)
+    {
+        if (!hooks.isInstalled() && HasStage())
+        {
+            // No keyboard hook means the live profile remaps nothing, so no key is held "under" it:
+            // apply the stage now. Keys down right now reached the system unremapped; they are recorded
+            // as pass-through orphans so their key-ups also pass through instead of being resolved by
+            // the new profile.
+            ApplyStageWithoutHook(hooks.keysDown(), adopt);
+        }
+
+        if (const auto [remapped, alone] = readTables(); remapped)
+        {
+            hooks.install(alone);
+            return;
+        }
+
+        hooks.uninstall();
+
+        // Look again after the removal. A stage offered while the hook was still installed would
+        // otherwise wait for a key-down that the removed hook can no longer see, and a mapping applied
+        // in place between the check above and the removal (the first mapping of an empty profile)
+        // would be left without a hook. Go round once more in either case; each round acts on what it
+        // sees, so this ends once the tables stop changing.
+        if (!HasStage() && !readTables().first)
+        {
+            return;
+        }
+    }
+}
+
+size_t ProfileSwapGate::HeldKeyCount() const noexcept
+{
+    return m_heldKeys.size();
+}
+
+size_t ProfileSwapGate::OrphanKeyCount() const noexcept
+{
+    return static_cast<size_t>(std::count_if(m_heldKeys.begin(), m_heldKeys.end(), [](const auto& entry) { return entry.second.orphan; }));
+}
