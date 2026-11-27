@@ -5,6 +5,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 using Microsoft.Win32;
 
 namespace Microsoft.CommandPalette.Extensions.Toolkit;
@@ -80,34 +81,70 @@ public static class ShellHelpers
         return OpenInShell(path, arguments, workingDir, runAs, runWithHiddenWindow);
     }
 
+    /// <summary>
+    /// Opens a target through the desktop Explorer, or uses the requested run-as verb.
+    /// Call from a worker thread. Logs launch errors and returns false on failure.
+    /// A successful request does not indicate that the target application is ready.
+    /// </summary>
     public static bool OpenInShell(string? path, string? arguments = null, string? workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
     {
-        using var process = new Process();
-        process.StartInfo.FileName = path;
-        process.StartInfo.WorkingDirectory = string.IsNullOrWhiteSpace(workingDir) ? string.Empty : workingDir;
-        process.StartInfo.Arguments = string.IsNullOrWhiteSpace(arguments) ? string.Empty : arguments;
-        process.StartInfo.WindowStyle = runWithHiddenWindow ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal;
-        process.StartInfo.UseShellExecute = true;
-
-        if (runAs == ShellRunAsType.Administrator)
-        {
-            process.StartInfo.Verb = "RunAs";
-        }
-        else if (runAs == ShellRunAsType.OtherUser)
-        {
-            process.StartInfo.Verb = "RunAsUser";
-        }
-
         try
         {
-            process.Start();
+            OpenInShellOrThrow(path, arguments, workingDir, runAs, runWithHiddenWindow);
             return true;
         }
-        catch (Win32Exception)
+        catch (Exception ex) when (ex is Win32Exception or COMException or ArgumentException or InvalidOperationException or IOException or UnauthorizedAccessException)
         {
-            // Log.Exception($"Unable to open {path}: {ex.Message}", ex, MethodBase.GetCurrentMethod().DeclaringType);
+            ExtensionHost.LogMessage($"Unable to open {path}: {ex}");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Opens a target through the desktop Explorer, or uses the requested run-as verb.
+    /// Call from a worker thread. Throws if the launch request fails; does not fall back
+    /// to launching an ordinary application as a child of the caller.
+    /// </summary>
+    public static void OpenInShellOrThrow(string? path, string? arguments = null, string? workingDir = null, ShellRunAsType runAs = ShellRunAsType.None, bool runWithHiddenWindow = false)
+    {
+        var startInfo = CreateShellStartInfo(path, arguments, workingDir, runAs, runWithHiddenWindow);
+        Launch(startInfo, ExplorerShellLauncher.Launch, static info =>
+        {
+            using var process = Process.Start(info);
+        });
+    }
+
+    internal static void Launch(ProcessStartInfo startInfo, Action<ProcessStartInfo> explorerLaunch, Action<ProcessStartInfo> directLaunch)
+    {
+        if (string.IsNullOrEmpty(startInfo.Verb))
+        {
+            explorerLaunch(startInfo);
+        }
+        else
+        {
+            // Keep explicit elevation and alternate-user launches in the caller's context.
+            directLaunch(startInfo);
+        }
+    }
+
+    internal static ProcessStartInfo CreateShellStartInfo(string? path, string? arguments, string? workingDir, ShellRunAsType runAs, bool runWithHiddenWindow)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(path);
+        return new ProcessStartInfo
+        {
+            FileName = path,
+            Arguments = string.IsNullOrWhiteSpace(arguments) ? string.Empty : arguments,
+            WorkingDirectory = string.IsNullOrWhiteSpace(workingDir) ? Environment.CurrentDirectory : Path.GetFullPath(workingDir),
+            WindowStyle = runWithHiddenWindow ? ProcessWindowStyle.Hidden : ProcessWindowStyle.Normal,
+            UseShellExecute = true,
+            Verb = runAs switch
+            {
+                ShellRunAsType.None => string.Empty,
+                ShellRunAsType.Administrator => "RunAs",
+                ShellRunAsType.OtherUser => "RunAsUser",
+                _ => throw new ArgumentOutOfRangeException(nameof(runAs)),
+            },
+        };
     }
 
     public enum ShellRunAsType

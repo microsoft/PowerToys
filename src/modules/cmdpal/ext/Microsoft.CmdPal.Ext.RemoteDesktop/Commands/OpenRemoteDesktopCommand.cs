@@ -3,7 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
+using System.IO;
 using System.Text;
 using Microsoft.CmdPal.Ext.RemoteDesktop.Properties;
 using Microsoft.CommandPalette.Extensions;
@@ -38,10 +38,7 @@ internal sealed partial class OpenRemoteDesktopCommand : BaseObservable, IInvoka
 
     public ICommandResult Invoke(object sender)
     {
-        using var process = new Process();
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.WorkingDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-        process.StartInfo.FileName = "mstsc";
+        var arguments = string.Empty;
 
         if (!string.IsNullOrWhiteSpace(_rdpHost))
         {
@@ -71,12 +68,15 @@ internal sealed partial class OpenRemoteDesktopCommand : BaseObservable, IInvoka
                 });
             }
 
-            process.StartInfo.Arguments = $"/v:{_rdpHost}";
+            arguments = $"/v:{_rdpHost}";
         }
 
         try
         {
-            process.Start();
+            ShellHelpers.OpenInShellOrThrow(
+                Path.Combine(Environment.SystemDirectory, "mstsc.exe"),
+                arguments,
+                Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 
             return CommandResult.Dismiss();
         }
