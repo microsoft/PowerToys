@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.ZoomIt.UITests;
@@ -13,6 +14,41 @@ public sealed class ZoomItDialogReadinessTests
     private static readonly string[] ReacquiredTargets = ["stale", "fresh"];
     private static readonly string[] ReacquiredObservations = ["stale", "fresh", "fresh"];
     private static readonly string[] StableObservations = ["fresh", "fresh"];
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void DemoTypeButtonsResolveByIdRegardlessOfClearState(bool clearEnabled)
+    {
+        var tree = JsonSerializer.SerializeToElement(new
+        {
+            children = new[]
+            {
+                new { type = "Button", automationId = ZoomItUi.DemoTypeClearButtonId, name = "Effacer", isEnabled = clearEnabled, selector = "clear" },
+                new { type = "Button", automationId = ZoomItUi.DemoTypeBrowseButtonId, name = "Parcourir", isEnabled = true, selector = "browse" },
+            },
+        });
+
+        Assert.AreEqual("browse", ZoomItUi.ResolveControlSelector(tree, "ZoomItDemoTypeFile", "Button", ZoomItUi.DemoTypeBrowseButtonId));
+        Assert.AreEqual("clear", ZoomItUi.ResolveControlSelector(tree, "ZoomItDemoTypeFile", "Button", ZoomItUi.DemoTypeClearButtonId));
+        Assert.ThrowsExactly<AssertFailedException>(() => ZoomItUi.ResolveControlSelector(tree, "ZoomItDemoTypeFile", "Button"));
+        Assert.ThrowsExactly<AssertFailedException>(() => ZoomItUi.ResolveControlSelector(tree, "ZoomItDemoTypeFile", "Button", "missing"));
+    }
+
+    [TestMethod]
+    public void SingleDialogButtonStillResolvesWithoutAnAutomationId()
+    {
+        var tree = JsonSerializer.SerializeToElement(new
+        {
+            children = new[]
+            {
+                new { type = "Button", className = "Microsoft.UI.Xaml.Controls.Expander", selector = "header" },
+                new { type = "Button", className = "Button", selector = "font" },
+            },
+        });
+
+        Assert.AreEqual("font", ZoomItUi.ResolveControlSelector(tree, "ZoomItTypeTextFont", "Button"));
+    }
 
     [TestMethod]
     public void StaleProbeReacquiresTheButtonAndRequiresFreshStableSamples()

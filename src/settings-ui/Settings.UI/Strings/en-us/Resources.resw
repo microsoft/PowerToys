@@ -5308,6 +5308,15 @@ Press **{0}** to reset DemoType and start from the beginning.</value>
   <data name="ZoomIt_DemoType_File_BrowseButton.Content" xml:space="preserve">
     <value>Browse</value>
   </data>
+  <data name="ZoomIt_DemoType_File_ClearButton.Content" xml:space="preserve">
+    <value>Clear</value>
+  </data>
+  <data name="ZoomIt_DemoType_File_ClearButton.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Clear DemoType input file</value>
+  </data>
+  <data name="ZoomIt_DemoType_File_EmptyDescription" xml:space="preserve">
+    <value>No input file selected</value>
+  </data>
   <data name="ZoomIt_DemoType_File_Picker_Dialog_Title" xml:space="preserve">
     <value>Specify DemoType file..</value>
   </data>

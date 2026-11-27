@@ -210,6 +210,37 @@ namespace DemoTypeClipboardTests
                     Assert::IsTrue(g_Text.empty());
                 }
 
+                TEST_METHOD (ClearedFileDoesNotStartCachedScript)
+                {
+                    SetText(L"Not a DemoType script");
+                    g_Text = L"Previously loaded file text";
+                    g_Index = 4;
+
+                    Assert::AreEqual(NO_FILE_SPECIFIED, StartDemoType(L"", 50, FALSE));
+                    Assert::IsFalse(g_Active);
+                }
+
+                TEST_METHOD (ClearedFileDoesNotStartCachedScriptWhenClipboardUnavailable)
+                {
+                    canOpen = false;
+                    g_Text = L"Previously loaded file text";
+
+                    Assert::AreEqual(NO_FILE_SPECIFIED, StartDemoType(L"", 50, FALSE));
+                    Assert::IsFalse(g_Active);
+                }
+
+                TEST_METHOD (ClearedFileDoesNotInterruptActiveTyping)
+                {
+                    g_Active = true;
+                    const auto result = StartDemoType(L"", 50, FALSE);
+                    const bool stillActive = g_Active;
+                    g_Active = false;
+
+                    Assert::AreEqual(-1, result);
+                    Assert::IsTrue(stillActive);
+                    Assert::AreEqual(0, openCount);
+                }
+
                 TEST_METHOD (ReusesUnchangedClipboardCache)
                 {
                     Assert::IsTrue(GetDemoTypeClipboard());

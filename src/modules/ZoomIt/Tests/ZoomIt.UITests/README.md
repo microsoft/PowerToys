@@ -15,6 +15,7 @@ It launches ZoomIt through the PowerToys runner, not as the standalone Sysintern
 | 5 | Live Zoom magnifies the marker and displays subsequent source updates; its shortcut exits. |
 | 6 | Draw preserves the original scale, renders a real mouse stroke, and exits with Escape. |
 | 7, 14 | Native file selection supplies Demo Type; empty, indented, and populated Notepad lines receive the exact text without changing their existing prefix. A controlled native editor isolates the minimum/maximum typing-rate measurement from Notepad's formatting and document-loading work; faster typing reduces duration, and Escape stops a longer script. |
+| Demo Type Clear | Select a file, clear it, and select another through Browse. Clear shows the empty-state description, disables itself, and persists an empty REG_SZ without changing the source file, shortcut, typing speed, or manual mode. Browse remains enabled and reselecting updates the description and enables Clear again. |
 | 8 | Break mode renders centered timer digits and exits with Escape. |
 | 9, 23 | Both the recording shortcut and the tray command capture real frames. Stopping opens the native save dialog; the saved MP4 has correct dimensions, duration, frame rate, and two decoded frames matching the source. |
 | 10 | Snipping copies the exact selected rectangle. Every clipboard bitmap pixel and its dimensions are compared with the source, replacing the manual Paint inspection. |
@@ -54,6 +55,9 @@ Before that single click, transient UIA errors invalidate the cached Browse/font
 and re-resolve it from its settings card within the existing readiness timeout.
 `ZoomItDialogReadinessTests` covers replacement during preparation/polling, consecutive
 sample resets, missing controls, non-transient failures, and bounded stale-control timeouts.
+Demo Type Browse and Clear are addressed by explicit automation IDs, never button order,
+enabled state, or localized captions. Headless selector regressions cover both Clear states,
+missing/ambiguous IDs, and the unchanged single-button font/file dialog behavior.
 Notepad startup and Settings navigation are also gated on a stable, test-owned window and
 an interactive editor. A replaced startup HWND is rebound, and an existing owned document
 is required before acknowledging a restored-session missing-path message. Fixture files

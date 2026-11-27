@@ -143,8 +143,18 @@
                             <tkcontrols:SettingsCard
                                 Name="ZoomItDemoTypeFile"
                                 x:Uid="ZoomIt_DemoType_File"
-                                Description="{x:Bind ViewModel.DemoTypeFile, Mode=OneWay}">
-                                <Button x:Uid="ZoomIt_DemoType_File_BrowseButton" Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}" />
+                                Description="{x:Bind ViewModel.DemoTypeFileDescription, Mode=OneWay}">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button
+                                        x:Uid="ZoomIt_DemoType_File_BrowseButton"
+                                        AutomationProperties.AutomationId="ZoomItDemoTypeBrowseButton"
+                                        Command="{x:Bind ViewModel.SelectDemoTypeFileCommand, Mode=OneWay}" />
+                                    <Button
+                                        x:Uid="ZoomIt_DemoType_File_ClearButton"
+                                        AutomationProperties.AutomationId="ZoomItDemoTypeClearButton"
+                                        Command="{x:Bind ViewModel.ClearDemoTypeFileCommand, Mode=OneWay}"
+                                        IsEnabled="{x:Bind ViewModel.HasDemoTypeFile, Mode=OneWay}" />
+                                </StackPanel>
                             </tkcontrols:SettingsCard>
                             <tkcontrols:SettingsCard Name="ZoomItDemoTypeToggleUserDrivenMode" ContentAlignment="Left">
                                 <CheckBox x:Uid="ZoomIt_DemoType_Toggle_UserDrivenMode" IsChecked="{x:Bind ViewModel.DemoTypeUserDrivenMode, Mode=TwoWay}" />
