@@ -39,8 +39,8 @@ namespace KeyboardManagerEditorUI.Pages
         private FileReplacementWatcher? _settingsWatcher;
 
         // Live reloads of the active profile that failed in a row (a file was locked or half-written).
-        // Each failure schedules another try: quickly at first, then every few seconds for as long as
-        // the editor is open (see ScheduleActiveProfileReloadRetry).
+        // Each failure schedules another try: quickly at first, then less often, for as long as the
+        // editor is open (see ScheduleActiveProfileReloadRetry).
         private int _activeProfileReloadRetries;
         private DispatcherTimer? _activeProfileDebounce;
         private DispatcherTimer? _activeProfileSlowRetry;
@@ -508,10 +508,10 @@ namespace KeyboardManagerEditorUI.Pages
         }
 
         // Tries the live reload again: at the 200 ms debounce interval for about five seconds, then
-        // every two seconds until it succeeds or the editor closes. It never gives up: once the file
-        // is readable again the page must catch up by itself, without waiting for the user to switch
-        // windows (a click on a window that is already in front does not activate it). A window
-        // activation (ReloadIfChangedOnDisk) and a new change on disk still try at once.
+        // after 2 s, doubling up to 30 s, until it succeeds or the editor closes. It never gives up:
+        // once the file is readable again the page must catch up by itself, without waiting for the
+        // user to switch windows (a click on a window that is already in front does not activate it).
+        // A window activation (ReloadIfChangedOnDisk) and a new change on disk still try at once.
         private void ScheduleActiveProfileReloadRetry()
         {
             if (_activeProfileDebounce == null || _activeProfileSlowRetry == null || _disposed)
@@ -524,8 +524,14 @@ namespace KeyboardManagerEditorUI.Pages
             {
                 if (_activeProfileReloadRetries == FastRetries)
                 {
-                    Logger.LogWarning("The active profile could not be loaded after several tries; still trying every two seconds.");
+                    Logger.LogWarning("The active profile could not be loaded after several tries; still trying, less often.");
                     _activeProfileReloadRetries++;
+                    _activeProfileSlowRetry.Interval = TimeSpan.FromSeconds(2);
+                }
+                else if (_activeProfileSlowRetry.Interval < TimeSpan.FromSeconds(30))
+                {
+                    TimeSpan doubled = _activeProfileSlowRetry.Interval * 2;
+                    _activeProfileSlowRetry.Interval = doubled < TimeSpan.FromSeconds(30) ? doubled : TimeSpan.FromSeconds(30);
                 }
 
                 _isReloadPending = true;
@@ -709,7 +715,14 @@ namespace KeyboardManagerEditorUI.Pages
             IReadOnlyList<string> profileIds = ProfileManager.GetProfiles();
             _autoSwitchChoices = new List<ProfileChoice> { new ProfileChoice(null, _notAssignedLabel) };
             _autoSwitchChoices.AddRange(profileIds.Select(id => new ProfileChoice(id, id)));
-            var validProfileIds = new HashSet<string>(profileIds, StringComparer.Ordinal);
+
+            // Profile ids are compared without case, like the engine does; a saved assignment written
+            // as "work" selects the profile listed as "Work".
+            var canonicalProfileIds = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            foreach (string id in profileIds)
+            {
+                canonicalProfileIds.TryAdd(id, id);
+            }
 
             // Start from previously-saved assignments only; live typing identifies/adds the rest.
             // (Enumeration is not used: it surfaces virtual/synthetic keyboards the user never types
@@ -722,7 +735,7 @@ namespace KeyboardManagerEditorUI.Pages
                     DevicePath = saved.Device,
                     DisplayName = string.IsNullOrEmpty(saved.Name) ? saved.Device : saved.Name,
                     Profiles = _autoSwitchChoices,
-                    SelectedProfileId = validProfileIds.Contains(saved.Profile) ? saved.Profile : null,
+                    SelectedProfileId = saved.Profile != null && canonicalProfileIds.TryGetValue(saved.Profile, out string? canonicalId) ? canonicalId : null,
                 });
             }
 
@@ -1750,6 +1763,8 @@ namespace KeyboardManagerEditorUI.Pages
                 LoadProfiles();
                 LoadAllMappings();
                 _isReloadPending = false;
+                _activeProfileReloadRetries = 0;
+                _activeProfileSlowRetry?.Stop();
                 RevalidateOpenRemappingDialog();
             }
             catch (Exception ex)
