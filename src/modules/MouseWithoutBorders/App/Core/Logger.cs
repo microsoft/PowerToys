@@ -82,7 +82,7 @@ internal static class Logger
     {
         if (e is not KnownException)
         {
-            var exText = e.ToString();
+            var exText = FormatException(e);
 
             Logger.Log($"!Exception!: {exText}", memberName, sourceFilePath, sourceLineNumber);
 
@@ -182,10 +182,11 @@ internal static class Logger
             $"\r\n" +
             $"{sb}\r\n";
 
-        // obfuscate the current encryption key
-        if (!string.IsNullOrEmpty(Encryption.myKey))
+        // Free-form dump text can contain the current key outside named fields.
+        var currentKey = Encryption.MyKey;
+        if (!string.IsNullOrEmpty(currentKey))
         {
-            log = log.Replace(Encryption.MyKey, Logger.GetChecksum(Encryption.MyKey));
+            log = log.Replace(currentKey, "<private_data>", StringComparison.Ordinal);
         }
 
         log += Thread.DumpThreadsStack();
@@ -270,6 +271,16 @@ internal static class Logger
             return false;
         }
 
+        if (objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("SecurityKey", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("<MyKey>k__BackingField", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("<SecurityKey>k__BackingField", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("_securityCode", StringComparison.OrdinalIgnoreCase)
+            || objName.Equals("SecurityCodeField", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         var objString = obj.ToString();
         var values = new string[7];
         values[0] = new string('-', Math.Max(level - 1, 0) * 2);
@@ -277,24 +288,22 @@ internal static class Logger
         /* values[2] = " "; */
         /* values[3] = t.FullName; */
         values[4] = " = ";
-        values[5] = objName.Equals(nameof(Encryption.myKey), StringComparison.OrdinalIgnoreCase)
-            ? Logger.GetChecksum(objString)
-            : objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
-                ? string.Empty
-                : objString
-                    .Replace("System.Windows.Forms.", string.Empty)
-                    .Replace("System.Net.Sockets.", string.Empty)
-                    .Replace("System.Security.Cryptography.", string.Empty)
-                    .Replace("System.Threading.", string.Empty)
-                    .Replace("System.ComponentModel.", string.Empty)
-                    .Replace("System.Runtime.", string.Empty)
-                    .Replace("System.Drawing.", string.Empty)
-                    .Replace("System.Object", "O")
-                    .Replace("System.Diagnostics.", string.Empty)
-                    .Replace("System.Collections.", string.Empty)
-                    .Replace("System.Drawing.", string.Empty)
-                    .Replace("System.Int", string.Empty)
-                    .Replace("System.EventHandler.", string.Empty);
+        values[5] = objName.Equals("lastClipboardObject", StringComparison.OrdinalIgnoreCase)
+            ? string.Empty
+            : objString
+                .Replace("System.Windows.Forms.", string.Empty)
+                .Replace("System.Net.Sockets.", string.Empty)
+                .Replace("System.Security.Cryptography.", string.Empty)
+                .Replace("System.Threading.", string.Empty)
+                .Replace("System.ComponentModel.", string.Empty)
+                .Replace("System.Runtime.", string.Empty)
+                .Replace("System.Drawing.", string.Empty)
+                .Replace("System.Object", "O")
+                .Replace("System.Diagnostics.", string.Empty)
+                .Replace("System.Collections.", string.Empty)
+                .Replace("System.Drawing.", string.Empty)
+                .Replace("System.Int", string.Empty)
+                .Replace("System.EventHandler.", string.Empty);
         values[6] = "\r\n";
         _ = sb.Append(string.Concat(values).Replace(Common.BinaryName, "MM"));
 
@@ -370,6 +379,101 @@ internal static class Logger
                 _ = Logger.PrivateDump(sb, fieldValue, fieldInfo.Name, level + 1, maxLevel, recurse);
             }
         }
+    }
+
+    internal static string FormatException(Exception exception)
+    {
+        var details = exception.ToString();
+        for (var current = exception; current != null; current = current.InnerException)
+        {
+            if (current is SocketException socketException && !string.IsNullOrEmpty(socketException.Message))
+            {
+                details = details.Replace(
+                    socketException.Message,
+                    $"{socketException.SocketErrorCode} ({socketException.NativeErrorCode.ToString(CultureInfo.InvariantCulture)})",
+                    StringComparison.Ordinal);
+            }
+        }
+
+        return details;
+    }
+
+    internal static string MaskAddress(IPAddress address)
+    {
+        if (address == null)
+        {
+            return null;
+        }
+
+        if (address.IsIPv4MappedToIPv6)
+        {
+            address = address.MapToIPv4();
+        }
+
+        if (address.AddressFamily == AddressFamily.InterNetwork)
+        {
+            var octets = address.GetAddressBytes();
+            static string MaskOctet(byte octet) => octet >= 100 ? "xxx" : octet >= 10 ? "xx" : "x";
+            return $"{MaskOctet(octets[0])}.{MaskOctet(octets[1])}.{MaskOctet(octets[2])}.{octets[3].ToString(CultureInfo.InvariantCulture)}";
+        }
+
+        return "xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx:xxxx";
+    }
+
+    internal static string MaskAddress(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        return IPAddress.TryParse(value, out var address)
+            ? MaskAddress(address)
+            : "<invalid IP address>";
+    }
+
+    internal static string MaskEndpoint(IPEndPoint endpoint)
+    {
+        if (endpoint == null)
+        {
+            return null;
+        }
+
+        var maskedAddress = MaskAddress(endpoint.Address);
+        var port = endpoint.Port.ToString(CultureInfo.InvariantCulture);
+        return maskedAddress.Contains(':')
+            ? $"[{maskedAddress}]:{port}"
+            : $"{maskedAddress}:{port}";
+    }
+
+    internal static string MaskName(string value)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return value;
+        }
+
+        var characterCount = value.EnumerateRunes().Count();
+        return string.Create(value.Length, (value, characterCount), static (masked, state) =>
+        {
+            masked.Fill('x');
+            if (state.characterCount > 3)
+            {
+                var middle = (state.characterCount - 1) / 2;
+                var index = 0;
+                var offset = 0;
+                foreach (var character in state.value.EnumerateRunes())
+                {
+                    if (index == 0 || index == middle || index == state.characterCount - 1)
+                    {
+                        _ = character.EncodeToUtf16(masked[offset..]);
+                    }
+
+                    offset += character.Utf16SequenceLength;
+                    index++;
+                }
+            }
+        });
     }
 
     /// <summary>
