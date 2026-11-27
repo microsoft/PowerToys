@@ -14,15 +14,16 @@ using PowerToys.DSC.Models.ResourceObjects;
 namespace PowerToys.DSC.UnitTests.KeyboardManager;
 
 /// <summary>
-/// Applying Keyboard Manager settings that leave out the active profile and
-/// the profile list must not reset them. These tests work on objects only and
-/// touch no settings file.
+/// The settings resource does not manage Keyboard Manager's active profile
+/// and profile list: the desired state takes them from the current state.
+/// These tests work on objects only and touch no settings file.
 /// </summary>
 [TestClass]
 public sealed class KeyboardManagerSettingsInputTests
 {
     private const string OnlyUseNewEditor = "{\"settings\":{\"properties\":{\"useNewEditor\":false}}}";
 
+    // The reviewer's case: the input leaves both out.
     [TestMethod]
     public void OnlyUseNewEditor_KeepsTheActiveProfileAndTheProfileList()
     {
@@ -30,15 +31,15 @@ public sealed class KeyboardManagerSettingsInputTests
         var desired = Deserialize(OnlyUseNewEditor);
         Assert.AreEqual("default", desired.Properties.ActiveConfiguration.Value, "The model fills an omitted value with its default.");
 
-        KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(JsonNode.Parse(OnlyUseNewEditor), desired, current);
+        KeyboardManagerSettingsInput.UseCurrentProfileFields(desired, current);
 
         Assert.AreEqual("work", desired.Properties.ActiveConfiguration.Value);
         CollectionAssert.AreEqual(new List<string> { "default", "work", "home" }, desired.Properties.KeyboardConfigurations.Value);
         Assert.IsFalse(desired.Properties.UseNewEditor);
     }
 
-    // With the two fields completed, an input that only repeats the current
-    // useNewEditor value is already in the desired state.
+    // An input that only repeats the current useNewEditor value is already
+    // in the desired state.
     [TestMethod]
     public void OnlyUseNewEditor_AlreadyApplied_ComparesEqualToTheCurrentState()
     {
@@ -46,61 +47,56 @@ public sealed class KeyboardManagerSettingsInputTests
         current.Properties.UseNewEditor = false;
         var desired = Deserialize(OnlyUseNewEditor);
 
-        KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(JsonNode.Parse(OnlyUseNewEditor), desired, current);
+        KeyboardManagerSettingsInput.UseCurrentProfileFields(desired, current);
 
         Assert.IsTrue(JsonNode.DeepEquals(JsonSerializer.SerializeToNode(desired), JsonSerializer.SerializeToNode(current)));
     }
 
+    // An export from another machine (or an older one from this machine)
+    // names a profile and a list. Applying it must not select a profile whose
+    // file may not exist here, nor drop profiles created since.
     [TestMethod]
-    public void ExplicitProfileFields_AreKeptAsGiven()
+    public void ProfileFieldsInTheInput_AreNotApplied()
     {
-        const string input = "{\"settings\":{\"properties\":{\"activeConfiguration\":{\"value\":\"home\"},\"keyboardConfigurations\":{\"value\":[\"default\",\"home\"]}}}}";
+        const string input = "{\"settings\":{\"properties\":{\"activeConfiguration\":{\"value\":\"office\"},\"keyboardConfigurations\":{\"value\":[\"default\",\"office\"]},\"useNewEditor\":false}}}";
         var current = CreateCurrent();
         var desired = Deserialize(input);
+        Assert.AreEqual("office", desired.Properties.ActiveConfiguration.Value);
 
-        KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(JsonNode.Parse(input), desired, current);
-
-        Assert.AreEqual("home", desired.Properties.ActiveConfiguration.Value);
-        CollectionAssert.AreEqual(new List<string> { "default", "home" }, desired.Properties.KeyboardConfigurations.Value);
-    }
-
-    [TestMethod]
-    public void OnlyOneOfTheTwoGiven_TheOtherIsKept()
-    {
-        const string input = "{\"settings\":{\"properties\":{\"activeConfiguration\":{\"value\":\"home\"}}}}";
-        var current = CreateCurrent();
-        var desired = Deserialize(input);
-
-        KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(JsonNode.Parse(input), desired, current);
-
-        Assert.AreEqual("home", desired.Properties.ActiveConfiguration.Value);
-        CollectionAssert.AreEqual(new List<string> { "default", "work", "home" }, desired.Properties.KeyboardConfigurations.Value);
-    }
-
-    [TestMethod]
-    public void ExplicitNull_CountsAsOmitted()
-    {
-        const string input = "{\"settings\":{\"properties\":{\"activeConfiguration\":null,\"useNewEditor\":false}}}";
-        var current = CreateCurrent();
-        var desired = new KeyboardManagerSettings();
-
-        KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(JsonNode.Parse(input), desired, current);
+        KeyboardManagerSettingsInput.UseCurrentProfileFields(desired, current);
 
         Assert.AreEqual("work", desired.Properties.ActiveConfiguration.Value);
+        CollectionAssert.AreEqual(new List<string> { "default", "work", "home" }, desired.Properties.KeyboardConfigurations.Value);
+        Assert.IsFalse(desired.Properties.UseNewEditor);
     }
 
-    // The function data runs the same completion in GetState; here without
-    // reading any file, through the object model only.
+    // A member without a value would otherwise be written as "value": null.
     [TestMethod]
-    public void InputWithoutSettingsObject_KeepsBoth()
+    public void EmptyProfileMembersInTheInput_AreNotApplied()
     {
+        const string input = "{\"settings\":{\"properties\":{\"activeConfiguration\":{},\"keyboardConfigurations\":{}}}}";
         var current = CreateCurrent();
-        var desired = new KeyboardManagerSettings();
+        var desired = Deserialize(input);
 
-        KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(JsonNode.Parse("{}"), desired, current);
+        KeyboardManagerSettingsInput.UseCurrentProfileFields(desired, current);
 
         Assert.AreEqual("work", desired.Properties.ActiveConfiguration.Value);
         Assert.AreEqual(3, desired.Properties.KeyboardConfigurations.Value.Count);
+    }
+
+    // The active configuration becomes a file name; anything that is not a
+    // plain file name falls back to the default profile.
+    [TestMethod]
+    public void GetProfileFileName_OnlyAcceptsAPlainFileName()
+    {
+        Assert.AreEqual("work.json", ProfileFunctionData.GetProfileFileName("work"));
+        Assert.AreEqual("My profile 2.json", ProfileFunctionData.GetProfileFileName("My profile 2"));
+        Assert.AreEqual("default.json", ProfileFunctionData.GetProfileFileName(null));
+        Assert.AreEqual("default.json", ProfileFunctionData.GetProfileFileName(string.Empty));
+        Assert.AreEqual("default.json", ProfileFunctionData.GetProfileFileName("..\\FancyZones\\settings"));
+        Assert.AreEqual("default.json", ProfileFunctionData.GetProfileFileName("../x"));
+        Assert.AreEqual("default.json", ProfileFunctionData.GetProfileFileName("a:b"));
+        Assert.AreEqual("default.json", ProfileFunctionData.GetProfileFileName(".."));
     }
 
     private static KeyboardManagerSettings CreateCurrent()

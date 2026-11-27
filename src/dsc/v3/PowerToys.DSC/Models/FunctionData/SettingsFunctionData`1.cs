@@ -25,9 +25,8 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
     private readonly SettingsResourceObject<TSettingsConfig> _input;
     private readonly SettingsResourceObject<TSettingsConfig> _output;
 
-    // The input as given, to tell a member that was omitted from one that
-    // was set to its default value (the typed model cannot).
-    private readonly JsonNode? _inputNode;
+    // Whether a desired state was given (Set, Test) or not (Get, Export).
+    private readonly bool _hasInput;
 
     /// <inheritdoc/>
     public ISettingsResourceObject Input => _input;
@@ -39,7 +38,7 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
     {
         _output = new();
         _input = string.IsNullOrEmpty(input) ? new() : JsonSerializer.Deserialize<SettingsResourceObject<TSettingsConfig>>(input) ?? new();
-        _inputNode = string.IsNullOrEmpty(input) ? null : JsonNode.Parse(input);
+        _hasInput = !string.IsNullOrEmpty(input);
     }
 
     /// <inheritdoc/>
@@ -48,14 +47,14 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
         _output.Settings = GetSettings();
 
         // Keyboard Manager keeps which profile is active, and the list of
-        // profiles, in its settings. An input that leaves them out (e.g. only
-        // "useNewEditor") must not reset them to "default": complete the
-        // desired state from the current one, before Test and Set use it.
-        if (_inputNode != null &&
+        // profiles, in its settings; the engine and the editor own them. The
+        // desired state takes both from the current state before Test and Set
+        // use it, so applying e.g. only "useNewEditor" does not reset them.
+        if (_hasInput &&
             (object?)_input.Settings is KeyboardManagerSettings desired &&
             (object?)_output.Settings is KeyboardManagerSettings current)
         {
-            KeyboardManagerSettingsInput.KeepProfileFieldsWhenOmitted(_inputNode, desired, current);
+            KeyboardManagerSettingsInput.UseCurrentProfileFields(desired, current);
         }
     }
 
@@ -98,6 +97,16 @@ public sealed class SettingsFunctionData<TSettingsConfig> : BaseFunctionData, IS
     /// <returns>The settings configuration for the module.</returns>
     private static TSettingsConfig GetSettings()
     {
+        // GetSettingsOrDefault writes a default settings file over one it
+        // cannot parse. For Keyboard Manager that would reset the active
+        // profile and the profile list when the read meets a file that is
+        // being written, so read it without that side effect (it retries, and
+        // fails the operation if the file stays unreadable).
+        if (typeof(TSettingsConfig) == typeof(KeyboardManagerSettings))
+        {
+            return _settingsUtils.GetSettingsOrDefaultReadOnly<TSettingsConfig>(_settingsConfig.GetModuleName());
+        }
+
         return _settingsUtils.GetSettingsOrDefault<TSettingsConfig>(_settingsConfig.GetModuleName());
     }
 
