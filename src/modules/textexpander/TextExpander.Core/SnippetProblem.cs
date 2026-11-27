@@ -12,5 +12,6 @@ namespace Microsoft.PowerToys.TextExpander
         TriggerHasLineBreak,
         TriggerStartsWithHiddenCharacter,
         TriggerHasOuterSpace,
+        TriggerHasControlCharacter,
     }
 }

@@ -614,6 +614,26 @@ namespace BugReportToolUnitTests
             }
         }
 
+        TEST_METHOD(LiteralPercentFilenameAndItsBackupAreExcluded)
+        {
+            const std::wstring name = L"my-%SystemDrive%.json";
+            const fs::path file = namedFolder / name;
+            const fs::path backup = namedFolder / (name + L".backup-20261029-124512");
+            Assert::IsTrue(WriteText(file, "private configured file") &&
+                               WriteText(backup, "private backup") &&
+                               WriteText(namedFolder / L"notes.txt", "unrelated text"),
+                           L"Could not create literal-path fixtures");
+
+            const std::vector<SettingsCase> cases{
+                { L"literal picker path", "{\"snippets_path\":{\"value\":" + JsonString(L"literal:\"" + file.wstring() + L"\"") + "}}" },
+            };
+            const std::vector<fs::path> excluded{ file.lexically_relative(settings), backup.lexically_relative(settings) };
+            const std::vector<fs::path> kept{ L"Named\\notes.txt", L"TextExpander\\settings.json" };
+            AssertExcluded(cases, excluded, L"The literal file or its backup was included", kept);
+            Assert::IsTrue(fs::remove(file), L"Could not remove the literal file");
+            AssertExcluded(cases, excluded, L"The missing literal file's backup was included", kept);
+        }
+
         // A configured .json file of any name, with its backups and temporary files, and the default-named
         // snippets file beside it.
         TEST_METHOD(ConfiguredJsonFileIsExcludedWithItsCopies)

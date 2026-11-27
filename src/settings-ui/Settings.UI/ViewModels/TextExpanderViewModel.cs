@@ -27,6 +27,7 @@ public sealed class TextExpanderViewModel : Observable
     private bool _isEnabled;
     private bool _hasEditorLaunchError;
     private bool _hasSettingsSaveError;
+    private bool _hasSettingsSaveWarning;
 
     public TextExpanderViewModel(
         TextExpanderSettingsUtils settingsUtils,
@@ -67,6 +68,16 @@ public sealed class TextExpanderViewModel : Observable
         private set
         {
             _hasSettingsSaveError = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasSettingsSaveWarning
+    {
+        get => _hasSettingsSaveWarning;
+        private set
+        {
+            _hasSettingsSaveWarning = value;
             OnPropertyChanged();
         }
     }
@@ -176,9 +187,17 @@ public sealed class TextExpanderViewModel : Observable
     private void UpdateOptions(Action<TextExpanderProperties> update, [System.Runtime.CompilerServices.CallerMemberName] string propertyName = null)
     {
         HasSettingsSaveError = false;
+        HasSettingsSaveWarning = false;
         try
         {
             _settings = _settingsUtils.UpdateOptions(update);
+        }
+        catch (AtomicSettingsPublicationException ex) when (ex.Outcome == AtomicSettingsPublicationOutcome.NewSettingsVerified)
+        {
+            Logger.LogWarning(ex.Message);
+            RefreshEnabledState();
+            HasSettingsSaveWarning = true;
+            return;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Text.Json.JsonException or InvalidOperationException)
         {

@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Microsoft.PowerToys.Settings.UI.Library.Interfaces;
@@ -21,6 +23,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("properties")]
         public TextExpanderProperties Properties { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> AdditionalSettings { get; set; } = new();
 
         public TextExpanderSettings()
         {

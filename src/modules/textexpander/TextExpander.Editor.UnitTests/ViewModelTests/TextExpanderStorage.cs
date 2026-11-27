@@ -389,6 +389,32 @@ namespace ViewModelTests
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void RevisionValidatesAnOpenNewDraftAgainstTheReloadedLibrary(bool initiallyDuplicate)
+        {
+            const string Trigger = "!draft";
+            const string Duplicate = "TextExpander_DuplicateTrigger";
+            string path = Write(_local, Current, SnippetJson.Of(initiallyDuplicate ? "!draft=Existing" : "!other=Other"));
+            using TextExpanderViewModel model = CreateViewModel();
+            model.Dispatch = action => action();
+            Assert.AreEqual(initiallyDuplicate ? Duplicate : null, model.ValidateSnippet(null, Trigger));
+            var validationResults = new List<string>();
+            model.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(TextExpanderViewModel.SnippetRevision))
+                {
+                    validationResults.Add(model.ValidateSnippet(null, Trigger));
+                }
+            };
+
+            File.WriteAllText(path, SnippetJson.Of(initiallyDuplicate ? "!other=Other" : "!draft=Existing"));
+            _environment.NotifyFilesChanged();
+
+            Assert.AreEqual(initiallyDuplicate ? null : Duplicate, validationResults.Single());
+        }
+
+        [TestMethod]
         public void ASaveThatDeletesThePCsFileAndRenamesACopyIntoPlaceIsNotLostToTheStarter()
         {
             string current = Write(_local, Current, SnippetJson.Of("!mine=Mine"));
@@ -542,6 +568,84 @@ namespace ViewModelTests
             Assert.IsFalse(model.CaseSensitive);
             Assert.IsFalse(model.RequireWordBoundary);
             Assert.IsNotNull(model.ValidateSnippet(null, "!HELLO"), "Validation must use the rules the engine now uses.");
+        }
+
+        [TestMethod]
+        public void OpeningTheEditorPreservesEngineCompatibleWrappedOptions()
+        {
+            Write(_local, Current, SnippetJson.Of("!old=Old"));
+            const string SettingsJson = """
+                {
+                    "properties": {
+                        "case_sensitive": { "value": false },
+                        "require_word_boundary": false
+                    }
+                }
+                """;
+            var store = new MockSettingsStore();
+            store.WriteExistingSettings(SettingsJson);
+            string settingsPath = store.GetSettingsFilePath(TextExpanderSettings.ModuleName);
+
+            using var model = new TextExpanderViewModel(store, false, key => key, _environment);
+
+            Assert.IsFalse(model.HasSnippetError);
+            Assert.IsFalse(model.CaseSensitive);
+            Assert.IsFalse(model.RequireWordBoundary);
+            Assert.AreEqual(SettingsJson, store.FileSystem.File.ReadAllText(settingsPath));
+        }
+
+        [TestMethod]
+        public void UnreadableStartupSettingsArePreservedAndRetryLoadsTheConfiguredLibrary()
+        {
+            Write(_local, Current, SnippetJson.Of("!default=Default"));
+            string chosen = Write(Path.Combine(_root, "chosen"), Current, SnippetJson.Of("!chosen=Chosen"));
+            var store = new MockSettingsStore();
+            store.WriteExistingSettings("{");
+            string settingsPath = store.GetSettingsFilePath(TextExpanderSettings.ModuleName);
+
+            using var model = new TextExpanderViewModel(store, false, key => key, _environment);
+            Assert.IsTrue(model.HasSnippetError);
+            Assert.IsFalse(model.CanAddSnippets);
+            Assert.IsEmpty(model.Snippets);
+            Assert.AreEqual(string.Empty, model.SnippetsFilePath);
+            Assert.AreEqual("{", store.FileSystem.File.ReadAllText(settingsPath));
+
+            store.WriteExistingSettings(EditorSettings.For(chosen).ToJsonString());
+            model.ReloadSnippets();
+
+            Assert.IsFalse(model.HasSnippetError);
+            Assert.IsTrue(model.CanAddSnippets);
+            Assert.AreEqual(chosen, model.SnippetsFilePath);
+            Assert.AreEqual("!chosen", model.Snippets.Single().Trigger);
+        }
+
+        [TestMethod]
+        public void SettingsReadRetriesOnTheSameFileStampAfterASharingFailure()
+        {
+            Write(_local, Current, SnippetJson.Of("!old=Old"));
+            bool temporarilyLocked = false;
+            TextExpanderSettings settings = EditorSettings.For(string.Empty);
+            var store = EditorSettings.Store(settings, () => temporarilyLocked
+                ? throw new InvalidOperationException("Settings read failed.", new IOException("Sharing violation."))
+                : settings);
+            _environment.SettingsWatchFolder = Path.GetDirectoryName(store.Object.GetSettingsFilePath(TextExpanderSettings.ModuleName));
+            using var model = new TextExpanderViewModel(store.Object, false, key => key, _environment);
+            model.Dispatch = action => action();
+            model.WatchSettings();
+            int revision = model.SnippetRevision;
+
+            temporarilyLocked = true;
+            _environment.NotifyFilesChanged();
+            Assert.IsTrue(model.HasSnippetError);
+            Assert.IsFalse(model.CanAddSnippets);
+
+            temporarilyLocked = false;
+            Assert.IsTrue(_environment.PollWithoutFileChange());
+
+            Assert.IsFalse(model.HasSnippetError);
+            Assert.IsTrue(model.CanAddSnippets);
+            Assert.AreEqual(revision, model.SnippetRevision);
+            Assert.IsFalse(_environment.PollWithoutFileChange());
         }
 
         [TestMethod]
@@ -722,6 +826,7 @@ namespace ViewModelTests
         {
             private readonly string _root;
             private Action _filesChanged;
+            private Func<bool> _needsRetry;
 
             public TestStorageEnvironment(string root, string defaultSnippetsFolder)
             {
@@ -780,16 +885,29 @@ namespace ViewModelTests
                 }
 
                 _filesChanged = changed;
+                _needsRetry = needsRetry;
                 return new CallbackDisposable(() =>
                 {
                     if (ReferenceEquals(_filesChanged, changed))
                     {
                         _filesChanged = null;
+                        _needsRetry = null;
                     }
                 });
             }
 
             public void NotifyFilesChanged() => _filesChanged?.Invoke();
+
+            public bool PollWithoutFileChange()
+            {
+                if (_needsRetry?.Invoke() != true)
+                {
+                    return false;
+                }
+
+                NotifyFilesChanged();
+                return true;
+            }
 
             private string Guard(string path)
             {

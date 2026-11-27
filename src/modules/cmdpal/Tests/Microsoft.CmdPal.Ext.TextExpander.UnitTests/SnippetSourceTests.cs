@@ -129,14 +129,17 @@ public sealed class SnippetSourceTests
     }
 
     [TestMethod]
-    public void GetState_SettingsCaughtMidSave_KeepsTheSettingsReadBefore()
+    [DataRow("{ \"properties\": ")]
+    [DataRow("""{"properties":{"snippets_path":"\ud800"}}""")]
+    [DataRow("""{"properties":{"clipboard_threshold_chars":{"value":"\ud800"}}}""")]
+    public void GetState_FailedSettingsRead_KeepsTheSettingsReadBefore(string malformed)
     {
         using var environment = new TestEnvironment();
         environment.UseSnippets(("!mysig", "Best regards,\nYour name"));
         environment.Folder.SetModuleSettings(caseSensitive: false, injectionBackend: "type");
         Assert.AreEqual(InjectionBackend.Typing, environment.Source.GetState().Settings.Backend);
 
-        File.WriteAllText(environment.Folder.Paths.ModuleSettingsFile, "{ \"properties\": ");
+        File.WriteAllText(environment.Folder.Paths.ModuleSettingsFile, malformed);
 
         var settings = environment.Source.GetState().Settings;
         Assert.AreEqual(InjectionBackend.Typing, settings.Backend);

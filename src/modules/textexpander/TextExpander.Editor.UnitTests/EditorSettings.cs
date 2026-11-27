@@ -27,8 +27,17 @@ internal static class EditorSettings
     public static Mock<TextExpanderSettingsUtils> Store(TextExpanderSettings settings, Func<TextExpanderSettings> latest = null)
     {
         var store = new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
-        store.Setup(s => s.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
-        store.Setup(s => s.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(latest ?? (() => settings));
+        bool initialRead = true;
+        store.Setup(s => s.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(() =>
+        {
+            if (initialRead)
+            {
+                initialRead = false;
+                return settings;
+            }
+
+            return latest == null ? settings : latest();
+        });
         store.Setup(s => s.UpdateOptions(It.IsAny<Action<TextExpanderProperties>>())).Returns((Action<TextExpanderProperties> update) =>
         {
             update(settings.Properties);

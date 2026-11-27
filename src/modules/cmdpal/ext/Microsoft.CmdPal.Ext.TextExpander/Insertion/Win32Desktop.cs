@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using CommunityToolkit.Mvvm.Messaging;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.PowerToys.TextExpander;
 
@@ -158,7 +159,8 @@ internal sealed class Win32Desktop : IDesktop
         return NativeMethods.SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<NativeMethods.INPUT>());
     }
 
-    public void HideCommandPalette() => WeakReferenceMessenger.Default.Send(new HideWindowMessage());
+    public CommandPaletteInputTarget? CaptureInputTarget(nint sourceHwnd, Guid sourceRouteId) =>
+        WeakReferenceMessenger.Default.Send(new GetCommandPaletteInputTargetMessage(sourceHwnd, sourceRouteId)).Target;
 
     /// <summary>
     /// Reads a process's integrity level, the last sub-authority of its mandatory label, as Text Expander does

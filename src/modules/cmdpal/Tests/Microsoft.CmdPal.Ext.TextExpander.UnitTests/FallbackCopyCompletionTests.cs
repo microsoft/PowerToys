@@ -182,6 +182,7 @@ public sealed class FallbackCopyCompletionTests
         Assert.AreEqual(CommandResultKind.ShowToast, failed.Kind);
         Assert.AreEqual(Resources.copy_failed_toast, ((ToastArgs)failed.Args!).Message);
         Assert.AreEqual(CommandResultKind.KeepOpen, ((ToastArgs)failed.Args!).Result!.Kind);
+        Assert.AreEqual(AskingSpots.Copied, environment.Clipboard.Text, "A failed fallback copy leaves the original content.");
         Assert.AreEqual("Your name", answer.Text, "A failed fallback copy must keep the answer for retrying.");
         Assert.AreEqual(("Hi Your name, reply to team@example.com", false), environment.Clipboard.Writes.Single());
 

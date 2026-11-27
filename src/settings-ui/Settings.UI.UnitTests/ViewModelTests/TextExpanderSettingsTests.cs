@@ -95,8 +95,34 @@ public sealed class TextExpanderSettingsTests
         TextExpanderViewModel model = Create(() => { }, settingsStore: store);
         model.CaseSensitive = false;
         Assert.IsTrue(model.HasSettingsSaveError);
+        Assert.IsFalse(model.HasSettingsSaveWarning);
         model.CaseSensitive = false;
         Assert.IsFalse(model.HasSettingsSaveError);
+    }
+
+    [TestMethod]
+    public void VerifiedOptionsAreReloadedWhenSaveCleanupFails()
+    {
+        var store = new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
+        TextExpanderViewModel model = Create(() => { }, settingsStore: store);
+        var persisted = new TextExpanderSettings();
+        store.Setup(instance => instance.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(
+            TextExpanderSettings.ModuleName,
+            SettingsUtils.DefaultFileName)).Returns(persisted);
+        store.Setup(instance => instance.UpdateOptions(It.IsAny<Action<TextExpanderProperties>>()))
+            .Callback<Action<TextExpanderProperties>>(update => update(persisted.Properties))
+            .Throws(new AtomicSettingsPublicationException(
+                AtomicSettingsPublicationOutcome.NewSettingsVerified,
+                "settings.json",
+                recoveryPaths: null,
+                new IOException("Test settings backup cleanup failure.")));
+
+        model.CaseSensitive = false;
+
+        Assert.IsFalse(model.CaseSensitive);
+        Assert.IsTrue(model.HasSettingsSaveWarning);
+        Assert.IsFalse(model.HasSettingsSaveError);
+        Assert.IsFalse(model.HasSettingsReadError);
     }
 
     [TestMethod]
@@ -114,8 +140,7 @@ public sealed class TextExpanderSettingsTests
     [TestMethod]
     public void UnreadableOptionsFileIsReportedAndLeftUnchanged()
     {
-        // The engine accepts a wrapped bool, but the Settings model can't read it.
-        byte[] unreadable = Encoding.UTF8.GetBytes("{\"properties\":{\"snippets_path\":{\"value\":\"C:\\\\Snippets\"},\"case_sensitive\":{\"value\":false}}}");
+        byte[] unreadable = Encoding.UTF8.GetBytes("""{"properties":{"snippets_path":{"value":"C:\\Snippets"},"case_sensitive":{"unexpected":false}}}""");
         var fileSystem = new MockFileSystem();
         string path = new SettingsUtils(fileSystem).GetSettingsFilePath(TextExpanderSettings.ModuleName);
         fileSystem.AddFile(path, new MockFileData(unreadable));

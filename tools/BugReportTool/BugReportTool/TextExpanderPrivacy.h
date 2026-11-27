@@ -21,6 +21,9 @@ namespace TextExpanderPrivacy {
 inline constexpr wchar_t SnippetFileName[] =
     L"PowerToysTextExpanderSnippets.json";
 
+// Matches SnippetPathResolution's encoding for literal picker paths.
+inline constexpr std::wstring_view LiteralPathPrefix = L"literal:\"";
+
 // Whether a file is a snippets file, or a copy Text Expander makes of one, for
 // a snippets file named <base>.json: backups
 // ("snippets.json.backup-20261029-145200"), keep-both copies
@@ -181,9 +184,9 @@ inline bool ExcludeCopiedSnippetFile(const std::filesystem::path &settingsRoot,
 // Reads a location setting the way the engine reads snippets_path: a string,
 // bare or wrapped as
 // {"value": ...}, trimmed of spaces and quotes, with environment variables
-// expanded. Leaves location empty when the setting is missing or empty, or not
-// fully qualified, which the engine ignores. Returns false when the value can't
-// be read, so callers can fail closed.
+// expanded unless the value encodes a literal picker path. Leaves location
+// empty when the setting is missing, empty or not fully qualified. Returns
+// false when the value can't be read, so callers can fail closed.
 inline bool
 ReadLocationSetting(const winrt::Windows::Data::Json::JsonObject &properties,
                     const wchar_t *key, std::filesystem::path &location) {
@@ -208,7 +211,6 @@ ReadLocationSetting(const winrt::Windows::Data::Json::JsonObject &properties,
     return false;
   }
 
-  // Same normalization as the engine's Trim().Trim('"').
   std::wstring configured{pathValue.GetString().c_str()};
   while (!configured.empty() && std::iswspace(configured.front())) {
     configured.erase(configured.begin());
@@ -216,32 +218,41 @@ ReadLocationSetting(const winrt::Windows::Data::Json::JsonObject &properties,
   while (!configured.empty() && std::iswspace(configured.back())) {
     configured.pop_back();
   }
-  while (!configured.empty() && configured.front() == L'"') {
-    configured.erase(configured.begin());
-  }
-  while (!configured.empty() && configured.back() == L'"') {
-    configured.pop_back();
+
+  std::wstring resolved;
+  if (configured.size() > LiteralPathPrefix.size() && configured.back() == L'"' &&
+      configured.compare(0, LiteralPathPrefix.size(), LiteralPathPrefix) == 0) {
+    resolved = configured.substr(LiteralPathPrefix.size(),
+                                 configured.size() - LiteralPathPrefix.size() - 1);
+  } else {
+    while (!configured.empty() && configured.front() == L'"') {
+      configured.erase(configured.begin());
+    }
+    while (!configured.empty() && configured.back() == L'"') {
+      configured.pop_back();
+    }
+
+    if (configured.empty()) {
+      return true;
+    }
+
+    DWORD expandedSize =
+        ExpandEnvironmentStringsW(configured.c_str(), nullptr, 0);
+    if (expandedSize == 0) {
+      return false;
+    }
+
+    resolved.resize(expandedSize);
+    DWORD written = ExpandEnvironmentStringsW(configured.c_str(), resolved.data(),
+                                              expandedSize);
+    if (written == 0 || written > expandedSize) {
+      return false;
+    }
+
+    resolved.resize(written - 1);
   }
 
-  if (configured.empty()) {
-    return true;
-  }
-
-  DWORD expandedSize =
-      ExpandEnvironmentStringsW(configured.c_str(), nullptr, 0);
-  if (expandedSize == 0) {
-    return false;
-  }
-
-  std::wstring expanded(expandedSize, L'\0');
-  DWORD written = ExpandEnvironmentStringsW(configured.c_str(), expanded.data(),
-                                            expandedSize);
-  if (written == 0 || written > expandedSize) {
-    return false;
-  }
-
-  expanded.resize(written - 1);
-  std::filesystem::path candidate(expanded);
+  std::filesystem::path candidate(resolved);
 
   // The engine ignores locations that are not fully qualified and uses its
   // default file.

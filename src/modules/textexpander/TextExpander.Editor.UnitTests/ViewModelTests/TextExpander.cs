@@ -645,6 +645,7 @@ namespace ViewModelTests
             Assert.AreEqual("TextExpander_Problem_EmptyTrigger", model.ValidateSnippet(null, string.Empty));
             Assert.AreEqual("TextExpander_Problem_EmptyTrigger", model.ValidateSnippet(null, "   "));
             Assert.AreEqual("TextExpander_Problem_TriggerHasLineBreak", model.ValidateSnippet(null, "#a\nb"));
+            Assert.AreEqual("TextExpander_Problem_TriggerHasControlCharacter", model.ValidateSnippet(null, "#a\tb"));
             Assert.AreEqual("TextExpander_Problem_TriggerStartsWithHiddenCharacter", model.ValidateSnippet(null, "\uFEFF#a"));
             Assert.AreEqual("TextExpander_Problem_TriggerHasOuterSpace", model.ValidateSnippet(null, "#a "));
             Assert.AreEqual("Duplicate: #sig", model.ValidateSnippet(null, "#sig"));

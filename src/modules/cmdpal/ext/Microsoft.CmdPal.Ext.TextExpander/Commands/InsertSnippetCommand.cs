@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.TextExpander.Insertion;
 using Microsoft.CmdPal.Ext.TextExpander.Properties;
 using Microsoft.CmdPal.Ext.TextExpander.Snippets;
@@ -16,7 +17,7 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Commands;
 /// Pastes a snippet into the app Command Palette was opened over: Command Palette hides, the snippet is expanded with
 /// any answers given, and <see cref="SnippetInserter"/> puts it in.
 /// </summary>
-internal sealed partial class InsertSnippetCommand : InvokableCommand
+internal sealed partial class InsertSnippetCommand : InvokableCommand, ICommandWithInputTarget
 {
     private readonly Snippet _snippet;
     private readonly SnippetSource _source;
@@ -52,7 +53,15 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
         _fill = fill;
     }
 
-    public override ICommandResult Invoke()
+    public Func<ICommandResult> PrepareInvocation(nint sourceHwnd, Guid sourceRouteId = default)
+    {
+        var target = _inserter.CaptureInputTarget(sourceHwnd, sourceRouteId);
+        return () => Invoke(target);
+    }
+
+    public override ICommandResult Invoke() => Invoke(_inserter.CaptureInputTarget(0));
+
+    private ICommandResult Invoke(CommandPaletteInputTarget? target)
     {
         var state = _source.GetState();
         if (!state.IsOn)
@@ -65,7 +74,7 @@ internal sealed partial class InsertSnippetCommand : InvokableCommand
             ? SnippetText.ExpandWithGaps(_snippet.Replacement, _answers?.Invoke() ?? [], _inserter.Clipboard.ReadText)
             : SnippetText.ExpandWithGaps(_snippet.Replacement, _fill);
         var text = expanded.Text;
-        var (outcome, clipboardLost) = _inserter.Insert(text, state.Settings.Backend, state.Settings.ClipboardThresholdChars, expanded.HasClipboardText);
+        var (outcome, clipboardLost) = _inserter.Insert(target, text, state.Settings.Backend, state.Settings.ClipboardThresholdChars, expanded.HasClipboardText);
         if (outcome is InsertOutcome.Inserted or InsertOutcome.Empty)
         {
             _inserted?.Invoke();

@@ -131,10 +131,10 @@ internal sealed class HostSettings : IDisposable
 
             return new Values(ReadString(props, "snippets_path"), ReadString(props, "injection_backend"), ReadInt(props, "clipboard_threshold_chars"), ReadBool(props, "treat_remaps_as_typing"), ReadBool(props, "require_word_boundary"), ReadBool(props, "word_boundary_keeps_space"), ReadBool(props, "case_sensitive"));
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {
-            // A half-written or hand-corrupted file must not take the engine down, nor be taken for
-            // one that asks for the defaults.
+            // JsonElement.GetString can fail when decoding an incomplete UTF-16 escape.
+            // Keep the previous settings on either kind of failed read.
             return null;
         }
     }

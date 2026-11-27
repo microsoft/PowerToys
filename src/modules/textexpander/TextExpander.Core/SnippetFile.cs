@@ -200,7 +200,7 @@ namespace Microsoft.PowerToys.TextExpander
         }
 
         /// <summary>
-        /// Gets a value indicating whether <paramref name="trigger"/> can be typed: it isn't empty, and has no line break,
+        /// Gets a value indicating whether <paramref name="trigger"/> can be typed: it isn't empty, and has no control character,
         /// no hidden first character and no space at either end.
         /// </summary>
         public static bool IsValidTrigger(string trigger, out SnippetProblem problem)
@@ -227,6 +227,12 @@ namespace Microsoft.PowerToys.TextExpander
             if (!string.Equals(trigger, trigger.Trim(), StringComparison.Ordinal))
             {
                 problem = SnippetProblem.TriggerHasOuterSpace;
+                return false;
+            }
+
+            if (trigger.Any(char.IsControl))
+            {
+                problem = SnippetProblem.TriggerHasControlCharacter;
                 return false;
             }
 

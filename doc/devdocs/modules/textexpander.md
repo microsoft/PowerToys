@@ -156,15 +156,17 @@ keys out of an insertion.
   key-down. They go back only to their window, still in front. A focus change cancels the insertion.
 - The guard ends after 2 s without an engine event, or at 256 held key events. Typing releases its
   guard after 2 s and continues only if no non-modifier input reached the app, including returned
-  keys. Final cursor placement takes the guard again to release modifiers during its moves.
+  keys. Expiry keeps newer keys behind the replay of older held keys. Later Enter and Tab presses
+  and final cursor moves can take a short guard to release and restore a held modifier.
   A slow clipboard borrow gets a new start marker before the erase.
 
 ### Erase
 
-- After 15 ms, the worker sends one Backspace per text element of the typed part. Up to 20 keys go one
-  per call, 25 ms apart, since Windows 11 Notepad drops faster keys. Longer erases go at once.
-- No call carries over 1,000 events. Before each call, the worker checks the window, its integrity, the
-  input generation and clicks. A failed check stops the insertion.
+- For a verified native Edit range, the worker removes the matched text through the focused control.
+  Other targets receive a Backspace per text element of the typed part. Up to 20 keys go one per call,
+  25 ms apart, since Windows 11 Notepad drops faster keys. Longer erases go at once.
+- No call carries over 1,000 events. Before each call, the worker checks the window, focused control,
+  integrity, input generation and clicks. A failed check stops the insertion.
 
 ### Paste or type
 
@@ -240,12 +242,12 @@ keys out of an insertion.
 
 ### Undo with Ctrl+Z
 
-- The hook records each insertion before held keys go back, except snippets with a prompt or a
-  clipboard variable.
-- Ctrl+Z alone, in the same window, undoes it. Ctrl+Shift+Z stays redo. Any other non-modifier key, a
-  click or a focus change ends the undo.
-- The worker waits up to 1 s for modifiers to go up, or gives up: Ctrl+Backspace deletes words. It
-  moves the caret to the end, erases the snippet and types what was typed again, through the guard.
+- The engine records an undo range only after a Unicode Edit or single-line Rich Edit confirms the
+  complete insertion. Other targets keep their own undo. Expansions with a prompt or clipboard
+  variable never create a record.
+- Ctrl+Z in the same focused control uses the recorded range. Other key presses that can change the
+  text, clicks, and focus changes invalidate it. The worker waits for modifiers to go up and checks
+  that the text and caret still match before replacing the range with the original trigger.
 
 ## Snippets and settings
 
@@ -271,8 +273,10 @@ Strings and numbers are `{"value": …}` objects, and booleans are bare.
 - Settings and the editor use `TextExpanderSettingsUtils` under the mutex
   `Local\PowerToys.Settings.AtomicFile.<hash>` (10 s timeout). A write re-reads the file, changes only
   its keys, publishes a flushed staging file with `File.Replace` and verifies it.
-- The Settings page never writes over a file it can't read. The editor's startup read
-  (`GetSettingsOrDefault`) writes defaults over a missing or invalid file.
+- Settings and the editor read options without writing defaults. If an existing file cannot be
+  read, the editor preserves it and retries a transient read failure. The **Retry** action rereads
+  the settings after a parse error. Both accept bare and wrapped values for compatible options
+  and write the standard settings shape.
 - The engine reads 250 ms after a change. An unreadable file changes nothing, and it retries 4 times.
 
 ### Snippets file
@@ -285,6 +289,11 @@ The file looks like `{"version": 1, "snippets": [{"trigger": "!mysig", "replacem
   `\n`, and typing skips `\r`.
 - Duplicate triggers may stay, and the engine uses the last one. With case sensitivity off, triggers
   differing only by case are duplicates.
+- Triggers cannot contain control characters, including tabs. Existing rows containing an invalid
+  trigger remain in the editor so they can be corrected.
+- General Settings backup compares the default library in file order. When the live library is
+  unreadable, a new backup keeps the last valid archived copy when available. Restore can replace
+  a damaged local library with a valid archived copy.
 - Reading allows a BOM, comments and trailing commas. A file that isn't JSON, or has no `snippets`
   list, throws `SnippetFileFormatException` (an `IOException`) and is never written over.
 - A `version` above 1 reads, but the editor won't save it.
@@ -294,7 +303,9 @@ The file looks like `{"version": 1, "snippets": [{"trigger": "!mysig", "replacem
 - The default is `PowerToysTextExpanderSnippets.json` in the settings folder. The bug report tool
   repeats this name.
 - `snippets_path` holds a full file path, with any name. `SnippetPathResolution` trims quotes and
-  expands environment variables. A blank or relative value means the default.
+  expands environment variables in hand-written paths. A blank or relative value means the default.
+  The editor stores a selected file containing a percent token as a literal path so the chosen file
+  stays selected even when it is temporarily unavailable.
 - A chosen file is never created. While it's missing, there are no snippets.
 - Text Expander doesn't sync. **Move snippets database…** copies the file somewhere, such as OneDrive,
   and uses it. **Sync from another PC…** uses an existing file. Both save `snippets_path` first, so
@@ -370,6 +381,10 @@ Command Palette's process; its
 
 - It follows the engine's policy and enable setting, and says "Text Expander is off" rather than
   pasting while either turns it off.
+- Paste checks that the original window returns to the foreground after its Command Palette session
+  closes. If the target cannot be confirmed, the action offers Copy.
+- Copy keeps the previous clipboard for an empty expansion and tries to restore it if publication fails
+  after clearing. If the previous contents cannot be saved safely, Copy reports a failure.
 - It finds and reads the snippets file with Core's `SnippetPathResolution` and `SnippetFile`, and
   never writes it. It expands with `Variables.ExpandWithPromptRequests`, so new variables work there
   without changes.

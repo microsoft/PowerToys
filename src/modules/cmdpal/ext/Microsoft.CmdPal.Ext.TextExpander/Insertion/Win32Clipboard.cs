@@ -18,7 +18,7 @@ namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
 /// it shares through TextExpander.Core: <see cref="ClipboardFormats"/> decides what a copy can put back, and
 /// <see cref="ClipboardPrivacy"/> which formats keep a write out of Clipboard History.
 /// </summary>
-internal sealed class Win32Clipboard : IClipboardAccess
+internal sealed partial class Win32Clipboard : IClipboardAccess
 {
     private const int OpenAttempts = 10;
     private const int OpenRetryDelayMs = 20;
@@ -78,64 +78,7 @@ internal sealed class Win32Clipboard : IClipboardAccess
 
         try
         {
-            // Listed first and read second, because reading a format can run its owner's rendering code.
-            var formats = new List<uint>();
-            uint format = 0;
-            while ((format = NativeMethods.EnumClipboardFormats(format)) != 0)
-            {
-                formats.Add(format);
-            }
-
-            // Zero means the end of the list, or a failure that would otherwise pass for a shorter list.
-            if (Marshal.GetLastPInvokeError() != NativeMethods.ERROR_SUCCESS)
-            {
-                return null;
-            }
-
-            var plan = ClipboardFormats.PlanCapture(formats);
-            if (plan is null)
-            {
-                return null;
-            }
-
-            var entries = new List<ClipboardEntry>(plan.Count);
-            long total = 0;
-            foreach (var planned in plan)
-            {
-                // A format that renders no data can't be put back, so the clipboard is left alone.
-                var handle = NativeMethods.GetClipboardData(planned);
-                if (handle == 0)
-                {
-                    return Discard(entries);
-                }
-
-                var size = (ulong)NativeMethods.GlobalSize(handle);
-                total += (long)Math.Min(size, (ulong)long.MaxValue);
-                if (size == 0 || size > int.MaxValue || total > MaxSavedBytes)
-                {
-                    return Discard(entries);
-                }
-
-                var pointer = NativeMethods.GlobalLock(handle);
-                if (pointer == 0)
-                {
-                    return Discard(entries);
-                }
-
-                try
-                {
-                    var bytes = new byte[size];
-                    Marshal.Copy(pointer, bytes, 0, bytes.Length);
-                    entries.Add(new ClipboardEntry(planned, bytes));
-                }
-                finally
-                {
-                    NativeMethods.GlobalUnlock(handle);
-                }
-            }
-
-            // Delayed formats have rendered, and no other app can publish between these bytes and their version.
-            return new SavedClipboard(entries, SequenceNumber);
+            return SaveOpenedClipboard();
         }
         finally
         {
@@ -143,9 +86,77 @@ internal sealed class Win32Clipboard : IClipboardAccess
         }
     }
 
+    private SavedClipboard? SaveOpenedClipboard()
+    {
+        // Listed first and read second, because reading a format can run its owner's rendering code.
+        var formats = new List<uint>();
+        uint format = 0;
+        while ((format = NativeMethods.EnumClipboardFormats(format)) != 0)
+        {
+            formats.Add(format);
+        }
+
+        // Zero means the end of the list, or a failure that would otherwise pass for a shorter list.
+        if (Marshal.GetLastPInvokeError() != NativeMethods.ERROR_SUCCESS)
+        {
+            return null;
+        }
+
+        var plan = ClipboardFormats.PlanCapture(formats);
+        if (plan is null)
+        {
+            return null;
+        }
+
+        var entries = new List<ClipboardEntry>(plan.Count);
+        long remaining = MaxSavedBytes;
+        foreach (var planned in plan)
+        {
+            // A format that renders no data can't be put back, so the clipboard is left alone.
+            var handle = NativeMethods.GetClipboardData(planned);
+            if (handle == 0)
+            {
+                return Discard(entries);
+            }
+
+            var size = (ulong)NativeMethods.GlobalSize(handle);
+            if (size == 0 || size > (ulong)remaining)
+            {
+                return Discard(entries);
+            }
+
+            var pointer = NativeMethods.GlobalLock(handle);
+            if (pointer == 0)
+            {
+                return Discard(entries);
+            }
+
+            try
+            {
+                var bytes = new byte[(int)size];
+                Marshal.Copy(pointer, bytes, 0, bytes.Length);
+                entries.Add(new ClipboardEntry(planned, bytes));
+                remaining -= bytes.Length;
+            }
+            finally
+            {
+                NativeMethods.GlobalUnlock(handle);
+            }
+        }
+
+        // Delayed formats have rendered, and no other app can publish between these bytes and their version.
+        return new SavedClipboard(entries, SequenceNumber);
+    }
+
     public ClipboardWrite WriteText(string text, bool keepOutOfHistory, SavedClipboard? saved = null)
     {
         ArgumentNullException.ThrowIfNull(text);
+
+        using var prepared = PrepareText(text);
+        if (prepared is null)
+        {
+            return ClipboardWrite.Refused;
+        }
 
         return WriteText(
             saved,
@@ -155,7 +166,7 @@ internal sealed class Win32Clipboard : IClipboardAccess
                 return (opened, owned);
             },
             () => SequenceNumber,
-            () => WriteOpenedText(text, keepOutOfHistory),
+            () => keepOutOfHistory ? WriteBorrowedText(prepared) : CopyOpenedText(prepared),
             () => NativeMethods.CloseClipboard());
     }
 
@@ -187,28 +198,116 @@ internal sealed class Win32Clipboard : IClipboardAccess
         }
     }
 
-    private static ClipboardWrite WriteOpenedText(string text, bool keepOutOfHistory)
+    private static ClipboardPayload? PrepareText(string text)
     {
-        if (!NativeMethods.EmptyClipboard())
-        {
-            return ClipboardWrite.Refused;
-        }
-
-        // Marked before the text goes on, so the text is never on the clipboard without the marks.
-        if (keepOutOfHistory)
-        {
-            PublishPrivacyFormats();
-        }
-
-        var bytes = Encoding.Unicode.GetBytes(text + '\0');
+        var bytes = new byte[checked(Encoding.Unicode.GetByteCount(text) + sizeof(char))];
         try
         {
-            return Publish(ClipboardFormats.CF_UNICODETEXT, bytes) ? ClipboardWrite.Written : ClipboardWrite.Failed;
+            _ = Encoding.Unicode.GetBytes(text.AsSpan(), bytes);
+            return ClipboardPayload.Prepare(ClipboardFormats.CF_UNICODETEXT, bytes);
         }
         finally
         {
             CryptographicOperations.ZeroMemory(bytes);
         }
+    }
+
+    private static ClipboardWrite WriteBorrowedText(ClipboardPayload text)
+        => CommitOpenedWrite(NativeMethods.EmptyClipboard, () =>
+        {
+            // Marked before the text goes on, so the text is never on the clipboard without the marks.
+            PublishPrivacyFormats();
+            return text.Publish();
+        });
+
+    private ClipboardWrite CopyOpenedText(ClipboardPayload text)
+    {
+        using var saved = SaveOpenedClipboard();
+        if (saved is null)
+        {
+            return ClipboardWrite.Refused;
+        }
+
+        // Have both writes ready before emptying. Restore on the same open clipboard so a subsequent copy wins.
+        var restore = new List<ClipboardPayload>(saved.Entries.Count + ClipboardPrivacy.FormatNames.Count);
+        try
+        {
+            if (!PrepareRestoration(saved, restore))
+            {
+                return ClipboardWrite.Refused;
+            }
+
+            return CommitOpenedWrite(NativeMethods.EmptyClipboard, text.Publish, () =>
+            {
+                var restored = true;
+                foreach (var payload in restore)
+                {
+                    // One format failing doesn't abandon the rest.
+                    restored &= payload.Publish();
+                }
+
+                return restored;
+            });
+        }
+        finally
+        {
+            foreach (var payload in restore)
+            {
+                payload.Dispose();
+            }
+        }
+    }
+
+    private static bool PrepareRestoration(SavedClipboard saved, List<ClipboardPayload> restore)
+    {
+        if (ClipboardPrivacy.ShouldMarkRestore(saved.Entries, RegisteredFormat))
+        {
+            var deny = ClipboardPrivacy.DenyPayload();
+            foreach (var name in ClipboardPrivacy.FormatNames)
+            {
+                if (!TryAddPayload(restore, RegisteredFormat(name), deny))
+                {
+                    return false;
+                }
+            }
+        }
+
+        foreach (var entry in saved.Entries)
+        {
+            if (!TryAddPayload(restore, entry.Format, entry.Data))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryAddPayload(List<ClipboardPayload> payloads, uint format, byte[] bytes)
+    {
+        if (format == 0 || ClipboardPayload.Prepare(format, bytes) is not { } payload)
+        {
+            return false;
+        }
+
+        payloads.Add(payload);
+        return true;
+    }
+
+    /// <summary>Commits a prepared write and, for Copy, any rollback while the clipboard remains open.</summary>
+    internal static ClipboardWrite CommitOpenedWrite(Func<bool> empty, Func<bool> publish, Func<bool>? restore = null)
+    {
+        if (!empty())
+        {
+            return ClipboardWrite.Refused;
+        }
+
+        if (publish())
+        {
+            return ClipboardWrite.Written;
+        }
+
+        return restore?.Invoke() == true ? ClipboardWrite.Refused : ClipboardWrite.Failed;
     }
 
     public bool HoldsText(string text) => string.Equals(ReadText(), text, StringComparison.Ordinal);
@@ -322,34 +421,71 @@ internal sealed class Win32Clipboard : IClipboardAccess
     /// </summary>
     private static bool Publish(uint format, byte[] data)
     {
-        var handle = NativeMethods.GlobalAlloc(NativeMethods.GMEM_MOVEABLE, (nuint)data.Length);
-        if (handle == 0)
+        using var payload = ClipboardPayload.Prepare(format, data);
+        return payload is not null && payload.Publish();
+    }
+
+    /// <summary>Owns prepared clipboard memory until publication transfers it to Windows.</summary>
+    private sealed partial class ClipboardPayload(uint format, int size) : IDisposable
+    {
+        private nint _handle;
+
+        public static unsafe ClipboardPayload? Prepare(uint format, ReadOnlySpan<byte> data)
         {
-            return false;
+            var payload = new ClipboardPayload(format, data.Length);
+            var handle = NativeMethods.GlobalAlloc(NativeMethods.GMEM_MOVEABLE, (nuint)data.Length);
+            if (handle == 0)
+            {
+                return null;
+            }
+
+            var pointer = NativeMethods.GlobalLock(handle);
+            if (pointer == 0)
+            {
+                NativeMethods.GlobalFree(handle);
+                return null;
+            }
+
+            try
+            {
+                data.CopyTo(new Span<byte>((void*)pointer, data.Length));
+            }
+            finally
+            {
+                NativeMethods.GlobalUnlock(handle);
+            }
+
+            payload._handle = handle;
+            return payload;
         }
 
-        var pointer = NativeMethods.GlobalLock(handle);
-        if (pointer == 0)
+        public bool Publish()
         {
-            NativeMethods.GlobalFree(handle);
-            return false;
+            if (NativeMethods.SetClipboardData(format, _handle) == 0)
+            {
+                return false;
+            }
+
+            _handle = 0;
+            return true;
         }
 
-        try
+        public unsafe void Dispose()
         {
-            Marshal.Copy(data, 0, pointer, data.Length);
-        }
-        finally
-        {
-            NativeMethods.GlobalUnlock(handle);
-        }
+            if (_handle == 0)
+            {
+                return;
+            }
 
-        if (NativeMethods.SetClipboardData(format, handle) == 0)
-        {
-            NativeMethods.GlobalFree(handle);
-            return false;
-        }
+            var pointer = NativeMethods.GlobalLock(_handle);
+            if (pointer != 0)
+            {
+                CryptographicOperations.ZeroMemory(new Span<byte>((void*)pointer, size));
+                NativeMethods.GlobalUnlock(_handle);
+            }
 
-        return true;
+            NativeMethods.GlobalFree(_handle);
+            _handle = 0;
+        }
     }
 }

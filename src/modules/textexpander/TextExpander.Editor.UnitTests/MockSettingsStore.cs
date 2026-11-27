@@ -26,11 +26,8 @@ internal sealed class MockSettingsStore : TextExpanderSettingsUtils
 
     public MockFileSystem FileSystem { get; }
 
-    /// <summary>Gets or sets the settings that GetSettingsOrDefault returns a copy of instead of reading the file.</summary>
-    public TextExpanderSettings InitialSettings { get; set; }
-
-    /// <summary>Gets or sets a value indicating whether read-only reads return a copy of <see cref="InitialSettings"/> too.</summary>
-    public bool ReadOnlyReturnsInitialSettings { get; set; }
+    /// <summary>Gets or sets a snapshot returned by the next read, simulating a change after that read.</summary>
+    public TextExpanderSettings NextSettingsRead { get; set; }
 
     /// <summary>Gets or sets a value indicating whether publishing a staged save throws once the file is in place.</summary>
     public bool ThrowAfterPublication { get; set; }
@@ -57,15 +54,16 @@ internal sealed class MockSettingsStore : TextExpanderSettingsUtils
 
     public AtomicSettingsPublicationException LastError { get; private set; }
 
-    public override T GetSettingsOrDefault<T>(string powertoy = "", string fileName = DefaultFileName)
-        => InitialSettings is not null && typeof(T) == typeof(TextExpanderSettings)
-            ? (T)(object)CopyOfInitialSettings()
-            : base.GetSettingsOrDefault<T>(powertoy, fileName);
-
     public override T GetSettingsOrDefaultReadOnly<T>(string powertoy = "", string fileName = DefaultFileName)
-        => ReadOnlyReturnsInitialSettings && typeof(T) == typeof(TextExpanderSettings)
-            ? (T)(object)CopyOfInitialSettings()
-            : base.GetSettingsOrDefaultReadOnly<T>(powertoy, fileName);
+    {
+        if (typeof(T) == typeof(TextExpanderSettings) && NextSettingsRead is { } snapshot)
+        {
+            NextSettingsRead = null;
+            return (T)(object)JsonSerializer.Deserialize(snapshot.ToJsonString(), SettingsSerializationContext.Default.TextExpanderSettings);
+        }
+
+        return base.GetSettingsOrDefaultReadOnly<T>(powertoy, fileName);
+    }
 
     public override TextExpanderSettings UpdateSnippetsPath(string snippetsPath)
     {
@@ -149,9 +147,6 @@ internal sealed class MockSettingsStore : TextExpanderSettingsUtils
         FileSystem.File.Delete(path);
         return new(HandleBoundFileDeletionStatus.Deleted, path, null);
     }
-
-    private TextExpanderSettings CopyOfInitialSettings()
-        => JsonSerializer.Deserialize(InitialSettings.ToJsonString(), SettingsSerializationContext.Default.TextExpanderSettings);
 
     private void WriteIfSet(string settingsPath, string contents)
     {

@@ -1471,18 +1471,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void UpdateEmptyContent()
     {
         UpdateProperty(nameof(ShowEmptyContent), nameof(HasContent));
-        if (!ShowEmptyContent || EmptyContent.Model.Unsafe is null)
+        if (!ShowEmptyContent)
         {
             return;
         }
 
         UpdateProperty(nameof(EmptyContent));
 
-        DoOnActivePage(
-           () =>
-           {
-               SetCommandBarContext(EmptyContent);
-           });
+        DoOnActivePage(() =>
+        {
+            // Results and their selection may have reached the UI while this update was queued.
+            if (ShowEmptyContent)
+            {
+                var context = EmptyContent;
+                SetCommandBarContext(context.Model.Unsafe is not null ? context : null);
+            }
+        });
     }
 
     private void ApplyLayoutToItems()

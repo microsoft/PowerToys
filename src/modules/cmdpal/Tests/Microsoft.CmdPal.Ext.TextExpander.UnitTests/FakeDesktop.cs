@@ -2,9 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.CmdPal.Common;
 using Microsoft.CmdPal.Ext.TextExpander.Insertion;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.UnitTests;
@@ -25,6 +29,14 @@ internal sealed class FakeDesktop : IDesktop
 
     /// <summary>Gets or sets the window that comes to the front once Command Palette hides.</summary>
     public nint WindowAfterHide { get; set; } = AppWindow;
+
+    public nint InputTargetWindow { get; set; } = AppWindow;
+
+    public Guid InputTargetRouteId { get; set; }
+
+    public uint AppWindowProcessId { get; set; } = AppProcess;
+
+    public bool CanReleaseForeground { get; set; } = true;
 
     public List<ushort> Held { get; } = new();
 
@@ -54,7 +66,7 @@ internal sealed class FakeDesktop : IDesktop
     public uint ProcessIdOf(nint window) => window switch
     {
         CommandPaletteWindow => CommandPaletteProcess,
-        AppWindow => AppProcess,
+        AppWindow => AppWindowProcessId,
         OtherWindow => OtherProcess,
         _ => 0,
     };
@@ -75,10 +87,19 @@ internal sealed class FakeDesktop : IDesktop
         return sent;
     }
 
-    public void HideCommandPalette()
+    public CommandPaletteInputTarget? CaptureInputTarget(nint sourceHwnd, Guid sourceRouteId) =>
+        InputTargetWindow == 0 || InputTargetRouteId != sourceRouteId ? null : new(InputTargetWindow, ProcessIdOf(InputTargetWindow), ReleaseForeground);
+
+    private Task<bool> ReleaseForeground(CancellationToken cancellationToken)
     {
+        if (!CanReleaseForeground || cancellationToken.IsCancellationRequested)
+        {
+            return Task.FromResult(false);
+        }
+
         HideRequests++;
         ForegroundWindow = WindowAfterHide;
+        return Task.FromResult(true);
     }
 
     /// <summary>Gets a value indicating whether Ctrl+V was sent.</summary>

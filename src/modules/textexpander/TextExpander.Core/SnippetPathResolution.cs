@@ -15,10 +15,21 @@ namespace Microsoft.PowerToys.TextExpander;
 /// </summary>
 internal readonly record struct SnippetPathResolution(string FilePath, bool IsDefault)
 {
+    // BugReportTool's TextExpanderPrivacy.h recognizes the same encoding.
+    private const string LiteralPathPrefix = "literal:\"";
+
+    /// <summary>Encodes an absolute file picker path when a pair of percent signs could be expanded on read.</summary>
+    public static string EncodePickedPath(string filePath)
+    {
+        int openingPercent = filePath.IndexOf('%');
+        return openingPercent >= 0 && filePath.IndexOf('%', openingPercent + 1) >= 0
+            ? $"{LiteralPathPrefix}{filePath}\""
+            : filePath;
+    }
+
     /// <summary>
-    /// Selects the snippets file for the configured snippets path, by the rule the engine and editor share: trim spaces
-    /// and quotes, expand environment variables, and accept only a fully qualified path, which is the file, whatever its
-    /// name. Returns null for a blank or not fully qualified value (the processes share no working directory), so the
+    /// Selects the snippets file for the configured snippets path. Decode literal selections as written. Otherwise, trim
+    /// spaces and quotes and expand environment variables. Returns null for a blank or not fully qualified value, so the
     /// caller uses the default location. Exceptions propagate; each caller keeps its own side effects.
     /// </summary>
     public static SnippetPathResolution? FromConfiguredPath(string? configured, Func<string, string> expandEnvironmentVariables)
@@ -28,9 +39,14 @@ internal readonly record struct SnippetPathResolution(string FilePath, bool IsDe
             return null;
         }
 
-        string expanded = expandEnvironmentVariables(configured.Trim().Trim('"'));
-        return Path.IsPathFullyQualified(expanded)
-            ? new SnippetPathResolution(Path.GetFullPath(expanded), IsDefault: false)
+        string value = configured.Trim();
+        string filePath = value.StartsWith(LiteralPathPrefix, StringComparison.Ordinal)
+            && value.Length > LiteralPathPrefix.Length
+            && value[^1] == '"'
+            ? value[LiteralPathPrefix.Length..^1]
+            : expandEnvironmentVariables(value.Trim('"'));
+        return Path.IsPathFullyQualified(filePath)
+            ? new SnippetPathResolution(Path.GetFullPath(filePath), IsDefault: false)
             : null;
     }
 

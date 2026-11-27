@@ -17,6 +17,7 @@ public sealed class ClipboardPolicyTests
         CollectionAssert.AreEqual(new uint[] { ClipboardFormats.CF_DIB, ClipboardFormats.CF_DIBV5 }, ClipboardFormats.PlanCapture([ClipboardFormats.CF_BITMAP, ClipboardFormats.CF_DIB, ClipboardFormats.CF_DIBV5])!.ToArray());
         Assert.IsNull(ClipboardFormats.PlanCapture([ClipboardFormats.CF_BITMAP]));
         Assert.IsNull(ClipboardFormats.PlanCapture([ClipboardFormats.CF_DIB, ClipboardFormats.CF_PALETTE]));
+        Assert.IsNull(ClipboardFormats.PlanCapture([ClipboardFormats.CF_DIB, ClipboardFormats.CF_DSPBITMAP]));
         Assert.IsNotNull(ClipboardFormats.PlanCapture(Array.Empty<uint>()));
     }
 

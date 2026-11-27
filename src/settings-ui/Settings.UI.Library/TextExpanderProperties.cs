@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.PowerToys.Settings.UI.Library
@@ -18,6 +20,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// defaults to %LOCALAPPDATA%\\Microsoft\\PowerToys\\TextExpander when unset.
         /// </summary>
         [JsonPropertyName("snippets_path")]
+        [JsonConverter(typeof(TextExpanderPropertyConverters.StringValue))]
         public StringProperty SnippetsPath { get; set; }
 
         /// <summary>
@@ -28,10 +31,12 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// also keeps expansions off the clipboard entirely for users who need that.
         /// </summary>
         [JsonPropertyName("injection_backend")]
+        [JsonConverter(typeof(TextExpanderPropertyConverters.StringValue))]
         public StringProperty InjectionBackend { get; set; }
 
         /// <summary>Replacements at least this long are pasted instead of typed.</summary>
         [JsonPropertyName("clipboard_threshold_chars")]
+        [JsonConverter(typeof(TextExpanderPropertyConverters.IntValue))]
         public IntProperty ClipboardThresholdChars { get; set; }
 
         /// <summary>
@@ -43,6 +48,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// is machinery rather than typing -- is defensible.
         /// </summary>
         [JsonPropertyName("treat_remaps_as_typing")]
+        [JsonConverter(typeof(TextExpanderPropertyConverters.BoolValue))]
         public bool TreatRemapsAsTyping { get; set; }
 
         /// <summary>
@@ -50,6 +56,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// True by default to preserve the exact trigger the user saved.
         /// </summary>
         [JsonPropertyName("case_sensitive")]
+        [JsonConverter(typeof(TextExpanderPropertyConverters.BoolValue))]
         public bool CaseSensitive { get; set; }
 
         /// <summary>
@@ -59,6 +66,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// A saved false value remains false, preserving the behavior users explicitly chose.
         /// </summary>
         [JsonPropertyName("require_word_boundary")]
+        [JsonConverter(typeof(TextExpanderPropertyConverters.BoolValue))]
         public bool RequireWordBoundary { get; set; }
 
         /// <summary>
@@ -70,7 +78,11 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// space is wrong rather than merely untidy. Only meaningful with RequireWordBoundary on.
         /// </summary>
         [JsonPropertyName("word_boundary_keeps_space")]
+        [JsonConverter(typeof(TextExpanderPropertyConverters.BoolValue))]
         public bool WordBoundaryKeepsSpace { get; set; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> AdditionalSettings { get; set; } = new();
 
         public TextExpanderProperties()
         {

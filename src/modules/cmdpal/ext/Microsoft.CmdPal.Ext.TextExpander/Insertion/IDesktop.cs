@@ -2,7 +2,9 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Collections.Generic;
+using Microsoft.CmdPal.Common;
 using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
@@ -45,6 +47,6 @@ internal interface IDesktop
     /// <summary>Sends <paramref name="strokes"/> in one call and returns how many events Windows accepted.</summary>
     uint Send(IReadOnlyList<KeyStroke> strokes);
 
-    /// <summary>Hides Command Palette, so the app it was opened over comes back to the front.</summary>
-    void HideCommandPalette();
+    /// <summary>Gets the target captured when the source palette opened.</summary>
+    CommandPaletteInputTarget? CaptureInputTarget(nint sourceHwnd, Guid sourceRouteId);
 }

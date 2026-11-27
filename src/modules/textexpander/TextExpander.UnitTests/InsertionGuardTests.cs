@@ -136,17 +136,85 @@ public sealed class InsertionGuardTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ExpiryReplaysHeldKeysBeforeFreshKeys(bool sinceMatch)
+    {
+        long now = 0;
+        int testThread = Environment.CurrentManagedThreadId;
+        var delivered = new List<char>();
+        using var guard = new InsertionGuard(() => 1, _ => true);
+        guard.Clock = () => Environment.CurrentManagedThreadId == testThread ? now : 0;
+        guard.Resend = inputs =>
+        {
+            foreach (Native.INPUT input in inputs)
+            {
+                Take(FakeTextBox.ToHookEvent(input));
+            }
+
+            return (uint)inputs.Length;
+        };
+
+        bool typedOn = false;
+        guard.TargetInFront = _ =>
+        {
+            if (!typedOn)
+            {
+                // In the gap between timeout detaching its keys and their first dispatch.
+                typedOn = true;
+                Take(FakeTextBox.UserKey('b', up: false));
+                Take(FakeTextBox.UserKey('b', up: true));
+                Assert.AreEqual(0, delivered.Count);
+            }
+
+            return true;
+        };
+
+        if (sinceMatch)
+        {
+            Assert.IsTrue(guard.HoldAfterMatch(Target, 1, FakeTextBox.UserKey('x', up: false)));
+            Take(FakeTextBox.UserKey('x', up: true));
+        }
+        else
+        {
+            byte marker = guard.Begin(1, Target);
+            Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(marker)));
+            Assert.IsTrue(guard.AwaitStart());
+        }
+
+        Take(FakeTextBox.UserKey('a', up: false));
+        Take(FakeTextBox.UserKey('a', up: true));
+        now = InsertionGuard.TimeoutMs;
+        guard.Expire();
+
+        Assert.IsTrue(typedOn);
+        Take(FakeTextBox.UserKey('c', up: false));
+        Assert.AreEqual(sinceMatch ? "xabc" : "abc", new string(delivered.ToArray()));
+
+        void Take(Native.KBDLLHOOKSTRUCT key)
+        {
+            if (!guard.Swallows(key) && (key.Flags & Native.LLKHF_UP) == 0)
+            {
+                delivered.Add((char)key.ScanCode);
+            }
+        }
+    }
+
+    [TestMethod]
     public void TooManyHeldKeysEndTheGuard()
     {
         // The timer ends it at once and sends them back: the hook never sends.
         var sent = new TaskCompletionSource<int>();
-        using var guard = new InsertionGuard(() => 1, _ => true)
+        using var guard = new InsertionGuard(() => 1, _ => true);
+        guard.Resend = inputs =>
         {
-            Resend = inputs =>
+            foreach (Native.INPUT input in inputs)
             {
-                sent.TrySetResult(inputs.Length);
-                return (uint)inputs.Length;
-            },
+                _ = guard.Swallows(FakeTextBox.ToHookEvent(input));
+            }
+
+            sent.TrySetResult(inputs.Length);
+            return (uint)inputs.Length;
         };
         byte id = guard.Begin(1, Target);
         Assert.IsTrue(guard.Swallows(FakeTextBox.Marker(id)));
@@ -157,7 +225,6 @@ public sealed class InsertionGuardTests
 
         Assert.IsTrue(sent.Task.Wait(10_000));
         Assert.AreEqual(InsertionGuard.MaxHeld, sent.Task.Result);
-        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('b', up: false)));
     }
 
     [TestMethod]
@@ -800,6 +867,54 @@ public sealed class InsertionGuardTests
     }
 
     [TestMethod]
+    [DataRow(Native.VK_RETURN, '\n')]
+    [DataRow(Native.VK_TAB, '\t')]
+    public void AChordAfterTheTypingLimitReleasesAndRestoresShift(int typingKey, char character)
+    {
+        long now = 0;
+        int testThread = Environment.CurrentManagedThreadId;
+        bool pressedShift = false;
+        bool shiftDown = false;
+        bool typedChord = false;
+        using var box = new FakeTextBox(string.Empty);
+        box.Guard.Clock = () => Environment.CurrentManagedThreadId == testThread ? now : 0;
+        box.AfterKey = key =>
+        {
+            bool down = (key.Flags & Native.LLKHF_UP) == 0;
+            if (key.VkCode == Native.VK_LSHIFT)
+            {
+                shiftDown = down;
+            }
+            else if (key.VkCode == typingKey && down)
+            {
+                Assert.IsFalse(shiftDown, "The synthetic key must go in without Shift.");
+                typedChord = true;
+            }
+        };
+
+        bool completed = Run(
+            box,
+            0,
+            $"a{character}b",
+            keys: vk => vk == Native.VK_LSHIFT && shiftDown ? unchecked((short)0x8000) : (short)0,
+            sleep: _ =>
+            {
+                if (!pressedShift)
+                {
+                    pressedShift = true;
+                    box.UserPresses((Native.VK_LSHIFT, false));
+                    now = InsertionGuard.HoldCapMs;
+                }
+            });
+
+        Assert.IsTrue(completed);
+        Assert.IsTrue(typedChord);
+        Assert.IsTrue(shiftDown, "The user's Shift is still physically held after the unmodified chord.");
+        Assert.IsFalse(box.Guard.Holding, "The chord must not hold typing for the rest of the snippet.");
+        box.UserPresses((Native.VK_LSHIFT, true));
+    }
+
+    [TestMethod]
     public void AClickWhileHeldKeysGoBackMidTypingStillStopsTheRest()
     {
         // A click while held keys go back must stop the rest even though the same window is still in front.
@@ -1010,13 +1125,16 @@ public sealed class InsertionGuardTests
     {
         // The timer sends them back at once, the swallowed key first: the hook never sends.
         var sent = new TaskCompletionSource<Native.INPUT[]>();
-        using var guard = new InsertionGuard(() => 1, _ => true)
+        using var guard = new InsertionGuard(() => 1, _ => true);
+        guard.Resend = inputs =>
         {
-            Resend = inputs =>
+            foreach (Native.INPUT input in inputs)
             {
-                sent.TrySetResult([.. inputs]);
-                return (uint)inputs.Length;
-            },
+                _ = guard.Swallows(FakeTextBox.ToHookEvent(input));
+            }
+
+            sent.TrySetResult([.. inputs]);
+            return (uint)inputs.Length;
         };
         Assert.IsTrue(guard.HoldAfterMatch(Target, 1, FakeTextBox.UserKey('x', up: false)));
         for (int i = 1; i < InsertionGuard.MaxHeld; i++)
@@ -1027,7 +1145,6 @@ public sealed class InsertionGuardTests
         Assert.IsTrue(sent.Task.Wait(10_000));
         Assert.AreEqual(InsertionGuard.MaxHeld, sent.Task.Result.Length);
         Assert.AreEqual((ushort)'x', sent.Task.Result[0].U.Ki.WScan);
-        Assert.IsFalse(guard.Swallows(FakeTextBox.UserKey('b', up: false)));
     }
 
     [TestMethod]

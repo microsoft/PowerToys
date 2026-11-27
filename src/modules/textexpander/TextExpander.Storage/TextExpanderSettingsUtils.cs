@@ -11,6 +11,7 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using ManagedCommon;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -28,7 +29,7 @@ namespace Microsoft.PowerToys.TextExpander.Storage
         {
         }
 
-        public TextExpanderSettingsUtils(IFileSystem fileSystem, System.Text.Json.JsonSerializerOptions? serializerOptions = null)
+        public TextExpanderSettingsUtils(IFileSystem fileSystem, JsonSerializerOptions? serializerOptions = null)
             : base(fileSystem, serializerOptions)
         {
             _file = fileSystem.File;
@@ -75,7 +76,15 @@ namespace Microsoft.PowerToys.TextExpander.Storage
             // A replace can briefly hide the destination; don't mistake an in-flight save for missing settings.
             using (AcquireAtomicSettingsClaim(GetSettingsFilePath(powertoy, fileName), AtomicSettingsClaimTimeout))
             {
-                return base.GetSettingsOrDefaultReadOnly<T>(powertoy, fileName);
+                T settings = base.GetSettingsOrDefaultReadOnly<T>(powertoy, fileName);
+                if (typeof(T) == typeof(TextExpanderSettings) && settings is not TextExpanderSettings { Properties: not null })
+                {
+                    throw new InvalidOperationException(
+                        $"Settings file {fileName} for {powertoy} could not be read consistently; no changes were made.",
+                        new JsonException("Text Expander settings and their properties cannot be null."));
+                }
+
+                return settings;
             }
         }
 

@@ -72,6 +72,7 @@ internal sealed class InsertionGuard : IDisposable
     private readonly List<HeldModifierRelease> _modifierReleases = [];
     private readonly Dictionary<IntPtr, ModifierCleanup> _cleanup = [];
     private readonly List<ReplayBatch> _replays = [];
+    private volatile ExpiryReplay? _expiryReplay;
     private int _pendingCleanup;
     private int _resending;
     private bool _disposed;
@@ -91,13 +92,25 @@ internal sealed class InsertionGuard : IDisposable
 
     private sealed record ModifierCleanup(Native.KBDLLHOOKSTRUCT Key, long Generation);
 
-    private sealed class ReplayBatch(Native.INPUT[] keys)
+    private sealed class ReplayBatch(Native.INPUT[] keys, bool fromExpiry)
     {
         public Native.INPUT[] Keys { get; } = keys;
+
+        public bool FromExpiry { get; } = fromExpiry;
 
         public Dictionary<int, HeldModifierRelease> Releases { get; } = [];
 
         public int Next { get; set; }
+    }
+
+    // Reserved under _lock before the timer removes either hold. Fresh keys wait behind the detached batches.
+    private sealed class ExpiryReplay(IntPtr target, long deadline)
+    {
+        public IntPtr Target { get; } = target;
+
+        public long Deadline { get; } = deadline;
+
+        public List<Native.KBDLLHOOKSTRUCT> Pending { get; set; } = [];
     }
 
     // Under _lock. The insertion being sent: the id its markers carry, the input generation of its trigger, its window,
@@ -186,7 +199,7 @@ internal sealed class InsertionGuard : IDisposable
         {
             lock (_lock)
             {
-                return _cancelled;
+                return _cancelled || (_over && _markers > 0 && _expiryReplay is not null);
             }
         }
     }
@@ -451,7 +464,14 @@ internal sealed class InsertionGuard : IDisposable
         {
             if (Wait(MarkerWaitMs, () => _markers > 0 || _over))
             {
-                return _over ? _unguarded : _committed;
+                if (!_over)
+                {
+                    return _committed;
+                }
+
+                // Even an insertion that may proceed without its marker must wait until the timer has returned
+                // the held modifier events, so the worker observes their state before its first edit.
+                return _unguarded && Wait(MarkerWaitMs, () => _expiryReplay is null) && !_disposed && Unchanged(_generation);
             }
 
             target = _target;
@@ -581,6 +601,11 @@ internal sealed class InsertionGuard : IDisposable
             {
                 DiscardLocked(TakeAfterMatchLocked());
             }
+
+            if (_expiryReplay is { } expiry && window != expiry.Target)
+            {
+                EndExpiryReplayLocked();
+            }
         }
     }
 
@@ -629,10 +654,25 @@ internal sealed class InsertionGuard : IDisposable
             {
                 foreach (ReplayBatch replay in _replays)
                 {
-                    if (replay.Next < replay.Keys.Length && SameInput(replay.Keys[replay.Next], key))
+                    // An earlier hook can consume one of the expired batch's events. Recognize the remainder
+                    // instead of holding it again, with a bounded search on the hook thread.
+                    int end = Math.Min(replay.Keys.Length, replay.Next + (replay.FromExpiry ? MaxHeld : 1));
+                    int index = replay.Next;
+                    while (index < end && !SameInput(replay.Keys[index], key))
+                    {
+                        index++;
+                    }
+
+                    if (index < end)
                     {
                         replayed = true;
-                        replay.Releases.TryGetValue(replay.Next++, out release);
+                        replay.Releases.TryGetValue(index, out release);
+                        replay.Next = index + 1;
+                        if (replay.FromExpiry)
+                        {
+                            Monitor.PulseAll(_lock);
+                        }
+
                         break;
                     }
                 }
@@ -641,7 +681,7 @@ internal sealed class InsertionGuard : IDisposable
 
         if (!KeyboardHook.IsModifierKey(key.VkCode) || key.DwExtraInfo == HostInputTags.KeyboardManagerSuppressed)
         {
-            return SwallowsCore(key, out mayMatch);
+            return SwallowsCore(key, out mayMatch, replayed);
         }
 
         lock (_lock)
@@ -653,7 +693,7 @@ internal sealed class InsertionGuard : IDisposable
                 _externalModifierGeneration[vk]++;
             }
 
-            bool swallowed = SwallowsCore(key, out mayMatch, release);
+            bool swallowed = SwallowsCore(key, out mayMatch, replayed, release);
             if (!swallowed)
             {
                 if (observePassed)
@@ -695,7 +735,7 @@ internal sealed class InsertionGuard : IDisposable
         }
     }
 
-    private bool SwallowsCore(Native.KBDLLHOOKSTRUCT key, out bool mayMatch, HeldModifierRelease? replayedRelease = null)
+    private bool SwallowsCore(Native.KBDLLHOOKSTRUCT key, out bool mayMatch, bool replayed, HeldModifierRelease? replayedRelease = null)
     {
         mayMatch = true;
         bool ours = key.DwExtraInfo == KeyboardHook.InjectionSignature;
@@ -707,7 +747,7 @@ internal sealed class InsertionGuard : IDisposable
 
         // Input a lower-integrity app injected is never held: sent again, it would carry our integrity level. The hold since
         // a match is read first: an insertion taking it over starts holding before it ends it.
-        if ((!_holdingAfterMatch && _mode == Mode.None) || (key.Flags & Native.LLKHF_LOWER_IL_INJECTED) != 0)
+        if ((!_holdingAfterMatch && _mode == Mode.None && _expiryReplay is null) || (key.Flags & Native.LLKHF_LOWER_IL_INJECTED) != 0)
         {
             return false;
         }
@@ -724,8 +764,16 @@ internal sealed class InsertionGuard : IDisposable
                 return false;
             }
 
-            // While held keys go back, the next one of them passes, and so does what Keyboard Manager sends in place of
-            // one: our hook usually runs before its, so a Caps Lock remapped to Ctrl comes back as an injected Ctrl.
+            // Keyboard Manager can replace a replayed event with an injected remap, such as Caps Lock becoming Ctrl.
+            bool remapped = (key.Flags & Injected) != 0 && (key.DwExtraInfo & HostInputTags.KeyboardManagerInjected) != 0;
+
+            if (_expiryReplay is { } expiry && !replayed && !remapped && expiry.Pending.Count < MaxHeld && Clock() < expiry.Deadline)
+            {
+                HoldLocked(expiry.Pending, key, replayedRelease);
+                return true;
+            }
+
+            // While held keys go back, the next one of them passes, and so does what Keyboard Manager sends in place of one.
             bool passes = _mode == Mode.None;
             if (_mode == Mode.Draining && (key.Flags & Injected) != 0)
             {
@@ -734,7 +782,7 @@ internal sealed class InsertionGuard : IDisposable
                     _next++;
                     passes = true;
                 }
-                else if ((key.DwExtraInfo & HostInputTags.KeyboardManagerInjected) != 0)
+                else if (remapped)
                 {
                     passes = true;
                 }
@@ -785,6 +833,7 @@ internal sealed class InsertionGuard : IDisposable
                 _cancelled = true;
                 DiscardLocked(EndLocked());
                 DiscardLocked(TakeAfterMatchLocked());
+                EndExpiryReplayLocked();
 
                 // A timer or worker may have detached a replay list and be checking its target. Its release records
                 // stay here until that operation finishes; disposal takes them over before closing the send gate.
@@ -878,10 +927,27 @@ internal sealed class InsertionGuard : IDisposable
         List<Native.KBDLLHOOKSTRUCT>? afterMatch = null;
         IntPtr target = IntPtr.Zero;
         IntPtr afterMatchTarget = IntPtr.Zero;
+        ExpiryReplay? expiry = null;
         lock (_lock)
         {
+            if (_disposed || _expiryReplay is not null)
+            {
+                return;
+            }
+
             long now = Clock();
-            if (_mode != Mode.None && (_deadline - now <= 0 || _held.Count >= MaxHeld))
+            bool expireInsertion = _mode != Mode.None && (_deadline - now <= 0 || _held.Count >= MaxHeld);
+            bool expireMatch = _holdingAfterMatch && (_afterMatchDeadline - now <= 0 || _afterMatch.Count >= MaxHeld);
+            if (expireInsertion && _held.Count > 0)
+            {
+                expiry = _expiryReplay = new ExpiryReplay(_target, now + TimeoutMs);
+            }
+            else if (expireMatch)
+            {
+                expiry = _expiryReplay = new ExpiryReplay(_afterMatchTarget, now + TimeoutMs);
+            }
+
+            if (expireInsertion)
             {
                 target = _target;
 
@@ -889,26 +955,95 @@ internal sealed class InsertionGuard : IDisposable
                 held = _awaitingStart ? EndWithoutMarkerLocked(out _) : EndLocked();
             }
 
-            if (_holdingAfterMatch && (_afterMatchDeadline - now <= 0 || _afterMatch.Count >= MaxHeld))
+            if (expireMatch)
             {
                 afterMatchTarget = _afterMatchTarget;
                 _afterMatchSentBack = _afterMatchGeneration;
                 afterMatch = TakeAfterMatchLocked();
             }
 
+            if (expiry is null)
+            {
+                ArmTimerLocked();
+            }
+        }
+
+        try
+        {
+            if (expiry is not null)
+            {
+                lock (_lock)
+                {
+                    // A normal drain may already be sending an older batch. Wait before checking the replay target.
+                    _ = Wait(ExpiryReplayWaitMs(expiry), () => _resending == 0 || !ReferenceEquals(_expiryReplay, expiry));
+                }
+            }
+
+            // Held since a match among keys going back, those were typed before what that insertion still held for later.
+            if (afterMatch is not null)
+            {
+                SendBackAsTheyCame(afterMatch, afterMatchTarget, expiry);
+            }
+
+            if (held is not null)
+            {
+                SendBack(held, target, expiry);
+            }
+
+            if (expiry is not null)
+            {
+                DrainExpiryReplay(expiry);
+            }
+        }
+        finally
+        {
+            if (expiry is not null)
+            {
+                lock (_lock)
+                {
+                    if (ReferenceEquals(_expiryReplay, expiry))
+                    {
+                        EndExpiryReplayLocked();
+                    }
+                }
+            }
+        }
+    }
+
+    private void DrainExpiryReplay(ExpiryReplay expiry)
+    {
+        while (true)
+        {
+            List<Native.KBDLLHOOKSTRUCT> pending;
+            lock (_lock)
+            {
+                if (!ReferenceEquals(_expiryReplay, expiry))
+                {
+                    return;
+                }
+
+                if (expiry.Pending.Count == 0)
+                {
+                    EndExpiryReplayLocked();
+                    return;
+                }
+
+                pending = expiry.Pending;
+                expiry.Pending = [];
+            }
+
+            SendBackAsTheyCame(pending, expiry.Target, expiry);
+        }
+    }
+
+    // Called with _lock. End only once every batch has drained or the original target is gone.
+    private void EndExpiryReplayLocked()
+    {
+        if (_expiryReplay is { } expiry)
+        {
+            _expiryReplay = null;
+            DiscardLocked(expiry.Pending);
             ArmTimerLocked();
-        }
-
-        // Held since a match among keys going back, those were typed before what that insertion still held for later. With
-        // the swallowed key first, they reach the app, so the insertion still to begin for that match won't go ahead.
-        if (afterMatch is not null)
-        {
-            SendBackAsTheyCame(afterMatch, afterMatchTarget);
-        }
-
-        if (held is not null)
-        {
-            SendBack(held, target);
         }
     }
 
@@ -1099,7 +1234,7 @@ internal sealed class InsertionGuard : IDisposable
     }
 
     /// <summary>Sends <paramref name="held"/> back as <see cref="ToResend"/> does if <paramref name="target"/> is in front, and zeroes it.</summary>
-    private void SendBack(List<Native.KBDLLHOOKSTRUCT> held, IntPtr target)
+    private void SendBack(List<Native.KBDLLHOOKSTRUCT> held, IntPtr target, ExpiryReplay? expiry = null)
     {
         Native.INPUT[] resend = [];
         try
@@ -1107,7 +1242,7 @@ internal sealed class InsertionGuard : IDisposable
             if (held.Count > 0 && TargetInFront(target))
             {
                 resend = ToResend(held);
-                _ = ResendWhileAlive(resend, held);
+                _ = ResendWhileAlive(resend, held, expiry);
             }
         }
         finally
@@ -1125,7 +1260,7 @@ internal sealed class InsertionGuard : IDisposable
     /// Held without a break since the match, so a key still down has its key-up still to come: unlike
     /// <see cref="ToResend"/>, nothing is added or left out, and a modifier the user still holds stays down.
     /// </summary>
-    private void SendBackAsTheyCame(List<Native.KBDLLHOOKSTRUCT> keys, IntPtr target)
+    private void SendBackAsTheyCame(List<Native.KBDLLHOOKSTRUCT> keys, IntPtr target, ExpiryReplay? expiry = null)
     {
         Native.INPUT[] resend = [];
         try
@@ -1138,7 +1273,7 @@ internal sealed class InsertionGuard : IDisposable
                     resend[i] = ToInput(keys[i]);
                 }
 
-                _ = ResendWhileAlive(resend, keys);
+                _ = ResendWhileAlive(resend, keys, expiry);
             }
         }
         finally
@@ -1311,9 +1446,9 @@ internal sealed class InsertionGuard : IDisposable
             && ((sent.DwFlags & Native.KEYEVENTF_EXTENDEDKEY) != 0) == ((key.Flags & Native.LLKHF_EXTENDED) != 0);
     }
 
-    private ReplayBatch BeginResendLocked(Native.INPUT[] keys, List<Native.KBDLLHOOKSTRUCT> source)
+    private ReplayBatch BeginResendLocked(Native.INPUT[] keys, List<Native.KBDLLHOOKSTRUCT> source, bool fromExpiry = false)
     {
-        var replay = new ReplayBatch(keys);
+        var replay = new ReplayBatch(keys, fromExpiry);
         int next = 0;
         foreach (HeldModifierRelease release in _modifierReleases.Where(release => ReferenceEquals(release.Owner, source)).OrderBy(release => release.Index))
         {
@@ -1343,28 +1478,42 @@ internal sealed class InsertionGuard : IDisposable
         }
     }
 
-    private uint ResendWhileAlive(Native.INPUT[] keys, List<Native.KBDLLHOOKSTRUCT> source)
+    private uint ResendWhileAlive(Native.INPUT[] keys, List<Native.KBDLLHOOKSTRUCT> source, ExpiryReplay? expiry)
     {
         ReplayBatch replay;
         lock (_lock)
         {
-            if (_disposed)
+            if (_disposed || (expiry is not null && !ReferenceEquals(_expiryReplay, expiry)))
             {
                 return 0;
             }
 
-            replay = BeginResendLocked(keys, source);
+            replay = BeginResendLocked(keys, source, fromExpiry: expiry is not null);
         }
 
         try
         {
-            return Resend(keys);
+            uint sent = Resend(keys);
+            if (expiry is not null && sent > 0)
+            {
+                lock (_lock)
+                {
+                    // SendInput accepting a batch does not mean the hook has seen it. Keep newer keys behind it.
+                    // Expiry still fails open if the hook or a previous send has stopped making progress.
+                    _ = Wait(ExpiryReplayWaitMs(expiry), () => replay.Next >= sent || !ReferenceEquals(_expiryReplay, expiry));
+                }
+            }
+
+            return sent;
         }
         finally
         {
             EndResend(replay);
         }
     }
+
+    private int ExpiryReplayWaitMs(ExpiryReplay expiry)
+        => (int)Math.Clamp(expiry.Deadline - Clock(), 0, MarkerWaitMs);
 
     /// <summary>Called under <c>_lock</c>: waits up to <paramref name="timeoutMs"/> for <paramref name="done"/>.</summary>
     private bool Wait(int timeoutMs, Func<bool> done)

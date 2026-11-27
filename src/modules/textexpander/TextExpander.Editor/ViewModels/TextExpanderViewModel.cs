@@ -31,7 +31,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private readonly ITextExpanderStorageEnvironment _storageEnvironment;
         private readonly Action<string> _openFile;
 
-        private TextExpanderSettings _settings;
+        private TextExpanderSettings _settings = new();
         private TextExpanderVariable[] _variables;
         private SnippetFile _file;
         private string _snippetError;
@@ -53,6 +53,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private int _snippetFileCheckQueued;
         private volatile bool _snippetReadPending;
         private IDisposable _settingsWatch;
+        private bool _hasReadSettings;
+        private volatile bool _settingsReadPending;
 
         private enum PersistedFolderSettingStatus
         {
@@ -75,18 +77,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             _storageEnvironment = storageEnvironment ?? new TextExpanderStorageEnvironment();
             _openFile = openFile ?? OpenFileWithDefaultApplication;
 
-            // Not wrapped in a catch-all: GetSettingsOrDefault already handles a missing or corrupt file, and
-            // anything else is a bug that must fail loudly rather than show defaults.
-            _settings = _settingsUtils.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName);
-
-            // "Keep the space you typed" is no longer exposed; this is the one place that clears a false
-            // saved by earlier builds, which the engine still honors.
-            if (!_settings.Properties.WordBoundaryKeepsSpace)
-            {
-                Save(properties => properties.WordBoundaryKeepsSpace = true);
-            }
-
-            LoadSnippets();
+            RefreshSettings();
         }
 
         /// <summary>
@@ -126,6 +117,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                     return _getResourceString("TextExpander_SnippetFile_SummaryElevated");
                 }
 
+                if (!_hasReadSettings)
+                {
+                    return _getResourceString("TextExpander_SnippetCountUnavailable");
+                }
+
                 string folder = SnippetsFolderPath;
                 return string.Format(
                     CultureInfo.CurrentCulture,
@@ -155,7 +151,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             get => _settings.Properties.SnippetsPath.Value;
             set
             {
-                if (!CanEditSnippets)
+                if (!CanEditSnippets || !_hasReadSettings)
                 {
                     return;
                 }
@@ -307,6 +303,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 return ElevatedSnippetAccessDeniedMessage();
             }
 
+            if (!_hasReadSettings)
+            {
+                return SnippetError;
+            }
+
             try
             {
                 string target = Path.GetFullPath(path);
@@ -315,17 +316,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                     return string.Format(CultureInfo.CurrentCulture, _getResourceString("TextExpander_SnippetFile_NotSnippets"), Path.GetFileName(target));
                 }
 
-                if (string.Equals(target, _loadedPath, StringComparison.OrdinalIgnoreCase))
+                string error = UseSnippetsPath(target);
+                if (error != null)
                 {
-                    LoadSnippets();
-                }
-                else
-                {
-                    string error = UseSnippetsPath(target);
-                    if (error != null)
-                    {
-                        return error;
-                    }
+                    return error;
                 }
             }
             catch (Exception ex) when (IsFileError(ex))
@@ -472,7 +466,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         public bool ShowsSnippetCount => !HasNoSnippets;
 
         /// <summary>Gets the resolved snippet file, shown so the user can find it outside the app.</summary>
-        public string SnippetsFilePath => _loadedPath ?? ResolveSnippetsFile();
+        public string SnippetsFilePath => _hasReadSettings ? _loadedPath ?? ResolveSnippetsFile() : string.Empty;
 
         /// <summary>Opens the snippets file in the app Windows uses for JSON files, or in Notepad when no app is set for them.</summary>
         /// <returns>A localized error message, or null when the file was opened.</returns>
@@ -481,6 +475,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             if (!CanEditSnippets)
             {
                 return ElevatedSnippetAccessDeniedMessage();
+            }
+
+            if (!_hasReadSettings)
+            {
+                return SnippetError;
             }
 
             string path = SnippetsFilePath;
@@ -565,8 +564,26 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// <summary>Reads the snippet file into <see cref="Snippets"/>.</summary>
         public void LoadSnippets() => LoadSnippets(clearSaveReview: true);
 
+        /// <summary>Retries settings and the snippet file when the editor reports a read failure.</summary>
+        public void ReloadSnippets()
+        {
+            if (_settingsReadError is null)
+            {
+                LoadSnippets();
+            }
+            else
+            {
+                RefreshSettings(reloadSnippets: true);
+            }
+        }
+
         private void LoadSnippets(bool clearSaveReview)
         {
+            if (!_hasReadSettings)
+            {
+                return;
+            }
+
             _snippetReadPending = false;
             IsWaitingForSnippetsFile = IsReadDefaultFileMissing();
             if (IsWaitingForSnippetsFile)
@@ -576,7 +593,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 return;
             }
 
-            AdvanceSnippetRevision(notifyEditor: true);
             _loadedSavesAsIs = null;
             if (clearSaveReview)
             {
@@ -588,10 +604,8 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 _file = null;
                 _loadedPath = null;
                 _loadedBytes = null;
-                Snippets.ReplaceAll(Array.Empty<TextExpanderSnippetViewModel>());
                 _snippetError = null;
-                RaiseSnippetListChanged();
-                WatchSnippetFolder();
+                PublishLoadedRows(Array.Empty<TextExpanderSnippetViewModel>());
                 return;
             }
 
@@ -649,8 +663,17 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 rows.Clear();
             }
 
+            PublishLoadedRows(rows);
+        }
+
+        private void PublishLoadedRows(IEnumerable<TextExpanderSnippetViewModel> rows)
+        {
+            SnippetRevision++;
             Snippets.ReplaceAll(rows);
             RaiseSnippetListChanged();
+
+            // An open draft validates against the newly loaded library as soon as it sees the revision.
+            OnPropertyChanged(nameof(SnippetRevision));
             WatchSnippetFolder();
         }
 
@@ -688,7 +711,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         /// </summary>
         private void SyncRows()
         {
-            AdvanceSnippetRevision(notifyEditor: false);
+            SnippetRevision++;
             var current = new Dictionary<int, TextExpanderSnippetViewModel>(Snippets.Count);
             foreach (TextExpanderSnippetViewModel row in Snippets)
             {
@@ -714,7 +737,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private void WatchSnippetFolder()
         {
             string file = null;
-            if (_dispatch != null && CanEditSnippets)
+            if (_dispatch != null && CanEditSnippets && _hasReadSettings)
             {
                 try
                 {
@@ -805,15 +828,6 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             }
         }
 
-        private void AdvanceSnippetRevision(bool notifyEditor)
-        {
-            SnippetRevision++;
-            if (notifyEditor)
-            {
-                OnPropertyChanged(nameof(SnippetRevision));
-            }
-        }
-
         /// <summary>
         /// Adds or updates a snippet and writes the file. Pass null as <paramref name="id"/> to
         /// add. Returns null on success, or the reason it was refused.
@@ -899,6 +913,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             SnippetProblem.TriggerHasLineBreak => "TextExpander_Problem_TriggerHasLineBreak",
             SnippetProblem.TriggerStartsWithHiddenCharacter => "TextExpander_Problem_TriggerStartsWithHiddenCharacter",
             SnippetProblem.TriggerHasOuterSpace => "TextExpander_Problem_TriggerHasOuterSpace",
+            SnippetProblem.TriggerHasControlCharacter => "TextExpander_Problem_TriggerHasControlCharacter",
             _ => throw new ArgumentOutOfRangeException(nameof(problem)),
         });
 
@@ -1529,20 +1544,30 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
         private string UseSnippetsPath(string path)
         {
             string previous = _settings.Properties.SnippetsPath.Value;
+            string configuredPath = SnippetPathResolution.EncodePickedPath(path);
+            if (string.Equals(path, _loadedPath, StringComparison.OrdinalIgnoreCase)
+                && (configuredPath == path || string.Equals(configuredPath, previous, StringComparison.OrdinalIgnoreCase)))
+            {
+                LoadSnippets();
+                return null;
+            }
+
+            // A picker selection can name the file already in use through a manual path template. Save the literal
+            // selection even then, so a change to an environment variable won't change what the picker chose.
             try
             {
-                _settingsUtils.UpdateSnippetsPath(path);
+                _settingsUtils.UpdateSnippetsPath(configuredPath);
             }
             catch (Exception ex)
             {
                 Logger.LogError("Error saving the Text Expander snippets file setting.", ex);
                 AtomicSettingsPublicationException atomicError = ex as AtomicSettingsPublicationException;
-                PersistedFolderSetting persisted = InspectPersistedFolderSetting(previous, path);
+                PersistedFolderSetting persisted = InspectPersistedFolderSetting(previous, configuredPath);
                 bool unreadable = persisted.Status == PersistedFolderSettingStatus.Unreadable;
                 if (persisted.Status == PersistedFolderSettingStatus.New
                     || (unreadable && atomicError?.Outcome == AtomicSettingsPublicationOutcome.NewSettingsVerified))
                 {
-                    AdoptPersistedFolderSetting(path);
+                    AdoptPersistedFolderSetting(configuredPath);
                     return FormatSettingsPublicationRecovery("TextExpander_SnippetFolder_SettingsCommittedAfterError", atomicError);
                 }
 
@@ -1560,7 +1585,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
                 return FormatSettingsPublicationRecovery("TextExpander_SnippetFolder_SettingsStateUncertain", atomicError);
             }
 
-            AdoptPersistedFolderSetting(path);
+            AdoptPersistedFolderSetting(configuredPath);
             return null;
         }
 
@@ -1645,69 +1670,114 @@ namespace Microsoft.PowerToys.TextExpander.Editor.ViewModels
             _settingsWatch = _storageEnvironment.WatchForFiles(
                 Path.GetDirectoryName(path),
                 new[] { Path.GetFileName(path) },
-                () => _dispatch?.Invoke(RefreshSettings));
+                () => _dispatch?.Invoke(RefreshSettings),
+                needsRetry: () => _settingsReadPending);
 
             // Settings may have changed since construction, before the watcher could observe them.
             RefreshSettings();
         }
 
-        public void RefreshSettings()
+        public void RefreshSettings() => RefreshSettings(reloadSnippets: false);
+
+        private void RefreshSettings(bool reloadSnippets)
         {
+            TextExpanderSettings latest;
             try
             {
-                TextExpanderSettings latest = _settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
-                bool recoveredSettingsRead = _settingsReadError != null;
-                _settingsReadError = null;
-                if (latest.ToJsonString() == _settings.ToJsonString())
+                // A failed read must never replace a file with defaults.
+                latest = _settingsUtils.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+            }
+            catch (Exception ex) when (IsSettingsReadError(ex))
+            {
+                // Releasing a sharing lock does not necessarily change the file stamp. A file that was read but
+                // could not be parsed waits for a new file event or an explicit retry.
+                _settingsReadPending = ex is IOException or InvalidOperationException { InnerException: IOException };
+                bool errorChanged = !string.Equals(_settingsReadError, ex.Message, StringComparison.Ordinal);
+                if (errorChanged)
                 {
-                    if (recoveredSettingsRead)
-                    {
-                        RaiseSnippetListChanged();
-                    }
-
-                    return;
+                    Logger.LogError("Could not reload Text Expander editor settings.", ex);
+                    _settingsReadError = ex.Message;
                 }
 
-                bool folderChanged = latest.Properties.SnippetsPath.Value != _settings.Properties.SnippetsPath.Value;
-                bool caseSensitivityChanged = latest.Properties.CaseSensitive != _settings.Properties.CaseSensitive;
-                bool wordBoundaryChanged = latest.Properties.RequireWordBoundary != _settings.Properties.RequireWordBoundary;
-                _settings = latest;
-                if (folderChanged)
+                if (reloadSnippets && _hasReadSettings)
                 {
                     LoadSnippets();
                 }
-                else
+                else if (errorChanged)
                 {
-                    if (caseSensitivityChanged)
-                    {
-                        ApplyCaseSensitivityToRows();
-                    }
-
-                    if (caseSensitivityChanged || wordBoundaryChanged)
-                    {
-                        DescribeSnippets();
-                    }
+                    RaiseSnippetListChanged();
                 }
 
-                if (caseSensitivityChanged)
-                {
-                    OnPropertyChanged(nameof(CaseSensitive));
-                }
-
-                if (wordBoundaryChanged)
-                {
-                    OnPropertyChanged(nameof(RequireWordBoundary));
-                }
-
-                OnPropertyChanged(string.Empty);
+                return;
             }
-            catch (Exception ex) when (IsFileError(ex) || ex is System.Text.Json.JsonException or InvalidOperationException)
+
+            bool firstRead = !_hasReadSettings;
+            bool recoveredSettingsRead = _settingsReadError != null;
+            _settingsReadError = null;
+            _settingsReadPending = false;
+            if (firstRead)
             {
-                Logger.LogError("Could not reload Text Expander editor settings.", ex);
-                _settingsReadError = ex.Message;
+                latest = MigrateWordBoundarySpacing(latest);
+            }
+
+            if (!firstRead && !reloadSnippets && latest.ToJsonString() == _settings.ToJsonString())
+            {
+                if (recoveredSettingsRead)
+                {
+                    RaiseSnippetListChanged();
+                }
+
+                return;
+            }
+
+            bool folderChanged = latest.Properties.SnippetsPath.Value != _settings.Properties.SnippetsPath.Value;
+            bool caseSensitivityChanged = latest.Properties.CaseSensitive != _settings.Properties.CaseSensitive;
+            bool wordBoundaryChanged = latest.Properties.RequireWordBoundary != _settings.Properties.RequireWordBoundary;
+            _settings = latest;
+            _hasReadSettings = true;
+            if (firstRead || folderChanged || reloadSnippets)
+            {
+                LoadSnippets();
+            }
+            else if (recoveredSettingsRead || caseSensitivityChanged || wordBoundaryChanged)
+            {
                 RaiseSnippetListChanged();
             }
+
+            if (caseSensitivityChanged)
+            {
+                OnPropertyChanged(nameof(CaseSensitive));
+            }
+
+            if (wordBoundaryChanged)
+            {
+                OnPropertyChanged(nameof(RequireWordBoundary));
+            }
+
+            OnPropertyChanged(string.Empty);
         }
+
+        private TextExpanderSettings MigrateWordBoundarySpacing(TextExpanderSettings settings)
+        {
+            // "Keep the space you typed" is no longer exposed. Clear a false saved by an earlier build.
+            if (settings.Properties.WordBoundaryKeepsSpace)
+            {
+                return settings;
+            }
+
+            try
+            {
+                return _settingsUtils.UpdateOptions(properties => properties.WordBoundaryKeepsSpace = true);
+            }
+            catch (Exception ex) when (IsSettingsReadError(ex))
+            {
+                Logger.LogError("Could not migrate Text Expander's word boundary spacing.", ex);
+                return settings;
+            }
+        }
+
+        private static bool IsSettingsReadError(Exception error)
+            => IsFileError(error) || error is System.Text.Json.JsonException or InvalidOperationException;
 
         public void Dispose()
         {

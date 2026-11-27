@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Microsoft.PowerToys.Settings.UI.Library;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.PowerToys.TextExpander.Editor.Helpers;
 using Microsoft.PowerToys.TextExpander.Editor.UnitTests;
@@ -401,6 +402,49 @@ namespace ViewModelTests
             Assert.IsNull(model.UseSnippetsFile(work, out status));
             Assert.AreEqual("Now using the 2 snippets in Snippets.", status);
             Assert.AreEqual(1, Directory.GetFiles(Synced).Length);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void PickingAFilenameWithPercentTokensKeepsItsLiteralPath(bool move)
+        {
+            _environment.Variables["SNIPPET_NAME"] = "other";
+            string other = Write(Path.Combine(Synced, "other.json"), SnippetJson.Of("!other=Other file"));
+            string picked = Path.Combine(Synced, "%SNIPPET_NAME%.json");
+            Write(move ? Path.Combine(Local, Current) : picked, TwoSnippets);
+            var store = new MockSettingsStore();
+            using var model = new TextExpanderViewModel(store, isElevated: false, Resource, _environment);
+
+            Assert.IsNull(move ? model.MoveSnippetsTo(picked, Choice.ReplaceFile, out _) : model.UseSnippetsFile(picked, out _));
+
+            string configured = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).Properties.SnippetsPath.Value;
+            Assert.AreEqual($"literal:\"{picked}\"", configured);
+            Assert.AreEqual(picked, model.SnippetsFilePath);
+            Assert.AreEqual(2, model.Snippets.Count);
+
+            File.Delete(picked);
+            model.LoadSnippets();
+            Assert.AreEqual(picked, model.SnippetsFilePath);
+            Assert.IsTrue(model.IsSnippetsFileMissing);
+
+            using TextExpanderViewModel manual = CreateViewModel($"  \"{picked}\"  ");
+            Assert.AreEqual(other, manual.SnippetsFilePath, "A manually configured template still expands.");
+            Assert.AreEqual("!other", manual.Snippets.Single().Trigger);
+        }
+
+        [TestMethod]
+        public void PickingTheCurrentFilePinsItEvenWhenItWasConfiguredAsATemplate()
+        {
+            string picked = Write(Path.Combine(Synced, "%SNIPPET_NAME%.json"), TwoSnippets);
+            using TextExpanderViewModel model = CreateViewModel(picked);
+            Assert.AreEqual(picked, model.SnippetsFilePath);
+
+            Assert.IsNull(model.UseSnippetsFile(picked, out _));
+            Assert.AreEqual($"literal:\"{picked}\"", model.SnippetsPath);
+            _environment.Variables["SNIPPET_NAME"] = "other";
+            model.LoadSnippets();
+            Assert.AreEqual(picked, model.SnippetsFilePath);
         }
 
         [TestMethod]

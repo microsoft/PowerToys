@@ -79,16 +79,46 @@ internal sealed class FakeClipboard : IClipboardAccess
         WhileOpeningForWrite = null;
         whileOpening?.Invoke();
         var result = NextWrite;
-        if (result == ClipboardWrite.Refused || (saved is not null && saved.SequenceNumber != SequenceNumber))
+        if (result == ClipboardWrite.Refused || (saved is not null && saved.SequenceNumber != SequenceNumber) || (!keepOutOfHistory && !CanBeSaved))
         {
             return ClipboardWrite.Refused;
         }
 
-        SequenceNumber++;
-        IsOurs = true;
-        Text = result == ClipboardWrite.Written ? text : null;
+        var previous = Text;
+        var write = Win32Clipboard.CommitOpenedWrite(
+            empty: () =>
+            {
+                SequenceNumber++;
+                IsOurs = true;
+                Text = null;
+                return true;
+            },
+            publish: () =>
+            {
+                if (result != ClipboardWrite.Written)
+                {
+                    return false;
+                }
+
+                Text = text;
+                return true;
+            },
+            restore: keepOutOfHistory ? null : RestorePrevious);
+
         AfterWrite?.Invoke();
-        return result;
+        return write;
+
+        bool RestorePrevious()
+        {
+            if (FailingRestores > 0)
+            {
+                FailingRestores--;
+                return false;
+            }
+
+            Text = previous;
+            return true;
+        }
     }
 
     public bool HoldsText(string text) => string.Equals(Text, text, StringComparison.Ordinal);

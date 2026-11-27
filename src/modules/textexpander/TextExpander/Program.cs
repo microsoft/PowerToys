@@ -430,7 +430,6 @@ internal static class Program
     internal static bool TryExpand(KeyboardHook hook, PendingExpansion work, ReplaceText? replace = null, Func<int, bool>? isKeyDown = null, Func<PromptRequest, IntPtr, Action?, string?>? ask = null, Func<ClipboardChoice, IntPtr, Action?, string?>? choose = null, Func<string?>? readClipboard = null, Func<ClipboardHistory>? readHistory = null, Action<IntPtr, IReadOnlyList<ClipboardGap>>? notify = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        replace ??= Injector.Replace;
         readClipboard ??= Clipboard.GetText;
 
         // A key press or click after this was queued may have moved the caret, so the work is dropped rather than
@@ -453,11 +452,11 @@ internal static class Program
             }
 
             // A $|$ left the caret inside the expansion; it goes back to the end before the expansion is erased.
-            return replace(Injector.CountDeletableUnits(work.Replacement), work.Trigger, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: work.CursorLeft, hook.Guard, work.InputGeneration, inserted: null, givenBack: 0, fromClipboard: false, swallowed: string.Empty);
+            return ReplaceSnippet(Injector.CountDeletableUnits(work.Replacement), work.Trigger, cursorLeft: 0, cursorRight: work.CursorLeft, givenBack: 0, fromClipboard: false, swallowed: string.Empty, typedPrefix: string.Empty);
         }
 
         // Before any prompt, so nobody answers questions for an expansion that can no longer happen.
-        if (!InputUnchanged())
+        if (!InputUnchanged() || (replace is null && !InputTarget.IsFocusedWindow(work.TargetWindow, work.FocusedWindow)))
         {
             return false;
         }
@@ -482,7 +481,7 @@ internal static class Program
             // what was typed stays as typed. Not while a modifier is still down: it would leave the app in menu mode.
             if (giveBack)
             {
-                _ = replace(0, work.SwallowedText, work.TargetWindow, cursorLeftUnits: 0, cursorRightUnits: 0, hook.Guard, work.InputGeneration, inserted: null, givenBack: work.SwallowedText.Length, fromClipboard: false, swallowed: string.Empty);
+                _ = ReplaceSnippet(0, work.SwallowedText, cursorLeft: 0, cursorRight: 0, givenBack: work.SwallowedText.Length, fromClipboard: false, swallowed: string.Empty);
             }
 
             return false;
@@ -513,11 +512,28 @@ internal static class Program
         string literalPrefix = work.SwallowedText[..(work.SwallowedText.Length - swallowedMatchLength)];
         text = literalPrefix + text;
 
-        // Kept for Ctrl+Z before the keys held meanwhile go back, unless it holds a prompt's answer or the clipboard.
-        Action<string, int>? record = Variables.UsesSensitiveRuntimeInput(work.Replacement)
-            ? null
-            : (sentText, sentCursorLeft) => hook.RecordExpansion(literalPrefix + typedText, sentText, work.TargetWindow, work.InputGeneration, sentCursorLeft);
-        bool inserted = replace(Injector.CountDeletableUnits(work.TypedPrefix), text, work.TargetWindow, cursorLeft, cursorRightUnits: 0, hook.Guard, work.InputGeneration, record, givenBack: literalPrefix.Length + (work.Terminator is null ? 0 : 1), fromClipboard: expanded.Value.HasClipboardText, swallowed: work.SwallowedText);
+        // Keep only confirmed inserted text for Ctrl+Z, and never an answer or data read from the clipboard.
+        string restore = literalPrefix + typedText;
+        bool retainUndo = !Variables.UsesSensitiveRuntimeInput(work.Replacement);
+        Action<string, int>? record = retainUndo && replace is not null
+            ? (sentText, sentCursorLeft) => hook.RecordExpansion(restore, sentText, work.TargetWindow, work.InputGeneration, sentCursorLeft)
+            : null;
+        Action<NativeEdit.Undo>? recordNative = retainUndo
+            ? undo => hook.RecordExpansion(restore, undo.Text, work.TargetWindow, work.InputGeneration, focusedWindow: work.FocusedWindow, verified: undo)
+            : null;
+        string caretSuffix = cursorLeft > 0 ? text[(literalPrefix.Length + cursor)..] : string.Empty;
+        bool inserted = ReplaceSnippet(
+            Injector.CountDeletableUnits(work.TypedPrefix),
+            text,
+            cursorLeft,
+            cursorRight: 0,
+            givenBack: literalPrefix.Length + (work.Terminator is null ? 0 : 1),
+            fromClipboard: expanded.Value.HasClipboardText,
+            swallowed: work.SwallowedText,
+            typedPrefix: work.TypedPrefix,
+            caretSuffix: caretSuffix,
+            record: record,
+            recordNative: recordNative);
 
         // A spot a clipboard variable left empty is told once it's all in and the keys held meanwhile went back, so the
         // notice never comes between the snippet and them.
@@ -527,6 +543,28 @@ internal static class Program
         }
 
         return inserted;
+
+        bool ReplaceSnippet(int backspaces, string input, int cursorLeft, int cursorRight, int givenBack, bool fromClipboard, string swallowed, string? typedPrefix = null, string caretSuffix = "", Action<string, int>? record = null, Action<NativeEdit.Undo>? recordNative = null)
+        {
+            if (replace is not null)
+            {
+                return replace(backspaces, input, work.TargetWindow, cursorLeft, cursorRight, hook.Guard, work.InputGeneration, record, givenBack, fromClipboard, swallowed);
+            }
+
+            NativeEdit? editor = typedPrefix is null ? null : NativeEdit.ForWindow(work.FocusedWindow);
+            if (editor is { SingleLineOnly: true } && input.AsSpan().ContainsAny('\r', '\n'))
+            {
+                editor = null;
+            }
+
+            if (work.IsUndo && (editor is null || work.VerifiedUndo is null))
+            {
+                return false;
+            }
+
+            NativeEdit.Operation? edit = editor is null ? null : new(editor, typedPrefix!, caretSuffix, work.VerifiedUndo, recordNative);
+            return Injector.Replace(backspaces, input, work.TargetWindow, work.FocusedWindow, cursorLeft, cursorRight, hook.Guard, work.InputGeneration, givenBack, fromClipboard, swallowed, edit);
+        }
     }
 
     /// <summary>

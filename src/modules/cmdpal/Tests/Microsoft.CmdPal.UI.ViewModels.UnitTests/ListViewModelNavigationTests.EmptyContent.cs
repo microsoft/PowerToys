@@ -108,6 +108,10 @@ public sealed partial class ListViewModelNavigationTests
             scheduler.Drain();
             Assert.AreSame(after, viewModel.EmptyContent.Model.Unsafe);
             Assert.AreSame(viewModel.EmptyContent, contexts[^1]);
+
+            page.EmptyContent = null;
+            scheduler.Drain();
+            Assert.IsNull(contexts[^1], "Removing the empty content clears its command from the bar.");
         }
         finally
         {
@@ -118,5 +122,61 @@ public sealed partial class ListViewModelNavigationTests
         }
 
         void OnCommandBarContextChanged(object? sender, PageCommandBarContextChangedEventArgs e) => contexts.Add(e.Context);
+    }
+
+    [TestMethod]
+    [Timeout(15000)]
+    public async Task EmptyContentChangeKeepsThePublishedRowsCommandBarContext()
+    {
+        var scheduler = new QueuedTaskScheduler();
+        var page = new SearchPage { EmptyContent = new CommandItem(new NoOpCommand { Name = "Before search" }) };
+        page.ReplaceItems([], notify: false);
+        var viewModel = CreateViewModel(page, scheduler);
+        var selectedContextSeen = false;
+        var emptyContextAfterSelection = false;
+
+        try
+        {
+            Assert.IsTrue(await viewModel.InitializeAsync());
+            scheduler.Drain();
+            Assert.IsTrue(viewModel.ShowEmptyContent);
+            viewModel.ItemsUpdated += SelectPublishedItem;
+            viewModel.CommandBarContextChanged += ObserveCommandBarContext;
+
+            await Task.Run(() =>
+            {
+                // The Indexer raises ItemsChanged and then EmptyContent on the same worker.
+                page.ReplaceItems([CreateItem("First result")]);
+                Assert.IsTrue(viewModel.ShowEmptyContent, "The UI has not published the fetched row yet.");
+                page.EmptyContent = new CommandItem(new AnonymousCommand(null) { Name = "Search all files" });
+            });
+            scheduler.Drain();
+
+            Assert.AreEqual(1, viewModel.FilteredItems.Count);
+            Assert.IsTrue(selectedContextSeen, "The published row must set the command-bar context.");
+            Assert.IsFalse(emptyContextAfterSelection, "The queued empty-content update must leave the published row's context active.");
+        }
+        finally
+        {
+            viewModel.ItemsUpdated -= SelectPublishedItem;
+            viewModel.CommandBarContextChanged -= ObserveCommandBarContext;
+            viewModel.Dispose();
+            scheduler.Drain();
+            viewModel.SafeCleanup();
+        }
+
+        void SelectPublishedItem(ListViewModel sender, ItemsUpdatedEventArgs args) =>
+            sender.UpdateSelectedItemCommand.Execute(sender.FilteredItems[0]);
+
+        void ObserveCommandBarContext(object? sender, PageCommandBarContextChangedEventArgs args)
+        {
+            if (viewModel.FilteredItems.Count == 0)
+            {
+                return;
+            }
+
+            selectedContextSeen |= ReferenceEquals(args.Context, viewModel.FilteredItems[0]);
+            emptyContextAfterSelection |= selectedContextSeen && ReferenceEquals(args.Context, viewModel.EmptyContent);
+        }
     }
 }

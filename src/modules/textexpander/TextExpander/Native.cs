@@ -135,6 +135,10 @@ internal static class Native
     [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetClassNameW", SetLastError = true)]
     public static extern unsafe int GetClassNameW(IntPtr hWnd, char* lpClassName, int nMaxCount);
 
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool IsWindowUnicode(IntPtr hWnd);
+
     [DllImport("user32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
     public static extern int GetWindowLongW(IntPtr hWnd, int nIndex);
 
@@ -316,6 +320,7 @@ internal static class Native
     public const uint WM_NULL = 0x0000;
     public const uint SMTO_BLOCK = 0x0001;
     public const uint SMTO_ABORTIFHUNG = 0x0002;
+    public const uint SMTO_ERRORONEXIT = 0x0020;
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
     public static extern IntPtr SendMessageTimeoutW(IntPtr hWnd, uint msg, IntPtr wParam, IntPtr lParam, uint fuFlags, uint uTimeout, out IntPtr lpdwResult);

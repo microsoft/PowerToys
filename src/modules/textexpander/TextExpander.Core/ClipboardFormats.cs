@@ -51,13 +51,13 @@ internal static class ClipboardFormats
 
     public static ClipboardFormatHandling Classify(uint format) => format switch
     {
-        // Bitmap handles Windows synthesizes from CF_DIB; the caller checks that a DIB is present.
-        CF_BITMAP or CF_DSPBITMAP => ClipboardFormatHandling.SynthesizedFromDib,
+        // Windows synthesizes CF_BITMAP from CF_DIB; the caller checks that a DIB is present.
+        CF_BITMAP => ClipboardFormatHandling.SynthesizedFromDib,
 
-        // Metafile and palette handles (CF_METAFILEPICT's memory holds a handle too) and owner-drawn
-        // content can't be copied as bytes.
+        // Private-format display bitmaps, metafile and palette handles, and owner-drawn content
+        // can't be copied as bytes.
         CF_METAFILEPICT or CF_ENHMETAFILE or CF_DSPMETAFILEPICT or CF_DSPENHMETAFILE
-            or CF_PALETTE or CF_OWNERDISPLAY => ClipboardFormatHandling.Unreproducible,
+            or CF_DSPBITMAP or CF_PALETTE or CF_OWNERDISPLAY => ClipboardFormatHandling.Unreproducible,
 
         >= CF_PRIVATEFIRST and <= CF_PRIVATELAST => ClipboardFormatHandling.Unreproducible,
         >= CF_GDIOBJFIRST and <= CF_GDIOBJLAST => ClipboardFormatHandling.Unreproducible,

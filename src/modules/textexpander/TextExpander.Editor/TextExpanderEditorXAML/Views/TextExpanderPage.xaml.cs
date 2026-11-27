@@ -989,7 +989,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Views
         {
             SnippetFolderFlyout.Hide();
             bool hadMessage = ViewModel.HasSnippetMessage;
-            ViewModel.LoadSnippets();
+            ViewModel.ReloadSnippets();
             if (ViewModel.IsWaitingForSnippetsFile)
             {
                 SetSnippetStatus(

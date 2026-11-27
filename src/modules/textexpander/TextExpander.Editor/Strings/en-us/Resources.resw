@@ -862,6 +862,9 @@
   <data name="TextExpander_Problem_TriggerHasLineBreak" xml:space="preserve">
     <value>A trigger can't have a line break.</value>
   </data>
+  <data name="TextExpander_Problem_TriggerHasControlCharacter" xml:space="preserve">
+    <value>A trigger can't have a tab or another control character.</value>
+  </data>
   <data name="TextExpander_Problem_TriggerStartsWithHiddenCharacter" xml:space="preserve">
     <value>This trigger starts with a hidden character, usually from pasting. Type the trigger instead.</value>
   </data>

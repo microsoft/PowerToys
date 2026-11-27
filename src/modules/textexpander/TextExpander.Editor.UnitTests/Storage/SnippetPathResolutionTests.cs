@@ -173,7 +173,7 @@ public sealed class SnippetPathResolutionTests
         var settings = new TextExpanderSettings();
         settings.Properties.SnippetsPath.Value = snippetsPath;
         var utils = new Mock<TextExpanderSettingsUtils>(new FileSystem(), null);
-        utils.Setup(u => u.GetSettingsOrDefault<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
+        utils.Setup(u => u.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName, SettingsUtils.DefaultFileName)).Returns(settings);
 
         var adapters = new TextExpanderStorageEnvironment();
         var environment = new Mock<ITextExpanderStorageEnvironment>();

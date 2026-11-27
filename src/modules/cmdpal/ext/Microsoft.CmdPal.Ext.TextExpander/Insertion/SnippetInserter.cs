@@ -3,6 +3,8 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading;
+using Microsoft.CmdPal.Common;
 using Microsoft.PowerToys.TextExpander;
 
 namespace Microsoft.CmdPal.Ext.TextExpander.Insertion;
@@ -53,6 +55,12 @@ internal sealed class SnippetInserter
 
     public IClipboardAccess Clipboard => _clipboard;
 
+    public CommandPaletteInputTarget? CaptureInputTarget(nint sourceHwnd, Guid sourceRouteId = default) =>
+        _desktop.CaptureInputTarget(sourceHwnd, sourceRouteId);
+
+    public (InsertOutcome Outcome, bool ClipboardLost) Insert(string text, InjectionBackend backend, int clipboardThresholdChars, bool fromClipboard = false)
+        => Insert(CaptureInputTarget(0), text, backend, clipboardThresholdChars, fromClipboard);
+
     /// <summary>
     /// Hides Command Palette, waits for the app it was opened over to come back to the front, and puts
     /// <paramref name="text"/> there, pasted or typed as Text Expander's <paramref name="backend"/> decides, pasting
@@ -60,33 +68,47 @@ internal sealed class SnippetInserter
     /// <paramref name="fromClipboard"/> says whether part of it came from a copy (<see cref="ExpandedSnippet.HasClipboardText"/>).
     /// </summary>
     /// <returns>The insertion outcome and a separate flag for a clipboard restore failure.</returns>
-    public (InsertOutcome Outcome, bool ClipboardLost) Insert(string text, InjectionBackend backend, int clipboardThresholdChars, bool fromClipboard = false)
+    public (InsertOutcome Outcome, bool ClipboardLost) Insert(CommandPaletteInputTarget? target, string text, InjectionBackend backend, int clipboardThresholdChars, bool fromClipboard = false)
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        _desktop.HideCommandPalette();
+        if (target is null || !IsTargetWindow(target))
+        {
+            return (text.Length == 0 ? InsertOutcome.Empty : InsertOutcome.NoTarget, false);
+        }
+
+        var handoffStarted = _clock.ElapsedMilliseconds;
+        var released = ReleaseForeground(target);
         if (text.Length == 0)
         {
             return (InsertOutcome.Empty, false);
         }
 
-        var target = WaitForTarget();
-        if (target == 0)
+        if (!released)
         {
-            return (InsertOutcome.NoTarget, false);
+            return (InsertOutcome.TargetChanged, false);
         }
 
-        if (!_desktop.CanDrive(target))
+        if (WaitForTarget(target, handoffStarted) is { } failure)
+        {
+            return (failure, false);
+        }
+
+        if (!_desktop.CanDrive(target.Window))
         {
             return (InsertOutcome.TargetOutOfReach, false);
         }
 
         WaitForModifierRelease();
+        if (!IsTargetForeground(target))
+        {
+            return (InsertOutcome.TargetChanged, false);
+        }
 
         // As Text Expander decides: Automatic types short snippets, and one line in Windows Terminal, which trims the
         // spaces at the end of a one-line paste, unless it came from a copy or has control characters.
-        var windowsTerminal = _desktop.IsWindowsTerminal(target);
-        var terminal = windowsTerminal || _desktop.IsConsole(target);
+        var windowsTerminal = _desktop.IsWindowsTerminal(target.Window);
+        var terminal = windowsTerminal || _desktop.IsConsole(target.Window);
         var clipboardLost = false;
         InsertOutcome? outcome = null;
         var pasting = InjectionPolicy.ShouldUseClipboard(text, clipboardThresholdChars, backend, givenBack: 0, windowsTerminal, fromClipboard);
@@ -111,7 +133,7 @@ internal sealed class SnippetInserter
     /// Pastes through the clipboard. Returns a null outcome, so the snippet is typed, when the clipboard can't be
     /// put back exactly, can't be written, or doesn't hold the snippet after the write.
     /// </summary>
-    private (InsertOutcome? Outcome, bool ClipboardLost) TryPaste(string text, nint target)
+    private (InsertOutcome? Outcome, bool ClipboardLost) TryPaste(string text, CommandPaletteInputTarget target)
     {
         using var saved = _clipboard.Save();
         if (saved is null)
@@ -142,7 +164,7 @@ internal sealed class SnippetInserter
             // Checked, not assumed: a write can succeed and leave something else on the clipboard.
             if (write == ClipboardWrite.Written && _clipboard.HoldsText(text))
             {
-                if (_desktop.ForegroundWindow != target)
+                if (!IsTargetForeground(target))
                 {
                     outcome = InsertOutcome.TargetChanged;
                 }
@@ -159,7 +181,7 @@ internal sealed class SnippetInserter
 
                     // No accepted input can leave a paste queued. A nonzero partial batch may have sent V, so it must
                     // still wait for the app; if the app stays busy at the cap, the snippet stays on the clipboard.
-                    handBack = sent == 0 || PasteSettle.WaitForRead(() => IsOpenBy(target), () => _desktop.IsTakingMessages(target), _clock, sentAt);
+                    handBack = sent == 0 || PasteSettle.WaitForRead(() => IsOpenBy(target.ProcessId), () => _desktop.IsTakingMessages(target.Window), _clock, sentAt);
                     outcome = sent == (uint)strokes.Count ? InsertOutcome.Inserted : InsertOutcome.Failed;
                 }
             }
@@ -186,11 +208,11 @@ internal sealed class SnippetInserter
         => ClipboardHandBack.Run(stillOurs => _clipboard.Restore(saved, stillOurs), loan, () => _clipboard.SequenceNumber, () => _clipboard.IsOurs, _clock.Sleep, RestoreAttempts, RestoreRetryDelayMs);
 
     /// <summary>Types one character per batch, paced as Text Expander types, and stops if another window comes to the front.</summary>
-    private InsertOutcome Type(string text, nint target)
+    private InsertOutcome Type(string text, CommandPaletteInputTarget target)
     {
         foreach (var character in KeyStrokes.Typing(text))
         {
-            if (_desktop.ForegroundWindow != target)
+            if (!IsTargetForeground(target))
             {
                 return InsertOutcome.TargetChanged;
             }
@@ -224,30 +246,53 @@ internal sealed class SnippetInserter
         }
     }
 
-    /// <summary>Waits for a window of another app to be in front: Command Palette hides on its own thread.</summary>
-    private nint WaitForTarget()
+    private static bool ReleaseForeground(CommandPaletteInputTarget target)
     {
-        var start = _clock.ElapsedMilliseconds;
+        using var timeout = new CancellationTokenSource(TargetWaitMs);
+        try
+        {
+            return target.ReleaseForeground(timeout.Token).WaitAsync(timeout.Token).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException) when (timeout.IsCancellationRequested)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>Waits for the captured app to regain foreground after the source palette closes.</summary>
+    private InsertOutcome? WaitForTarget(CommandPaletteInputTarget target, long handoffStarted)
+    {
         while (true)
         {
             var window = _desktop.ForegroundWindow;
-            if (window != 0)
+            if (window == target.Window)
             {
-                var processId = _desktop.ProcessIdOf(window);
-                if (processId != 0 && processId != _desktop.CurrentProcessId)
-                {
-                    return window;
-                }
+                return IsTargetWindow(target) ? null : InsertOutcome.NoTarget;
             }
 
-            if (_clock.ElapsedMilliseconds - start >= TargetWaitMs)
+            var processId = window == 0 ? 0 : _desktop.ProcessIdOf(window);
+            if (processId != 0 && processId != _desktop.CurrentProcessId)
             {
-                return 0;
+                return InsertOutcome.TargetChanged;
+            }
+
+            if (_clock.ElapsedMilliseconds - handoffStarted >= TargetWaitMs)
+            {
+                return InsertOutcome.NoTarget;
             }
 
             _clock.Sleep(PollMs);
         }
     }
+
+    private bool IsTargetWindow(CommandPaletteInputTarget target) =>
+        target.Window != 0 &&
+        target.ProcessId != 0 &&
+        target.ProcessId != _desktop.CurrentProcessId &&
+        _desktop.ProcessIdOf(target.Window) == target.ProcessId;
+
+    private bool IsTargetForeground(CommandPaletteInputTarget target) =>
+        _desktop.ForegroundWindow == target.Window && IsTargetWindow(target);
 
     /// <summary>Waits for the user to let go of the modifier keys. Any still held are let go of in the batch that's sent.</summary>
     private void WaitForModifierRelease()
@@ -259,9 +304,5 @@ internal sealed class SnippetInserter
         }
     }
 
-    private bool IsOpenBy(nint target)
-    {
-        var processId = _clipboard.OpenedByProcessId();
-        return processId != 0 && processId == _desktop.ProcessIdOf(target);
-    }
+    private bool IsOpenBy(uint processId) => _clipboard.OpenedByProcessId() == processId;
 }

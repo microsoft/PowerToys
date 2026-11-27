@@ -120,9 +120,12 @@ public sealed class HostSettingsTests
     }
 
     [TestMethod]
-    public void SettingsThatCantBeReadKeepTheSnippetsLibraryInUse()
+    [DataRow("{")]
+    [DataRow("""{"properties":{"snippets_path":"\ud800"}}""")]
+    [DataRow("""{"properties":{"clipboard_threshold_chars":{"value":"\ud800"}}}""")]
+    public void SettingsThatCantBeReadKeepTheSnippetsLibraryInUse(string malformed)
     {
-        // An incomplete '{' written to settings.json switched a custom library to the default starters.
+        // A bad write to settings.json must not switch a custom library to the default starters.
         using ScratchDirectory scratch = ScratchDirectory.Create();
         string custom = Path.Combine(scratch.Path, "Custom.json");
         File.WriteAllText(custom, SnippetJson.Of("!c=custom"));
@@ -134,7 +137,7 @@ public sealed class HostSettingsTests
         Assert.IsTrue(Program.ApplyChangedSettings(settings, store));
         Assert.AreEqual(custom, store.FilePath);
 
-        File.WriteAllText(file, "{");
+        File.WriteAllText(file, malformed);
         Assert.IsFalse(Program.ApplyChangedSettings(settings, store));
         Assert.AreEqual(custom, store.FilePath);
         Assert.IsFalse(store.IsDefaultPath);

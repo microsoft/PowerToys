@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Commands;
 using Microsoft.CmdPal.Ext.TextExpander.Insertion;
+using Microsoft.CmdPal.Ext.TextExpander.Properties;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using Microsoft.PowerToys.TextExpander;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -144,34 +147,47 @@ public sealed class ClipboardBorrowTests
     }
 
     [TestMethod]
-    public void PersistentCopy_WritesWithoutReadingASnapshotVersion()
+    public void PersistentCopy_RestoresAfterFailureBeforeAllowingAnotherCopy()
     {
         var held = false;
-        var sequenceReads = 0;
-        var writes = 0;
+        string? text = "A";
         var result = Win32Clipboard.WriteText(
             null,
             () =>
             {
+                text = "B";
                 held = true;
                 return (true, true);
             },
-            () =>
-            {
-                sequenceReads++;
-                return 42;
-            },
+            () => throw new AssertFailedException("A Copy captures the state while it has the clipboard open."),
             () =>
             {
                 Assert.IsTrue(held);
-                writes++;
-                return ClipboardWrite.Written;
+                var previous = text;
+                return Win32Clipboard.CommitOpenedWrite(
+                    empty: () =>
+                    {
+                        Assert.IsTrue(held);
+                        text = null;
+                        return true;
+                    },
+                    publish: () => false,
+                    restore: () =>
+                    {
+                        Assert.IsTrue(held);
+                        text = previous;
+                        return true;
+                    });
             },
-            () => held = false);
+            () =>
+            {
+                Assert.AreEqual("B", text, "Restore the copy that was present when the clipboard was acquired.");
+                held = false;
+                text = "C";
+            });
 
-        Assert.AreEqual(ClipboardWrite.Written, result);
-        Assert.AreEqual(1, writes);
-        Assert.AreEqual(0, sequenceReads);
+        Assert.AreEqual(ClipboardWrite.Refused, result);
+        Assert.AreEqual("C", text, "A later copy remains on the clipboard.");
         Assert.IsFalse(held);
     }
 
@@ -226,5 +242,52 @@ public sealed class ClipboardBorrowTests
         Assert.AreEqual(("first\r\nsecond", false), clipboard.Writes.Single());
         Assert.AreEqual(0, clipboard.Saves);
         Assert.AreEqual(0, clipboard.Restores);
+    }
+
+    [TestMethod]
+    public void CopyCommand_EmptyExpansionKeepsOriginalClipboardAndDoesNotComplete()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!email", "{{clipboard:email}}"));
+        environment.Clipboard.Text = "No email address here";
+        var completions = 0;
+        var copy = environment.Actions.CopyCommand(environment.SnippetFor("!email"), answers: null, copied: () => completions++);
+
+        var result = copy.Invoke();
+
+        Assert.AreEqual("No email address here", environment.Clipboard.Text);
+        Assert.AreEqual(0, environment.Clipboard.Writes.Count);
+        Assert.AreEqual(0, completions);
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toast = (ToastArgs)result.Args!;
+        Assert.AreEqual(Resources.picks_comes_out_empty, toast.Message);
+        Assert.AreEqual(CommandResultKind.KeepOpen, toast.Result!.Kind);
+    }
+
+    [TestMethod]
+    public void CopyCommand_UnsupportedClipboardIsLeftAlone()
+    {
+        var clipboard = new FakeClipboard { Text = "Original", CanBeSaved = false };
+        var originalSequence = clipboard.SequenceNumber;
+        var copy = new CopySnippetCommand(() => "Replacement", clipboard);
+
+        var result = copy.Invoke();
+
+        Assert.AreEqual("Original", clipboard.Text);
+        Assert.AreEqual(originalSequence, clipboard.SequenceNumber);
+        Assert.AreEqual(Resources.copy_failed_toast, ((ToastArgs)result.Args!).Message);
+    }
+
+    [TestMethod]
+    public void CopyCommand_ReportsAnIncompleteRollback()
+    {
+        var clipboard = new FakeClipboard { Text = "Original", NextWrite = ClipboardWrite.Failed, FailingRestores = 1 };
+        var copy = new CopySnippetCommand(() => "Replacement", clipboard);
+
+        var result = copy.Invoke();
+
+        var toast = (ToastArgs)result.Args!;
+        StringAssert.Contains(toast.Message, Resources.toast_clipboard_not_restored);
+        Assert.AreEqual(CommandResultKind.KeepOpen, toast.Result!.Kind);
     }
 }

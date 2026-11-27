@@ -117,6 +117,18 @@ internal static class InputTarget
             && (string.Equals(Path.GetFileName(imagePath), "PowerToys.Settings.exe", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(Path.GetFileName(imagePath), "PowerToys.TextExpander.Editor.exe", StringComparison.OrdinalIgnoreCase));
 
+    internal static IntPtr FocusedWindow(uint thread)
+    {
+        var info = new Native.GUITHREADINFO { CbSize = (uint)Marshal.SizeOf<Native.GUITHREADINFO>() };
+        return thread != 0 && Native.GetGUIThreadInfo(thread, ref info) ? info.HwndFocus : IntPtr.Zero;
+    }
+
+    internal static bool IsFocusedWindow(IntPtr foreground, IntPtr focus)
+        => foreground != IntPtr.Zero
+            && Native.GetForegroundWindow() == foreground
+            && FocusedWindow(Native.GetWindowThreadProcessId(foreground, out _)) == focus
+            && Native.GetForegroundWindow() == foreground;
+
     /// <summary>
     /// True when <paramref name="window"/> is a Windows Terminal window. Terminal trims trailing whitespace from a one-line
     /// paste (its <c>trimPaste</c> setting, on by default), so the space given back after a pasted snippet would be lost.

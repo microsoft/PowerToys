@@ -125,6 +125,57 @@ public sealed class SnippetInserterTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Insert_DifferentWindowTakesForegroundAfterHide_SendsNothing(bool alwaysType)
+    {
+        _desktop.WindowAfterHide = FakeDesktop.OtherWindow;
+
+        Assert.AreEqual((InsertOutcome.TargetChanged, false), Insert(Signature, alwaysType ? InjectionBackend.Typing : InjectionBackend.Auto));
+        Assert.AreEqual(1, _desktop.HideRequests);
+        Assert.AreEqual(0, _desktop.Sent.Count);
+        Assert.AreEqual(0, _clipboard.Saves);
+    }
+
+    [TestMethod]
+    public void Insert_WithoutAnOpeningTarget_SendsNothing()
+    {
+        _desktop.InputTargetWindow = 0;
+        _desktop.ForegroundWindow = FakeDesktop.OtherWindow;
+
+        Assert.AreEqual((InsertOutcome.NoTarget, false), Insert(Signature));
+        Assert.AreEqual(0, _desktop.HideRequests);
+        Assert.AreEqual(0, _desktop.Sent.Count);
+        Assert.AreEqual(0, _clipboard.Saves);
+    }
+
+    [TestMethod]
+    public void Insert_SourcePaletteIsNoLongerActive_SendsNothing()
+    {
+        _desktop.CanReleaseForeground = false;
+        _desktop.ForegroundWindow = FakeDesktop.AppWindow;
+
+        Assert.AreEqual((InsertOutcome.TargetChanged, false), Insert(Signature));
+        Assert.AreEqual(0, _desktop.HideRequests);
+        Assert.AreEqual(0, _desktop.Sent.Count);
+        Assert.AreEqual(0, _clipboard.Saves);
+    }
+
+    [TestMethod]
+    public void Insert_WindowHandleNowBelongsToAnotherProcess_SendsNothing()
+    {
+        var target = Inserter.CaptureInputTarget(0);
+        _desktop.AppWindowProcessId = FakeDesktop.OtherProcess;
+
+        Assert.AreEqual(
+            (InsertOutcome.NoTarget, false),
+            Inserter.Insert(target, Signature, InjectionBackend.Auto, InjectionPolicy.DefaultClipboardThresholdChars));
+        Assert.AreEqual(0, _desktop.HideRequests);
+        Assert.AreEqual(0, _desktop.Sent.Count);
+        Assert.AreEqual(0, _clipboard.Saves);
+    }
+
+    [TestMethod]
     public void Insert_AppRunsAsAdministrator_SendsNothing()
     {
         _desktop.CanDriveTarget = false;

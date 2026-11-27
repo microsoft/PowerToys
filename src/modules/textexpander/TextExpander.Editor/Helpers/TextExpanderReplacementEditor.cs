@@ -37,6 +37,10 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         private bool _recolorQueued;
         private bool _hasTransientEdit;
         private (int Start, int End)? _variableSelectedByClick;
+        private (int Start, int End) _pasteSelection;
+        private long _pasteRevision;
+
+        internal readonly record struct PasteTarget(object Edit, (int Start, int End) Selection, long Revision);
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TextExpanderReplacementEditor"/> class.
@@ -62,7 +66,11 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 }
             };
             box.TextChanged += (_, _) => OnContentChanged();
-            box.TextCompositionStarted += (_, _) => _composing = true;
+            box.TextCompositionStarted += (_, _) =>
+            {
+                _composing = true;
+                _pasteRevision++;
+            };
             box.TextCompositionEnded += (_, _) => EndComposition();
             box.LostFocus += (_, _) =>
             {
@@ -162,6 +170,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// <summary>Shows <paramref name="text"/> for editing, with nothing to undo.</summary>
         public void SetText(string text)
         {
+            _pasteRevision++;
             _composing = false;
             _hasTransientEdit = false;
             _variableSelectedByClick = null;
@@ -227,6 +236,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             }
 
             _history.EndRun();
+            _pasteRevision++;
             _hasTransientEdit = true;
             ApplyWithoutHistory(text, selectionStart, selectionEnd);
         }
@@ -458,6 +468,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             }
 
             _text = text;
+            _pasteRevision++;
             _history.Record(text);
             Recolor();
             TextChanged?.Invoke(this, EventArgs.Empty);
@@ -507,6 +518,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
         /// <summary>Puts back a text from the history, changing only the part that differs.</summary>
         private void Restore(string text, int selectionStart, int selectionEnd)
         {
+            _pasteRevision++;
             (int start, int removed, string inserted) = TextExpanderTokenText.Diff(_text, text);
             Update(() => _box.Document.GetRange(start, start + removed).SetText(TextSetOptions.None, TextExpanderTokenText.ToEditor(inserted)));
             _text = ReadText();
@@ -560,7 +572,20 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
                 selection.SetRange(Math.Clamp(start, 0, length), Math.Clamp(end, 0, length));
                 selection.ScrollIntoView(PointOptions.None);
             });
+            TrackPasteSelection();
             SelectionChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private (int Start, int End) TrackPasteSelection()
+        {
+            var selection = GetSelection();
+            if (selection != _pasteSelection)
+            {
+                _pasteSelection = selection;
+                _pasteRevision++;
+            }
+
+            return selection;
         }
 
         private void Box_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
@@ -674,6 +699,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
 
         private void Box_SelectionChanged(object sender, RoutedEventArgs e)
         {
+            var selection = TrackPasteSelection();
             SelectionChanged?.Invoke(this, EventArgs.Empty);
             if (_updating || _variableSelectedByClick is not { } selected)
             {
@@ -681,7 +707,7 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             }
 
             // Forget the click once the selection moves anywhere but that variable or a caret in it.
-            (int start, int end) = GetSelection();
+            (int start, int end) = selection;
             bool onVariable = (start == selected.Start && end == selected.End)
                 || (start == end && selected.Start < start && start < selected.End);
             if (!onVariable)
@@ -770,36 +796,59 @@ namespace Microsoft.PowerToys.TextExpander.Editor.Helpers
             await PastePlainTextAsync();
         }
 
-        private async Task PastePlainTextAsync()
+        private Task PastePlainTextAsync()
+            => PasteAtUnchangedTargetAsync(
+                CapturePasteTarget,
+                ReadClipboardTextAsync,
+                (start, end, text) => Replace(start, end, text, start + text.Length, start + text.Length));
+
+        private PasteTarget? CapturePasteTarget()
         {
-            object edit = _currentEdit();
-            string text;
+            if (_updating || _composing || _hasTransientEdit || _currentEdit() is not { } edit)
+            {
+                return null;
+            }
+
+            OnContentChanged();
+            return new PasteTarget(edit, TrackPasteSelection(), _pasteRevision);
+        }
+
+        private static async Task<string> ReadClipboardTextAsync()
+        {
             try
             {
                 DataPackageView content = Clipboard.GetContent();
                 if (!content.Contains(StandardDataFormats.Text))
                 {
-                    return;
+                    return null;
                 }
 
-                text = await content.GetTextAsync();
+                return (await content.GetTextAsync()) ?? string.Empty;
             }
             catch (Exception ex) when (ex is COMException or UnauthorizedAccessException or InvalidOperationException)
             {
                 // Another app has the clipboard open, or its text went away.
-                return;
+                return null;
             }
+        }
 
-            // This box is reused for other snippets while a clipboard provider can still be preparing the text.
-            if (edit is null || !ReferenceEquals(edit, _currentEdit()))
+        internal static async Task PasteAtUnchangedTargetAsync(Func<PasteTarget?> captureTarget, Func<Task<string>> readText, Action<int, int, string> replace)
+        {
+            if (captureTarget() is not { } target)
             {
                 return;
             }
 
-            OnContentChanged();
-            string pasted = (text ?? string.Empty).Replace("\r\n", "\n", StringComparison.Ordinal).Replace('\r', '\n');
-            (int start, int end) = GetSelection();
-            Replace(start, end, pasted, start + pasted.Length, start + pasted.Length);
+            string text = await readText();
+
+            // A clipboard provider can take time. Changes within the same dialog can also invalidate the original range.
+            if (text == null || captureTarget() is not { } current || !ReferenceEquals(target.Edit, current.Edit)
+                || target.Selection != current.Selection || target.Revision != current.Revision)
+            {
+                return;
+            }
+
+            replace(target.Selection.Start, target.Selection.End, SnippetFile.NormaliseNewlines(text));
         }
 
         private void Copy() => TryCopy();

@@ -36,6 +36,8 @@ namespace Microsoft.PowerToys.TextExpander;
 /// All text produced by the intercepted key, including any part before the matched trigger that must still be inserted.
 /// Empty for an undo, which intercepts a shortcut rather than text.
 /// </param>
+/// <param name="FocusedWindow">The control that owned keyboard focus when the trigger or undo was matched.</param>
+/// <param name="VerifiedUndo">The exact range, accepted text and caret the target confirmed after insertion.</param>
 internal readonly record struct PendingExpansion(
     string Trigger,
     string TypedPrefix,
@@ -46,4 +48,6 @@ internal readonly record struct PendingExpansion(
     long InputGeneration = 0,
     int CursorLeft = 0,
     char? Terminator = null,
-    string SwallowedText = "");
+    string SwallowedText = "",
+    IntPtr FocusedWindow = default,
+    NativeEdit.Undo? VerifiedUndo = null);

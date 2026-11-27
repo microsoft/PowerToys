@@ -57,6 +57,7 @@ internal sealed class KeyboardHook : IDisposable
     // Grows with the longest trigger (EnsureCapacity); guarded by _bufferLock.
     private char[] _buffer = new char[MinimumBufferCapacity];
     private int _count;
+    private (IntPtr Window, IntPtr Focus) _bufferTarget;
 
     // The last key typed nothing yet: a dead key, whose accent the app keeps for the next key. Guarded by _bufferLock.
     private bool _afterDeadKey;
@@ -75,7 +76,7 @@ internal sealed class KeyboardHook : IDisposable
     private volatile IntPtr _promptTarget;
 
     // CursorLeft is how far before the end of Replacement the snippet's $|$ left the caret.
-    private sealed record UndoEntry(string Trigger, string Replacement, IntPtr TargetWindow, int CursorLeft);
+    private sealed record UndoEntry(string Trigger, string Replacement, IntPtr TargetWindow, IntPtr FocusedWindow, int CursorLeft, NativeEdit.Undo? Verified);
 
     internal sealed record TargetAuthorization(IntPtr Window, uint ProcessId, bool CanDrive);
 
@@ -130,10 +131,10 @@ internal sealed class KeyboardHook : IDisposable
     internal Action<IntPtr> RequestAuthorization { get; init; }
 
     /// <summary>Gets what the check of the window in front says about a key typed there. Tests pass their own.</summary>
-    internal Func<ForegroundCapture> CaptureForeground { get; init; }
+    internal Func<ForegroundCapture>? CaptureForeground { get; init; }
 
     /// <summary>Gets whether a standard password box has the focus, where keys don't count. Tests pass their own.</summary>
-    internal Func<bool> InPasswordBox { get; init; } = IsFocusedPasswordEdit;
+    internal Func<bool>? InPasswordBox { get; init; }
 
     /// <summary>
     /// What a key types into <c>typed</c>, as the window in front's layout makes it: the number of UTF-16 units produced
@@ -142,7 +143,7 @@ internal sealed class KeyboardHook : IDisposable
     internal delegate int KeyDecoder(uint vk, uint scanCode, Span<char> typed);
 
     /// <summary>Gets what decodes each key. Tests pass their own, to type as a layout with dead keys does.</summary>
-    internal KeyDecoder Decode { get; init; } = DecodeWithForegroundLayout;
+    internal KeyDecoder? Decode { get; init; }
 
     /// <summary>Continues the hook chain before ordinary text is committed. Tests supply a downstream remapping hook.</summary>
     internal Native.HookProc NextHook { get; set; }
@@ -202,7 +203,6 @@ internal sealed class KeyboardHook : IDisposable
         _winEventProc = ForegroundChanged;
         Guard = new InsertionGuard(() => InputGeneration, TargetInFront, () => Clicks);
         RequestAuthorization = window => RefreshTargetAuthorization(window, asynchronous: true);
-        CaptureForeground = CaptureForForeground;
         NextHook = (code, message, data) => Native.CallNextHookEx(_hookHandle, code, message, data);
     }
 
@@ -468,7 +468,11 @@ internal sealed class KeyboardHook : IDisposable
 
     private bool HandleKeyLocked(Native.KBDLLHOOKSTRUCT data)
     {
-        ForegroundCapture capture = CaptureForeground();
+        IntPtr window = Native.GetForegroundWindow();
+        uint processId = 0;
+        uint thread = window == IntPtr.Zero ? 0 : Native.GetWindowThreadProcessId(window, out processId);
+        ForegroundCapture capture = CaptureForeground?.Invoke()
+            ?? (thread == 0 || processId == 0 ? ForegroundCapture.Refused : CaptureForWindow(window, processId));
         if (capture == ForegroundCapture.Refused)
         {
             ResetBuffer();
@@ -476,7 +480,15 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        if (InPasswordBox())
+        IntPtr focus = InputTarget.FocusedWindow(thread);
+        if (_bufferTarget != (window, focus))
+        {
+            _bufferTarget = (window, focus);
+            ResetBuffer();
+            ClearUndo();
+        }
+
+        if (InPasswordBox?.Invoke() ?? IsFocusedPasswordEdit(focus))
         {
             ResetBuffer();
             ClearUndo();
@@ -491,7 +503,10 @@ internal sealed class KeyboardHook : IDisposable
             shift: IsDown(Native.VK_SHIFT),
             win: IsDown(Native.VK_LWIN) || IsDown(Native.VK_RWIN),
             mayExpand: capture == ForegroundCapture.Authorized,
-            key: data);
+            key: data,
+            window,
+            focus,
+            thread);
     }
 
     /// <summary>
@@ -507,7 +522,7 @@ internal sealed class KeyboardHook : IDisposable
         }
     }
 
-    private bool ProcessKeyLocked(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win, bool mayExpand, Native.KBDLLHOOKSTRUCT? key)
+    private bool ProcessKeyLocked(uint vk, uint scanCode, bool ctrl, bool alt, bool shift, bool win, bool mayExpand, Native.KBDLLHOOKSTRUCT? key, IntPtr targetWindow = default, IntPtr focusedWindow = default, uint thread = 0)
     {
         if (vk == Native.VK_BACK)
         {
@@ -551,9 +566,22 @@ internal sealed class KeyboardHook : IDisposable
                 _undo = null;
             }
 
-            if (undo is not null && (undo.TargetWindow == IntPtr.Zero || Native.GetForegroundWindow() == undo.TargetWindow))
+            if (undo is not null
+                && (undo.Verified is null
+                    ? undo.TargetWindow == IntPtr.Zero || Native.GetForegroundWindow() == undo.TargetWindow
+                    : undo.TargetWindow == targetWindow && undo.FocusedWindow == focusedWindow
+                        && InputTarget.IsFocusedWindow(targetWindow, focusedWindow)))
             {
-                Pending.Add(new PendingExpansion(undo.Trigger, string.Empty, undo.Replacement, undo.TargetWindow, IsUndo: true, InputGeneration: InputGeneration, CursorLeft: undo.CursorLeft));
+                Pending.Add(new PendingExpansion(
+                    undo.Trigger,
+                    string.Empty,
+                    undo.Replacement,
+                    undo.TargetWindow,
+                    IsUndo: true,
+                    InputGeneration: InputGeneration,
+                    CursorLeft: undo.CursorLeft,
+                    FocusedWindow: undo.FocusedWindow,
+                    VerifiedUndo: undo.Verified));
                 ResetBuffer();
                 return true;
             }
@@ -590,7 +618,7 @@ internal sealed class KeyboardHook : IDisposable
         }
 
         Span<char> typed = stackalloc char[8];
-        int written = Decode(vk, scanCode, typed);
+        int written = Decode is { } decode ? decode(vk, scanCode, typed) : DecodeWithLayout(vk, scanCode, typed, thread);
         if (written < 0)
         {
             _afterDeadKey = true;
@@ -651,7 +679,7 @@ internal sealed class KeyboardHook : IDisposable
 
         // Typed before the window in front passed its check, which can't be known on this thread.
         // The trigger stays as typed, as in a window that was refused.
-        if (!mayExpand)
+        if (!mayExpand || (key.HasValue && CaptureForeground is null && !InputTarget.IsFocusedWindow(targetWindow, focusedWindow)))
         {
             ResetBuffer();
             return false;
@@ -669,11 +697,10 @@ internal sealed class KeyboardHook : IDisposable
         // From here on the user's keys are held, after this one, until the insertion takes them over: one typed straight
         // after the trigger reached the app before the insertion began, which dropped it and lost the swallowed key.
         // Before the work is queued, so the worker can't begin first.
-        IntPtr target = Native.GetForegroundWindow();
         long generation = InputGeneration;
         if (key is { } swallowed)
         {
-            _ = Guard.HoldAfterMatch(target, generation, swallowed);
+            _ = Guard.HoldAfterMatch(targetWindow, generation, swallowed);
         }
 
         // The keystroke that completed the match is swallowed; everything typed before it reached the target.
@@ -681,18 +708,19 @@ internal sealed class KeyboardHook : IDisposable
             trigger,
             typedPrefix,
             replacement,
-            target,
+            targetWindow,
             TypedText: typedText,
             InputGeneration: generation,
             Terminator: wordMode && WordBoundary.KeepTerminator ? ch : null,
-            SwallowedText: swallowedText));
+            SwallowedText: swallowedText,
+            FocusedWindow: focusedWindow));
         return true;
     }
 
     public bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow)
         => RecordExpansion(trigger, replacement, targetWindow, InputGeneration);
 
-    internal bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow, long inputGeneration, int cursorLeft = 0)
+    internal bool RecordExpansion(string trigger, string replacement, IntPtr targetWindow, long inputGeneration, int cursorLeft = 0, IntPtr focusedWindow = default, NativeEdit.Undo? verified = null)
     {
         lock (_undoLock)
         {
@@ -701,7 +729,7 @@ internal sealed class KeyboardHook : IDisposable
                 return false;
             }
 
-            _undo = new UndoEntry(trigger, replacement, targetWindow, cursorLeft);
+            _undo = new UndoEntry(trigger, replacement, targetWindow, focusedWindow, cursorLeft, verified);
             return true;
         }
     }
@@ -732,7 +760,7 @@ internal sealed class KeyboardHook : IDisposable
     /// miss. <c>stackalloc</c> costs a pointer bump and is zeroed by the runtime.
     /// </para>
     /// </summary>
-    private static unsafe int DecodeWithForegroundLayout(uint vk, uint scanCode, Span<char> typed)
+    private static unsafe int DecodeWithLayout(uint vk, uint scanCode, Span<char> typed, uint thread)
     {
         // Unicode-injected input (touch keyboard, emoji picker, remote desktop, automation)
         // carries the character in scanCode rather than a real virtual key, and ToUnicodeEx
@@ -749,11 +777,7 @@ internal sealed class KeyboardHook : IDisposable
             return 1;
         }
 
-        IntPtr foreground = Native.GetForegroundWindow();
-        uint threadId = foreground == IntPtr.Zero
-            ? 0
-            : Native.GetWindowThreadProcessId(foreground, out _);
-        IntPtr layout = Native.GetKeyboardLayout(threadId);
+        IntPtr layout = Native.GetKeyboardLayout(thread);
 
         Span<byte> state = stackalloc byte[256];
         state.Clear();
@@ -813,21 +837,9 @@ internal sealed class KeyboardHook : IDisposable
 
     private static bool IsDown(int vk) => (Native.GetAsyncKeyState(vk) & 0x8000) != 0;
 
-    private static unsafe bool IsFocusedPasswordEdit()
+    private static unsafe bool IsFocusedPasswordEdit(IntPtr focus)
     {
-        IntPtr foreground = Native.GetForegroundWindow();
-        if (foreground == IntPtr.Zero)
-        {
-            return false;
-        }
-
-        uint thread = Native.GetWindowThreadProcessId(foreground, out _);
-        var guiInfo = new Native.GUITHREADINFO
-        {
-            CbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Native.GUITHREADINFO>(),
-        };
-
-        if (thread == 0 || !Native.GetGUIThreadInfo(thread, ref guiInfo) || guiInfo.HwndFocus == IntPtr.Zero)
+        if (focus == IntPtr.Zero)
         {
             return false;
         }
@@ -836,7 +848,7 @@ internal sealed class KeyboardHook : IDisposable
         int length;
         fixed (char* classNamePointer = className)
         {
-            length = Native.GetClassNameW(guiInfo.HwndFocus, classNamePointer, className.Length);
+            length = Native.GetClassNameW(focus, classNamePointer, className.Length);
         }
 
         if (length <= 0)
@@ -844,7 +856,7 @@ internal sealed class KeyboardHook : IDisposable
             return false;
         }
 
-        return IsPasswordEditControl(className[..length], Native.GetWindowLongW(guiInfo.HwndFocus, Native.GWL_STYLE));
+        return IsPasswordEditControl(className[..length], Native.GetWindowLongW(focus, Native.GWL_STYLE));
     }
 
     internal static bool IsPasswordEditControl(ReadOnlySpan<char> className, int style)
@@ -932,21 +944,6 @@ internal sealed class KeyboardHook : IDisposable
         DiscardUndo();
         Volatile.Write(ref _requestedAuthorizationWindow, IntPtr.Zero);
         RefreshTargetAuthorization(Native.GetForegroundWindow(), asynchronous: true);
-    }
-
-    private ForegroundCapture CaptureForForeground()
-    {
-        IntPtr foreground = Native.GetForegroundWindow();
-        uint foregroundProcessId = 0;
-        uint thread = foreground == IntPtr.Zero
-            ? 0
-            : Native.GetWindowThreadProcessId(foreground, out foregroundProcessId);
-        if (thread == 0 || foregroundProcessId == 0)
-        {
-            return ForegroundCapture.Refused;
-        }
-
-        return CaptureForWindow(foreground, foregroundProcessId);
     }
 
     /// <summary>

@@ -28,6 +28,7 @@
                     </InfoBar.ActionButton>
                 </InfoBar>
                 <InfoBar x:Uid="TextExpander_OptionsSaveError" IsClosable="False" IsOpen="{x:Bind ViewModel.HasSettingsSaveError, Mode=OneWay}" Severity="Error" />
+                <InfoBar x:Uid="TextExpander_OptionsSaveWarning" IsClosable="False" IsOpen="{x:Bind ViewModel.HasSettingsSaveWarning, Mode=OneWay}" Severity="Warning" />
                 <InfoBar x:Uid="TextExpander_ElevatedEditingNotice" IsClosable="False" IsOpen="{x:Bind ViewModel.IsElevated, Mode=OneWay}" Severity="Warning" />
                     <controls:SettingsGroup x:Uid="TextExpander_Advanced_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
                         <tkcontrols:SettingsCard x:Uid="TextExpander_RequireWordBoundary" HeaderIcon="{ui:FontIcon Glyph=&#xE75A;}">

@@ -41,16 +41,30 @@ internal sealed partial class CopySnippetCommand : InvokableCommand
         var text = _text();
         if (text is null)
         {
-            return CommandResult.ShowToast(new ToastArgs { Message = Resources.toast_off, Result = CommandResult.KeepOpen() });
+            return KeepOpenToast(Resources.toast_off);
+        }
+
+        if (text.Length == 0)
+        {
+            return KeepOpenToast(Resources.picks_comes_out_empty);
         }
 
         // With CR LF line breaks, as the clipboard has text: the console runs pasted lines with a lone LF as one.
-        if (_clipboard.WriteText(ClipboardFormats.WithClipboardLineBreaks(text), keepOutOfHistory: false) != ClipboardWrite.Written)
+        var write = _clipboard.WriteText(ClipboardFormats.WithClipboardLineBreaks(text), keepOutOfHistory: false);
+        if (write != ClipboardWrite.Written)
         {
-            return CommandResult.ShowToast(new ToastArgs { Message = Resources.copy_failed_toast, Result = CommandResult.KeepOpen() });
+            return KeepOpenToast(write == ClipboardWrite.Failed
+                ? string.Concat(Resources.copy_failed_toast, " ", Resources.toast_clipboard_not_restored)
+                : Resources.copy_failed_toast);
         }
 
         _copied?.Invoke();
         return CommandResult.ShowToast(Resources.copied_toast);
     }
+
+    private static CommandResult KeepOpenToast(string message) => CommandResult.ShowToast(new ToastArgs
+    {
+        Message = message,
+        Result = CommandResult.KeepOpen(),
+    });
 }

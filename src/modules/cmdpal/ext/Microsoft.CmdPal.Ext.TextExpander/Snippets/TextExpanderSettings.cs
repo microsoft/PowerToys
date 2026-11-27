@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.PowerToys.TextExpander;
@@ -46,8 +47,9 @@ internal sealed record TextExpanderSettings(string? SnippetsPath, bool CaseSensi
                 InjectionPolicy.ParseBackend(ReadString(properties, "injection_backend"), Default.Backend),
                 ReadInt(properties, "clipboard_threshold_chars") is int threshold && threshold >= 1 ? threshold : Default.ClipboardThresholdChars);
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or InvalidOperationException)
         {
+            // JsonElement.GetString can fail when decoding an incomplete UTF-16 escape.
             return null;
         }
     }

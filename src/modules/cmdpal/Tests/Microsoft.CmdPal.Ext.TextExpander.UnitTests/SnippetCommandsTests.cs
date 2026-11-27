@@ -2,6 +2,7 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Linq;
 using Microsoft.CmdPal.Ext.TextExpander.Commands;
 using Microsoft.CmdPal.Ext.TextExpander.Pages;
@@ -60,6 +61,47 @@ public sealed class SnippetCommandsTests
 
         _ = ((CopySnippetCommand)toast.Command!).Invoke();
         Assert.AreEqual(("you@example.com", false), environment.Clipboard.Writes.Single());
+    }
+
+    [TestMethod]
+    public void Insert_UsesTheTargetCapturedBeforeItsWorkerStarts()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!myemail", "you@example.com"));
+        var command = new InsertSnippetCommand(environment.SnippetFor("!myemail"), environment.Source, environment.Inserter);
+        var invoke = command.PrepareInvocation(0);
+
+        environment.Desktop.InputTargetWindow = FakeDesktop.OtherWindow;
+        environment.Desktop.WindowAfterHide = FakeDesktop.OtherWindow;
+        var result = invoke();
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toast = (ToastArgs)result.Args!;
+        Assert.AreEqual(InsertSnippetCommand.MessageFor(Insertion.InsertOutcome.TargetChanged), toast.Message);
+        Assert.IsInstanceOfType<CopySnippetCommand>(toast.Command);
+        Assert.AreEqual(0, environment.Desktop.Sent.Count);
+        Assert.AreEqual(0, environment.Clipboard.Writes.Count);
+    }
+
+    [TestMethod]
+    public void Insert_FromAnOldFlyoutRoute_OffersCopyInsteadOfUsingTheNewTarget()
+    {
+        using var environment = new TestEnvironment();
+        environment.UseSnippets(("!myemail", "you@example.com"));
+        var command = new InsertSnippetCommand(environment.SnippetFor("!myemail"), environment.Source, environment.Inserter);
+        var originalRoute = Guid.NewGuid();
+        environment.Desktop.InputTargetRouteId = Guid.NewGuid();
+        environment.Desktop.InputTargetWindow = FakeDesktop.OtherWindow;
+
+        var result = command.PrepareInvocation(FakeDesktop.CommandPaletteWindow, originalRoute)();
+
+        Assert.AreEqual(CommandResultKind.ShowToast, result.Kind);
+        var toast = (ToastArgs)result.Args!;
+        Assert.AreEqual(InsertSnippetCommand.MessageFor(Insertion.InsertOutcome.NoTarget), toast.Message);
+        Assert.IsInstanceOfType<CopySnippetCommand>(toast.Command);
+        Assert.AreEqual(0, environment.Desktop.HideRequests);
+        Assert.AreEqual(0, environment.Desktop.Sent.Count);
+        Assert.AreEqual(0, environment.Clipboard.Writes.Count);
     }
 
     [TestMethod]

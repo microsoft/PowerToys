@@ -4,6 +4,7 @@
 
 using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -25,6 +26,66 @@ public sealed class SettingsOwnershipTests
         Assert.AreEqual(@"C:\Snippets", updated.Properties.SnippetsPath.Value);
         Assert.IsFalse(updated.Properties.CaseSensitive);
         Assert.IsFalse(store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName).Properties.CaseSensitive);
+    }
+
+    [TestMethod]
+    public void ReadingAndUpdatingCompatibleSettingsPreservesOtherOptions()
+    {
+        const string json = """
+            {
+                "custom_metadata": {"revision": 2},
+                "properties": {
+                    "snippets_path": "C:\\Snippets",
+                    "injection_backend": "type",
+                    "clipboard_threshold_chars": {"value": "18"},
+                    "case_sensitive": {"value": false},
+                    "require_word_boundary": {"value": true},
+                    "treat_remaps_as_typing": {"value": false},
+                    "word_boundary_keeps_space": {"value": false},
+                    "custom_option": [1, 2]
+                }
+            }
+            """;
+        var store = new MockSettingsStore();
+        store.WriteExistingSettings(json);
+        string path = store.GetSettingsFilePath(TextExpanderSettings.ModuleName);
+        TextExpanderSettings initial = store.GetSettingsOrDefaultReadOnly<TextExpanderSettings>(TextExpanderSettings.ModuleName);
+        Assert.IsTrue(initial.Properties.RequireWordBoundary);
+        Assert.AreEqual(json, store.FileSystem.File.ReadAllText(path));
+
+        TextExpanderSettings updated = store.UpdateOptions(properties => properties.RequireWordBoundary = false);
+        Assert.AreEqual(@"C:\Snippets", updated.Properties.SnippetsPath.Value);
+        Assert.AreEqual("type", updated.Properties.InjectionBackend.Value);
+        Assert.AreEqual(18, updated.Properties.ClipboardThresholdChars.Value);
+        Assert.IsFalse(updated.Properties.CaseSensitive);
+        Assert.IsFalse(updated.Properties.TreatRemapsAsTyping);
+        Assert.IsFalse(updated.Properties.WordBoundaryKeepsSpace);
+
+        using JsonDocument document = JsonDocument.Parse(store.FileSystem.File.ReadAllText(path));
+        JsonElement properties = document.RootElement.GetProperty("properties");
+        Assert.AreEqual(@"C:\Snippets", properties.GetProperty("snippets_path").GetProperty("value").GetString());
+        Assert.AreEqual(18, properties.GetProperty("clipboard_threshold_chars").GetProperty("value").GetInt32());
+        Assert.IsFalse(properties.GetProperty("require_word_boundary").GetBoolean());
+        Assert.AreEqual(2, properties.GetProperty("custom_option").GetArrayLength());
+        Assert.AreEqual(2, document.RootElement.GetProperty("custom_metadata").GetProperty("revision").GetInt32());
+    }
+
+    [TestMethod]
+    [DataRow("null")]
+    [DataRow("""{"properties":null}""")]
+    [DataRow("""{"properties":{"snippets_path":null}}""")]
+    [DataRow("""{"properties":{"injection_backend":{"value":null}}}""")]
+    [DataRow("""{"properties":{"clipboard_threshold_chars":{}}}""")]
+    [DataRow("""{"properties":{"case_sensitive":{"value":"false"}}}""")]
+    [DataRow("""{"properties":{"snippets_path":"\ud800"}}""")]
+    public void UpdatingOptionsRejectsInvalidSettingsWithoutOverwritingThem(string json)
+    {
+        var store = new MockSettingsStore();
+        store.WriteExistingSettings(json);
+        InvalidOperationException error = Assert.Throws<InvalidOperationException>(
+            () => store.UpdateOptions(properties => properties.CaseSensitive = false));
+        Assert.IsInstanceOfType<JsonException>(error.InnerException);
+        Assert.AreEqual(json, store.FileSystem.File.ReadAllText(store.GetSettingsFilePath(TextExpanderSettings.ModuleName)));
     }
 
     [TestMethod]
@@ -134,7 +195,7 @@ public sealed class SettingsOwnershipTests
         TextExpanderSettings latest = EditorSettings.For(folder.Path);
         latest.Properties.WordBoundaryKeepsSpace = false;
         latest.Properties.CaseSensitive = false;
-        var store = new MockSettingsStore { InitialSettings = stale };
+        var store = new MockSettingsStore { NextSettingsRead = stale };
         store.SaveSettings(latest.ToJsonString(), TextExpanderSettings.ModuleName);
 
         using var editor = new TextExpanderViewModel(store, false, key => key);

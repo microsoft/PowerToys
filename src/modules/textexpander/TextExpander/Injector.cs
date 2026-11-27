@@ -186,8 +186,21 @@ internal static class Injector
     /// If a terminal can't be given <paramref name="text"/>, nothing is erased and it goes back, so what was typed stays
     /// as typed. Empty when nothing was swallowed.
     /// </param>
-    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, Action<string, int>? inserted, int givenBack, bool fromClipboard, string swallowed)
-        => ReplaceCore(backspaceCount, text, targetWindow, cursorLeftUnits, InputTarget.CanDrive, guard, inputGeneration, cursorRightUnits: cursorRightUnits, inserted: inserted, givenBack: givenBack, fromClipboard: fromClipboard, swallowed: swallowed);
+    public static bool Replace(int backspaceCount, string text, IntPtr targetWindow, IntPtr focusedWindow, int cursorLeftUnits, int cursorRightUnits, InsertionGuard guard, long inputGeneration, int givenBack, bool fromClipboard, string swallowed, NativeEdit.Operation? nativeEdit)
+        => ReplaceCore(
+            backspaceCount,
+            text,
+            targetWindow,
+            cursorLeftUnits,
+            InputTarget.CanDrive,
+            guard,
+            inputGeneration,
+            cursorRightUnits: cursorRightUnits,
+            givenBack: givenBack,
+            fromClipboard: fromClipboard,
+            swallowed: swallowed,
+            nativeEdit: nativeEdit,
+            focusUnchanged: () => InputTarget.IsFocusedWindow(targetWindow, focusedWindow));
 
     internal static bool ReplaceCore(
         int backspaceCount,
@@ -211,7 +224,9 @@ internal static class Injector
         bool fromClipboard = false,
         Func<IntPtr, bool>? isConsole = null,
         Action<IntPtr, bool>? refusedInTerminal = null,
-        string swallowed = "")
+        string swallowed = "",
+        NativeEdit.Operation? nativeEdit = null,
+        Func<bool>? focusUnchanged = null)
     {
         ArgumentNullException.ThrowIfNull(canDrive);
 
@@ -224,6 +239,7 @@ internal static class Injector
         isWindowsTerminal ??= InputTarget.IsWindowsTerminal;
         isConsole ??= InputTarget.IsConsole;
         refusedInTerminal ??= TerminalNotice.ShowRefusal;
+        focusUnchanged ??= static () => true;
 
         // Read once, as Settings can change it meanwhile: whether to paste and whether to type must agree.
         InjectionBackend backend = Backend;
@@ -268,6 +284,13 @@ internal static class Injector
         bool guarded = false;
         bool succeeded = false;
         bool refused = false;
+        bool editRefused = false;
+        bool editSelected = false;
+        NativeEdit.Snapshot? editBefore = null;
+        int editStart = 0;
+        int editEnd = 0;
+        string? sentEditText = null;
+        bool sentEditPaste = false;
         Native.INPUT marker = default;
         int[] modifiers = [];
         Native.INPUT[] pressAgain = [];
@@ -286,10 +309,15 @@ internal static class Injector
             // from a copy. Then only the key the hook swallowed goes back, so what was typed stays as typed.
             refused = Typing() && InjectionPolicy.RefusesTypedLines(text, terminal, backend, fromClipboard);
             succeeded = outcome == PasteOutcome.Pasted || (Typing() && !refused && Insert(paste: false));
-            if (refused && swallowed.Length > 0)
+            if ((refused || editRefused) && !editSelected && swallowed.Length > 0)
             {
                 _ = GiveBack();
             }
+        }
+
+        if (succeeded && sentEditText is not null)
+        {
+            CompleteNativeEdit(sentEditText, sentEditPaste);
         }
 
         // RichEdit and Windows 11 Notepad drop typing while a mouse button is down: after a click, what's held goes back
@@ -325,7 +353,7 @@ internal static class Injector
 
         return succeeded;
 
-        bool Ready() => guard.Unchanged(inputGeneration) && IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow);
+        bool Ready() => guard.Unchanged(inputGeneration) && IsAuthorizedTarget(targetWindow, canDrive, getForegroundWindow) && focusUnchanged();
 
         bool Typing() => outcome is PasteOutcome.NotAttempted or PasteOutcome.RefusedBeforeErase;
 
@@ -377,10 +405,18 @@ internal static class Injector
                 && guard.Unchanged(inputGeneration)
                 && EraseTrigger()
                 && (paste ? PasteChord() : TypeText(typed))
-                && PlaceCaret(left);
+                && (editBefore.HasValue || PlaceCaret(left));
             if (done)
             {
-                inserted?.Invoke(paste ? text : typed, left);
+                if (editBefore.HasValue)
+                {
+                    sentEditText = paste ? text : typed;
+                    sentEditPaste = paste;
+                }
+                else
+                {
+                    inserted?.Invoke(paste ? text : typed, left);
+                }
             }
 
             return done;
@@ -397,6 +433,34 @@ internal static class Injector
         // snippet, still goes out at once rather than hold the user's keys for seconds.
         bool EraseTrigger()
         {
+            if (nativeEdit is { } edit && SelectNativeRange(edit))
+            {
+                if (editStart != editEnd)
+                {
+                    if (!OnTarget())
+                    {
+                        return false;
+                    }
+
+                    // This edit is addressed to the exact control. A physical Backspace could reach a different
+                    // control if focus changed after the check.
+                    sentAny = true;
+                    if (!edit.Editor.EraseSelection()
+                        || edit.Editor.Read() is not { } erased || !erased.HasCaretAt(editStart)
+                        || !string.Equals(editBefore!.Value.Text.Remove(editStart, editEnd - editStart), erased.Text, StringComparison.Ordinal))
+                    {
+                        return false;
+                    }
+                }
+
+                return SendChunks(Modifiers(modifiers, up: true));
+            }
+
+            if (editRefused)
+            {
+                return false;
+            }
+
             int presses = Math.Max(0, cursorRightUnits) + Math.Max(0, backspaceCount);
             if (presses < 2 || presses > MaxPacedEraseKeys || KeyDelayMs <= 0)
             {
@@ -419,6 +483,121 @@ internal static class Injector
             }
 
             return true;
+        }
+
+        bool SelectNativeRange(NativeEdit.Operation edit)
+        {
+            if (!OnTarget())
+            {
+                editRefused = true;
+                return false;
+            }
+
+            NativeEdit.Snapshot? read = edit.Editor.Read();
+            if (read is not { } current)
+            {
+                // Rich Edit with multiple paragraphs uses a different offset model. Keep its usual expansion.
+                editRefused = edit.Undo is not null || !edit.Editor.SingleLineOnly;
+                return false;
+            }
+
+            NativeEdit.Undo? undo = edit.Undo;
+            string expected = undo?.Text ?? edit.TypedPrefix;
+            int caret = undo?.Caret ?? current.SelectionEnd;
+            int start = undo?.Start ?? caret - expected.Length;
+            if (!current.HasCaretAt(caret)
+                || start < 0 || start > current.Text.Length - expected.Length
+                || !current.Text.AsSpan(start, expected.Length).SequenceEqual(expected)
+                || (undo is not null && !NativeEdit.Hash(current.Text).AsSpan().SequenceEqual(undo.DocumentHash))
+                || !OnTarget())
+            {
+                editRefused = true;
+                return false;
+            }
+
+            if (expected.Length > 0)
+            {
+                // Once we set this range, a failed verification must not type the returned key over it.
+                editSelected = true;
+                if (!edit.Editor.Select(start, start + expected.Length)
+                    || edit.Editor.Read() is not { } selected
+                    || selected.SelectionStart != start || selected.SelectionEnd != start + expected.Length
+                    || !string.Equals(current.Text, selected.Text, StringComparison.Ordinal))
+                {
+                    editRefused = true;
+                    return false;
+                }
+            }
+
+            editBefore = current;
+            editStart = start;
+            editEnd = start + expected.Length;
+            return true;
+        }
+
+        void CompleteNativeEdit(string sent, bool pasted)
+        {
+            NativeEdit.Operation edit = nativeEdit!;
+            if (edit.CaretSuffix.Length == 0 && edit.RecordUndo is null)
+            {
+                return;
+            }
+
+            NativeEdit.Snapshot before = editBefore!.Value;
+            string expected = NativeEdit.WithEditLineBreaks(sent);
+            int insertedEnd = editStart + expected.Length;
+            string caretSuffix = pasted ? edit.CaretSuffix : edit.CaretSuffix.Replace("\r", string.Empty, StringComparison.Ordinal);
+            int caret = insertedEnd - NativeEdit.WithEditLineBreaks(caretSuffix).Length;
+
+            // Pacing and clipboard settle normally leave the text in the target already. An injected batch can still
+            // be queued while a synchronous message is handled. Give it a short chance to arrive before reading again.
+            for (int attempt = 0; attempt < 3 && OnTarget(); attempt++)
+            {
+                if (edit.Editor.Read() is { } current
+                    && current.HasCaretAt(insertedEnd)
+                    && current.Text.Length == before.Text.Length - (editEnd - editStart) + expected.Length
+                    && current.Text.AsSpan(0, editStart).SequenceEqual(before.Text.AsSpan(0, editStart))
+                    && current.Text.AsSpan(editStart, expected.Length).SequenceEqual(expected)
+                    && current.Text.AsSpan(insertedEnd).SequenceEqual(before.Text.AsSpan(editEnd)))
+                {
+                    if (caret < editStart)
+                    {
+                        return;
+                    }
+
+                    if (caret != insertedEnd)
+                    {
+                        if (!guarded)
+                        {
+                            if (!Start())
+                            {
+                                return;
+                            }
+
+                            pressAgain = [];
+                        }
+
+                        if (!OnTarget() || !edit.Editor.Select(caret, caret)
+                            || edit.Editor.Read() is not { } positioned || !positioned.HasCaretAt(caret)
+                            || !string.Equals(current.Text, positioned.Text, StringComparison.Ordinal))
+                        {
+                            return;
+                        }
+                    }
+
+                    if (OnTarget())
+                    {
+                        edit.RecordUndo?.Invoke(new NativeEdit.Undo(editStart, caret, expected, NativeEdit.Hash(current.Text)));
+                    }
+
+                    return;
+                }
+
+                if (attempt < 2)
+                {
+                    sleep(15);
+                }
+            }
         }
 
         // A long typed insertion may have returned held modifiers at its cap. Hold input again and release the current
@@ -472,7 +651,7 @@ internal static class Injector
                 return false;
             }
 
-            return guard.Unchanged(inputGeneration) && guard.Clicks == clicks;
+            return guard.Unchanged(inputGeneration) && guard.Clicks == clicks && focusUnchanged();
         }
 
         bool Send(Native.INPUT[] keys, bool mayPaste = false)
@@ -574,12 +753,26 @@ internal static class Injector
 
                 Native.INPUT[] keys;
                 int key = 0;
+                bool guardChord = false;
                 if (ch is '\n' or '\t')
                 {
-                    // Real key presses: many editors ignore a literal \n delivered as a Unicode event. A modifier the user
-                    // holds once the guard has let go is let go of first, or Tab would become Shift+Tab.
+                    // Real key presses: many editors ignore a literal \n delivered as a Unicode event.
+                    int[] held = HeldModifiers(getAsyncKeyState);
+                    if (held.Length > 0 && !guard.Holding)
+                    {
+                        // Only the guard can safely release these modifiers and restore them before replaying their
+                        // physical key-ups. Hold again just for this chord if the rest of the text is going in unguarded.
+                        if (!Start() || !guard.Holding || !OnTarget())
+                        {
+                            return false;
+                        }
+
+                        guardChord = true;
+                        held = modifiers;
+                    }
+
                     key = ch == '\n' ? Native.VK_RETURN : Native.VK_TAB;
-                    keys = [.. Modifiers(HeldModifiers(getAsyncKeyState), up: true), KeyDown(key), KeyUp(key)];
+                    keys = [.. Modifiers(held, up: true), KeyDown(key), KeyUp(key)];
                 }
                 else if (char.IsHighSurrogate(ch) && i + 1 < chars.Length && char.IsLowSurrogate(chars[i + 1]))
                 {
@@ -592,22 +785,25 @@ internal static class Injector
                     keys = [UnicodeDown(ch), UnicodeUp(ch)];
                 }
 
-                if (!Send(keys))
+                bool sent = Send(keys);
+                if (sent)
                 {
-                    // Cut off part way, a typed Enter or Tab may be left down: it's let go of, as Command Palette's
-                    // extension does.
-                    if (key != 0)
+                    int delay = KeyDelayMs + (IsSentenceBoundary(ch) ? SentenceBoundaryDelayMs : 0);
+                    if (delay > 0)
                     {
-                        _ = DispatchExactly(dispatch, [KeyUp(key)]);
+                        sleep(delay);
                     }
-
-                    return false;
+                }
+                else if (key != 0)
+                {
+                    // Cut off part way, a typed Enter or Tab may be left down.
+                    _ = DispatchExactly(dispatch, [KeyUp(key)]);
                 }
 
-                int delay = KeyDelayMs + (IsSentenceBoundary(ch) ? SentenceBoundaryDelayMs : 0);
-                if (delay > 0)
+                bool drained = !guardChord || EndGuard(matchReturnedKeys: false);
+                if (!sent || !drained)
                 {
-                    sleep(delay);
+                    return false;
                 }
 
                 // Keys are held for HoldCapMs at most. Keep the original generation: returned keys can move the caret
