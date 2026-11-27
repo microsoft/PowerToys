@@ -385,6 +385,7 @@ private:
     OnThreadExecutor m_dpiUnawareThread;
 
     EventWaiter m_toggleEditorEventWaiter;
+    VirtualDesktopWatcher m_virtualDesktopWatcher;
 
     std::unique_ptr<notifications::NotificationUtil> m_notificationUtil;
 
@@ -471,6 +472,7 @@ FancyZones::Run() noexcept
 
     m_notificationUtil = std::make_unique<notifications::NotificationUtil>();
 
+    m_virtualDesktopWatcher.Start(m_window);
     SyncVirtualDesktops();
 
     // id format of applied-layouts and app-zone-history was changed in 0.60
@@ -485,6 +487,7 @@ FancyZones::Run() noexcept
 IFACEMETHODIMP_(void)
 FancyZones::Destroy() noexcept
 {
+    m_virtualDesktopWatcher.Stop();
     m_workAreaConfiguration.Clear();
     BufferedPaintUnInit();
     if (m_window)

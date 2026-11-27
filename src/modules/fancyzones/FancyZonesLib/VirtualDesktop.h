@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 class VirtualDesktop
 {
 public:
@@ -20,4 +22,17 @@ private:
     IVirtualDesktopManager* m_vdManager{nullptr};
 
     std::optional<std::vector<GUID>> GetVirtualDesktopIdsFromRegistry(HKEY hKey) const;
+};
+
+class VirtualDesktopWatcher
+{
+public:
+    ~VirtualDesktopWatcher();
+
+    void Start(HWND window) noexcept;
+    void Stop() noexcept;
+
+private:
+    wil::unique_event m_stopEvent;
+    std::thread m_thread;
 };
