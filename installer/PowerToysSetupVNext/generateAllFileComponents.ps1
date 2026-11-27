@@ -41,6 +41,22 @@ Function Generate-FileList() {
 
     $fileExclusionList = @("*.pdb", "*.lastcodeanalysissucceeded", "createdump.exe", "powertoys.exe")
 
+    if ($fileListName -eq "BaseApplicationsFiles") {
+        # Project references copy these WinUI apphost files into the output root.
+        # WinUI3ApplicationsFiles harvests the complete apps from WinUI3Apps.
+        $fileExclusionList += @(
+            "PowerToys.ImageResizer.exe",
+            "PowerToys.ImageResizer.deps.json",
+            "PowerToys.ImageResizer.runtimeconfig.json",
+            "PowerToys.ColorPickerUI.exe",
+            "PowerToys.ColorPickerUI.deps.json",
+            "PowerToys.ColorPickerUI.runtimeconfig.json",
+            "PowerToys.WorkspacesLauncherUI.exe",
+            "PowerToys.WorkspacesLauncherUI.deps.json",
+            "PowerToys.WorkspacesLauncherUI.runtimeconfig.json"
+        )
+    }
+
     # *.winmd: WinRT metadata for the Windows App SDK AI APIs (Phi Silica, Imaging, etc.). The AI
     # runtime resolves these from the app directory at runtime, so they must ship with the product.
     # Without them GetReadyState() reports NotReady and EnsureReadyAsync() fails with
@@ -177,33 +193,8 @@ if ($platform -ceq "arm64") {
     $platform = "ARM64"
 }
 
-#BaseApplications
-# WORKAROUND: Exclude app-host files that leak into the root output directory.
-# A SelfContained Exe with a ProjectReference to a SelfContained WinExe makes MSBuild copy the
-# referenced WinExe's apphost (.exe, .deps.json, .runtimeconfig.json) to the root output directory
-# as a side effect. These files are incomplete (missing the managed .dll) and should not be in the
-# installer; the complete app is in WinUI3Apps/ and is handled by WinUI3ApplicationsFiles.
-#   - ImageResizer: ImageResizerCLI (Exe) references ImageResizerUI (WinExe).
-#   - ColorPicker: ColorPickerUI.UnitTests (Exe) references ColorPickerUI (WinExe). The leaked root
-#     PowerToys.ColorPickerUI.exe is also unsigned (ESRP only signs the WinUI3Apps copy), so it must
-#     be stripped or the "Verify all binaries are signed and versioned" stage fails.
-# TODO: Refactor these to use a shared Library project instead.
+# BaseApplications
 Generate-FileList -fileDepsJson "" -fileListName BaseApplicationsFiles -wxsFilePath $PSScriptRoot\BaseApplications.wxs -depsPath "$PSScriptRoot..\..\..\$platform\Release"
-
-# Remove leaked app-host artifacts from BaseApplications
-$baseAppWxsPath = "$PSScriptRoot\BaseApplications.wxs"
-$baseAppWxs = Get-Content $baseAppWxsPath -Raw
-$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.exe;?', ''
-$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.deps\.json;?', ''
-$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ImageResizer\.runtimeconfig\.json;?', ''
-$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ColorPickerUI\.exe;?', ''
-$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ColorPickerUI\.deps\.json;?', ''
-$baseAppWxs = $baseAppWxs -replace 'PowerToys\.ColorPickerUI\.runtimeconfig\.json;?', ''
-# Clean up trailing/double semicolons left after removal
-$baseAppWxs = $baseAppWxs -replace ';;+', ';'
-$baseAppWxs = $baseAppWxs -replace '=;', '='
-$baseAppWxs = $baseAppWxs -replace ';"', '"'
-Set-Content -Path $baseAppWxsPath -Value $baseAppWxs
 Generate-FileComponents -fileListName "BaseApplicationsFiles" -wxsFilePath $PSScriptRoot\BaseApplications.wxs
 
 # Light Switch CLI translations can arrive after the English resources. Harvest only
