@@ -128,9 +128,20 @@ namespace BugReportToolUnitTests
             STARTUPINFOW si{ .cb = sizeof(si) };
             PROCESS_INFORMATION pi{};
             Assert::IsTrue(CreateProcessW(nullptr, commandLine.data(), nullptr, nullptr, FALSE, CREATE_NO_WINDOW, nullptr, nullptr, &si, &pi) != FALSE);
-            WaitForSingleObject(pi.hProcess, INFINITE);
+            const DWORD waited = WaitForSingleObject(pi.hProcess, 60000);
+            DWORD tarExitCode = 1;
+            if (waited == WAIT_OBJECT_0)
+            {
+                GetExitCodeProcess(pi.hProcess, &tarExitCode);
+            }
+            else
+            {
+                TerminateProcess(pi.hProcess, 1);
+            }
             CloseHandle(pi.hThread);
             CloseHandle(pi.hProcess);
+            Assert::AreEqual((DWORD)WAIT_OBJECT_0, waited, L"tar did not finish extracting the ZIP");
+            Assert::AreEqual((DWORD)0, tarExitCode, L"tar could not extract the ZIP");
 
             AssertProfileCleaned(ReadFile(extracted / L"Keyboard Manager" / L"default.json"));
             AssertProfileCleaned(ReadFile(extracted / L"ConfigBackup" / L"Keyboard Manager" / L"default.json"));
