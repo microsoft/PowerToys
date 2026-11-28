@@ -10,6 +10,10 @@ export const NEEDS_AUTHOR_FEEDBACK_LABEL = 'Needs-Author-Feedback';
 const LEGACY_READY_FOR_REVIEW_LABEL = 'Needs-Review';
 export const FEEDBACK_SINCE_MARKER = 'powertoys-pr-intake:feedback-since';
 export const STALE_FEEDBACK_DAYS = 7;
+// Core team, extended team, and code owners receive repository access through
+// these roles. Team membership itself is not readable with the workflow token.
+export const TEAM_ROLES = new Set(['admin', 'maintain', 'write', 'triage']);
+export const TEAM_BASE_PERMISSIONS = new Set(['admin', 'write']);
 
 const PAGE_SIZE = 100;
 const MAX_COMMENT_PAGES = 10;
@@ -816,6 +820,22 @@ function parseIssueLabels(issue) {
     : [];
 }
 
+export async function isTeamMember(api, login) {
+  if (typeof login !== 'string' || !login || login.toLowerCase().endsWith('[bot]')) {
+    return false;
+  }
+  let permission;
+  try {
+    permission = await api.getCollaboratorPermission(login);
+  } catch {
+    // Fail open so a lookup outage never silences feedback to contributors.
+    return false;
+  }
+  const role = String(permission?.role_name ?? '').toLowerCase();
+  const base = String(permission?.permission ?? '').toLowerCase();
+  return TEAM_ROLES.has(role) || TEAM_BASE_PERMISSIONS.has(base);
+}
+
 export async function runPullRequestIntake({ api, event }) {
   if (!event?.repository) {
     throw new Error('The GitHub event payload must contain repository data');
@@ -883,8 +903,12 @@ export async function runPullRequestIntake({ api, event }) {
   });
   const comments = await listAllComments(api, issueNumber);
   const { canonical } = selectCanonicalComment(comments);
+  // Team-authored PRs (core team, extended team, code owners) keep product and
+  // readiness labels but never get an intake reply or Needs-Author-Feedback.
+  const teamAuthored = await isTeamMember(api, pullRequest.user?.login);
+  const needsAuthorFeedback = report.needsAuthorFeedback && !teamAuthored;
   const feedbackSince = determineFeedbackSince({
-    needsAuthorFeedback: report.needsAuthorFeedback,
+    needsAuthorFeedback,
     existingCommentBody: canonical?.body ?? '',
     action: event.action,
     senderLogin: event.sender?.login,
@@ -892,7 +916,7 @@ export async function runPullRequestIntake({ api, event }) {
   });
   const desiredLabels = [
     ...(report.readyForReview ? [READY_FOR_REVIEW_LABEL] : []),
-    ...(report.needsAuthorFeedback ? [NEEDS_AUTHOR_FEEDBACK_LABEL] : []),
+    ...(needsAuthorFeedback ? [NEEDS_AUTHOR_FEEDBACK_LABEL] : []),
     ...pathProductLabels,
   ];
   const labelPlan = planManagedLabelChanges(
@@ -918,7 +942,18 @@ export async function runPullRequestIntake({ api, event }) {
     comment: null,
     deletedExtraComments: [],
   };
-  if (hasRemarks) {
+  if (teamAuthored) {
+    const deletedCanonicalCommentIds = await deleteCanonicalComments({
+      api,
+      issueNumber,
+      comments,
+    });
+    commentResult = {
+      operation: deletedCanonicalCommentIds.length ? 'deleted' : 'skipped',
+      comment: null,
+      deletedExtraComments: deletedCanonicalCommentIds,
+    };
+  } else if (hasRemarks) {
     commentResult = await upsertCanonicalComment({
       api,
       issueNumber,
@@ -951,9 +986,10 @@ export async function runPullRequestIntake({ api, event }) {
     mergeabilityKnown: report.mergeabilityKnown,
     closingIssueCount: report.closingIssues.length,
     invalidClosingIssueCount: report.invalidClosingIssues.length,
-    needsAuthorFeedback: report.needsAuthorFeedback,
+    needsAuthorFeedback,
     feedbackSince,
     readyForReview: report.readyForReview,
+    teamAuthored,
   };
 }
 
@@ -1037,6 +1073,13 @@ export class GitHubApi {
 
   getPullRequest(pullNumber) {
     return this.request('GET', `/pulls/${pullNumber}`);
+  }
+
+  getCollaboratorPermission(login) {
+    return this.request(
+      'GET',
+      `/collaborators/${encodeURIComponent(login)}/permission`,
+    );
   }
 
   addLabels(issueNumber, labels) {

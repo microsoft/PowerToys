@@ -6,6 +6,11 @@
 # Needs-Author-Feedback lifecycle labels in sync, and nudges for visual evidence
 # on product UI changes.
 #
+# Pull requests authored by users with the admin, maintain, write, or triage
+# repository role (core team, extended team, and code owners) still get
+# Product-* and Ready for review labels, but never an intake comment or the
+# Needs-Author-Feedback label.
+#
 # This workflow does not run any code from the pull request head. The Node
 # script reads all pull request data through the GitHub API, so the trusted
 # default branch is checked out only to run the script itself. 3rd-party
