@@ -469,6 +469,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             OnPropertyChanged(nameof(CanManagePairing));
             OnPropertyChanged(nameof(CanConnectPairing));
             OnPropertyChanged(nameof(HasPairingError));
+
             try
             {
                 using (await SettingsSyncRequests.Semaphore.EnterAsync())
@@ -476,6 +477,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                 {
                     var endpoint = syncHelper?.Endpoint ?? throw new InvalidOperationException("Pairing endpoint is unavailable.");
                     var generatedKey = await endpoint.GenerateNewKey().WaitAsync(SettingsSyncRequests.Timeout);
+
                     if (string.IsNullOrWhiteSpace(generatedKey) || PairingKeyCodec.IsEncryptedValue(generatedKey))
                     {
                         throw new InvalidOperationException("Pairing key was not returned.");
@@ -497,7 +499,7 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
                     _hasPairingError = true;
                 }
 
-                Logger.LogError($"Couldn't update Mouse Without Borders pairing ({ex.GetType().Name}).");
+                Logger.LogError($"Couldn't update Mouse Without Borders pairing: {ex}");
             }
             finally
             {
