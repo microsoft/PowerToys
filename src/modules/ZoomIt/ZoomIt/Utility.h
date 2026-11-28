@@ -21,6 +21,12 @@ RECT RectFromPointsMinSize( POINT a, POINT b, LONG minSize );
 int ScaleForDpi( int value, UINT dpi );
 POINT ScalePointInRects( POINT point, const RECT& source, const RECT& target );
 
+// Integrity checks for input ZoomIt synthesizes (see Utility.cpp)
+DWORD GetProcessIntegrityLevel( const HANDLE hProcess );
+DWORD GetInputIntegrityLimit();
+bool IsWindowAboveOurIntegrity( const HWND hwnd );
+bool IsForegroundAboveOurIntegrity();
+
 // Dialog DPI scaling functions
 void ScaleDialogForDpi( HWND hDlg, UINT newDpi, UINT oldDpi = DPI_BASELINE );
 void ScaleChildControlsForDpi( HWND hParent, UINT newDpi, UINT oldDpi = DPI_BASELINE );
