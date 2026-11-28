@@ -112,6 +112,15 @@ namespace KeyboardManagerInput
 
         // Function to get the foreground process name
         void GetForegroundProcess(_Out_ std::wstring& foregroundProcess);
+
+        // Function to set what GetFilterKeysRepeatMs returns (0: Filter Keys off)
+        void SetFilterKeysRepeatMs(DWORD milliseconds);
+
+        // Function to get the repeat time set by SetFilterKeysRepeatMs
+        DWORD GetFilterKeysRepeatMs();
+
+    private:
+        DWORD filterKeysRepeatMs = 0;
     };
 }
 

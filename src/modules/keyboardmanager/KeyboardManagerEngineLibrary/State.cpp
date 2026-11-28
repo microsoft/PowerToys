@@ -132,6 +132,14 @@ uint64_t SequencePressTracker::MakeKeyId(const DWORD scanCode, const bool extend
     return vkCode;
 }
 
+DWORD SequencePressTracker::SlowedRepeatLimit(KeyboardManagerInput::InputInterface& ii)
+{
+    // Twice the longest gap, as for the ordinary settings. Capped far below the wrap-around range.
+    constexpr DWORD largestRepeatMs = 0x10000000;
+    const DWORD repeatMs = ii.GetFilterKeysRepeatMs();
+    return repeatMs < largestRepeatMs ? 2 * repeatMs : 2 * largestRepeatMs;
+}
+
 std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress(const KBDLLHOOKSTRUCT& key, KeyboardManagerInput::InputInterface& ii)
 {
     const uint64_t id = KeyIdOf(key);
@@ -141,7 +149,7 @@ std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress
         // difference in the upper half of the range is a time stamp a little older than the last
         // one (events are not always stamped in the order they arrive), not a gap of weeks.
         const DWORD age = key.time - it->second.lastEventTime;
-        if (age <= StalePressAfterMs || age > static_cast<DWORD>(INT_MAX))
+        if (age <= StalePressAfterMs || age > static_cast<DWORD>(INT_MAX) || age <= SlowedRepeatLimit(ii))
         {
             it->second.lastEventTime = key.time;
             return it->second.disposition;

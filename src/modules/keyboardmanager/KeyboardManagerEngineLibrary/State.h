@@ -83,9 +83,9 @@ public:
     // then at the repeat rate (at least about 2.5 a second), so the key-downs of one press are at
     // most about 1 s apart. A held key that stops repeating, because another key of the same
     // keyboard was pressed, sends no further key-down at all, only its key-up. 2 s is twice the
-    // longest gap a repeating key can produce. (The Filter Keys accessibility feature can slow the
-    // repeat down to 2 s and more. With such a setting a held key counts as pressed again at each
-    // repeat, and its sequence is sent again.)
+    // longest gap a repeating key can produce. The Filter Keys accessibility feature can slow the
+    // repeat down further: when a key-down comes later than this, the Filter Keys setting is asked,
+    // and the limit becomes twice its longest gap if that is more (see SlowedRepeatLimit).
     static constexpr DWORD StalePressAfterMs = 2000;
 
     // Identity of a physical key: scan code + extended-key flag, or the virtual key if the event
@@ -93,10 +93,15 @@ public:
     static uint64_t MakeKeyId(DWORD scanCode, bool extended, DWORD vkCode) noexcept;
 
     // For a key-down: the disposition of the press the key already belongs to (the key-down is an
-    // auto-repeat), or nullopt if this is a new press. A record whose last event is more than
-    // StalePressAfterMs older than this key-down is discarded first. ii is only asked for the key
-    // state when keys seeded by SeedForwardedPresses are left.
+    // auto-repeat), or nullopt if this is a new press. A record whose last event is older than this
+    // key-down by more than StalePressAfterMs, and by more than SlowedRepeatLimit, is discarded
+    // first. ii is asked for the Filter Keys setting only then, and for the key state only when
+    // keys seeded by SeedForwardedPresses are left.
     std::optional<Disposition> FindPress(const KBDLLHOOKSTRUCT& key, KeyboardManagerInput::InputInterface& ii);
+
+    // Twice the longest gap between two key-downs of a held key under the Filter Keys setting, or 0
+    // if Filter Keys does not set the repeat.
+    static DWORD SlowedRepeatLimit(KeyboardManagerInput::InputInterface& ii);
 
     // Records the disposition of a new press, or changes the one recorded for the key.
     void RecordPress(const KBDLLHOOKSTRUCT& key, Disposition disposition);

@@ -1487,6 +1487,75 @@ namespace RemappingLogicTests
             Assert::IsTrue(testState.SequencePresses().Empty());
         }
 
+        // Filter Keys (an accessibility feature) can make a held key repeat less often than every
+        // 2 s. A press whose key-down reached the app (here: while remapping was suspended) stays
+        // that press at such a repeat: no sequence, and its key-up reaches the app.
+        TEST_METHOD (SequenceRemap_FilterKeysSlowRepeat_ForwardedPressKeepsItsKeyUp)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            AdvanceTime(100000);
+
+            remappingSuspended = true;
+            SendKey(VK_F1, false);
+            remappingSuspended = false;
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, false));
+
+            mockedInputHandler.SetFilterKeysRepeatMs(3000);
+            AdvanceTime(3000);
+            SendKey(VK_F1, false); // auto-repeat
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::AreEqual((size_t)2, Delivered(VK_F1, false));
+
+            AdvanceTime(1000);
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)1, Delivered(VK_F1, true));
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState(VK_F1));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+        }
+
+        // The same repeat for a key whose press was replaced by its sequence: the sequence is sent once.
+        TEST_METHOD (SequenceRemap_FilterKeysSlowRepeat_HeldKeySendsItsSequenceOnce)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            mockedInputHandler.SetFilterKeysRepeatMs(3000);
+            AdvanceTime(100000);
+
+            SendKey(VK_F1, false);
+            for (int i = 0; i < 3; i++)
+            {
+                AdvanceTime(3000);
+                SendKey(VK_F1, false);
+            }
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            SendKey(VK_F1, true);
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+        }
+
+        // With Filter Keys, a key that never sends a key-up still starts a new press, once the
+        // key-down comes later than twice the slowed repeat.
+        TEST_METHOD (SequenceRemap_FilterKeysSlowRepeat_KeyThatNeverSendsKeyUp_StillStartsANewPress)
+        {
+            constexpr WORD imeKey = 0xF3;
+            constexpr WORD imeKeyScanCode = 0x29;
+            ReloadSequenceRemaps({ { imeKey, { 0x41, 0x42 } } });
+            mockedInputHandler.SetFilterKeysRepeatMs(3000);
+            AdvanceTime(100000);
+
+            SendKey(imeKey, false, imeKeyScanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            // Exactly at the limit is still an auto-repeat
+            AdvanceTime(6000);
+            SendKey(imeKey, false, imeKeyScanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            AdvanceTime(6001);
+            SendKey(imeKey, false, imeKeyScanCode);
+            Assert::AreEqual((size_t)8, SequenceEvents());
+        }
+
         // The event time is a tick count that wraps around to 0. The age of a press is measured
         // across the wrap.
         TEST_METHOD (SequenceRemap_EventTimeWrapsAround_PressAgeIsStillMeasured)

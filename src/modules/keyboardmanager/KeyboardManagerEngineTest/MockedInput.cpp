@@ -253,3 +253,13 @@ void MockedInput::GetForegroundProcess(_Out_ std::wstring& foregroundProcess)
 {
     foregroundProcess = currentProcess;
 }
+
+void MockedInput::SetFilterKeysRepeatMs(DWORD milliseconds)
+{
+    filterKeysRepeatMs = milliseconds;
+}
+
+DWORD MockedInput::GetFilterKeysRepeatMs()
+{
+    return filterKeysRepeatMs;
+}

@@ -213,6 +213,11 @@ namespace
             ii.GetForegroundProcess(foregroundProcess);
         }
 
+        DWORD GetFilterKeysRepeatMs() override
+        {
+            return ii.GetFilterKeysRepeatMs();
+        }
+
         bool GetVirtualKeyState(const int key) override
         {
             const DWORD vk = static_cast<DWORD>(key);

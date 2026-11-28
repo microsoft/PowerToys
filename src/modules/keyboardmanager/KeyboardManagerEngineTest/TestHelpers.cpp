@@ -15,6 +15,7 @@ namespace TestHelpers
         input.SetQueuedDelivery(false);
         input.SetEncodeNumpadOrigin(false);
         input.SetEventTime(0);
+        input.SetFilterKeysRepeatMs(0);
         input.ClearDeliveredEvents();
         input.SetForegroundProcess(L"");
         state.ClearSingleKeyRemaps();
