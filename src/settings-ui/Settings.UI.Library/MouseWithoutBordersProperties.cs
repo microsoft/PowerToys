@@ -60,6 +60,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public bool ShareClipboard { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]
+        public bool SuppressKeyboardManager { get; set; }
+
+        [JsonConverter(typeof(BoolPropertyJsonConverter))]
         public bool TransferFile { get; set; }
 
         [JsonConverter(typeof(BoolPropertyJsonConverter))]

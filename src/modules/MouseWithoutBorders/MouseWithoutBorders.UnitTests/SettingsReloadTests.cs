@@ -37,6 +37,21 @@ public sealed class SettingsReloadTests
     }
 
     [TestMethod]
+    public void ApplyLoadedSettings_KeyboardManagerBypassTakesEffectWithoutMatrixResend()
+    {
+        var previous = new MouseWithoutBordersProperties();
+        var settings = CreateSettings(previous);
+        Assert.IsFalse(settings.SuppressKeyboardManager);
+
+        var loaded = new MouseWithoutBordersProperties { SuppressKeyboardManager = true };
+        Assert.IsFalse(ApplySettings(settings, loaded));
+        Assert.IsTrue(settings.SuppressKeyboardManager);
+
+        Assert.IsFalse(ApplySettings(settings, previous));
+        Assert.IsFalse(settings.SuppressKeyboardManager);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void SetMachineMatrix_OverlappingAdoption_PreservesCompleteSnapshots(bool pauseAfterFirstValue)

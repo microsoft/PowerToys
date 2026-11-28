@@ -1095,6 +1095,19 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool SuppressKeyboardManager
+        {
+            get => Settings.Properties.SuppressKeyboardManager;
+            set
+            {
+                if (Settings.Properties.SuppressKeyboardManager != value)
+                {
+                    Settings.Properties.SuppressKeyboardManager = value;
+                    NotifyPropertyChanged();
+                }
+            }
+        }
+
         public bool DrawMouseCursor
         {
             get

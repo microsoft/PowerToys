@@ -314,6 +314,14 @@
                     </tkcontrols:SettingsExpander>
 
                     <tkcontrols:SettingsCard
+                        Name="MouseWithoutBordersSuppressKeyboardManager"
+                        x:Uid="MouseWithoutBorders_SuppressKeyboardManager"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE765;}">
+                        <ToggleSwitch
+                            AutomationProperties.AutomationId="MouseWithoutBordersSuppressKeyboardManagerToggle"
+                            IsOn="{x:Bind ViewModel.SuppressKeyboardManager, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard
                         Name="MouseWithoutBordersValidateRemoteMachineIP"
                         x:Uid="MouseWithoutBorders_ValidateRemoteMachineIP"
                         HeaderIcon="{ui:FontIcon Glyph=&#xEDA3;}"
