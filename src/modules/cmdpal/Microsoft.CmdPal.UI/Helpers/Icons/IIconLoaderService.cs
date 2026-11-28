@@ -31,7 +31,8 @@ internal interface IIconLoaderService : IAsyncDisposable
         TaskCompletionSource<IconSource?> tcs,
         IconLoadPriority priority,
         IconLoadMeasurement? diagnostics = null,
-        IconLoadDemand? demand = null);
+        IconLoadDemand? demand = null,
+        ImagePreviewDecode? previewDecode = null);
 
     bool TryEnqueueShellItemLoad(
         ShellItemIconRequest request,

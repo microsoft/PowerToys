@@ -26,6 +26,7 @@ public static partial class IconProvider
     private static IIconSourceProvider _provider64 = null!;
     private static IIconSourceProvider _provider256 = null!;
     private static IIconSourceProvider _providerUnbound = null!;
+    private static IIconLoaderService _loader = null!;
     private static ImageIconSource? _appIconFallbackSource;
 
     public static void Initialize(IServiceProvider serviceProvider)
@@ -36,6 +37,12 @@ public static partial class IconProvider
         _provider64 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size64);
         _provider256 = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Size256);
         _providerUnbound = serviceProvider.GetRequiredKeyedService<IIconSourceProvider>(WellKnownIconSize.Unbound);
+        _loader = serviceProvider.GetRequiredService<IIconLoaderService>();
+    }
+
+    internal static void SourceRequestedPreview(SourceRequestedEventArgs args, ImagePreviewDecode decode)
+    {
+        SourceRequestedCore(new IconSourceProvider(_loader, decode.Bounds, isPriority: true, previewDecode: decode), args);
     }
 
     private static async void SourceRequestedCore(IIconSourceProvider service, SourceRequestedEventArgs args)

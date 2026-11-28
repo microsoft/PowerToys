@@ -201,7 +201,10 @@
             </DataTemplate>
 
             <DataTemplate x:Key="DetailsImageContentTemplate" x:DataType="viewModels:ContentImageViewModel">
-                <extViews:ImageContentViewer DataContext="{x:Bind}" />
+                <extViews:ImageContentViewer
+                    HorizontalAlignment="Left"
+                    DataContext="{x:Bind}"
+                    FitStreamDecodeToBounds="True" />
             </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
@@ -248,7 +251,8 @@
             IsTabStop="False"
             Text="{x:Bind Details.Body, Mode=OneWay}"
             UseEmphasisExtras="True"
-            UsePipeTables="True" />
+            UsePipeTables="True"
+            Visibility="{x:Bind Details.Body, Converter={StaticResource DetailsStringNotEmptyToVisibilityConverter}, Mode=OneWay}" />
 
         <ItemsRepeater
             Grid.Row="3"

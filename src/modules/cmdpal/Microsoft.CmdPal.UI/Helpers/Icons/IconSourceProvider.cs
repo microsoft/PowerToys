@@ -14,12 +14,14 @@ internal sealed class IconSourceProvider : IIconSourceProvider
     private readonly IIconLoaderService _loader;
     private readonly Size _iconSize;
     private readonly bool _isPriority;
+    private readonly ImagePreviewDecode? _previewDecode;
 
-    public IconSourceProvider(IIconLoaderService loader, Size iconSize, bool isPriority = false)
+    public IconSourceProvider(IIconLoaderService loader, Size iconSize, bool isPriority = false, ImagePreviewDecode? previewDecode = null)
     {
         _loader = loader;
         _iconSize = iconSize;
         _isPriority = isPriority;
+        _previewDecode = previewDecode;
     }
 
     public IconSourceProvider(IIconLoaderService loader, int iconSize, bool isPriority = false)
@@ -110,7 +112,8 @@ internal sealed class IconSourceProvider : IIconSourceProvider
                     tcs,
                     _isPriority ? IconLoadPriority.High : IconLoadPriority.Low,
                     loadDiagnostics,
-                    loadDemand))
+                    loadDemand,
+                    _previewDecode))
             {
                 tcs.TrySetException(new ObjectDisposedException(nameof(IIconLoaderService)));
             }

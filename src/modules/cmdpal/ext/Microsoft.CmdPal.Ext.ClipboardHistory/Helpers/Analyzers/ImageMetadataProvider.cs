@@ -17,17 +17,22 @@ internal sealed class ImageMetadataProvider : IClipboardMetadataProvider
 
     public bool CanHandle(ClipboardItem item) => item.IsImage;
 
-    public IEnumerable<DetailsElement> GetDetails(ClipboardItem item)
+    public IEnumerable<DetailsElement> GetDetails(ClipboardItem item) => GetDetails(item, out _);
+
+    public IEnumerable<ProviderAction> GetActions(ClipboardItem item) => [];
+
+    internal IEnumerable<DetailsElement> GetDetails(ClipboardItem item, out ImageMetadata? metadata)
     {
-        var result = new List<DetailsElement>();
-        if (!CanHandle(item) || item.ImageData is null)
+        metadata = null;
+        if (!CanHandle(item) || item.ImageData is not { } image)
         {
-            return result;
+            return [];
         }
 
+        var result = new List<DetailsElement>();
         try
         {
-            var metadata = ImageMetadataAnalyzer.GetAsync(item.ImageData).GetAwaiter().GetResult();
+            metadata = ImageMetadataAnalyzer.GetAsync(image).GetAwaiter().GetResult();
 
             result.Add(new DetailsElement
             {
@@ -56,6 +61,4 @@ internal sealed class ImageMetadataProvider : IClipboardMetadataProvider
 
         return result;
     }
-
-    public IEnumerable<ProviderAction> GetActions(ClipboardItem item) => [];
 }

@@ -25,32 +25,4 @@ public class DetailsMarkdownHelperTests
 
         Assert.AreEqual("````text\nbefore ``` after\n````", body);
     }
-
-    [TestMethod]
-    public void BuildImageBody_ReturnsMarkdownImage_WithFitAndMaxHeightHints()
-    {
-        var path = @"C:\Temp\clipboard.png";
-
-        var body = DetailsMarkdownHelper.BuildImageBody(path, "Image");
-
-        Assert.AreEqual("![Image](file:///C:/Temp/clipboard.png?--x-cmdpal-fit=fit&--x-cmdpal-maxheight=200)", body);
-    }
-
-    [TestMethod]
-    public void BuildImageBody_UsesProvidedAltText()
-    {
-        var path = @"C:\Temp\clipboard.png";
-
-        var body = DetailsMarkdownHelper.BuildImageBody(path, "Clipboard image");
-
-        StringAssert.StartsWith(body, "![Clipboard image](file:///");
-    }
-
-    [TestMethod]
-    public void BuildImageBody_ReturnsEmpty_WhenImageDataIsNull()
-    {
-        var body = DetailsMarkdownHelper.BuildImageBody(null, "Image");
-
-        Assert.AreEqual(string.Empty, body);
-    }
 }

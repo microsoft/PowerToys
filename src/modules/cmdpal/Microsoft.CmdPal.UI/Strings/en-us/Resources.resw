@@ -1518,9 +1518,6 @@ Home: highest position. End: lowest position.</value>
     <value>NEW</value>
     <comment>Must be all caps</comment>
   </data>
-  <data name="ImageContentViewer_ZoomAndScroll.Text" xml:space="preserve">
-    <value>Zoom &amp; Scroll</value>
-  </data>
   <data name="ImageContentViewer_OpenZoomViewer.Text" xml:space="preserve">
     <value>Open image viewer</value>
   </data>

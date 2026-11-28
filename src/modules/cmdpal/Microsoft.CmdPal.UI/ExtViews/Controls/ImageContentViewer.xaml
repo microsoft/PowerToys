@@ -5,61 +5,82 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.CmdPal.UI.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:help="using:Microsoft.CmdPal.UI.Helpers"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-    <Grid Padding="12,8,8,8">
+    <Grid x:Name="PreviewLayout">
         <Border
             x:Name="ImageBorder"
             HorizontalAlignment="Stretch"
-            VerticalAlignment="Stretch"
-            BorderThickness="1">
-            <Grid>
-                <Border
-                    x:Name="ImageCornerBorder"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    CornerRadius="8">
+            VerticalAlignment="Stretch">
+            <Border
+                x:Name="ImageCornerBorder"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="Transparent"
+                CornerRadius="8">
+                <Grid>
                     <Viewbox
                         x:Name="FitViewbox"
-                        MaxWidth="{x:Bind ViewModel.MaxWidth, Mode=OneWay}"
-                        MaxHeight="{x:Bind ViewModel.MaxHeight, Mode=OneWay}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"
-                        SizeChanged="FitViewbox_SizeChanged"
+                        SizeChanged="Preview_SizeChanged"
                         Stretch="Uniform">
                         <controls:IconBox
                             x:Name="Image"
                             AutomationProperties.AccessibilityView="Raw"
                             DiagnosticScope="Content"
                             RequestSite="Image"
-                            SourceKey="{x:Bind ViewModel.Image, Mode=OneWay}"
-                            SourceRequested="{x:Bind help:IconProvider.SourceRequestedOriginal}" />
+                            SourceRequested="Image_SourceRequested" />
                     </Viewbox>
-                </Border>
 
-                <Canvas
-                    x:Name="OverlayCanvas"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Stretch"
-                    Background="{x:Null}">
-                    <Button
-                        x:Name="OpenZoomOverlayButton"
-                        x:Uid="ImageContentViewer_OpenZoomOverlayButton"
-                        Padding="8,4"
-                        Click="OpenZoomOverlay_Click"
-                        IsHitTestVisible="True"
-                        Loaded="OpenZoomOverlayButton_Loaded"
-                        SizeChanged="OpenZoomOverlayButton_SizeChanged"
-                        Style="{StaticResource ButtonRevealStyle}">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <SymbolIcon Symbol="Zoom" />
-                            <TextBlock x:Uid="ImageContentViewer_ZoomAndScroll" />
-                        </StackPanel>
-                    </Button>
-                </Canvas>
-            </Grid>
+                    <Canvas>
+                        <Grid x:Name="ZoomButtonOverlay">
+                            <Button
+                                x:Name="OpenZoomOverlayButton"
+                                x:Uid="ImageContentViewer_OpenZoomOverlayButton"
+                                Width="32"
+                                Height="32"
+                                MinWidth="0"
+                                MinHeight="0"
+                                Padding="0"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                HorizontalContentAlignment="Stretch"
+                                VerticalContentAlignment="Stretch"
+                                Click="OpenZoomOverlay_Click"
+                                GotFocus="ZoomButton_FocusChanged"
+                                LostFocus="ZoomButton_FocusChanged"
+                                PointerEntered="ZoomButton_PointerEntered"
+                                PointerExited="ZoomButton_PointerExited"
+                                Style="{StaticResource ButtonRevealStyle}"
+                                Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="28" />
+                                    </Grid.ColumnDefinitions>
+                                    <Canvas x:Name="ZoomButtonLabelSlot" SizeChanged="ZoomButtonLabelSlot_SizeChanged">
+                                        <Canvas.Clip>
+                                            <RectangleGeometry x:Name="ZoomButtonLabelClip" />
+                                        </Canvas.Clip>
+                                        <TextBlock
+                                            x:Name="ZoomButtonLabel"
+                                            x:Uid="ImageContentViewer_OpenZoomViewer"
+                                            Canvas.Left="8"
+                                            AutomationProperties.AccessibilityView="Raw"
+                                            SizeChanged="ZoomButtonLabel_SizeChanged" />
+                                    </Canvas>
+                                    <SymbolIcon
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Center"
+                                        Symbol="Zoom" />
+                                </Grid>
+                            </Button>
+                        </Grid>
+                    </Canvas>
+                </Grid>
+            </Border>
         </Border>
         <Grid.ContextFlyout>
             <MenuFlyout>

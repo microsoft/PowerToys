@@ -19,6 +19,8 @@ namespace Microsoft.CmdPal.Ext.ClipboardHistory.Models;
 
 internal sealed partial class ClipboardListItem : ListItem
 {
+    private const int ImagePreviewMaxHeight = 200;
+
     private static readonly IClipboardMetadataProvider[] MetadataProviders =
     [
         new ImageMetadataProvider(),
@@ -49,7 +51,7 @@ internal sealed partial class ClipboardListItem : ListItem
         _settingsManager = settingsManager;
         _settingsManager.Settings.SettingsChanged += SettingsOnSettingsChanged;
 
-        _lazyDetails = new(() => CreateDetails());
+        _lazyDetails = new(() => CreateDetails(item));
 
         var deleteConfirmationCommand = new ConfirmableCommand
         {
@@ -196,25 +198,19 @@ internal sealed partial class ClipboardListItem : ListItem
         return [.. commands];
     }
 
-    private Details CreateDetails()
+    internal static Details CreateDetails(ClipboardItem item)
     {
         List<IDetailsElement> metadata = [];
 
+        ImageMetadata? imageMetadata = null;
         foreach (var provider in MetadataProviders)
         {
-            if (provider.CanHandle(_item))
+            if (provider.CanHandle(item))
             {
-                var details = provider.GetDetails(_item);
-                if (details.Any())
-                {
-                    metadata.Add(new DetailsElement
-                    {
-                        Key = provider.SectionTitle,
-                        Data = new DetailsSeparator(),
-                    });
-
-                    metadata.AddRange(details);
-                }
+                var details = provider is ImageMetadataProvider imageProvider
+                    ? imageProvider.GetDetails(item, out imageMetadata)
+                    : provider.GetDetails(item);
+                AddMetadataSection(metadata, provider.SectionTitle, details);
             }
         }
 
@@ -226,30 +222,48 @@ internal sealed partial class ClipboardListItem : ListItem
         metadata.Add(new DetailsElement
         {
             Key = Properties.Resources.metadata_copied_key,
-            Data = new DetailsLink(_item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
+            Data = new DetailsLink(item.Timestamp.DateTime.ToString(DateTimeFormatInfo.CurrentInfo)),
         });
 
-        if (_item.IsImage)
+        if (item.IsImage)
         {
+            var preview = new ImageContent(new IconInfo(new IconData(item.ImageData))) { MaxHeight = ImagePreviewMaxHeight };
+            if (imageMetadata is { Width: > 0, Height: > 0 } dimensions)
+            {
+                preview.MaxWidth = (int)Math.Min(dimensions.Width, (uint)int.MaxValue);
+                preview.MaxHeight = (int)Math.Min(dimensions.Height, (uint)ImagePreviewMaxHeight);
+            }
+
             return new Details
             {
-                Title = _item.GetDataType(),
-                Body = DetailsMarkdownHelper.BuildImageBody(_item.ImagePath, Properties.Resources.clipboard_item_image_title),
+                Title = Properties.Resources.clipboard_item_image_title,
+                Content = [preview],
                 Metadata = [.. metadata],
             };
         }
 
-        if (_item.IsText)
+        if (item.IsText)
         {
             return new Details
             {
-                Title = _item.GetDataType(),
-                Body = DetailsMarkdownHelper.BuildTextBody(_item.Content),
+                Title = item.GetDataType(),
+                Body = DetailsMarkdownHelper.BuildTextBody(item.Content),
                 Metadata = [.. metadata],
             };
         }
 
-        return new Details { Title = _item.GetDataType() };
+        return new Details { Title = item.GetDataType() };
+    }
+
+    private static void AddMetadataSection(List<IDetailsElement> metadata, string title, IEnumerable<DetailsElement> details)
+    {
+        if (!details.Any())
+        {
+            return;
+        }
+
+        metadata.Add(new DetailsElement { Key = title, Data = new DetailsSeparator() });
+        metadata.AddRange(details);
     }
 
     private static List<string> StripLeadingWhitespace(IEnumerable<string> lines)
