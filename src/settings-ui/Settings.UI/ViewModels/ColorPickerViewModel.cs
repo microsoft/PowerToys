@@ -253,6 +253,20 @@ namespace Microsoft.PowerToys.Settings.UI.ViewModels
             }
         }
 
+        public bool EditorAlwaysOnTop
+        {
+            get => _colorPickerSettings.Properties.EditorAlwaysOnTop;
+            set
+            {
+                if (_colorPickerSettings.Properties.EditorAlwaysOnTop != value)
+                {
+                    _colorPickerSettings.Properties.EditorAlwaysOnTop = value;
+                    OnPropertyChanged(nameof(EditorAlwaysOnTop));
+                    NotifySettingsChanged();
+                }
+            }
+        }
+
         public ObservableCollection<ColorFormatModel> ColorFormats { get; } = new ObservableCollection<ColorFormatModel>();
 
         public ObservableCollection<KeyValuePair<string, string>> ColorFormatsPreview => _colorFormatsPreview;

@@ -17,4 +17,6 @@
 - [] Hold the I key in the Editor with another app (e.g. Notepad) behind it: no "iii" is typed into that app, and picking starts once I is released
 - [] Hold the I key in the Editor, Alt+Tab away and release it there: picking does not start later on its own
 - [] Open Adjust color from the Editor
+- [] Minimize the Editor and restore it from the taskbar; minimize it again, press the activation shortcut, pick a color and check the Editor opens restored
+- [] Turn off `Keep the editor on top`: the Editor opens above the active app and goes behind other windows when you switch apps. Turn it back on while the Editor is open and check it stays on top again
 - [] Check Color Picker logs for errors

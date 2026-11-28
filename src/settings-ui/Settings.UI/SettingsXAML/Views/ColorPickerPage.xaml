@@ -107,6 +107,13 @@
                     <tkcontrols:SettingsCard Name="ColorPickerShowColorName" x:Uid="ColorPicker_ShowColorName">
                         <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{Binding ShowColorName, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
+
+                    <tkcontrols:SettingsCard
+                        Name="ColorPickerEditorAlwaysOnTop"
+                        x:Uid="ColorPicker_EditorAlwaysOnTop"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE7C4;}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.EditorAlwaysOnTop, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
                     <!--
                 Disabling this until we have a safer way to reset cursor as
                 we can hit a state where the cursor doesn't reset
