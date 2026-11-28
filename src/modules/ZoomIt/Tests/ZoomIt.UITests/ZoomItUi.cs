@@ -15,6 +15,8 @@ internal sealed class ZoomItUi(TestContext context)
     internal const string ProcessName = "PowerToys.ZoomIt";
     internal const string OverlayClass = "ZoomitClass";
     internal const string LiveZoomClass = "MagnifierClass";
+    internal const string DemoTypeBrowseButtonId = "ZoomItDemoTypeBrowseButton";
+    internal const string DemoTypeClearButtonId = "ZoomItDemoTypeClearButton";
 
     private readonly Session session = Session.FromProcess("PowerToys.Settings", PowerToysModule.PowerToysSettings);
 
@@ -50,6 +52,11 @@ internal sealed class ZoomItUi(TestContext context)
         // Exclude the SettingsExpander's own Button-like header from its content controls.
         var card = session.Find<Element>(By.AccessibilityId(cardId), 15_000);
         var tree = WinappCli.InvokeJson("ui", "inspect", card.Selector, session.TargetFlag, session.TargetValue, "--json", "-d", "12");
+        return session.Find<T>(By.Slug(ResolveControlSelector(tree, cardId, controlType, automationId)));
+    }
+
+    internal static string ResolveControlSelector(JsonElement tree, string cardId, string controlType, string? automationId = null)
+    {
         var matches = Nodes(tree).Where(node =>
             (Property(node, "type") == controlType || Property(node, "className") == controlType) &&
             Property(node, "className") != "Microsoft.UI.Xaml.Controls.Expander" &&
@@ -57,7 +64,23 @@ internal sealed class ZoomItUi(TestContext context)
         Assert.HasCount(1, matches, $"Expected one {controlType}/{automationId} inside {cardId}. Tree: {tree}");
         var selector = Property(matches[0], "selector");
         Assert.IsFalse(string.IsNullOrWhiteSpace(selector), $"No selector for the control in {cardId}.");
-        return session.Find<T>(By.Slug(selector));
+        return selector;
+    }
+
+    internal void WaitForCardText(string cardId, string expected)
+    {
+        var result = WaitHelper.WaitForStable(
+            () =>
+            {
+                var card = session.Find<Element>(By.AccessibilityId(cardId));
+                var tree = WinappCli.InvokeJson("ui", "inspect", card.Selector, session.TargetFlag, session.TargetValue, "--json", "-d", "12");
+                return Nodes(tree).Where(node => Property(node, "type") == "Text").Select(node => Property(node, "name")).ToArray();
+            },
+            texts => texts is not null && texts.Contains(expected, StringComparer.Ordinal),
+            10_000,
+            2,
+            shouldRetryException: ShellMenu.IsTransientElementException);
+        Assert.IsTrue(result.Succeeded, $"Expected text '{expected}' inside {cardId}. Actual: {string.Join("; ", result.LastObservation ?? [])}. {result.LastException?.Message}");
     }
 
     internal Key[] Shortcut(string cardId)
@@ -132,10 +155,10 @@ internal sealed class ZoomItUi(TestContext context)
         WaitForSetting(registryName, expectedValue);
     }
 
-    internal void PickFile(string cardId, string path, string registryName)
+    internal void PickFile(string cardId, string path, string registryName, string? buttonAutomationId = null)
     {
         Step($"Choosing {path} for {cardId}");
-        var dialog = OpenDialog<TextBox>(cardId, "1148");
+        var dialog = OpenDialog<TextBox>(cardId, "1148", buttonAutomationId);
         var filename = dialog.Find<TextBox>(By.AccessibilityId("1148"));
         filename.SetText(path);
         Assert.IsTrue(WindowControl.WaitForForeground(new IntPtr(dialog.WindowHandle), 10_000), "The file picker did not acquire foreground.");
@@ -144,7 +167,7 @@ internal sealed class ZoomItUi(TestContext context)
         WaitForSetting(registryName, path);
     }
 
-    internal Session OpenDialog<TInput>(string cardId, string inputAutomationId)
+    internal Session OpenDialog<TInput>(string cardId, string inputAutomationId, string? buttonAutomationId = null)
         where TInput : Element, new()
     {
         var existing = WindowsFinder.WaitForWindowByApp("PowerToys.Settings", candidate => candidate.ClassName == "#32770", 100);
@@ -176,7 +199,7 @@ internal sealed class ZoomItUi(TestContext context)
         var middleBottom = bounds.Top + (((bounds.Bottom - bounds.Top) * 2) / 3);
         MouseHelper.MoveTo(bounds.Left + 50, bounds.Top + 50);
         var ready = WaitForDialogButton(
-            () => Control<Button>(cardId, "Button"),
+            () => Control<Button>(cardId, "Button", buttonAutomationId),
             target =>
             {
                 target.ScrollIntoView();

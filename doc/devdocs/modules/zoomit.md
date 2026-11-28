@@ -80,6 +80,19 @@ The `ZoomItSettingsInterop` library handles:
 2. Saving changes from the settings UI back to the registry
 3. Notifying the ZoomIt application when settings change
 
+DemoType's **Clear** input-file button removes only the file selection; it does not
+delete the source file, change the shortcut, speed or manual mode, or stop active
+typing. PowerToys saves the empty `DemoTypeFile` string immediately through
+`ZoomItSettingsInterop.SaveSettingsJson` to
+`HKEY_CURRENT_USER\Software\Sysinternals\ZoomIt`, then sends `refresh_settings`.
+Registry strings include the terminating NUL so an empty path replaces the
+previously loaded filename when the running process reloads settings.
+The native options dialog stages Browse and Clear changes until **OK**; **Cancel**
+or closing the dialog discards them. There is no separate Apply button.
+In either UI, Clear is disabled when no file is selected. Clipboard-based DemoType
+remains available, and activation without a file or valid clipboard script retains
+the existing no-source behavior instead of replaying a cached file.
+
 ![interop](../images/zoomit/interop.png)
 
 ## Integration Steps

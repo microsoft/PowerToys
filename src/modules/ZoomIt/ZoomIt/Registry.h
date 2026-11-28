@@ -273,7 +273,7 @@ private:
     void WriteValue( PCTSTR ValueName, PTCHAR Value ) 
     {
         RegSetValueEx( hKey, ValueName, 0, REG_SZ, reinterpret_cast<PBYTE>(Value),
-                static_cast<DWORD>(_tcslen( Value )) * sizeof(TCHAR));
+                static_cast<DWORD>(_tcslen( Value ) + 1) * sizeof(TCHAR));
     }
     void WriteValueBinary( PCTSTR ValueName, PBYTE Value, DWORD Length ) 
     {
