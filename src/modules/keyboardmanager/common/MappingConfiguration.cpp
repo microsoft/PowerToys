@@ -4,6 +4,7 @@
 #include <common/SettingsAPI/settings_objects.h>
 #include <common/SettingsAPI/settings_helpers.h>
 #include <common/logger/logger.h>
+#include <common/interop/shared_constants.h>
 
 #include "KeyboardManagerConstants.h"
 #include "Shortcut.h"
@@ -59,6 +60,13 @@ void MappingConfiguration::ClearSingleKeyRemaps()
 void MappingConfiguration::ClearSingleKeyAloneRemaps()
 {
     aloneSingleKeyReMap.clear();
+}
+
+// Function to clear the single-key-to-sequence remapping table.
+void MappingConfiguration::ClearSingleKeyToSequenceRemaps()
+{
+    singleKeyToSequenceReMap.clear();
+    storedSequenceRemaps = nullptr;
 }
 
 // Function to clear the Keys remapping table.
@@ -127,6 +135,154 @@ bool MappingConfiguration::AddSingleKeyAloneRemap(const DWORD& originalKey, cons
     return true;
 }
 
+bool MappingConfiguration::AddSingleKeyToSequenceRemap(const DWORD& originalKey, const std::vector<DWORD>& sequence)
+{
+    if (sequence.empty())
+    {
+        return false;
+    }
+
+    // Reject a duplicate source key within the sequence table.
+    if (singleKeyToSequenceReMap.find(originalKey) != singleKeyToSequenceReMap.end())
+    {
+        return false;
+    }
+
+    singleKeyToSequenceReMap[originalKey] = sequence;
+    storedSequenceRemaps = nullptr; // the table is the one to save from now on
+    return true;
+}
+
+std::wstring MappingConfiguration::KeySequenceToString(const std::vector<DWORD>& sequence)
+{
+    std::wstring result;
+    for (const DWORD key : sequence)
+    {
+        if (!result.empty())
+        {
+            result += L';';
+        }
+        result += std::to_wstring(key);
+    }
+
+    return result;
+}
+
+namespace
+{
+    // Parses a complete decimal key code: ASCII digits only, nothing else (no sign, space, hex prefix,
+    // NUL or trailing characters), so a malformed value is rejected instead of becoming a different key.
+    DWORD ParseDecimalKeyCode(const std::wstring_view element)
+    {
+        // A DWORD has at most 10 digits (numpad-origin encodings use bit 31, so they have 10).
+        if (element.empty() || element.size() > 10)
+        {
+            throw std::invalid_argument("invalid key code");
+        }
+
+        uint64_t key = 0;
+        for (const wchar_t c : element)
+        {
+            if (c < L'0' || c > L'9')
+            {
+                throw std::invalid_argument("invalid key code");
+            }
+            key = key * 10 + static_cast<uint64_t>(c - L'0');
+        }
+
+        if (key > MAXDWORD)
+        {
+            throw std::invalid_argument("invalid key code");
+        }
+
+        return static_cast<DWORD>(key);
+    }
+}
+
+std::vector<DWORD> MappingConfiguration::ParseKeySequence(const std::wstring& value)
+{
+    std::vector<DWORD> sequence;
+    if (value.empty())
+    {
+        return sequence;
+    }
+
+    size_t start = 0;
+    while (true)
+    {
+        const size_t end = value.find(L';', start);
+        const std::wstring_view element = std::wstring_view(value).substr(start, end == std::wstring::npos ? std::wstring::npos : end - start);
+
+        // Each element is sent with SendInput, whose KEYBDINPUT.wVk takes 1-254. The KBM codes for
+        // Disabled (skipped) and Win (sent as Left Win) are handled by the engine. An empty element
+        // ("27;;26" or a trailing ';') is rejected like any other malformed element.
+        const DWORD key = ParseDecimalKeyCode(element);
+        if ((key == 0 || key > 0xFE) && key != CommonSharedConstants::VK_DISABLED && key != CommonSharedConstants::VK_WIN_BOTH)
+        {
+            throw std::invalid_argument("invalid key code in key sequence");
+        }
+
+        sequence.push_back(key);
+
+        if (end == std::wstring::npos)
+        {
+            break;
+        }
+
+        start = end + 1;
+    }
+
+    return sequence;
+}
+
+std::vector<DWORD> MappingConfiguration::ParseSequenceSourceKeys(const std::wstring& value)
+{
+    const DWORD key = ParseDecimalKeyCode(value);
+
+    // Codes the keyboard hook never reports for a physical key: expand them to the left and right keys,
+    // as the editor does when it saves an ordinary remap (key sequences are written by hand for now).
+    switch (key)
+    {
+    case CommonSharedConstants::VK_WIN_BOTH:
+        return { VK_LWIN, VK_RWIN };
+    case VK_SHIFT:
+        return { VK_LSHIFT, VK_RSHIFT };
+    case VK_CONTROL:
+        return { VK_LCONTROL, VK_RCONTROL };
+    case VK_MENU:
+        return { VK_LMENU, VK_RMENU };
+    default:
+        break;
+    }
+
+    // The hook reports 1-254 for the keys that have a virtual-key code, and marks a numpad key that shares
+    // its VK code with another key (e.g. NumPad End) with the numpad-origin bit; accept exactly those
+    // encodings. 255 (0xFF) is rejected although the hook can report it for a key without a VK code: it is
+    // the dummy key Keyboard Manager itself injects (KeyboardManagerConstants::DUMMY_KEY). 231 (VK_PACKET)
+    // is rejected too: it carries text sent as Unicode input, not a key, and the engine never tracks it
+    // as a press, so a sequence on it could never fire.
+    if (key == VK_PACKET)
+    {
+        throw std::invalid_argument("invalid source key");
+    }
+
+    if (key >= 1 && key <= 0xFE)
+    {
+        return { key };
+    }
+
+    if (Helpers::IsNumpadOriginated(key))
+    {
+        const DWORD baseKey = Helpers::ClearKeyNumpadOrigin(key);
+        if (baseKey >= 1 && baseKey <= 0xFE && (Helpers::EncodeKeyNumpadOrigin(baseKey, false) == key || Helpers::EncodeKeyNumpadOrigin(baseKey, true) == key))
+        {
+            return { key };
+        }
+    }
+
+    throw std::invalid_argument("invalid source key");
+}
+
 bool MappingConfiguration::AddSingleKeyToTextRemap(const DWORD originalKey, const std::wstring& text)
 {
     if (auto it = singleKeyToTextReMap.find(originalKey); it != end(singleKeyToTextReMap))
@@ -179,6 +335,7 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
         auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
         ClearSingleKeyRemaps();
         ClearSingleKeyAloneRemaps();
+        ClearSingleKeyToSequenceRemaps();
 
         if (remapKeysData)
         {
@@ -227,6 +384,69 @@ bool MappingConfiguration::LoadSingleKeyRemaps(const json::JsonObject& jsonData)
     catch (...)
     {
         Logger::error(L"Improper JSON format for single key remaps. Skip to next remap type");
+        result = false;
+    }
+
+    // Key-sequence remaps live in their own optional array (absent in older settings files), read
+    // separately so a problem in inProcess doesn't hide them. They are hand-written for now (no editor
+    // UI), so a bad entry is logged and skipped without failing the whole load: a failed load would
+    // stop the editor from opening the profile and make the engine retry loading.
+    try
+    {
+        auto remapKeysData = jsonData.GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+        json::IJsonValue sequenceValue{ nullptr };
+        if (remapKeysData && remapKeysData.HasKey(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName))
+        {
+            sequenceValue = remapKeysData.GetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+        }
+
+        // Kept as read (set again after the entries are added below, which drop it).
+        const json::IJsonValue storedValue = sequenceValue;
+
+        // The array is optional, so a value of the wrong type (null, an object, ...) is ignored with a
+        // warning instead of failing the load, which would also hide the valid ordinary remaps above.
+        if (sequenceValue && sequenceValue.ValueType() != json::JsonValueType::Array)
+        {
+            Logger::warn(L"Ignored the key sequence remaps: {} is not an array.", KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+        }
+        else if (sequenceValue)
+        {
+            auto sequenceRemapKeys = sequenceValue.GetArray();
+            for (const auto& it : sequenceRemapKeys)
+            {
+                std::wstring originalKey;
+                try
+                {
+                    // Convert with the full length (not c_str()), so a NUL inside the string is validated
+                    // as part of it instead of silently cutting the value short.
+                    originalKey = std::wstring{ std::wstring_view{ it.GetObjectW().GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName) } };
+                    const std::wstring sequence{ std::wstring_view{ it.GetObjectW().GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName) } };
+
+                    // Both throw on a value that is not a complete decimal key code in range.
+                    const auto sourceKeys = ParseSequenceSourceKeys(originalKey);
+                    const auto keySequence = ParseKeySequence(sequence);
+
+                    // A generic source key (e.g. 260 = Win) adds one remap for each side.
+                    for (const DWORD sourceKey : sourceKeys)
+                    {
+                        if (!AddSingleKeyToSequenceRemap(sourceKey, keySequence))
+                        {
+                            Logger::warn(L"Ignored the key sequence remap for key {}: the sequence is empty or the key already has one.", sourceKey);
+                        }
+                    }
+                }
+                catch (...)
+                {
+                    Logger::warn(L"Ignored the key sequence remap for key {}: not a valid entry.", originalKey.c_str());
+                }
+            }
+        }
+
+        storedSequenceRemaps = storedValue;
+    }
+    catch (...)
+    {
+        Logger::error(L"Improper JSON format for key sequence remaps. Skip to next remap type");
         result = false;
     }
 
@@ -476,6 +696,7 @@ bool MappingConfiguration::LoadSettings()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
     configurationNameResolved = false;
+    configurationFileRead = false;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -496,6 +717,7 @@ bool MappingConfiguration::LoadSettings()
             return false;
         }
 
+        configurationFileRead = true;
         bool result = LoadSingleKeyRemaps(*configFile);
         ClearOSLevelShortcuts();
         ClearAppSpecificShortcuts();
@@ -518,10 +740,31 @@ bool MappingConfiguration::IsConfigurationNameResolved() const
     return configurationNameResolved;
 }
 
-// Save the updated configuration.
-bool MappingConfiguration::SaveSettingsToFile()
+bool MappingConfiguration::IsConfigurationFileRead() const
 {
-    bool result = true;
+    return configurationFileRead;
+}
+
+void MappingConfiguration::TakeLoadedMappingsFrom(MappingConfiguration&& other)
+{
+    singleKeyReMap = std::move(other.singleKeyReMap);
+    aloneSingleKeyReMap = std::move(other.aloneSingleKeyReMap);
+    singleKeyToSequenceReMap = std::move(other.singleKeyToSequenceReMap);
+    storedSequenceRemaps = std::move(other.storedSequenceRemaps);
+    scanMap = std::move(other.scanMap);
+    singleKeyToTextReMap = std::move(other.singleKeyToTextReMap);
+    osLevelShortcutReMap = std::move(other.osLevelShortcutReMap);
+    osLevelShortcutReMapSortedKeys = std::move(other.osLevelShortcutReMapSortedKeys);
+    appSpecificShortcutReMap = std::move(other.appSpecificShortcutReMap);
+    appSpecificShortcutReMapSortedKeys = std::move(other.appSpecificShortcutReMapSortedKeys);
+    currentConfig = std::move(other.currentConfig);
+    configurationNameResolved = other.configurationNameResolved;
+    configurationFileRead = other.configurationFileRead;
+}
+
+// Builds the settings JSON of the current configuration (what SaveSettingsToFile writes).
+json::JsonObject MappingConfiguration::ToSettingsJson() const
+{
     json::JsonObject configJson;
     json::JsonObject remapShortcuts;
     json::JsonObject remapShortcutsToText;
@@ -580,6 +823,16 @@ bool MappingConfiguration::SaveSettingsToFile()
         keys.SetNamedValue(KeyboardManagerConstants::RemapConditionSettingName, json::value(KeyboardManagerConstants::RemapConditionAlone));
 
         inProcessRemapKeysArray.Append(keys);
+    }
+    // Serialize key-sequence remaps into their own array (see InProcessSequenceRemapKeysSettingName).
+    // Without this, saving from the editor would silently drop them.
+    json::JsonArray inProcessSequenceRemapKeysArray;
+    for (const auto& [originalKey, sequence] : singleKeyToSequenceReMap)
+    {
+        json::JsonObject keys;
+        keys.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(originalKey))));
+        keys.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(KeySequenceToString(sequence)));
+        inProcessSequenceRemapKeysArray.Append(keys);
     }
 
     for (const auto& [code, text] : singleKeyToTextReMap)
@@ -727,11 +980,30 @@ bool MappingConfiguration::SaveSettingsToFile()
     remapShortcutsToText.SetNamedValue(KeyboardManagerConstants::AppSpecificRemapShortcutsSettingName, appSpecificRemapShortcutsToTextArray);
 
     remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysArray);
+    // The key-sequence list as the file had it is written back unchanged (see storedSequenceRemaps).
+    // Otherwise the list is written from the table, and only when there is something in it, so files
+    // without sequences stay exactly as before.
+    if (storedSequenceRemaps)
+    {
+        remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, storedSequenceRemaps);
+    }
+    else if (inProcessSequenceRemapKeysArray.Size() > 0)
+    {
+        remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequenceRemapKeysArray);
+    }
     remapKeysToText.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcessRemapKeysToTextArray);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapKeysToTextSettingName, remapKeysToText);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsSettingName, remapShortcuts);
     configJson.SetNamedValue(KeyboardManagerConstants::RemapShortcutsToTextSettingName, remapShortcutsToText);
+    return configJson;
+}
+
+// Save the updated configuration.
+bool MappingConfiguration::SaveSettingsToFile()
+{
+    bool result = true;
+    const json::JsonObject configJson = ToSettingsJson();
 
     const std::wstring settingsFilePath = PTSettingsHelper::get_module_save_folder_location(KeyboardManagerConstants::ModuleName) + L"\\" + currentConfig + L".json";
     if (!WriteJsonAtomically(settingsFilePath, configJson))

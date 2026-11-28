@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "MockedInput.h"
+#include <keyboardmanager/common/Helpers.h>
 
 using namespace KeyboardManagerInput;
 
@@ -18,8 +19,39 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         return false;
     }
 
-    // Iterate over inputs
-    for (const INPUT& input : inputs)
+    if (!queuedDelivery)
+    {
+        // Iterate over inputs
+        for (const INPUT& input : inputs)
+        {
+            DeliverInput(input);
+        }
+        return true;
+    }
+
+    // Queued delivery: like SendInput, add the events to the end of the input queue. A call made
+    // from inside the hook returns here; its events go through the hook after the event being
+    // handled, and after anything that was queued before them.
+    queuedInputs.insert(queuedInputs.end(), inputs.begin(), inputs.end());
+    if (deliveringQueue)
+    {
+        return true;
+    }
+
+    deliveringQueue = true;
+    while (!queuedInputs.empty())
+    {
+        const INPUT input = queuedInputs.front();
+        queuedInputs.pop_front();
+        DeliverInput(input);
+    }
+    deliveringQueue = false;
+    return true;
+}
+
+// Sends one event through the hook and, if it is not suppressed, to the keyboard state
+void MockedInput::DeliverInput(const INPUT& input)
+{
     {
         LowlevelKeyboardEvent keyEvent{};
 
@@ -48,9 +80,19 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         }
         KBDLLHOOKSTRUCT lParam = {};
 
-        // Set only vkCode and dwExtraInfo since other values are unused
+        // Set vkCode, dwExtraInfo, the scan code, the extended-key flag and the time since other values are unused
         lParam.vkCode = input.ki.wVk;
         lParam.dwExtraInfo = input.ki.dwExtraInfo;
+        lParam.scanCode = input.ki.wScan;
+        lParam.time = input.ki.time != 0 ? input.ki.time : eventTime;
+        if (input.ki.dwFlags & KEYEVENTF_EXTENDEDKEY)
+        {
+            lParam.flags |= LLKHF_EXTENDED;
+        }
+        if (encodeNumpadOrigin)
+        {
+            lParam.vkCode = Helpers::EncodeKeyNumpadOrigin(lParam.vkCode, lParam.flags & LLKHF_EXTENDED);
+        }
         keyEvent.lParam = &lParam;
 
         // If the SendVirtualInput call condition is true, increment the count. If no condition is set then always increment the count
@@ -65,6 +107,8 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
         // Set keyboard state if the hook does not suppress the input
         if (result == 0)
         {
+            deliveredEvents.push_back({ lParam.vkCode, (input.ki.dwFlags & KEYEVENTF_KEYUP) != 0, lParam.dwExtraInfo, lParam.scanCode });
+
             // If key up flag is set, then set keyboard state to false
             keyboardState[input.ki.wVk] = (input.ki.dwFlags & KEYEVENTF_KEYUP) ? false : true;
 
@@ -113,7 +157,6 @@ bool MockedInput::SendVirtualInput(const std::vector<INPUT>& inputs)
             }
         }
     }
-    return true;
 }
 
 // Function to simulate keyboard hook behavior
@@ -167,6 +210,38 @@ int MockedInput::GetSendVirtualInputCallCount()
     return sendVirtualInputCallCount;
 }
 
+// Function to choose between queued and nested delivery of input sent from inside the hook
+void MockedInput::SetQueuedDelivery(bool queued)
+{
+    queuedDelivery = queued;
+    deliveringQueue = false;
+    queuedInputs.clear();
+}
+
+// Function to make the hook see numpad-origin encoded virtual keys, as the real hook procedure does
+void MockedInput::SetEncodeNumpadOrigin(bool encode)
+{
+    encodeNumpadOrigin = encode;
+}
+
+// Function to set the time stamp (in milliseconds, as KBDLLHOOKSTRUCT.time) of the events sent from now on
+void MockedInput::SetEventTime(DWORD time)
+{
+    eventTime = time;
+}
+
+// Function to get the events that reached the system (were not suppressed by the hook), in order
+const std::vector<DeliveredKeyEvent>& MockedInput::GetDeliveredEvents() const
+{
+    return deliveredEvents;
+}
+
+// Function to forget the events that reached the system so far
+void MockedInput::ClearDeliveredEvents()
+{
+    deliveredEvents.clear();
+}
+
 // Function to get the foreground process name
 void MockedInput::SetForegroundProcess(std::wstring process)
 {
@@ -177,4 +252,14 @@ void MockedInput::SetForegroundProcess(std::wstring process)
 void MockedInput::GetForegroundProcess(_Out_ std::wstring& foregroundProcess)
 {
     foregroundProcess = currentProcess;
+}
+
+void MockedInput::SetFilterKeysRepeatMs(DWORD milliseconds)
+{
+    filterKeysRepeatMs = milliseconds;
+}
+
+DWORD MockedInput::GetFilterKeysRepeatMs()
+{
+    return filterKeysRepeatMs;
 }

@@ -30,8 +30,10 @@ KeyboardManager::KeyboardManager()
 {
     mainThreadId = GetCurrentThreadId();
 
-    // Load the initial settings.
+    // Load the initial settings. This is the hook thread and no hook is installed yet, so the
+    // key-sequence table can be published right here.
     LoadSettings();
+    state.PublishStagedSequenceTable();
 
     // Set the static pointer to the newest object of the class
     keyboardManagerObjectPtr = this;
@@ -61,23 +63,28 @@ KeyboardManager::KeyboardManager()
         if (!loadedSuccessfully)
             return;
 
+        // This is a worker thread. The key-sequence table was parsed into the loader's own table and
+        // staged by LoadSettings, and this thread does nothing more about it. The hook thread makes
+        // the staged table live itself: at the next key event if the hook is installed (see
+        // KeyboardEventHandlers::DispatchKeyboardEvent), or else when it installs the hook (see
+        // StartLowlevelKeyboardHook).
+
         const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
-        // We didn't have any bindings before and we have now
-        if (newHasRemappings && !hookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+        noRemappingsLoaded = !newHasRemappings;
 
-        // All bindings were removed
-        if (!newHasRemappings && hookHandle)
-            StopLowlevelKeyboardHook();
+        // The hook thread installs or removes the keyboard hook; this thread does not look at the hook.
+        // The messages are handled in the order they were posted, and each one goes by the settings
+        // as they are then, so a reload that quickly follows the removal of the last binding still
+        // ends with a hook. Start does nothing to a keyboard hook that is installed already, apart from
+        // reconciling the companion mouse hook with the "Alone" (dual-key) remaps. Stop removes the
+        // hook only once no press that a key sequence replaced is still held (see
+        // StopLowlevelKeyboardHookWhenIdle).
+        PostThreadMessageW(mainThreadId, newHasRemappings ? StartHookMessageID : StopHookMessageID, 0, 0);
 
-        // The set of "Alone" (dual-key) remaps may have changed without changing whether ANY binding
-        // exists, so reconcile the companion mouse hook. Route an install through the same StartHook
-        // message (SetWindowsHookEx must run on the hook thread); a removal is safe inline, mirroring
-        // the StopLowlevelKeyboardHook call above.
+        // A mouse hook that is no longer needed is removed inline (it suppresses nothing, so no press
+        // depends on it). One that is needed is installed by the Start message above.
         const bool needMouseHook = !state.aloneSingleKeyReMap.empty();
-        if (needMouseHook && hookHandle && !mouseHookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-        else if (!needMouseHook && mouseHookHandle)
+        if (!needMouseHook && mouseHookHandle)
             StopLowlevelMouseHook();
     };
 
@@ -87,19 +94,36 @@ KeyboardManager::KeyboardManager()
 
 void KeyboardManager::LoadSettings()
 {
-    bool loadedSuccessful = state.LoadSettings();
-    if (!loadedSuccessful)
+    // The settings are read and parsed into a configuration of their own, without touching the tables
+    // in use, and swapped in afterwards (State::ReplaceLoadedMappings), so the hook never sees tables
+    // that are half rebuilt.
+    MappingConfiguration loaded;
+    if (!loaded.LoadSettings())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        state.LoadSettings();
+        MappingConfiguration retried;
+        retried.LoadSettings();
+        if (retried.IsConfigurationFileRead() || !loaded.IsConfigurationFileRead())
+        {
+            loaded = std::move(retried);
+        }
     }
 
-    // The reload above rebuilt the alone remap table; discard any leftover alone runtime state so a key
-    // that was physically held across the reload can't leave a stale pending/combination entry (which a
-    // later event would promote, injecting an unmatched original key-down). No-op on the initial load.
-    state.ClearAllAloneKeyState();
+    // A load that could not read the configuration file left the tables as they were before (it
+    // returned before changing them), and so does this one. The swap also forgets the "Alone"
+    // runtime state, so a key held across the reload can't leave a stale pending/combination entry.
+    if (loaded.IsConfigurationFileRead())
+    {
+        state.ReplaceLoadedMappings(std::move(loaded));
+    }
+
+    // The key-sequence remaps are not applied by the loading thread. Hand a finished copy over to
+    // the hook thread instead (see State::PublishStagedSequenceTable). This covers the key-sequence
+    // table and its press records only; the other tables are swapped in above, under loadingSettings
+    // as before.
+    state.StageSequenceTable();
     try
     {
         // Send telemetry about configured key/shortcut to key/shortcut mappings, OS an app specific level.
@@ -194,6 +218,7 @@ void KeyboardManager::HandleMouseHookEvent() noexcept
     KeyboardEventHandlers::PromotePendingAloneKeysToCombination(inputHandler, state);
 }
 
+
 void KeyboardManager::StartLowlevelKeyboardHook()
 {
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
@@ -205,6 +230,13 @@ void KeyboardManager::StartLowlevelKeyboardHook()
 
     if (!hookHandle)
     {
+        // The new hook starts with the key-sequence table of the settings loaded last. No event was
+        // seen while there was no hook, so the press records start afresh, and the keys that are down
+        // right now are recorded as presses that already reached the system. This runs on the hook
+        // thread, before the hook can deliver anything. (A hook that
+        // is installed already publishes a staged table itself, at its next key event.)
+        state.StartSequencePressTracking(inputHandler);
+
         hookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, HookProc, GetModuleHandle(NULL), NULL);
         hookHandleCopy = hookHandle;
         if (!hookHandle)
@@ -238,6 +270,28 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     }
 
     StopLowlevelMouseHook();
+}
+
+void KeyboardManager::StopLowlevelKeyboardHookWhenIdle()
+{
+    // Remappings were loaded again since the message was posted, or there is no hook.
+    if (!noRemappingsLoaded || !hookHandle)
+    {
+        hookStopPending = false;
+        return;
+    }
+
+    // A press that a key sequence replaced is still held. Without the hook its auto-repeats and its
+    // key-up would reach the app, for a key-down the app never got. HandleKeyboardHookEvent posts
+    // this message again once no such press is left.
+    if (state.SequencePresses().HasSuppressedPress(GetTickCount(), inputHandler))
+    {
+        hookStopPending = true;
+        return;
+    }
+
+    hookStopPending = false;
+    StopLowlevelKeyboardHook();
 }
 
 void KeyboardManager::StartLowlevelMouseHook()
@@ -295,66 +349,26 @@ bool KeyboardManager::HasRegisteredRemappings() const
 
 bool KeyboardManager::HasRegisteredRemappingsUnchecked() const
 {
-    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.aloneSingleKeyReMap.empty() && state.singleKeyToTextReMap.empty());
+    return !(state.appSpecificShortcutReMap.empty() && state.appSpecificShortcutReMapSortedKeys.empty() && state.osLevelShortcutReMap.empty() && state.osLevelShortcutReMapSortedKeys.empty() && state.singleKeyReMap.empty() && state.aloneSingleKeyReMap.empty() && state.singleKeyToSequenceReMap.empty() && state.singleKeyToTextReMap.empty());
 }
 
 intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) noexcept
 {
-    if (loadingSettings)
+    // Remapping is suspended while the settings are being loaded, and while the remap key/shortcut
+    // window is opened.
+    const bool remappingSuspended = loadingSettings || (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0);
+
+    // The handler chain lives in KeyboardEventHandlers so the unit tests can run it as a whole.
+    const intptr_t result = KeyboardEventHandlers::DispatchKeyboardEvent(inputHandler, data, state, remappingSuspended);
+
+    // The hook is to be removed once the presses that key sequences replaced have ended. This event
+    // may have ended the last one (its key-up was just suppressed): ask the hook thread to try
+    // again, from its message loop rather than from inside the hook.
+    if (hookStopPending && !state.SequencePresses().HasSuppressedPress(data->lParam->time, inputHandler))
     {
-        return 0;
+        hookStopPending = false;
+        PostThreadMessageW(mainThreadId, StopHookMessageID, 0, 0);
     }
 
-    // Suspend remapping if remap key/shortcut window is opened
-    if (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0)
-    {
-        return 0;
-    }
-
-    // If key has suppress flag, then suppress it
-    if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
-    {
-        return 1;
-    }
-
-    // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
-    // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
-    intptr_t SingleKeyAloneRemapResult = KeyboardEventHandlers::HandleSingleKeyAloneRemapEvent(inputHandler, data, state);
-    if (SingleKeyAloneRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Remap a key
-    intptr_t SingleKeyRemapResult = KeyboardEventHandlers::HandleSingleKeyRemapEvent(inputHandler, data, state);
-
-    // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
-    if (SingleKeyRemapResult == 1)
-    {
-        return 1;
-    }
-
-    /* This feature has not been enabled (code from proof of concept stage)
-        // Remap a key to behave like a modifier instead of a toggle
-        intptr_t SingleKeyToggleToModResult = KeyboardEventHandlers::HandleSingleKeyToggleToModEvent(inputHandler, data, keyboardManagerState);
-    */
-
-    // Handle an app-specific shortcut remapping
-    intptr_t AppSpecificShortcutRemapResult = KeyboardEventHandlers::HandleAppSpecificShortcutRemapEvent(inputHandler, data, state);
-
-    // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
-    if (AppSpecificShortcutRemapResult == 1)
-    {
-        return 1;
-    }
-
-    intptr_t SingleKeyToTextRemapResult = KeyboardEventHandlers::HandleSingleKeyToTextRemapEvent(inputHandler, data, state);
-
-    if (SingleKeyToTextRemapResult == 1)
-    {
-        return 1;
-    }
-
-    // Handle an os-level shortcut remapping
-    return KeyboardEventHandlers::HandleOSLevelShortcutRemapEvent(inputHandler, data, state);
+    return result;
 }

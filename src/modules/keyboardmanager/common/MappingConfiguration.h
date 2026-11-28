@@ -8,12 +8,20 @@
 
 using SingleKeyRemapTable = std::unordered_map<DWORD, KeyShortcutTextUnion>;
 using SingleKeyToTextRemapTable = SingleKeyRemapTable;
+// Maps a source key to an ORDERED sequence of key taps to send (down+up each), in order.
+// Distinct from a shortcut (simultaneous chord) and from a single-key remap (#5679).
+using SingleKeyToSequenceRemapTable = std::unordered_map<DWORD, std::vector<DWORD>>;
 using ShortcutRemapTable = std::map<Shortcut, RemapShortcut>;
 using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>;
 
 class MappingConfiguration
 {
 public:
+    MappingConfiguration() = default;
+    MappingConfiguration(const MappingConfiguration&) = default;
+    MappingConfiguration(MappingConfiguration&&) = default;
+    MappingConfiguration& operator=(const MappingConfiguration&) = default;
+    MappingConfiguration& operator=(MappingConfiguration&&) = default;
     ~MappingConfiguration() = default;
 
     // Load the configuration.
@@ -21,8 +29,21 @@ public:
 
     bool IsConfigurationNameResolved() const;
 
+    // True if the last LoadSettings got as far as reading the configuration file (it may still have
+    // skipped parts of it). False if it found no configuration name or could not read the file.
+    bool IsConfigurationFileRead() const;
+
+    // Moves everything a load fills in (the remap tables, the configuration name) from other into
+    // this configuration, replacing what it had. Runtime state that is not loaded (numpadKeyPressed)
+    // is kept.
+    void TakeLoadedMappingsFrom(MappingConfiguration&& other);
+
     // Save the updated configuration.
     bool SaveSettingsToFile();
+
+    // The settings JSON that SaveSettingsToFile writes for this configuration. Public so what a save
+    // writes can be unit tested without touching disk.
+    json::JsonObject ToSettingsJson() const;
 
     // Function to clear the OS Level shortcut remapping table
     void ClearOSLevelShortcuts();
@@ -36,6 +57,9 @@ public:
     // Function to clear the "Alone" single key remapping table (dual-key: tap-alone action)
     void ClearSingleKeyAloneRemaps();
 
+    // Function to clear the single-key-to-sequence (ordered key taps) remapping table
+    void ClearSingleKeyToSequenceRemaps();
+
     // Function to clear the App specific shortcut remapping table
     void ClearAppSpecificShortcuts();
 
@@ -48,6 +72,10 @@ public:
     // Function to add a new "Alone" single key remapping (dual-key / Karabiner to_if_alone):
     // the action applied only when originalKey is tapped alone; in combination the original key passes through.
     bool AddSingleKeyAloneRemap(const DWORD& originalKey, const KeyShortcutTextUnion& aloneRemapKey);
+
+    // Function to add a new single-key-to-sequence remapping: pressing originalKey sends `sequence`
+    // as discrete key taps (down+up each), in order. Rejects a duplicate source key or empty sequence.
+    bool AddSingleKeyToSequenceRemap(const DWORD& originalKey, const std::vector<DWORD>& sequence);
 
     // Function to add a new OS level shortcut remapping
     bool AddOSLevelShortcut(const Shortcut& originalSC, const KeyShortcutTextUnion& newSC);
@@ -64,6 +92,18 @@ public:
     // exist in singleKeyReMap in a fuller implementation; for phase 1 an entry here means
     // "tap alone -> this action, in combination pass the original key through".
     SingleKeyRemapTable aloneSingleKeyReMap;
+
+    // Stores single-key-to-sequence remappings (source key -> ordered list of key taps, #5679).
+    // In the engine this is the table the settings are loaded into; the keyboard hook uses a
+    // finished copy of it that the hook thread publishes (see State::StageSequenceTable).
+    SingleKeyToSequenceRemapTable singleKeyToSequenceReMap;
+
+    // The inProcessSequence value exactly as the settings file had it (any type), or null when the file
+    // had none. There is no editor UI for sequences, so saving writes this value back unchanged instead
+    // of a list rebuilt from singleKeyToSequenceReMap: entries the loader skipped (a typo, a duplicate),
+    // their order and any extra members are kept. Changing the table in code (Clear/Add) drops it, so
+    // the table is written from then on.
+    json::IJsonValue storedSequenceRemaps{ nullptr };
 
     std::unordered_map<DWORD, DWORD> scanMap;
 
@@ -84,12 +124,29 @@ public:
     std::wstring currentConfig = KeyboardManagerConstants::DefaultConfiguration;
 
     // Parses the single-key remap section of a settings JSON object into singleKeyReMap /
-    // aloneSingleKeyReMap, routing by the optional per-entry "condition" field. Public so the
+    // aloneSingleKeyReMap / singleKeyToSequenceReMap, routing by the optional per-entry "condition" field. Public so the
     // dual-key (tap-alone) condition round-trip can be unit tested without touching disk.
     bool LoadSingleKeyRemaps(const json::JsonObject& jsonData);
 
+    // Converts between a key sequence and its settings string: the VK codes in order, ';'-separated
+    // (e.g. Esc then IME-Off = "27;26"). Stored in the separate inProcessSequence array, so the
+    // same ';' format as a shortcut means "one after another" here, not "at the same time". ParseKeySequence
+    // throws on an element that is empty or not a complete decimal key code that can be sent (1-254, or
+    // the KBM codes 256 = Disabled and 260 = Win); the loader then skips that remap.
+    static std::wstring KeySequenceToString(const std::vector<DWORD>& sequence);
+    static std::vector<DWORD> ParseKeySequence(const std::wstring& value);
+
+    // Parses the source key of a key-sequence remap: a complete decimal key code that the keyboard hook
+    // can report (1-254, or a numpad key with the numpad-origin marker, see Helpers::EncodeKeyNumpadOrigin).
+    // The hook never reports 260 (Win) or the generic Shift/Ctrl/Alt (16/17/18) for a physical key, so
+    // those are expanded to the left and right keys (saving the profile then writes both entries).
+    // Throws on anything else, and on 231 (VK_PACKET, never a physical press); the loader then skips
+    // that remap with a warning.
+    static std::vector<DWORD> ParseSequenceSourceKeys(const std::wstring& value);
+
 private:
     bool configurationNameResolved = false;
+    bool configurationFileRead = false;
 
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "State.h"
+#include <algorithm>
+#include <climits>
 #include <optional>
+#include <keyboardmanager/common/Helpers.h>
 
 // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
 std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyRemap(const DWORD& originalKey)
@@ -36,6 +39,245 @@ std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyAloneRemap(const
     }
 
     return std::nullopt;
+}
+
+void State::ReplaceLoadedMappings(MappingConfiguration&& loaded)
+{
+    std::lock_guard lock{ mappingTablesMutex };
+    TakeLoadedMappingsFrom(std::move(loaded));
+
+    // A key that was held across the reload must not leave a pending or combination entry for the
+    // new tables (a later event would promote it and inject an unmatched key-down).
+    ClearAllAloneKeyState();
+    mappingTablesGeneration++;
+}
+
+std::unique_lock<std::mutex> State::LockMappingTables()
+{
+    return std::unique_lock{ mappingTablesMutex };
+}
+
+uint64_t State::MappingTablesGeneration() const noexcept
+{
+    return mappingTablesGeneration;
+}
+
+void State::StageSequenceTable()
+{
+    // Build the finished table before taking the lock, and free a table that was staged but never
+    // published after releasing it.
+    std::shared_ptr<const SingleKeyToSequenceRemapTable> staged = std::make_shared<const SingleKeyToSequenceRemapTable>(singleKeyToSequenceReMap);
+    {
+        std::lock_guard lock{ stagedSequenceTableMutex };
+        stagedSequenceTable.swap(staged);
+        sequenceTableStaged = true;
+    }
+}
+
+bool State::PublishStagedSequenceTable()
+{
+    // The hook gets here at every key event: nothing staged is the usual case, and costs this read.
+    if (!sequenceTableStaged)
+    {
+        return false;
+    }
+
+    std::shared_ptr<const SingleKeyToSequenceRemapTable> staged;
+    {
+        std::lock_guard lock{ stagedSequenceTableMutex };
+        staged.swap(stagedSequenceTable);
+        sequenceTableStaged = false;
+    }
+
+    if (!staged)
+    {
+        return false;
+    }
+
+    // The previous table is freed here, or by a hook call that still holds it (see GetLiveSequenceTable).
+    // The press records are kept as they are: the hook tracks every press whether or not there are
+    // key-sequence remaps, so a key that is held now has its record, and a remap for it waits for
+    // its next press.
+    liveSequenceTable = std::move(staged);
+    return true;
+}
+
+void State::StartSequencePressTracking(KeyboardManagerInput::InputInterface& ii)
+{
+    PublishStagedSequenceTable();
+
+    // No event was seen while there was no hook. Keys that are down now already reached the
+    // system (no hook of ours could suppress them), so the key state tells which ones they are.
+    sequencePresses.Reset();
+    sequencePresses.SeedForwardedPresses(ii);
+}
+
+std::shared_ptr<const SingleKeyToSequenceRemapTable> State::GetLiveSequenceTable() const
+{
+    return liveSequenceTable;
+}
+
+bool State::HasLiveSequenceRemaps() const noexcept
+{
+    return !liveSequenceTable->empty();
+}
+
+SequencePressTracker& State::SequencePresses() noexcept
+{
+    return sequencePresses;
+}
+
+namespace
+{
+    uint64_t KeyIdOf(const KBDLLHOOKSTRUCT& key) noexcept
+    {
+        return SequencePressTracker::MakeKeyId(key.scanCode, (key.flags & LLKHF_EXTENDED) != 0, key.vkCode);
+    }
+
+    // The virtual key without the numpad-origin marker the hook procedure adds to it.
+    DWORD PlainVirtualKey(const KBDLLHOOKSTRUCT& key) noexcept
+    {
+        return Helpers::ClearKeyNumpadOrigin(key.vkCode);
+    }
+}
+
+uint64_t SequencePressTracker::MakeKeyId(const DWORD scanCode, const bool extended, const DWORD vkCode) noexcept
+{
+    if (scanCode != 0)
+    {
+        // Bit 32 keeps the scan-code ids apart from the virtual-key ids below.
+        return (uint64_t{ 1 } << 32) | (extended ? 0x10000u : 0u) | (scanCode & 0xFFFFu);
+    }
+
+    // No scan code: fall back to the virtual key as the hook reports it (with its numpad-origin marker).
+    return vkCode;
+}
+
+DWORD SequencePressTracker::SlowedRepeatLimit(KeyboardManagerInput::InputInterface& ii)
+{
+    // Twice the longest gap, as for the ordinary settings. Capped far below the wrap-around range.
+    constexpr DWORD largestRepeatMs = 0x10000000;
+    const DWORD repeatMs = ii.GetFilterKeysRepeatMs();
+    return repeatMs < largestRepeatMs ? 2 * repeatMs : 2 * largestRepeatMs;
+}
+
+bool SequencePressTracker::IsStillHeldAfter(const DWORD age, KeyboardManagerInput::InputInterface& ii)
+{
+    // The time is a tick count that wraps around, so the age is the unsigned difference. A
+    // difference in the upper half of the range is a time stamp a little older than the last one
+    // (events are not always stamped in the order they arrive), not a gap of weeks. The Filter Keys
+    // setting is only asked when the age is over the ordinary limit.
+    return age <= StalePressAfterMs || age > static_cast<DWORD>(INT_MAX) || age <= SlowedRepeatLimit(ii);
+}
+
+bool SequencePressTracker::HasSuppressedPress(const DWORD now, KeyboardManagerInput::InputInterface& ii) const
+{
+    return std::any_of(m_presses.begin(), m_presses.end(), [now, &ii](const auto& press) {
+        return press.second.disposition == Disposition::SequenceFired && IsStillHeldAfter(now - press.second.lastEventTime, ii);
+    });
+}
+
+std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress(const KBDLLHOOKSTRUCT& key, KeyboardManagerInput::InputInterface& ii)
+{
+    const uint64_t id = KeyIdOf(key);
+    if (const auto it = m_presses.find(id); it != m_presses.end())
+    {
+        if (IsStillHeldAfter(key.time - it->second.lastEventTime, ii))
+        {
+            it->second.lastEventTime = key.time;
+            return it->second.disposition;
+        }
+
+        // Too late for an auto-repeat: the key-up of the recorded press never arrived, and this is
+        // a new press.
+        m_presses.erase(it);
+    }
+
+    if (!m_seededKeys.empty())
+    {
+        // A seeded key that the system no longer reports as down was released without an event the
+        // hook tracks (for example it was down because Keyboard Manager itself had sent it). The hook
+        // runs before the key state changes, so a held key that repeats is still reported as down
+        // here, and a key that is pressed again is not.
+        std::erase_if(m_seededKeys, [&ii](const DWORD vk) { return !ii.GetVirtualKeyState(static_cast<int>(vk)); });
+
+        if (m_seededKeys.erase(PlainVirtualKey(key)) > 0)
+        {
+            // First event of a key that was down when tracking started: from here on it is known by
+            // its own identity.
+            m_presses.insert_or_assign(id, Press{ Disposition::Forwarded, key.time, key.vkCode });
+            return Disposition::Forwarded;
+        }
+    }
+
+    return std::nullopt;
+}
+
+void SequencePressTracker::RecordPress(const KBDLLHOOKSTRUCT& key, const Disposition disposition)
+{
+    m_presses.insert_or_assign(KeyIdOf(key), Press{ disposition, key.time, key.vkCode });
+}
+
+std::optional<SequencePressTracker::Disposition> SequencePressTracker::ReleasePress(const KBDLLHOOKSTRUCT& key)
+{
+    const bool seeded = !m_seededKeys.empty() && m_seededKeys.erase(PlainVirtualKey(key)) > 0;
+
+    if (const auto it = m_presses.find(KeyIdOf(key)); it != m_presses.end())
+    {
+        const Disposition disposition = it->second.disposition;
+        m_presses.erase(it);
+        return disposition;
+    }
+
+    if (seeded)
+    {
+        return Disposition::Forwarded;
+    }
+
+    // No press with this scan code. The key may have been pressed under another one (Print Screen
+    // changes its scan code while Alt is down), or this key-up has none: end the press that began
+    // with the same virtual key.
+    const auto sameVirtualKey = std::find_if(m_presses.begin(), m_presses.end(), [&key](const auto& press) {
+        return press.second.virtualKey == key.vkCode;
+    });
+    if (sameVirtualKey != m_presses.end())
+    {
+        const Disposition disposition = sameVirtualKey->second.disposition;
+        m_presses.erase(sameVirtualKey);
+        return disposition;
+    }
+
+    return std::nullopt;
+}
+
+void SequencePressTracker::SeedForwardedPresses(KeyboardManagerInput::InputInterface& ii)
+{
+    for (DWORD vk = 1; vk < 0xFF; vk++)
+    {
+        // Skip the mouse buttons, and the Shift/Ctrl/Alt codes that do not say which side is down:
+        // the hook reports the left and right keys, which are checked on their own.
+        if (vk == VK_LBUTTON || vk == VK_RBUTTON || vk == VK_MBUTTON || vk == VK_XBUTTON1 || vk == VK_XBUTTON2 ||
+            vk == VK_SHIFT || vk == VK_CONTROL || vk == VK_MENU)
+        {
+            continue;
+        }
+
+        if (ii.GetVirtualKeyState(static_cast<int>(vk)))
+        {
+            m_seededKeys.insert(vk);
+        }
+    }
+}
+
+void SequencePressTracker::Reset() noexcept
+{
+    m_presses.clear();
+    m_seededKeys.clear();
+}
+
+bool SequencePressTracker::Empty() const noexcept
+{
+    return m_presses.empty() && m_seededKeys.empty();
 }
 
 void State::SetAlonePending(const DWORD key)

@@ -19,5 +19,10 @@ namespace KeyboardManagerInput
 
         // Function to get the foreground process name
         virtual void GetForegroundProcess(_Out_ std::wstring& foregroundProcess) = 0;
+
+        // The longest time, in milliseconds, between two key-downs of a held key when the Filter Keys
+        // accessibility feature sets the repeat (the larger of its repeat delay and repeat rate).
+        // 0 when Filter Keys is off or does not repeat: the ordinary keyboard settings apply then.
+        virtual DWORD GetFilterKeysRepeatMs() = 0;
     };
 }

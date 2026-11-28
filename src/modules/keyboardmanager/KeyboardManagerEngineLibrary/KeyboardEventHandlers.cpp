@@ -36,6 +36,308 @@ namespace
         return data->lParam->dwExtraInfo & CommonSharedConstants::KEYBOARDMANAGER_INJECTED_FLAG;
     }
 
+    // True while a shortcut with the right Alt key (AltGr, which also presses Left Ctrl) is being handled.
+    // Set by HandleShortcutRemapEvent.
+    bool isAltRightKeyInvoked = false;
+
+    // The part of "Case 5" of HandleShortcutRemapEvent that does not depend on which key was pressed:
+    // while a shortcut remap is invoked (the system sees the target, the original shortcut is held),
+    // a key that is not part of the original shortcut goes down. Appends the key events that put the
+    // keyboard state back to the keys that are physically held (the original modifiers, and the
+    // original action key if the target's action key was down). The caller adds the event of the key
+    // that was pressed, resets the state of the remap and sends the events.
+    // Returns false if nothing is to be put back: a shortcut remapped to a key whose target key is
+    // still down stays as it is, so that the target key can be combined with other keys.
+    bool AppendRevertOfInvokedShortcut(KeyboardManagerInput::InputInterface& ii, const Shortcut& originalShortcut, const RemapShortcut& remap, std::vector<INPUT>& keyEventList)
+    {
+        if (remap.targetShortcut.index() == 1)
+        {
+            const Shortcut& targetShortcut = std::get<Shortcut>(remap.targetShortcut);
+
+            // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
+            bool isActionKeyPressed = ii.GetVirtualKeyState(targetShortcut.GetActionKey());
+
+            // Release new shortcut state (release in reverse order of shortcut to be accurate)
+            if (isActionKeyPressed)
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(targetShortcut.GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+            if (!isAltRightKeyInvoked)
+            {
+                Helpers::SetModifierKeyEvents(targetShortcut, remap.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, originalShortcut);
+
+                // Set old shortcut key down state
+                Helpers::SetModifierKeyEvents(originalShortcut, remap.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, targetShortcut);
+            }
+
+            // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
+            if (isActionKeyPressed)
+            {
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(originalShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+            }
+
+            return true;
+        }
+
+        // For remap to key, if the original action key is not currently pressed, we should revert the keyboard state to the physical keys. If it is pressed we should not suppress the event so that shortcut to key remaps can be pressed with other keys. Example use-case: Alt+D->Win, allows Alt+D+A to perform Win+A
+        auto maybeTargetKey = std::get_if<DWORD>(&remap.targetShortcut);
+
+        // If the shortcut is remapped to Disable then we have to revert the keyboard state to the physical keys
+        bool isRemapToDisable = maybeTargetKey && (*maybeTargetKey == CommonSharedConstants::VK_DISABLED);
+        bool isOriginalActionKeyPressed = false;
+
+        if (maybeTargetKey && !isRemapToDisable)
+        {
+            // If the remap target key is currently pressed, then we do not have to revert the keyboard state to the physical keys
+            if (ii.GetVirtualKeyState((Helpers::FilterArtificialKeys(*maybeTargetKey))))
+            {
+                isOriginalActionKeyPressed = true;
+            }
+        }
+        else
+        {
+            isOriginalActionKeyPressed = remap.isOriginalActionKeyPressed;
+        }
+
+        if (!isRemapToDisable && isOriginalActionKeyPressed)
+        {
+            return false;
+        }
+
+        if (!isAltRightKeyInvoked)
+        {
+            // Set original shortcut key down state
+            Helpers::SetModifierKeyEvents(originalShortcut, remap.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+
+        // Send the original action key only if it is physically pressed. For remappings to keys other than disabled we already check earlier that it is not pressed in this scenario. For remap to disable
+        if (isRemapToDisable && isOriginalActionKeyPressed)
+        {
+            // Set original action key
+            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(originalShortcut.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
+        }
+
+        return true;
+    }
+
+    // A shortcut remap that a key sequence puts back before its taps (see StartSequencePress), and
+    // the state it had: the remap is reset before the key events are sent, and that state is put
+    // back if they cannot be sent. The pointer is only used while the lock of
+    // State::LockMappingTables is held and the tables are the same generation (a swap frees them).
+    struct RevertedShortcutRemap
+    {
+        RemapShortcut* remap;
+
+        // True for an app-specific shortcut remap
+        bool appSpecific;
+
+        bool isShortcutInvoked;
+        Modifiers modifierKeysInvoked;
+        bool isOriginalActionKeyPressed;
+    };
+
+    // The same for a left or right modifier key and the code without a side (0 for any other key)
+    DWORD ModifierWithoutSide(const DWORD key)
+    {
+        switch (key)
+        {
+        case VK_LCONTROL:
+        case VK_RCONTROL:
+            return VK_CONTROL;
+        case VK_LSHIFT:
+        case VK_RSHIFT:
+            return VK_SHIFT;
+        case VK_LMENU:
+        case VK_RMENU:
+            return VK_MENU;
+        default:
+            return 0;
+        }
+    }
+
+    // The left and right keys of Ctrl/Shift/Alt without a side
+    std::optional<std::pair<DWORD, DWORD>> SidesOfModifier(const DWORD key)
+    {
+        switch (key)
+        {
+        case VK_CONTROL:
+            return std::pair<DWORD, DWORD>{ VK_LCONTROL, VK_RCONTROL };
+        case VK_SHIFT:
+            return std::pair<DWORD, DWORD>{ VK_LSHIFT, VK_RSHIFT };
+        case VK_MENU:
+            return std::pair<DWORD, DWORD>{ VK_LMENU, VK_RMENU };
+        default:
+            return std::nullopt;
+        }
+    }
+
+    // The key state as it will be once some key events that are not sent yet have been delivered.
+    // A key sequence sends several changes in one SendInput call (shortcut remaps put back, then the
+    // taps), and each change is judged on a key state that must include the ones queued before it:
+    // asking the system would give the state from before the whole call. For a key:
+    // - the last queued event of the key decides (an event of the code without a side counts for
+    //   the left and the right key);
+    // - otherwise a key that the "Alone" (dual-key) remap pressed earlier in this same hook call is
+    //   down: that key-down is ahead in the input queue but may not have been processed yet;
+    // - otherwise the current key state.
+    // Only this hook call counts: a key the Alone remap pressed in an earlier call may have been
+    // released since by another remap, and the key state knows that.
+    class KeyStateAfterQueuedEvents : public KeyboardManagerInput::InputInterface
+    {
+    public:
+        KeyStateAfterQueuedEvents(KeyboardManagerInput::InputInterface& ii, const std::vector<INPUT>& queuedEvents, const std::vector<DWORD>& keysJustPressed) noexcept :
+            ii(ii), queuedEvents(queuedEvents), keysJustPressed(keysJustPressed)
+        {
+        }
+
+        bool SendVirtualInput(const std::vector<INPUT>& inputs) override
+        {
+            return ii.SendVirtualInput(inputs);
+        }
+
+        void GetForegroundProcess(_Out_ std::wstring& foregroundProcess) override
+        {
+            ii.GetForegroundProcess(foregroundProcess);
+        }
+
+        DWORD GetFilterKeysRepeatMs() override
+        {
+            return ii.GetFilterKeysRepeatMs();
+        }
+
+        bool GetVirtualKeyState(const int key) override
+        {
+            const DWORD vk = static_cast<DWORD>(key);
+            if (const auto sides = SidesOfModifier(vk))
+            {
+                // Without a side: down if either key is. Judged per key once an event of either is queued.
+                if (LastQueuedEvent(vk) || LastQueuedEvent(sides->first) || LastQueuedEvent(sides->second))
+                {
+                    return GetVirtualKeyState(static_cast<int>(sides->first)) || GetVirtualKeyState(static_cast<int>(sides->second));
+                }
+
+                return JustPressed(vk) || JustPressed(sides->first) || JustPressed(sides->second) || ii.GetVirtualKeyState(key);
+            }
+
+            if (const INPUT* const last = LastQueuedEvent(vk))
+            {
+                return !(last->ki.dwFlags & KEYEVENTF_KEYUP);
+            }
+
+            return JustPressed(vk) || ii.GetVirtualKeyState(key);
+        }
+
+    private:
+        // The last queued event of the key, or of its code without a side
+        const INPUT* LastQueuedEvent(const DWORD key) const
+        {
+            const DWORD withoutSide = ModifierWithoutSide(key);
+            for (auto queued = queuedEvents.rbegin(); queued != queuedEvents.rend(); ++queued)
+            {
+                if (queued->ki.wVk == key || (withoutSide != 0 && queued->ki.wVk == withoutSide))
+                {
+                    return &*queued;
+                }
+            }
+
+            return nullptr;
+        }
+
+        bool JustPressed(const DWORD key) const
+        {
+            return std::find(keysJustPressed.begin(), keysJustPressed.end(), key) != keysJustPressed.end();
+        }
+
+        KeyboardManagerInput::InputInterface& ii;
+        const std::vector<INPUT>& queuedEvents;
+        const std::vector<DWORD>& keysJustPressed;
+    };
+
+    // For a key sequence that is about to be sent: appends the key events that put every invoked
+    // shortcut remap back to the physically held keys, as a key outside the shortcut does when it
+    // goes down (AppendRevertOfInvokedShortcut), and lists those remaps with their state. Looks at
+    // the app-specific remaps of the activated app and at the OS-level ones. Changes nothing: the
+    // caller resets the listed remaps. The caller holds the lock of State::LockMappingTables.
+    // Each remap is judged on the key state after the events appended before it (KeyStateAfterQueuedEvents):
+    // putting back an app-specific remap can press a key that an OS-level remap has as its target
+    // (global LCtrl+X -> LShift, app LShift+A -> LAlt+B). That remap then stays invoked, as it does
+    // when the same events go through the hook one at a time, and its own release lifts the key.
+    void AppendRevertOfInvokedShortcuts(KeyboardManagerInput::InputInterface& ii, State& state, const std::vector<DWORD>& keysJustPressed, std::vector<INPUT>& keyEventList, std::vector<RevertedShortcutRemap>& reverted)
+    {
+        KeyStateAfterQueuedEvents keyState{ ii, keyEventList, keysJustPressed };
+        const auto appendFrom = [&](const bool appSpecific, ShortcutRemapTable& table) {
+            for (auto& [originalShortcut, remap] : table)
+            {
+                if (!remap.isShortcutInvoked)
+                {
+                    continue;
+                }
+
+                // As in HandleShortcutRemapEvent: only while the system sees the modifiers of the new shortcut as held down
+                if (remap.targetShortcut.index() == 1 && !std::get<Shortcut>(remap.targetShortcut).CheckModifiersKeyboardState(keyState))
+                {
+                    continue;
+                }
+
+                if (AppendRevertOfInvokedShortcut(keyState, originalShortcut, remap, keyEventList))
+                {
+                    reverted.push_back({ &remap, appSpecific, remap.isShortcutInvoked, remap.modifierKeysInvoked, remap.isOriginalActionKeyPressed });
+                }
+            }
+        };
+
+        const std::wstring activatedApp = state.GetActivatedApp();
+        if (activatedApp != KeyboardManagerConstants::NoActivatedApp)
+        {
+            const auto appTable = state.appSpecificShortcutReMap.find(activatedApp);
+            if (appTable != state.appSpecificShortcutReMap.end())
+            {
+                appendFrom(true, appTable->second);
+            }
+        }
+
+        appendFrom(false, state.osLevelShortcutReMap);
+    }
+
+    // The key of a key-sequence target that is down already, if there is one. A target code that
+    // stands for two keys (Win, or Ctrl/Shift/Alt without a side) is down when either of them is,
+    // and the key returned is the one that is down: it is the key that gets pressed again, and
+    // pressing the other one instead would leave that one down. isKeyDown answers for one virtual
+    // key.
+    // Ctrl/Shift/Alt without a side are judged from their left and right keys only. The state of
+    // the code without a side is that of the two keys together, so it adds nothing, and it is not
+    // what the caller needs: the key events the caller is about to send (see KeyStateAfterQueuedEvents) name
+    // the left or the right key, and one that releases Left Shift would not be seen in a question
+    // about "Shift".
+    template<typename IsKeyDown>
+    std::optional<DWORD> HeldKeyOfSequenceTarget(const DWORD targetKey, const IsKeyDown& isKeyDown)
+    {
+        const auto firstKeyDown = [&isKeyDown](const std::initializer_list<DWORD> keys) -> std::optional<DWORD> {
+            for (const DWORD key : keys)
+            {
+                if (isKeyDown(key))
+                {
+                    return key;
+                }
+            }
+            return std::nullopt;
+        };
+
+        switch (targetKey)
+        {
+        case CommonSharedConstants::VK_WIN_BOTH:
+            return firstKeyDown({ VK_LWIN, VK_RWIN });
+        case VK_CONTROL:
+            return firstKeyDown({ VK_LCONTROL, VK_RCONTROL });
+        case VK_SHIFT:
+            return firstKeyDown({ VK_LSHIFT, VK_RSHIFT });
+        case VK_MENU:
+            return firstKeyDown({ VK_LMENU, VK_RMENU });
+        default:
+            return firstKeyDown({ targetKey });
+        }
+    }
+
     void UpdateNumpadWithShift(LowlevelKeyboardEvent* data, State& state)
     {
         //Function for fixing numpad when used as shift https://github.com/microsoft/PowerToys/issues/22346
@@ -246,7 +548,7 @@ namespace KeyboardEventHandlers
     // See header. Injects the original key-down for each pending alone key (except `exceptKey`) and
     // marks it as a started combination, so a subsequent mouse/keyboard action is seen with the real
     // modifier held. Its matching real key-up is injected later when the alone key is released.
-    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey) noexcept
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey, std::vector<DWORD>* pressedKeys) noexcept
     {
         for (const DWORD pendingKey : state.GetPendingAloneKeys())
         {
@@ -267,6 +569,18 @@ namespace KeyboardEventHandlers
             }
 
             state.SetAloneCombination(pendingKey);
+            if (pressedKeys)
+            {
+                try
+                {
+                    // As a plain virtual key: the alone keys are recorded numpad-origin encoded.
+                    pressedKeys->push_back(Helpers::ClearKeyNumpadOrigin(pendingKey));
+                }
+                catch (...)
+                {
+                    // Out of memory: a later key sequence then judges this key from the key state alone.
+                }
+            }
         }
     }
 
@@ -280,7 +594,7 @@ namespace KeyboardEventHandlers
     //    action is injected on release (as a down+up tap).
     // Timeout-based cancellation (hold too long => not a tap) is intentionally out of scope for now;
     // it needs an injectable clock to be unit-testable and will be added with that abstraction.
-    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, std::vector<DWORD>* promotedKeys) noexcept
     {
         // Ignore our own injected events to avoid re-processing / recursion.
         if (GeneratedByKBM(data))
@@ -304,7 +618,7 @@ namespace KeyboardEventHandlers
         // or scroll does the same via the mouse hook; see PromotePendingAloneKeysToCombination.)
         if (isKeyDown)
         {
-            PromotePendingAloneKeysToCombination(ii, state, vk);
+            PromotePendingAloneKeysToCombination(ii, state, vk, promotedKeys);
         }
 
         // Step 2: handle the alone-mapped key's own events.
@@ -408,6 +722,243 @@ namespace KeyboardEventHandlers
         }
 
         return 0;
+    }
+
+    // See header. Bookkeeping only: nothing is sent and no mapping table is read here.
+    SequencePressStep ResolveSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        // Our own injected events are not physical presses.
+        if (GeneratedByKBM(data))
+        {
+            return SequencePressStep::NotTracked;
+        }
+
+        // Neither is text that another program sends as Unicode input. The scan code field of such
+        // an event holds a character, which must not be taken for the scan code of a key.
+        if (data->lParam->vkCode == VK_PACKET)
+        {
+            return SequencePressStep::NotTracked;
+        }
+
+        // Every physical press is tracked, also while there is no key-sequence remap: a remap that
+        // is added while its key is held must know that the press began without it, even if
+        // another remap suppressed the key-down (F1 -> Z held: the system sees Z down, not F1).
+
+        const auto toStep = [](const SequencePressTracker::Disposition disposition) {
+            switch (disposition)
+            {
+            case SequencePressTracker::Disposition::SequenceFired:
+                return SequencePressStep::Suppress;
+            case SequencePressTracker::Disposition::PassThroughTerminal:
+                return SequencePressStep::PassThrough;
+            default:
+                return SequencePressStep::Forwarded;
+            }
+        };
+
+        if (data->wParam == WM_KEYUP || data->wParam == WM_SYSKEYUP)
+        {
+            // The release ends the press and is answered from its record alone. The remap that was
+            // used for the key-down may be gone or changed by now, and the key-up may carry another
+            // virtual key than the key-down did.
+            const auto disposition = state.SequencePresses().ReleasePress(*data->lParam);
+
+            // A key-up with no recorded key-down (the key-up of an earlier press was lost and this is
+            // a stray one, or the press was not seen): the key-sequence remap never acted on it.
+            return disposition ? toStep(*disposition) : SequencePressStep::Forwarded;
+        }
+
+        if (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN)
+        {
+            // A key that is already down is repeating: same answer as its first key-down.
+            const auto disposition = state.SequencePresses().FindPress(*data->lParam, ii);
+            if (disposition)
+            {
+                return toStep(*disposition);
+            }
+
+            // A new press. The caller records what became of it (StartSequencePress records a key
+            // without a sequence remap as forwarded).
+            return SequencePressStep::NewPress;
+        }
+
+        return SequencePressStep::NotTracked;
+    }
+
+    // See header. Injects the whole sequence on the first key-down of a press. The sequence remap is
+    // chosen by the virtual key of this key-down (numpad-origin encoded, as the hook reports it).
+    SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::vector<DWORD>& keysJustPressed) noexcept
+    {
+        // Keep the table alive until this function is done with it, whatever is published meanwhile:
+        // the taps sent below can go through the hook nested inside this call, and each hook call
+        // publishes a table that was staged in the meantime.
+        const std::shared_ptr<const SingleKeyToSequenceRemapTable> sequenceTable = state.GetLiveSequenceTable();
+        const auto sequenceRemap = sequenceTable->find(data->lParam->vkCode);
+        if (sequenceRemap == sequenceTable->end())
+        {
+            // Not a sequence key now. If a sequence remap for it is loaded while it is held, that
+            // remap waits for the next press.
+            state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::Forwarded);
+            return SequencePressStep::Forwarded;
+        }
+
+        // From here on the press is replaced by its sequence: holding the key must not replay the
+        // sequence on every auto-repeat key-down, and the physical key-up is suppressed too, so the
+        // source key never reaches the app on its own.
+        state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::SequenceFired);
+
+        // A shortcut remap may be invoked right now: the user holds Ctrl+X, the system sees Shift+Y.
+        // The source key is a key outside that shortcut going down, so the keyboard state is put
+        // back to the physically held keys, as the shortcut handler does for such a key ("Case 5"
+        // of HandleShortcutRemapEvent). This is settled here, before the taps, and its key events go
+        // at the head of the same SendInput call. The taps then carry KEYBOARDMANAGER_SEQUENCE_FLAG,
+        // which the shortcut stages pass on untouched. Otherwise the shortcut handler would settle
+        // it on the first tap, by taking that tap out and sending it again: the tap would lose its
+        // mark, and would arrive behind the other taps, after its own key-up.
+        // A consequence, and intended: the taps of a sequence do not trigger shortcut remaps.
+        std::vector<INPUT> keyEventList;
+        std::vector<RevertedShortcutRemap> revertedShortcutRemaps;
+        const std::wstring activatedAppBefore = state.GetActivatedApp();
+        uint64_t tablesGeneration = 0;
+        {
+            // The shortcut tables are read and their remaps reset under this lock, which a settings
+            // reload takes to swap the tables in (State::ReplaceLoadedMappings). It is released
+            // before anything is sent: the events sent below go through the hook again.
+            const auto tablesLock = state.LockMappingTables();
+            tablesGeneration = state.MappingTablesGeneration();
+            AppendRevertOfInvokedShortcuts(ii, state, keysJustPressed, keyEventList, revertedShortcutRemaps);
+            const size_t revertEventCount = keyEventList.size();
+
+            // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
+            // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
+            //
+            // A target that is down already gets its key-down only, without the key-up: the key-up
+            // would release a key the sequence did not press (with Left Ctrl held, "Left Ctrl, A"
+            // would send A without Ctrl). The sequence only releases what it pressed; the key that is
+            // down stays down for the following taps and until its own key-up, whoever holds it (the
+            // user, or Keyboard Manager for another remap). Its key-down is still sent, as when the key
+            // repeats, so that a character key still types its character: with S still down from the
+            // letter typed before, "T, E, S, T" must not lose its S. Each occurrence of such a target
+            // sends one key-down. "Down" is judged as it will be after the events above: a modifier
+            // that is down only through the shortcut remap is not down then. A key that the "Alone"
+            // remap has just pressed in this same hook call is down (see KeyStateAfterQueuedEvents).
+            const std::vector<INPUT> revertEvents = keyEventList;
+            KeyStateAfterQueuedEvents keyStateAfterRevert{ ii, revertEvents, keysJustPressed };
+            const auto isKeyDown = [&keyStateAfterRevert](const DWORD key) {
+                return keyStateAfterRevert.GetVirtualKeyState(static_cast<int>(key));
+            };
+
+            for (const DWORD targetKey : sequenceRemap->second)
+            {
+                if (targetKey == CommonSharedConstants::VK_DISABLED)
+                {
+                    continue;
+                }
+
+                if (const std::optional<DWORD> heldKey = HeldKeyOfSequenceTarget(targetKey, isKeyDown))
+                {
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(*heldKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
+                    continue;
+                }
+
+                const DWORD filtered = Helpers::FilterArtificialKeys(targetKey);
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
+            }
+
+            // Nothing to send (every element is VK_DISABLED): nothing reaches the system, so the
+            // shortcut remap is left as it is too.
+            if (keyEventList.size() == revertEventCount)
+            {
+                return SequencePressStep::Suppress;
+            }
+
+            // The shortcut remaps are put back by the events below: reset their state now, before
+            // the send, as the shortcut handler does. Done on the very remaps the scan above found,
+            // so the reset applies to exactly the invocations that the events put back. Nothing is
+            // changed after the send: hook calls nested in it may start a new invocation, and that
+            // one must stay.
+            for (const RevertedShortcutRemap& reverted : revertedShortcutRemaps)
+            {
+                if (!isAltRightKeyInvoked)
+                {
+                    reverted.remap->isShortcutInvoked = false;
+                    reverted.remap->modifierKeysInvoked.Reset();
+                    reverted.remap->isOriginalActionKeyPressed = false;
+                }
+
+                // If app specific shortcut has finished invoking, reset the target application
+                if (reverted.appSpecific)
+                {
+                    state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                }
+            }
+        }
+
+        // If a Ctrl/Alt/Shift key is the source, reset the modifier state first (as the single-key
+        // remap does) so the injected taps are delivered as WM_KEYDOWN, not WM_SYSKEYDOWN.
+        const DWORD sourceKey = data->lParam->vkCode;
+        if (Helpers::IsModifierKey(sourceKey) && !(sourceKey == VK_LWIN || sourceKey == VK_RWIN || sourceKey == CommonSharedConstants::VK_WIN_BOTH))
+        {
+            std::vector<INPUT> suppressList;
+            Helpers::SetKeyEvent(suppressList, INPUT_KEYBOARD, static_cast<WORD>(sourceKey), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG);
+            ii.SendVirtualInput(suppressList);
+        }
+
+        if (!ii.SendVirtualInput(keyEventList))
+        {
+            // Injection was blocked (e.g. by UIPI). Pass the original key through instead of leaving
+            // a dead key, and keep passing this press through (no retry) until its key-up, so the
+            // key isn't stranded down. The result is final: the caller must not hand the event to
+            // the handlers after this one, or a Disabled remap of the same key would swallow it.
+            state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::PassThroughTerminal);
+
+            // Nothing was sent, so the shortcut remaps are still invoked for the system: put back
+            // the state they had. Only into the same tables (a reload in the meantime replaced
+            // them with remaps that were never invoked), and only into a remap that nothing has
+            // invoked again since.
+            const auto tablesLock = state.LockMappingTables();
+            if (state.MappingTablesGeneration() == tablesGeneration)
+            {
+                bool appRestored = false;
+                for (const RevertedShortcutRemap& reverted : revertedShortcutRemaps)
+                {
+                    if (!isAltRightKeyInvoked && !reverted.remap->isShortcutInvoked)
+                    {
+                        reverted.remap->isShortcutInvoked = reverted.isShortcutInvoked;
+                        reverted.remap->modifierKeysInvoked = reverted.modifierKeysInvoked;
+                        reverted.remap->isOriginalActionKeyPressed = reverted.isOriginalActionKeyPressed;
+                    }
+
+                    appRestored = appRestored || reverted.appSpecific;
+                }
+
+                if (appRestored && state.GetActivatedApp() == KeyboardManagerConstants::NoActivatedApp)
+                {
+                    state.SetActivatedApp(activatedAppBefore);
+                }
+            }
+
+            return SequencePressStep::PassThrough;
+        }
+
+        return SequencePressStep::Suppress;
+    }
+
+    // Function to handle a single-key-to-sequence remap (#5679). Pressing the source key sends an
+    // ordered list of key taps (down+up each), in order, once per press: the whole sequence is
+    // injected on the first key-down, auto-repeat key-downs while the key stays held are swallowed,
+    // and the physical key-up is suppressed too. Must run before HandleSingleKeyRemapEvent in the
+    // dispatch chain, so a sequence remap takes precedence over a regular remap of the same key.
+    intptr_t HandleSingleKeyToSequenceRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
+    {
+        SequencePressStep step = ResolveSequencePress(ii, data, state);
+        if (step == SequencePressStep::NewPress)
+        {
+            step = StartSequencePress(ii, data, state, {});
+        }
+
+        return step == SequencePressStep::Suppress ? 1 : 0;
     }
 
     // Function to handle a single key remap
@@ -663,7 +1214,6 @@ namespace KeyboardEventHandlers
             bool isMatchOnChordEnd = false;
             bool isMatchOnChordStart = false;
 
-            static bool isAltRightKeyInvoked = false;
 
             // Check if the right Alt key (AltGr) is pressed.
             if (data->lParam->vkCode == VK_RMENU && ii.GetVirtualKeyState(VK_LCONTROL) && (data->wParam == WM_KEYDOWN || data->wParam == WM_SYSKEYDOWN))
@@ -1279,27 +1829,8 @@ namespace KeyboardEventHandlers
                             }
                             else
                             {
-                                // If the target shortcut's action key is pressed, then it should be released and original shortcut's action key should be set
-                                bool isActionKeyPressed = ii.GetVirtualKeyState(std::get<Shortcut>(it->second.targetShortcut).GetActionKey());
-
-                                // Release new shortcut state (release in reverse order of shortcut to be accurate)
-                                if (isActionKeyPressed)
-                                {
-                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(std::get<Shortcut>(it->second.targetShortcut).GetActionKey()), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
-                                if (!isAltRightKeyInvoked)
-                                {
-                                    Helpers::SetModifierKeyEvents(std::get<Shortcut>(it->second.targetShortcut), it->second.modifierKeysInvoked, keyEventList, false, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, it->first);
-
-                                    // Set old shortcut key down state
-                                    Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG, std::get<Shortcut>(it->second.targetShortcut));
-                                }
-
-                                // key down for original shortcut action key with shortcut flag so that we don't invoke the same shortcut remap again
-                                if (isActionKeyPressed)
-                                {
-                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
+                                // Release the new shortcut and set the original shortcut again
+                                AppendRevertOfInvokedShortcut(ii, it->first, it->second, keyEventList);
 
                                 // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
                                 Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
@@ -1340,40 +1871,10 @@ namespace KeyboardEventHandlers
                                 ResetIfModifierKeyForLowerLevelKeyHandlers(ii, data->lParam->vkCode, Helpers::FilterArtificialKeys(*maybeTargetKey));
                             }
 
-                            // If the shortcut is remapped to Disable then we have to revert the keyboard state to the physical keys
-                            bool isRemapToDisable = maybeTargetKey && (*maybeTargetKey == CommonSharedConstants::VK_DISABLED);
-                            bool isOriginalActionKeyPressed = false;
-
-                            if (maybeTargetKey && !isRemapToDisable)
+                            // Set the original shortcut again, unless the remap target key is currently pressed
+                            std::vector<INPUT> keyEventList;
+                            if (AppendRevertOfInvokedShortcut(ii, it->first, it->second, keyEventList))
                             {
-                                // If the remap target key is currently pressed, then we do not have to revert the keyboard state to the physical keys
-                                if (ii.GetVirtualKeyState((Helpers::FilterArtificialKeys(*maybeTargetKey))))
-                                {
-                                    isOriginalActionKeyPressed = true;
-                                }
-                            }
-                            else
-                            {
-                                isOriginalActionKeyPressed = it->second.isOriginalActionKeyPressed;
-                            }
-
-                            if (isRemapToDisable || !isOriginalActionKeyPressed)
-                            {
-                                std::vector<INPUT> keyEventList;
-
-                                if (!isAltRightKeyInvoked)
-                                {
-                                    // Set original shortcut key down state
-                                    Helpers::SetModifierKeyEvents(it->first, it->second.modifierKeysInvoked, keyEventList, true, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
-
-                                // Send the original action key only if it is physically pressed. For remappings to keys other than disabled we already check earlier that it is not pressed in this scenario. For remap to disable
-                                if (isRemapToDisable && isOriginalActionKeyPressed)
-                                {
-                                    // Set original action key
-                                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(it->first.GetActionKey()), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG);
-                                }
-
                                 // Send current key pressed without shortcut flag so that it can be reprocessed in case the physical keys pressed are a different remapped shortcut
                                 Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(data->lParam->vkCode), 0, 0);
 
@@ -2151,7 +2652,8 @@ namespace KeyboardEventHandlers
     intptr_t HandleOSLevelShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {
         // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
-        if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG)
+        // The taps of a key sequence are passed on as they are too (see KEYBOARDMANAGER_SEQUENCE_FLAG).
+        if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG && data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG)
         {
             bool result = HandleShortcutRemapEvent(ii, data, state);
             return result;
@@ -2164,7 +2666,8 @@ namespace KeyboardEventHandlers
     intptr_t HandleAppSpecificShortcutRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept
     {
         // Check if the key event was generated by KeyboardManager to avoid remapping events generated by us.
-        if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG)
+        // The taps of a key sequence are passed on as they are too (see KEYBOARDMANAGER_SEQUENCE_FLAG).
+        if (data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SHORTCUT_FLAG && data->lParam->dwExtraInfo != KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG)
         {
             std::wstring process_name;
 
@@ -2296,5 +2799,119 @@ namespace KeyboardEventHandlers
         // the modifier released is always safe: the user taps it again to re-engage.
 
         return 1;
+    }
+
+    // See header.
+    intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const bool remappingSuspended) noexcept
+    {
+        // Key-sequence remap (#5679): if a settings reload staged a new key-sequence table, make it
+        // the live one now. This is the hook thread, and nothing in this call has read the table
+        // yet. (A call further up the stack may have, if this event is one it injected; it holds on
+        // to the table it took.) Done while remapping is suspended too: the staged table is a
+        // finished copy. One atomic read when nothing is staged.
+        state.PublishStagedSequenceTable();
+
+        // Key-sequence remap, step 1: pair the event with its physical press. This comes
+        // before everything else, the suspension check included, and reads no mapping table: an
+        // auto-repeat or a key-up follows what was decided at the first key-down of its press.
+        SequencePressStep sequencePressStep = ResolveSequencePress(ii, data, state);
+
+        if (remappingSuspended)
+        {
+            // Remapping is bypassed, so a key pressed now reaches the system. Remember that: when
+            // remapping resumes while the key is still held, the rest of the press must reach the
+            // system too, instead of starting a sequence on an auto-repeat.
+            if (sequencePressStep == SequencePressStep::NewPress)
+            {
+                state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::Forwarded);
+            }
+
+            // The rest of a press that a sequence replaced stays suppressed: the system never saw its key-down.
+            return sequencePressStep == SequencePressStep::Suppress ? 1 : 0;
+        }
+
+        // If key has suppress flag, then suppress it
+        if (data->lParam->dwExtraInfo == KeyboardManagerConstants::KEYBOARDMANAGER_SUPPRESS_FLAG)
+        {
+            return 1;
+        }
+
+        // Auto-repeat or key-up of a press the key-sequence remap already decided on.
+        if (sequencePressStep == SequencePressStep::Suppress)
+        {
+            return 1;
+        }
+        if (sequencePressStep == SequencePressStep::PassThrough)
+        {
+            return 0;
+        }
+
+        // Remap a key tapped alone (dual-key). Runs before the regular single-key remap so it can hold
+        // the key-down (lazy) and decide tap-vs-combination; if it handles the event, suppress the original.
+        // The keys it presses here for a combination are handed to the key sequence below: their
+        // key-downs are ahead of the sequence in the input queue but may not be in the key state yet.
+        std::vector<DWORD> keysPressedByAloneRemap;
+        intptr_t SingleKeyAloneRemapResult = HandleSingleKeyAloneRemapEvent(ii, data, state, &keysPressedByAloneRemap);
+        if (SingleKeyAloneRemapResult == 1)
+        {
+            // The key belongs to the "Alone" remap for this press, not to a sequence.
+            if (sequencePressStep == SequencePressStep::NewPress)
+            {
+                state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::Forwarded);
+            }
+            return 1;
+        }
+
+        // Key-sequence remap, step 2: a new press of a key with a sequence remap sends the sequence.
+        // Runs before the regular single-key remap; the sequence fully replaces the source key, so
+        // the original is suppressed.
+        if (sequencePressStep == SequencePressStep::NewPress)
+        {
+            sequencePressStep = StartSequencePress(ii, data, state, keysPressedByAloneRemap);
+            if (sequencePressStep == SequencePressStep::Suppress)
+            {
+                return 1;
+            }
+
+            // The sequence could not be injected, so this press is passed through as it is. Stop
+            // here: a later handler (e.g. a Disabled remap of the same key) must not consume it.
+            if (sequencePressStep == SequencePressStep::PassThrough)
+            {
+                return 0;
+            }
+        }
+
+        // Remap a key
+        intptr_t SingleKeyRemapResult = HandleSingleKeyRemapEvent(ii, data, state);
+
+        // Single key remaps have priority. If a key is remapped, only the remapped version should be visible to the shortcuts and hence the event should be suppressed here.
+        if (SingleKeyRemapResult == 1)
+        {
+            return 1;
+        }
+
+        /* This feature has not been enabled (code from proof of concept stage)
+            // Remap a key to behave like a modifier instead of a toggle
+            intptr_t SingleKeyToggleToModResult = HandleSingleKeyToggleToModEvent(ii, data, keyboardManagerState);
+        */
+
+        // Handle an app-specific shortcut remapping
+        intptr_t AppSpecificShortcutRemapResult = HandleAppSpecificShortcutRemapEvent(ii, data, state);
+
+        // If an app-specific shortcut is remapped then the os-level shortcut remapping should be suppressed.
+        if (AppSpecificShortcutRemapResult == 1)
+        {
+            return 1;
+        }
+
+        intptr_t SingleKeyToTextRemapResult = HandleSingleKeyToTextRemapEvent(ii, data, state);
+
+        if (SingleKeyToTextRemapResult == 1)
+        {
+            return 1;
+        }
+
+        // Handle an os-level shortcut remapping
+        return HandleOSLevelShortcutRemapEvent(ii, data, state);
     }
 }

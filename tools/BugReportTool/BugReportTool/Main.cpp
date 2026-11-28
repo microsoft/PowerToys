@@ -21,164 +21,12 @@
 #include "EventViewer.h"
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
+#include "ReportPrivateData.h"
 #include "ReportSanitizer.h"
 
 using namespace std;
 using namespace std::filesystem;
 using namespace winrt::Windows::Data::Json;
-
-map<wstring, vector<wstring>> escapeInfo = {
-    { L"FancyZones\\app-zone-history.json", { L"app-zone-history/app-path" } },
-    { L"FancyZones\\settings.json", { L"properties/fancyzones_excluded_apps" } },
-    { L"MouseWithoutBorders\\settings.json", { L"properties/SecurityKey" } }, // avoid leaking connection key
-    { L"Keyboard Manager\\default.json", {
-        L"remapKeysToText",
-        L"remapShortcutsToText",
-        L"remapShortcuts/global/runProgramFilePath",
-        L"remapShortcuts/global/runProgramArgs",
-        L"remapShortcuts/global/runProgramStartInDir",
-        L"remapShortcuts/global/openUri",
-        L"remapShortcuts/appSpecific/runProgramFilePath",
-        L"remapShortcuts/appSpecific/runProgramArgs",
-        L"remapShortcuts/appSpecific/runProgramStartInDir",
-        L"remapShortcuts/appSpecific/openUri",
-        } }, // avoid leaking personal information from text, URI or application mappings
-    { L"Workspaces/workspaces.json", { L"workspaces/applications/command-line-arguments" } },
-    { L"AdvancedPaste/settings.json", {
-        L"properties/custom-actions/value/name",
-        L"properties/custom-actions/value/prompt"
-        } },
-};
-
-vector<wstring> filesToDelete = {
-    L"AdvancedPaste\\lastQuery.json",
-    L"AdvancedPaste\\kernelQueryCache.json",
-    L"PowerToys Run\\Cache",
-    L"PowerRename\\replace-mru.json",
-    L"PowerRename\\search-mru.json",
-    L"PowerToys Run\\Settings\\UserSelectedRecord.json",
-    L"PowerToys Run\\Settings\\QueryHistory.json",
-    L"NewPlus\\Templates",
-    L"etw",
-};
-
-vector<wstring> GetXpathArray(wstring xpath)
-{
-    vector<wstring> result;
-    wstring cur = L"";
-    for (auto ch : xpath)
-    {
-        if (ch == L'/')
-        {
-            result.push_back(cur);
-            cur = L"";
-            continue;
-        }
-
-        cur += ch;
-    }
-
-    if (!cur.empty())
-    {
-        result.push_back(cur);
-    }
-
-    return result;
-}
-
-void HideByXPath(IJsonValue& val, vector<wstring>& xpathArray, int p)
-{
-    if (val.ValueType() == JsonValueType::Array)
-    {
-        for (auto it : val.GetArray())
-        {
-            HideByXPath(it, xpathArray, p);
-        }
-
-        return;
-    }
-
-    if (p == xpathArray.size() - 1)
-    {
-        if (val.ValueType() == JsonValueType::Object)
-        {
-            auto obj = val.GetObjectW();
-            if (obj.HasKey(xpathArray[p]))
-            {
-                auto privateDatavalue = JsonValue::CreateStringValue(L"<private_data>");
-                obj.SetNamedValue(xpathArray[p], privateDatavalue);
-            }
-        }
-
-        return;
-    }
-
-    if (val.ValueType() == JsonValueType::Object)
-    {
-        IJsonValue newVal;
-        try
-        {
-            newVal = val.GetObjectW().GetNamedValue(xpathArray[p]);
-        }
-        catch (...)
-        {
-            return;
-        }
-
-        HideByXPath(newVal, xpathArray, p + 1);
-    }
-}
-
-void HideForFile(const path& dir, const wstring& relativePath)
-{
-    path jsonPath = dir;
-    jsonPath.append(relativePath);
-    auto jObject = json::from_file(jsonPath.wstring());
-    if (!jObject.has_value())
-    {
-        wprintf(L"Failed to parse file %s\n", jsonPath.c_str());
-        return;
-    }
-
-    JsonValue jValue = json::value(jObject.value());
-    for (auto xpath : escapeInfo[relativePath])
-    {
-        vector<wstring> xpathArray = GetXpathArray(xpath);
-        HideByXPath(jValue, xpathArray, 0);
-    }
-
-    json::to_file(jsonPath.wstring(), jObject.value());
-}
-
-bool DeleteFolder(wstring path)
-{
-    error_code err;
-    remove_all(path, err);
-    if (err.value() != 0)
-    {
-        wprintf_s(L"Failed to delete %s. Error code: %d\n", path.c_str(), err.value());
-        return false;
-    }
-
-    return true;
-}
-
-void HideUserPrivateInfo(const filesystem::path& dir)
-{
-    // Replace data in json files
-    for (auto& it : escapeInfo)
-    {
-        HideForFile(dir, it.first);
-    }
-
-    // Delete files
-    for (auto it : filesToDelete)
-    {
-        auto path = dir;
-        path = path.append(it);
-        DeleteFolder(path);
-    }
-}
 
 void ReportWindowsVersion(const filesystem::path& tmpDir)
 {
@@ -325,7 +173,8 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     auto reportDir = temp_directory_path() / "PowerToys\\";
     if (!DeleteFolder(reportDir))
     {
-        printf("Failed to delete temp folder\n");
+        // A copy left by an earlier run may hold data that was never hidden: say where it is.
+        wprintf_s(L"Failed to delete the working copy left by an earlier run in %s; delete it by hand\n", reportDir.c_str());
     }
 
     try
@@ -350,6 +199,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     catch (...)
     {
         printf("Failed to copy PowerToys folder\n");
+        DeleteReportCopyOrSayWhere(reportDir);
         return 1;
     }
 
@@ -368,7 +218,12 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 #endif
 
     // Hide sensitive information
-    HideUserPrivateInfo(reportDir);
+    if (!HideUserPrivateInfo(reportDir))
+    {
+        printf("Failed to remove private Keyboard Manager data from the report; no report was created\n");
+        DeleteReportCopyOrSayWhere(reportDir);
+        return 1;
+    }
 
     // Write windows settings to the temporary folder
     ReportWindowsSettings(reportDir);
@@ -409,7 +264,7 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     catch (const std::exception& error)
     {
         printf("Failed to redact report data: %s\n", error.what());
-        DeleteFolder(reportDir);
+        DeleteReportCopyOrSayWhere(reportDir);
         return 1;
     }
 

@@ -7,6 +7,7 @@
 #pragma warning(pop)
 
 #include <keyboardmanager/common/MappingConfiguration.h>
+#include <keyboardmanager/common/Helpers.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/LoadingAndSavingRemappingHelper.h>
 #include <common/interop/shared_constants.h>
 #include <keyboardmanager/KeyboardManagerEditorLibrary/ShortcutErrorType.h>
@@ -481,6 +482,341 @@ namespace RemappingUITests
             Assert::IsTrue(config.singleKeyReMap.find(0x43) != config.singleKeyReMap.end());
             Assert::AreEqual(static_cast<DWORD>(0x44), std::get<DWORD>(config.singleKeyReMap[0x43]));
             Assert::IsTrue(config.aloneSingleKeyReMap.find(0x43) == config.aloneSingleKeyReMap.end());
+        }
+
+        // Test that a key-sequence remap round-trips: KeySequenceToString writes the target exactly as
+        // SaveSettingsToFile stores it (in the separate inProcessSequence array), and
+        // LoadSingleKeyRemaps loads it into the sequence table in the same order -- not into the
+        // regular table as a shortcut, even though both use the ';'-separated format.
+        TEST_METHOD (LoadSingleKeyRemaps_ShouldRouteSequenceToSequenceTable_InOrder)
+        {
+            const std::vector<DWORD> sequence{ VK_ESCAPE, VK_IME_OFF, 0x41 };
+            const std::wstring stored = MappingConfiguration::KeySequenceToString(sequence);
+            Assert::AreEqual(std::wstring(L"27;26;65"), stored);
+
+            json::JsonObject sequenceEntry;
+            sequenceEntry.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(VK_ESCAPE))));
+            sequenceEntry.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(stored));
+
+            json::JsonArray inProcessSequence;
+            inProcessSequence.Append(sequenceEntry);
+
+            json::JsonObject remapKeys;
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray());
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequence);
+
+            json::JsonObject root;
+            root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+            MappingConfiguration config;
+            Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+
+            Assert::AreEqual(static_cast<size_t>(1), config.singleKeyToSequenceReMap.size());
+            Assert::IsTrue(config.singleKeyToSequenceReMap[VK_ESCAPE] == sequence);
+            Assert::IsTrue(config.singleKeyReMap.empty());
+            Assert::IsTrue(config.aloneSingleKeyReMap.empty());
+        }
+
+        // Test the key-sequence string parser: every element must be a complete decimal key code that
+        // can be sent (1-254, or the KBM codes 256 = Disabled and 260 = Win); anything else, including an
+        // empty element, throws (LoadSingleKeyRemaps catches it and skips that one remap).
+        TEST_METHOD (ParseKeySequence_ShouldThrowOnInvalidOrEmptyElements)
+        {
+            Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"27;26") == std::vector<DWORD>{ 27, 26 });
+            Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"").empty());
+
+            Assert::IsTrue(MappingConfiguration::ParseKeySequence(L"1;254;256;260") == std::vector<DWORD>{ 1, 254, CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH });
+
+            const std::wstring invalidValues[] = {
+                L"27;;26", L"27;26;", L";27", L";",
+                L"27;abc", L"0x1A", L"27abc", L"-1", L"+27", L" 27", L"27 ",
+                L"0", L"255", L"257", L"300", L"999999", L"99999999999999999999",
+                std::wstring(L"65;66\0;300", 10), std::wstring(L"65\0", 3),
+            };
+            for (const auto& invalid : invalidValues)
+            {
+                bool threw = false;
+                try
+                {
+                    MappingConfiguration::ParseKeySequence(invalid);
+                }
+                catch (...)
+                {
+                    threw = true;
+                }
+                Assert::IsTrue(threw, invalid.c_str());
+            }
+        }
+
+        // Test the source-key parser: a source key must be a complete decimal key code that the keyboard
+        // hook can report -- 1-254, or a numpad key with the numpad-origin marker. The codes the hook
+        // never reports for a physical key are expanded to the left and right keys: 260 (Win) and the
+        // generic Shift/Ctrl/Alt (16/17/18).
+        TEST_METHOD (ParseSequenceSourceKeys_ShouldAcceptHookKeys_AndExpandGenericKeys)
+        {
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"27") == std::vector<DWORD>{ 27 });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"1") == std::vector<DWORD>{ 1 });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"254") == std::vector<DWORD>{ 254 });
+
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"260") == std::vector<DWORD>{ VK_LWIN, VK_RWIN });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"16") == std::vector<DWORD>{ VK_LSHIFT, VK_RSHIFT });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"17") == std::vector<DWORD>{ VK_LCONTROL, VK_RCONTROL });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(L"18") == std::vector<DWORD>{ VK_LMENU, VK_RMENU });
+
+            // Numpad-origin encodings, as the hook reports them (e.g. NumPad End and NumPad Enter).
+            const DWORD numpadEnd = Helpers::EncodeKeyNumpadOrigin(VK_END, false);
+            const DWORD numpadEnter = Helpers::EncodeKeyNumpadOrigin(VK_RETURN, true);
+            Assert::IsTrue(numpadEnd != VK_END && numpadEnter != VK_RETURN);
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(std::to_wstring(numpadEnd)) == std::vector<DWORD>{ numpadEnd });
+            Assert::IsTrue(MappingConfiguration::ParseSequenceSourceKeys(std::to_wstring(numpadEnter)) == std::vector<DWORD>{ numpadEnter });
+
+            const std::wstring invalidValues[] = {
+                L"", L"0", L"255", L"256", L"257", L"999999", L"99999999999999999999",
+                L"231", // VK_PACKET: text sent as Unicode input, never tracked as a press
+                L"0x1B", L"27abc", L"-27", L"+27", L" 27", L"27;26",
+                std::wstring(L"27\0abc", 6), std::wstring(L"27\0", 3),
+                std::to_wstring(VK_F1 | Helpers::GetNumpadOriginEncodingBit()), // F1 never has the numpad marker
+                std::to_wstring(Helpers::GetNumpadOriginEncodingBit()),
+            };
+            for (const auto& invalid : invalidValues)
+            {
+                bool threw = false;
+                try
+                {
+                    MappingConfiguration::ParseSequenceSourceKeys(invalid);
+                }
+                catch (...)
+                {
+                    threw = true;
+                }
+                Assert::IsTrue(threw, invalid.c_str());
+            }
+        }
+
+        // The loader validates the complete JSON strings: a NUL inside the source or the target makes the
+        // entry invalid instead of cutting the string there. A source of 260 (Win) loads for both Win keys.
+        // The key-code boundaries: source 1-254 and the numpad-origin encodings, target 1-254 and the aliases.
+        TEST_METHOD (LoadSingleKeyRemaps_ValidatesCompleteStrings_AndExpandsWinSource)
+        {
+            auto entry = [](const std::wstring& original, const std::wstring& sequence) {
+                json::JsonObject e;
+                e.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::JsonValue::CreateStringValue(winrt::hstring(std::wstring_view(original))));
+                e.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::JsonValue::CreateStringValue(winrt::hstring(std::wstring_view(sequence))));
+                return e;
+            };
+
+            json::JsonArray inProcessSequence;
+            inProcessSequence.Append(entry(std::wstring(L"112\0abc", 7), L"65")); // NUL in the source
+            inProcessSequence.Append(entry(L"113", std::wstring(L"65;66\0;300", 10))); // NUL in the target
+            inProcessSequence.Append(entry(L"114", L"65;255"));                     // target out of range
+            inProcessSequence.Append(entry(L"115", L"65;;66"));                     // empty element
+            inProcessSequence.Append(entry(L"999999", L"65"));                      // source out of range
+            inProcessSequence.Append(entry(L"260", L"27;26"));                      // Win: both Win keys
+            inProcessSequence.Append(entry(L"27", L"27;254;256;260"));              // valid, with the aliases
+            inProcessSequence.Append(entry(L"254", L"65"));                         // highest source key
+            inProcessSequence.Append(entry(L"255", L"65"));                         // source out of range (Keyboard Manager's dummy key)
+            inProcessSequence.Append(entry(L"116", L"65;0"));                       // target out of range
+            const DWORD numpadEnd = Helpers::EncodeKeyNumpadOrigin(VK_END, false);
+            inProcessSequence.Append(entry(std::to_wstring(numpadEnd), L"66"));     // numpad-origin encoding of the source
+            inProcessSequence.Append(entry(L"231", L"65"));                         // VK_PACKET as the source: never tracked, so rejected
+
+            json::JsonObject remapKeys;
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray());
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequence);
+            json::JsonObject root;
+            root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+            MappingConfiguration config;
+            Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+            Assert::AreEqual(static_cast<size_t>(5), config.singleKeyToSequenceReMap.size());
+            Assert::IsTrue(config.singleKeyToSequenceReMap[254] == std::vector<DWORD>{ 65 });
+            Assert::IsTrue(numpadEnd != VK_END);
+            Assert::IsTrue(config.singleKeyToSequenceReMap[numpadEnd] == std::vector<DWORD>{ 66 });
+            Assert::IsTrue(config.singleKeyToSequenceReMap[VK_LWIN] == std::vector<DWORD>{ 27, 26 });
+            Assert::IsTrue(config.singleKeyToSequenceReMap[VK_RWIN] == std::vector<DWORD>{ 27, 26 });
+            Assert::IsTrue(config.singleKeyToSequenceReMap[27] == std::vector<DWORD>{ 27, 254, CommonSharedConstants::VK_DISABLED, CommonSharedConstants::VK_WIN_BOTH });
+        }
+
+        // Test that loading again replaces the key sequences instead of keeping the old ones (the
+        // duplicate check would otherwise reject the new value), and that a ';' value in the regular
+        // inProcess array is still a shortcut, not a sequence. Also: a file without the
+        // inProcessSequence array (every settings file written before this feature) loads cleanly.
+        TEST_METHOD (LoadSingleKeyRemaps_ReloadReplacesSequences_AndUntaggedStaysShortcut)
+        {
+            auto makeRoot = [](const std::wstring& sequenceValue) {
+                json::JsonObject sequenceEntry;
+                sequenceEntry.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(VK_ESCAPE))));
+                sequenceEntry.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(sequenceValue));
+
+                json::JsonObject shortcutEntry;
+                shortcutEntry.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(winrt::to_hstring(static_cast<unsigned int>(0x41))));
+                shortcutEntry.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(L"162;67"));
+
+                json::JsonArray inProcess;
+                inProcess.Append(shortcutEntry);
+                json::JsonArray inProcessSequence;
+                inProcessSequence.Append(sequenceEntry);
+
+                json::JsonObject remapKeys;
+                remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcess);
+                remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequence);
+
+                json::JsonObject root;
+                root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+                return root;
+            };
+
+            MappingConfiguration config;
+            config.LoadSingleKeyRemaps(makeRoot(L"27;26"));
+            config.LoadSingleKeyRemaps(makeRoot(L"26;27"));
+
+            Assert::AreEqual(static_cast<size_t>(1), config.singleKeyToSequenceReMap.size());
+            Assert::IsTrue(config.singleKeyToSequenceReMap[VK_ESCAPE] == std::vector<DWORD>{ 26, 27 });
+
+            Assert::AreEqual(static_cast<size_t>(1), config.singleKeyReMap.size());
+            Assert::AreEqual(static_cast<size_t>(1), config.singleKeyReMap[0x41].index());
+            Assert::IsTrue(config.singleKeyToSequenceReMap.find(0x41) == config.singleKeyToSequenceReMap.end());
+
+            // A file written before this feature has no inProcessSequence array: it loads without error
+            // and clears the sequences loaded before.
+            json::JsonArray legacyInProcess;
+            json::JsonObject legacyRemapKeys;
+            legacyRemapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, legacyInProcess);
+            json::JsonObject legacyRoot;
+            legacyRoot.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, legacyRemapKeys);
+            Assert::IsTrue(config.LoadSingleKeyRemaps(legacyRoot));
+            Assert::IsTrue(config.singleKeyToSequenceReMap.empty());
+        }
+
+        // Key sequences are hand-written for now, so a bad entry is skipped without failing the load
+        // (a failed load stops the editor from opening the profile). Only the valid entry is loaded.
+        TEST_METHOD (LoadSingleKeyRemaps_SkipsBadSequenceEntries_WithoutFailingLoad)
+        {
+            auto entry = [](const wchar_t* original, const wchar_t* sequence) {
+                json::JsonObject e;
+                e.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(original));
+                e.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(sequence));
+                return e;
+            };
+
+            json::JsonArray inProcessSequence;
+            inProcessSequence.Append(entry(L"27", L"27;26"));   // valid
+            inProcessSequence.Append(entry(L"27", L"26"));      // duplicate source key
+            inProcessSequence.Append(entry(L"112", L""));       // empty sequence
+            inProcessSequence.Append(entry(L"113", L"27;0x1A")); // not decimal
+            inProcessSequence.Append(entry(L"0x72", L"65"));    // source key not decimal
+            inProcessSequence.Append(entry(L"114abc", L"65"));  // trailing characters
+            inProcessSequence.Append(entry(L"0", L"65"));       // source key 0
+            inProcessSequence.Append(entry(L"-27", L"65"));     // sign
+            inProcessSequence.Append(entry(L" 115", L"65"));    // leading space
+
+            json::JsonObject remapKeys;
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, json::JsonArray());
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequence);
+            json::JsonObject root;
+            root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+            MappingConfiguration config;
+            Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+            Assert::AreEqual(static_cast<size_t>(1), config.singleKeyToSequenceReMap.size());
+            Assert::IsTrue(config.singleKeyToSequenceReMap[27] == std::vector<DWORD>{ 27, 26 });
+        }
+
+        // The key-sequence array is read even when remapKeys has no inProcess array.
+        TEST_METHOD (LoadSingleKeyRemaps_ReadsSequences_WhenInProcessIsMissing)
+        {
+            json::JsonObject e;
+            e.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(L"27"));
+            e.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(L"27;26"));
+            json::JsonArray inProcessSequence;
+            inProcessSequence.Append(e);
+
+            json::JsonObject remapKeys;
+            remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, inProcessSequence);
+            json::JsonObject root;
+            root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+            MappingConfiguration config;
+            config.LoadSingleKeyRemaps(root);
+            Assert::AreEqual(static_cast<size_t>(1), config.singleKeyToSequenceReMap.size());
+        }
+
+        // The key-sequence array is optional: when it has the wrong JSON type (null, an object, a string
+        // or a number), it is ignored with a warning, and the ordinary remaps still load without failing
+        // the load (a failed load stops the editor from opening the profile).
+        TEST_METHOD (LoadSingleKeyRemaps_IgnoresSequenceField_WhenItIsNotAnArray)
+        {
+            const json::IJsonValue wrongTypes[] = {
+                json::JsonValue::CreateNullValue(),
+                json::JsonObject(),
+                json::JsonValue::CreateStringValue(L"27;26"),
+                json::JsonValue::CreateNumberValue(27),
+            };
+
+            for (const auto& wrongType : wrongTypes)
+            {
+                json::JsonObject remap;
+                remap.SetNamedValue(KeyboardManagerConstants::OriginalKeysSettingName, json::value(L"65"));
+                remap.SetNamedValue(KeyboardManagerConstants::NewRemapKeysSettingName, json::value(L"66"));
+                json::JsonArray inProcess;
+                inProcess.Append(remap);
+
+                json::JsonObject remapKeys;
+                remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessRemapKeysSettingName, inProcess);
+                remapKeys.SetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName, wrongType);
+                json::JsonObject root;
+                root.SetNamedValue(KeyboardManagerConstants::RemapKeysSettingName, remapKeys);
+
+                MappingConfiguration config;
+                Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+                Assert::AreEqual(static_cast<size_t>(1), config.singleKeyReMap.size());
+                Assert::IsTrue(std::get<DWORD>(config.singleKeyReMap[0x41]) == 0x42);
+                Assert::IsTrue(config.singleKeyToSequenceReMap.empty());
+            }
+        }
+
+        // Saving after an ordinary remapping was changed writes the key-sequence list back exactly as the
+        // file had it: there is no editor UI for sequences, so entries the loader skipped (a typo, a
+        // duplicate), the generic Win source key 260, the order and extra members must all survive.
+        TEST_METHOD (Save_AfterChangingAnOrdinaryRemap_KeepsTheSequenceListAsStored)
+        {
+            const std::wstring sequences = LR"([{"originalKeys":"260","newRemapKeys":"27;26"},{"originalKeys":"113","newRemapKeys":"27;0x1A","note":"typo"},{"originalKeys":"27","newRemapKeys":"65"},{"originalKeys":"27","newRemapKeys":"66"}])";
+            const auto root = json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[{"originalKeys":"65","newRemapKeys":"66"}],"inProcessSequence":)" + sequences + L"}}");
+
+            MappingConfiguration config;
+            Assert::IsTrue(config.LoadSingleKeyRemaps(root));
+            config.ClearSingleKeyRemaps();
+            Assert::IsTrue(config.AddSingleKeyRemap(0x41, static_cast<DWORD>(0x43)));
+
+            const auto saved = config.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName);
+            Assert::AreEqual(std::wstring(json::JsonArray::Parse(sequences).Stringify()), std::wstring(saved.GetNamedValue(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName).Stringify()));
+            Assert::AreEqual(std::wstring(L"67"), std::wstring(saved.GetNamedArray(KeyboardManagerConstants::InProcessRemapKeysSettingName).GetObjectAt(0).GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName)));
+        }
+
+        // A value of another type is kept as it is too; a file without the list gets none.
+        TEST_METHOD (Save_KeepsASequenceValueOfAnyType_AndAddsNoneWhenAbsent)
+        {
+            MappingConfiguration withString;
+            withString.LoadSingleKeyRemaps(json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[],"inProcessSequence":"27;26"}})"));
+            Assert::AreEqual(std::wstring(L"27;26"), std::wstring(withString.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName).GetNamedString(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName)));
+
+            MappingConfiguration without;
+            without.LoadSingleKeyRemaps(json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[]}})"));
+            Assert::IsFalse(without.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName).HasKey(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName));
+        }
+
+        // Once code changes the sequence table itself, the table is what is saved.
+        TEST_METHOD (Save_AfterTheSequenceTableIsChangedInCode_WritesTheTable)
+        {
+            MappingConfiguration config;
+            config.LoadSingleKeyRemaps(json::JsonObject::Parse(LR"({"remapKeys":{"inProcess":[],"inProcessSequence":[{"originalKeys":"27","newRemapKeys":"27;26"}]}})"));
+            config.ClearSingleKeyToSequenceRemaps();
+            Assert::IsTrue(config.AddSingleKeyToSequenceRemap(112, { 65, 66 }));
+
+            const auto list = config.ToSettingsJson().GetNamedObject(KeyboardManagerConstants::RemapKeysSettingName).GetNamedArray(KeyboardManagerConstants::InProcessSequenceRemapKeysSettingName);
+            Assert::AreEqual(1u, list.Size());
+            Assert::AreEqual(std::wstring(L"112"), std::wstring(list.GetObjectAt(0).GetNamedString(KeyboardManagerConstants::OriginalKeysSettingName)));
+            Assert::AreEqual(std::wstring(L"65;66"), std::wstring(list.GetObjectAt(0).GetNamedString(KeyboardManagerConstants::NewRemapKeysSettingName)));
         }
 
         // Test if the ApplyShortcutRemappings method resets the keyboard manager state's os level and app specific shortcut remappings on passing an empty buffer

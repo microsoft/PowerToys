@@ -9,6 +9,7 @@
       <Filter>ZipTools</Filter>
     </ClCompile>
     <ClCompile Include="ReportMonitorInfo.cpp" />
+    <ClCompile Include="ReportPrivateData.cpp" />
     <ClCompile Include="ReportSanitizer.cpp" />
     <ClCompile Include="RegistryUtils.cpp" />
     <ClCompile Include="EventViewer.cpp" />
@@ -29,6 +30,7 @@
     </ClInclude>
     <ClInclude Include="..\..\..\common\utils\json.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
+    <ClInclude Include="ReportPrivateData.h" />
     <ClInclude Include="ReportSanitizer.h" />
     <ClInclude Include="RegistryUtils.h" />
     <ClInclude Include="EventViewer.h" />

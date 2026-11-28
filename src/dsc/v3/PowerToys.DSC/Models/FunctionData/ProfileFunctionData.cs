@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Security.Principal;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -27,6 +28,11 @@ public sealed class ProfileFunctionData : BaseFunctionData
     // Named event the Keyboard Manager engine listens on to reload its
     // configuration; see SettingsEventName in KeyboardManagerConstants.h.
     public const string SettingsEventName = "PowerToys_KeyboardManager_Event_Settings";
+
+    // Where the engine reads the remappings that send a sequence of keys;
+    // see MappingConfiguration::LoadSingleKeyRemaps.
+    private const string RemapKeysName = "remapKeys";
+    private const string SequenceRemapsName = "inProcessSequence";
 
     private static readonly SettingsUtils _settingsUtils = SettingsUtils.Default;
     private readonly Func<bool> _isProcessElevated;
@@ -129,11 +135,61 @@ public sealed class ProfileFunctionData : BaseFunctionData
             _settingsUtils.SaveSettings(settings.ToJsonString(), KeyboardManagerSettings.ModuleName);
         }
 
+        var fileName = GetProfileFileName();
         var profile = KbmProfileConverter.ToProfile(Input.Profile);
-        var profileJson = JsonSerializer.Serialize(profile, _profileSerializerOptions);
-        _settingsUtils.SaveSettings(profileJson, KeyboardManagerSettings.ModuleName, GetProfileFileName());
+        var profileNode = JsonSerializer.SerializeToNode(profile, _profileSerializerOptions)!.AsObject();
+        CarryOverSequenceRemaps(profileNode, ReadSequenceRemaps(fileName));
+        _settingsUtils.SaveSettings(profileNode.ToJsonString(), KeyboardManagerSettings.ModuleName, fileName);
 
         return SignalSettingsChangedEvent();
+    }
+
+    /// <summary>
+    /// Reads "remapKeys.inProcessSequence" (one key that sends a sequence of
+    /// keys) from the profile file as it is now. This resource does not
+    /// model that list, so Set copies it over unchanged instead of dropping
+    /// it. A file that cannot be read right now fails the operation; a file
+    /// that is not valid JSON has no list that could be kept.
+    /// </summary>
+    /// <param name="fileName">The profile file name, e.g. "default.json".</param>
+    /// <returns>A copy of the stored value, of whatever type; null when there is none.</returns>
+    private static JsonNode? ReadSequenceRemaps(string fileName)
+    {
+        var path = _settingsUtils.GetSettingsFilePath(KeyboardManagerSettings.ModuleName, fileName);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            return JsonNode.Parse(File.ReadAllText(path))?[RemapKeysName]?[SequenceRemapsName]?.DeepClone();
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Puts the stored sequence list into the profile about to be written.
+    /// </summary>
+    /// <param name="profile">The serialized profile to write.</param>
+    /// <param name="sequenceRemaps">The stored list; nothing is added when it is null.</param>
+    internal static void CarryOverSequenceRemaps(JsonObject profile, JsonNode? sequenceRemaps)
+    {
+        if (sequenceRemaps == null)
+        {
+            return;
+        }
+
+        if (profile[RemapKeysName] is not JsonObject remapKeys)
+        {
+            remapKeys = new JsonObject();
+            profile[RemapKeysName] = remapKeys;
+        }
+
+        remapKeys[SequenceRemapsName] = sequenceRemaps;
     }
 
     /// <summary>

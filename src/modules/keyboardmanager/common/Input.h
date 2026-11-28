@@ -59,5 +59,18 @@ namespace KeyboardManagerInput
         {
             foregroundProcess = Helpers::GetCurrentApplication(false);
         }
+
+        // See InputInterface. Asked rarely (only when a key-down comes long after the last event of
+        // its key), so the setting is read each time instead of being kept up to date.
+        DWORD GetFilterKeysRepeatMs()
+        {
+            FILTERKEYS filterKeys{ .cbSize = sizeof(FILTERKEYS) };
+            if (!SystemParametersInfoW(SPI_GETFILTERKEYS, sizeof(FILTERKEYS), &filterKeys, 0) || !(filterKeys.dwFlags & FKF_FILTERKEYSON))
+            {
+                return 0;
+            }
+
+            return filterKeys.iDelayMSec > filterKeys.iRepeatMSec ? filterKeys.iDelayMSec : filterKeys.iRepeatMSec;
+        }
     };
 }

@@ -40,15 +40,66 @@ namespace KeyboardEventHandlers
     // Function to handle an "Alone" single key remap (dual-key / Karabiner to_if_alone): applies the
     // remapped action only when the source key is tapped alone; in combination the original key passes
     // through. Must run before HandleSingleKeyRemapEvent in the hook dispatch chain.
-    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+    // promotedKeys, if given, receives the alone keys whose original key-down was injected in this
+    // call because another key went down (see PromotePendingAloneKeysToCombination).
+    intptr_t HandleSingleKeyAloneRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, std::vector<DWORD>* promotedKeys = nullptr) noexcept;
+
+    // Function to handle a single-key-to-sequence remap (#5679): pressing the source key sends an
+    // ordered list of key taps (down+up each), in order, once per press. The source key's own key-down
+    // (including auto-repeats) and key-up are suppressed; the whole sequence is injected on the first
+    // key-down. A target key that is already down gets its key-down only, without the key-up, so the
+    // sequence only releases keys it pressed (and a character key that is still down still types
+    // its character). A shortcut remap that is invoked at that moment is put back to the physically
+    // held keys first, and the taps do not trigger shortcut remaps (see KEYBOARDMANAGER_SEQUENCE_FLAG).
+    // This is ResolveSequencePress followed, for a new press, by StartSequencePress; the
+    // hook's handler chain (DispatchKeyboardEvent) calls those two itself, because other steps of
+    // the chain come in between.
+    intptr_t HandleSingleKeyToSequenceRemapEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
+    // What the key-sequence remap says about an event.
+    enum class SequencePressStep
+    {
+        // Not part of a tracked physical press: sent by Keyboard Manager itself, Unicode input of
+        // another program (VK_PACKET), or neither a key-down nor a key-up. Every other physical
+        // press is tracked, whether or not there are key-sequence remaps.
+        NotTracked,
+
+        // First key-down of a press. Nothing is recorded for it yet.
+        NewPress,
+
+        // Belongs to a press the key-sequence remap left alone (or a key-up with no known key-down):
+        // the other handlers decide.
+        Forwarded,
+
+        // Belongs to a press that was replaced by its sequence: suppress the event.
+        Suppress,
+
+        // Belongs to a press whose sequence could not be injected: pass the event to the system
+        // without running any other handler.
+        PassThrough,
+    };
+
+    // Pairs an event with its physical press, before the mapping tables are looked at: an
+    // auto-repeat or a key-up gets the answer recorded for the first key-down of its press (and a
+    // key-up ends the press). Only a first key-down returns NewPress, and it is the caller that
+    // records what becomes of it: StartSequencePress, or SequencePressTracker::RecordPress with
+    // Forwarded if the press does not get that far.
+    SequencePressStep ResolveSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state) noexcept;
+
+    // Handles the first key-down of a press: if the key (the virtual key of this key-down) has a
+    // sequence remap, sends the sequence. Records the outcome for the rest of the press and returns
+    // it: Suppress, Forwarded (no sequence remap), or PassThrough (the injection failed).
+    // keysJustPressed: keys that Keyboard Manager pressed earlier in this same hook call (the
+    // "Alone" remap's promoted keys); they count as down although the key state may not show them yet.
+    SequencePressStep StartSequencePress(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, const std::vector<DWORD>& keysJustPressed = {}) noexcept;
 
     // Promote every currently-pending ("tap candidate") "Alone" key into a started combination by
     // injecting its original key-down as a real key/modifier, so in-combination behavior works (e.g.
     // Right Ctrl acting as Ctrl for Ctrl+H, Ctrl+Click or Ctrl+Wheel). Shared by the keyboard
     // combination path (another key was pressed) and the low-level mouse hook (a click/scroll while an
     // alone key is held). `exceptKey` is left pending (used to skip the alone key's own auto-repeat);
-    // pass 0 to promote all pending keys.
-    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey = 0) noexcept;
+    // pass 0 to promote all pending keys. pressedKeys, if given, receives each key whose key-down was injected.
+    void PromotePendingAloneKeysToCombination(KeyboardManagerInput::InputInterface& ii, State& state, DWORD exceptKey = 0, std::vector<DWORD>* pressedKeys = nullptr) noexcept;
 
     // Append a key event that re-injects an "Alone" key's ORIGINAL (source) key while preserving its
     // numpad origin. Alone keys are tracked by the numpad-origin-encoded value of
@@ -139,4 +190,13 @@ namespace KeyboardEventHandlers
 
     // Function to ensure Ctrl/Shift/Alt modifier key state is not detected as pressed down by applications which detect keys at a lower level than hooks when it is remapped for scenarios where its required
     void ResetIfModifierKeyForLowerLevelKeyHandlers(KeyboardManagerInput::InputInterface& ii, DWORD key, DWORD target);
+
+    // Runs one low-level keyboard event through the remap handlers, in their fixed order. Returns 1
+    // to suppress the event and 0 to pass it on. remappingSuspended is true while remapping is
+    // bypassed for a moment (settings are being loaded, or the editor window is open); the mapping
+    // tables are not read then, but physical presses are still paired with their releases. A
+    // key-sequence table staged by a settings reload is made the live one first. This is the
+    // whole body of the hook callback, kept apart from KeyboardManager so the unit tests can drive
+    // the handler chain as a whole.
+    intptr_t DispatchKeyboardEvent(KeyboardManagerInput::InputInterface& ii, LowlevelKeyboardEvent* data, State& state, bool remappingSuspended) noexcept;
 };
