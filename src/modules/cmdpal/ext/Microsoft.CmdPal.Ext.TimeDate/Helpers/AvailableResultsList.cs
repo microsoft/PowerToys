@@ -362,7 +362,7 @@ internal static class AvailableResultsList
                 },
                 new AvailableResult()
                 {
-                    Value = currentTime?.ToString("R", CultureInfo.InvariantCulture) ?? dateTimeNow.ToString("R"),
+                    Value = currentTime?.ToString("R", CultureInfo.InvariantCulture) ?? dateTimeNowUtc.ToString("R", CultureInfo.InvariantCulture),
                     Label = Resources.Microsoft_plugin_timedate_Rfc1123,
                     AlternativeSearchTag = ResultHelper.SelectStringFromResources(isSystemDateTime, "Microsoft_plugin_timedate_SearchTagFormat"),
                     IconType = ResultIconType.DateTime,
