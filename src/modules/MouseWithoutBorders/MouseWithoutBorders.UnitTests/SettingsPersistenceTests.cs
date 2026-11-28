@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.IO.Abstractions;
+using System.IO.Abstractions.TestingHelpers;
 using System.Security.Principal;
 using System.Text.Json;
 using Microsoft.PowerToys.Settings.UI.Library;
@@ -114,6 +115,23 @@ public sealed class SettingsPersistenceTests
     }
 
     [TestMethod]
+    public void SharingViolationDuringSaveIsRetriedThroughRealSettingsUtils()
+    {
+        var fileSystem = new MockFileSystem();
+        var file = new SharingViolationOnceFile(fileSystem);
+        var settingsUtils = new SettingsUtils(file, new SettingPath(fileSystem.Directory, fileSystem.Path));
+        var scheduler = new QueuedSaveScheduler();
+        var settings = new MwbSettings(settingsUtils, CreateSettings(RequestedKey), new PassthroughPairingKeyCodec(), scheduler);
+
+        settings.SaveSettings();
+        scheduler.RunNext();
+
+        Assert.AreEqual(2, file.WriteAttempts);
+        using var saved = JsonDocument.Parse(fileSystem.File.ReadAllText(settingsUtils.GetSettingsFilePath(MouseWithoutBordersSettings.ModuleName)));
+        Assert.AreEqual(RequestedKey, GetKey(saved));
+    }
+
+    [TestMethod]
     public void QueuedSavePreservesPropertiesWhenLiveValuesChange()
     {
         var writer = new RecordingSettingsUtils();
@@ -159,10 +177,31 @@ public sealed class SettingsPersistenceTests
         {
         }
 
-        public override void SaveSettings(string json, string powertoy = "", string fileName = DefaultFileName)
+        public override void SaveSettingsOrThrow(string json, string powertoy = "", string fileName = DefaultFileName)
         {
             BeforeWrite?.Invoke();
             Writes.Add(json);
+        }
+    }
+
+    private sealed class SharingViolationOnceFile : MockFile
+    {
+        public SharingViolationOnceFile(MockFileSystem fileSystem)
+            : base(fileSystem)
+        {
+        }
+
+        public int WriteAttempts { get; private set; }
+
+        public override void WriteAllText(string path, string? contents)
+        {
+            if (++WriteAttempts == 1)
+            {
+                // Mirrors a concurrent Settings/Quick Access read holding the file with FileShare.Read.
+                throw new IOException("The process cannot access the file because it is being used by another process.", unchecked((int)0x80070020));
+            }
+
+            base.WriteAllText(path, contents);
         }
     }
 
