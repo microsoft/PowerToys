@@ -159,30 +159,13 @@ static bool g_thumbSolidMode = false;
 // fall back to a live DWM thumbnail automatically.
 constexpr bool kUseStaticSnapshotPreview = true;
 
-static LRESULT CALLBACK ThumbHostProc(HWND h, UINT msg, WPARAM w, LPARAM l)
+#pragma warning(suppress : 26497)
+static POINT ClientPointFromLParam(LPARAM lParam)
 {
-    if (msg == WM_ERASEBKGND)
-    {
-        if (g_thumbSolidMode && g_thumbSolidBrush)
-        {
-            RECT rc{};
-            GetClientRect(h, &rc);
-            FillRect(reinterpret_cast<HDC>(w), &rc, g_thumbSolidBrush);
-        }
-        return 1;
-    }
-    if (msg == WM_NCCALCSIZE && w)
-    {
-        // thumbHost carries WS_CAPTION solely so DWM treats it as a "framed"
-        // top-level window -- DWMWA_SYSTEMBACKDROP_TYPE (Mica/acrylic) is
-        // silently ignored on plain WS_POPUP windows with no frame at all.
-        // Returning 0 here (instead of calling DefWindowProc) collapses the
-        // non-client caption/border to nothing, so the window still looks
-        // like a plain borderless popup while DWM still applies the
-        // backdrop material to it.
-        return 0;
-    }
-    return DefWindowProcW(h, msg, w, l);
+    return {
+        static_cast<int>(static_cast<short>(LOWORD(lParam))),
+        static_cast<int>(static_cast<short>(HIWORD(lParam)))
+    };
 }
 
 // Apply the overlay backdrop to thumbHost. Win11 22H2+ gets public acrylic via
@@ -415,6 +398,8 @@ static void ForceForeground(HWND hwnd)
 // WM_AWC_HOTKEY: wParam = forward flag (0/1), lParam = held modifier mask.
 static const UINT WM_AWC_HOTKEY = WM_APP + 1;
 static const UINT WM_AWC_CANCEL = WM_APP + 2;
+static const UINT WM_AWC_MOUSEMOVE = WM_APP + 3;
+static const UINT WM_AWC_MOUSECLICK = WM_APP + 4;
 
 static DWORD g_uiThreadId = 0;
 
@@ -423,6 +408,17 @@ static DWORD g_uiThreadId = 0;
 // visible keeps Escape out of the runner's global hotkey table, so PowerToys never
 // claims Alt+Escape (a Windows shell shortcut) while the module sits idle.
 static HHOOK g_escapeHook = nullptr;
+// Same visibility window for mouse: the overlay is WS_EX_NOACTIVATE, so it cannot
+// SetCapture (that API requires a foreground window) and layered per-pixel alpha
+// also punches through live thumbnail holes. The hook is installed only while the
+// overlay is shown, posts to the UI thread, and swallows left-clicks so they do
+// not land on the app underneath.
+static HHOOK g_mouseHook = nullptr;
+static std::atomic<bool> g_overlayVisible{ false };
+static std::atomic<LONG> g_pointerScreenX{ 0 };
+static std::atomic<LONG> g_pointerScreenY{ 0 };
+static std::atomic<bool> g_pointerMovePosted{ false };
+static std::atomic<bool> g_swallowedLeftDown{ false };
 
 static LRESULT CALLBACK EscapeHookProc(int code, WPARAM wParam, LPARAM lParam)
 {
@@ -442,6 +438,49 @@ static LRESULT CALLBACK EscapeHookProc(int code, WPARAM wParam, LPARAM lParam)
     return CallNextHookEx(nullptr, code, wParam, lParam);
 }
 
+static LRESULT CALLBACK MouseHookProc(int code, WPARAM wParam, LPARAM lParam)
+{
+    if (code == HC_ACTION && g_overlayVisible.load(std::memory_order_relaxed) && g_uiThreadId)
+    {
+        const auto* info = reinterpret_cast<const MSLLHOOKSTRUCT*>(lParam);
+        if (info)
+        {
+            if (wParam == WM_MOUSEMOVE)
+            {
+                g_pointerScreenX.store(info->pt.x, std::memory_order_relaxed);
+                g_pointerScreenY.store(info->pt.y, std::memory_order_relaxed);
+                if (!g_pointerMovePosted.exchange(true, std::memory_order_acq_rel))
+                {
+                    if (!PostThreadMessageW(g_uiThreadId, WM_AWC_MOUSEMOVE, 0, 0))
+                    {
+                        g_pointerMovePosted.store(false, std::memory_order_relaxed);
+                    }
+                }
+            }
+            else if (wParam == WM_LBUTTONDOWN)
+            {
+                if (PostThreadMessageW(
+                        g_uiThreadId,
+                        WM_AWC_MOUSECLICK,
+                        static_cast<WPARAM>(static_cast<INT_PTR>(info->pt.x)),
+                        static_cast<LPARAM>(info->pt.y)))
+                {
+                    g_swallowedLeftDown.store(true, std::memory_order_relaxed);
+                    return 1;
+                }
+            }
+            else if (wParam == WM_LBUTTONUP && g_swallowedLeftDown.exchange(false, std::memory_order_relaxed))
+            {
+                // Swallow the matching up so the window under the overlay does not
+                // see a button-up without a down.
+                return 1;
+            }
+        }
+    }
+
+    return CallNextHookEx(nullptr, code, wParam, lParam);
+}
+
 // =================== Switcher class ===================
 
 class Switcher
@@ -451,6 +490,8 @@ public:
     void Shutdown();
     void OnHotkey(bool forward, unsigned int holdModifiers);
     void OnCancel();
+    void OnMouseMoveFromHook();
+    void OnMouseClickFromHook(int screenX, int screenY);
 
 private:
     enum class St { Idle, Visible };
@@ -459,6 +500,7 @@ private:
     static const UINT TIMER_MS = 25;
 
     static LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+    static LRESULT CALLBACK ThumbHostProc(HWND, UINT, WPARAM, LPARAM);
 
     void OnTick();
     void Commit();
@@ -466,6 +508,9 @@ private:
     void ShowOverlayWindow();
     void HideOverlayWindow();
     void SetSelection(int index);
+    void OnPointerMove(int x, int y);
+    void OnPointerClick(int x, int y);
+    int HitTest(int x, int y) const;
     void RenderLayered();
     void OnThemeChanged();
     void ComputeLayout(const RECT& work, int& x, int& y, int& panelW, int& panelH);
@@ -474,6 +519,9 @@ private:
     void InstallEscapeHook();
     void RemoveEscapeHook();
     void EnsureFont();
+    void EnsureLayeredBuffer(int w, int h);
+    void ReleaseLayeredBuffer();
+    COLORREF AccentColor();
 
     RECT TileRect(int index) const;
     RECT PreviewRect(const RECT& tile) const;
@@ -494,7 +542,8 @@ private:
     // preview-rect pixel size at capture time (see
     // CaptureWindowSnapshotForPreview), refreshed on show/page change. A null
     // entry means capture failed for that slot and a live DWM thumbnail was
-    // registered instead.
+    // registered instead. Dest-sized caches keep hover re-renders as blits
+    // instead of HighQualityBicubic scales every frame.
     std::vector<std::unique_ptr<Gdiplus::Bitmap>> snapshots;
     std::vector<HICON> icons;
     std::vector<std::wstring> titles;
@@ -502,6 +551,16 @@ private:
     int selected = 0;
     int pageStart = 0;
     unsigned int activeHoldModifiers = AltWindowCycleLogic::ModifierAlt;
+    COLORREF cachedAccent = 0;
+    bool cachedAccentValid = false;
+
+    // Reused UpdateLayeredWindow backing store (reallocated when panel size changes).
+    HDC layeredDC = nullptr;
+    HBITMAP layeredDib = nullptr;
+    HGDIOBJ layeredOldBmp = nullptr;
+    void* layeredBits = nullptr;
+    int layeredW = 0;
+    int layeredH = 0;
 
     double scale = 1.0;
     AltWindowCycleLogic::OverlayLayout overlayLayout;
@@ -522,7 +581,7 @@ bool Switcher::Init(HINSTANCE instance)
 
     WNDCLASSW hc = {};
     hc.style = CS_HREDRAW | CS_VREDRAW;
-    hc.lpfnWndProc = &ThumbHostProc;
+    hc.lpfnWndProc = &Switcher::ThumbHostProc;
     hc.hInstance = hinst;
     hc.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     hc.hbrBackground = nullptr;
@@ -558,6 +617,7 @@ bool Switcher::Init(HINSTANCE instance)
         return false;
 
     SetWindowLongPtrW(overlay, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
+    SetWindowLongPtrW(thumbHost, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
     return true;
 }
 
@@ -565,6 +625,7 @@ void Switcher::Shutdown()
 {
     RemoveEscapeHook();
     UnregisterThumbnails();
+    ReleaseLayeredBuffer();
     if (thumbHost)
     {
         DestroyWindow(thumbHost);
@@ -827,18 +888,33 @@ void Switcher::HideOverlayWindow()
     UnregisterThumbnails();
     icons.clear();
     titles.clear();
+    cachedAccentValid = false;
 }
 
 void Switcher::InstallEscapeHook()
 {
+    g_overlayVisible.store(true, std::memory_order_release);
+    g_pointerMovePosted.store(false, std::memory_order_relaxed);
     if (!g_escapeHook)
     {
         g_escapeHook = SetWindowsHookExW(WH_KEYBOARD_LL, EscapeHookProc, nullptr, 0);
+    }
+    if (!g_mouseHook)
+    {
+        g_mouseHook = SetWindowsHookExW(WH_MOUSE_LL, MouseHookProc, nullptr, 0);
     }
 }
 
 void Switcher::RemoveEscapeHook()
 {
+    g_overlayVisible.store(false, std::memory_order_release);
+    g_pointerMovePosted.store(false, std::memory_order_relaxed);
+    g_swallowedLeftDown.store(false, std::memory_order_relaxed);
+    if (g_mouseHook)
+    {
+        UnhookWindowsHookEx(g_mouseHook);
+        g_mouseHook = nullptr;
+    }
     if (g_escapeHook)
     {
         UnhookWindowsHookEx(g_escapeHook);
@@ -861,6 +937,84 @@ void Switcher::SetSelection(int index)
     RenderLayered();
 }
 
+int Switcher::HitTest(int x, int y) const
+{
+    return AltWindowCycleLogic::HitTestTile(
+        overlayLayout,
+        pageStart,
+        static_cast<int>(windows.size()),
+        x,
+        y);
+}
+
+void Switcher::OnPointerMove(int x, int y)
+{
+    if (state != St::Visible)
+    {
+        return;
+    }
+
+    const int hit = HitTest(x, y);
+    if (hit >= 0 && hit != selected)
+    {
+        SetSelection(hit);
+    }
+}
+
+void Switcher::OnPointerClick(int x, int y)
+{
+    if (state != St::Visible)
+    {
+        return;
+    }
+
+    const int hit = HitTest(x, y);
+    if (hit >= 0)
+    {
+        selected = hit;
+        Commit();
+        return;
+    }
+
+    // Clicking the dimmed desktop (outside the panel) dismisses without switching,
+    // matching Alt+Tab. Clicks in the padding/gap between tiles are ignored.
+    RECT client{};
+    GetClientRect(overlay, &client);
+    const POINT pt = { x, y };
+    if (!PtInRect(&client, pt))
+    {
+        Cancel();
+    }
+}
+
+void Switcher::OnMouseMoveFromHook()
+{
+    g_pointerMovePosted.store(false, std::memory_order_relaxed);
+    if (state != St::Visible || !overlay)
+    {
+        return;
+    }
+
+    POINT pt = {
+        g_pointerScreenX.load(std::memory_order_relaxed),
+        g_pointerScreenY.load(std::memory_order_relaxed)
+    };
+    ScreenToClient(overlay, &pt);
+    OnPointerMove(pt.x, pt.y);
+}
+
+void Switcher::OnMouseClickFromHook(int screenX, int screenY)
+{
+    if (state != St::Visible || !overlay)
+    {
+        return;
+    }
+
+    POINT pt = { screenX, screenY };
+    ScreenToClient(overlay, &pt);
+    OnPointerClick(pt.x, pt.y);
+}
+
 // React to a live OS Light/Dark theme switch while the overlay is visible.
 // The backdrop is forced dark regardless of system theme (to match the fixed
 // dark card chrome), so this just re-applies it defensively -- e.g. in case
@@ -869,6 +1023,7 @@ void Switcher::OnThemeChanged()
 {
     if (state != St::Visible)
         return;
+    cachedAccentValid = false;
     ApplyBackdrop(thumbHost);
     RedrawWindow(thumbHost, nullptr, nullptr,
                  RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -1418,7 +1573,7 @@ static void DrawHeaderText(BYTE* destBits, int destW, int destH, HFONT fontHandl
     ReleaseDC(nullptr, screen);
 }
 
-static COLORREF GetAccentColor()
+static COLORREF QueryAccentColor()
 {
     DWORD color = 0, size = sizeof(color), type = 0;
     HKEY key = nullptr;
@@ -1439,15 +1594,27 @@ static COLORREF GetAccentColor()
     return AltTabStyle::AccentFallbackRef();
 }
 
-void Switcher::RenderLayered()
+COLORREF Switcher::AccentColor()
 {
-    int w = ovW, h = ovH;
-    if (w <= 0 || h <= 0)
+    if (!cachedAccentValid)
+    {
+        cachedAccent = QueryAccentColor();
+        cachedAccentValid = true;
+    }
+    return cachedAccent;
+}
+
+void Switcher::EnsureLayeredBuffer(int w, int h)
+{
+    if (layeredDib && layeredDC && layeredW == w && layeredH == h)
+    {
         return;
+    }
+
+    ReleaseLayeredBuffer();
 
     HDC screenDC = GetDC(nullptr);
-    HDC memDC = CreateCompatibleDC(screenDC);
-
+    layeredDC = CreateCompatibleDC(screenDC);
     BITMAPINFO bi = {};
     bi.bmiHeader.biSize = sizeof(bi.bmiHeader);
     bi.bmiHeader.biWidth = w;
@@ -1455,21 +1622,57 @@ void Switcher::RenderLayered()
     bi.bmiHeader.biPlanes = 1;
     bi.bmiHeader.biBitCount = 32;
     bi.bmiHeader.biCompression = BI_RGB;
+    layeredDib = CreateDIBSection(screenDC, &bi, DIB_RGB_COLORS, &layeredBits, nullptr, 0);
+    ReleaseDC(nullptr, screenDC);
 
-    void* bits = nullptr;
-    HBITMAP dib = CreateDIBSection(screenDC, &bi, DIB_RGB_COLORS, &bits, nullptr, 0);
-    if (!dib)
+    if (!layeredDC || !layeredDib || !layeredBits)
     {
-        DeleteDC(memDC);
-        ReleaseDC(nullptr, screenDC);
+        ReleaseLayeredBuffer();
         return;
     }
-    HGDIOBJ oldBmp = SelectObject(memDC, dib);
-    ZeroMemory(bits, static_cast<size_t>(w) * h * 4);
+
+    layeredOldBmp = SelectObject(layeredDC, layeredDib);
+    layeredW = w;
+    layeredH = h;
+}
+
+void Switcher::ReleaseLayeredBuffer()
+{
+    if (layeredDC && layeredOldBmp)
+    {
+        SelectObject(layeredDC, layeredOldBmp);
+        layeredOldBmp = nullptr;
+    }
+    if (layeredDib)
+    {
+        DeleteObject(layeredDib);
+        layeredDib = nullptr;
+    }
+    if (layeredDC)
+    {
+        DeleteDC(layeredDC);
+        layeredDC = nullptr;
+    }
+    layeredBits = nullptr;
+    layeredW = 0;
+    layeredH = 0;
+}
+
+void Switcher::RenderLayered()
+{
+    int w = ovW, h = ovH;
+    if (w <= 0 || h <= 0)
+        return;
+
+    EnsureLayeredBuffer(w, h);
+    if (!layeredDC || !layeredDib || !layeredBits)
+        return;
+
+    ZeroMemory(layeredBits, static_cast<size_t>(w) * h * 4);
 
     {
         Gdiplus::Bitmap bmp(w, h, w * 4, PixelFormat32bppPARGB,
-                            static_cast<BYTE*>(bits));
+                            static_cast<BYTE*>(layeredBits));
         Gdiplus::Graphics g(&bmp);
         g.SetSmoothingMode(Gdiplus::SmoothingModeAntiAlias);
         g.SetTextRenderingHint(Gdiplus::TextRenderingHintAntiAliasGridFit);
@@ -1487,7 +1690,7 @@ void Switcher::RenderLayered()
                                  static_cast<Gdiplus::REAL>((std::max)(1, Scaled(1))));
         g.DrawPath(&panelStroke, &panel);
 
-        COLORREF accent = GetAccentColor();
+        COLORREF accent = AccentColor();
         Gdiplus::Color accentClr = AltTabStyle::Accent(accent);
 
         const int pageEnd = (std::min)(
@@ -1520,6 +1723,7 @@ void Switcher::RenderLayered()
                     // capture time (see RegisterThumbnails), so it can be used
                     // directly as an identity-scale texture brush -- no further
                     // DrawImage pass or intermediate offscreen bitmap needed here.
+                    // That keeps hover re-renders cheap (blit only).
                     Gdiplus::TextureBrush brush(snap, Gdiplus::WrapModeClamp);
                     Gdiplus::Matrix xform(1.0f, 0.0f, 0.0f, 1.0f,
                                           static_cast<Gdiplus::REAL>(pv.left),
@@ -1558,7 +1762,7 @@ void Switcher::RenderLayered()
             {
                 int iy = tile.top + (headerH - iconSize) / 2;
                 g.Flush();
-                DrawIconOverPARGB(bits, w, h, ic, hdr.left, iy, iconSize);
+                DrawIconOverPARGB(layeredBits, w, h, ic, hdr.left, iy, iconSize);
                 textLeft = hdr.left + iconSize + Scaled(8);
             }
 
@@ -1567,7 +1771,7 @@ void Switcher::RenderLayered()
             {
                 g.Flush();
                 RECT textRc = { textLeft, tile.top, hdr.right, tile.top + headerH };
-                DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, textRc, *text,
+                DrawHeaderText(static_cast<BYTE*>(layeredBits), w, h, font, textRc, *text,
                                AltTabStyle::HeaderTextRef(sel), AltTabStyle::CardRef(sel));
             }
 
@@ -1594,7 +1798,7 @@ void Switcher::RenderLayered()
             const std::wstring pageText =
                 std::to_wstring(currentPage) + L" / " + std::to_wstring(totalPages);
             RECT pageRc = { pad, h - pad, w - pad, h };
-            DrawHeaderText(static_cast<BYTE*>(bits), w, h, font, pageRc, pageText,
+            DrawHeaderText(static_cast<BYTE*>(layeredBits), w, h, font, pageRc, pageText,
                            AltTabStyle::HeaderTextRef(false), AltTabStyle::CardRef(false), DT_CENTER,
                            /*opaqueBackground=*/false);
         }
@@ -1602,15 +1806,12 @@ void Switcher::RenderLayered()
         g.Flush();
     }
 
+    HDC screenDC = GetDC(nullptr);
     POINT ptDst = { ovX, ovY };
     SIZE sz = { w, h };
     POINT ptSrc = { 0, 0 };
     BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-    UpdateLayeredWindow(overlay, screenDC, &ptDst, &sz, memDC, &ptSrc, 0, &bf, ULW_ALPHA);
-
-    SelectObject(memDC, oldBmp);
-    DeleteObject(dib);
-    DeleteDC(memDC);
+    UpdateLayeredWindow(overlay, screenDC, &ptDst, &sz, layeredDC, &ptSrc, 0, &bf, ULW_ALPHA);
     ReleaseDC(nullptr, screenDC);
 }
 
@@ -1628,6 +1829,20 @@ LRESULT CALLBACK Switcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
                 return 0;
             }
             break;
+        case WM_MOUSEACTIVATE:
+            return MA_NOACTIVATE;
+        case WM_MOUSEMOVE:
+        {
+            const POINT pt = ClientPointFromLParam(lParam);
+            self->OnPointerMove(pt.x, pt.y);
+            return 0;
+        }
+        case WM_LBUTTONDOWN:
+        {
+            const POINT pt = ClientPointFromLParam(lParam);
+            self->OnPointerClick(pt.x, pt.y);
+            return 0;
+        }
         case WM_ERASEBKGND:
             return 1;
         case WM_SETTINGCHANGE:
@@ -1639,6 +1854,58 @@ LRESULT CALLBACK Switcher::WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lP
             }
             break;
         }
+    }
+    return DefWindowProcW(hwnd, msg, wParam, lParam);
+}
+
+// Mouse events also land here: the layered overlay is per-pixel hit-tested, so
+// fully transparent preview punches (live DWM thumbnails) and the gaps between
+// cards fall through to thumbHost. Both windows share panel-relative client
+// coordinates, so the same hover/click hit-test applies.
+LRESULT CALLBACK Switcher::ThumbHostProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+    Switcher* self = reinterpret_cast<Switcher*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
+    if (self)
+    {
+        switch (msg)
+        {
+        case WM_MOUSEACTIVATE:
+            return MA_NOACTIVATE;
+        case WM_MOUSEMOVE:
+        {
+            const POINT pt = ClientPointFromLParam(lParam);
+            self->OnPointerMove(pt.x, pt.y);
+            return 0;
+        }
+        case WM_LBUTTONDOWN:
+        {
+            const POINT pt = ClientPointFromLParam(lParam);
+            self->OnPointerClick(pt.x, pt.y);
+            return 0;
+        }
+        }
+    }
+
+    if (msg == WM_ERASEBKGND)
+    {
+        if (g_thumbSolidMode && g_thumbSolidBrush)
+        {
+            RECT rc{};
+            GetClientRect(hwnd, &rc);
+            FillRect(reinterpret_cast<HDC>(wParam), &rc, g_thumbSolidBrush);
+        }
+        return 1;
+    }
+    if (msg == WM_NCCALCSIZE && wParam)
+    {
+        // thumbHost carries WS_CAPTION solely so DWM treats it as a "framed"
+        // top-level window -- DWMWA_SYSTEMBACKDROP_TYPE (Mica/acrylic) is
+        // silently ignored on plain WS_POPUP windows with no frame at all.
+        // Returning 0 here (instead of calling DefWindowProc) collapses the
+        // non-client caption/border to nothing, so the window still looks
+        // like a plain borderless popup while DWM still applies the
+        // backdrop material to it.
+        return 0;
     }
     return DefWindowProcW(hwnd, msg, wParam, lParam);
 }
@@ -1774,6 +2041,16 @@ static DWORD WINAPI UIThreadProc(LPVOID param)
         else if (msg.hwnd == nullptr && msg.message == WM_AWC_CANCEL)
         {
             g_switcher.OnCancel();
+        }
+        else if (msg.hwnd == nullptr && msg.message == WM_AWC_MOUSEMOVE)
+        {
+            g_switcher.OnMouseMoveFromHook();
+        }
+        else if (msg.hwnd == nullptr && msg.message == WM_AWC_MOUSECLICK)
+        {
+            g_switcher.OnMouseClickFromHook(
+                static_cast<int>(static_cast<INT_PTR>(msg.wParam)),
+                static_cast<int>(msg.lParam));
         }
         else
         {
