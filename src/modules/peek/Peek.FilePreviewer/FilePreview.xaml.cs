@@ -267,6 +267,15 @@ namespace Peek.FilePreviewer
             await UpdatePreviewAsync(_cancellationTokenSource.Token);
         }
 
+        /// <summary>
+        /// Blanks the browser preview, if one is showing, so it does not flash on the next activation.
+        /// Call before the window is hidden.
+        /// </summary>
+        public Task ClearBrowserPreviewAsync()
+        {
+            return BrowserPreviewer != null ? BrowserPreview.ClearAsync() : Task.CompletedTask;
+        }
+
         private async Task OnScalingFactorPropertyChanged()
         {
             await UpdatePreviewSizeAsync(_cancellationTokenSource.Token);

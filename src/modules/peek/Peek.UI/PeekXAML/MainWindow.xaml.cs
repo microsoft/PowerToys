@@ -44,6 +44,8 @@ namespace Peek.UI
         /// </summary>
         private bool _isDeleteInProgress;
         private bool _exitAfterClose;
+        private bool _isUninitializing;
+        private SelectedItem? _pendingToggleItem;
 
         private IntPtr _keyboardHookHandle;
         private NativeMethods.LowLevelKeyboardProc? _keyboardHookProc;
@@ -153,6 +155,14 @@ namespace Peek.UI
                 return;
             }
 
+            // A close is still in progress (blanking the WebView). Handle this request once it has
+            // finished, as if it arrived after the close; otherwise the close would tear down the new preview.
+            if (_isUninitializing)
+            {
+                _pendingToggleItem = selectedItem;
+                return;
+            }
+
             if (DeleteConfirmationDialog.Visibility == Visibility.Visible)
             {
                 DeleteConfirmationDialog.Hide();
@@ -238,10 +248,22 @@ namespace Peek.UI
             PowerToysTelemetry.Log.WriteEvent(new OpenedEvent() { FileExtension = ViewModel.CurrentItem?.Extension ?? string.Empty, HotKeyToVisibleTimeMs = bootTime.ElapsedMilliseconds });
         }
 
-        private void Uninitialize()
+        private async void Uninitialize()
         {
+            if (_isUninitializing)
+            {
+                return;
+            }
+
+            _isUninitializing = true;
             try
             {
+                // Blank the WebView while it is still visible; otherwise it shows this file again on next open.
+                if (AppWindow.IsVisible)
+                {
+                    await FilePreviewer.ClearBrowserPreviewAsync();
+                }
+
                 // Keep teardown best-effort: one failure must not skip later cleanup
                 // or prevent the CLI/-FilePath exit-after-close contract.
                 TryRunUninitializeStep(UninstallKeyboardHook, nameof(UninstallKeyboardHook));
@@ -254,9 +276,16 @@ namespace Peek.UI
             }
             finally
             {
+                _isUninitializing = false;
                 if (_exitAfterClose)
                 {
                     Environment.Exit(0);
+                }
+
+                if (_pendingToggleItem is { } pending)
+                {
+                    _pendingToggleItem = null;
+                    Toggle(false, pending, false);
                 }
             }
         }

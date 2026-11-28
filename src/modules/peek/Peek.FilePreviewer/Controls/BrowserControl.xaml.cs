@@ -142,6 +142,56 @@ namespace Peek.FilePreviewer.Controls
             }
         }
 
+        /// <summary>
+        /// Replaces the current document with a blank page and waits until the renderer has painted it.
+        /// WebView2 keeps its last painted frame while hidden and presents it again the next time it is
+        /// shown, so clearing before Peek hides prevents the previous file from flashing on next open.
+        /// Must be called while the control is still visible, otherwise the renderer does not paint.
+        /// </summary>
+        public async Task ClearAsync()
+        {
+            var core = PreviewBrowser.CoreWebView2;
+            if (core == null)
+            {
+                return;
+            }
+
+            try
+            {
+                // Avoid NavigationStarting treating about:blank as a user navigation (open-in-browser dialog).
+                _navigatedUri = null;
+
+                var navigated = new TaskCompletionSource();
+                void OnCompleted(CoreWebView2 s, CoreWebView2NavigationCompletedEventArgs a) => navigated.TrySetResult();
+                core.NavigationCompleted += OnCompleted;
+                try
+                {
+                    core.Navigate("about:blank");
+
+                    // Cap the wait so closing Peek is never held up noticeably; if the renderer is slower, the old frame may still flash.
+                    var deadline = Task.Delay(100);
+                    if (await Task.WhenAny(navigated.Task, deadline) == deadline)
+                    {
+                        return;
+                    }
+
+                    // DevTools Runtime.evaluate awaits the promise and works even when page scripts are disabled.
+                    var painted = core.CallDevToolsProtocolMethodAsync(
+                        "Runtime.evaluate",
+                        "{\"expression\":\"new Promise(r => requestAnimationFrame(() => requestAnimationFrame(() => r(0))))\",\"awaitPromise\":true}").AsTask();
+                    await Task.WhenAny(painted, deadline);
+                }
+                finally
+                {
+                    core.NavigationCompleted -= OnCompleted;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("BrowserControl.ClearAsync failed: " + ex.Message);
+            }
+        }
+
         private void SourcePropertyChanged()
         {
             OpenUriDialog.Hide();
