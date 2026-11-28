@@ -259,7 +259,6 @@ coclass
 CODENAME
 codereview
 Codespaces
-codicon
 Coen
 cognitiveservices
 COINIT
@@ -443,7 +442,6 @@ dllmain
 Dmdo
 DMy
 DNLEN
-dompurify
 DONOTROUND
 DONTVALIDATEPATH
 dotnet
@@ -526,7 +524,6 @@ EREOF
 EResize
 ERRORIMAGE
 ERRORTITLE
-esbuild
 esrp
 etd
 ETDT
@@ -1288,7 +1285,6 @@ nowarn
 NOZORDER
 NPH
 npmjs
-npmrc
 NPU
 NResize
 NTAPI
@@ -1722,7 +1718,6 @@ SHACF
 SHANDLE
 sharepoint
 sharpfuzz
-shasum
 SHCNE
 SHCNF
 SHCONTF
@@ -2062,7 +2057,6 @@ Usb
 USEDEFAULT
 USEFILEATTRIBUTES
 USEINSTALLERFORTEST
-USERCONFIG
 USESHOWWINDOW
 USESTDHANDLES
 USRDLL

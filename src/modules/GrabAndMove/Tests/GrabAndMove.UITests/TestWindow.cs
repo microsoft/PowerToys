@@ -40,8 +40,6 @@ internal sealed class TestWindow : IDisposable
 
     internal IntPtr Handle { get; }
 
-    internal int ClientClickCount => Volatile.Read(ref clientClickCount);
-
     internal Rectangle Bounds
     {
         get
@@ -82,10 +80,10 @@ internal sealed class TestWindow : IDisposable
             throw new InvalidOperationException($"The fixture cursor did not settle at ({x}, {y}): {cursor.LastObservation}.");
         }
 
-        var previousClicks = ClientClickCount;
+        var previousClicks = Volatile.Read(ref clientClickCount);
         MouseHelper.LeftClickAt(x, y);
         var delivered = WaitHelper.WaitForStable(
-            () => ClientClickCount,
+            () => Volatile.Read(ref clientClickCount),
             count => count > previousClicks && lastClientClick == new Point(x, y),
             5_000,
             requiredConsecutiveMatches: 3,

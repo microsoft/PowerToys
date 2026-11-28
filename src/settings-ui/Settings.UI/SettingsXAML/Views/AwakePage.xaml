@@ -94,10 +94,9 @@
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard
-                        x:Uid="Awake_DisplaySettingsCard"
-                        HeaderIcon="{ui:FontIcon Glyph=&#xE7F4;}"
-                        IsEnabled="{x:Bind ViewModel.IsScreenConfigurationPossibleEnabled, Mode=OneWay}">
-                        <ToggleSwitch IsOn="{x:Bind ViewModel.KeepDisplayOn, Mode=TwoWay}" />
+                        x:Uid="ShowThemeAdaptiveTrayIcon"
+                        HeaderIcon="{ui:FontIcon Glyph=&#xE75B;}">
+                        <ToggleSwitch IsOn="{x:Bind ViewModel.ShowThemeAdaptiveTrayIcon, Mode=TwoWay}" />
                     </tkcontrols:SettingsCard>
 
                     <tkcontrols:SettingsCard

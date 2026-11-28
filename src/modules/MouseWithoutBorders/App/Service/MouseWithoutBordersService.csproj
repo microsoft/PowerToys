@@ -61,16 +61,15 @@
     <None Remove="Service\**" />
   </ItemGroup>
   <ItemGroup>
-    <!-- Align runtime assemblies with other apps in the shared output directory. -->
-    <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
-  </ItemGroup>
-  <ItemGroup>
+    <!-- Including MessagePack to force version, since it's used by StreamJsonRpc but contains vulnerabilities. After StreamJsonRpc updates the version of MessagePack, we can upgrade StreamJsonRpc instead. -->
+    <PackageReference Include="MessagePack" />
     <!-- HACK: To align Microsoft.Bcl.AsyncInterfaces.dll version with Advanced Paste version (from the Semantic Kernel dependency). -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" />
+    <PackageReference Include="StreamJsonRpc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\common\GPOWrapper\GPOWrapper.vcxproj" />

@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using FancyZonesEditorCommon.Data;
 
@@ -65,15 +64,10 @@ namespace FancyZonesEditorCommon.Utils
         // CustomLayouts operations
         public static CustomLayouts.CustomLayoutListWrapper ReadCustomLayouts()
         {
-            return ReadCustomLayouts(FancyZonesPaths.CustomLayouts);
-        }
-
-        internal static CustomLayouts.CustomLayoutListWrapper ReadCustomLayouts(string filePath, IOUtils ioUtils = null)
-        {
-            return new CustomLayouts().ReadOrDefault(
-                filePath,
-                () => new CustomLayouts.CustomLayoutListWrapper { CustomLayouts = new List<CustomLayouts.CustomLayoutWrapper>() },
-                ioUtils);
+            return ReadData(
+                () => new CustomLayouts(),
+                instance => instance.File,
+                (instance, file) => instance.Read(file));
         }
 
         public static void WriteCustomLayouts(CustomLayouts.CustomLayoutListWrapper data)
@@ -88,42 +82,10 @@ namespace FancyZonesEditorCommon.Utils
         // LayoutTemplates operations
         public static LayoutTemplates.TemplateLayoutsListWrapper ReadLayoutTemplates()
         {
-            return ReadLayoutTemplates(FancyZonesPaths.LayoutTemplates);
-        }
-
-        internal static LayoutTemplates.TemplateLayoutsListWrapper ReadLayoutTemplates(string filePath, IOUtils ioUtils = null)
-        {
-            return new LayoutTemplates().ReadOrDefault(filePath, CreateDefaultLayoutTemplates, ioUtils);
-        }
-
-        private static LayoutTemplates.TemplateLayoutsListWrapper CreateDefaultLayoutTemplates()
-        {
-            var templates = new List<LayoutTemplates.TemplateLayoutWrapper>();
-            Constants.TemplateLayout[] types =
-            [
-                Constants.TemplateLayout.Empty,
-                Constants.TemplateLayout.Focus,
-                Constants.TemplateLayout.Columns,
-                Constants.TemplateLayout.Rows,
-                Constants.TemplateLayout.Grid,
-                Constants.TemplateLayout.PriorityGrid,
-            ];
-
-            foreach (var type in types)
-            {
-                bool isBlank = type == Constants.TemplateLayout.Empty;
-                bool isGrid = type != Constants.TemplateLayout.Empty && type != Constants.TemplateLayout.Focus;
-                templates.Add(new LayoutTemplates.TemplateLayoutWrapper
-                {
-                    Type = Constants.TemplateLayoutJsonTags[type],
-                    ZoneCount = isBlank ? 0 : LayoutDefaultSettings.DefaultZoneCount,
-                    SensitivityRadius = isBlank ? 0 : LayoutDefaultSettings.DefaultSensitivityRadius,
-                    ShowSpacing = isGrid && LayoutDefaultSettings.DefaultShowSpacing,
-                    Spacing = isGrid ? LayoutDefaultSettings.DefaultSpacing : 0,
-                });
-            }
-
-            return new LayoutTemplates.TemplateLayoutsListWrapper { LayoutTemplates = templates };
+            return ReadData(
+                () => new LayoutTemplates(),
+                instance => instance.File,
+                (instance, file) => instance.Read(file));
         }
 
         public static void WriteLayoutTemplates(LayoutTemplates.TemplateLayoutsListWrapper data)

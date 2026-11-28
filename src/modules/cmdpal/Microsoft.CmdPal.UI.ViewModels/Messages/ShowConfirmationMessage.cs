@@ -4,7 +4,4 @@
 
 namespace Microsoft.CmdPal.UI.ViewModels.Messages;
 
-public record ShowConfirmationMessage(
-    Microsoft.CommandPalette.Extensions.IConfirmationArgs? Args,
-    FallbackQueryContext? FallbackContext = null,
-    IDisposable? SnapshotLease = null);
+public record ShowConfirmationMessage(Microsoft.CommandPalette.Extensions.IConfirmationArgs? Args);

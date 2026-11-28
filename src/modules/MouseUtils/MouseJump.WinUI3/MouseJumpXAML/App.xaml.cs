@@ -26,7 +26,6 @@ public partial class App : Application, IDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
     private readonly DispatcherQueue _dispatcherQueue;
-    private SettingsHelper? _settingsHelper;
     private bool disposedValue;
 
     /// <summary>
@@ -52,8 +51,8 @@ public partial class App : Application, IDisposable
 
             var etwTrace = new ETWTrace();
 
-            _settingsHelper = new SettingsHelper(_dispatcherQueue);
-            var previewWindow = new PreviewWindow(_settingsHelper);
+            var settingsHelper = new SettingsHelper();
+            var previewWindow = new PreviewWindow(settingsHelper);
 
             // start the handler that listens for the "show preview" event
             Logger.LogInfo("starting 'show preview' event handler");
@@ -86,11 +85,7 @@ public partial class App : Application, IDisposable
     {
         Logger.LogInfo("exiting Mouse Jump.");
         _cancellationTokenSource.Cancel();
-        _dispatcherQueue.TryEnqueue(() =>
-        {
-            this.Dispose();
-            this.Exit();
-        });
+        _dispatcherQueue.TryEnqueue(this.Exit);
     }
 
     protected virtual void Dispose(bool disposing)
@@ -103,7 +98,6 @@ public partial class App : Application, IDisposable
         if (disposing)
         {
             this._cancellationTokenSource.Cancel();
-            _settingsHelper?.Dispose();
         }
 
         disposedValue = true;

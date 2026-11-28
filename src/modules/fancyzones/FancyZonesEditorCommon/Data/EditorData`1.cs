@@ -28,12 +28,6 @@ namespace FancyZonesEditorCommon.Data
             return JsonSerializer.Deserialize(data, TypeInfo);
         }
 
-        internal T ReadOrDefault(string file, Func<T> createDefault, IOUtils ioUtils = null)
-        {
-            string data = (ioUtils ?? new IOUtils()).ReadFileOrDefault(file);
-            return data == null ? createDefault() : JsonSerializer.Deserialize(data, TypeInfo);
-        }
-
         public string Serialize(T data)
         {
             return JsonSerializer.Serialize(data, TypeInfo);

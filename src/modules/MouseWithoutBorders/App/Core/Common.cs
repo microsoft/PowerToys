@@ -747,7 +747,7 @@ internal static class Common
         SendPackage(src, PackageType.ClipboardCapture);
     }
 
-    internal static void ShowToolTip(string tip, int timeOutInMilliseconds = 5000, ToolTipIcon icon = ToolTipIcon.Info, bool showBalloonTip = true, bool forceEvenIfHidingOldUI = false, string logText = null)
+    internal static void ShowToolTip(string tip, int timeOutInMilliseconds = 5000, ToolTipIcon icon = ToolTipIcon.Info, bool showBalloonTip = true, bool forceEvenIfHidingOldUI = false)
     {
         if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
         {
@@ -768,7 +768,7 @@ internal static class Common
                     }
                     else
                     {
-                        Logger.Log(logText ?? tip);
+                        Logger.Log(tip);
                     }
                 }
             });
@@ -1013,7 +1013,7 @@ internal static class Common
                     {
                         if ((t.Status != SocketStatus.Connected && t.BirthTime < GetTick() - SocketStuff.CONNECT_TIMEOUT) || t.BackingSocket == null)
                         {
-                            Logger.LogDebug("CloseAnUnusedSocket: " + Logger.MaskName(t.MachineName) + ":" + t.MachineId + "|" + t.Status.ToString());
+                            Logger.LogDebug("CloseAnUnusedSocket: " + t.MachineName + ":" + t.MachineId + "|" + t.Status.ToString());
                             tobeRemoved = t;
 
                             if (t.BackingSocket != null)
@@ -1055,7 +1055,7 @@ internal static class Common
                     {
                         if (t.Status == SocketStatus.Connected)
                         {
-                            Logger.LogDebug("AtLeastOneSocketConnected returning true: " + Logger.MaskName(t.MachineName));
+                            Logger.LogDebug("AtLeastOneSocketConnected returning true: " + t.MachineName);
                             return true;
                         }
                     }
@@ -1081,7 +1081,7 @@ internal static class Common
                     {
                         if (!t.IsClient && t.Status == SocketStatus.Connected)
                         {
-                            Logger.LogDebug("AtLeastOneServerSocketConnected returning true: " + Logger.MaskName(t.MachineName));
+                            Logger.LogDebug("AtLeastOneServerSocketConnected returning true: " + t.MachineName);
                             return t.BackingSocket;
                         }
                     }
@@ -1126,7 +1126,7 @@ internal static class Common
                         {
                             if (TestSend(t))
                             {
-                                Logger.LogDebug($"{nameof(AtLeastOneSocketEstablished)} returning true: {Logger.MaskName(t.MachineName)}");
+                                Logger.LogDebug($"{nameof(AtLeastOneSocketEstablished)} returning true: {t.MachineName}");
                                 return true;
                             }
                         }
@@ -1216,7 +1216,7 @@ internal static class Common
         if (machineCt < 2 && MachineStuff.Settings != null && (MachineStuff.Settings.GetCurrentPage() is SetupPage1 || MachineStuff.Settings.GetCurrentPage() is SetupPage2b))
         {
             MachineStuff.MachineMatrix = new string[MachineStuff.MAX_MACHINE] { Common.MachineName.Trim(), desMachine, string.Empty, string.Empty };
-            Logger.LogDebug("UpdateSetupMachineMatrix: " + string.Join(",", MachineStuff.MachineMatrix.Select(Logger.MaskName)));
+            Logger.LogDebug("UpdateSetupMachineMatrix: " + string.Join(",", MachineStuff.MachineMatrix));
 
             Common.DoSomethingInUIThread(
                 () =>
@@ -1368,7 +1368,7 @@ internal static class Common
         try
         {
             machine_Name = Dns.GetHostName();
-            Logger.LogDebug("GetHostName = " + Logger.MaskName(machine_Name));
+            Logger.LogDebug("GetHostName = " + machine_Name);
         }
         catch (Exception e)
         {
@@ -1426,7 +1426,7 @@ internal static class Common
         }
         catch (SocketException e)
         {
-            Logger.Log($"{nameof(GetRemoteStringIP)}: {e.SocketErrorCode}");
+            Logger.Log($"{nameof(GetRemoteStringIP)}: {e.Message}");
 
             if (throwException)
             {

@@ -198,28 +198,20 @@ public sealed class AdvancedPasteFileTests : AdvancedPasteTestBase
         }
         else
         {
-            SelectAction(OpenAdvancedPasteForWindow(new IntPtr(explorer.WindowHandle)), action, useKeyboard: true);
+            SelectAction(OpenAdvancedPasteForWindow(new IntPtr(explorer.WindowHandle)), action);
         }
 
         // Reading CF_HDROP opens the clipboard and can race Explorer's actual Ctrl+V.
         // Observe the destination first, then inspect the transferred clipboard data.
-        var delivery = WaitHelper.WaitForStable(
+        WaitUntil(
             () =>
             {
                 Assert.IsNotEmpty(GetModuleProcessIds(), $"Advanced Paste exited while '{action}' was running.");
                 return destination.EnumerateFiles().Any();
             },
-            hasFile => hasFile,
+            $"Explorer did not receive any file from '{action}'.",
             timeoutMS: 60_000,
             shouldRetryException: exception => exception is IOException);
-        if (!delivery.Succeeded)
-        {
-            var explorerHandle = new IntPtr(explorer.WindowHandle);
-            Assert.Fail(
-                $"Explorer did not receive any file from '{action}'. Foreground: {WindowControl.GetForegroundWindowInfo()}; " +
-                $"Explorer {explorerHandle} file view focused: {WindowControl.IsKeyboardFocusWithinClass(explorerHandle, "SHELLDLL_DefView")}; " +
-                $"Advanced Paste visible: {IsAdvancedPasteVisible()}; last error: {delivery.LastException}.");
-        }
 
         var result = WaitHelper.WaitForStable(
             () =>

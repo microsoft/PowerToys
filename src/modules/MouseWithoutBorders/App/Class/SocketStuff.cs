@@ -332,7 +332,7 @@ namespace MouseWithoutBorders.Class
                 {
                     if (byUser)
                     {
-                        Common.ShowToolTip(errCode.ToString(CultureInfo.CurrentCulture) + ": " + openSocketErr.Message, 5000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: $"{errCode}: {openSocketErr.GetType().Name}");
+                        Common.ShowToolTip(errCode.ToString(CultureInfo.CurrentCulture) + ": " + openSocketErr.Message, 5000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
                     }
                 }
 
@@ -730,7 +730,7 @@ namespace MouseWithoutBorders.Class
             }
             catch (SocketException e)
             {
-                Logger.Log($"{nameof(GetMachineNameFromSocket)}: {e.SocketErrorCode}");
+                Logger.Log($"{nameof(GetMachineNameFromSocket)}: {e.Message}");
                 return stringIP;
             }
 
@@ -741,7 +741,7 @@ namespace MouseWithoutBorders.Class
 
                 if (dotPos > 0)
                 {
-                    Logger.LogDebug("Removing domain part from the full machine name: {0}.", Logger.MaskName(name));
+                    Logger.LogDebug("Removing domain part from the full machine name: {0}.", name);
                     name = name[..dotPos];
                 }
             }
@@ -752,7 +752,7 @@ namespace MouseWithoutBorders.Class
         private void AddSocket(Socket s)
         {
             string machineName = GetMachineNameFromSocket(s);
-            Logger.Log($"New connection from client: [{Logger.MaskName(machineName)}].");
+            Logger.Log($"New connection from client: [{machineName}].");
             TcpSk tcp = AddTcpSocket(false, s, SocketStatus.Connecting, machineName);
             StartNewTcpServer(tcp, machineName);
         }
@@ -795,7 +795,7 @@ namespace MouseWithoutBorders.Class
             {
                 if (MachineStuff.MachineMatrix != null)
                 {
-                    Logger.LogDebug("MachineMatrix = " + string.Join(", ", MachineStuff.MachineMatrix.Select(Logger.MaskName)));
+                    Logger.LogDebug("MachineMatrix = " + string.Join(", ", MachineStuff.MachineMatrix));
 
                     foreach (string st in MachineStuff.MachineMatrix)
                     {
@@ -809,7 +809,7 @@ namespace MouseWithoutBorders.Class
 
                             if (found)
                             {
-                                Logger.LogDebug(Logger.MaskName(machineName) + " is already connected! ^^^^^^^^^^^^^^^^^^^^^");
+                                Logger.LogDebug(machineName + " is already connected! ^^^^^^^^^^^^^^^^^^^^^");
                                 continue;
                             }
 
@@ -887,7 +887,7 @@ namespace MouseWithoutBorders.Class
                 Socket dummySocket = new(AddressFamily.Unspecified, SocketType.Stream, ProtocolType.Tcp);
                 TcpSk dummyTcp = AddTcpSocket(true, dummySocket, SocketStatus.Resolving, machineName);
 
-                Logger.LogDebug("Connecting to: " + Logger.MaskName(machineName));
+                Logger.LogDebug("Connecting to: " + machineName);
 
                 if (HasName2IpMappingRules(Setting.Values.Name2IpPolicyList, Setting.Values.Name2IP))
                 {
@@ -914,9 +914,9 @@ namespace MouseWithoutBorders.Class
                     {
                         useName2IP = true;
 
-                        Logger.LogDebug("Using both user-defined Name-to-IP mappings and DNS result for " + Logger.MaskName(machineName));
+                        Logger.LogDebug("Using both user-defined Name-to-IP mappings and DNS result for " + machineName);
 
-                        Common.ShowToolTip("Using both user-defined Name-to-IP mappings and DNS result for " + machineName, 3000, ToolTipIcon.Info, false, logText: "Using both user-defined Name-to-IP mappings and DNS result for " + Logger.MaskName(machineName));
+                        Common.ShowToolTip("Using both user-defined Name-to-IP mappings and DNS result for " + machineName, 3000, ToolTipIcon.Info, false);
 
                         if (!CheckForSameSubNet(validatedAddresses, machineName))
                         {
@@ -942,9 +942,9 @@ namespace MouseWithoutBorders.Class
 
                     UpdateTcpSockets(dummyTcp, SocketStatus.Timeout);
 
-                    Common.ShowToolTip(e.Message + ": " + machineName, 10000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: $"{e.SocketErrorCode}: {Logger.MaskName(machineName)}");
+                    Common.ShowToolTip(e.Message + ": " + machineName, 10000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
 
-                    Logger.Log($"{nameof(StartNewTcpClient)}.{nameof(Dns.GetHostEntry)}: {e.SocketErrorCode}");
+                    Logger.Log($"{nameof(StartNewTcpClient)}.{nameof(Dns.GetHostEntry)}: {e.Message}");
                 }
 
                 UpdateTcpSockets(dummyTcp, SocketStatus.NA);
@@ -961,7 +961,7 @@ namespace MouseWithoutBorders.Class
 
                     foreach (IPAddress ip in host.AddressList)
                     {
-                        ipLog += "<" + Logger.MaskAddress(ip) + ">";
+                        ipLog += "<" + ip.ToString() + ">";
 
                         if ((ip.AddressFamily == AddressFamily.InterNetwork || ip.AddressFamily == AddressFamily.InterNetworkV6) && !validAddressesSt.Contains("[" + ip.ToString() + "]"))
                         {
@@ -970,7 +970,7 @@ namespace MouseWithoutBorders.Class
                         }
                     }
 
-                    Logger.LogDebug(Logger.MaskName(machineName) + ipLog);
+                    Logger.LogDebug(machineName + ipLog);
                 }
 
                 if (validAddresses.Count > 0)
@@ -986,7 +986,7 @@ namespace MouseWithoutBorders.Class
                         {
                             if (IsBadIP(machineName, ip))
                             {
-                                Logger.Log($"Skip bad IP address: {Logger.MaskAddress(ip)}");
+                                Logger.Log($"Skip bad IP address: {ip}");
                                 continue;
                             }
 
@@ -1001,18 +1001,18 @@ namespace MouseWithoutBorders.Class
                                 }
                                 else
                                 {
-                                    Logger.Log($"DNS information of machine not matched: {Logger.MaskName(machineName)} => {Logger.MaskAddress(ip)} => {Logger.MaskName(hn)}.");
+                                    Logger.Log($"DNS information of machine not matched: {machineName} => {ip} => {hn}.");
                                     AddBadIP(machineName, ip);
                                 }
                             }
                             catch (SocketException se)
                             {
-                                Logger.Log($"{nameof(StartNewTcpClient)}: DNS information of machine not matched: {Logger.MaskName(machineName)} => {Logger.MaskAddress(ip)} => {se.SocketErrorCode}.");
+                                Logger.Log($"{nameof(StartNewTcpClient)}: DNS information of machine not matched: {machineName} => {ip} => {se.Message}.");
                                 AddBadIP(machineName, ip);
                             }
                             catch (ArgumentException ae)
                             {
-                                Logger.Log($"{nameof(StartNewTcpClient)}: DNS information of machine not matched: {Logger.MaskName(machineName)} => {Logger.MaskAddress(ip)} => {ae.GetType().Name} ({ae.HResult}).");
+                                Logger.Log($"{nameof(StartNewTcpClient)}: DNS information of machine not matched: {machineName} => {ip} => {ae.Message}.");
                                 AddBadIP(machineName, ip);
                             }
                         }
@@ -1033,11 +1033,11 @@ namespace MouseWithoutBorders.Class
                 }
                 else
                 {
-                    Logger.Log("Cannot resolve IPv4 Addresses of machine: " + Logger.MaskName(machineName));
+                    Logger.Log("Cannot resolve IPv4 Addresses of machine: " + machineName);
 
                     if (!useName2IP)
                     {
-                        Common.ShowToolTip($"Cannot resolve IP Address of the remote machine: {machineName}.\r\nPlease fix your DNS or use the Mapping option in the Settings form.", 10000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: $"Cannot resolve IP Address of the remote machine: {Logger.MaskName(machineName)}.");
+                        Common.ShowToolTip($"Cannot resolve IP Address of the remote machine: {machineName}.\r\nPlease fix your DNS or use the Mapping option in the Settings form.", 10000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
                     }
                 }
             }
@@ -1061,7 +1061,7 @@ namespace MouseWithoutBorders.Class
 
             if (!remoteIPv4Addresses.Any())
             {
-                Logger.Log($"No IPv4 resolved from the remote machine: {Logger.MaskName(machineName)}.");
+                Logger.Log($"No IPv4 resolved from the remote machine: {machineName}.");
                 return true;
             }
 
@@ -1069,7 +1069,7 @@ namespace MouseWithoutBorders.Class
 
             if (localIPv4Addresses.Count == 0)
             {
-                Logger.Log($"No IPv4 resolved from the local machine: {Logger.MaskName(Common.MachineName)}");
+                Logger.Log($"No IPv4 resolved from the local machine: {Common.MachineName}");
                 return true;
             }
 
@@ -1088,7 +1088,7 @@ namespace MouseWithoutBorders.Class
                 }
             }
 
-            Logger.Log($"Skip machine not in the same network: {Logger.MaskName(machineName)}.");
+            Logger.Log($"Skip machine not in the same network: {machineName}.");
 
             return false;
         }
@@ -1130,13 +1130,13 @@ namespace MouseWithoutBorders.Class
 
                     if (Common.IsConnectedByAClientSocketTo(machineName))
                     {
-                        Logger.LogDebug(Logger.MaskName(machineName) + " is already connected by another client socket.");
+                        Logger.LogDebug(machineName + " is already connected by another client socket.");
                         return;
                     }
 
                     if (Common.IsConnectingByAClientSocketTo(machineName, ip))
                     {
-                        Logger.LogDebug($"{Logger.MaskName(machineName)}:{Logger.MaskAddress(ip)} is already being connected by another client socket.");
+                        Logger.LogDebug($"{machineName}:{ip} is already being connected by another client socket.");
                         return;
                     }
 
@@ -1145,7 +1145,7 @@ namespace MouseWithoutBorders.Class
                     // Update the other server socket's machine name based on this corresponding client socket.
                     UpdateTcpSockets(tcp, SocketStatus.Connecting);
 
-                    Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, "=====> Connecting to: {0}:{1}", Logger.MaskName(machineName), Logger.MaskAddress(ip)));
+                    Logger.LogDebug(string.Format(CultureInfo.CurrentCulture, "=====> Connecting to: {0}:{1}", machineName, ip.ToString()));
 
                     long timeoutLeft;
 
@@ -1158,7 +1158,7 @@ namespace MouseWithoutBorders.Class
                         catch (ObjectDisposedException)
                         {
                             // When user reconnects.
-                            Logger.LogDebug($"tcpClient.Connect: The socket has already been disposed: {Logger.MaskName(machineName)}:{Logger.MaskAddress(ip)}");
+                            Logger.LogDebug($"tcpClient.Connect: The socket has already been disposed: {machineName}:{ip}");
                             return;
                         }
                         catch (SocketException e)
@@ -1167,17 +1167,17 @@ namespace MouseWithoutBorders.Class
 
                             if (timeoutLeft > 0)
                             {
-                                Logger.LogDebug($"tcpClient.Connect: {timeoutLeft}: {e.SocketErrorCode}");
+                                Logger.LogDebug($"tcpClient.Connect: {timeoutLeft}: {e.Message}");
                                 Thread.Sleep(1000);
                                 continue;
                             }
                             else
                             {
-                                Logger.Log($"tcpClient.Connect: Unable to connect after a timeout: {Logger.MaskName(machineName)}:{Logger.MaskAddress(ip)} : {e.SocketErrorCode}");
+                                Logger.Log($"tcpClient.Connect: Unable to connect after a timeout: {machineName}:{ip} : {e.Message}");
 
                                 string message = $"Connection timed out: {machineName}:{ip}";
 
-                                Common.ShowToolTip(message, 5000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: $"Connection timed out: {Logger.MaskName(machineName)}:{Logger.MaskAddress(ip)}");
+                                Common.ShowToolTip(message, 5000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
 
                                 UpdateTcpSockets(tcp, SocketStatus.Timeout);
                                 return;
@@ -1188,7 +1188,7 @@ namespace MouseWithoutBorders.Class
                     }
                     while (true);
 
-                    Logger.LogDebug($"=====> Connected: {Logger.MaskEndpoint((IPEndPoint)tcpClient.Client.LocalEndPoint)} => {Logger.MaskName(machineName)}: {Logger.MaskAddress(ip)}");
+                    Logger.LogDebug($"=====> Connected: {tcpClient.Client.LocalEndPoint} => {machineName}: {ip}");
 
                     // Sending/Receiving packages
                     MainTCPRoutine(tcp, machineName, true);
@@ -1200,16 +1200,15 @@ namespace MouseWithoutBorders.Class
                 catch (SocketException e)
                 {
                     // DHCP error, etc.
-                    var localEndpoint = (IPEndPoint)tcpClient?.Client?.LocalEndPoint;
-                    string localIP = localEndpoint?.ToString();
+                    string localIP = tcpClient?.Client?.LocalEndPoint?.ToString();
 
                     if (localIP != null && (localIP.StartsWith("169.254", StringComparison.InvariantCulture) || localIP.ToString().StartsWith("0.0", StringComparison.InvariantCulture)))
                     {
-                        Common.ShowToolTip($"Error: The machine has limited connectivity on [{localIP}].", 5000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: $"Error: The machine has limited connectivity on [{Logger.MaskEndpoint(localEndpoint)}].");
+                        Common.ShowToolTip($"Error: The machine has limited connectivity on [{localIP}].", 5000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
                     }
                     else
                     {
-                        Logger.TelemetryLogTrace($"{nameof(StartNewTcpClientThread)}: Error: {e.SocketErrorCode} on the IP Address: {Logger.MaskEndpoint(localEndpoint)}", SeverityLevel.Error);
+                        Logger.TelemetryLogTrace($"{nameof(StartNewTcpClientThread)}: Error: {e.Message} on the IP Address: {localIP}", SeverityLevel.Error);
                     }
                 }
                 catch (Exception e)
@@ -1303,7 +1302,7 @@ namespace MouseWithoutBorders.Class
                 strIP = Common.GetRemoteStringIP(currentSocket, true);
                 remoteMachine = string.IsNullOrEmpty(machineName) ? GetMachineNameFromSocket(currentSocket) : machineName;
 
-                Logger.LogDebug($"MainTCPRoutine: Remote machineName/IP = {Logger.MaskName(remoteMachine)}/{Logger.MaskAddress(strIP)}");
+                Logger.LogDebug($"MainTCPRoutine: Remote machineName/IP = {remoteMachine}/{strIP}");
             }
             catch (ObjectDisposedException e)
             {
@@ -1333,12 +1332,12 @@ namespace MouseWithoutBorders.Class
                     {
                         errCount++;
 
-                        string log = $"{nameof(MainTCPRoutine)}.TcpReceive error, invalid package from {Logger.MaskName(remoteMachine)}: {receivedCount}";
+                        string log = $"{nameof(MainTCPRoutine)}.TcpReceive error, invalid package from {remoteMachine}: {receivedCount}";
                         Logger.Log(log);
 
                         if (receivedCount > 0)
                         {
-                            Common.ShowToolTip($"Invalid package from {remoteMachine}. Ensure the security keys are the same in both machines.", 5000, ToolTipIcon.Warning, false, logText: $"Invalid package from {Logger.MaskName(remoteMachine)}.");
+                            Common.ShowToolTip($"Invalid package from {remoteMachine}. Ensure the security keys are the same in both machines.", 5000, ToolTipIcon.Warning, false);
                         }
 
                         if (errCount > 5)
@@ -1413,7 +1412,7 @@ namespace MouseWithoutBorders.Class
 
                                     if (!remoteMachine.Equals(claimedMachineName, StringComparison.Ordinal))
                                     {
-                                        Logger.LogDebug($"DNS.RemoteMachineName({Logger.MaskName(remoteMachine)}) <> Claimed.MachineName({Logger.MaskName(claimedMachineName)}), using the claimed machine name.");
+                                        Logger.LogDebug($"DNS.RemoteMachineName({remoteMachine}) <> Claimed.MachineName({claimedMachineName}), using the claimed machine name.");
                                         remoteMachine = claimedMachineName;
                                         currentTcp.MachineName = remoteMachine;
                                     }
@@ -1421,7 +1420,7 @@ namespace MouseWithoutBorders.Class
                                     // Double check to avoid a redundant client socket.
                                     if (isClient && Common.IsConnectedByAClientSocketTo(remoteMachine))
                                     {
-                                        Logger.LogDebug("=====> Duplicate connected client socket for: " + Logger.MaskName(remoteMachine) + ":" + Logger.MaskAddress(strIP) + " is being removed.");
+                                        Logger.LogDebug("=====> Duplicate connected client socket for: " + remoteMachine + ":" + strIP + " is being removed.");
                                         UpdateTcpSockets(currentTcp, SocketStatus.ForceClosed);
                                         currentSocket.Close();
                                         return;
@@ -1429,7 +1428,7 @@ namespace MouseWithoutBorders.Class
 
                                     if (remoteMachine.Equals(Common.MachineName, StringComparison.OrdinalIgnoreCase))
                                     {
-                                        Logger.LogDebug("Connected to/from local socket: " + Logger.MaskAddress(strIP) + (isClient ? "-Client" : "-Server"));
+                                        Logger.LogDebug("Connected to/from local socket: " + strIP + (isClient ? "-Client" : "-Server"));
                                         UpdateTcpSockets(currentTcp, SocketStatus.NA);
                                         Common.MMSleep(1);
                                         currentSocket.Close();
@@ -1441,18 +1440,18 @@ namespace MouseWithoutBorders.Class
                                     currentTcp.MachineId = (uint)remoteID;
                                     currentTcp.Status = SocketStatus.Connected;
                                     UpdateTcpSockets(currentTcp, SocketStatus.Connected);
-                                    Logger.LogDebug("))))))))))))))) Machine got trusted: " + Logger.MaskName(remoteMachine) + ":" + Logger.MaskAddress(strIP) + ", Is client: " + isClient);
+                                    Logger.LogDebug("))))))))))))))) Machine got trusted: " + remoteMachine + ":" + strIP + ", Is client: " + isClient);
 
                                     if (Math.Abs(Common.GetTick() - Common.LastReconnectByHotKeyTime) < 5000)
                                     {
-                                        Common.ShowToolTip("Connected to " + remoteMachine, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus, logText: "Connected to " + Logger.MaskName(remoteMachine));
+                                        Common.ShowToolTip("Connected to " + remoteMachine, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus);
                                     }
 
                                     Common.SendHeartBeat(initial: true);
 
                                     if (MachineStuff.MachinePool.TryFindMachineByName(remoteMachine, out MachineInf machineInfo))
                                     {
-                                        Logger.LogDebug("Machine updated: " + Logger.MaskName(remoteMachine) + "/" + remoteID.ToString());
+                                        Logger.LogDebug("Machine updated: " + remoteMachine + "/" + remoteID.ToString());
 
                                         if (machineInfo.Name.Equals(MachineStuff.DesMachineName, StringComparison.OrdinalIgnoreCase))
                                         {
@@ -1466,11 +1465,11 @@ namespace MouseWithoutBorders.Class
                                     }
                                     else
                                     {
-                                        Logger.LogDebug("New machine connected: {0}.", Logger.MaskName(remoteMachine));
+                                        Logger.LogDebug("New machine connected: {0}.", remoteMachine);
 
                                         if (!Common.RunOnLogonDesktop && !Common.RunOnScrSaverDesktop)
                                         {
-                                            Common.ShowToolTip("Connected to new machine " + remoteMachine, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus, logText: "Connected to new machine " + Logger.MaskName(remoteMachine));
+                                            Common.ShowToolTip("Connected to new machine " + remoteMachine, 1000, ToolTipIcon.Info, Setting.Values.ShowClipNetStatus);
                                         }
                                     }
 
@@ -1481,7 +1480,7 @@ namespace MouseWithoutBorders.Class
                                 }
                                 else
                                 {
-                                    Logger.LogDebug("Invalid ACK from " + Logger.MaskName(remoteMachine));
+                                    Logger.LogDebug("Invalid ACK from " + remoteMachine);
                                     UpdateTcpSockets(currentTcp, SocketStatus.InvalidKey);
 
                                     string remoteEP = currentSocket.RemoteEndPoint.ToString();
@@ -1534,7 +1533,7 @@ namespace MouseWithoutBorders.Class
                             if (lastRemoteMachineID != (long)remoteID)
                             {
                                 _ = Interlocked.Exchange(ref lastRemoteMachineID, (long)remoteID);
-                                Logger.LogDebug($"MainTCPRoutine: Remote machine = {Logger.MaskAddress(strIP)}/{lastRemoteMachineID}");
+                                Logger.LogDebug($"MainTCPRoutine: Remote machine = {strIP}/{lastRemoteMachineID}");
                             }
 
                             if (package.Type == PackageType.HandshakeAck)
@@ -1634,9 +1633,8 @@ namespace MouseWithoutBorders.Class
         {
             try
             {
-                var remoteSocketEndpoint = (IPEndPoint)s.RemoteEndPoint;
-                string remoteEndPoint = remoteSocketEndpoint.ToString();
-                Logger.LogDebug("SendClipboardData: Request accepted: " + Logger.MaskEndpoint((IPEndPoint)s.LocalEndPoint) + "/" + Logger.MaskEndpoint(remoteSocketEndpoint));
+                string remoteEndPoint = s.RemoteEndPoint.ToString();
+                Logger.LogDebug("SendClipboardData: Request accepted: " + s.LocalEndPoint.ToString() + "/" + remoteEndPoint);
                 DragDrop.IsDropping = false;
                 DragDrop.IsDragging = false;
                 DragDrop.DragMachine = (ID)1;
@@ -1652,7 +1650,7 @@ namespace MouseWithoutBorders.Class
                 }
                 else
                 {
-                    Logger.LogDebug($"{nameof(SendOrReceiveClipboardData)}: Clipboard connection accepted: " + Logger.MaskName(remoteEndPoint));
+                    Logger.LogDebug($"{nameof(SendOrReceiveClipboardData)}: Clipboard connection accepted: " + remoteEndPoint);
                     Common.SetToggleIcon(new int[Common.TOGGLE_ICONS_SIZE] { Common.ICON_SMALL_CLIPBOARD, -1, -1, -1 });
                 }
 
@@ -1682,144 +1680,63 @@ namespace MouseWithoutBorders.Class
             const int CLOSE_TIMEOUT = 10;
             byte[] header = new byte[1024];
             string headerString = string.Empty;
-            if (Clipboard.TryAcquireLastDragDropFile(
-                out string lastDragDropFile,
-                out LocalPathLease pathLease,
-                out bool isDirectory,
-                out bool requiresLease))
+            if (Clipboard.LastDragDropFile != null)
             {
-                string leaseValidationHeader = null;
-                if (requiresLease)
+                string fileName = null;
+
+                if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
                 {
-                    if (!LocalPathLease.TryCreate(lastDragDropFile, out pathLease))
+                    if (!File.Exists(Clipboard.LastDragDropFile))
                     {
-                        leaseValidationHeader = $"{0}*{lastDragDropFile} not found or unavailable!";
+                        headerString = Directory.Exists(Clipboard.LastDragDropFile)
+                            ? $"{0}*{Clipboard.LastDragDropFile} - Folder is not supported, zip it first!"
+                            : Clipboard.LastDragDropFile.Contains("- File too big")
+                                ? $"{0}*{Clipboard.LastDragDropFile}"
+                                : $"{0}*{Clipboard.LastDragDropFile} not found!";
                     }
-                    else if (pathLease.IsDirectory)
+                    else
                     {
-                        pathLease.Dispose();
-                        pathLease = null;
-                        leaseValidationHeader = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
+                        fileName = Clipboard.LastDragDropFile;
+                        headerString = $"{new FileInfo(fileName).Length}*{fileName}";
                     }
-                    else if (!Clipboard.IsClipboardFileSizeSupported(pathLease.Length))
-                    {
-                        pathLease.Dispose();
-                        pathLease = null;
-                        leaseValidationHeader = $"{0}*{lastDragDropFile} - File too big (greater than 100MB), please drag and drop the file instead!";
-                    }
+                }))
+                {
+                    s?.Close();
+                    return;
                 }
 
-                using (pathLease)
+                Common.GetBytesU(headerString).CopyTo(header, 0);
+
+                try
                 {
-                    string fileName = null;
-                    FileStream leasedFileStream = null;
+                    ecStream.Write(header, 0, header.Length);
 
-                    try
+                    if (!string.IsNullOrEmpty(fileName))
                     {
-                        if (leaseValidationHeader != null)
-                        {
-                            headerString = leaseValidationHeader;
-                        }
-                        else if (isDirectory)
-                        {
-                            headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
-                        }
-                        else if (pathLease != null)
-                        {
-                            if (pathLease.IsDirectory)
-                            {
-                                headerString = $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!";
-                            }
-                            else if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
-                            {
-                                try
-                                {
-                                    leasedFileStream = pathLease.OpenReadStream(Common.NETWORK_STREAM_BUF_SIZE);
-                                }
-                                catch (Exception e)
-                                {
-                                    Logger.Log(e);
-                                }
-                            })
-                                || leasedFileStream == null)
-                            {
-                                s?.Close();
-                                return;
-                            }
-                            else
-                            {
-                                headerString = $"{leasedFileStream.Length}*{lastDragDropFile}";
-                            }
-                        }
-                        else
-                        {
-                            if (!Launch.ImpersonateLoggedOnUserAndDoSomething(() =>
-                            {
-                                if (lastDragDropFile.Contains("- File too big"))
-                                {
-                                    headerString = $"{0}*{lastDragDropFile}";
-                                }
-                                else if (!File.Exists(lastDragDropFile))
-                                {
-                                    headerString = Directory.Exists(lastDragDropFile)
-                                        ? $"{0}*{lastDragDropFile} - Folder is not supported, zip it first!"
-                                        : $"{0}*{lastDragDropFile} not found!";
-                                }
-                                else
-                                {
-                                    fileName = lastDragDropFile;
-                                    headerString = $"{new FileInfo(fileName).Length}*{fileName}";
-                                }
-                            }))
-                            {
-                                s?.Close();
-                                return;
-                            }
-                        }
-
-                        Common.GetBytesU(headerString).CopyTo(header, 0);
-
-                        ecStream.Write(header, 0, header.Length);
-
-                        if (leasedFileStream != null)
-                        {
-                            if (SendFileEx(s, ecStream, leasedFileStream, lastDragDropFile))
-                            {
-                                s.Close(CLOSE_TIMEOUT);
-                            }
-                        }
-                        else if (!string.IsNullOrEmpty(fileName))
-                        {
-                            if (SendFile(s, ecStream, fileName))
-                            {
-                                s.Close(CLOSE_TIMEOUT);
-                            }
-                        }
-                        else
+                        if (SendFile(s, ecStream, fileName))
                         {
                             s.Close(CLOSE_TIMEOUT);
                         }
                     }
-                    catch (IOException e)
+                    else
                     {
-                        string log = $"{nameof(SendClipboardData)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                        Logger.Log(log);
+                        s.Close(CLOSE_TIMEOUT);
                     }
-                    catch (SocketException e)
-                    {
-                        string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the connection is closed by the remote host.";
-                        Logger.Log(log);
-                    }
-                    catch (ObjectDisposedException e)
-                    {
-                        string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the socket is disposed by a machine switch for ex..";
-                        Logger.Log(log);
-                    }
-                    finally
-                    {
-                        leasedFileStream?.Dispose();
-                        Clipboard.CompleteLastDragDropFileSend(pathLease);
-                    }
+                }
+                catch (IOException e)
+                {
+                    string log = $"{nameof(SendClipboardData)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
+                    Logger.Log(log);
+                }
+                catch (SocketException e)
+                {
+                    string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the connection is closed by the remote host.";
+                    Logger.Log(log);
+                }
+                catch (ObjectDisposedException e)
+                {
+                    string log = $"{nameof(SendClipboardData)}: {e.GetType()}/{e.Message}. This is expected when the socket is disposed by a machine switch for ex..";
+                    Logger.Log(log);
                 }
             }
             else if (!Clipboard.IsClipboardDataImage && Clipboard.LastClipboardData != null)
@@ -1896,62 +1813,50 @@ namespace MouseWithoutBorders.Class
         {
             try
             {
-                using FileStream fileStream = File.OpenRead(fileName);
-                return SendFileEx(s, ecStream, fileStream, fileName);
-            }
-            catch (Exception e)
-            {
-                return HandleSendFileException(s, e);
-            }
-        }
-
-        private static bool SendFileEx(Socket s, Stream ecStream, Stream fileStream, string fileName)
-        {
-            try
-            {
-                byte[] buf = new byte[Common.NETWORK_STREAM_BUF_SIZE];
-                int rv, sentCount = 0;
-
-                do
+                using (FileStream f = File.OpenRead(fileName))
                 {
-                    if ((rv = fileStream.Read(buf, 0, Common.NETWORK_STREAM_BUF_SIZE)) > 0)
+                    byte[] buf = new byte[Common.NETWORK_STREAM_BUF_SIZE];
+                    int rv, sentCount = 0;
+
+                    do
                     {
-                        ecStream.Write(buf, 0, rv);
-                        sentCount += rv;
+                        if ((rv = f.Read(buf, 0, Common.NETWORK_STREAM_BUF_SIZE)) > 0)
+                        {
+                            ecStream.Write(buf, 0, rv);
+                            sentCount += rv;
+                        }
                     }
-                }
-                while (rv > 0);
+                    while (rv > 0);
 
-                if ((rv = Package.PACKAGE_SIZE - (sentCount % Package.PACKAGE_SIZE)) > 0)
-                {
-                    Array.Clear(buf, 0, buf.Length);
-                    ecStream.Write(buf, 0, rv);
+                    if ((rv = Package.PACKAGE_SIZE - (sentCount % Package.PACKAGE_SIZE)) > 0)
+                    {
+                        Array.Clear(buf, 0, buf.Length);
+                        ecStream.Write(buf, 0, rv);
+                    }
+
+                    ecStream.Flush();
+
+                    Logger.LogDebug("File sent: " + fileName);
                 }
 
-                ecStream.Flush();
-                Logger.LogDebug("File sent: " + fileName);
                 return true;
             }
             catch (Exception e)
             {
-                return HandleSendFileException(s, e);
-            }
-        }
+                if (e is IOException)
+                {
+                    string log = $"{nameof(SendFileEx)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
+                    Logger.Log(log);
+                }
+                else
+                {
+                    Logger.Log(e);
+                }
 
-        private static bool HandleSendFileException(Socket s, Exception e)
-        {
-            if (e is IOException)
-            {
-                string log = $"{nameof(SendFileEx)}: Exception accessing the socket: {e.InnerException?.GetType()}/{e.Message}. (This is expected when the remote machine closes the connection during desktop switch or reconnection.)";
-                Logger.Log(log);
-            }
-            else
-            {
-                Logger.Log(e);
+                Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
+                s.Close();
             }
 
-            Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: Logger.FormatException(e));
-            s.Close();
             return false;
         }
 
@@ -2016,7 +1921,7 @@ namespace MouseWithoutBorders.Class
                     Logger.Log(e);
                 }
 
-                Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus, logText: Logger.FormatException(e));
+                Common.ShowToolTip(e.Message, 1000, ToolTipIcon.Warning, Setting.Values.ShowClipNetStatus);
                 ecStream.Close();
                 s.Close();
             }
@@ -2093,7 +1998,7 @@ namespace MouseWithoutBorders.Class
                             foreach (TcpSk t in tobeRemovedSockets)
                             {
                                 t.Status = SocketStatus.ForceClosed;
-                                Logger.LogDebug($"Closing duplicated socket {Logger.MaskName(t.MachineName)}: {Logger.MaskAddress(t.Address)}");
+                                Logger.LogDebug($"Closing duplicated socket {t.MachineName}: {t.Address}");
                             }
                         }
 

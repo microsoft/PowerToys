@@ -171,7 +171,7 @@ internal static class Event
         if (!Common.IsConnectedTo(newDesMachineID))
         {
             // Connection lost, cancel switching
-            Logger.LogDebug("No active connection found for " + Logger.MaskName(newDesMachineName));
+            Logger.LogDebug("No active connection found for " + newDesMachineName);
 
             // ShowToolTip("No active connection found for [" + newDesMachineName + "]!", 500);
         }
@@ -206,7 +206,7 @@ internal static class Event
             // Change des machine
             if (MachineStuff.desMachineID != newDesMachineID)
             {
-                Logger.LogDebug("MouseEvent: Switching to new machine:" + Logger.MaskName(newDesMachineName));
+                Logger.LogDebug("MouseEvent: Switching to new machine:" + newDesMachineName);
 
                 // Ask current machine to hide the Mouse cursor
                 if (newDesMachineID != ID.ALL && MachineStuff.desMachineID != Common.MachineID)

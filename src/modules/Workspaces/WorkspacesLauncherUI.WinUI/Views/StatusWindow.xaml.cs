@@ -3,15 +3,12 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Globalization;
-using System.IO;
 using System.Runtime.InteropServices;
 
 using ManagedCommon;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 
-using WorkspacesLauncherUI.Helpers;
 using WorkspacesLauncherUI.ViewModels;
 using WorkspacesLauncherUI.Views;
 
@@ -26,7 +23,6 @@ namespace WorkspacesLauncherUI
         public StatusWindow(MainViewModel mainViewModel)
         {
             this.InitializeComponent();
-            RootGrid.FlowDirection = CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
             StatusPageView.Initialize(mainViewModel);
 
             ExtendsContentIntoTitleBar = true;
@@ -46,7 +42,7 @@ namespace WorkspacesLauncherUI
             }
 
             appWindow.Resize(new Windows.Graphics.SizeInt32(width, height));
-            appWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "Workspaces.ico"));
+            appWindow.SetIcon("Assets/Workspaces/Workspaces.ico");
 
             if (appWindow.Presenter is OverlappedPresenter presenter)
             {
@@ -84,8 +80,9 @@ namespace WorkspacesLauncherUI
             var displayArea = DisplayArea.GetFromWindowId(appWindow.Id, DisplayAreaFallback.Nearest);
             if (displayArea != null)
             {
-                var bounds = WindowPlacement.GetCenteredBounds(displayArea.WorkArea, appWindow.Size);
-                appWindow.Move(new Windows.Graphics.PointInt32(bounds.X, bounds.Y));
+                int centerX = displayArea.WorkArea.X + ((displayArea.WorkArea.Width - appWindow.Size.Width) / 2);
+                int centerY = displayArea.WorkArea.Y + ((displayArea.WorkArea.Height - appWindow.Size.Height) / 2);
+                appWindow.Move(new Windows.Graphics.PointInt32(centerX, centerY));
             }
         }
 
@@ -96,12 +93,6 @@ namespace WorkspacesLauncherUI
 
         private void Window_Closed(object sender, WindowEventArgs args)
         {
-            if (StatusPageView.ViewModel?.IsCancellationPending == true)
-            {
-                args.Handled = true;
-                return;
-            }
-
             StatusPageView.ViewModel?.Dispose();
             (Application.Current as App)?.OnMainWindowClosed();
         }

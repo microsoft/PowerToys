@@ -8,7 +8,6 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.CmdPal.Common.Helpers;
 using Microsoft.CmdPal.Common.Text;
 using Microsoft.CmdPal.UI.ViewModels.Messages;
-using Microsoft.CmdPal.UI.ViewModels.Models;
 using Microsoft.CmdPal.UI.ViewModels.Services;
 using Microsoft.CmdPal.UI.ViewModels.Settings;
 using Microsoft.CommandPalette.Extensions;
@@ -20,10 +19,8 @@ using WyHash;
 namespace Microsoft.CmdPal.UI.ViewModels;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
+public partial class TopLevelViewModel : ObservableObject, IListItem, IExtendedAttributesProvider, IPrecomputedListItem, ICommandContextSource
 {
-    private static readonly ExtensionObject<IFallbackQueryHandler> EmptyFallbackQueryHandler = new(null);
-
     private readonly ISettingsService _settingsService;
     private readonly IServiceProvider _serviceProvider;
     private readonly CommandItemViewModel _commandItemViewModel;
@@ -60,7 +57,7 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
 
     public string ExtensionName => ExtensionHost.GetExtensionDisplayName() ?? string.Empty;
 
-    public override CommandViewModel CommandViewModel => _commandItemViewModel.Command;
+    public CommandViewModel CommandViewModel => _commandItemViewModel.Command;
 
     public CommandItemViewModel ItemViewModel => _commandItemViewModel;
 
@@ -69,9 +66,9 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
     public IconInfoViewModel IconViewModel => _commandItemViewModel.Icon;
 
     ////// ICommandItem
-    public virtual string Title => _commandItemViewModel.Title;
+    public string Title => _commandItemViewModel.Title;
 
-    public virtual string Subtitle => _commandItemViewModel.Subtitle;
+    public string Subtitle => _commandItemViewModel.Subtitle;
 
     public IIconInfo Icon => (IIconInfo)IconViewModel;
 
@@ -96,28 +93,9 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
     // Fallback items
     public virtual string DisplayTitle => string.Empty;
 
-    internal virtual bool IsFallbackV2 => false;
-
-    internal virtual ExtensionObject<IFallbackQueryHandler> FallbackQueryHandler => EmptyFallbackQueryHandler;
-
-    internal bool HasFallbackQueryHandler => FallbackQueryHandler.HasValue;
-
-    internal bool IsPassiveFallback => IsFallbackV2 && !HasFallbackQueryHandler;
-
     internal string FallbackKey => $"{CommandProviderId}\0{Id}";
 
     internal bool IncludeInGlobalResults => GetFallbackSettings()?.IncludeInGlobalResults == true;
-
-    internal uint EffectiveQueryDelayMilliseconds => GetFallbackSettings()?.QueryDelayMilliseconds
-        ?? 0;
-
-    internal uint EffectiveMinimumQueryLength => GetFallbackSettings()?.MinimumQueryLength
-        ?? 0;
-
-    internal uint EffectiveMaximumVisibleItemCount => Math.Clamp(
-        GetFallbackSettings()?.MaximumVisibleItemCount ?? FallbackResultQueryManager.InitialRequestedItemCount,
-        FallbackSettings.MinimumItemCount,
-        FallbackSettings.MaximumItemCount);
 
     public HotkeySettings? Hotkey
     {
@@ -247,7 +225,7 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
         ItemViewModel.SlowInitializeProperties();
     }
 
-    protected virtual void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    private void Item_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (!string.IsNullOrEmpty(e.PropertyName))
         {
@@ -401,25 +379,7 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
         }
     }
 
-    internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery, string queryId, CancellationToken queryToken) => false;
-
-    internal virtual bool MatchesPassiveQuery(string query) => false;
-
-    internal virtual bool PreparePassiveFallback(string query, string queryId, bool matches, CancellationToken queryToken) => false;
-
-    protected void NotifyItemChanged(string propertyName)
-    {
-        if (propertyName == nameof(Title))
-        {
-            _titleCache.Invalidate();
-        }
-        else if (propertyName == nameof(Subtitle))
-        {
-            _subtitleCache.Invalidate();
-        }
-
-        PropChanged?.Invoke(this, new PropChangedEventArgs(propertyName));
-    }
+    internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery) => false;
 
     private FallbackSettings? GetFallbackSettings()
     {
@@ -431,7 +391,7 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
 
     public PerformCommandMessage GetPerformCommandMessage()
     {
-        return new PerformCommandMessage(CommandViewModel, new Models.ExtensionObject<IListItem>(this));
+        return new PerformCommandMessage(this.CommandViewModel, new Models.ExtensionObject<IListItem>(this));
     }
 
     public override string ToString()

@@ -13,17 +13,16 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Management.Deployment;
 using WorkspacesCsharpLibrary;
-using WorkspacesLauncherUI.Data;
 
 namespace WorkspacesLauncherUI.Helpers
 {
     internal static class IconHelper
     {
-        public static BitmapImage TryGetApplicationIcon(ApplicationWrapper application)
+        public static BitmapImage TryGetApplicationIcon(string path, string packageFullName, string pwaAppId)
         {
-            return TryGetPwaIcon(application.PwaAppId, application.ApplicationPath, application.AppUserModelId) ??
-                   TryGetPackagedAppIcon(application.PackageFullName) ??
-                   TryGetExecutableIcon(application.ApplicationPath) ??
+            return TryGetPackagedAppIcon(packageFullName) ??
+                   TryGetPwaIcon(pwaAppId) ??
+                   TryGetExecutableIcon(path) ??
                    TryLoadImageFile(Path.Combine(AppContext.BaseDirectory, "Assets", "Workspaces", "DefaultIcon.ico"));
         }
 
@@ -50,14 +49,14 @@ namespace WorkspacesLauncherUI.Helpers
             }
         }
 
-        private static BitmapImage TryGetPwaIcon(string pwaAppId, string browserPath, string appUserModelId)
+        private static BitmapImage TryGetPwaIcon(string pwaAppId)
         {
             if (string.IsNullOrWhiteSpace(pwaAppId))
             {
                 return null;
             }
 
-            return TryLoadImageFile(PwaHelper.GetPwaIconFilename(pwaAppId, browserPath, appUserModelId));
+            return TryLoadImageFile(PwaHelper.GetPwaIconFilename(pwaAppId));
         }
 
         private static BitmapImage TryGetExecutableIcon(string path)

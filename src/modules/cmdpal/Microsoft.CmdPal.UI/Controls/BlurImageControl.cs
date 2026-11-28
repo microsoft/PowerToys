@@ -11,9 +11,6 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Media.Imaging;
-using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.UI;
 
 namespace Microsoft.CmdPal.UI.Controls;
@@ -97,20 +94,12 @@ internal sealed partial class BlurImageControl : Control
     private SpriteVisual? _effectVisual;
     private CompositionEffectBrush? _effectBrush;
     private CompositionSurfaceBrush? _imageBrush;
-    private CompositionBackdropBrush? _backdropBrush;
     private LoadedImageSurface? _lastLoadedSurface;
-    private IRandomAccessStream? _lastLoadedStream;
-    private Uri? _lastLoadedUri;
-    private DateTime? _lastLoadedFileWriteTime;
-    private bool _lastLoadedFromUri;
-    private Uri? _loadingUri;
-    private long _imageLoadVersion;
 
     public BlurImageControl()
     {
         this.DefaultStyleKey = typeof(BlurImageControl);
         this.Loaded += OnLoaded;
-        this.Unloaded += OnUnloaded;
         this.SizeChanged += OnSizeChanged;
     }
 
@@ -198,45 +187,7 @@ internal sealed partial class BlurImageControl : Control
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        if (_compositor is null)
-        {
-            InitializeComposition();
-        }
-    }
-
-    private void OnUnloaded(object sender, RoutedEventArgs e)
-    {
-        if (IsLoaded)
-        {
-            return;
-        }
-
-        ClearImageSurface();
-        var effectVisual = _effectVisual;
-        var effectBrush = _effectBrush;
-        var imageBrush = _imageBrush;
-        var backdropBrush = _backdropBrush;
-        _compositor = null;
-        _effectVisual = null;
-        _effectBrush = null;
-        _imageBrush = null;
-        _backdropBrush = null;
-
-        try
-        {
-            ElementCompositionPreview.SetElementChildVisual(this, null);
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to detach visual for BlurImageControl", ex);
-        }
-        finally
-        {
-            DisposeResource(effectVisual);
-            DisposeResource(effectBrush);
-            DisposeResource(imageBrush);
-            DisposeResource(backdropBrush);
-        }
+        InitializeComposition();
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -256,7 +207,8 @@ internal sealed partial class BlurImageControl : Control
             return;
         }
 
-        control.UpdateImageSource();
+        control.EnsureEffect(force: true);
+        control.UpdateEffect();
     }
 
     private void InitializeComposition()
@@ -275,14 +227,14 @@ internal sealed partial class BlurImageControl : Control
         UpdateEffect();
     }
 
-    private void EnsureEffect()
+    private void EnsureEffect(bool force = false)
     {
         if (_compositor is null)
         {
             return;
         }
 
-        if (_effectBrush is not null)
+        if (_effectBrush is not null && !force)
         {
             return;
         }
@@ -334,33 +286,23 @@ internal sealed partial class BlurImageControl : Control
 
         var effectFactory = _compositor.CreateEffectFactory(tintEffect, AnimatableProperties);
 
+        _effectBrush?.Dispose();
         _effectBrush = effectFactory.CreateBrush();
-        UpdateImageSource();
+
+        if (ImageSource is not null)
+        {
+            _imageBrush ??= _compositor.CreateSurfaceBrush();
+            LoadImageAsync(ImageSource);
+            _effectBrush.SetSourceParameter(ImageSourceParameterName, _imageBrush);
+        }
+        else
+        {
+            _effectBrush.SetSourceParameter(ImageSourceParameterName, _compositor.CreateBackdropBrush());
+        }
 
         if (_effectVisual is not null)
         {
             _effectVisual.Brush = _effectBrush;
-        }
-    }
-
-    private void UpdateImageSource()
-    {
-        if (_compositor is null || _effectBrush is null)
-        {
-            return;
-        }
-
-        if (ImageSource is BitmapImage { UriSource: not null } bitmapImage)
-        {
-            _imageBrush ??= _compositor.CreateSurfaceBrush();
-            _effectBrush.SetSourceParameter(ImageSourceParameterName, _imageBrush);
-            _ = LoadImageAsync(bitmapImage);
-        }
-        else
-        {
-            ClearImageSurface();
-            _backdropBrush ??= _compositor.CreateBackdropBrush();
-            _effectBrush.SetSourceParameter(ImageSourceParameterName, _backdropBrush);
         }
     }
 
@@ -422,118 +364,69 @@ internal sealed partial class BlurImageControl : Control
         props.InsertColor(TintColorEffectProperty, adjustedColor);
     }
 
-    private async Task LoadImageAsync(BitmapImage bitmapImage)
+    private void LoadImageAsync(ImageSource imageSource)
     {
-        var uri = bitmapImage.UriSource;
-        if (uri.Equals(_loadingUri))
-        {
-            return;
-        }
-
-        var version = ++_imageLoadVersion;
-        _loadingUri = uri;
-        LoadedImageSurface? loadedSurface = null;
-        IRandomAccessStream? loadedStream = null;
         try
         {
-            var lastWriteTime = uri.IsAbsoluteUri && uri.IsFile
-                ? await Task.Run(() => GetImageLastWriteTime(uri))
-                : null;
-            if (version != _imageLoadVersion || _imageBrush is null || CanReuseImage(uri, lastWriteTime))
+            if (imageSource is not Microsoft.UI.Xaml.Media.Imaging.BitmapImage bitmapImage)
             {
                 return;
             }
 
-            Logger.LogDebug($"Starting load of BlurImageControl from '{uri}'");
-            if (lastWriteTime is not null)
-            {
-                try
-                {
-                    // Snapshot the file to bypass URI caching and release the file before decoding.
-                    loadedStream = await Task.Run(() => ReadImageFileAsync(uri));
-                }
-                catch (Exception ex)
-                {
-                    if (version == _imageLoadVersion)
-                    {
-                        if (_lastLoadedFromUri && CanReuseImage(uri, lastWriteTime, allowUriFallback: true))
-                        {
-                            return;
-                        }
-
-                        Logger.LogWarning($"Failed to read image file for BlurImageControl; trying URI loading: {ex.Message}");
-                    }
-                }
-            }
-
-            if (version != _imageLoadVersion || _imageBrush is null)
+            _imageBrush ??= _compositor?.CreateSurfaceBrush();
+            if (_imageBrush is null)
             {
                 return;
             }
 
+            Logger.LogDebug($"Starting load of BlurImageControl from '{bitmapImage.UriSource}'");
+
+            // Each call to LoadImageAsync creates a new LoadedImageSurface backed by native
+            // composition resources. The old surface becomes unrooted once the brush points at
+            // the new one, so it isn't leaked, but dispose it explicitly so the unmanaged
+            // resources are released deterministically instead of waiting for finalization.
             var previousSurface = _lastLoadedSurface;
-            var previousStream = _lastLoadedStream;
 
-            var loadedFromUri = loadedStream is null;
-            loadedSurface = loadedStream is not null
-                ? LoadedImageSurface.StartLoadFromStream(loadedStream)
-                : LoadedImageSurface.StartLoadFromUri(uri);
+            var loadedSurface = LoadedImageSurface.StartLoadFromUri(bitmapImage.UriSource);
+            _lastLoadedSurface = loadedSurface;
             loadedSurface.LoadCompleted += OnLoadedSurfaceOnLoadCompleted;
             SetLoadedSurfaceToBrush(loadedSurface);
-            _lastLoadedSurface = loadedSurface;
-            _lastLoadedStream = loadedStream;
-            _lastLoadedUri = uri;
-            _lastLoadedFromUri = loadedFromUri;
+            _effectBrush?.SetSourceParameter(ImageSourceParameterName, _imageBrush);
 
-            // Track the attempted file version; URI fallback still needs to retry the file read.
-            _lastLoadedFileWriteTime = lastWriteTime;
-            loadedSurface = null;
-            loadedStream = null;
-
-            // Release the previous native resources after binding the replacement surface.
-            DisposeLoadedSurface(previousSurface);
-            DisposeResource(previousStream);
+            previousSurface?.Dispose();
         }
         catch (Exception ex)
         {
-            if (version == _imageLoadVersion)
-            {
-                ClearImageSurface();
-                Logger.LogError("Failed to load image for BlurImageControl", ex);
-            }
-        }
-        finally
-        {
-            DisposeLoadedSurface(loadedSurface);
-            DisposeResource(loadedStream);
-            if (version == _imageLoadVersion)
-            {
-                _loadingUri = null;
-            }
-        }
-    }
-
-    private void OnLoadedSurfaceOnLoadCompleted(LoadedImageSurface loadedSurface, LoadedImageSourceLoadCompletedEventArgs e)
-    {
-        if (!ReferenceEquals(loadedSurface, _lastLoadedSurface))
-        {
-            return;
+            Logger.LogError("Failed to load image for BlurImageControl: {0}", ex);
         }
 
-        // The surface is already bound to the brush and updates in place as it loads.
-        switch (e.Status)
+        return;
+
+        void OnLoadedSurfaceOnLoadCompleted(LoadedImageSurface loadedSurface, LoadedImageSourceLoadCompletedEventArgs e)
         {
-            case LoadedImageSourceLoadStatus.Success:
-                Logger.LogDebug("BlurImageControl loaded successfully");
-                break;
-            case LoadedImageSourceLoadStatus.NetworkError:
-            case LoadedImageSourceLoadStatus.InvalidFormat:
-            case LoadedImageSourceLoadStatus.Other:
-            default:
-                _lastLoadedUri = null;
-                _lastLoadedFileWriteTime = null;
-                Logger.LogError($"Failed to load image for BlurImageControl: Load status {e.Status}");
-                break;
+            switch (e.Status)
+            {
+                case LoadedImageSourceLoadStatus.Success:
+                    Logger.LogDebug($"BlurImageControl loaded successfully: has _imageBrush? {_imageBrush != null}");
+
+                    try
+                    {
+                        SetLoadedSurfaceToBrush(loadedSurface);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogError("Failed to set surface in BlurImageControl", ex);
+                        throw;
+                    }
+
+                    break;
+                case LoadedImageSourceLoadStatus.NetworkError:
+                case LoadedImageSourceLoadStatus.InvalidFormat:
+                case LoadedImageSourceLoadStatus.Other:
+                default:
+                    Logger.LogError($"Failed to load image for BlurImageControl: Load status {e.Status}");
+                    break;
+            }
         }
     }
 
@@ -545,110 +438,9 @@ internal sealed partial class BlurImageControl : Control
             return;
         }
 
+        surfaceBrush.Surface = loadedSurface;
         surfaceBrush.Stretch = ConvertStretch(ImageStretch);
         surfaceBrush.BitmapInterpolationMode = CompositionBitmapInterpolationMode.Linear;
-        surfaceBrush.Surface = loadedSurface;
-    }
-
-    private void ClearImageSurface()
-    {
-        var loadedSurface = _lastLoadedSurface;
-        var loadedStream = _lastLoadedStream;
-        _lastLoadedSurface = null;
-        _lastLoadedStream = null;
-        _lastLoadedUri = null;
-        _lastLoadedFileWriteTime = null;
-        _lastLoadedFromUri = false;
-        _loadingUri = null;
-        _imageLoadVersion++;
-
-        try
-        {
-            if (_imageBrush is not null)
-            {
-                _imageBrush.Surface = null;
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to clear image for BlurImageControl", ex);
-        }
-        finally
-        {
-            DisposeLoadedSurface(loadedSurface);
-            DisposeResource(loadedStream);
-        }
-    }
-
-    private void DisposeLoadedSurface(LoadedImageSurface? loadedSurface)
-    {
-        try
-        {
-            if (loadedSurface is not null)
-            {
-                loadedSurface.LoadCompleted -= OnLoadedSurfaceOnLoadCompleted;
-            }
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to detach image load handler for BlurImageControl", ex);
-        }
-        finally
-        {
-            DisposeResource(loadedSurface);
-        }
-    }
-
-    private static void DisposeResource(IDisposable? resource)
-    {
-        try
-        {
-            resource?.Dispose();
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError("Failed to dispose resource for BlurImageControl", ex);
-        }
-    }
-
-    private static DateTime? GetImageLastWriteTime(Uri uri)
-    {
-        try
-        {
-            var file = new FileInfo(uri.LocalPath);
-            return file.Exists ? file.LastWriteTimeUtc : null;
-        }
-        catch (Exception)
-        {
-            // File metadata is only a cache hint; loading reports image errors.
-            return null;
-        }
-    }
-
-    private bool CanReuseImage(Uri uri, DateTime? lastWriteTime, bool allowUriFallback = false)
-    {
-        return _lastLoadedSurface is not null
-            && uri.Equals(_lastLoadedUri)
-            && (lastWriteTime is null
-                || (lastWriteTime == _lastLoadedFileWriteTime && (allowUriFallback || !_lastLoadedFromUri)));
-    }
-
-    private static async Task<IRandomAccessStream> ReadImageFileAsync(Uri uri)
-    {
-        var file = await StorageFile.GetFileFromPathAsync(uri.LocalPath);
-        using var fileStream = await file.OpenAsync(FileAccessMode.Read, StorageOpenOptions.AllowReadersAndWriters);
-        var memory = new InMemoryRandomAccessStream();
-        try
-        {
-            await RandomAccessStream.CopyAsync(fileStream, memory);
-            memory.Seek(0);
-            return memory;
-        }
-        catch
-        {
-            DisposeResource(memory);
-            throw;
-        }
     }
 
     private static CompositionStretch ConvertStretch(Stretch stretch)

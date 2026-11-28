@@ -204,11 +204,11 @@ void dispatch_received_json(const std::wstring& json_to_parse)
     const bool ok = json::JsonObject::TryParse(json_to_parse, j);
     if (!ok)
     {
-        Logger::error(L"dispatch_received_json: got malformed json");
+        Logger::error(L"dispatch_received_json: got malformed json: {}", json_to_parse);
         return;
     }
 
-    Logger::info(L"dispatch_received_json: received message");
+    Logger::info(L"dispatch_received_json: {}", json_to_parse);
 
     for (const auto& base_element : j)
     {

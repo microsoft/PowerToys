@@ -165,11 +165,7 @@ if (-not $credentialValid) {
         $random.Dispose()
     }
     $plainPassword = ([BitConverter]::ToString($passwordBytes) -replace '-', '') + 'aA1!'
-    $securePassword = [Security.SecureString]::new()
-    foreach ($character in $plainPassword.ToCharArray()) {
-        $securePassword.AppendChar($character)
-    }
-    $securePassword.MakeReadOnly()
+    $securePassword = ConvertTo-SecureString $plainPassword -AsPlainText -Force
     if ($null -eq $localUser) {
         New-LocalUser `
             -Name $StandardUser `

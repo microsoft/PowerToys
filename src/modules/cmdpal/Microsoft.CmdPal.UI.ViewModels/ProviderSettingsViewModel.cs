@@ -273,11 +273,11 @@ public partial class ProviderSettingsViewModel : ObservableObject, IDisposable
         {
             if (_providerSettings.FallbackCommands.TryGetValue(fallbackItem.Id, out var fallbackSettings))
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, fallbackSettings, this, _settingsService));
             }
             else
             {
-                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), this));
+                fallbackViewModels.Add(new FallbackSettingsViewModel(fallbackItem, new(), this, _settingsService));
             }
         }
 

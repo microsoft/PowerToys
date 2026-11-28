@@ -33,7 +33,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Microsoft.CmdPal.Common\Microsoft.CmdPal.Common.csproj" />
     <ProjectReference Include="..\..\Microsoft.CmdPal.UI.ViewModels\Microsoft.CmdPal.UI.ViewModels.csproj" />
-    <ProjectReference Include="..\..\..\..\common\ManagedTelemetry\Telemetry\ManagedTelemetry.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,7 +65,6 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\AdaptiveCacheRemovalReason.cs" Link="Helpers\AdaptiveCacheRemovalReason.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\BinaryIconReference.cs" Link="Helpers\Icons\BinaryIconReference.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\CompactPositionConstraints.cs" Link="Helpers\CompactPositionConstraints.cs" />
-    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\CompactModeLayout.cs" Link="Helpers\CompactModeLayout.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\CachedIconSourceProvider.cs" Link="Helpers\Icons\CachedIconSourceProvider.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherMaterializationKind.cs" Link="Helpers\Icons\IconDispatcherMaterializationKind.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IconDispatcherUiSliceKind.cs" Link="Helpers\Icons\IconDispatcherUiSliceKind.cs" />
@@ -140,8 +138,6 @@
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IShellItemIconLoadCoordinator.cs" Link="Helpers\Icons\IShellItemIconLoadCoordinator.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\Icons\IShellItemIconLocator.cs" Link="Helpers\Icons\IShellItemIconLocator.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\PowerToysRootPageService.cs" Link="PowerToysRootPageService.cs" />
-    <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\HeartbeatTelemetry.cs" Link="Helpers\HeartbeatTelemetry.cs" />
-    <Compile Include="..\..\Microsoft.CmdPal.UI\Events\CmdPalHeartbeat.cs" Link="Events\CmdPalHeartbeat.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Helpers\BuildInfo.cs" Link="Helpers\BuildInfo.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\LanguageService.cs" Link="Services\LanguageService.cs" />
     <Compile Include="..\..\Microsoft.CmdPal.UI\Services\MonitorService.cs" Link="Services\MonitorService.cs" />

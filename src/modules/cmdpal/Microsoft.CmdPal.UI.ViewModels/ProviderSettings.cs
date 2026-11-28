@@ -4,7 +4,6 @@
 
 using System.Collections.Immutable;
 using System.Text.Json.Serialization;
-using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.UI.ViewModels;
 
@@ -102,12 +101,7 @@ public record ProviderSettings
                 {
                     var enableGlobalResults = (wrapper.Extension is null)
                         && !_excludedBuiltInFallbacks.Contains(fallback.Id);
-                    uint? maximumVisibleItemCount = fallback.HasFallbackQueryHandler
-                        ? FallbackResultQueryManager.InitialRequestedItemCount
-                        : null;
-                    builder[fallback.Id] = new FallbackSettings(
-                        enableGlobalResults,
-                        maximumVisibleItemCount: maximumVisibleItemCount);
+                    builder[fallback.Id] = new FallbackSettings(enableGlobalResults);
                     changed = true;
                 }
             }

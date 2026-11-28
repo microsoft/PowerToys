@@ -121,11 +121,6 @@ namespace WorkspacesLibUnitTests
             Run(L"gui-file-errors");
         }
 
-        TEST_METHOD (GuiWorkspaceSelectorsAcceptLegacyIdsAndOptionalArguments)
-        {
-            Run(L"gui-selectors");
-        }
-
         TEST_METHOD (PersistenceVerificationFailureRetainsObservedApplicationsInTextAndJson)
         {
             Run(L"persistence-output");

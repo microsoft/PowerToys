@@ -21,7 +21,7 @@ if ($wingetModules) {
 
   $moduleUpToDate = $false;
   foreach ($mod in $wingetModules) {
-    if ($mod.Version -ge "1.29.380") {
+    if ($mod.Version -ge "1.8.1133") {
       $moduleUpToDate = $true;
       break;
     }

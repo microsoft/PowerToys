@@ -92,9 +92,9 @@ namespace MouseWithoutBorders.Class
                 }
 
                 User = WindowsIdentity.GetCurrent().Name;
-                Logger.LogDebug("*** Started as " + Logger.MaskName(User));
+                Logger.LogDebug("*** Started as " + User);
 
-                Logger.Log($"Command-line argument count: {args.Length - 1}");
+                Logger.Log(Environment.CommandLine);
 
                 bool serviceMode = firstArg == ServiceModeArg;
 

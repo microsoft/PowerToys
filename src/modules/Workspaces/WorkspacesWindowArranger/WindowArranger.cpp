@@ -126,7 +126,7 @@ namespace PlacementHelper
     }
 }
 
-bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, const WindowWithDistance& target)
+bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Application& app, HWND windowToMove)
 {
     Logger::info(L"The app {} is found at launch, moving it", app.name);
     auto appState = m_launchingStatus.Get(app);
@@ -136,17 +136,15 @@ bool WindowArranger::TryMoveWindow(const WorkspacesData::WorkspacesProject::Appl
         return false;
     }
 
-    DWORD processId{};
-    const bool sameWindow = target.processId && GetWindowThreadProcessId(target.window, &processId) && processId == target.processId;
-    bool success = sameWindow && moveWindow(target.window, app);
+    bool success = moveWindow(windowToMove, app);
     if (success)
     {
-        m_launchingStatus.Update(appState.value().application, target.window, LaunchingState::LaunchedAndMoved);
+        m_launchingStatus.Update(appState.value().application, windowToMove, LaunchingState::LaunchedAndMoved);
     }
     else
     {
         Logger::info(L"Failed to move the existing app {} ", app.name);
-        m_launchingStatus.Update(appState.value().application, target.window, LaunchingState::Failed, sameWindow ? target.processId : 0);
+        m_launchingStatus.Update(appState.value().application, windowToMove, LaunchingState::Failed);
     }
 
     auto updatedState = m_launchingStatus.Get(app);
@@ -182,8 +180,7 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
         }
 
         DWORD pid{};
-        if (!GetWindowThreadProcessId(window, &pid) || !pid)
-            continue;
+        GetWindowThreadProcessId(window, &pid);
         std::wstring title = WindowUtils::GetWindowTitle(window);
 
         // fix for the packaged apps that are not caught when minimized, e.g. Settings, Microsoft ToDo, ...
@@ -205,8 +202,14 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
 
         auto data = Utils::Apps::GetApp(processPath, pid, m_installedApps);
 
-        // Only Steam games are eligible without a thick frame.
-        if (!data || (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window)))
+        if (!data->IsSteamGame() && !WindowUtils::HasThickFrame(window))
+        {
+            // Only care about steam games if it has no thick frame to remain consistent with
+            // the behavior as before.
+            continue;
+        }
+
+        if (!data.has_value())
         {
             continue;
         }
@@ -247,7 +250,6 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
                 appDataNearest = data;
                 nearestWindowWithDistance.distance = PlacementHelper::CalculateDistance(app, window);
                 nearestWindowWithDistance.window = window;
-                nearestWindowWithDistance.processId = pid;
             }
             else
             {
@@ -257,7 +259,6 @@ std::optional<WindowWithDistance> WindowArranger::GetNearestWindow(const Workspa
                     appDataNearest = data;
                     nearestWindowWithDistance.distance = currentDistance;
                     nearestWindowWithDistance.window = window;
-                    nearestWindowWithDistance.processId = pid;
                 }
             }
         }
@@ -299,7 +300,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, std::u
             isMovePhase = false;
             int minDistance = INT_MAX;
             WorkspacesData::WorkspacesProject::Application appToMove;
-            WindowWithDistance target{};
+            HWND windowToMove = NULL;
             for (auto& app : project.apps)
             {
                 // move the apps which are set to "Move-If-Exists" and are already present (launched, running)
@@ -316,7 +317,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, std::u
                     {
                         minDistance = nearestWindowWithDistance.value().distance;
                         appToMove = app;
-                        target = nearestWindowWithDistance.value();
+                        windowToMove = nearestWindowWithDistance.value().window;
                     }
                 }
                 else
@@ -329,11 +330,11 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, std::u
             {
                 isMovePhase = true;
                 movedAny = true;
-                bool success = TryMoveWindow(appToMove, target);
+                bool success = TryMoveWindow(appToMove, windowToMove);
                 movedApps.push_back(appToMove);
                 if (success)
                 {
-                    movedWindows.push_back(target.window);
+                    movedWindows.push_back(windowToMove);
                 }
             }
         }
@@ -393,7 +394,7 @@ WindowArranger::WindowArranger(WorkspacesData::WorkspacesProject project, std::u
         result.SetNamedValue(L"operationId", json::value(m_operationId));
         json::JsonArray states;
         for (const auto& [app, state] : m_launchingStatus.Get())
-            states.Append(WorkspacesData::AppLaunchInfoJSON::ToResultJson(state));
+            states.Append(WorkspacesData::AppLaunchInfoJSON::ToJson(state));
         result.SetNamedValue(L"applications", states);
         m_ipcHelper->send(result.Stringify().c_str());
         const auto deadline = GetTickCount64() + 5000;

@@ -208,16 +208,14 @@ namespace UnitTestsCommonUtils
                     {
                         std::this_thread::yield();
                     }
-
-                    // Read at least once: the writer can finish before a reader thread is scheduled.
-                    do
+                    while (!done)
                     {
                         s.Read([](const int& v) {
                             // Just read the value
                             (void)v;
                         });
                         readAttempts++;
-                    } while (!done);
+                    }
                 });
             }
 

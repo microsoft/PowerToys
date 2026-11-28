@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
 
 using Windows.System;
+using WorkspacesCsharpLibrary.Data;
 using WorkspacesEditor.Helpers;
 using WorkspacesEditor.ViewModels;
 
@@ -20,7 +21,7 @@ namespace WorkspacesEditor.Views
 {
     public sealed partial class WorkspacesEditorPage : Page
     {
-        public MainViewModel ViewModel { get; private set; }
+        private MainViewModel _mainViewModel;
 
         public Project EditedProject { get; private set; }
 
@@ -32,7 +33,8 @@ namespace WorkspacesEditor.Views
             {
                 if (e.Key == Windows.System.VirtualKey.Escape)
                 {
-                    ViewModel?.SwitchToMainView();
+                    TempProjectData.DeleteTempFile();
+                    _mainViewModel?.SwitchToMainView();
                     e.Handled = true;
                 }
             };
@@ -43,26 +45,14 @@ namespace WorkspacesEditor.Views
             base.OnNavigatedTo(e);
             if (e.Parameter is (MainViewModel vm, Project project))
             {
-                ViewModel = vm;
-                UpdateProject(project);
+                _mainViewModel = vm;
+                EditedProject = project;
+                this.DataContext = project;
+                Bindings.Update();
 
                 // Set focus to the name field so Narrator announces the page context
                 this.Loaded -= OnLoaded;
                 this.Loaded += OnLoaded;
-            }
-        }
-
-        public void UpdateProject(Project project)
-        {
-            ArgumentNullException.ThrowIfNull(project);
-            EditedProject = project;
-            this.DataContext = project;
-            Bindings.Update();
-            ViewModel?.SaveProjectName(project);
-
-            if (IsLoaded)
-            {
-                EditNameTextBox.Focus(Microsoft.UI.Xaml.FocusState.Programmatic);
             }
         }
 
@@ -74,7 +64,7 @@ namespace WorkspacesEditor.Views
 
         private void SaveButtonClicked(object sender, RoutedEventArgs e)
         {
-            ViewModel.SaveOrAddProject(EditedProject);
+            _mainViewModel.SaveOrAddProject(EditedProject);
         }
 
         private void DeleteButtonClicked(object sender, RoutedEventArgs e)
@@ -105,7 +95,7 @@ namespace WorkspacesEditor.Views
             var result = await dialog.ShowAsync();
             if (result == ContentDialogResult.Primary)
             {
-                ViewModel.DeleteProjectById(project.Id);
+                _mainViewModel.DeleteProjectById(project.Id);
             }
         }
 
@@ -124,14 +114,14 @@ namespace WorkspacesEditor.Views
                 e.Handled = true;
                 if (this.DataContext is Project project)
                 {
-                    ViewModel.CancelProjectName(project);
+                    _mainViewModel.CancelProjectName(project);
                 }
             }
         }
 
         private void EditNameTextBox_GotFocus(object sender, RoutedEventArgs e)
         {
-            ViewModel.SaveProjectName(DataContext as Project);
+            _mainViewModel.SaveProjectName(DataContext as Project);
         }
 
         private void EditNameTextBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -186,18 +176,13 @@ namespace WorkspacesEditor.Views
         {
             if (this.DataContext is Project project)
             {
-                _ = ViewModel.LaunchAndEditAsync(project);
+                _ = _mainViewModel.LaunchAndEditAsync(project);
             }
-        }
-
-        private void RecaptureCurrentLayoutButtonClicked(object sender, RoutedEventArgs e)
-        {
-            ViewModel.RecaptureCurrentLayout(EditedProject);
         }
 
         private void RevertButtonClicked(object sender, RoutedEventArgs e)
         {
-            ViewModel.RevertLaunch();
+            _mainViewModel.RevertLaunch();
         }
     }
 }

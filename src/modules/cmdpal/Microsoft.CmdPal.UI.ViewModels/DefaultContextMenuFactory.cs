@@ -28,8 +28,7 @@ public partial class DefaultContextMenuFactory : IContextMenuFactory
         {
             if (item is ICommandContextItem contextItem)
             {
-                var fallbackContext = commandItem.FallbackContext?.WithInvocationContext(contextItem);
-                var contextItemViewModel = new CommandContextItemViewModel(contextItem, commandItem.PageContext, fallbackContext);
+                var contextItemViewModel = new CommandContextItemViewModel(contextItem, commandItem.PageContext);
                 contextItemViewModel.SlowInitializeProperties();
                 results.Add(contextItemViewModel);
             }

@@ -7,8 +7,7 @@ param([Parameter(Mandatory = $true)][string]$ConfigurationPath)
 
 $ErrorActionPreference = 'Stop'
 . "$PSScriptRoot\EndpointSupport.ps1"
-Add-Type -Path ('DesktopState.cs', 'MouseTargetState.cs', 'NativeSupport.cs', 'ProcessIdentity.cs', 'WindowInfo.cs' |
-    ForEach-Object { Join-Path $PSScriptRoot $_ })
+Add-Type -Path "$PSScriptRoot\NativeSupport.cs"
 $config = Read-RunJson $ConfigurationPath
 $provision = Read-RunJson $config.ProvisioningMarker
 $identity = [Security.Principal.WindowsIdentity]::GetCurrent()

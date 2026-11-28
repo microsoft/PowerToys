@@ -263,9 +263,8 @@ namespace WorkspacesLibUnitTests
             try
             {
                 int resultCode{};
-                const auto session = WorkspacesSession::DeserializeResult(json::JsonObject::Parse(winrt::to_hstring(output)), operationId);
-                Assert::AreEqual(fixture, session.launchedAnyApplication, L"Only the real fixture executable can launch successfully.");
-                const auto result = WorkspacesCli::SessionResult(session, resultCode);
+                const auto result = WorkspacesCli::SessionResult(
+                    WorkspacesSession::DeserializeResult(json::JsonObject::Parse(winrt::to_hstring(output)), operationId), resultCode);
                 Assert::AreEqual(DWORD{ 0 }, code);
                 return { static_cast<DWORD>(resultCode), result };
             }

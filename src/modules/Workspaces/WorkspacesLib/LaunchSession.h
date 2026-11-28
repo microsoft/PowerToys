@@ -51,9 +51,6 @@ namespace WorkspacesSession
         std::map<std::wstring, LaunchDecision> approvals;
         std::optional<WorkspaceStore::UpdateResult> persistence;
         bool loggingAvailable = true;
-        bool launchedAnyApplication = false;
-
-        bool CanRecapture() const;
     };
 
     struct ExecutionOptions

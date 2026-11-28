@@ -18,20 +18,14 @@ public record HandleCommandResultMessage
 
     public SourceContext? Context { get; private set; }
 
-    public FallbackQueryContext? FallbackContext { get; }
-
     public Action? OnBeforeShowConfirmation { get; set; }
 
     public Func<ICommandResult, bool>? ResultHandler { get; set; }
 
-    public HandleCommandResultMessage(
-        ExtensionObject<ICommandResult> result,
-        PageViewModel? sourcePage = null,
-        FallbackQueryContext? fallbackContext = null)
+    public HandleCommandResultMessage(ExtensionObject<ICommandResult> result, PageViewModel? sourcePage = null)
     {
         Result = result;
         Context = sourcePage is null ? null : new(sourcePage);
-        FallbackContext = fallbackContext ?? sourcePage?.FallbackContext;
         DockRoute = sourcePage?.DockRoute;
     }
 }

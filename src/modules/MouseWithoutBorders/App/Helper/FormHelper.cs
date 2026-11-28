@@ -23,7 +23,6 @@ namespace MouseWithoutBorders
         private long lastClipboardEventTime;
 
         private IClipboardHelper remoteClipboardHelper;
-        private long dragValidationGeneration;
         private const string TEXT_TYPE_SEP = "{4CFF57F7-BEDD-43d5-AE8F-27A61E886F2F}";
 
         private const int MAX_TEXT_SIZE = 20 * 1024 * 1024;
@@ -132,8 +131,7 @@ namespace MouseWithoutBorders
 
                     try
                     {
-                        long validationGeneration = Interlocked.Exchange(ref dragValidationGeneration, 0);
-                        remoteClipboardHelper.SendDragFile(fileName, validationGeneration);
+                        remoteClipboardHelper.SendDragFile(fileName);
                     }
                     catch (Exception ex)
                     {
@@ -453,11 +451,6 @@ namespace MouseWithoutBorders
 
                 case SharedConst.QUIT_CMD:
                     Process.GetCurrentProcess().Kill();
-                    break;
-
-                case SharedConst.SET_DRAG_VALIDATION_GENERATION_CMD:
-                    _ = Interlocked.Exchange(ref dragValidationGeneration, m.WParam.ToInt64());
-                    m.Result = (IntPtr)1;
                     break;
 
                 default:

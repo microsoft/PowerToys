@@ -90,9 +90,6 @@ namespace WorkspacesData
         WorkspacesData::WorkspacesProject::Application application;
         HWND window{};
         LaunchingState state{ LaunchingState::Waiting };
-        DWORD existingWindowProcessId{};
-
-        bool HasLiveExistingWindow() const;
     };
 
     using LaunchingAppStateMap = std::map<WorkspacesData::WorkspacesProject::Application, LaunchingAppState>;
@@ -143,7 +140,6 @@ namespace WorkspacesData
     namespace AppLaunchInfoJSON
     {
         json::JsonObject ToJson(const LaunchingAppState& data);
-        json::JsonObject ToResultJson(const LaunchingAppState& data);
         std::optional<LaunchingAppState> FromJson(const json::JsonObject& json);
     }
 

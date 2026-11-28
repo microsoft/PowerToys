@@ -152,7 +152,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
         var extensionDetails = model.Details;
         if (extensionDetails is not null)
         {
-            Details = ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext));
+            Details = new(extensionDetails, PageContext);
             Details.InitializeProperties();
         }
 
@@ -221,7 +221,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             case nameof(Details):
                 var existingReference = Details;
                 var extensionDetails = model.Details;
-                Details = extensionDetails is not null ? ShareFallbackContext(new DetailsViewModel(extensionDetails, PageContext)) : null;
+                Details = extensionDetails is not null ? new(extensionDetails, PageContext) : null;
                 Details?.InitializeProperties();
                 UpdateDetails();
                 existingReference?.SafeCleanup();
@@ -255,10 +255,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
             {
                 if (item is ICommandContextItem contextItem)
                 {
-                    return new CommandContextItemViewModel(
-                        contextItem,
-                        PageContext,
-                        FallbackContext?.WithInvocationContext(contextItem));
+                    return new CommandContextItemViewModel(contextItem, PageContext);
                 }
 
                 return new SeparatorViewModel();
@@ -383,7 +380,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (PrimaryCommand is not null)
         {
-            var message = new PerformCommandMessage(PrimaryCommand, PrimaryCommand.Model.Unsafe, this);
+            var message = new PerformCommandMessage(PrimaryCommand.Command, PrimaryCommand.Model, this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }
@@ -394,7 +391,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     {
         if (SecondaryCommand is not null)
         {
-            var message = new PerformCommandMessage(SecondaryCommand, SecondaryCommand.Model.Unsafe, this);
+            var message = new PerformCommandMessage(SecondaryCommand.Command, SecondaryCommand.Model, this);
             WeakReferenceMessenger.Default.Send(message);
         }
     }

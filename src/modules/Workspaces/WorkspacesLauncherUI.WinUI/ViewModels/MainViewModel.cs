@@ -6,11 +6,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Text.Json;
-using System.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ManagedCommon;
 using Microsoft.UI.Dispatching;
+using WorkspacesCsharpLibrary;
 using WorkspacesLauncherUI.Data;
 using WorkspacesLauncherUI.Helpers;
 using WorkspacesLauncherUI.Models;
@@ -19,18 +19,15 @@ namespace WorkspacesLauncherUI.ViewModels
 {
     public partial class MainViewModel : ObservableObject, IDisposable
     {
-        private static readonly TimeSpan CancellationAcknowledgementTimeout = TimeSpan.FromSeconds(2);
         private readonly Action<string> _sendMessage;
         private readonly Func<SignatureWarningRequest, ISignatureWarningWindow> _createWarning;
         private readonly Action<Action, bool> _enqueue;
         private readonly Func<bool> _canDisplayWarning;
         private readonly Action _closeOwner;
-        private readonly Func<ApplicationWrapper, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> _loadIcon;
-        private readonly Func<Action, IDisposable> _createCancellationTimer;
+        private readonly Func<string, string, string, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> _loadIcon;
         private readonly HashSet<Guid> _seenRequests = new HashSet<Guid>();
         private ActiveWarning _warning;
-        private IDisposable _cancellationTimer;
-        private SessionState _state = SessionState.Active;
+        private bool _stopped;
 
         public MainViewModel()
             : this(false, () => false, () => { })
@@ -46,6 +43,10 @@ namespace WorkspacesLauncherUI.ViewModels
                 closeOwner,
                 IconHelper.TryGetApplicationIcon)
         {
+            if (!confirmationOnly)
+            {
+                _ = new PwaHelper();
+            }
         }
 
         internal MainViewModel(
@@ -54,8 +55,7 @@ namespace WorkspacesLauncherUI.ViewModels
             Action<Action, bool> enqueue,
             Func<bool> canDisplayWarning,
             Action closeOwner,
-            Func<ApplicationWrapper, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> loadIcon = null,
-            Func<Action, IDisposable> createCancellationTimer = null)
+            Func<string, string, string, Microsoft.UI.Xaml.Media.Imaging.BitmapImage> loadIcon = null)
         {
             _sendMessage = sendMessage;
             _createWarning = createWarning;
@@ -63,22 +63,16 @@ namespace WorkspacesLauncherUI.ViewModels
             _canDisplayWarning = canDisplayWarning;
             _closeOwner = closeOwner;
             _loadIcon = loadIcon;
-            _createCancellationTimer = createCancellationTimer ??
-                (callback => new Timer(_ => callback(), null, CancellationAcknowledgementTimeout, Timeout.InfiniteTimeSpan));
             App.IPCMessageReceivedCallback = ReceiveMessage;
         }
 
         public ObservableCollection<AppLaunching> AppsListed { get; } = new ObservableCollection<AppLaunching>();
 
-        public bool IsCancellationPending => _state == SessionState.CancellationPending;
-
-        public bool IsInteractionEnabled => _state == SessionState.Active;
-
         private void ReceiveMessage(string message) => _enqueue(() => HandleMessage(message), true);
 
         private void HandleMessage(string message)
         {
-            if (_state == SessionState.Stopped)
+            if (_stopped)
             {
                 return;
             }
@@ -90,24 +84,6 @@ namespace WorkspacesLauncherUI.ViewModels
                 if (root.ValueKind != JsonValueKind.Object)
                 {
                     throw new JsonException("Expected a Workspaces launcher message object.");
-                }
-
-                if (root.TryGetProperty("type", out var messageType) &&
-                    messageType.ValueKind == JsonValueKind.String &&
-                    messageType.GetString() == "cancel-accepted")
-                {
-                    if (IsCancellationPending)
-                    {
-                        Logger.LogInfo($"Workspaces launcher acknowledged cancellation for UI process {Environment.ProcessId}.");
-                        CompleteCancellation();
-                    }
-
-                    return;
-                }
-
-                if (IsCancellationPending)
-                {
-                    return;
                 }
 
                 if (!root.TryGetProperty("type", out _))
@@ -238,7 +214,7 @@ namespace WorkspacesLauncherUI.ViewModels
             }
         }
 
-        private bool CanShowWarning(ActiveWarning warning) => IsInteractionEnabled && ReferenceEquals(_warning, warning) && _canDisplayWarning();
+        private bool CanShowWarning(ActiveWarning warning) => !_stopped && ReferenceEquals(_warning, warning) && _canDisplayWarning();
 
         private void CompleteWarning(ActiveWarning warning, bool? run)
         {
@@ -263,7 +239,7 @@ namespace WorkspacesLauncherUI.ViewModels
 
             if (run.HasValue)
             {
-                SendResponse(warning.Request.RequestId, allowRun && IsInteractionEnabled && _canDisplayWarning());
+                SendResponse(warning.Request.RequestId, allowRun && !_stopped && _canDisplayWarning());
             }
         }
 
@@ -280,9 +256,9 @@ namespace WorkspacesLauncherUI.ViewModels
             catch (Exception exception)
             {
                 Logger.LogError("Unable to queue a Workspaces launcher UI message", exception);
-                if (IsInteractionEnabled)
+                if (!_stopped)
                 {
-                    Stop();
+                    Stop(false);
                     _closeOwner();
                 }
 
@@ -301,7 +277,7 @@ namespace WorkspacesLauncherUI.ViewModels
                 {
                     Name = app.Application.Application,
                     AppPath = app.Application.ApplicationPath,
-                    IconImage = _loadIcon?.Invoke(app.Application),
+                    IconImage = _loadIcon?.Invoke(app.Application.ApplicationPath, app.Application.PackageFullName, app.Application.PwaAppId),
                     PackagedName = app.Application.PackageFullName,
                     Aumid = app.Application.AppUserModelId,
                     PwaAppId = app.Application.PwaAppId,
@@ -320,80 +296,31 @@ namespace WorkspacesLauncherUI.ViewModels
 
         public void Dispose()
         {
-            Stop();
+            Stop(false);
             GC.SuppressFinalize(this);
         }
 
         [RelayCommand]
-        internal void CancelLaunch()
+        internal void CancelLaunch() => Stop(true);
+
+        private void Stop(bool cancel)
         {
-            if (!IsInteractionEnabled)
+            if (_stopped)
             {
                 return;
             }
 
-            // Keep IPC alive until the launcher has received cancellation or the wait expires.
-            _state = SessionState.CancellationPending;
-            OnPropertyChanged(nameof(IsCancellationPending));
-            OnPropertyChanged(nameof(IsInteractionEnabled));
-            CompleteWarning(_warning, null);
-            if (!IsCancellationPending)
-            {
-                return;
-            }
-
-            _cancellationTimer = _createCancellationTimer(() => _enqueue(OnCancellationTimeout, true));
-            if (!TrySendMessage("cancel"))
-            {
-                CompleteCancellation();
-            }
-        }
-
-        private void OnCancellationTimeout()
-        {
-            if (IsCancellationPending)
-            {
-                Logger.LogWarning("Timed out waiting for the Workspaces launcher to acknowledge cancellation.");
-                CompleteCancellation();
-            }
-        }
-
-        private void CompleteCancellation()
-        {
-            if (!IsCancellationPending)
-            {
-                return;
-            }
-
-            Stop();
-            _closeOwner();
-        }
-
-        private void Stop()
-        {
-            if (_state == SessionState.Stopped)
-            {
-                return;
-            }
-
-            var wasPending = IsCancellationPending;
-            _state = SessionState.Stopped;
-            _cancellationTimer?.Dispose();
-            _cancellationTimer = null;
+            _stopped = true;
             if (App.IPCMessageReceivedCallback == ReceiveMessage)
             {
                 App.IPCMessageReceivedCallback = null;
             }
 
-            OnPropertyChanged(wasPending ? nameof(IsCancellationPending) : nameof(IsInteractionEnabled));
-            CompleteWarning(_warning, wasPending ? null : false);
-        }
-
-        private enum SessionState
-        {
-            Active,
-            CancellationPending,
-            Stopped,
+            CompleteWarning(_warning, cancel ? null : false);
+            if (cancel)
+            {
+                TrySendMessage("cancel");
+            }
         }
 
         private sealed class ActiveWarning

@@ -10,10 +10,5 @@ SetLastError
 
 ShowWindow
 SetForegroundWindow
+SetFocus
 SetActiveWindow
-
-AttachThreadInput
-BringWindowToTop
-GetCurrentThreadId
-GetForegroundWindow
-GetWindowThreadProcessId

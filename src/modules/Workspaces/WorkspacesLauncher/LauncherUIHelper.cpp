@@ -34,16 +34,6 @@ LauncherUIHelper::LauncherUIHelper(std::function<void(const std::wstring&)> ipcC
 
 LauncherUIHelper::~LauncherUIHelper()
 {
-    Close();
-}
-
-void LauncherUIHelper::SetCallback(std::function<void(const std::wstring&)> callback)
-{
-    m_ipcHelper.SetCallback(std::move(callback));
-}
-
-void LauncherUIHelper::Close()
-{
     if (m_process && WaitForSingleObject(m_process.get(), 1000) == WAIT_TIMEOUT)
     {
         Logger::info(L"Stopping WorkspacesLauncherUI with pid {}", m_processId);
@@ -52,8 +42,6 @@ void LauncherUIHelper::Close()
             Logger::error(L"Unable to stop the Workspaces UI process: {}", GetLastError());
         }
     }
-    m_ipcHelper.Stop();
-    m_process.reset();
 }
 
 bool LauncherUIHelper::LaunchUI(const std::function<bool()>& isCanceled)
@@ -115,11 +103,6 @@ void LauncherUIHelper::DismissApproval(const std::wstring& requestId) const
         message.SetNamedValue(L"requestId", json::value(requestId));
         m_ipcHelper.send(message.Stringify().c_str());
     }
-}
-
-void LauncherUIHelper::AcknowledgeCancellation() const
-{
-    m_ipcHelper.send(Message(L"cancel-accepted").Stringify().c_str());
 }
 
 void LauncherUIHelper::UpdateLaunchStatus(WorkspacesData::LaunchingAppStateMap launchedApps) const

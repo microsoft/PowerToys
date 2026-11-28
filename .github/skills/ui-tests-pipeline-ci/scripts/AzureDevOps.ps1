@@ -63,9 +63,9 @@ function Invoke-AzDevOpsRest
 
         [string] $OutFile,
 
-        [string] $Organization = 'shine-oss',
+        [string] $Organization = 'microsoft',
 
-        [string] $Project = 'PowerToys'
+        [string] $Project = 'Dart'
     )
 
     $token = $null
@@ -143,9 +143,9 @@ function Get-AzDevOpsPagedValues
         [Parameter(Mandatory)]
         [string] $Uri,
 
-        [string] $Organization = 'shine-oss',
+        [string] $Organization = 'microsoft',
 
-        [string] $Project = 'PowerToys'
+        [string] $Project = 'Dart'
     )
 
     $items = [Collections.Generic.List[object]]::new()

@@ -141,7 +141,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     public event EventHandler<PageDragStateChangedEventArgs>? DragStateChanged;
 
     private IHostWindow? _hostWindow;
-    private PageViewModel? _compactLayoutPage;
 
     public ShellViewModel ViewModel { get; private set; }
 
@@ -381,21 +380,17 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowConfirmationMessage message)
     {
-        if (!DispatcherQueue.TryEnqueue(async () =>
+        DispatcherQueue.TryEnqueue(async () =>
         {
-            using var snapshotLease = message.SnapshotLease;
             try
             {
-                await HandleConfirmArgsOnUiThread(message.Args, message.FallbackContext);
+                await HandleConfirmArgsOnUiThread(message.Args);
             }
             catch (Exception ex)
             {
                 Logger.LogError(ex.ToString());
             }
-        }))
-        {
-            message.SnapshotLease?.Dispose();
-        }
+        });
     }
 
     public void Receive(ExternalCommandLinkRequestedMessage message) => _externalCommandLinks.Enqueue(message.Route);
@@ -415,13 +410,10 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
     public void Receive(ShowToastMessage message)
     {
-        if (!DispatcherQueue.TryEnqueue(() =>
+        DispatcherQueue.TryEnqueue(() =>
         {
             _toast.ShowToast(message);
-        }))
-        {
-            message.SnapshotLease?.Dispose();
-        }
+        });
     }
 
     public void Receive(ShowPinToDockDialogMessage message)
@@ -486,21 +478,14 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     // This gets called from the UI thread
-    private async Task HandleConfirmArgsOnUiThread(
-        IConfirmationArgs? args,
-        FallbackQueryContext? fallbackContext)
+    private async Task HandleConfirmArgsOnUiThread(IConfirmationArgs? args)
     {
         if (args is null)
         {
             return;
         }
 
-        if (fallbackContext?.CanInvoke == false)
-        {
-            return;
-        }
-
-        ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage), fallbackContext);
+        ConfirmResultViewModel vm = new(args, new(ViewModel.CurrentPage));
         var initializeDialogTask = Task.Run(() => { InitializeConfirmationDialog(vm); });
         await initializeDialogTask;
 
@@ -777,8 +762,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
 
         if (!RootFrame.CanGoBack)
         {
-            // GoHome() clears search on the root page, use OnNavigatedHome()
-            ViewModel.OnNavigatedHome();
+            ViewModel.GoHome(withAnimation, focusSearch);
         }
 
         // Only move focus when the palette is actually on screen. FocusActiveControl uses keyboard
@@ -1042,7 +1026,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
             Logger.LogWarning("Unrecognized target for shell navigation: " + e.Parameter);
         }
 
-        ObservePageForCompactLayout(ViewModel.CurrentPage);
         _pageInteractions.AttachPage(ViewModel.CurrentPage);
         AttachInteractionTarget(e.Content as IPageInteractionTarget);
 
@@ -1056,17 +1039,33 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
     }
 
     /// <summary>
-    /// Updates the compact/expanded state after a navigation or page-content change. Nested
-    /// pages stay expanded while they have visible content; a settled empty list collapses
-    /// to the page's search row. On the root page, the search box still drives the state.
-    /// Driving this from navigation (rather than only from search-text changes) makes
-    /// alias-based navigation expand correctly — an alias clears the search box before
-    /// navigating, so the search-text transition alone would otherwise collapse the page.
+    /// Updates the compact/expanded state after a navigation. On any nested (sub) page we
+    /// always show the full expanded UI; on the root page the search box drives the state,
+    /// so we collapse to the compact search box only when the query is empty. Driving this
+    /// from navigation (rather than only from search-text changes) makes alias-based
+    /// navigation expand correctly — an alias clears the search box before navigating, so
+    /// the search-text transition alone would otherwise leave the palette collapsed.
     /// Transient pages always show the expanded UI, ignoring the compact setting entirely.
     /// </summary>
     private void UpdateCompactModeForCurrentPage()
     {
         var settings = App.Current.Services.GetRequiredService<ISettingsService>().Settings;
+        if (!settings.CompactMode)
+        {
+            // Compact mode is off: the shell always shows the full expanded UI. Set it
+            // explicitly (rather than trusting the constructor's initial value) so toggling
+            // the setting off at runtime restores the list and command bar when the palette
+            // was collapsed.
+            HandleExpandCompactOnUiThread(true);
+            return;
+        }
+
+        // Transient pages ignore compact mode and always present as expanded.
+        if (ViewModel.IsTransient)
+        {
+            HandleExpandCompactOnUiThread(true);
+            return;
+        }
 
         // The ShellViewModel's IsNested flag is only updated on forward navigation and is
         // never cleared when navigating back to the root page. Gate it on the current
@@ -1075,44 +1074,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         var isRootPage = ViewModel.CurrentPage?.IsRootPage ?? false;
         var nested = ViewModel.IsNested && !isRootPage;
         var hasQuery = !string.IsNullOrEmpty(ViewModel.CurrentPage?.SearchTextBox);
-        var hasPageContent = ViewModel.CurrentPage?.HasContent != false;
-        HandleExpandCompactOnUiThread(
-            CompactModeLayout.ShouldExpand(
-                settings.CompactMode,
-                ViewModel.IsTransient,
-                nested,
-                hasQuery,
-                hasPageContent));
-    }
-
-    private void ObservePageForCompactLayout(PageViewModel page)
-    {
-        if (ReferenceEquals(_compactLayoutPage, page))
-        {
-            return;
-        }
-
-        if (_compactLayoutPage is not null)
-        {
-            _compactLayoutPage.PropertyChanged -= CompactLayoutPage_PropertyChanged;
-        }
-
-        _compactLayoutPage = page;
-        _compactLayoutPage.PropertyChanged += CompactLayoutPage_PropertyChanged;
-    }
-
-    private void CompactLayoutPage_PropertyChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        var queryChanged = e.PropertyName is nameof(PageViewModel.SearchTextBox);
-        var contentChanged = e.PropertyName is nameof(PageViewModel.HasContent)
-            or nameof(PageViewModel.ErrorMessage);
-        if (CompactModeLayout.ShouldUpdateForPageChange(
-            ViewModel.CurrentPage?.IsRootPage == true,
-            queryChanged,
-            contentChanged))
-        {
-            UpdateCompactModeForCurrentPage();
-        }
+        HandleExpandCompactOnUiThread(nested || hasQuery);
     }
 
     private void FocusAfterLoaded(object sender, RoutedEventArgs e)
@@ -2464,7 +2426,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         this.ExpandedMode = newExpanded;
         PropertyChanged?.Invoke(this, new(nameof(ExpandedMode)));
         NotifyQuickAccessShelfVisibilityChanged();
-        WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(newExpanded));
     }
 
     /// <summary>
@@ -2481,6 +2442,7 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         }
 
         HandleExpandCompactOnUiThread(true);
+        WeakReferenceMessenger.Default.Send<ExpandCompactModeMessage>(new(true));
         return true;
     }
 
@@ -2538,12 +2500,6 @@ public sealed partial class ShellPage : Microsoft.UI.Xaml.Controls.Page,
         ViewModel.PageNavigationRequested -= ViewModel_PageNavigationRequested;
         ViewModel.GoHomeRequested -= ViewModel_GoHomeRequested;
         ViewModel.GoBackRequested -= ViewModel_GoBackRequested;
-        if (_compactLayoutPage is not null)
-        {
-            _compactLayoutPage.PropertyChanged -= CompactLayoutPage_PropertyChanged;
-            _compactLayoutPage = null;
-        }
-
         SearchBox.BackRequested -= SearchBox_BackRequested;
         SearchBox.NavigationRequested -= SearchBox_NavigationRequested;
         FiltersDropDown.FocusSearchRequested -= FiltersDropDown_FocusSearchRequested;
