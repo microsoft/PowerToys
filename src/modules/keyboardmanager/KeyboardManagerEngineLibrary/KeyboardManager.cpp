@@ -72,23 +72,19 @@ KeyboardManager::KeyboardManager()
         const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
         noRemappingsLoaded = !newHasRemappings;
 
-        // We didn't have any bindings before and we have now
-        if (newHasRemappings && !hookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
+        // The hook thread installs or removes the keyboard hook; this thread does not look at the hook.
+        // The messages are handled in the order they were posted, and each one goes by the settings
+        // as they are then, so a reload that quickly follows the removal of the last binding still
+        // ends with a hook. Start does nothing to a keyboard hook that is installed already, apart from
+        // reconciling the companion mouse hook with the "Alone" (dual-key) remaps. Stop removes the
+        // hook only once no press that a key sequence replaced is still held (see
+        // StopLowlevelKeyboardHookWhenIdle).
+        PostThreadMessageW(mainThreadId, newHasRemappings ? StartHookMessageID : StopHookMessageID, 0, 0);
 
-        // All bindings were removed. The hook is removed by the hook thread, which knows whether a
-        // press that a key sequence replaced is still held (see StopLowlevelKeyboardHookWhenIdle).
-        if (!newHasRemappings && hookHandle)
-            PostThreadMessageW(mainThreadId, StopHookMessageID, 0, 0);
-
-        // The set of "Alone" (dual-key) remaps may have changed without changing whether ANY binding
-        // exists, so reconcile the companion mouse hook. Route an install through the same StartHook
-        // message (SetWindowsHookEx must run on the hook thread); a removal is done inline (the mouse
-        // hook suppresses nothing, so no press depends on it).
+        // A mouse hook that is no longer needed is removed inline (it suppresses nothing, so no press
+        // depends on it). One that is needed is installed by the Start message above.
         const bool needMouseHook = !state.aloneSingleKeyReMap.empty();
-        if (needMouseHook && hookHandle && !mouseHookHandle)
-            PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
-        else if (!needMouseHook && mouseHookHandle)
+        if (!needMouseHook && mouseHookHandle)
             StopLowlevelMouseHook();
     };
 
@@ -235,9 +231,9 @@ void KeyboardManager::StartLowlevelKeyboardHook()
     if (!hookHandle)
     {
         // The new hook starts with the key-sequence table of the settings loaded last. No event was
-        // seen while there was no hook, so the press records start afresh; if there are key-sequence
-        // remaps, the keys that are down right now are recorded as presses that already reached the
-        // system. This runs on the hook thread, before the hook can deliver anything. (A hook that
+        // seen while there was no hook, so the press records start afresh, and the keys that are down
+        // right now are recorded as presses that already reached the system. This runs on the hook
+        // thread, before the hook can deliver anything. (A hook that
         // is installed already publishes a staged table itself, at its next key event.)
         state.StartSequencePressTracking(inputHandler);
 
