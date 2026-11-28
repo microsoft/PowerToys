@@ -98,6 +98,7 @@
         <controls:BrowserControl
             x:Name="BrowserPreview"
             x:Load="True"
+            AllowExternalImages="{x:Bind BrowserPreviewer.AllowExternalImages, Mode=OneWay}"
             CustomContextMenu="{x:Bind BrowserPreviewer.CustomContextMenu, Mode=OneWay}"
             DOMContentLoaded="BrowserPreview_DOMContentLoaded"
             FlowDirection="LeftToRight"
