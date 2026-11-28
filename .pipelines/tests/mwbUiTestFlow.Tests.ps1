@@ -188,8 +188,8 @@ function Restore-LightSwitchLocation {
         $env:MWB_SELECTION_BLOCKED = $Blocked.ToString().ToLowerInvariant()
         $env:MWB_FLOW_FAILURE = $Failure
         if ($Failure -in @('MissingRunner','CompletedWorker','UnconfirmedWorker')) {
-            $env:SELECTED_UI_TEST_MODULES += ';MouseUtils.UITests.Next'
-            $suite = 'MouseUtils.UITests.Next'
+            $env:SELECTED_UI_TEST_MODULES += ';MouseUtils.UITests'
+            $suite = 'MouseUtils.UITests'
             $runner = New-Item -ItemType Directory "$fixture\artifact\tests\$suite" -Force
             '{}' | Set-Content "$runner\$suite.runtimeconfig.json"
             if ($Failure -ne 'MissingRunner') {

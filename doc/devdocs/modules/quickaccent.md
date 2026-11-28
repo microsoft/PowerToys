@@ -70,7 +70,7 @@ This component:
 
 ### UI Tests (PowerAccent.UITests)
 
-`PowerAccent.UITests` uses `Microsoft.PowerToys.UITest.Next` and `winappcli` to drive Quick Accent
+`PowerAccent.UITests` uses `Microsoft.PowerToys.UITest` and `winappcli` to drive Quick Accent
 through the Settings UI and a real Notepad window. The suite covers activation and character
 selection, module lifecycle, language filtering, every toolbar position, input delay, excluded
 applications, usage-frequency sorting, and start-from-left behavior.

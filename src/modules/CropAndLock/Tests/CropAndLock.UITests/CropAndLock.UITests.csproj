@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
-    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
     <!-- Share identical fixture source without loading the self-contained packaged executable into the test host. -->
     <ProjectReference Include="..\CropAndLock.TestApp\CropAndLock.TestApp.csproj" ReferenceOutputAssembly="false" />
     <Compile Include="..\CropAndLock.TestApp\CropSourceForm.cs" Link="CropSourceForm.cs" />

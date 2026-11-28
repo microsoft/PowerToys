@@ -212,15 +212,14 @@ Describe 'Light Switch pipeline prerequisite gating' {
 
     # These fragments intentionally follow the YAML indentation; update the extraction with the template.
     It 'enables only the exact runner <Module>' -TestCases @(
-        @{ Module = 'LightSwitch.UITests.Next'; Count = 1 }
-        @{ Module = 'lightswitch.uitests.next'; Count = 1 }
-        @{ Module = 'LightSwitch.UITests'; Count = 0 }
-        @{ Module = 'LightSwitch.UITests.Next.Extra'; Count = 0 }
-        @{ Module = 'OtherLightSwitch.UITests.Next'; Count = 0 }
+        @{ Module = 'LightSwitch.UITests'; Count = 1 }
+        @{ Module = 'lightswitch.uitests'; Count = 1 }
+        @{ Module = 'LightSwitch.UITests.Extra'; Count = 0 }
+        @{ Module = 'OtherLightSwitch.UITests'; Count = 0 }
         @{ Module = 'ColorPicker.UITests'; Count = 0 }
     ) {
         param($Module, $Count)
-        $start = $yaml.IndexOf("          if (`$base -eq 'LightSwitch.UITests.Next') {")
+        $start = $yaml.IndexOf("          if (`$base -eq 'LightSwitch.UITests') {")
         $end = $yaml.IndexOf('          if ($nonElevatedSuites', $start)
         $start | Should BeGreaterThan 0
         $base = $Module
@@ -231,21 +230,21 @@ Describe 'Light Switch pipeline prerequisite gating' {
     It 'retains direct same-user dispatch and immediate, always, and interrupted cleanup' {
         $line = ($yaml -split "`n" | Where-Object { $_ -match '^\s+\$nonElevatedSuites =' }).Trim()
         $suites = & ([scriptblock]::Create($line + '; $nonElevatedSuites'))
-        ($suites -contains 'LightSwitch.UITests.Next') | Should Be $false
-        $yaml | Should Match "(?s)finally \{\s+try \{\s+if \(\`$base -eq 'LightSwitch.UITests.Next'\) \{\s+try \{\s+Restore-LightSwitchLocation"
+        ($suites -contains 'LightSwitch.UITests') | Should Be $false
+        $yaml | Should Match '(?ms)^ {8}\} finally \{\s+try \{.*?^ {12}if \(\$base -eq ''LightSwitch\.UITests''\) \{\s+try \{\s+Restore-LightSwitchLocation'
         $yaml | Should Match 'displayName: Restore interrupted Light Switch location setup'
         $yaml | Should Match '(?s)displayName: Restore UI-test prerequisites\s+condition: always\(\)'
     }
 
     It 'continues later suites and counts a <Failure> failure once' -TestCases @(
         @{ Failure = 'setup'; ExpectedRunners = 'Z.Other.UITests' }
-        @{ Failure = 'cleanup'; ExpectedRunners = 'LightSwitch.UITests.Next,Z.Other.UITests' }
+        @{ Failure = 'cleanup'; ExpectedRunners = 'LightSwitch.UITests,Z.Other.UITests' }
         @{ Failure = 'setup-and-cleanup'; ExpectedRunners = 'Z.Other.UITests' }
-        @{ Failure = 'runner'; ExpectedRunners = 'LightSwitch.UITests.Next,Z.Other.UITests' }
+        @{ Failure = 'runner'; ExpectedRunners = 'LightSwitch.UITests,Z.Other.UITests' }
     ) {
         param($Failure, $ExpectedRunners)
 
-        $entries = @('LightSwitch.UITests.Next', 'Z.Other.UITests') | ForEach-Object {
+        $entries = @('LightSwitch.UITests', 'Z.Other.UITests') | ForEach-Object {
             $directory = New-Item -ItemType Directory -Path (Join-Path $TestDrive $_) -Force
             New-Item -ItemType File -Path (Join-Path $directory.FullName "$_.dll") -Force | Out-Null
             [pscustomobject]@{
@@ -259,7 +258,7 @@ Describe 'Light Switch pipeline prerequisite gating' {
         function dotnet {
             $runner = [IO.Path]::GetFileNameWithoutExtension($args[0])
             $script:executedRunners += $runner
-            $global:LASTEXITCODE = if ($script:runnerFails -and $runner -eq 'LightSwitch.UITests.Next') { 1 } else { 0 }
+            $global:LASTEXITCODE = if ($script:runnerFails -and $runner -eq 'LightSwitch.UITests') { 1 } else { 0 }
         }
         if ($Failure -in @('setup', 'setup-and-cleanup')) {
             Mock Enable-LightSwitchLocation { throw 'Setup failure.' }
@@ -268,6 +267,8 @@ Describe 'Light Switch pipeline prerequisite gating' {
             Mock Restore-LightSwitchLocation { throw 'Cleanup failure.' }
         }
         Mock Write-Host {}
+        function Get-UmdfFixtures { @() }
+        $runMwbSandbox = $false
         $nonElevatedSuites = @()
         $resultsDir = $TestDrive
         $start = $yaml.IndexOf('      $failed = 0')

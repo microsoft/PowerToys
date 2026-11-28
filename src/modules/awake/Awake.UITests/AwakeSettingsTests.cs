@@ -4,7 +4,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.PowerToys.Awake.UITests;

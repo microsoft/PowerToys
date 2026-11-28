@@ -436,21 +436,24 @@ public sealed class ClipboardHelperTests
         File.WriteAllText(path, "content");
 
         TimeSpan originalTimeout = Clipboard.TransientLeaseReleaseTimeout;
-        LocalPathLease? leaseReference = null;
+        var clock = new ManualReleaseTimeProvider();
         try
         {
             Clipboard.TransientLeaseReleaseTimeout = TimeSpan.FromMilliseconds(500);
             LocalPathLease? lease = LocalPathLease.TryCreateForCurrentUser(path);
             Assert.IsNotNull(lease);
-            leaseReference = lease;
             long validationGeneration = Clipboard.BeginTransientDragFileValidation();
             Assert.IsTrue(Clipboard.TrySetValidatedTransientDragFile(validationGeneration, path, lease));
-            Clipboard.RequestLastDragDropFileReleaseAfterSend();
+            Clipboard.RequestLastDragDropFileReleaseAfterSend(clock);
 
-            System.Threading.Thread.Sleep(350);
-            Clipboard.RequestLastDragDropFileReleaseAfterSend();
+            clock.Advance(TimeSpan.FromMilliseconds(350));
+            Assert.IsFalse(lease.IsDisposed);
+            Clipboard.RequestLastDragDropFileReleaseAfterSend(clock);
 
-            Assert.IsTrue(SpinWait.SpinUntil(() => leaseReference.IsDisposed, TimeSpan.FromMilliseconds(300)));
+            clock.Advance(TimeSpan.FromMilliseconds(149));
+            Assert.IsFalse(lease.IsDisposed);
+            clock.Advance(TimeSpan.FromMilliseconds(1));
+            Assert.IsTrue(lease.IsDisposed, "The original release deadline must still expire the lease.");
             Assert.IsNull(Clipboard.LastDragDropFile);
         }
         finally
@@ -568,6 +571,55 @@ public sealed class ClipboardHelperTests
         catch (IOException)
         {
             return false;
+        }
+    }
+
+    private sealed class ManualReleaseTimeProvider : TimeProvider
+    {
+        private TimeSpan elapsed;
+        private ManualTimer? timer;
+
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            var newTimer = new ManualTimer(this, callback, state);
+            newTimer.Change(dueTime, period);
+            timer = newTimer;
+            return newTimer;
+        }
+
+        public void Advance(TimeSpan duration)
+        {
+            elapsed += duration;
+            timer?.FireIfDue();
+        }
+
+        private sealed class ManualTimer(ManualReleaseTimeProvider clock, TimerCallback callback, object? state) : ITimer
+        {
+            private TimeSpan? deadline;
+
+            public bool Change(TimeSpan dueTime, TimeSpan period)
+            {
+                Assert.AreEqual(Timeout.InfiniteTimeSpan, period);
+                deadline = dueTime == Timeout.InfiniteTimeSpan ? null : clock.elapsed + dueTime;
+                return true;
+            }
+
+            public void FireIfDue()
+            {
+                if (deadline is TimeSpan due && clock.elapsed >= due)
+                {
+                    deadline = null;
+                    callback(state);
+                }
+            }
+
+            public void Dispose() => deadline = null;
+
+            public ValueTask DisposeAsync()
+            {
+                Dispose();
+                return ValueTask.CompletedTask;
+            }
         }
     }
 }

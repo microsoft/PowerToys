@@ -353,7 +353,7 @@ pwsh .github\skills\ui-tests-local-vm\scripts\Invoke-LocalVmUiTest.ps1 `
   -VmName PowerToysUiTest-Win11 `
   -VmRoot X:\PowerToysUiTestVm `
   -ExchangeRoot X:\PowerToysUiTestVm\shared\PowerToysUiTests\MyModule `
-  -TestExecutable MyModule.UITests.Next.exe `
+  -TestExecutable MyModule.UITests.exe `
   -Filter 'Name=MyModule.FocusedTest' `
   -Platform ARM64 `
   -BuildLabel (git rev-parse HEAD) `

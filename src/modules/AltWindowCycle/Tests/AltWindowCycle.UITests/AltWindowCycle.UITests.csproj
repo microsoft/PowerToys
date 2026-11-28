@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <PackageReference Include="MSTest" />
-    <ProjectReference Include="..\..\..\..\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <ProjectReference Include="..\..\..\..\common\UITestAutomation\UITestAutomation.csproj" />
     <ProjectReference Include="..\AltWindowCycle.TestApp\AltWindowCycle.TestApp.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

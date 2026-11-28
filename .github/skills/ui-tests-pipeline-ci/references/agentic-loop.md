@@ -22,7 +22,7 @@ pwsh -NoLogo -NoProfile -File `
 ```
 
 Do not proceed unless it exits `0`, reports `Ready: true`, and every required check is `PASS`. The
-default probe uses `refs/heads/main`, module `FancyZones.UITests.Next`, and dynamically selects one
+default probe uses `refs/heads/main`, module `FancyZones.UITests`, and dynamically selects one
 of the ten newest completed pipeline builds for build/log/artifact checks plus the first test-bearing
 build in that set for Azure Test checks. The JSON reports these separately as `ProbeBuildId` and
 `ProbeTestBuildId`. It creates no build and changes no Azure or repository state. The setup preview
@@ -79,7 +79,7 @@ $build = (Invoke-AzDevOpsRest -Uri '_apis/build/builds/123?api-version=7.1').Bod
 `Get-AzDevOpsPagedValues` follows every `x-ms-continuationtoken` response header. Use it whenever an
 endpoint can paginate; never infer completeness from one page.
 
-REST writes mutate Azure state. A create, migrate, or stabilize UI-test task includes the scoped
+REST writes mutate Azure state. Creating, updating, or fixing UI tests includes the scoped
 commit/push and CI-validation continuation described in the three skills; it does not need a second
 "run CI" request. Explicit local-only/no-push/no-CI scope overrides that default. A status question,
 VM setup, or local run of existing tests does not authorize publication. Cancel, retry, or approve
@@ -104,7 +104,7 @@ stop and ask the user before consuming CI.
 Derive `uiTestModules` from the exact `.csproj` filename without `.csproj`, for example:
 
 ```text
-FancyZonesEditor.UITests.Next
+FancyZonesEditor.UITests
 ```
 
 The list must be non-empty and contain only the projects currently being changed.

@@ -233,8 +233,8 @@ FancyZones is divided into several projects:
 
 ## FancyZones UI Testing
 
-UI tests use `Microsoft.PowerToys.UITest.Next` and winappcli in
-`FancyZones.UITests.Next` and `FancyZonesEditor.UITests.Next`.
+UI tests use `Microsoft.PowerToys.UITest` and winappcli in
+`FancyZones.UITests` and `FancyZonesEditor.UITests`.
 
 ### Before running tests
 
@@ -244,7 +244,7 @@ UI tests use `Microsoft.PowerToys.UITest.Next` and winappcli in
 ### Running tests
   
   - Exit PowerToys if it's running
-  - Build the focused `.Next` test project with the repository build script.
+  - Build the focused UI-test project with the repository build script.
   - Run tests in the Test Explorer (`Test > Test Explorer` or `Ctrl+E, T`). 
 
 >Note: notifications or other application windows, that are shown above the window under test, can disrupt the testing process.
@@ -478,7 +478,7 @@ In "FancyZones::MoveSizeUpdate" function.
 
 ### Extra tools and information
 
-**Test samples**: see the [UI-tests migration skill](../../../.github/skills/ui-tests-migration/SKILL.md).
+**Test samples**: see the [UI-test maintenance skill](../../../.github/skills/ui-tests-maintenance/SKILL.md).
 
 While working on tests, you may need a tool that helps you to view the element's accessibility data, e.g. for finding the button to click. For this purpose, you could use [AccessibilityInsights](https://accessibilityinsights.io/docs/windows/overview).
 

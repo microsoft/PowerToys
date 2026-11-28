@@ -76,7 +76,7 @@ EnvironmentVariableUILib            # Abstracted UI methods and implementations
 replaces the current user's PATH with `path1;path2;path3`. Stopping the test host, a timeout, or a
 machine reset can leave that PATH in place until recovery runs.
 
-`src\modules\EnvironmentVariables\EnvironmentVariables.UITests` uses `UITestAutomation.Next`
+`src\modules\EnvironmentVariables\EnvironmentVariables.UITests` uses `UITestAutomation`
 and winappcli. Test variables and profiles have unique names; cleanup restores
 the original unexpanded values, registry value kinds, and profile/settings files. TMP and System
 PATH are not modified. Registry reads independently verify the persistent Windows environment

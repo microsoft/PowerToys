@@ -1,6 +1,6 @@
 ---
 name: ui-tests-pipeline-ci
-description: "Microsoft FTE-only completion workflow for PowerToys UI-test implementation: automatically continue after successful local VM suites, commit and push scoped changes, queue CI, watch through completion, and stabilize through Azure CLI and Azure DevOps REST APIs. No separate push/run-CI request is needed for create, migrate, or stabilize tasks unless the user limited scope. Also use for explicit UITests CI, setup preflight, 401/403 diagnosis, build reuse, recordings/artifacts, and the three-run limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, commit, push, local-to-CI handoff, buildNow, specificBuildId, uiTestModules, CI flake."
+description: "Microsoft FTE-only completion workflow for PowerToys UI-test implementation: automatically continue after successful local VM suites, commit and push scoped changes, queue CI, watch through completion, and stabilize through Azure CLI and Azure DevOps REST APIs. No separate push/run-CI request is needed when creating, updating, or fixing tests unless the user limited scope. Also use for explicit UITests CI, setup preflight, 401/403 diagnosis, build reuse, recordings/artifacts, and the three-run limit. Keywords: FTE, az, Azure CLI, Azure DevOps, pipeline, UI Test Automation, UITests CI, commit, push, local-to-CI handoff, buildNow, specificBuildId, uiTestModules, CI flake."
 license: MIT
 ---
 
@@ -19,8 +19,8 @@ discovery, preview, queueing, status, timelines, logs, tests, artifacts, and res
 
 ## When to use
 
-Invoke this skill automatically when an authorized Microsoft FTE's **create, migrate, or stabilize
-UI tests** task passes its full local VM matrix. That task includes scoped commit/push and CI
+When creating, updating, or fixing UI tests for an authorized Microsoft FTE, invoke this skill
+automatically after the full local VM matrix passes. That task includes scoped commit/push and CI
 validation; do not wait for an additional "run CI" request.
 
 Also use it when an authorized Microsoft FTE asks to:
@@ -34,7 +34,7 @@ Also use it when an authorized Microsoft FTE asks to:
 
 Do not use this skill for local execution. Complete
 [ui-tests-local-vm](../ui-tests-local-vm/SKILL.md) first. Use
-[ui-tests-migration](../ui-tests-migration/SKILL.md) for test implementation and stabilization.
+[ui-tests-maintenance](../ui-tests-maintenance/SKILL.md) for test creation and maintenance.
 
 ## Automatic handoff and scope
 
@@ -66,7 +66,7 @@ verified terminal success or a documented blocker/three-run escalation.
    or cancel a relevant superseded run on the target branch; runs on other branches may continue in
    parallel. Never cancel another branch's unrelated run.
 5. **Always scope modules.** `uiTestModules` must be non-empty and contain the exact current UITest
-   project stem, for example `[FancyZonesEditor.UITests.Next]`.
+   project stem, for example `[FancyZonesEditor.UITests]`.
 6. **Three-run ceiling.** A CI stabilization sequence may queue at most three runs total. Keep an
    attempt ledger. If run 3 is not green, stop and ask the user for assistance. Also stop when three
    consecutive runs show no stabilization progress.

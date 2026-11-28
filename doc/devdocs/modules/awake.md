@@ -45,7 +45,7 @@ Awake includes command-line functionality for power users and automation scenari
 
 ## UI tests
 
-`src\modules\awake\Awake.UITests` uses `Microsoft.PowerToys.UITest.Next` and winappcli.
+`src\modules\awake\Awake.UITests` uses `Microsoft.PowerToys.UITest` and winappcli.
 The suite covers Settings lifecycle and modes, display requests, duration and expiration edits,
 native tray actions, and standalone CLI help, errors, timers, process binding, and configuration
 hot reload. Timer checks include minimum durations, and power-state checks read the Windows kernel's

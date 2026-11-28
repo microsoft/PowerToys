@@ -33,30 +33,29 @@ function Get-UITestSigningSelection {
 
 Describe 'UI test signing selection' {
     $authenticatedModules = @(
-        'AdvancedPaste.UITests.Next',
+        'AdvancedPaste.UITests',
         'AltWindowCycle.UITests',
         'Awake.UITests',
         'ColorPicker.UITests',
         'CropAndLock.UITests',
         'FileLocksmith.UITests',
         'GrabAndMove.UITests',
-        'Hosts.UITests.Next',
+        'Hosts.UITests',
         'ImageResizer.UITests',
-        'LightSwitch.UITests.Next',
-        'Microsoft.CmdPal.UITests.Next',
+        'LightSwitch.UITests',
+        'Microsoft.CmdPal.UITests',
         'MouseWithoutBorders.UITests',
-        'MouseUtils.UITests.Next',
+        'MouseUtils.UITests',
         'NewPlus.UITests',
-        'NewPlus.UITests.Next',
         'PowerAccent.UITests',
         'PowerDisplay.UITests',
-        'PowerOCR.UITests.Next',
-        'PowerRename.UITests.Next',
+        'PowerOCR.UITests',
+        'PowerRename.UITests',
         'RegistryPreview.UITests',
-        'ScreenRuler.UITests.Next',
+        'ScreenRuler.UITests',
         'Settings.UITests',
         'ShortcutGuide.UITests',
-        'Workspaces.UITests.Next',
+        'Workspaces.UITests',
         'ZoomIt.UITests'
     )
 
@@ -74,25 +73,25 @@ Describe 'UI test signing selection' {
     It 'does not require IPC companions for unrelated project <Module>' -TestCases @(
         'AdvancedPaste-UITests',
         'HostsEditor.UITests',
-        'MouseUtils.UITests',
-        'PowerRename.UITests',
+        'MouseUtils.UITests.Extra',
+        'PowerRename.UITests.Extra',
         'OtherNewPlus.UITests',
         'NewPlus.UITests.Extra',
         'OtherPowerRename.UITests',
         'PowerRename.FuzzingTest',
-        'AdvancedPaste.UITests.Next.Extra',
+        'AdvancedPaste.UITests.Extra',
         'AltWindowCycle.UITests.Extra',
         'Awake.UITests.Extra',
-        'FancyZones.UITests.Next',
+        'FancyZones.UITests',
         'FileLocksmith.UITests.Extra',
         'GrabAndMove.UITests.Extra',
         'ImageResizer.UITests.Extra',
-        'LightSwitch.UITests.Next.Extra',
-        'Microsoft.CmdPal.UITests.Next.Extra',
+        'LightSwitch.UITests.Extra',
+        'Microsoft.CmdPal.UITests.Extra',
         'MouseWithoutBorders.UITests.Extra',
         'PowerDisplay.UITests.Extra',
-        'PowerOCR.UITests.Next.Extra',
-        'ScreenRuler.UITests.Next.Extra',
+        'PowerOCR.UITests.Extra',
+        'ScreenRuler.UITests.Extra',
         'ShortcutGuide.UITests.Extra',
         'Workspaces.Editor.UITests',
         'ZoomIt.UITests.Extra' | ForEach-Object { @{ Module = $_ } }
@@ -121,11 +120,11 @@ Describe 'UI test signing selection' {
         'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
     ) {
         param($Platform)
-        $selected = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next' -Platform $Platform
+        $selected = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests' -Platform $Platform
         ($selected.Packages -contains 'SamplePagesExtension.msix') | Should Be $true
-        $unrelated = Get-UITestSigningSelection -Modules 'FancyZones.UITests.Next' -Platform $Platform
+        $unrelated = Get-UITestSigningSelection -Modules 'FancyZones.UITests' -Platform $Platform
         ($unrelated.Packages -contains 'SamplePagesExtension.msix') | Should Be $false
-        $prefixOnly = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Next.Extra' -Platform $Platform
+        $prefixOnly = Get-UITestSigningSelection -Modules 'Microsoft.CmdPal.UITests.Extra' -Platform $Platform
         ($prefixOnly.Packages -contains 'SamplePagesExtension.msix') | Should Be $false
         $all = Get-UITestSigningSelection -Platform $Platform
         ($all.Packages -contains 'SamplePagesExtension.msix') | Should Be $true
@@ -146,15 +145,11 @@ Describe 'UI test signing selection' {
         ($result.Packages -contains 'ImageResizerContextMenuPackage.msix') | Should Be ($Platform -ne 'x64Win10')
     }
 
-    It 'uses consistent New+ requirements for <Module> on <Platform>' -TestCases @(
-        foreach ($module in @('NewPlus.UITests', 'NewPlus.UITests.Next')) {
-            foreach ($platform in @('x64Win10', 'x64Win11', 'ARM64')) {
-                @{ Module = $module; Platform = $platform }
-            }
-        }
+    It 'signs the New+ package and IPC companions for New+ on <Platform>' -TestCases @(
+        'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
     ) {
-        param($Module, $Platform)
-        $result = Get-UITestSigningSelection -Modules $Module -Platform $Platform
+        param($Platform)
+        $result = Get-UITestSigningSelection -Modules 'NewPlus.UITests' -Platform $Platform
 
         $result.RequiresNewPlus | Should Be $true
         $result.RequiresAuthenticatedSettingsIpc | Should Be $true
@@ -178,7 +173,7 @@ Describe 'UI test signing selection' {
         'x64Win10', 'x64Win11', 'ARM64' | ForEach-Object { @{ Platform = $_ } }
     ) {
         param($Platform)
-        foreach ($modules in @(@('Workspaces.UITests.Next'), @())) {
+        foreach ($modules in @(@('Workspaces.UITests'), @())) {
             $result = Get-UITestSigningSelection -Modules $modules -Platform $Platform
             foreach ($file in @('PowerToys.WorkspacesCLI.exe', 'PowerToys.WorkspacesLauncher.exe',
                     'PowerToys.WorkspacesWindowArranger.exe', 'PowerToys.WorkspacesLauncherUI.exe')) {
@@ -191,8 +186,8 @@ Describe 'UI test signing selection' {
 
     It 'accepts mixed module selections and preserves case-insensitive matching' {
         $result = Get-UITestSigningSelection -Modules @(
-            'FancyZones.UITests.Next',
-            'advancedpaste.uitests.next',
+            'FancyZones.UITests',
+            'advancedpaste.uitests',
             'newplus.uitests'
         )
 
@@ -248,12 +243,12 @@ Describe 'PowerOCR language prerequisites' {
     }
 
     It 'scopes provisioning to <Case>' -TestCases @(
-        @{ Case = 'PowerOCR'; Modules = 'PowerOCR.UITests.Next'; Auto = ''; Calls = 8 }
+        @{ Case = 'PowerOCR'; Modules = 'PowerOCR.UITests'; Auto = ''; Calls = 8 }
         @{ Case = 'all modules'; Modules = ''; Auto = ''; Calls = 8 }
         @{ Case = 'an unrelated suite'; Modules = 'ColorPicker.UITests'; Auto = ''; Calls = 0 }
-        @{ Case = 'a similar name'; Modules = 'PowerOCR.UITests.Next.Extra'; Auto = ''; Calls = 0 }
-        @{ Case = 'auto-selected PowerOCR'; Modules = 'ColorPicker.UITests'; Auto = 'PowerOCR.UITests.Next'; Calls = 8 }
-        @{ Case = 'an unrelated auto-selection'; Modules = 'PowerOCR.UITests.Next'; Auto = 'ColorPicker.UITests'; Calls = 0 }
+        @{ Case = 'a similar name'; Modules = 'PowerOCR.UITests.Extra'; Auto = ''; Calls = 0 }
+        @{ Case = 'auto-selected PowerOCR'; Modules = 'ColorPicker.UITests'; Auto = 'PowerOCR.UITests'; Calls = 8 }
+        @{ Case = 'an unrelated auto-selection'; Modules = 'PowerOCR.UITests'; Auto = 'ColorPicker.UITests'; Calls = 0 }
     ) {
         param($Case, $Modules, $Auto, $Calls)
         $env:AUTO_UI_TEST_MODULES = $Auto
@@ -266,7 +261,7 @@ Describe 'PowerOCR language prerequisites' {
 
     It 'installs a missing capability and marks readiness only after verification' {
         $fixture.States['Language.OCR~~~en-GB~0.0.1.0'] = 'NotPresent'
-        & $setup 'PowerOCR.UITests.Next'
+        & $setup 'PowerOCR.UITests'
 
         Assert-MockCalled Add-WindowsCapability -Times 1 -Exactly -Scope It -ParameterFilter { $Name -eq 'Language.OCR~~~en-GB~0.0.1.0' }
         ($fixture.Messages -contains '##vso[task.setvariable variable=PowerOcrLanguagesReady]true') | Should Be $true
@@ -276,7 +271,7 @@ Describe 'PowerOCR language prerequisites' {
     It 'leaves PowerOCR blocked when capability installation fails' {
         $fixture.States['Language.OCR~~~en-GB~0.0.1.0'] = 'NotPresent'
         $fixture.FailInstall = $true
-        { & $setup 'PowerOCR.UITests.Next' } | Should Throw 'Capability installation failed.'
+        { & $setup 'PowerOCR.UITests' } | Should Throw 'Capability installation failed.'
 
         ($fixture.Messages -contains '##vso[task.setvariable variable=PowerOcrLanguagesReady]false') | Should Be $true
         ($fixture.Messages -contains '##vso[task.setvariable variable=PowerOcrLanguagesReady]true') | Should Be $false
@@ -285,18 +280,18 @@ Describe 'PowerOCR language prerequisites' {
 
     It 'isolates PowerOCR dispatch when readiness is <Ready>' -TestCases @(
         @{ Ready = 'false'; Failed = 1; Runners = 'Other.UITests' }
-        @{ Ready = 'true'; Failed = 0; Runners = 'PowerOCR.UITests.Next,Other.UITests' }
+        @{ Ready = 'true'; Failed = 0; Runners = 'PowerOCR.UITests,Other.UITests' }
     ) {
         param($Ready, $Failed, $Runners)
         $env:POWER_OCR_LANGUAGES_READY = $Ready
         $guard = [regex]::Match(
             $yaml,
-            '(?ms)^ {10}if \(\$base -eq ''PowerOCR\.UITests\.Next'' -and [^\r\n]*\) \{.*?^ {10}\}').Value
+            '(?ms)^ {10}if \(\$base -eq ''PowerOCR\.UITests'' -and [^\r\n]*\) \{.*?^ {10}\}').Value
         $guard | Should Not BeNullOrEmpty
         $loop = @'
 $failed = 0
 $executed = @()
-foreach ($base in @('PowerOCR.UITests.Next', 'Other.UITests')) {
+foreach ($base in @('PowerOCR.UITests', 'Other.UITests')) {
     $suiteFailed = $false
     try {
 '@ + "`n" + $guard + "`n" + @'

@@ -4,7 +4,7 @@
 
 <#
 .SYNOPSIS
-Stages and runs a PowerToys UITest.Next payload inside a persistent local Windows VM.
+Stages and runs a PowerToys UITest payload inside a persistent local Windows VM.
 
 .DESCRIPTION
 This guest template is dispatched by Invoke-LocalVmUiTest.ps1. It reads the generated request,

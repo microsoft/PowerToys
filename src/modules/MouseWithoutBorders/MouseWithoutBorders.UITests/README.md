@@ -1,7 +1,7 @@
 # Mouse Without Borders UI tests
 
 This is the **maintained twelve-case UI-test suite**. It uses
-`Microsoft.PowerToys.UITest.Next` and unmodified official winappcli v0.7.1.
+`Microsoft.PowerToys.UITest` and unmodified official winappcli v0.7.1.
 There is no separate manual Debug experiment to build or run.
 
 ## Project layout
@@ -101,7 +101,7 @@ The hidden property does not make older official binaries support this flow.
 Run the **entire executable without a filter** for sign-off. The CI result gate
 rejects stale, empty, filtered, failed or skipped TRX evidence.
 `AutonomousSandboxTests.AutonomousSandboxSmoke` is one ordered, nonparallel
-scenario using the Next framework directly, not the generic single-peer
+scenario using the shared UI-test framework directly, not the generic single-peer
 `UITestBase` lifecycle.
 
 The smoke requires protected provisioning identity, correlated Sandbox desktop

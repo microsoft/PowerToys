@@ -5,9 +5,9 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Text.Json.Nodes;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using AutomationButton = Microsoft.PowerToys.UITest.Next.Button;
+using AutomationButton = Microsoft.PowerToys.UITest.Button;
 
 namespace Microsoft.AltWindowCycle.UITests;
 

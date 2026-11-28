@@ -6,8 +6,8 @@ creating extensions.
 
 ## UI tests
 
-`src\modules\cmdpal\Tests\Microsoft.CmdPal.UITests.Next` drives Command Palette through
-`Microsoft.PowerToys.UITest.Next` and `winappcli`. See the
+`src\modules\cmdpal\Tests\Microsoft.CmdPal.UITests` drives Command Palette through
+`Microsoft.PowerToys.UITest` and `winappcli`. See the
 [shared UI-test framework guide](../development/ui-tests.md) for general build, local-VM, and CI
 workflows.
 
@@ -88,7 +88,7 @@ also checks that a hidden Command Palette instance can be re-shown without repla
 
 ### Checklist coverage
 
-The `.Next` project replaces the legacy suite. It covers its basic-provider,
+The suite covers basic-provider,
 Indexer, Dock, Settings-search, and sample-extension keyboard cases. The expanded workflows use
 test-owned files, shortcuts, windows, and bookmarks; live configuration tests preserve the same
 Command Palette process and restore changed settings.

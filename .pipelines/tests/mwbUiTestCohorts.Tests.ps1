@@ -7,17 +7,17 @@
 Describe 'Controlled UI execution cohorts' {
     It 'selects a desktop cohort without executing the Sandbox suite' {
         $result = @(Get-UiTestExecutionCohort `
-            -AvailableSuites @('AdvancedPaste.UITests.Next', 'PreviewPane.UITests', 'MouseWithoutBorders.UITests') `
-            -ExecutionSuites @('AdvancedPaste.UITests.Next', 'PreviewPane.UITests') -ShardCount 1)
+            -AvailableSuites @('AdvancedPaste.UITests', 'PreviewPane.UITests', 'MouseWithoutBorders.UITests') `
+            -ExecutionSuites @('AdvancedPaste.UITests', 'PreviewPane.UITests') -ShardCount 1)
 
         $result.Count | Should Be 2
-        $result[0] | Should Be 'AdvancedPaste.UITests.Next'
+        $result[0] | Should Be 'AdvancedPaste.UITests'
         $result[1] | Should Be 'PreviewPane.UITests'
     }
 
     It 'allows the Sandbox alone from the same prerequisite selection' {
         $result = @(Get-UiTestExecutionCohort `
-            -AvailableSuites @('AdvancedPaste.UITests.Next', 'MouseWithoutBorders.UITests') `
+            -AvailableSuites @('AdvancedPaste.UITests', 'MouseWithoutBorders.UITests') `
             -ExecutionSuites @('MouseWithoutBorders.UITests') -ShardCount 1)
 
         $result.Count | Should Be 1
@@ -53,13 +53,13 @@ Describe 'Controlled UI execution cohorts' {
 Describe 'Diagnostic execution leaves prerequisite selection unchanged' {
     BeforeEach {
         $entries = @(
-            [pscustomobject]@{ Name = 'AdvancedPaste.UITests.Next.runtimeconfig.json' }
+            [pscustomobject]@{ Name = 'AdvancedPaste.UITests.runtimeconfig.json' }
             [pscustomobject]@{ Name = 'PreviewPane.UITests.runtimeconfig.json' }
         )
     }
 
     It 'keeps desktop execution separate from Sandbox execution' {
-        $plan = Select-UiTestExecutionPlan $entries $true -DiagnosticCohort -ExecutionModules 'AdvancedPaste.UITests.Next','PreviewPane.UITests'
+        $plan = Select-UiTestExecutionPlan $entries $true -DiagnosticCohort -ExecutionModules 'AdvancedPaste.UITests','PreviewPane.UITests'
         $plan.Entries.Count | Should Be 2
         $plan.RunMwbSandbox | Should Be $false
     }

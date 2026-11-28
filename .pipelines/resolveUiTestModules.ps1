@@ -52,14 +52,14 @@ $uiTestModules = foreach ($module in $touchedModules) {
             [xml] $project = Get-Content -LiteralPath $_.FullName -Raw
             @($project.SelectNodes("//*[local-name()='ProjectReference']")) |
                 Where-Object {
-                    ($_.Include -replace '\\', '/') -match '/UITestAutomation\.Next/UITestAutomation\.Next\.csproj$'
+                    ($_.Include -replace '\\', '/') -match '/UITestAutomation/UITestAutomation\.csproj$'
                 }
         } |
         ForEach-Object { $_.BaseName }
 }
 
 # Changes to the shared UI-test infrastructure (test job, resolver, install/sign/cleanup scripts,
-# UITestAutomation.Next) can break every suite without touching a module, so run a small smoke set
+# UITestAutomation) can break every suite without touching a module, so run a small smoke set
 # that covers a non-elevated suite with an MSIX fixture (CropAndLock) and an elevated suite (Hosts).
 $uiTestInfrastructurePatterns = @(
     '^\.pipelines/resolveUiTestModules\.ps1$',
@@ -72,9 +72,9 @@ $uiTestInfrastructurePatterns = @(
     '^\.pipelines/v2/templates/job-test-project\.yml$',
     '^\.pipelines/v2/templates/job-resolve-ui-tests\.yml$',
     '^\.pipelines/v2/templates/steps-download-artifacts-with-azure-cli\.yml$',
-    '^src/common/UITestAutomation\.Next/'
+    '^src/common/UITestAutomation/'
 )
-$smokeUiTestModules = @('CropAndLock.UITests', 'Hosts.UITests.Next')
+$smokeUiTestModules = @('CropAndLock.UITests', 'Hosts.UITests')
 
 $infrastructureChanged = @(
     $ChangedFile |

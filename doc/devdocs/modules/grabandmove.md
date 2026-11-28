@@ -14,13 +14,13 @@ applications. Settings changes apply to the running module without a restart.
 | `src\modules\GrabAndMove\GrabAndMoveModuleInterface` | Runner module interface and module process lifecycle |
 | `src\settings-ui\Settings.UI\SettingsXAML\Views\GrabAndMovePage.xaml` | Settings page |
 | `src\modules\GrabAndMove\Tests\GrabAndMove.UITests` | Module UI tests and inert resizable test window |
-| `src\common\UITestAutomation.Next\UmdfHidInput.cs` | Optional virtual-HID backend for the shared input helpers |
+| `src\common\UITestAutomation\UmdfHidInput.cs` | Optional virtual-HID backend for the shared input helpers |
 | `.pipelines\umdf-hid-smoke` | Test-only driver build, signing, provisioning, cleanup and transport probe |
 | `.pipelines\umdf` | Shared UMDF build, fixture orchestration, ownership, trust and diagnostic primitives |
 
 ## UI tests
 
-The suite uses `Microsoft.PowerToys.UITest.Next` and winappcli, not WinAppDriver/Selenium. Its eight
+The suite uses `Microsoft.PowerToys.UITest` and winappcli, not WinAppDriver/Selenium. Its eight
 cases cover Alt move/resize, geometry visibility for both gestures, live modifier changes,
 application exclusions, disable/re-enable behavior and repeated modifier selection while the
 inert fixture owns foreground, through the real Settings UI.
@@ -310,7 +310,7 @@ commands with `not-microsoft-signed`. Debug relaxes only that signature check; m
 filenames and the `WinUI3Apps` directory layout are still required.
 
 For Release validation, use a matching officially signed runtime or the existing
-[`signSparsePackages.ps1 -RequiredAuthenticodeFile` companion-signing workflow](../../../.github/skills/ui-tests-migration/references/ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc)
+[`signSparsePackages.ps1 -RequiredAuthenticodeFile` companion-signing workflow](../../../.github/skills/ui-tests-maintenance/references/ci-stability.md#principle-5a--keep-module-lifecycle-tests-on-real-release-settings-ipc)
 for **both** `PowerToys.exe` and `PowerToys.Settings.exe` on the isolated execution machine.
 Keep its certificate marker separate from `driver-state.json` and remove that test trust with
 [removeTestSigningCertificates.ps1](../../../.pipelines/removeTestSigningCertificates.ps1).

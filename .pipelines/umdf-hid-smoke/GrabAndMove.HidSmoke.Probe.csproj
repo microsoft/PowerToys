@@ -18,7 +18,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="MSTest" />
-    <ProjectReference Include="$(RepoRoot)src\common\UITestAutomation.Next\UITestAutomation.Next.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\common\UITestAutomation\UITestAutomation.csproj" />
     <Compile Include="$(RepoRoot)src\modules\GrabAndMove\Tests\GrabAndMove.UITests\TestWindow.cs" Link="TestWindow.cs" />
   </ItemGroup>
 </Project>

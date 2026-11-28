@@ -14,9 +14,9 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Microsoft.PowerToys.UITest.Next;
+using Microsoft.PowerToys.UITest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using UiButton = Microsoft.PowerToys.UITest.Next.Button;
+using UiButton = Microsoft.PowerToys.UITest.Button;
 
 namespace Microsoft.MouseWithoutBorders.UITests;
 

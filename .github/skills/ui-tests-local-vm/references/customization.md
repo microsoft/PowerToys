@@ -58,7 +58,7 @@ rich baseline can hide deployment defects.
 
 ## Visual Studio Remote Debugger (`msvsmon`)
 
-`msvsmon` is optional. Normal UITest.Next execution requires no Visual Studio installation or remote
+`msvsmon` is optional. Normal UITest execution requires no Visual Studio installation or remote
 tools in the VM. The controller needs only PowerShell Direct, Task Scheduler, the interactive
 desktop, winappcli, the product, tests, and the .NET runtime.
 

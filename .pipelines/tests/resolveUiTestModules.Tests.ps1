@@ -8,15 +8,13 @@ function New-UITestProject {
         [Parameter(Mandatory)]
         [string] $RelativePath,
 
-        [ValidateSet('Next', 'None')]
-        [string] $Framework = 'Next'
+        [switch] $WithoutFramework
     )
 
     $path = Join-Path $TestDrive $RelativePath
     New-Item -ItemType Directory -Path (Split-Path $path) -Force | Out-Null
-    $projectReference = switch ($Framework) {
-        'Next' { '<ProjectReference Include="..\UITestAutomation.Next\UITestAutomation.Next.csproj" />' }
-        default { '' }
+    $projectReference = if (-not $WithoutFramework) {
+        '<ProjectReference Include="..\UITestAutomation\UITestAutomation.csproj" />'
     }
     @"
 <Project Sdk="Microsoft.NET.Sdk">
@@ -72,21 +70,21 @@ Describe 'resolveUiTestModules' {
         $result.UiTestModules | Should Be @('FileLocksmith.UITests')
     }
 
-    It 'selects all UI test projects using the Next framework' {
-        New-UITestProject 'src\modules\fancyzones\FancyZones.UITests.Next\FancyZones.UITests.Next.csproj'
-        New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests.Next\FancyZonesEditor.UITests.Next.csproj'
+    It 'selects all UI test projects using the shared framework' {
+        New-UITestProject 'src\modules\fancyzones\FancyZones.UITests\FancyZones.UITests.csproj'
+        New-UITestProject 'src\modules\fancyzones\FancyZonesEditor.UITests\FancyZonesEditor.UITests.csproj'
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile 'src/modules/fancyzones/dll/FancyZones.cpp'
 
         $result.UiTestModules | Should Be @(
-            'FancyZones.UITests.Next',
-            'FancyZonesEditor.UITests.Next'
+            'FancyZones.UITests',
+            'FancyZonesEditor.UITests'
         )
     }
 
     It 'ignores projects without the UI test framework and non-module changes' {
-        New-UITestProject 'src\modules\Example\Tests\Example.UITests\Example.UITests.csproj' -Framework None
-        New-UITestProject 'src\modules\Example\Tests\Example.UnitTests\Example.UnitTests.csproj' -Framework None
+        New-UITestProject 'src\modules\Example\Tests\Example.UITests\Example.UITests.csproj' -WithoutFramework
+        New-UITestProject 'src\modules\Example\Tests\Example.UnitTests\Example.UnitTests.csproj' -WithoutFramework
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
             'doc/devdocs/modules/example.md',
@@ -112,7 +110,7 @@ Describe 'resolveUiTestModules' {
 
     It 'selects the smoke set when UI-test infrastructure changes' {
         New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
-        New-UITestProject 'src\modules\Hosts\Hosts.UITests.Next\Hosts.UITests.Next.csproj'
+        New-UITestProject 'src\modules\Hosts\Hosts.UITests\Hosts.UITests.csproj'
         New-UITestProject 'src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj'
         New-UITestProject 'src\modules\GrabAndMove\Tests\GrabAndMove.UITests\GrabAndMove.UITests.csproj'
         New-UITestProject 'src\modules\powerdisplay\PowerDisplay.UITests\PowerDisplay.UITests.csproj'
@@ -121,14 +119,14 @@ Describe 'resolveUiTestModules' {
             '.pipelines/v2/templates/job-test-project.yml',
             '.pipelines\signSparsePackages.ps1',
             '.pipelines\UiTestArtifacts.Common.ps1',
-            'src/common/UITestAutomation.Next/Session.cs'
+            'src/common/UITestAutomation/Session.cs'
         )) {
             $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile $file
 
             $result.InfrastructureChanged | Should Be $true
-            $expected = @('CropAndLock.UITests', 'Hosts.UITests.Next')
+            $expected = @('CropAndLock.UITests', 'Hosts.UITests')
             if ($file -eq '.pipelines/v2/templates/job-test-project.yml') {
-                $expected = @('CropAndLock.UITests', 'GrabAndMove.UITests', 'Hosts.UITests.Next', 'PowerDisplay.UITests')
+                $expected = @('CropAndLock.UITests', 'GrabAndMove.UITests', 'Hosts.UITests', 'PowerDisplay.UITests')
             }
             $result.UiTestModules | Should Be $expected
         }
@@ -136,7 +134,7 @@ Describe 'resolveUiTestModules' {
 
     It 'merges the smoke set with touched module UI tests' {
         New-UITestProject 'src\modules\CropAndLock\Tests\CropAndLock.UITests\CropAndLock.UITests.csproj'
-        New-UITestProject 'src\modules\Hosts\Hosts.UITests.Next\Hosts.UITests.Next.csproj'
+        New-UITestProject 'src\modules\Hosts\Hosts.UITests\Hosts.UITests.csproj'
         New-UITestProject 'src\modules\ZoomIt\Tests\ZoomIt.UITests\ZoomIt.UITests.csproj'
 
         $result = & $scriptPath -RepoRoot $TestDrive -ChangedFile @(
@@ -145,7 +143,7 @@ Describe 'resolveUiTestModules' {
             'src/modules/Hosts/HostsUILib/Host.cs'
         )
 
-        $result.UiTestModules | Should Be @('CropAndLock.UITests', 'Hosts.UITests.Next', 'ZoomIt.UITests')
+        $result.UiTestModules | Should Be @('CropAndLock.UITests', 'Hosts.UITests', 'ZoomIt.UITests')
     }
 
     It 'does not select the smoke set for unrelated pipeline changes' {

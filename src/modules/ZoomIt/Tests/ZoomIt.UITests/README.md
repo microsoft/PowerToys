@@ -1,6 +1,6 @@
 # ZoomIt UI tests
 
-This greenfield suite uses `Microsoft.PowerToys.UITest.Next` and winappcli to automate
+This greenfield suite uses `Microsoft.PowerToys.UITest` and winappcli to automate
 the [ZoomIt release checklist](https://github.com/microsoft/PowerToys/issues/40684).
 It launches ZoomIt through the PowerToys runner, not as the standalone Sysinternals app.
 

@@ -53,8 +53,8 @@ Most of the sub-modules (Find My Mouse, Mouse Highlighter, Mouse Pointer Crossha
 
 ## UI Test Automation
 
-Mouse Utilities UI tests use `Microsoft.PowerToys.UITest.Next` in
-`src\modules\MouseUtils\MouseUtils.UITests.Next`. See the [UI-test guide](../../development/ui-tests.md).
+Mouse Utilities UI tests use `Microsoft.PowerToys.UITest` in
+`src\modules\MouseUtils\MouseUtils.UITests`. See the [UI-test guide](../../development/ui-tests.md).
 
 ## See Also
 
