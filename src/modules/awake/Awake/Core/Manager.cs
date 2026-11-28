@@ -293,8 +293,15 @@ namespace Awake.Core
             SetModeShellIcon();
         }
 
-        internal static void SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
+        internal static bool SetExpirableKeepAwake(DateTimeOffset expireAt, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")
         {
+            DateTimeOffset now = DateTimeOffset.Now;
+            if (expireAt <= now)
+            {
+                Logger.LogError($"The specified target date and time is not in the future. Current time: {now}, Target time: {expireAt}");
+                return false;
+            }
+
             Logger.LogInfo($"Expirable keep-awake invoked by {callerName}. Expected expiration date/time: {expireAt} with display on setting set to {keepDisplayOn}.");
             PowerToysTelemetry.Log.WriteEvent(new Telemetry.AwakeExpirableKeepAwakeEvent());
 
@@ -319,7 +326,7 @@ namespace Awake.Core
                         // We return here because when the settings are saved, they will be automatically
                         // processed. That means that when they are processed, the expirable keep-awake will kick-in properly
                         // and we avoid double execution.
-                        return;
+                        return true;
                     }
                 }
                 catch (Exception ex)
@@ -329,13 +336,6 @@ namespace Awake.Core
             }
 
             Logger.LogInfo($"Expirable keep-awake starting...");
-
-            if (expireAt <= DateTimeOffset.Now)
-            {
-                Logger.LogError($"The specified target date and time is not in the future. Current time: {DateTimeOffset.Now}, Target time: {expireAt}");
-                return;
-            }
-
             Logger.LogInfo($"Starting expirable log for {expireAt}");
 
             lock (StateLock)
@@ -350,9 +350,15 @@ namespace Awake.Core
             SetModeShellIcon();
 
             TimeSpan remainingTime = expireAt - DateTimeOffset.Now;
+            if (remainingTime < TimeSpan.Zero)
+            {
+                remainingTime = TimeSpan.Zero;
+            }
 
             _timerSubscription = Observable.Timer(remainingTime).Subscribe(
                 _ => HandleTimerCompletion("expirable"));
+
+            return true;
         }
 
         internal static void SetTimedKeepAwake(uint seconds, bool keepDisplayOn = true, [CallerMemberName] string callerName = "")

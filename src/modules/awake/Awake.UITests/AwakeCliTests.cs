@@ -83,6 +83,7 @@ public sealed class AwakeCliTests : UITestBase
     [DataRow("--time-limit -1", "Interval in --time-limit could not be parsed correctly")]
     [DataRow("--pid not-a-pid", "PID value in --pid could not be parsed correctly")]
     [DataRow("--expire-at not-a-date", "Date and time value in --expire-at could not be parsed correctly")]
+    [DataRow("--expire-at \"2000-01-01 00:00:00\"", "Date and time value in --expire-at must be in the future")]
     public void InvalidOptionsShowErrorsAndDoNotKeepAwake(string arguments, string diagnostic)
     {
         terminal!.Start(arguments, waitForCommandExit: true);
