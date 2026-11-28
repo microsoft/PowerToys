@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation
+﻿// Copyright (c) Microsoft Corporation
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
@@ -33,6 +33,8 @@ namespace Peek.FilePreviewer.Controls
             get { return (string?)GetValue(ToolTipTextProperty); }
             set { SetValue(ToolTipTextProperty, value); }
         }
+
+        public Windows.Media.Playback.MediaPlayer MediaPlayer => PlayerElement.MediaPlayer;
 
         public AudioControl()
         {
