@@ -44,6 +44,7 @@
     <ClCompile Include="ProcessesList.cpp" />
     <ClCompile Include="ReportGPOValues.cpp" />
     <ClCompile Include="ReportMonitorInfo.cpp" />
+    <ClCompile Include="ReportPrivateData.cpp" />
     <ClCompile Include="ReportSanitizer.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="RegistryUtils.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="Package.h" />
     <ClInclude Include="ReportGPOValues.h" />
     <ClInclude Include="ReportMonitorInfo.h" />
+    <ClInclude Include="ReportPrivateData.h" />
     <ClInclude Include="ReportSanitizer.h" />
     <ClInclude Include="$(RepoRoot)src\common\utils\json.h" />
     <ClInclude Include="RegistryUtils.h" />
