@@ -27,50 +27,73 @@ internal static class ExpirationTimeParser
             value,
             culture,
             DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.NoCurrentDateDefault,
-            out DateTime parsedNoDefault) && parsedNoDefault.Kind == DateTimeKind.Unspecified)
+            out DateTime parsedNoDefault))
         {
-            // Distinguish literal 0001-01-01 dates from time-only strings that default to DateTime.MinValue.
-            bool isTimeOnly = parsedNoDefault.Date == DateTime.MinValue
-                && DateTime.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTime parsedWithDefault)
-                && parsedWithDefault.Date != DateTime.MinValue;
+            // Compare with and without NoCurrentDateDefault so literal 0001-01-01 dates and
+            // offset wraparound across midnight onto 0001-01-02 are not treated as time-only.
+            bool isTimeOnly = DateTime.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTime parsedWithDefault)
+                && parsedNoDefault.Date != parsedWithDefault.Date;
 
             if (isTimeOnly)
             {
-                DateTimeOffset localNow = TimeZoneInfo.ConvertTime(now, timeZone);
-                DateTime todayLocal = localNow.Date + parsedNoDefault.TimeOfDay;
-                DateTimeOffset candidate = new(todayLocal, timeZone.GetUtcOffset(todayLocal));
+                DateTimeOffset anchoredNow;
+                TimeSpan timeOfDay;
+                TimeSpan? fixedOffset = null;
 
-                if (candidate <= now)
+                if (parsedNoDefault.Kind == DateTimeKind.Unspecified)
                 {
-                    if (localNow.Date >= DateTime.MaxValue.Date)
+                    anchoredNow = TimeZoneInfo.ConvertTime(now, timeZone);
+                    timeOfDay = parsedNoDefault.TimeOfDay;
+                }
+                else
+                {
+                    if (!DateTimeOffset.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTimeOffset parsedTimeOffset))
                     {
                         return ExpirationTimeParseStatus.InvalidFormat;
                     }
 
-                    DateTime tomorrowLocal = localNow.Date.AddDays(1) + parsedNoDefault.TimeOfDay;
-                    candidate = new DateTimeOffset(tomorrowLocal, timeZone.GetUtcOffset(tomorrowLocal));
+                    anchoredNow = now.ToOffset(parsedTimeOffset.Offset);
+                    timeOfDay = parsedTimeOffset.TimeOfDay;
+                    fixedOffset = parsedTimeOffset.Offset;
+                }
+
+                DateTime todayDateTime = anchoredNow.Date + timeOfDay;
+                DateTimeOffset candidate = new(todayDateTime, fixedOffset ?? timeZone.GetUtcOffset(todayDateTime));
+
+                if (candidate <= now)
+                {
+                    if (anchoredNow.Date >= DateTime.MaxValue.Date)
+                    {
+                        return ExpirationTimeParseStatus.InvalidFormat;
+                    }
+
+                    DateTime tomorrowDateTime = anchoredNow.Date.AddDays(1) + timeOfDay;
+                    candidate = new DateTimeOffset(tomorrowDateTime, fixedOffset ?? timeZone.GetUtcOffset(tomorrowDateTime));
                 }
 
                 expirationDateTime = candidate;
                 return ExpirationTimeParseStatus.Success;
             }
 
-            try
+            if (parsedNoDefault.Kind == DateTimeKind.Unspecified)
             {
-                DateTimeOffset localCandidate = new(parsedNoDefault, timeZone.GetUtcOffset(parsedNoDefault));
-                if (localCandidate <= now)
+                try
                 {
-                    return ExpirationTimeParseStatus.InThePast;
-                }
+                    DateTimeOffset localCandidate = new(parsedNoDefault, timeZone.GetUtcOffset(parsedNoDefault));
+                    if (localCandidate <= now)
+                    {
+                        return ExpirationTimeParseStatus.InThePast;
+                    }
 
-                expirationDateTime = localCandidate;
-                return ExpirationTimeParseStatus.Success;
-            }
-            catch (ArgumentOutOfRangeException)
-            {
-                return parsedNoDefault.Year == 1
-                    ? ExpirationTimeParseStatus.InThePast
-                    : ExpirationTimeParseStatus.InvalidFormat;
+                    expirationDateTime = localCandidate;
+                    return ExpirationTimeParseStatus.Success;
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    return parsedNoDefault.Year == 1
+                        ? ExpirationTimeParseStatus.InThePast
+                        : ExpirationTimeParseStatus.InvalidFormat;
+                }
             }
         }
 

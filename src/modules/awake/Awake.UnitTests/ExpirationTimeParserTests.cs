@@ -47,6 +47,8 @@ public class ExpirationTimeParserTests
     [DataRow("2026-11-22 14:00")]
     [DataRow("2026-11-22T14:00:00Z")]
     [DataRow("2026-11-22T15:00:00+02:00")]
+    [DataRow("2026-01-01T08:00+02:00")]
+    [DataRow("0001-01-01T08:00+02:00")]
     public void TryParse_PastFullDatesAndIsoStrings_ReturnsInThePast(string input)
     {
         ExpirationTimeParseStatus status = ExpirationTimeParser.TryParse(
@@ -91,6 +93,20 @@ public class ExpirationTimeParserTests
     }
 
     [TestMethod]
+    public void TryParse_TimeOnlyWithOffset_UsesOffsetDateAndRollsToTomorrow()
+    {
+        AssertSuccess("00:00:00Z", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 23, 0, 0, 0, TimeSpan.Zero));
+        AssertSuccess("08:00+02:00", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 23, 8, 0, 0, TimeSpan.FromHours(2)));
+        AssertSuccess("23:30+02:00", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 22, 23, 30, 0, TimeSpan.FromHours(2)));
+
+        DateTimeOffset crossDateNow = new(2026, 6, 15, 22, 30, 0, TimeSpan.Zero);
+        AssertSuccess("01:00+02:00", crossDateNow, UsCulture, Eastern, new DateTimeOffset(2026, 6, 16, 1, 0, 0, TimeSpan.FromHours(2)));
+
+        DateTimeOffset exactMidnightUtc = new(2026, 11, 22, 0, 0, 0, TimeSpan.Zero);
+        AssertSuccess("00:00:00Z", exactMidnightUtc, UsCulture, Eastern, new DateTimeOffset(2026, 11, 23, 0, 0, 0, TimeSpan.Zero));
+    }
+
+    [TestMethod]
     public void TryParse_TimeOnlyAcrossOvernightDstChange_UsesNextDayOffset()
     {
         DateTimeOffset beforeSpringForward = new(2026, 3, 7, 23, 0, 0, TimeSpan.FromHours(-5));
@@ -112,6 +128,9 @@ public class ExpirationTimeParserTests
         Assert.AreEqual(
             ExpirationTimeParseStatus.InvalidFormat,
             ExpirationTimeParser.TryParse("9999-12-31 23:59:59", BaseNow, UsCulture, Eastern, out _));
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InvalidFormat,
+            ExpirationTimeParser.TryParse("08:00:00Z", new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero), UsCulture, Eastern, out _));
     }
 
     [TestMethod]
