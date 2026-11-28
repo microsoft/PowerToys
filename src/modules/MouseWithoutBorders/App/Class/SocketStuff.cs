@@ -824,6 +824,75 @@ namespace MouseWithoutBorders.Class
             }
         }
 
+        // Returns the machines in the layout that have no connection in either direction and no connection attempt of this
+        // machine's in progress. Returns none while a key mismatch is known, the same rule as UpdateTCPClients.
+        internal static List<string> GetMachinesToRetry(bool invalidKeyFound, string[] machineMatrix, string thisMachineName, IReadOnlyList<(string MachineName, bool IsClient, SocketStatus Status, bool HasBackingSocket)> sockets)
+        {
+            List<string> machines = new();
+
+            if (invalidKeyFound || machineMatrix == null)
+            {
+                return machines;
+            }
+
+            string thisMachine = thisMachineName?.Trim();
+
+            foreach (string entry in machineMatrix)
+            {
+                if (string.IsNullOrWhiteSpace(entry))
+                {
+                    continue;
+                }
+
+                string machineName = entry.Trim();
+
+                if (machineName.Equals(thisMachine, StringComparison.OrdinalIgnoreCase) || machines.Contains(machineName, StringComparer.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                // A connection either way is enough, and so is an attempt of this machine's that is still running.
+                bool hasConnectionOrAttempt = sockets.Any(socket =>
+                    socket.HasBackingSocket
+                    && machineName.Equals(socket.MachineName?.Trim(), StringComparison.OrdinalIgnoreCase)
+                    && (socket.Status == SocketStatus.Connected
+                        || (socket.IsClient && socket.Status is SocketStatus.Resolving or SocketStatus.Connecting or SocketStatus.Handshaking)));
+
+                if (!hasConnectionOrAttempt)
+                {
+                    machines.Add(machineName);
+                }
+            }
+
+            return machines;
+        }
+
+        // Called once a minute from FrmScreen.HelperTimer_Tick: starts a connection attempt to each machine that
+        // GetMachinesToRetry returns. Every other reconnect waits for an event, such as a failed send or the other
+        // machine connecting in.
+        internal void RetryMachinesWithoutConnection()
+        {
+            // Close() clears skMessageServer. The key check that FrmScreen runs one minute after it opens the sockets can
+            // close them on purpose and leave Common.Sk set, and this machine must not dial out again after that.
+            if (skMessageServer == null)
+            {
+                return;
+            }
+
+            List<(string MachineName, bool IsClient, SocketStatus Status, bool HasBackingSocket)> sockets;
+
+            lock (TcpSocketsLock)
+            {
+                sockets = TcpSockets.Where(t => t != null).Select(t => (t.MachineName, t.IsClient, t.Status, HasBackingSocket: t.BackingSocket != null)).ToList();
+            }
+
+            foreach (string machineName in GetMachinesToRetry(InvalidKeyFound, MachineStuff.MachineMatrix, Common.MachineName, sockets))
+            {
+                Logger.LogDebug($"{nameof(RetryMachinesWithoutConnection)}: {machineName}");
+                StartNewTcpClient(machineName);
+            }
+        }
+
         private static readonly Dictionary<string, List<IPAddress>> BadIPs = new();
         private static readonly Lock BadIPsLock = new();
 
