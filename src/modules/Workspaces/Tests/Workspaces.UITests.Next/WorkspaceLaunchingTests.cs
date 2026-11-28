@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,7 +12,6 @@ namespace Microsoft.Workspaces.UITests
     public sealed partial class WorkspacesTests
     {
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false, false)]
         [DataRow(true, false)]
         [DataRow(false, true)]
@@ -34,7 +32,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         [DataRow(false)]
         [DataRow(true)]
         public void CommandLineArgumentsReachUnpackagedAndPackagedApps(bool packaged)
@@ -75,7 +72,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void DesktopShortcutTracksFilePresenceAndLaunchesWorkspace()
         {
             var title = State.Prefix + "-shortcut";
@@ -86,7 +82,7 @@ namespace Microsoft.Workspaces.UITests
             var shortcut = WorkspaceTestState.ShortcutPath(name);
             OpenEditor();
             EditWorkspace(name);
-            var checkBox = Editor.Find<CheckBox>(By.Name("Create desktop shortcut"));
+            var checkBox = Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox"));
             Assert.IsFalse(checkBox.IsChecked, "A missing desktop shortcut should be shown as unchecked.");
             SetCheck(checkBox, true);
             SaveWorkspace();
@@ -97,9 +93,9 @@ namespace Microsoft.Workspaces.UITests
             // Read the created .lnk through the Windows Script Host shell. StorageFile.GetFileFromPathAsync
             // refuses desktop shortcuts on some images ("Access is denied ... system or hidden"), while the
             // WScript.Shell shortcut object reads the target and arguments the Shell actually stored.
-            var (target, shortcutArguments) = ReadShortcutTargetAndArguments(shortcut);
+            var (target, shortcutArguments) = WorkspaceProfileSnapshot.ReadShortcutTargetAndArguments(shortcut);
             Assert.AreEqual(
-                Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Workspaces))!, "PowerToys.WorkspacesLauncher.exe"),
+                Path.Combine(Path.GetDirectoryName(SessionHelper.GetExecutablePath(PowerToysModule.Runner))!, "PowerToys.WorkspacesLauncher.exe"),
                 target,
                 true,
                 "The shortcut does not target the Workspaces launcher.");
@@ -112,57 +108,68 @@ namespace Microsoft.Workspaces.UITests
             WaitForLaunchCompletion(project);
 
             EditWorkspace(name);
-            Assert.IsTrue(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")).IsChecked, "The existing desktop shortcut was not recognized.");
+            Assert.IsTrue(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).IsChecked, "The existing desktop shortcut was not recognized.");
             CancelEditing();
             File.Delete(shortcut);
             EditWorkspace(name);
-            Assert.IsFalse(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")).IsChecked, "The checkbox did not notice an externally removed shortcut.");
-            SetCheck(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")), true);
+            Assert.IsFalse(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")).IsChecked, "The checkbox did not notice an externally removed shortcut.");
+            SaveWorkspace();
+            Assert.IsFalse(File.Exists(shortcut), "Saving another edit recreated the externally removed shortcut.");
+            Assert.IsFalse(WorkspaceTestState.ReadProject(WorkspaceTestState.Text(project, "id"))["is-shortcut-needed"]!.GetValue<bool>());
+            EditWorkspace(name);
+            SetCheck(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")), true);
             SaveWorkspace();
             Assert.IsTrue(File.Exists(shortcut), "The shortcut was not recreated.");
             EditWorkspace(name);
-            SetCheck(Editor.Find<CheckBox>(By.Name("Create desktop shortcut")), false);
+            SetCheck(Editor.Find<CheckBox>(By.AccessibilityId("CreateShortcutCheckBox")), false);
             SaveWorkspace();
             Assert.IsFalse(File.Exists(shortcut), "Unchecking the option did not remove the desktop shortcut.");
             Assert.IsFalse(WorkspaceTestState.ReadProject(WorkspaceTestState.Text(project, "id"))["is-shortcut-needed"]!.GetValue<bool>());
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void LaunchAndEditCaptureAddsWindowsToTheExistingWorkspace()
         {
             var originalTitle = State.Prefix + "-original";
+            var draftTitle = State.Prefix + "-unsaved";
+            var draftArguments = $"--title \"{draftTitle}\"";
             var addedTitle = State.Prefix + "-added";
             var app = State.Application("Workspaces.TestApp", originalTitle);
             var project = State.Project("launch-edit", app);
             State.WriteProjects(project);
+            var stored = File.ReadAllBytes(WorkspaceTestState.WorkspacesPath);
             var name = WorkspaceTestState.Text(project, "name");
             OpenEditor();
             EditWorkspace(name);
-            Step("Launching the saved workspace from Launch and Edit.");
-            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "Launching a saved workspace must not require a temporary draft.");
+            var arguments = ExpandApplication("Workspaces.TestApp").Find<TextBox>(By.AccessibilityId("CommandLineTextBox"));
+            arguments.SetText(draftArguments);
+            Assert.IsTrue(arguments.WaitForValue(draftArguments), "The editing page did not accept the draft arguments.");
+            Step("Launching the workspace with its unsaved command-line arguments.");
+            Assert.IsFalse(File.Exists(WorkspaceTestState.TemporaryPath), "A capture file already existed before Launch and Edit.");
             Editor.Find<Button>(By.AccessibilityId("LaunchEditButton")).Invoke(msPostAction: 0);
-            var original = State.Fixture.WaitForWindow(originalTitle);
-            AssertPositioned(original, app);
+            var launched = State.Fixture.WaitForWindow(draftTitle);
+            AssertPositioned(launched, app);
             var capture = WaitForCaptureWindow();
+            Assert.IsNull(State.Fixture.FindWindow(originalTitle), "Launch and Edit also launched the saved command line.");
+            CollectionAssert.AreEqual(stored, File.ReadAllBytes(WorkspaceTestState.WorkspacesPath), "Launch and Edit modified the stored workspace before Save.");
             State.Fixture.OpenUnpackaged(addedTitle, TestContext);
-            Capture(capture, addedTitle);
-            Assert.IsTrue(Editor.Find<Button>(By.AccessibilityId("RevertButton")).IsEnabled, "Launch and Edit did not expose its revert action.");
+            CaptureIntoEditor(capture, recapture: true);
             SaveWorkspace();
             var saved = WorkspaceTestState.WaitForProject(
                 WorkspaceTestState.Text(project, "id"),
                 value => value["applications"]!.AsArray().Any(application => WorkspaceTestState.Text(application!, "title") == addedTitle));
             Assert.AreEqual(1, WorkspaceTestState.ReadProjects().Count, "Launch and Edit created a second workspace instead of updating the existing one.");
             Assert.AreEqual(name, WorkspaceTestState.Text(saved, "name"));
+            var savedApp = AppByTitle(saved["applications"]!.AsArray(), draftTitle);
             Assert.AreEqual(
                 Guid.Parse(WorkspaceTestState.Text(app, "id")),
-                Guid.Parse(WorkspaceTestState.Text(AppByTitle(saved["applications"]!.AsArray(), originalTitle), "id")),
+                Guid.Parse(WorkspaceTestState.Text(savedApp, "id")),
                 "Recapture did not retain the identity of the originally launched application.");
+            Assert.AreEqual(draftArguments, WorkspaceTestState.Text(savedApp, "command-line-arguments"), "Save did not retain the draft launch arguments after recapture.");
             AppByTitle(saved["applications"]!.AsArray(), addedTitle);
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void MoveExistingWindowsReusesTheOriginalProcessAndWindow()
         {
             var title = State.Prefix + "-reuse";
@@ -172,7 +179,7 @@ namespace Microsoft.Workspaces.UITests
             State.WriteProjects(project);
             OpenEditor();
             EditWorkspace(WorkspaceTestState.Text(project, "name"));
-            SetCheck(Editor.Find<CheckBox>(By.Name("Move existing windows")), true);
+            SetCheck(Editor.Find<CheckBox>(By.AccessibilityId("MoveExistingWindowsCheckBox")), true);
             SaveWorkspace();
             LaunchWorkspace(WorkspaceTestState.Text(project, "name"));
             AssertPositioned(original, app);
@@ -184,7 +191,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void MissingSavedMonitorUsesTheRemainingDisplay()
         {
             var title = State.Prefix + "-missing-monitor";
@@ -209,7 +215,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void LauncherDisplaysLaunchingLaunchedAndFailedStates()
         {
             using var gate = new EventWaitHandle(false, EventResetMode.ManualReset, $@"Local\{State.Prefix}-progress-gate");
@@ -296,7 +301,6 @@ namespace Microsoft.Workspaces.UITests
         }
 
         [TestMethod]
-        [Ignore(WinUiMigrationIgnoreReason)]
         public void DismissClosesProgressWhileApplicationsContinueLaunching()
         {
             var gateName = $@"Local\{State.Prefix}-dismiss-gate";
@@ -393,48 +397,11 @@ namespace Microsoft.Workspaces.UITests
         private void LaunchWorkspace(string name)
         {
             var card = WaitForCard(name);
-            var launch = LaunchButtonsForCard(card);
-            if (launch.Length != 1)
-            {
-                // The Launch button is a card descendant, so its automation peer can be missing after the
-                // list re-projected its items (e.g. right after a save). Re-render the list once from a
-                // fresh editor to restore live descendant peers, then reacquire the button.
-                Step("Re-rendering the workspace list to restore the card's Launch button.");
-                CloseEditor();
-                OpenEditor();
-                card = WaitForCard(name);
-                launch = LaunchButtonsForCard(card);
-            }
-
-            Assert.HasCount(1, launch, "The workspace Launch button was not uniquely addressable.");
+            var launches = FindDescendants<Button>(Editor.Find<Element>(By.AccessibilityId(card.Id), 10_000), "Button", "LaunchButton");
+            Assert.HasCount(1, launches, "The workspace card should contain one Launch button.");
+            Assert.IsTrue(launches[0].IsEnabled, "The workspace Launch button is unavailable.");
             Step($"Launching workspace '{name}' from its editor card.");
-            launch[0].Invoke(msPostAction: 0);
-        }
-
-        private Button[] LaunchButtonsForCard(WorkspaceCard card) =>
-            [.. Editor.FindAll<Button>(By.Name("Launch"), 5_000)
-                .Where(button => button.Name == "Launch" && button.Y >= card.Y && button.Y <= card.Y + card.Height)];
-
-        private static (string Target, string Arguments) ReadShortcutTargetAndArguments(string path)
-        {
-            var shellType = Type.GetTypeFromProgID("WScript.Shell") ?? throw new InvalidOperationException("WScript.Shell is not registered.");
-            dynamic shell = Activator.CreateInstance(shellType)!;
-            try
-            {
-                dynamic link = shell.CreateShortcut(path);
-                try
-                {
-                    return ((string)link.TargetPath, (string)link.Arguments);
-                }
-                finally
-                {
-                    Marshal.FinalReleaseComObject(link);
-                }
-            }
-            finally
-            {
-                Marshal.FinalReleaseComObject(shell);
-            }
+            launches[0].Invoke(msPostAction: 0);
         }
 
         private Session LauncherWindow()

@@ -41,6 +41,38 @@ namespace WorkspacesEditor.UnitTests
 
         [TestMethod]
         [TestCategory("Model.Project")]
+        public void CanBeSaved_ExcludingAndRestoringTheLastApplicationNotifiesTheEditor()
+        {
+            var saved = TestHelpers.CreateProject("My Workspace", 0, 0, "Notepad");
+            var draft = new Project(saved);
+            bool canSave = draft.CanBeSaved;
+            draft.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(Project.CanBeSaved))
+                {
+                    canSave = draft.CanBeSaved;
+                }
+            };
+
+            Assert.IsTrue(canSave);
+            draft.Applications[0].SwitchDeletion();
+            Assert.IsFalse(canSave);
+            Assert.IsTrue(saved.CanBeSaved);
+            draft.Applications[0].SwitchDeletion();
+            Assert.IsTrue(canSave);
+        }
+
+        [TestMethod]
+        [TestCategory("Model.Project")]
+        public void CanBeSaved_ExcludingOneOfTwoApplicationsKeepsSaveEnabled()
+        {
+            var project = TestHelpers.CreateProject("My Workspace", 0, 0, "Notepad", "Terminal");
+            project.Applications[0].SwitchDeletion();
+            Assert.IsTrue(project.CanBeSaved);
+        }
+
+        [TestMethod]
+        [TestCategory("Model.Project")]
         public void Name_SetValue_RaisesPropertyChanged()
         {
             var project = TestHelpers.CreateProject("Initial", 0, 0, "App");

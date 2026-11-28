@@ -541,6 +541,20 @@ jobs:
       & '.pipelines/verifyPossibleAssetConflicts.ps1' -targetDir '$(build.sourcesdirectory)\$(BuildPlatform)\$(BuildConfiguration)\WinUI3Apps'
     displayName: Audit WinAppSDK applications path asset conflicts
 
+  - ${{ if or(eq(parameters.runTests, true), eq(parameters.codeSign, true)) }}:
+    - powershell: |-
+        Import-Module Pester -MinimumVersion 3.4 -MaximumVersion 4.99
+        $suite = @{
+            Path = '.pipelines/tests/workspacesInstallerIntegration.Tests.ps1'
+            Parameters = @{ BuildOutput = '$(Build.SourcesDirectory)\$(BuildPlatform)\$(BuildConfiguration)' }
+        }
+        $result = Invoke-Pester -Script $suite -PassThru
+        if ($result.TotalCount -eq 0 -or $result.PassedCount -ne $result.TotalCount) {
+            throw 'Workspaces installer integration tests failed.'
+        }
+      displayName: Verify Workspaces build output and installer integration
+      condition: and(succeeded(), in(variables['BuildPlatform'], 'x64', 'arm64'))
+
   # To streamline the pipeline and prevent errors, skip this step during compatibility tests with the latest WinAppSDK.
   - ${{ if eq(parameters.useLatestWinAppSDK, false) }}:
     - pwsh: |-

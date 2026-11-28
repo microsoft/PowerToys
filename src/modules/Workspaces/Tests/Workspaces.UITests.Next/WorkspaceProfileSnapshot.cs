@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.Workspaces.UITests
 {
-    internal sealed class WorkspaceProfileSnapshot : IDisposable
+    internal sealed partial class WorkspaceProfileSnapshot : IDisposable
     {
         private const string StageMarker = "PowerToys.Workspaces.UITests.Next.v2";
         private const string ZipMarker = "PowerToys.Workspaces.UITests.Next.v1";
@@ -25,7 +25,7 @@ namespace Microsoft.Workspaces.UITests
         private bool isolated;
         private bool disposed;
 
-        internal WorkspaceProfileSnapshot(string workspaceDirectory)
+        internal WorkspaceProfileSnapshot(string workspaceDirectory, string? desktopDirectory = null)
         {
             this.workspaceDirectory = Path.TrimEndingDirectorySeparator(Path.GetFullPath(workspaceDirectory));
             recoveryDirectory = this.workspaceDirectory + ".UITestRecovery";
@@ -33,6 +33,7 @@ namespace Microsoft.Workspaces.UITests
             RequireRegularDirectory(recoveryDirectory);
             capturing = Path.Combine(recoveryDirectory, "capturing");
             original = Path.Combine(recoveryDirectory, "original");
+            this.desktopDirectory = desktopDirectory ?? Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
             lease = new FileStream(Path.Combine(recoveryDirectory, "profile.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         }
 
@@ -51,6 +52,13 @@ namespace Microsoft.Workspaces.UITests
             bool legacy = RequireRegularFileOrMissing(legacyZip);
             bool partial = Directory.Exists(capturing);
             bool committed = Directory.Exists(original);
+            if (!partial && !committed && RegularDirectoryExists(SavedJournalDirectory))
+            {
+                // The stage marker is created before the first journal moves and retired
+                // after the last one returns. An unaccompanied directory is not ours to use.
+                throw new InvalidDataException($"Shortcut journals have no owning Workspaces backup at '{SavedJournalDirectory}'.");
+            }
+
             if ((partial && committed) || (legacy && (partial || committed)))
             {
                 throw new InvalidDataException($"Conflicting Workspaces UI test backups in '{recoveryDirectory}'.");
@@ -78,6 +86,9 @@ namespace Microsoft.Workspaces.UITests
             {
                 File.Open(Path.Combine(capturing, StageMarker), FileMode.CreateNew).Dispose();
 
+                // The product uses the active workspace IDs to decide which desktop shortcuts
+                // to remove. Hide the user's journals before taking their workspace list offline.
+                CaptureShortcutJournals();
                 foreach (var name in FileNames.Concat(requests))
                 {
                     var path = Path.Combine(workspaceDirectory, name);
@@ -155,13 +166,19 @@ namespace Microsoft.Workspaces.UITests
             Guid.TryParseExact(name.AsSpan(RequestPrefix.Length), "B", out _);
 
         // A null source represents an originally absent fixed file. Validate the whole journal before using it.
-        private static Dictionary<string, string?> ReadStage(string stage)
+        private Dictionary<string, string?> ReadStage(string stage)
         {
             RequireRegularDirectory(stage);
             var pending = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
             bool marked = false;
             foreach (var entry in new DirectoryInfo(stage).GetFileSystemInfos())
             {
+                if (entry is DirectoryInfo && entry.Name is SavedJournals or TestShortcuts)
+                {
+                    RequireRegularDirectory(entry.FullName);
+                    continue;
+                }
+
                 if (entry is FileInfo file && !file.Attributes.HasFlag(FileAttributes.ReparsePoint))
                 {
                     if (file.Name == StageMarker && file.Length == 0)
@@ -189,7 +206,8 @@ namespace Microsoft.Workspaces.UITests
             }
 
             // An empty directory can be left just before creating or just after retiring the marker.
-            if (!marked && pending.Count != 0)
+            if (!marked && (pending.Count != 0 || Directory.Exists(Path.Combine(stage, SavedJournals)) ||
+                Directory.Exists(Path.Combine(stage, TestShortcuts)) || RegularDirectoryExists(SavedJournalDirectory)))
             {
                 throw new InvalidDataException($"Unrecognized Workspaces UI test backup at '{stage}'.");
             }
@@ -221,6 +239,8 @@ namespace Microsoft.Workspaces.UITests
                 }
             }
 
+            // Restore the user's workspace IDs before allowing the editor to inspect their journals.
+            RestoreShortcuts(stage, interruptedDirectory, interrupted);
             File.Delete(Path.Combine(stage, StageMarker));
             Directory.Delete(stage);
         }
@@ -250,7 +270,7 @@ namespace Microsoft.Workspaces.UITests
             using (var archive = ZipFile.OpenRead(path))
             {
                 var entries = archive.Entries.ToDictionary(entry => entry.FullName, StringComparer.OrdinalIgnoreCase);
-                if (!entries.Remove(ZipMarker, out var marker) || marker.FullName != ZipMarker || marker.Length != 0 ||
+                if (!entries.Remove(ZipMarker, out var marker) || marker.FullName != ZipMarker || marker.Length != 0 || marker.Crc32 != 0 ||
                     entries.Keys.Any(name => !IsFixedName(name) && !IsRequestName(name)))
                 {
                     throw new InvalidDataException($"Unrecognized Workspaces UI test backup at '{path}'.");
@@ -259,9 +279,7 @@ namespace Microsoft.Workspaces.UITests
                 var requestTimes = new Dictionary<string, DateTime>(StringComparer.OrdinalIgnoreCase);
                 foreach (var entry in entries.Values)
                 {
-                    // Fail on unreadable compressed data before displacing any live files.
-                    using var source = entry.Open();
-                    source.CopyTo(Stream.Null);
+                    ValidateLegacyEntry(entry);
                     if (IsRequestName(entry.FullName))
                     {
                         if (!DateTime.TryParseExact(entry.Comment, "O", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var modified) || modified.Kind != DateTimeKind.Utc)
@@ -313,6 +331,34 @@ namespace Microsoft.Workspaces.UITests
             }
 
             File.Delete(path);
+        }
+
+        private static void ValidateLegacyEntry(ZipArchiveEntry entry)
+        {
+            // ZipArchiveEntry.Open can return damaged bytes that still decompress. Validate the
+            // uncompressed size and the ZIP CRC-32 for every entry before changing the live profile.
+            using var source = entry.Open();
+            Span<byte> buffer = stackalloc byte[4096];
+            long length = 0;
+            uint crc = uint.MaxValue;
+            int count;
+            while ((count = source.Read(buffer)) > 0)
+            {
+                length += count;
+                foreach (byte value in buffer[..count])
+                {
+                    crc ^= value;
+                    for (int bit = 0; bit < 8; bit++)
+                    {
+                        crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xedb88320u : crc >> 1;
+                    }
+                }
+            }
+
+            if (length != entry.Length || ~crc != entry.Crc32)
+            {
+                throw new InvalidDataException($"Invalid length or CRC-32 for '{entry.FullName}' in the Workspaces UI test backup.");
+            }
         }
 
         private static bool MatchesLegacyEntry(string path, ZipArchiveEntry entry, DateTime? requestWriteTime)

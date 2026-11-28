@@ -90,9 +90,9 @@ internal sealed class WorkspaceShortcutJournalGuard : IDisposable
         const uint nameSurrogate = 0x20000000;
         const int fileAttributeTagInfo = 9;
 
-        // Keep the directory name stable during enumeration. Deny reads of the existing journals
-        // while the editor sees the test workspace list. Neither handle follows a redirected name.
-        var handle = CreateFileW(path, genericRead, isDirectory ? FileShare.ReadWrite : FileShare.None, 0, FileMode.Open, openReparsePoint | backupSemantics, 0);
+        // Pin the directory and deny reads and writes to the existing journals. Share DELETE
+        // on files so the profile snapshot can rename each original into and out of recovery.
+        var handle = CreateFileW(path, genericRead, isDirectory ? FileShare.ReadWrite : FileShare.Delete, 0, FileMode.Open, openReparsePoint | backupSemantics, 0);
         if (handle.IsInvalid)
         {
             int error = Marshal.GetLastWin32Error();

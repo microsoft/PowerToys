@@ -4,6 +4,7 @@
 
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.PowerToys.UITest.Next;
@@ -16,10 +17,6 @@ namespace Microsoft.Workspaces.UITests
     [DoNotParallelize]
     public sealed partial class WorkspacesTests : UITestBase
     {
-        // Re-enable these scenarios after the WinUI automation contracts and end-to-end behavior are validated.
-        private const string WinUiMigrationIgnoreReason =
-            "Temporarily disabled pending Workspaces WinUI migration validation: https://github.com/microsoft/PowerToys/pull/49077";
-
         private const string EditorProcess = "PowerToys.WorkspacesEditor";
         private const string LauncherProcess = "PowerToys.WorkspacesLauncher";
         private const string LauncherUiProcess = "PowerToys.WorkspacesLauncherUI";
@@ -189,19 +186,59 @@ namespace Microsoft.Workspaces.UITests
         {
             Step("Navigating to Workspaces Settings.");
 
-            // Wait out any startup window replacement before driving the UI, so navigation runs against the
-            // window Settings actually settles on rather than the transient handle it was launched with.
-            _ = SettingsWindow();
-            var settings = Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
+            const string pageControl = "WorkspacesLaunchEditorButtonControl";
+            const string workspaceItem = "WorkspacesNavItem";
+            const string groupItem = "WindowingAndLayoutsNavItem";
+            string? selectedWindow = null;
+            var ready = WaitHelper.WaitForStable(
+                () =>
+                {
+                    string window = SettingsWindow().ToInt64().ToString(System.Globalization.CultureInfo.InvariantCulture);
+                    if (FindControl(window, pageControl, "Button") is not null)
+                    {
+                        return true;
+                    }
 
-            if (!settings.Has(By.AccessibilityId("WorkspacesNavItem"), 500))
+                    if (window != selectedWindow)
+                    {
+                        if (FindControl(window, workspaceItem, "ListItem") is not null)
+                        {
+                            // Select by AutomationId within this HWND. The item's runtime slug can
+                            // change between search and activation while the navigation pane settles.
+                            WinappCli.InvokeAssertSuccess("ui", "invoke", workspaceItem, "-w", window, "--action", "select", "--json");
+                            selectedWindow = window;
+                        }
+                        else if (FindControl(window, groupItem, "ListItem") is { } group && UiString(group, "expandState") == "collapsed")
+                        {
+                            WinappCli.InvokeAssertSuccess("ui", "invoke", groupItem, "-w", window, "--action", "expand", "--json");
+                        }
+                    }
+
+                    return false;
+                },
+                arrived => arrived,
+                timeoutMS: 30_000,
+                pollIntervalMS: 250,
+                shouldRetryException: error => ShellMenu.IsTransientElementException(error) ||
+                    (error is AssertFailedException && error.Message.Contains("internal_error", StringComparison.OrdinalIgnoreCase) &&
+                     error.Message.Contains("Window HWND ", StringComparison.OrdinalIgnoreCase) &&
+                     error.Message.Contains("not found or not accessible", StringComparison.OrdinalIgnoreCase)));
+            Assert.IsTrue(ready.Succeeded, $"The Workspaces Settings page did not become ready. {ready.LastException?.Message}");
+            return Microsoft.PowerToys.UITest.Next.Session.FromProcess(SettingsProcess, timeoutMS: 30_000);
+
+            static JsonElement? FindControl(string window, string automationId, string controlType)
             {
-                settings.Find<NavigationViewItem>(By.AccessibilityId("WindowingAndLayoutsNavItem"), 15_000).Invoke(msPostAction: 0);
-            }
+                var hits = WinappCli.InvokeJson("ui", "search", automationId, "-w", window, "--type", controlType, "--json");
+                if (!hits.TryGetProperty("matches", out var matches))
+                {
+                    return null;
+                }
 
-            settings.Find<NavigationViewItem>(By.AccessibilityId("WorkspacesNavItem"), 15_000).Invoke(msPostAction: 0);
-            Assert.IsTrue(settings.Has(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000), "The Workspaces Settings page did not become ready.");
-            return settings;
+                return matches.EnumerateArray()
+                    .Where(hit => UiString(hit, "automationId") == automationId)
+                    .Select(hit => (JsonElement?)hit)
+                    .SingleOrDefault();
+            }
         }
 
         // Freshly resolve the current PowerToys.Settings main window for the few physical operations that
@@ -227,28 +264,39 @@ namespace Microsoft.Workspaces.UITests
             SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesEnableToggleControlHeaderText"), 15_000)
                 .Find<ToggleSwitch>(By.Name("Workspaces"), 15_000);
 
-        private void OpenEditor()
+        private void OpenEditor(bool maximize = true)
         {
-            Step("Clicking Open editor in Settings.");
-            var launch = SettingsUi.Find<Element>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
-            Assert.IsTrue(launch.Displayed && launch.Width > 0 && launch.Height > 0, "The launch card is not visible.");
+            Step("Opening editor from Settings with Enter.");
             SettingsUi.EnsureForeground();
             Assert.IsTrue(
                 WindowControl.WaitForForeground(SettingsWindow(), 10_000),
                 $"Settings did not acquire foreground for the launch card: {WindowControl.GetForegroundWindowInfo()}.");
 
-            // SettingsCard exposes a Button role but no InvokePattern; its pointer command is the user action.
-            launch.Click(msPostAction: 0);
-            AttachEditor();
+            var launch = SettingsUi.Find<Button>(By.AccessibilityId("WorkspacesLaunchEditorButtonControl"), 15_000);
+            Assert.AreEqual("WorkspacesLaunchEditorButtonControl", launch.AutomationId, "The Settings launch action resolved to the wrong control.");
+            Assert.IsTrue(launch.Displayed && launch.IsEnabled, "The launch card is not available.");
+
+            // SettingsCard handles Enter through ButtonBase even when its automation peer does not
+            // expose InvokePattern. Keep activation on the actual Settings card and command path.
+            launch.Focus();
+            Assert.IsTrue(launch.WaitForProperty("HasKeyboardFocus", "True", 5_000), "The Settings launch card did not receive keyboard focus.");
+            KeyboardHelper.SendKeys(Key.Enter);
+            AttachEditor(maximize);
         }
 
-        private void AttachEditor()
+        private void AttachEditor(bool maximize = true)
         {
             editor = WindowsFinder.WaitForWindowByApp(EditorProcess, window => window.Width > 400 && window.Height > 300, 45_000);
             Assert.IsNotNull(editor, "Workspaces Editor did not open.");
             Assert.IsFalse(editor.IsElevated, "Workspaces Editor must run at the test user's integrity level.");
-            WindowHelper.MaximizeWindow(new IntPtr(editor.WindowHandle));
-            Assert.IsTrue(editor.Has(By.AccessibilityId("NewProjectButton"), 20_000), "The editor did not present its workspace list.");
+            if (maximize)
+            {
+                WindowHelper.MaximizeWindow(new IntPtr(editor.WindowHandle));
+            }
+
+            // The overview also hosts the retry action when the initial storage read fails.
+            // Wait for the page here; callers that require its data wait for the cards separately.
+            Assert.IsTrue(editor.Has(By.AccessibilityId("NewProjectButton"), 20_000), "The editor did not present its overview.");
         }
 
         private void CloseEditor()
@@ -259,47 +307,39 @@ namespace Microsoft.Workspaces.UITests
             editor = null;
         }
 
-        private void EditWorkspace(string name, bool useMenu = false)
+        private void EditWorkspace(string name, bool useKeyboard = false)
         {
             var card = WaitForCard(name);
-            if (useMenu)
+            if (useKeyboard)
             {
-                OpenWorkspaceMenu(card);
-                var process = Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess);
-                var buttons = process.FindAll<Button>(By.Name("Edit"), 10_000).Where(button => button.Name == "Edit").ToArray();
-                var menuButton = buttons.Single(button => button.Width > 0 && button.Width < 300);
-                Step("Invoking the workspace's Edit menu command.");
-                menuButton.Invoke(msPostAction: 0);
+                Step($"Opening workspace '{name}' with the keyboard.");
+                Editor.EnsureForeground();
+                var element = Editor.Find<Element>(By.AccessibilityId(card.Id));
+                element.Focus();
+                Assert.IsTrue(element.WaitForProperty("HasKeyboardFocus", "True", 5_000), "The workspace card did not receive keyboard focus.");
+                KeyboardHelper.SendKeys(Key.Enter);
             }
             else
             {
-                Step($"Invoking the workspace card '{name}'.");
-                OpenCardForEditing(name);
+                Step($"Opening the workspace card '{name}' with the mouse.");
+                OpenCardForEditing(card);
             }
 
             Assert.IsTrue(Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000), "The editing page did not open.");
             Assert.AreEqual(name, Editor.Find<TextBox>(By.AccessibilityId("EditNameTextBox")).Value);
         }
 
-        // Open a workspace's editing page with a real mouse click on the card's name region. The whole
-        // card is the Edit button, and its left name area never overlaps the Launch/More buttons on the
-        // right. WPF drops the cards' descendant automation peers after the list re-projects its items
-        // (a save, sort, or filter), so a UIA invoke on the descendant Edit button is unreliable; the item
-        // container keeps correct on-screen bounds, so a physical click on it always reaches the button.
-        // A single physical click can still be silently dropped while the editor is settling foreground /
-        // z-order right after it opens (observed in CI), so retry a bounded number of times: re-acquire the
-        // card by name (its bounds survive re-projection), click, and stop the moment the editing page's
-        // ready signal (EditNameTextBox) appears. Only click while the workspace list is still active, so a
-        // retry can never land a click on the editing page itself — this stays idempotent, never a longer
-        // arbitrary sleep.
-        private void OpenCardForEditing(string name)
+        private void OpenCardForEditing(WorkspaceCard target)
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
+            var handle = new IntPtr(Editor.WindowHandle);
             const int maxAttempts = 4;
+            int clicks = 0;
             for (var attempt = 1; attempt <= maxAttempts; attempt++)
             {
                 if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 500))
                 {
-                    return;
+                    break;
                 }
 
                 if (!Editor.Has(By.AccessibilityId("NewProjectButton"), 500))
@@ -308,54 +348,195 @@ namespace Microsoft.Workspaces.UITests
                     // registered and the page is transitioning. Wait for the ready signal, do not re-click.
                     if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 3_000))
                     {
-                        return;
+                        break;
                     }
 
                     continue;
                 }
 
-                var card = WaitForCard(name);
                 Editor.EnsureForeground();
-                Assert.IsTrue(
-                    WindowControl.WaitForForeground(new IntPtr(Editor.WindowHandle), 10_000),
-                    $"The editor did not acquire foreground to open a workspace card: {WindowControl.GetForegroundWindowInfo()}.");
-                var x = card.X + Math.Clamp(card.Width / 8, 24, 120);
-                var y = card.Y + (card.Height / 2);
-                Step($"Clicking the workspace card '{name}' (attempt {attempt}).");
+                if (!WindowControl.WaitForForeground(handle, 2_500))
+                {
+                    Step($"Card {target.Id}, attempt {attempt}: editor HWND {handle} did not acquire foreground (HWND {WindowControl.GetForegroundWindowHandle()}).");
+                    continue;
+                }
+
+                // Bringing the editor forward can restore it. Read the card's bounds from the active overview afterward.
+                var cards = WorkspaceCards()?.Where(candidate => candidate.Id == target.Id).ToArray();
+                if (cards is not [var card] || card.Name != target.Name)
+                {
+                    Step($"Card {target.Id}, attempt {attempt}: the overview did not expose the requested card.");
+                    continue;
+                }
+
+                var area = card.VisibleEditArea;
+                if (area.Width <= 0 || area.Height <= 0)
+                {
+                    // This card was realized outside the scroll viewport. The pinned CLI also
+                    // supports a scrollable ancestor when the card lacks ScrollItemPattern.
+                    try
+                    {
+                        WinappCli.InvokeAssertSuccess("ui", "scroll-into-view", card.Id, "-w", Editor.WindowHandleArg, "--json");
+                    }
+                    catch (AssertFailedException error) when (ShellMenu.IsTransientElementException(error))
+                    {
+                        Step($"Card {card.Id} was recycled during scrolling. Reacquiring it on the overview.");
+                    }
+
+                    continue;
+                }
+
+                var x = Math.Clamp(card.Bounds.X + Math.Clamp(card.Bounds.Width / 8, 24, 120), area.Left, area.Right - 1);
+                var y = area.Top + (area.Height / 2);
+                if (!WindowControl.IsPointOwnedByWindow(handle, x, y))
+                {
+                    Step($"Card {target.Id}, attempt {attempt}: ({x}, {y}) was covered before moving the pointer. Foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
+                    continue;
+                }
+
+                Step($"Card {target.Id}, attempt {attempt}: targeting ({x}, {y}) on editor HWND {handle}.");
                 MouseHelper.MoveTo(x, y);
                 Thread.Sleep(50);
+                var afterMove = WorkspaceCards()?.Where(candidate => candidate.Id == target.Id).ToArray();
+                if (afterMove is not [var current] || current != card)
+                {
+                    Step($"Skipped mouse-down. The overview, card identity, or card bounds changed after moving to ({x}, {y}).");
+                    continue;
+                }
+
+                var cursor = MouseHelper.GetMousePosition();
+                var foreground = WindowControl.GetForegroundWindowHandle();
+                bool owned = WindowControl.IsPointOwnedByWindow(handle, cursor.X, cursor.Y);
+                if (cursor != (x, y) || foreground != handle || !owned)
+                {
+                    Step($"Skipped mouse-down. Cursor {cursor}, foreground HWND {foreground}, editor owns cursor point: {owned}.");
+                    continue;
+                }
+
                 MouseHelper.LeftClick();
+                clicks++;
                 if (Editor.Has(By.AccessibilityId("EditNameTextBox"), 3_000))
                 {
-                    return;
+                    break;
                 }
             }
-        }
 
-        private void OpenWorkspaceMenu(WorkspaceCard card)
-        {
-            Step("Opening the workspace actions menu.");
-
-            // Scope the More button to the target card by its on-screen row so the correct card's menu
-            // opens even when several cards are present. This relies on live descendant peers, so it is
-            // only used on a freshly rendered list (before any save/sort/filter re-projects the items).
-            var more = Editor.FindAll<Button>(By.AccessibilityId("MoreButton"), 10_000)
-                .Where(button => button.Y >= card.Y && button.Y <= card.Y + card.Height)
-                .ToArray();
-            Assert.HasCount(1, more, "The workspace actions button was not uniquely addressable.");
-            more[0].Invoke(msPostAction: 0);
-
-            // The delete command's accessible name is the localized Resources.Delete, which reads "Remove".
+            Assert.IsTrue(clicks > 0, $"No mouse click was sent to card {target.Id} in {maxAttempts} attempts. Editor HWND {handle}, foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
             Assert.IsTrue(
-                Microsoft.PowerToys.UITest.Next.Session.FromProcess(EditorProcess).Has<Button>(By.Name("Remove"), 10_000),
-                "The workspace actions menu did not open.");
+                Editor.Has(By.AccessibilityId("EditNameTextBox"), 15_000),
+                $"Card {target.Id} did not open. Sent {clicks} mouse clicks in {maxAttempts} attempts. Editor HWND {handle}, foreground HWND {WindowControl.GetForegroundWindowHandle()}.");
         }
 
         private void Search(string term)
         {
             Step($"Searching workspaces for '{term}'.");
-            Editor.Find<TextBox>(By.AccessibilityId("SearchTextBox"), 15_000).SetText(term);
+            var input = SearchInput();
+            input.Focus();
+            input.SetText(term);
+            Assert.IsTrue(input.WaitForValue(term, timeoutMS: 5_000), "The search input did not accept the query.");
         }
+
+        private TextBox SearchInput()
+        {
+            var search = Editor.Find<Element>(By.AccessibilityId("SearchBox"), 15_000);
+            var inputs = FindDescendants<TextBox>(search, "Edit");
+            Assert.HasCount(1, inputs, "The AutoSuggestBox should contain one editable search input.");
+            return inputs[0];
+        }
+
+        private T[] FindDescendants<T>(Element parent, string controlType, string? automationId = null)
+            where T : Element, new()
+        {
+            T[]? ReadChildren()
+            {
+                // winappcli can return the whole window when the requested parent was recycled.
+                var tree = WinappCli.InvokeJson("ui", "inspect", parent.Selector, "-w", Editor.WindowHandleArg, "--json", "-d", "20");
+                var roots = EditorRoots(tree).ToArray();
+                if (roots.Length != 1 || UiString(roots[0], "selector") != parent.Selector)
+                {
+                    return null;
+                }
+
+                var matches = new List<T>();
+                foreach (var element in Subtree(roots[0]).Skip(1))
+                {
+                    if (UiString(element, "type") != controlType || (automationId is not null && UiString(element, "automationId") != automationId))
+                    {
+                        continue;
+                    }
+
+                    // Unique AutomationIds use search, repeated controls use their exact runtime slug.
+                    if (UiString(element, "selector") is not { Length: > 0 } selector)
+                    {
+                        return null;
+                    }
+
+                    var by = selector == UiString(element, "automationId") ? By.AccessibilityId(selector) : By.Slug(selector);
+                    var resolved = Editor.FindAll<T>(by, 0).Where(hit => hit.Selector == selector).ToArray();
+                    if (resolved.Length != 1)
+                    {
+                        return null;
+                    }
+
+                    matches.Add(resolved[0]);
+                }
+
+                return [.. matches];
+            }
+
+            var ready = WaitHelper.WaitForStable(ReadChildren, matches => matches is not null, 5_000, shouldRetryException: IsStaleElement);
+            Assert.IsTrue(ready.Succeeded, $"Could not resolve descendants of '{parent.Selector}' in the editor.");
+            return ready.LastObservation!;
+        }
+
+        private IEnumerable<JsonElement> EditorRoots(JsonElement tree) =>
+            WindowRoots(tree).Where(root => root.Handle == Editor.WindowHandle).Select(root => root.Element);
+
+        private static IEnumerable<(long Handle, JsonElement Element)> WindowRoots(JsonElement tree)
+        {
+            // A stale target can return a JSON error envelope while the overview is being rebuilt.
+            if (!tree.TryGetProperty("windows", out var windows))
+            {
+                yield break;
+            }
+
+            foreach (var window in windows.EnumerateArray())
+            {
+                if (window.TryGetProperty("elements", out var elements))
+                {
+                    var handle = window.GetProperty("hwnd").GetInt64();
+                    foreach (var element in elements.EnumerateArray())
+                    {
+                        yield return (handle, element);
+                    }
+                }
+            }
+        }
+
+        private static IEnumerable<JsonElement> Subtree(JsonElement element)
+        {
+            yield return element;
+            if (element.TryGetProperty("children", out var children))
+            {
+                foreach (var descendant in children.EnumerateArray().SelectMany(Subtree))
+                {
+                    yield return descendant;
+                }
+            }
+        }
+
+        private static string? UiString(JsonElement element, string property) =>
+            element.TryGetProperty(property, out var value) ? value.GetString() : null;
+
+        private static int UiCoordinate(JsonElement element, string property) =>
+            element.TryGetProperty(property, out var value) ? (int)Math.Round(value.GetDouble()) : 0;
+
+        private static bool IsVisible(JsonElement element) =>
+            (!element.TryGetProperty("isOffscreen", out var offscreen) || !offscreen.GetBoolean()) &&
+            UiCoordinate(element, "width") > 0 && UiCoordinate(element, "height") > 0;
+
+        private static bool IsStaleElement(Exception error) =>
+            error is AssertFailedException && error.Message.Contains("stale_element", StringComparison.OrdinalIgnoreCase);
 
         // Reproduce the product's snapshot geometry contract (workspaces-common WindowUtils::GetWindowRect):
         // take the raw Win32 GetWindowRect (outer window, including invisible resize borders) and convert
@@ -365,6 +546,7 @@ namespace Microsoft.Workspaces.UITests
         // (WindowHelper.GetVisibleBounds) are only correct for composed preview pixels, not saved placement.
         private static (int X, int Y, int Width, int Height) NormalizedOuterBounds(IntPtr handle)
         {
+            using var physicalCoordinates = new PhysicalCoordinateScope();
             var (left, top, right, bottom) = WindowHelper.GetWindowBounds(handle);
             var dpi = NativeMethods.GetDpiForWindow(handle);
             Assert.IsTrue(dpi > 0, $"Could not read DPI for fixture HWND {handle}.");
@@ -379,71 +561,105 @@ namespace Microsoft.Workspaces.UITests
             return (x, y, (int)Math.Round(originX + width) - x, (int)Math.Round(originY + height) - y);
         }
 
-        private WorkspaceCard[] WorkspaceCards()
+        private WorkspaceCard[]? WorkspaceCards() => WorkspaceCards(out _);
+
+        private WorkspaceCard[]? WorkspaceCards(out string? scrollSelector)
         {
-            // Read each workspace card from its container's AutomationId (bound to the workspace name via
-            // the ItemsControl item-container style in MainPage.xaml) plus its on-screen bounds. WPF drops
-            // the cards' descendant automation peers after a filter/sort/save re-projects the ItemsControl
-            // source, but the item container itself stays in the tree with correct bounds, so it is the one
-            // handle on a workspace's identity and location that survives every re-projection.
-            var found = new List<WorkspaceCard>();
+            scrollSelector = null;
 
-            void Walk(JsonElement element)
+            // Read the overview and its cards in the same frame so navigation cannot turn a
+            // temporarily missing list into an observation of an empty workspace.
+            JsonElement[] elements;
+            try
             {
-                if (element.TryGetProperty("automationId", out var idProperty) &&
-                    idProperty.GetString() is { } id &&
-                    id.StartsWith(State.Prefix, StringComparison.Ordinal))
-                {
-                    found.Add(new WorkspaceCard(
-                        id,
-                        element.TryGetProperty("x", out var xp) ? xp.GetInt32() : 0,
-                        element.TryGetProperty("y", out var yp) ? yp.GetInt32() : 0,
-                        element.TryGetProperty("width", out var wp) ? wp.GetInt32() : 0,
-                        element.TryGetProperty("height", out var hp) ? hp.GetInt32() : 0));
-                }
+                elements = EditorRoots(Editor.Inspect(depth: 20)).SelectMany(Subtree).ToArray();
+            }
+            catch (AssertFailedException error) when (IsStaleElement(error))
+            {
+                return null;
+            }
 
-                if (element.TryGetProperty("children", out var children) && children.ValueKind == JsonValueKind.Array)
+            if (!elements.Any(element => UiString(element, "type") == "Button" && UiString(element, "automationId") == "NewProjectButton" && IsVisible(element)) ||
+                elements.Any(element => UiString(element, "automationId") == "EditNameTextBox"))
+            {
+                return null;
+            }
+
+            var viewport = elements.FirstOrDefault(element => UiString(element, "className") == "ScrollViewer" &&
+                Subtree(element).Any(IsWorkspaceCard));
+            Rectangle viewportBounds = Rectangle.Empty;
+            if (viewport.ValueKind == JsonValueKind.Object && IsVisible(viewport))
+            {
+                viewportBounds = UiBounds(viewport);
+                if (UiString(viewport, "scrollDir")?.Contains('v') == true)
                 {
-                    foreach (var child in children.EnumerateArray())
-                    {
-                        Walk(child);
-                    }
+                    scrollSelector = UiString(viewport, "selector");
                 }
             }
 
-            var tree = Editor.Inspect(depth: 10);
-            if (tree.TryGetProperty("windows", out var windows) && windows.ValueKind == JsonValueKind.Array)
+            var cards = new List<WorkspaceCard>();
+            foreach (var element in elements.Where(IsWorkspaceCard))
             {
-                foreach (var window in windows.EnumerateArray())
-                {
-                    if (window.TryGetProperty("elements", out var elements) && elements.ValueKind == JsonValueKind.Array)
-                    {
-                        foreach (var element in elements.EnumerateArray())
-                        {
-                            Walk(element);
-                        }
-                    }
-                }
+                var bounds = UiBounds(element);
+
+                // Only the visible left half is eligible for editing. The right side contains Launch.
+                var editArea = new Rectangle(bounds.Left, bounds.Top, (bounds.Width + 1) / 2, bounds.Height);
+                var visibleEditArea = IsVisible(element) ? Rectangle.Intersect(editArea, viewportBounds) : Rectangle.Empty;
+                cards.Add(new WorkspaceCard(UiString(element, "automationId")!, UiString(element, "name") ?? string.Empty, bounds, visibleEditArea));
             }
 
-            return [.. found.OrderBy(card => card.Y)];
+            if (cards.Count == 0 && !elements.Any(element => UiString(element, "type") == "Text" &&
+                UiString(element, "name") == "There are no saved Workspaces." && IsVisible(element)))
+            {
+                return null;
+            }
+
+            return [.. cards.OrderBy(card => card.Bounds.Y)];
         }
 
-        private string[] WorkspaceNames() => WorkspaceCards().Select(card => card.Name).ToArray();
+        private static bool IsWorkspaceCard(JsonElement element) =>
+            UiString(element, "type") == "Button" && UiString(element, "className") == "SettingsCard" &&
+            Guid.TryParse(UiString(element, "automationId"), out _);
+
+        private static Rectangle UiBounds(JsonElement element) =>
+            new(UiCoordinate(element, "x"), UiCoordinate(element, "y"), UiCoordinate(element, "width"), UiCoordinate(element, "height"));
+
+        private string[]? WorkspaceNames() => WorkspaceCards()?.Select(card => card.Name).ToArray();
 
         private WorkspaceCard WaitForCard(string name)
         {
+            string? viewport = null;
+            bool fromTop = true;
             var result = WaitHelper.WaitForStable(
-                () => WorkspaceCards().Where(card => card.Name == name).ToArray(),
-                cards => cards is { Length: 1 } && cards[0].Width > 0 && cards[0].Height > 0,
+                () => WorkspaceCards(out viewport)?.Where(card => card.Name == name).ToArray(),
+                cards => cards is [var card] && card.Bounds.Width > 0 && card.Bounds.Height > 0,
                 timeoutMS: 15_000,
                 requiredConsecutiveMatches: 2,
-                pollIntervalMS: 200);
+                pollIntervalMS: 200,
+                recover: cards =>
+                {
+                    if (cards is null || cards.Length > 1 || viewport is null)
+                    {
+                        return;
+                    }
+
+                    // An unrealized item has no selector. Scroll the overview until its card is realized.
+                    if (fromTop)
+                    {
+                        WinappCli.InvokeAssertSuccess("ui", "scroll", viewport, "-w", Editor.WindowHandleArg, "--to", "top", "--json");
+                        fromTop = false;
+                    }
+                    else
+                    {
+                        WinappCli.InvokeAssertSuccess("ui", "scroll", viewport, "-w", Editor.WindowHandleArg, "--direction", "down", "--json");
+                    }
+                },
+                shouldRetryException: ShellMenu.IsTransientElementException);
             Assert.IsTrue(result.Succeeded, $"The workspace card '{name}' did not become uniquely addressable.");
             return result.LastObservation![0];
         }
 
-        private readonly record struct WorkspaceCard(string Name, int X, int Y, int Width, int Height);
+        private readonly record struct WorkspaceCard(string Id, string Name, Rectangle Bounds, Rectangle VisibleEditArea);
 
         private void AssertWorkspaceNames(params string[] expected)
         {
@@ -453,21 +669,28 @@ namespace Microsoft.Workspaces.UITests
                 timeoutMS: 15_000,
                 requiredConsecutiveMatches: 2,
                 pollIntervalMS: 150);
-            Assert.IsTrue(
-                ready.Succeeded,
-                $"Expected workspaces [{string.Join(", ", expected)}], observed [{string.Join(", ", ready.LastObservation ?? [])}].");
+            string observed = ready.LastObservation is { } names ? $"[{string.Join(", ", names)}]" : "overview not ready";
+            Assert.IsTrue(ready.Succeeded, $"Expected workspaces [{string.Join(", ", expected)}], observed {observed}.");
         }
 
         private Element ExpandApplication(string name)
         {
             Step($"Expanding application '{name}'.");
             var row = Editor.Find<Element>(By.AccessibilityId(name), 15_000);
-            if (!string.Equals(row.GetProperty("ExpandCollapseState"), "Expanded", StringComparison.OrdinalIgnoreCase))
+            var expanders = FindDescendants<Button>(row, "Button")
+                .Where(button => button.ClassName == "Microsoft.UI.Xaml.Controls.Expander").ToArray();
+            Assert.HasCount(1, expanders, "The application row should expose one expandable header.");
+            var expander = expanders[0];
+            if (!string.Equals(expander.GetProperty("ExpandCollapseState"), "Expanded", StringComparison.OrdinalIgnoreCase))
             {
-                row.Invoke(msPostAction: 0);
+                expander.Invoke(msPostAction: 0);
             }
 
-            Assert.IsTrue(row.Find<TextBox>(By.AccessibilityId("CommandLineTextBox"), 15_000).IsEnabled, "Application details did not expand.");
+            var ready = WaitHelper.WaitForStable(
+                () => FindDescendants<TextBox>(row, "Edit", "CommandLineTextBox").Any(input => input.IsEnabled),
+                expanded => expanded,
+                15_000);
+            Assert.IsTrue(ready.Succeeded, "Application details did not expand.");
             return row;
         }
 
@@ -477,7 +700,17 @@ namespace Microsoft.Workspaces.UITests
             var save = Editor.Find<Button>(By.AccessibilityId("SaveButton"), 15_000);
             Assert.IsTrue(save.IsEnabled, "The workspace cannot be saved.");
             save.Invoke(msPostAction: 0);
-            Assert.IsTrue(Editor.Has(By.AccessibilityId("NewProjectButton"), 15_000), "Save did not return to the workspace list.");
+            AssertWorkspaceListReady();
+        }
+
+        private void AssertWorkspaceListReady()
+        {
+            var ready = WaitHelper.WaitForStable(
+                WorkspaceCards,
+                cards => cards is not null,
+                15_000,
+                requiredConsecutiveMatches: 2);
+            Assert.IsTrue(ready.Succeeded, "The editor did not return to the visible workspace list.");
         }
 
         private Session StartCapture()
@@ -498,37 +731,39 @@ namespace Microsoft.Workspaces.UITests
             return capture;
         }
 
-        private JsonObject Capture(Session capture, string? expectedAddedTitle = null)
+        private void CaptureIntoEditor(Session capture, bool recapture = false)
         {
-            var previousId = File.Exists(WorkspaceTestState.TemporaryPath)
-                ? WorkspaceTestState.Text(WorkspaceTestState.ReadObject(WorkspaceTestState.TemporaryPath), "id")
-                : null;
             Step("Capturing the desktop.");
             capture.Find<Button>(By.AccessibilityId("SnapshotButton"), 15_000).Invoke(msPostAction: 0);
             Assert.IsTrue(Editor.Has(By.AccessibilityId("EditNameTextBox"), 45_000), "The captured workspace did not open in the editing page.");
             WindowHelper.MaximizeWindow(new IntPtr(Editor.WindowHandle));
+            if (recapture)
+            {
+                // The old draft stays visible until the editor has accepted the new capture.
+                Assert.IsTrue(
+                    Editor.Find<Button>(By.AccessibilityId("RevertButton"), 15_000).WaitForProperty("IsEnabled", "True", 30_000),
+                    "The editor did not finish applying the recaptured workspace.");
+            }
+        }
 
-            // Recapture keeps the old editing page visible while the snapshot tool runs. Require the new
-            // snapshot's identity/content, then the editor's own completed-recapture state before saving.
+        private JsonObject CapturePublishedSnapshot(Session capture)
+        {
+            var previousId = File.Exists(WorkspaceTestState.TemporaryPath)
+                ? WorkspaceTestState.Text(WorkspaceTestState.ReadObject(WorkspaceTestState.TemporaryPath), "id")
+                : null;
+            CaptureIntoEditor(capture);
             var result = WaitHelper.WaitForStable(
                 () => File.Exists(WorkspaceTestState.TemporaryPath)
                     ? WorkspaceTestState.ReadObject(WorkspaceTestState.TemporaryPath)
                     : null,
                 snapshot => snapshot is not null &&
                     WorkspaceTestState.Text(snapshot, "id") != previousId &&
-                    snapshot["applications"] is JsonArray { Count: > 0 } apps &&
-                    (expectedAddedTitle is null || apps.Any(app => WorkspaceTestState.Text(app!, "title") == expectedAddedTitle)),
+                    snapshot["applications"] is JsonArray { Count: > 0 },
                 timeoutMS: 30_000,
                 requiredConsecutiveMatches: 2,
                 pollIntervalMS: 300,
                 shouldRetryException: error => error is IOException or JsonException);
-            Assert.IsTrue(result.Succeeded, $"A fresh snapshot containing '{expectedAddedTitle ?? "the captured applications"}' was not written.");
-            if (expectedAddedTitle is not null)
-            {
-                Assert.IsTrue(
-                    Editor.Find<Button>(By.AccessibilityId("RevertButton"), 15_000).WaitForProperty("IsEnabled", "True", 30_000),
-                    "The editor did not finish applying the recaptured workspace.");
-            }
+            Assert.IsTrue(result.Succeeded, "A fresh snapshot containing the captured applications was not published.");
 
             var snapshot = result.LastObservation!;
             State.TrackProjectShortcutFiles(WorkspaceTestState.Text(snapshot, "id"));

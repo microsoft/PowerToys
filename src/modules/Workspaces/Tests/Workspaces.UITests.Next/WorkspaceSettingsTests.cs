@@ -17,6 +17,14 @@ namespace Microsoft.Workspaces.UITests
             Assert.IsTrue(ModuleToggle().IsOn, "Workspaces should start enabled.");
             OpenEditor();
             AssertWorkspaceNames();
+
+            var titleBar = Editor.Find<Element>(By.AccessibilityId("AppTitleBar"));
+            var titles = FindDescendants<TextBlock>(titleBar, "Text", "PART_TitleText");
+            Assert.HasCount(1, titles, "The expanded editor title bar should contain its title text.");
+            var title = titles[0];
+            Assert.IsTrue(title.Displayed && title.Width > 0 && title.Height > 0, "The custom title bar should show the editor title.");
+            Assert.IsFalse(string.IsNullOrWhiteSpace(title.Name), "The rendered editor title should have text.");
+            Assert.AreEqual(Editor.WindowTitle, title.Name, "The rendered title should match the editor's localized window title.");
         }
 
         [TestMethod]
