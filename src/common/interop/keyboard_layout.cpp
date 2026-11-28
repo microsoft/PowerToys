@@ -156,7 +156,10 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_RETURN | numpadOriginBit] = L"Enter (Numpad)";
     keyboardLayoutMap[VK_DIVIDE | numpadOriginBit] = L"/ (Numpad)";
 
-    keyboardLayoutMap[VK_SUBTRACT] = L"- (Subtract)";
+    keyboardLayoutMap[VK_DIVIDE] = L"/ (Numpad)";
+    keyboardLayoutMap[VK_MULTIPLY] = L"* (Numpad)";
+    keyboardLayoutMap[VK_ADD] = L"+ (Numpad)";
+    keyboardLayoutMap[VK_SUBTRACT] = L"- (Numpad)";
     keyboardLayoutMap[VK_SELECT] = L"Select";
     keyboardLayoutMap[VK_PRINT] = L"Print";
     keyboardLayoutMap[VK_EXECUTE] = L"Execute";
@@ -176,7 +179,7 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_NUMPAD7] = L"NumPad 7";
     keyboardLayoutMap[VK_NUMPAD8] = L"NumPad 8";
     keyboardLayoutMap[VK_NUMPAD9] = L"NumPad 9";
-    keyboardLayoutMap[VK_SEPARATOR] = L"Separator";
+    keyboardLayoutMap[VK_SEPARATOR] = L"Separator (Numpad)";
     keyboardLayoutMap[VK_F1] = L"F1";
     keyboardLayoutMap[VK_F2] = L"F2";
     keyboardLayoutMap[VK_F3] = L"F3";
@@ -251,7 +254,12 @@ void LayoutMap::LayoutMapImpl::UpdateLayout()
     keyboardLayoutMap[VK_NONCONVERT] = L"IME Non-Convert";
     keyboardLayoutMap[VK_ACCEPT] = L"IME Kana";
     keyboardLayoutMap[VK_MODECHANGE] = L"IME Mode Change";
-    keyboardLayoutMap[VK_DECIMAL] = L". (Numpad)";
+    std::wstring decimalChar = keyboardLayoutMap[VK_DECIMAL];
+    if (decimalChar.empty() || decimalChar.rfind(L"VK ", 0) == 0)
+    {
+        decimalChar = L".";
+    }
+    keyboardLayoutMap[VK_DECIMAL] = decimalChar + L" (Numpad)";
     keyboardLayoutMap[CommonSharedConstants::VK_DISABLED] = L"Disable";
 }
 
@@ -291,6 +299,12 @@ std::vector<DWORD> LayoutMap::LayoutMapImpl::GetKeyCodeList(const bool isShortcu
         std::vector<DWORD> specialKeys;
         for (int i = 1; i < 256; i++)
         {
+            // VK_DIVIDE is handled via VK_DIVIDE | numpadOriginBit
+            if (i == VK_DIVIDE)
+            {
+                continue;
+            }
+
             // If it is not already been added (i.e. it was either a modifier or had a unicode representation)
             if (std::find(keyCodes.begin(), keyCodes.end(), i) == keyCodes.end())
             {
