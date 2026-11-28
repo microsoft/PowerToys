@@ -63,15 +63,17 @@ internal sealed partial class GetMonitorsCommand : FancyZonesBaseCommand
             sb.AppendLine(CultureInfo.InvariantCulture, $"  Position: ({monitor.LeftCoordinate}, {monitor.TopCoordinate})");
             sb.AppendLine(CultureInfo.InvariantCulture, $"  Selected: {monitor.IsSelected}");
 
-            // Find matching applied layout for this monitor using EditorCommon's matching logic.
+            // Find the applied layout for this monitor using its complete device identity.
             if (appliedLayouts.AppliedLayouts != null)
             {
                 var matchedLayout = AppliedLayoutsHelper.FindLayoutForMonitor(
                     appliedLayouts,
                     monitor.Monitor,
+                    monitor.MonitorInstanceId,
                     monitor.MonitorSerialNumber,
                     monitor.MonitorNumber,
-                    monitor.VirtualDesktop);
+                    monitor.VirtualDesktop,
+                    editorParams.Monitors);
 
                 if (matchedLayout != null && matchedLayout.Value.AppliedLayout.Type != null)
                 {

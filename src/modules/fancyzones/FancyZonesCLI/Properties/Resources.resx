@@ -143,6 +143,9 @@ Tip: For templates, use the type name (e.g., 'focus', 'columns', 'rows', 'grid',
   <data name="set_layout_error_monitor_not_found" xml:space="preserve">
     <value>Monitor {0} not found. Available monitors: 1-{1}</value>
   </data>
+  <data name="set_layout_error_ambiguous_monitor_identity" xml:space="preserve">
+    <value>Cannot safely update layouts because identical monitors have incomplete identity information. Specify --all to update all matching monitors.</value>
+  </data>
   <data name="set_layout_error_no_monitors" xml:space="preserve">
     <value>Internal error - no monitors to update.</value>
   </data>

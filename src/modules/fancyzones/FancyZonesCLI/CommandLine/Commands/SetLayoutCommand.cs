@@ -75,7 +75,7 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
 
         List<int> monitorsToUpdate = GetMonitorsToUpdate(editorParams, monitor, all);
         List<AppliedLayouts.AppliedLayoutWrapper> newLayouts = BuildNewLayouts(editorParams, monitorsToUpdate, targetCustomLayout, targetTemplate);
-        var updatedLayouts = MergeWithHistoricalLayouts(appliedLayouts, newLayouts);
+        var updatedLayouts = MergeWithHistoricalLayouts(appliedLayouts, newLayouts, editorParams.Monitors);
 
         Logger.LogInfo($"Writing {updatedLayouts.AppliedLayouts?.Count ?? 0} layouts to file");
         FancyZonesDataIO.WriteAppliedLayouts(updatedLayouts);
@@ -326,36 +326,98 @@ internal sealed partial class SetLayoutCommand : FancyZonesBaseCommand
         throw new InvalidOperationException(Properties.Resources.set_layout_error_no_layout);
     }
 
-    private static AppliedLayouts.AppliedLayoutsListWrapper MergeWithHistoricalLayouts(
+    internal static AppliedLayouts.AppliedLayoutsListWrapper MergeWithHistoricalLayouts(
         AppliedLayouts.AppliedLayoutsListWrapper existingLayouts,
-        List<AppliedLayouts.AppliedLayoutWrapper> newLayouts)
+        List<AppliedLayouts.AppliedLayoutWrapper> newLayouts,
+        List<EditorParameters.NativeMonitorDataWrapper> connectedMonitors)
     {
         var mergedLayoutsList = new List<AppliedLayouts.AppliedLayoutWrapper>();
         mergedLayoutsList.AddRange(newLayouts);
+        var replacedLayoutIndices = new HashSet<int>();
 
         if (existingLayouts.AppliedLayouts != null)
         {
-            foreach (var existingLayout in existingLayouts.AppliedLayouts)
+            foreach (var newLayout in newLayouts)
             {
-                bool isUpdated = false;
-
-                foreach (var newLayout in newLayouts)
+                var legacyMatchIndices = new List<int>();
+                for (int i = 0; i < existingLayouts.AppliedLayouts.Count; i++)
                 {
-                    if (AppliedLayoutsHelper.MatchesDevice(
+                    var existingLayout = existingLayouts.AppliedLayouts[i];
+                    if (!AppliedLayoutsHelper.HasSameBaseIdentity(
                         existingLayout.Device,
                         newLayout.Device.Monitor,
                         newLayout.Device.SerialNumber,
-                        newLayout.Device.MonitorNumber,
                         newLayout.Device.VirtualDesktop))
                     {
-                        isUpdated = true;
-                        break;
+                        continue;
+                    }
+
+                    var matchStrength = AppliedLayoutsHelper.GetDeviceMatchStrength(
+                        existingLayout.Device,
+                        newLayout.Device.MonitorInstance,
+                        newLayout.Device.MonitorNumber);
+                    if (matchStrength == AppliedLayoutsHelper.DeviceMatchStrength.NoMatch)
+                    {
+                        continue;
+                    }
+
+                    if (matchStrength == AppliedLayoutsHelper.DeviceMatchStrength.Legacy)
+                    {
+                        legacyMatchIndices.Add(i);
+                    }
+                    else
+                    {
+                        replacedLayoutIndices.Add(i);
                     }
                 }
 
-                if (!isUpdated)
+                if (legacyMatchIndices.Count == 0)
                 {
-                    mergedLayoutsList.Add(existingLayout);
+                    continue;
+                }
+
+                int connectedPeerCount = 0;
+                foreach (var monitor in connectedMonitors)
+                {
+                    if (AppliedLayoutsHelper.HasSameBaseIdentity(
+                        newLayout.Device,
+                        monitor.Monitor,
+                        monitor.MonitorSerialNumber,
+                        monitor.VirtualDesktop))
+                    {
+                        connectedPeerCount++;
+                    }
+                }
+
+                int updatedPeerCount = 0;
+                foreach (var updatedLayout in newLayouts)
+                {
+                    if (AppliedLayoutsHelper.HasSameBaseIdentity(
+                        newLayout.Device,
+                        updatedLayout.Device.Monitor,
+                        updatedLayout.Device.SerialNumber,
+                        updatedLayout.Device.VirtualDesktop))
+                    {
+                        updatedPeerCount++;
+                    }
+                }
+
+                if (connectedPeerCount > 1 && updatedPeerCount < connectedPeerCount)
+                {
+                    throw new InvalidOperationException(Properties.Resources.set_layout_error_ambiguous_monitor_identity);
+                }
+
+                foreach (int index in legacyMatchIndices)
+                {
+                    replacedLayoutIndices.Add(index);
+                }
+            }
+
+            for (int i = 0; i < existingLayouts.AppliedLayouts.Count; i++)
+            {
+                if (!replacedLayoutIndices.Contains(i))
+                {
+                    mergedLayoutsList.Add(existingLayouts.AppliedLayouts[i]);
                 }
             }
         }

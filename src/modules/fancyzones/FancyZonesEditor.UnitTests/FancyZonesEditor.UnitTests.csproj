@@ -27,6 +27,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\editor\FancyZonesEditor\FancyZonesEditor.csproj" />
+    <ProjectReference Include="..\FancyZonesCLI\FancyZonesCLI.csproj" />
   </ItemGroup>
 
 </Project>

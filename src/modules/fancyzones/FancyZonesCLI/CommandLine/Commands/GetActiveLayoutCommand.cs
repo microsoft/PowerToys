@@ -51,9 +51,11 @@ internal sealed partial class GetActiveLayoutCommand : FancyZonesBaseCommand
             var matchedLayout = AppliedLayoutsHelper.FindLayoutForMonitor(
                 appliedLayouts,
                 monitor.Monitor,
+                monitor.MonitorInstanceId,
                 monitor.MonitorSerialNumber,
                 monitor.MonitorNumber,
-                monitor.VirtualDesktop);
+                monitor.VirtualDesktop,
+                editorParams.Monitors);
 
             if (matchedLayout.HasValue)
             {

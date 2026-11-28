@@ -200,6 +200,12 @@ namespace FancyZonesCLI.Properties {
             }
         }
         
+        internal static string set_layout_error_ambiguous_monitor_identity {
+            get {
+                return ResourceManager.GetString("set_layout_error_ambiguous_monitor_identity", resourceCulture);
+            }
+        }
+
         internal static string set_layout_error_no_monitors {
             get {
                 return ResourceManager.GetString("set_layout_error_no_monitors", resourceCulture);
