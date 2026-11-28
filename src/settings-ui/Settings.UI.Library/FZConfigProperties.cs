@@ -61,6 +61,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             FancyzonesAllowPopupWindowSnap = new BoolProperty();
             FancyzonesAllowChildWindowSnap = new BoolProperty();
             FancyzonesDisableRoundCornersOnSnap = new BoolProperty();
+            FancyzonesNativeSnap = new BoolProperty();
             FancyzonesExcludedApps = new StringProperty();
             FancyzonesInActiveColor = new StringProperty(ConfigDefaults.DefaultFancyZonesInActiveColor);
             FancyzonesBorderColor = new StringProperty(ConfigDefaults.DefaultFancyzonesBorderColor);
@@ -135,6 +136,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         [JsonPropertyName("fancyzones_disableRoundCornersOnSnap")]
         public BoolProperty FancyzonesDisableRoundCornersOnSnap { get; set; }
+
+        [JsonPropertyName("fancyzones_nativeSnap")]
+        public BoolProperty FancyzonesNativeSnap { get; set; }
 
         [JsonPropertyName("fancyzones_zoneHighlightColor")]
         public StringProperty FancyzonesZoneHighlightColor { get; set; }

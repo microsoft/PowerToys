@@ -75,6 +75,7 @@ namespace ViewModelTests
             Assert.AreEqual(originalSettings.Properties.UseCursorposEditorStartupscreen.Value, viewModel.UseCursorPosEditorStartupScreen);
             Assert.AreEqual(originalSettings.Properties.FancyzonesAllowChildWindowSnap.Value, viewModel.AllowChildWindowSnap);
             Assert.AreEqual(originalSettings.Properties.FancyzonesDisableRoundCornersOnSnap.Value, viewModel.DisableRoundCornersOnWindowSnap);
+            Assert.AreEqual(originalSettings.Properties.FancyzonesNativeSnap.Value, viewModel.NativeSnap);
 
             // Verify that the stub file was used
             var expectedCallCount = 2;  // once via the view model, and once by the test (GetSettings<T>)
@@ -537,6 +538,24 @@ namespace ViewModelTests
             // assert
             var expected = viewModel.DisableRoundCornersOnWindowSnap;
             var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesDisableRoundCornersOnSnap.Value;
+            Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void NativeSnapShouldSetValue2TrueWhenSuccessful()
+        {
+            Mock<SettingsUtils> mockSettingsUtils = new Mock<SettingsUtils>(new FileSystem(), null);
+
+            // arrange
+            FancyZonesViewModel viewModel = new FancyZonesViewModel(mockSettingsUtils.Object, SettingsRepository<GeneralSettings>.GetInstance(mockGeneralSettingsUtils.Object), SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object), sendMockIPCConfigMSG, FancyZonesTestFolderName);
+            Assert.IsFalse(viewModel.NativeSnap); // check if value was initialized to false.
+
+            // act
+            viewModel.NativeSnap = true;
+
+            // assert
+            var expected = viewModel.NativeSnap;
+            var actual = SettingsRepository<FancyZonesSettings>.GetInstance(mockFancyZonesSettingsUtils.Object).SettingsConfig.Properties.FancyzonesNativeSnap.Value;
             Assert.AreEqual(expected, actual);
         }
 

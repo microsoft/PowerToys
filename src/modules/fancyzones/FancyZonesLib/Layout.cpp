@@ -173,6 +173,11 @@ GUID Layout::Id() const noexcept
     return m_data.uuid;
 }
 
+int Layout::ZoneSpacing() const noexcept
+{
+    return m_data.showSpacing ? m_data.spacing : 0;
+}
+
 FancyZonesDataTypes::ZoneSetLayoutType Layout::Type() const noexcept
 {
     return m_data.type;

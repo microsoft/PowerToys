@@ -56,6 +56,7 @@ namespace FancyZonesUnitTests
         Assert::AreEqual(expected.layoutNameLabelFontSize, actual.layoutNameLabelFontSize);
         Assert::AreEqual(expected.layoutNameLabelPadding, actual.layoutNameLabelPadding);
         Assert::AreEqual(expected.layoutNameLabelDuration, actual.layoutNameLabelDuration);
+        Assert::AreEqual(expected.nativeSnap, actual.nativeSnap);
         Assert::AreEqual(expected.excludedApps.c_str(), actual.excludedApps.c_str());
         Assert::AreEqual(expected.excludedAppsArray.size(), actual.excludedAppsArray.size());
         for (int i = 0; i < expected.excludedAppsArray.size(); i++)
@@ -125,6 +126,7 @@ namespace FancyZonesUnitTests
         {
             //prepare data
             const Settings expected{
+                .nativeSnap = true,
                 .excludedApps = L"app\r\napp1\r\napp2\r\nanother app",
                 .excludedAppsArray = { L"APP", L"APP1", L"APP2", L"ANOTHER APP" },
             };
@@ -156,10 +158,11 @@ namespace FancyZonesUnitTests
             values.add_property(L"fancyzones_prevTab_hotkey", expected.prevTabHotkey.get_json());
             values.add_property(L"fancyzones_monitorRotation", expected.monitorRotation);
             values.add_property(L"fancyzones_monitorRotation_hotkey", expected.monitorRotationHotkey.get_json());
+            values.add_property(L"fancyzones_nativeSnap", expected.nativeSnap);
             values.add_property(L"fancyzones_excluded_apps", expected.excludedApps);
 
             json::to_file(FancyZonesSettings::GetSettingsFileName(), values.get_raw_json());
-            
+
             FancyZonesSettings::instance().LoadSettings();
             auto actual = FancyZonesSettings::settings();
             compareSettings(expected, actual);

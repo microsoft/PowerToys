@@ -3695,6 +3695,9 @@ Right-click to remove the key combination, thereby deactivating the shortcut.</v
   <data name="FancyZones_DisableRoundCornersOnWindowSnap.Content" xml:space="preserve">
     <value>Disable rounded corners when a window is snapped</value>
   </data>
+  <data name="FancyZones_NativeSnap.Content" xml:space="preserve">
+    <value>Put zoned windows into Windows snap groups</value>
+  </data>
   <data name="PowerLauncher_SearchQueryTuningEnabled.Description" xml:space="preserve">
     <value>Fine tune results ordering</value>
   </data>
