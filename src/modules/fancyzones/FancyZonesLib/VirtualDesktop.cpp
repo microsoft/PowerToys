@@ -1,8 +1,12 @@
 #include "pch.h"
 #include "VirtualDesktop.h"
 
+#include "FancyZonesWinHookEventIDs.h"
+#include "util.h"
+
 #include <common/logger/logger.h>
-#include "trace.h"
+#include <exception>
+#include <utility>
 
 // Non-Localizable strings
 namespace NonLocalizable
@@ -13,17 +17,27 @@ namespace NonLocalizable
     const wchar_t RegKeyVirtualDesktopsFromSession[] = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\SessionInfo\\%d\\VirtualDesktops";
 }
 
-std::optional<GUID> NewGetCurrentDesktopId()
+namespace
 {
-    wil::unique_hkey key{};
-    if (RegOpenKeyExW(HKEY_CURRENT_USER, NonLocalizable::RegKeyVirtualDesktops, 0, KEY_ALL_ACCESS, &key) == ERROR_SUCCESS)
+    std::optional<GUID> ReadCurrentDesktopId(HKEY key) noexcept
     {
         GUID value{};
-        DWORD size = sizeof(GUID);
-        if (RegQueryValueExW(key.get(), NonLocalizable::RegCurrentVirtualDesktop, 0, nullptr, reinterpret_cast<BYTE*>(&value), &size) == ERROR_SUCCESS)
+        DWORD size = sizeof(value);
+        if (RegGetValueW(key, nullptr, NonLocalizable::RegCurrentVirtualDesktop, RRF_RT_REG_BINARY, nullptr, &value, &size) == ERROR_SUCCESS && size == sizeof(value))
         {
             return value;
         }
+
+        return std::nullopt;
+    }
+}
+
+std::optional<GUID> NewGetCurrentDesktopId()
+{
+    wil::unique_hkey key{};
+    if (RegOpenKeyExW(HKEY_CURRENT_USER, NonLocalizable::RegKeyVirtualDesktops, 0, KEY_QUERY_VALUE, &key) == ERROR_SUCCESS)
+    {
+        return ReadCurrentDesktopId(key.get());
     }
 
     return std::nullopt;
@@ -203,4 +217,94 @@ std::vector<HWND> VirtualDesktop::GetWindowsFromCurrentDesktop() const
     }
 
     return result;
+}
+
+VirtualDesktopWatcher::~VirtualDesktopWatcher()
+{
+    Stop();
+}
+
+void VirtualDesktopWatcher::Start(HWND window) noexcept
+{
+    if (m_thread.joinable())
+    {
+        return;
+    }
+
+    wil::unique_hkey key;
+    const auto openResult = RegOpenKeyExW(HKEY_CURRENT_USER, NonLocalizable::RegKeyVirtualDesktops, 0, KEY_NOTIFY | KEY_QUERY_VALUE, &key);
+    if (openResult != ERROR_SUCCESS)
+    {
+        Logger::warn(L"Failed to open the virtual desktop registry key for notifications. Error: {}", openResult);
+        return;
+    }
+
+    // Take the baseline before FancyZones synchronizes its initial desktop.
+    const auto initialDesktopId = ReadCurrentDesktopId(key.get());
+    m_stopEvent.reset(CreateEventW(nullptr, TRUE, FALSE, nullptr));
+    if (!m_stopEvent)
+    {
+        Logger::warn(L"Failed to create the virtual desktop watcher stop event. Error: {}", GetLastError());
+        return;
+    }
+
+    try
+    {
+        m_thread = std::thread([window, stopEvent = m_stopEvent.get(), key = std::move(key), lastDesktopId = initialDesktopId]() mutable noexcept {
+            wil::unique_event changeEvent;
+            changeEvent.reset(CreateEventW(nullptr, FALSE, FALSE, nullptr));
+            if (!changeEvent)
+            {
+                Logger::warn(L"Failed to create the virtual desktop registry change event. Error: {}", GetLastError());
+                return;
+            }
+
+            // Close the watched key before the event so any pending notification is canceled first.
+            const auto watchedKey = std::move(key);
+            const HANDLE events[] = { stopEvent, changeEvent.get() };
+            for (;;)
+            {
+                // Arm before reading so writes during the read are signaled on the next wait.
+                const auto notifyResult = RegNotifyChangeKeyValue(watchedKey.get(), FALSE, REG_NOTIFY_CHANGE_LAST_SET, changeEvent.get(), TRUE);
+                if (notifyResult != ERROR_SUCCESS)
+                {
+                    Logger::warn(L"Failed to watch the virtual desktop registry key. Error: {}", notifyResult);
+                    return;
+                }
+
+                const auto desktopId = ReadCurrentDesktopId(watchedKey.get());
+                if (desktopId && desktopId != lastDesktopId)
+                {
+                    lastDesktopId = desktopId;
+                    Logger::info(L"Virtual desktop switch detected in the registry: {}", FancyZonesUtils::GuidToString(*desktopId).value_or(L"<unknown>"));
+                    PostMessageW(window, WM_PRIV_VD_SWITCH, 0, 0);
+                }
+
+                const auto waitResult = WaitForMultipleObjects(ARRAYSIZE(events), events, FALSE, INFINITE);
+                if (waitResult != WAIT_OBJECT_0 + 1)
+                {
+                    if (waitResult == WAIT_FAILED)
+                    {
+                        Logger::warn(L"Failed to wait for virtual desktop registry changes. Error: {}", GetLastError());
+                    }
+                    return;
+                }
+            }
+        });
+    }
+    catch (const std::exception& error)
+    {
+        Logger::warn("Failed to start the virtual desktop registry watcher. {}", error.what());
+        m_stopEvent.reset();
+    }
+}
+
+void VirtualDesktopWatcher::Stop() noexcept
+{
+    if (m_thread.joinable())
+    {
+        m_stopEvent.SetEvent();
+        m_thread.join();
+    }
+    m_stopEvent.reset();
 }
