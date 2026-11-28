@@ -8,6 +8,9 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
+#include <icu.h>
+
+#pragma comment(lib, "icu.lib")
 
 namespace fs = std::filesystem;
 
@@ -16,6 +19,72 @@ namespace
     const int MAX_INPUT_STRING_LEN = 1024;
 
     const wchar_t c_rootRegPath[] = L"Software\\Microsoft\\PowerRename";
+
+    enum class UnicodeCase
+    {
+        Lower,
+        Upper,
+        Title,
+    };
+
+    HRESULT ChangeUnicodeCase(const std::u16string& text, UnicodeCase casing, std::u16string& mapped)
+    {
+        if (text.size() > INT32_MAX)
+        {
+            return E_INVALIDARG;
+        }
+
+        UErrorCode status = U_ZERO_ERROR;
+        std::unique_ptr<UCaseMap, decltype(&ucasemap_close)> caseMap(nullptr, ucasemap_close);
+        if (casing == UnicodeCase::Title)
+        {
+            // Titlecase only the start of this suffix, not every word. The caller has
+            // already selected the first alphabetic character, so ICU must not skip it.
+            caseMap.reset(ucasemap_open(nullptr, U_TITLECASE_WHOLE_STRING | U_TITLECASE_NO_BREAK_ADJUSTMENT, &status));
+            if (U_FAILURE(status))
+            {
+                return E_FAIL;
+            }
+        }
+
+        auto map = [&](UChar* destination, int32_t capacity) {
+            if (casing == UnicodeCase::Title)
+            {
+                return ucasemap_toTitle(caseMap.get(), destination, capacity, text.data(), static_cast<int32_t>(text.size()), &status);
+            }
+
+            auto operation = casing == UnicodeCase::Upper ? u_strToUpper : u_strToLower;
+            return operation(destination, capacity, text.data(), static_cast<int32_t>(text.size()), nullptr, &status);
+        };
+
+        // Unicode mappings can expand the text (for example, sharp s becomes "Ss").
+        // Preflight the required UTF-16 length; buffer overflow is expected here.
+        int32_t length = map(nullptr, 0);
+
+        if (status != U_BUFFER_OVERFLOW_ERROR && U_FAILURE(status))
+        {
+            return E_FAIL;
+        }
+
+        if (length == INT32_MAX)
+        {
+            return E_INVALIDARG;
+        }
+
+        // Reserve the terminator too, then clear the preflight error before mapping.
+        mapped.resize(static_cast<size_t>(length) + 1);
+        status = U_ZERO_ERROR;
+        length = map(mapped.data(), static_cast<int32_t>(mapped.size()));
+
+        if (U_FAILURE(status))
+        {
+            return E_FAIL;
+        }
+
+        mapped.resize(length);
+
+        return S_OK;
+    }
 
     // Helper function: Find the longest matching pattern starting at the given position
     // Returns the matched pattern name, or empty string if no match found
@@ -191,7 +260,7 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                 }
             }
         }
-        else if (flags & Titlecase)
+        else if (flags & TitleCase)
         {
             if (!(flags & ExtensionOnly))
             {
@@ -277,6 +346,67 @@ HRESULT GetTransformedFileName(_Out_ PWSTR result, UINT cchMax, _In_ PCWSTR sour
                         stem[i] = towlower(stem[i]);
                     }
                 }
+                hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
+            }
+            else
+            {
+                hr = StringCchCopy(result, cchMax, source);
+            }
+        }
+        else if (flags & SentenceCase)
+        {
+            if (!(flags & ExtensionOnly))
+            {
+                std::wstring stem = isFolder ? source : fs::path(source).stem().wstring();
+                std::wstring extension = isFolder ? L"" : fs::path(source).extension().wstring();
+
+                std::u16string originalStem(stem.begin(), stem.end());
+                if (originalStem.size() > INT32_MAX)
+                {
+                    return E_INVALIDARG;
+                }
+
+                // Inspect complete code points so a supplementary-plane letter counts
+                // as the first letter rather than letting a later Latin letter win.
+                size_t firstAlphabetic = originalStem.size();
+                for (int32_t i = 0; i < static_cast<int32_t>(originalStem.size());)
+                {
+                    int32_t start = i;
+                    UChar32 character;
+                    U16_NEXT(originalStem.data(), i, static_cast<int32_t>(originalStem.size()), character);
+
+                    if (u_isalpha(character))
+                    {
+                        firstAlphabetic = static_cast<size_t>(start);
+                        break;
+                    }
+                }
+
+                // Non-alphabetic characters can still have case mappings. Lowercase
+                // the prefix separately; if no letter was found, it is the entire stem.
+                std::u16string mappedStem;
+                hr = ChangeUnicodeCase(originalStem.substr(0, firstAlphabetic), UnicodeCase::Lower, mappedStem);
+                if (FAILED(hr))
+                {
+                    return hr;
+                }
+
+                if (firstAlphabetic != originalStem.size())
+                {
+                    // Map the original suffix in one operation so the first letter's
+                    // combining marks and the remaining letters retain their casing
+                    // context.
+                    std::u16string titlecased;
+                    hr = ChangeUnicodeCase(originalStem.substr(firstAlphabetic), UnicodeCase::Title, titlecased);
+                    if (FAILED(hr))
+                    {
+                        return hr;
+                    }
+
+                    mappedStem += titlecased;
+                }
+
+                stem.assign(mappedStem.begin(), mappedStem.end());
                 hr = StringCchPrintf(result, cchMax, L"%s%s", stem.c_str(), extension.c_str());
             }
             else

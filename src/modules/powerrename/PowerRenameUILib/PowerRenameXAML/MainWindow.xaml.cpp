@@ -620,6 +620,7 @@ namespace winrt::PowerRenameUI::implementation
                 toggleButton_lowerCase().IsChecked(false);
                 toggleButton_titleCase().IsChecked(false);
                 toggleButton_capitalize().IsChecked(false);
+                toggleButton_sentenceCase().IsChecked(false);
             }
         }
         else if (flag == Lowercase)
@@ -629,15 +630,17 @@ namespace winrt::PowerRenameUI::implementation
                 toggleButton_upperCase().IsChecked(false);
                 toggleButton_titleCase().IsChecked(false);
                 toggleButton_capitalize().IsChecked(false);
+                toggleButton_sentenceCase().IsChecked(false);
             }
         }
-        else if (flag == Titlecase)
+        else if (flag == TitleCase)
         {
             if (toggleButton_titleCase().IsChecked())
             {
                 toggleButton_upperCase().IsChecked(false);
                 toggleButton_lowerCase().IsChecked(false);
                 toggleButton_capitalize().IsChecked(false);
+                toggleButton_sentenceCase().IsChecked(false);
             }
         }
         else if (flag == Capitalized)
@@ -647,6 +650,17 @@ namespace winrt::PowerRenameUI::implementation
                 toggleButton_upperCase().IsChecked(false);
                 toggleButton_lowerCase().IsChecked(false);
                 toggleButton_titleCase().IsChecked(false);
+                toggleButton_sentenceCase().IsChecked(false);
+            }
+        }
+        else if (flag == SentenceCase)
+        {
+            if (toggleButton_sentenceCase().IsChecked())
+            {
+                toggleButton_upperCase().IsChecked(false);
+                toggleButton_lowerCase().IsChecked(false);
+                toggleButton_titleCase().IsChecked(false);
+                toggleButton_capitalize().IsChecked(false);
             }
         }
 
@@ -720,11 +734,20 @@ namespace winrt::PowerRenameUI::implementation
 
         // ToggleButton TitleCase
         toggleButton_titleCase().Checked([&](auto const&, auto const&) {
-            ValidateFlags(Titlecase);
-            UpdateFlag(Titlecase, UpdateFlagCommand::Set);
+            ValidateFlags(TitleCase);
+            UpdateFlag(TitleCase, UpdateFlagCommand::Set);
         });
         toggleButton_titleCase().Unchecked([&](auto const&, auto const&) {
-            UpdateFlag(Titlecase, UpdateFlagCommand::Reset);
+            UpdateFlag(TitleCase, UpdateFlagCommand::Reset);
+        });
+
+        // ToggleButton SentenceCase
+        toggleButton_sentenceCase().Checked([&](auto const&, auto const&) {
+            ValidateFlags(SentenceCase);
+            UpdateFlag(SentenceCase, UpdateFlagCommand::Set);
+        });
+        toggleButton_sentenceCase().Unchecked([&](auto const&, auto const&) {
+            UpdateFlag(SentenceCase, UpdateFlagCommand::Reset);
         });
 
         // ToggleButton Capitalize
@@ -1084,13 +1107,17 @@ namespace winrt::PowerRenameUI::implementation
         {
             toggleButton_lowerCase().IsChecked(true);
         }
-        else if (flags & Titlecase)
+        else if (flags & TitleCase)
         {
             toggleButton_titleCase().IsChecked(true);
         }
         else if (flags & Capitalized)
         {
             toggleButton_capitalize().IsChecked(true);
+        }
+        else if (flags & SentenceCase)
+        {
+            toggleButton_sentenceCase().IsChecked(true);
         }
 
         int metadataIndex = (flags & MetadataSourceXMP) ? 1 : 0;

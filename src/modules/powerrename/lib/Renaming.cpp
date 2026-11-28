@@ -34,6 +34,7 @@ static bool IsSameName(_In_ PCWSTR first, _In_ PCWSTR second)
 
 bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnumIndex, CComPtr<IPowerRenameItem>& spItem)
 {
+    constexpr DWORD casingFlags = Uppercase | Lowercase | TitleCase | SentenceCase | Capitalized;
     bool wouldRename = false;
     DWORD flags = 0;
     winrt::check_hresult(spRenameRegEx->GetFlags(&flags));
@@ -201,7 +202,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     // as nullptr so we clear the renamed column
     // Except string transformation is selected.
 
-    if (newName == nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase || flags & Capitalized))
+    if (newName == nullptr && (flags & casingFlags))
     {
         SHStrDup(sourceName, &newName);
     }
@@ -247,7 +248,7 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     }
 
     wchar_t transformedName[MAX_PATH] = { 0 };
-    if (newNameToUse != nullptr && (flags & Uppercase || flags & Lowercase || flags & Titlecase || flags & Capitalized))
+    if (newNameToUse != nullptr && (flags & casingFlags))
     {
         try
         {
@@ -271,8 +272,6 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
     {
         wouldRename = true;
         std::wstring newNameToUseWstr{ newNameToUse };
-        PWSTR path = nullptr;
-        spItem->GetPath(&path);
 
         // Following characters cannot be used for file names.
         // Ref https://learn.microsoft.com/windows/win32/fileio/naming-a-file#naming-conventions
@@ -291,11 +290,29 @@ bool DoRename(CComPtr<IPowerRenameRegEx>& spRenameRegEx, unsigned long& itemEnum
         }
         // Max file path is 260 and max folder path is 247.
         // Ref https://learn.microsoft.com/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
-        else if ((isFolder && lstrlen(path) + (lstrlen(newNameToUse) - lstrlen(originalName)) > 247) ||
-                 lstrlen(path) + (lstrlen(newNameToUse) - lstrlen(originalName)) > 260)
+        else if ((isFolder && filePathStr.size() - wcslen(originalName) + newNameToUseWstr.size() > 247) ||
+                 filePathStr.size() - wcslen(originalName) + newNameToUseWstr.size() > 260)
         {
             spItem->PutStatus(PowerRenameItemRenameStatus::ItemNameTooLong);
             wouldRename = false;
+        }
+        else
+        {
+            // A target path can fit while its filename exceeds the filesystem's component
+            // limit, especially after Unicode casing expands a previously valid name.
+            wchar_t volumePath[MAX_PATH] = { 0 };
+
+            // Resolve the volume from the existing parent, not the proposed name. This
+            // also handles mounted volumes rather than assuming the drive root's limit.
+            const auto parentPath = fs::path(filePathStr).parent_path();
+            winrt::check_bool(GetVolumePathNameW(parentPath.c_str(), volumePath, ARRAYSIZE(volumePath)));
+            DWORD maximumComponentLength = 0;
+            winrt::check_bool(GetVolumeInformationW(volumePath, nullptr, 0, nullptr, &maximumComponentLength, nullptr, nullptr, 0));
+            if (newNameToUseWstr.size() > maximumComponentLength)
+            {
+                spItem->PutStatus(PowerRenameItemRenameStatus::ItemNameTooLong);
+                wouldRename = false;
+            }
         }
     }
 

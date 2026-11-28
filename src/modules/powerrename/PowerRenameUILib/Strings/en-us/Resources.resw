@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -298,25 +298,31 @@
     <value>Text formatting</value>
   </data>
   <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>lowercase</value>
+    <value>Convert to lowercase</value>
   </data>
   <data name="ToggleButton_Lowercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Lowercase</value>
   </data>
   <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>UPPERCASE</value>
+    <value>Convert to uppercase</value>
   </data>
   <data name="ToggleButton_Uppercase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Uppercase</value>
   </data>
-  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Title case</value>
+  <data name="ToggleButton_SentenceCase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Capitalize first letter only (sentence case)</value>
   </data>
-  <data name="ToggleButton_Titlecase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+  <data name="ToggleButton_SentenceCase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
+    <value>Sentence case</value>
+  </data>
+  <data name="ToggleButton_TitleCase.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Capitalize major words, keep minor words lowercase (title case)</value>
+  </data>
+  <data name="ToggleButton_TitleCase.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Title case</value>
   </data>
   <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
-    <value>Capitalize Each Word</value>
+    <value>Capitalize each word</value>
   </data>
   <data name="ToggleButton_Capitalize.[using:Microsoft.UI.Xaml.Automation]AutomationProperties.Name" xml:space="preserve">
     <value>Capitalize each word</value>
