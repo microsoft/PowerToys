@@ -40,6 +40,7 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
 
     private HotkeySettings? _hotkey;
     private IIconInfo? _initialIcon;
+    private volatile bool _cleanedUp;
 
     private FuzzyTargetCache _titleCache;
     private FuzzyTargetCache _subtitleCache;
@@ -124,10 +125,18 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
         get => _hotkey;
         set
         {
-            _serviceProvider.GetService<HotkeyManager>()!.UpdateHotkey(Id, value);
-            UpdateHotkey();
-            UpdateTags();
-            Save();
+            if (value?.IsEmpty() == true)
+            {
+                value = null;
+            }
+
+            // Two-way bindings echo the getter during realization and property updates
+            if (value != _hotkey)
+            {
+                _serviceProvider.GetService<HotkeyManager>()!.UpdateHotkey(Id, value);
+            }
+
+            RefreshHotkeyFromSettings();
         }
     }
 
@@ -350,13 +359,23 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
         }
     }
 
+    /// <summary>Reloads the shortcut and notifies bindings on the command's UI scheduler without persisting settings.</summary>
+    internal void RefreshHotkey() => DoOnUiThread(RefreshHotkeyFromSettings);
+
+    private void RefreshHotkeyFromSettings()
+    {
+        var previous = _hotkey;
+        UpdateHotkey();
+        if (_hotkey != previous)
+        {
+            UpdateTags();
+            OnPropertyChanged(nameof(Hotkey));
+        }
+    }
+
     private void UpdateHotkey()
     {
-        var hotkey = _settingsService.Settings.CommandHotkeys.Where(hk => hk.CommandId == Id).FirstOrDefault();
-        if (hotkey is not null)
-        {
-            _hotkey = hotkey.Hotkey;
-        }
+        _hotkey = _settingsService.Settings.GetCommandHotkey(Id);
     }
 
     private void UpdateTags()
@@ -391,14 +410,22 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
 
     private void DoOnUiThread(Action action)
     {
-        if (_commandItemViewModel.PageContext.TryGetTarget(out var pageContext))
+        if (_cleanedUp || !_commandItemViewModel.PageContext.TryGetTarget(out var pageContext))
         {
-            Task.Factory.StartNew(
-                action,
-                CancellationToken.None,
-                TaskCreationOptions.None,
-                pageContext.Scheduler);
+            return;
         }
+
+        Task.Factory.StartNew(
+            () =>
+            {
+                if (!_cleanedUp)
+                {
+                    action();
+                }
+            },
+            CancellationToken.None,
+            TaskCreationOptions.None,
+            pageContext.Scheduler);
     }
 
     internal virtual bool SafeUpdateFallbackTextSynchronous(string newQuery, string queryId, CancellationToken queryToken) => false;
@@ -488,6 +515,7 @@ public partial class TopLevelViewModel : CommandItemViewModelAdapter, IListItem,
     /// </summary>
     internal virtual void Cleanup()
     {
+        _cleanedUp = true;
         _commandItemViewModel.PropertyChangedBackground -= Item_PropertyChanged;
         _commandItemViewModel.SafeCleanup();
         _initialIcon = null;

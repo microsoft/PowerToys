@@ -40,7 +40,7 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
 
     public override string DisplayTitle => _displayTitle;
 
-    public override bool IsEnabled => !ProviderSettings.FallbackCommands.TryGetValue(_fallbackId, out var settings) || settings.IsEnabled;
+    public override bool IsEnabled => IsEnabledWithSettings(ProviderSettings);
 
     internal override bool IsFallbackV2 => _isV2;
 
@@ -246,5 +246,10 @@ internal sealed partial class TopLevelFallbackViewModel : TopLevelViewModel
         {
             return false;
         }
+    }
+
+    internal bool IsEnabledWithSettings(ProviderSettings providerSettings)
+    {
+        return !providerSettings.FallbackCommands.TryGetValue(_fallbackId, out var settings) || settings.IsEnabled;
     }
 }
