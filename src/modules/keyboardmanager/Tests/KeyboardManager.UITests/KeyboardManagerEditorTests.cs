@@ -477,37 +477,6 @@ public sealed class KeyboardManagerEditorTests : KeyboardManagerTestBase
         Assert.IsTrue(editor.WaitForElement(By.AccessibilityId(expectedInputId), timeoutMS: 5_000), $"Selecting {actionName} did not expose {expectedInputId}.");
     }
 
-    private void RecordKeys(Session editor, string toggleAutomationId, params int[] keys)
-    {
-        Step($"Recording [{string.Join(", ", keys.Select(key => $"0x{key:X2}"))}] through {toggleAutomationId}");
-        var toggle = editor.Find<Element>(By.AccessibilityId(toggleAutomationId), timeoutMS: 5_000);
-        toggle.Invoke(msPostAction: 200);
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", timeoutMS: 3_000), $"{toggleAutomationId} did not enter recording mode.");
-
-        try
-        {
-            foreach (var key in keys)
-            {
-                KeyboardHelper.PressKey((Key)checked((byte)key));
-            }
-        }
-        finally
-        {
-            foreach (var key in keys.Reverse())
-            {
-                KeyboardHelper.ReleaseKey((Key)checked((byte)key));
-            }
-        }
-
-        toggle = editor.Find<Element>(By.AccessibilityId(toggleAutomationId), timeoutMS: 5_000);
-        if (string.Equals(toggle.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
-        {
-            toggle.Invoke(msPostAction: 200);
-        }
-
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 3_000), $"{toggleAutomationId} did not leave recording mode.");
-    }
-
     private static void SelectKeyFromSearch(Session editor, Element keyButton, params Key[] query)
     {
         keyButton.Click(msPostAction: 300);
