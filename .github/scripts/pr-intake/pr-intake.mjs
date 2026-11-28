@@ -433,6 +433,78 @@ export function findVisualEvidence(body) {
   };
 }
 
+const ATX_HEADING_PATTERN = /^ {0,3}(#{1,6})(?:[ \t]|$)/;
+const SUMMARY_TITLE_PATTERN =
+  /^summary(?:[ \t]+of[ \t]+the[ \t]+pull[ \t]+request)?[ \t]*:?(?:[ \t]+#+)?$/i;
+// Bounds the title match so a crafted heading cannot cause slow backtracking.
+const MAX_SUMMARY_TITLE_LENGTH = 64;
+const DETAILS_TAG_PATTERN = /^( {0,3}<details\b[^>\n]*>)|(<\/details\s*>)/gim;
+
+function headingLevel(line) {
+  const match = ATX_HEADING_PATTERN.exec(line);
+  return match ? match[1].length : 0;
+}
+
+function isSummaryHeading(line) {
+  const match = ATX_HEADING_PATTERN.exec(line);
+  if (!match) {
+    return false;
+  }
+  const title = line.slice(match[0].length).trim();
+  return title.length <= MAX_SUMMARY_TITLE_LENGTH && SUMMARY_TITLE_PATTERN.test(title);
+}
+
+// Drops text that is not the author's visible writing: HTML comments and
+// collapsed <details> blocks, which hold AI-generated notes. An unclosed
+// comment or block hides the rest of the body.
+function stripHiddenText(body) {
+  const text = (typeof body === 'string' ? body : '')
+    .replace(/\r\n?/g, '\n')
+    .replace(/<!--[\s\S]*?(?:-->|$)/g, '');
+  let visible = '';
+  let cursor = 0;
+  let depth = 0;
+  for (const match of text.matchAll(DETAILS_TAG_PATTERN)) {
+    if (match[1] !== undefined) {
+      if (depth === 0) {
+        visible += text.slice(cursor, match.index);
+      }
+      depth += 1;
+    } else if (depth > 0) {
+      depth -= 1;
+      if (depth === 0) {
+        cursor = match.index + match[0].length;
+      }
+    }
+  }
+  return depth > 0 ? visible : visible + text.slice(cursor);
+}
+
+// The human summary is the text under the Summary heading, up to the next
+// heading of the same or a higher level. Text above the heading counts too,
+// because some authors write their summary first. A body without a Summary
+// heading is free-form, so any visible text counts.
+export function hasHumanSummary(body) {
+  const lines = stripHiddenText(body).split('\n');
+  const headingIndex = lines.findIndex((line) => isSummaryHeading(line));
+  let summaryLines = lines;
+  if (headingIndex !== -1) {
+    const level = headingLevel(lines[headingIndex]);
+    const sectionLength = lines.slice(headingIndex + 1).findIndex((line) => {
+      const nextLevel = headingLevel(line);
+      return nextLevel > 0 && nextLevel <= level;
+    });
+    const sectionEnd = sectionLength === -1
+      ? lines.length
+      : headingIndex + 1 + sectionLength;
+    summaryLines = [
+      ...lines.slice(0, headingIndex),
+      ...lines.slice(headingIndex + 1, sectionEnd),
+    ];
+  }
+  return summaryLines.some((line) => line.trim() !== '' && headingLevel(line) === 0);
+}
+
 export function isMergeabilityKnown(pullRequest) {
   if (pullRequest?.mergeable === true || pullRequest?.mergeable === false) {
     return true;
@@ -509,12 +581,19 @@ export function buildIntakeReport({
     ? invalidClosingIssues
     : [];
   const visualEvidence = findVisualEvidence(body);
+  const humanSummaryFound = hasHumanSummary(body);
+  const contributingUrl = buildContributingUrl(repositoryHtmlUrl, baseRef);
   const authorActions = [];
   const recommendations = [];
 
   if (mergeConflict) {
     authorActions.push(
       'Resolve the merge conflicts with the target branch.',
+    );
+  }
+  if (!humanSummaryFound) {
+    recommendations.push(
+      `Write a short **Summary** in your own words: what changed, why, and what reviewers should look at. Agents may fill in facts such as linked issues and checklist boxes, but not the Summary. See [who writes what](${contributingUrl}#pull-request-descriptions-must-be-written-by-a-human).`,
     );
   }
   if (!closingIssues.length && !invalidClosingReferences.length) {
@@ -548,6 +627,7 @@ export function buildIntakeReport({
     invalidClosingIssues: invalidClosingReferences,
     visualEvidence,
     visualAssessment,
+    humanSummaryFound,
     authorActions,
     recommendations,
     authorLogin: boundedString(authorLogin, 100),
@@ -555,7 +635,7 @@ export function buildIntakeReport({
     mergeabilityKnown,
     needsAuthorFeedback,
     readyForReview: authorActions.length === 0 && mergeabilityKnown,
-    contributingUrl: buildContributingUrl(repositoryHtmlUrl, baseRef),
+    contributingUrl,
   };
 }
 
@@ -634,7 +714,7 @@ ${deadlineNotice}`;
   const recommendationSection = report.recommendations.length
     ? `## Recommendation
 
-${report.recommendations.map((entry) => `> ${entry}`).join('\n')}
+${report.recommendations.map((entry) => `> ${entry}`).join('\n>\n')}
 
 `
     : '';
@@ -951,6 +1031,7 @@ export async function runPullRequestIntake({ api, event }) {
     mergeabilityKnown: report.mergeabilityKnown,
     closingIssueCount: report.closingIssues.length,
     invalidClosingIssueCount: report.invalidClosingIssues.length,
+    humanSummaryFound: report.humanSummaryFound,
     needsAuthorFeedback: report.needsAuthorFeedback,
     feedbackSince,
     readyForReview: report.readyForReview,

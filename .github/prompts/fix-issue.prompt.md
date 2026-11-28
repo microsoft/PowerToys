@@ -26,7 +26,7 @@ Required plan file (single source of truth):
 For **#{{issue_number}}**:
 - Use implementation-plan.md as the single authority.
 - Apply code and test changes directly in the repository.
-- Produce author notes for the PR. The human writes the PR description (see AGENTS.md "Pull request descriptions (hard rule)").
+- Draft the PR body: fill in only the agent sections and leave the human sections for the author (see AGENTS.md "Pull request descriptions (hard rule)").
 
 # OUTPUT FILES
 1) Generated Files/issueFix/{{issue_number}}/pr-description.md
@@ -47,23 +47,24 @@ For **#{{issue_number}}**:
 // TODO(Human input needed): <clarification needed>
 5) Verify locally: build & tests run successfully.
 
-# pr-description.md (author notes, NOT a PR body)
-A human must write the visible PR body in their own words. Do not write a ready-to-paste description. Structure the file as follows:
-1. A short note at the top: "Write the PR summary, description, and validation steps in your own words. Paste only the <details> block below into the PR."
-2. Facts to help the author write it, as terse bullet points:
-   - Suggested title: `Fix: <short summary> (#{{issue_number}})`
-   - Files or modules touched
-   - Risks & mitigations (implemented)
-   - Tests added/updated and how to run them
-   - Telemetry behavior (if applicable)
-   - Validation / reproduction steps performed
-   - `Closes #{{issue_number}}`
-3. Any explanatory prose (what changed and why the fix works) ONLY inside:
+# pr-description.md (PR body draft; the human sections stay empty)
+Start from `.github/pull_request_template.md` and keep its headings and comments. Follow AGENTS.md "Pull request descriptions (hard rule)":
+1. At the top, add an HTML comment for the author: "Write the Summary and What I verified sections in your own words, tick the Author checklist yourself, and review every change." Include the suggested title in it: `Fix: <short summary> (#{{issue_number}})`.
+2. Leave **Summary**, **What I verified**, and the **Author checklist** empty. Do not draft text for them.
+3. Fill in the agent sections with facts you verified:
+   - Linked issues: `Closes: #{{issue_number}}`, plus `Relates to:` lines for other issues the change really touches
+   - PR checklist: tick a box only when the diff or a command proves it, and add a one-line evidence pointer (test result, `.resw` path, doc path)
+   - Automated checks: the exact build and test commands you ran, with their results (passed or failed)
+4. Put helpful context for the author ONLY inside the collapsed block at the end, as terse bullets:
    ```markdown
    <details>
-   <summary>AI-generated summary</summary>
+   <summary>AI-generated notes</summary>
 
-   ...
+   - Files or modules touched
+   - What changed and why the fix works
+   - Risks & mitigations (implemented)
+   - Telemetry behavior (if applicable)
+   - Reproduction steps you used, so the author can verify the fix
 
    </details>
    ```
@@ -78,6 +79,6 @@ A human must write the visible PR body in their own words. Do not write a ready-
 - Use repository conventions and deterministic, minimal changes.
 
 # FINALIZE
-- Write pr-description.md (author notes; prose only inside the AI-generated `<details>` block)
+- Write pr-description.md (agent sections filled with verified facts; human sections empty; longer prose only inside the `AI-generated notes` block)
 - Write manual-steps.md only if needed
-- Print concise success message or note items requiring human interaction, and remind the user to write the PR description in their own words
+- Print concise success message or note items requiring human interaction, and remind the user to write the Summary and What I verified sections in their own words and to review every change

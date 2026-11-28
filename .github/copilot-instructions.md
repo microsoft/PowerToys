@@ -11,7 +11,7 @@ Concise guidance for AI contributions. For complete details, see [AGENTS.md](../
 - Atomic PRs: one logical change, no drive-by refactors
 - Add tests when changing behavior
 - Keep hot paths quiet (no logging in hooks/tight loops)
-- A human must write the PR body. Never write the visible PR description.
+- PR descriptions: never write the human sections (Summary, What I verified) or tick the Author checklist. Add only facts you verified. See [AGENTS.md](../AGENTS.md#pull-request-descriptions-hard-rule).
 
 ## Style Enforcement
 

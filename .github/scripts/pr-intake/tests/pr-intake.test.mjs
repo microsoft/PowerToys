@@ -18,6 +18,7 @@ import {
   findClosingIssueReferences,
   findVisualEvidence,
   getPullRequestWithMergeability,
+  hasHumanSummary,
   hasMergeConflict,
   isMergeabilityKnown,
   parseFeedbackSince,
@@ -388,6 +389,54 @@ https://github.com/user-attachments/files/1234/PowerToysReport_demo.zip
   assert.deepEqual(evidence.types, []);
 });
 
+test('human summary reads the Summary section, not comments or details blocks', () => {
+  assert.equal(hasHumanSummary('## Summary\n<!-- Human only. -->\n\n## What I verified\nRan the tests.'), false);
+  assert.equal(hasHumanSummary('## Summary of the Pull Request\r\n\r\n## PR Checklist\r\n- [x] Closes: #12'), false);
+  assert.equal(hasHumanSummary(
+    '## Summary\n<details>\n<summary>AI-generated notes</summary>\n\n<details>\n<summary>Log</summary>\n\nNested log.\n</details>\n\nNotes.\n</details>\n\n## What I verified',
+  ), false);
+  assert.equal(hasHumanSummary(
+    '<details>\n<summary>AI-generated notes</summary>\n\n## Summary\nAgent text.\n</details>\n\n## Summary\n',
+  ), false);
+  assert.equal(hasHumanSummary('## Summary\n<!-- unclosed comment\nHidden text.'), false);
+  assert.equal(hasHumanSummary('## Summary\nFixes the crash on empty lists.\n\n## What I verified'), true);
+  assert.equal(hasHumanSummary('## Summary\n### Root cause\nThe list was null.\n## What I verified'), true);
+  assert.equal(hasHumanSummary('Fixes the crash on empty lists.\n\n## Summary of the Pull Request\n\n## PR Checklist'), true);
+});
+
+test('free-form bodies without a Summary heading count any visible text', () => {
+  assert.equal(hasHumanSummary('Before, compact mode always expanded nested pages.'), true);
+  assert.equal(hasHumanSummary(''), false);
+  assert.equal(hasHumanSummary(null), false);
+  assert.equal(hasHumanSummary(
+    '<!-- template -->\n<details>\n<summary>AI-generated notes</summary>\n\nEverything.\n</details>\n',
+  ), false);
+});
+
+test('human summary detection stays fast on crafted bodies', () => {
+  const started = performance.now();
+  assert.equal(hasHumanSummary(`## Summary${' '.repeat(60000)}x`), false);
+  assert.equal(hasHumanSummary(
+    `## Summary\n${'<details>\n'.repeat(5000)}x\n${'</details>\n'.repeat(5000)}`,
+  ), false);
+  assert.ok(performance.now() - started < 1000);
+});
+
+test('the PR template starts with an empty Summary and nothing intake would parse', () => {
+  const template = fs.readFileSync(
+    new URL('../../../pull_request_template.md', import.meta.url),
+    'utf8',
+  );
+
+  assert.equal(hasHumanSummary(template), false);
+  assert.deepEqual(findClosingIssueReferences(template), []);
+  assert.equal(findVisualEvidence(template).found, false);
+  assert.equal(
+    hasHumanSummary(template.replace(/^## Summary[ \t]*\r?$/m, '## Summary\nFixes the crash on empty lists.')),
+    true,
+  );
+});
+
 test('label plan removes only managed lifecycle labels', () => {
   const plan = planManagedLabelChanges(
     ['Product-FancyZones', NEEDS_AUTHOR_FEEDBACK_LABEL],
@@ -478,6 +527,27 @@ test('missing issue link is recommended without blocking readiness', () => {
     'Link the issue this PR fixes using a closing keyword such as `Closes #123`.',
   ]);
   assert.match(renderIntakeComment(report), /## Recommendation/);
+});
+
+test('empty human summary is recommended without blocking readiness', () => {
+  const report = buildIntakeReport({
+    changedPaths: ['doc/devdocs/core/architecture.md'],
+    body: '## Summary\n<!-- Human only. -->\n\n## What I verified\nRan the tests.',
+    repositoryHtmlUrl: 'https://github.com/microsoft/PowerToys',
+    baseRef: 'main',
+    authorLogin: 'alice',
+    verifiedClosingIssues: [],
+    invalidClosingIssues: [],
+  });
+
+  assert.equal(report.humanSummaryFound, false);
+  assert.equal(report.readyForReview, true);
+  assert.equal(report.needsAuthorFeedback, false);
+  assert.deepEqual(report.authorActions, []);
+  assert.match(
+    renderIntakeComment(report),
+    /> Write a short \*\*Summary\*\* in your own words[^\n]*CONTRIBUTING\.md#pull-request-descriptions-must-be-written-by-a-human\)\.\n>\n> Link the issue/,
+  );
 });
 
 test('merge conflict blocks readiness with an author action', () => {

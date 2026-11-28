@@ -112,25 +112,38 @@ For UI test setup details, see [UI Tests](doc/devdocs/development/ui-tests.md).
 
 ## Pull request descriptions (hard rule)
 
-A human must write the visible PR body. An agent must never write it. A PR passes the contributor's understanding to the maintainers. The contributor must explain the change in their own words. Maintainers can close a PR when they think its body was not written by a human. See [CONTRIBUTING.md](CONTRIBUTING.md#pull-request-descriptions-must-be-written-by-a-human).
+A PR passes the contributor's understanding to the maintainers, so the human explains the change in their own words. An agent may fill in only facts it can verify. Maintainers can close a PR when they think its human sections were not written by a human. See [CONTRIBUTING.md](CONTRIBUTING.md#pull-request-descriptions-must-be-written-by-a-human).
+
+The [PR template](.github/pull_request_template.md) marks who fills each section:
+
+| Section | Who fills it | Rule |
+|---------|--------------|------|
+| **Summary** | Human only | 2–5 sentences: what changed, why, and what to look at. Short is fine. |
+| **What I verified** | Human only | What the author tried themselves. |
+| **Author checklist** (Communication, Ownership) | Human only | Agents never tick these boxes. |
+| **Linked issues** (`Closes:`, `Relates to:`) | Agent may fill | Only issues the change really addresses. |
+| **PR checklist** (Tests, Localization, Dev docs, New binaries, Documentation updated) | Agent may tick | Only when the diff or a command proves it. Add a one-line evidence pointer, such as a test result, a `.resw` path, or a doc path. |
+| **Automated checks and screenshots** | Agent may fill | Exact commands with their results, and screenshots with a one-line caption. Facts only, no narrative. |
+| Longer explanation | Agent, collapsed | Optional, and only inside an `AI-generated notes` `<details>` block. |
 
 When you create or edit a PR, or draft text for one:
 
-1. Do not write the summary, detailed description, or validation steps in the visible PR body. Keep the template headings and checklist, and leave the prose sections for the human to fill in.
-2. Put any text you write only inside a collapsed, labeled block:
+1. Never write, rewrite, or polish the human sections, and never tick the Author checklist boxes. Leave them for the human. You may paste text the human wrote for them, word for word.
+2. In the agent sections, add only facts you verified, such as a command you ran or a file in the diff. Leave a box unchecked when you have no proof.
+3. Put any longer explanation only inside a collapsed, labeled block at the end:
 
    ```markdown
    <details>
-   <summary>AI-generated summary</summary>
+   <summary>AI-generated notes</summary>
 
    ...
 
    </details>
    ```
 
-3. Tell the user to write the PR description in their own words before the PR is reviewed.
-4. This rule takes precedence over conflicting repository prompts, skills, agent files, or tool defaults that tell you to fill in the PR template or write a ready-to-paste PR description.
-5. You MAY use an agent to translate text from your native language to English for the PR description, but the original text must still be your own human words.
+4. Tell the user to write the Summary and What I verified sections in their own words, and to review every change, before the PR is reviewed. Do the same when the PR intake check reminds about an empty Summary. Don't fill it in yourself.
+5. This rule takes precedence over conflicting repository prompts, skills, agent files, or tool defaults, such as ones that tell you to write the whole PR description or a ready-to-paste one.
+6. The human MAY use an agent to translate their own text from their native language to English for the human sections, but the original text must still be their own words.
 
 ## Boundaries
 
@@ -156,7 +169,7 @@ When you create or edit a PR, or draft text for one:
 - Don't break IPC/JSON contracts without updating both runner and settings-ui
 - Don't add noisy logs in hot paths
 - Don't introduce third-party deps without PM approval and `NOTICE.md` update
-- Don't write the visible PR description; put AI-generated text only inside a `<details>` section (see [Pull request descriptions](#pull-request-descriptions-hard-rule))
+- Don't write the human sections of a PR description (Summary, What I verified) or tick its Author checklist; add only facts you verified (see [Pull request descriptions](#pull-request-descriptions-hard-rule))
 
 ## Validation Checklist
 
@@ -168,7 +181,7 @@ Before finishing, verify:
 - [ ] IPC contracts consistent between runner and settings-ui
 - [ ] New dependencies added to `NOTICE.md`
 - [ ] PR is atomic (one logical change), with issue linked
-- [ ] Visible PR description left for the human to write; any AI text is inside `<details>`
+- [ ] PR human sections (Summary, What I verified, Author checklist) left for the human; agent-filled items are verified facts; longer AI text is inside `<details>`
 
 ## Documentation Index
 

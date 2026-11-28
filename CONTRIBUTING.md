@@ -59,19 +59,22 @@ Follow the [development guidelines](https://github.com/microsoft/PowerToys/blob/
 
 A PR does more than change code. It also passes what you learned to the maintainers. To do that, you must explain the change in your own words. If you cannot explain a change, you do not understand what it does to the code base. If you do not understand it, a maintainer cannot be expected to understand it either.
 
-- **You must write the PR body in your own words.** This includes the summary, the detailed description, and the validation steps. Do not let an AI tool, agent, or bot write them.
-- **AI-generated text is allowed only inside a collapsed `<details>` section.** Label it clearly as AI-generated, for example:
+The [PR template](https://github.com/microsoft/PowerToys/blob/main/.github/pull_request_template.md) marks each section as "Human only" or "Agent may fill".
+
+- **You must write the human sections yourself.** These are the **Summary** (2–5 sentences: what changed, why, and what reviewers should look at; short is fine) and **What I verified** (what you tried yourself). You also tick the **Author checklist** boxes yourself, including "I wrote the summary and reviewed every change". Do not let an AI tool, agent, or bot write these sections or tick these boxes. The PR intake check reminds you when the Summary is empty.
+- **An agent may fill in only facts it can verify.** It may add linked issues (`Closes:` or `Relates to:`) that the change really addresses. It may tick the Tests, Localization, Dev docs, New binaries, and Documentation updated boxes only when the diff or a command proves it, with a one-line pointer to the evidence. It may also list automated checks (exact commands and their results) and add screenshots with a one-line caption. You are still responsible for every fact in your PR.
+- **Longer AI-generated text is allowed only inside a collapsed `<details>` section.** Label it clearly as AI-generated, for example:
 
   ```markdown
   <details>
-  <summary>AI-generated summary</summary>
+  <summary>AI-generated notes</summary>
 
   ...text written by an AI tool...
 
   </details>
   ```
 
-- **If maintainers think a PR body was not written by a human, they can close the PR without further review.**
+- **If maintainers think the human sections were not written by a human, they can close the PR without further review.**
 - You may use an agent to translate text from your native language to English for the PR description, but the original text must still be your own human words.
 
 ### Naming features and functionality
