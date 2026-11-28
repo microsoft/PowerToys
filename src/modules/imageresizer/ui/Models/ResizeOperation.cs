@@ -79,7 +79,7 @@ namespace ImageResizer.Models
                     encoderId = CodecHelper.GetEncoderIdFromLegacyGuid(_settings.FallbackEncoder);
                 }
 
-                var encoderGuid = encoderId.Value;
+                var encoderGuid = GetOutputEncoderId(_settings.OutputFormat) ?? encoderId.Value;
 
                 if (_settings.SelectedSize is AiSize)
                 {
@@ -153,7 +153,19 @@ namespace ImageResizer.Models
             }
 
             string backup = null;
-            if (_settings.Replace)
+            if (_settings.Replace && !string.Equals(_fileSystem.Path.GetExtension(path), _fileSystem.Path.GetExtension(_file), StringComparison.OrdinalIgnoreCase))
+            {
+                // Converted to another format: give the new file the original's name, then recycle the original.
+                var renamed = _fileSystem.Path.ChangeExtension(_file, _fileSystem.Path.GetExtension(path));
+                if (!_fileSystem.File.Exists(renamed))
+                {
+                    _fileSystem.File.Move(path, renamed);
+                    path = renamed;
+                }
+
+                backup = _file;
+            }
+            else if (_settings.Replace)
             {
                 backup = GetBackupPath();
                 _fileSystem.File.Replace(path, _file, backup, ignoreMetadataErrors: true);
@@ -305,7 +317,11 @@ namespace ImageResizer.Models
             int originalWidth,
             int originalHeight)
         {
-            for (uint i = 0; i < decoder.FrameCount; i++)
+            // Only GIF and TIFF can hold more than one frame.
+            uint frameCount = encoderGuid == BitmapEncoder.GifEncoderId || encoderGuid == BitmapEncoder.TiffEncoderId
+                ? decoder.FrameCount
+                : 1;
+            for (uint i = 0; i < frameCount; i++)
             {
                 if (i > 0)
                 {
@@ -364,6 +380,20 @@ namespace ImageResizer.Models
                     ExifOrientationMode.IgnoreExifOrientation,
                     colorManagementMode);
 
+                var pixels = pixelData.DetachPixelData();
+                if (encoderGuid == BitmapEncoder.JpegEncoderId && frame.BitmapAlphaMode != BitmapAlphaMode.Ignore)
+                {
+                    // JPEG has no alpha channel. Flatten premultiplied pixels onto white so
+                    // transparent areas don't turn black.
+                    for (int p = 0; p < pixels.Length; p += 4)
+                    {
+                        byte inverseAlpha = (byte)(255 - pixels[p + 3]);
+                        pixels[p] += inverseAlpha;
+                        pixels[p + 1] += inverseAlpha;
+                        pixels[p + 2] += inverseAlpha;
+                    }
+                }
+
                 encoder.SetPixelData(
                     pixelFormat,
                     alphaMode,
@@ -371,7 +401,7 @@ namespace ImageResizer.Models
                     outHeight,
                     frame.DpiX,
                     frame.DpiY,
-                    pixelData.DetachPixelData());
+                    pixels);
 
                 // GoToNextFrameAsync commits the current frame, so copy its metadata
                 // before advancing rather than copying the first frame onto the last.
@@ -753,6 +783,16 @@ namespace ImageResizer.Models
 
             return null;
         }
+
+        private static Guid? GetOutputEncoderId(OutputFormat format) => format switch
+        {
+            OutputFormat.Png => BitmapEncoder.PngEncoderId,
+            OutputFormat.Jpeg => BitmapEncoder.JpegEncoderId,
+            OutputFormat.Bmp => BitmapEncoder.BmpEncoderId,
+            OutputFormat.Tiff => BitmapEncoder.TiffEncoderId,
+            OutputFormat.Gif => BitmapEncoder.GifEncoderId,
+            _ => null,
+        };
 
         private static byte? MapTiffCompression(TiffCompressOption option)
         {
