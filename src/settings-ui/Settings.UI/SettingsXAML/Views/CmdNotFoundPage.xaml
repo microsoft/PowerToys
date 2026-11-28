@@ -154,11 +154,13 @@
                     </tkcontrols:SettingsExpander.Items>
                 </tkcontrols:SettingsExpander>
                 <TextBlock
+                    x:Name="InstallationLogsHeader"
                     x:Uid="CmdNotFound_ModuleInstallationLogs"
                     Margin="0,12,0,4"
                     Style="{ThemeResource BodyStrongTextBlockStyle}" />
                 <TextBox
                     Height="300"
+                    AutomationProperties.LabeledBy="{x:Bind InstallationLogsHeader}"
                     FontFamily="Consolas"
                     IsReadOnly="True"
                     Text="{x:Bind ViewModel.CommandOutputLog, Mode=OneWay}"
