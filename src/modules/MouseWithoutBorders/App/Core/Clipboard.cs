@@ -22,7 +22,6 @@ using MouseWithoutBorders.Class;
 using MouseWithoutBorders.Exceptions;
 
 using SystemClipboard = System.Windows.Forms.Clipboard;
-using ThreadingTimer = System.Threading.Timer;
 
 // <summary>
 //     Clipboard related routines.
@@ -58,7 +57,7 @@ internal static class Clipboard
     private static bool lastDragDropFileTransferCompleted;
     private static int lastDragDropFileActiveTransfers;
     private static long lastDragDropFileGeneration;
-    private static ThreadingTimer lastDragDropFileReleaseTimer;
+    private static ITimer lastDragDropFileReleaseTimer;
     private static long nextTransientDragValidationGeneration;
     private static long pendingTransientDragValidationGeneration;
     private static bool pendingTransientDragReleaseRequested;
@@ -96,7 +95,7 @@ internal static class Clipboard
         bool isTransient = false)
     {
         LocalPathLease previousLease;
-        ThreadingTimer previousTimer;
+        ITimer previousTimer;
 
         lock (LastDragDropFileLock)
         {
@@ -136,7 +135,7 @@ internal static class Clipboard
         LocalPathLease lease)
     {
         LocalPathLease previousLease = null;
-        ThreadingTimer previousTimer = null;
+        ITimer previousTimer = null;
 
         lock (LastDragDropFileLock)
         {
@@ -207,10 +206,13 @@ internal static class Clipboard
         return path != null;
     }
 
-    internal static void RequestLastDragDropFileReleaseAfterSend()
+    internal static void RequestLastDragDropFileReleaseAfterSend() =>
+        RequestLastDragDropFileReleaseAfterSend(TimeProvider.System);
+
+    internal static void RequestLastDragDropFileReleaseAfterSend(TimeProvider timeProvider)
     {
         LocalPathLease ownerLeaseToRelease = null;
-        ThreadingTimer timerToDispose = null;
+        ITimer timerToDispose = null;
 
         lock (LastDragDropFileLock)
         {
@@ -232,7 +234,7 @@ internal static class Clipboard
             else if (lastDragDropFileReleaseTimer == null)
             {
                 long generation = lastDragDropFileGeneration;
-                lastDragDropFileReleaseTimer = new ThreadingTimer(
+                lastDragDropFileReleaseTimer = timeProvider.CreateTimer(
                     ReleaseExpiredTransientDragFile,
                     generation,
                     TransientLeaseReleaseTimeout,
@@ -252,7 +254,7 @@ internal static class Clipboard
         }
 
         LocalPathLease ownerLeaseToRelease = null;
-        ThreadingTimer timerToDispose = null;
+        ITimer timerToDispose = null;
 
         lock (LastDragDropFileLock)
         {
@@ -279,7 +281,7 @@ internal static class Clipboard
     {
         long generation = (long)state;
         LocalPathLease ownerLeaseToRelease = null;
-        ThreadingTimer timerToDispose = null;
+        ITimer timerToDispose = null;
 
         lock (LastDragDropFileLock)
         {
@@ -296,7 +298,7 @@ internal static class Clipboard
         ownerLeaseToRelease?.Dispose();
     }
 
-    private static LocalPathLease ClearLastDragDropFileLocked(out ThreadingTimer timer)
+    private static LocalPathLease ClearLastDragDropFileLocked(out ITimer timer)
     {
         LocalPathLease ownerLease = lastDragDropFileLease;
         timer = lastDragDropFileReleaseTimer;
