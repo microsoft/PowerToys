@@ -126,6 +126,15 @@ public class SettingsCliTests
     }
 
     [TestMethod]
+    public void TestGetModuleGpoRuleReadsTextExpanderPolicy()
+    {
+        // A module without a policy mapping reports Unavailable, so list, enable and disable would ignore its policy.
+        Assert.AreNotEqual(
+            SettingsCliHelper.GetModuleGpoRule("UnknownModule"),
+            SettingsCliHelper.GetModuleGpoRule("TextExpander"));
+    }
+
+    [TestMethod]
     public void TestSetModuleEnabledPropagatesSaveFailure()
     {
         var failingSettingsUtils = new FailingSaveSettingsUtils();

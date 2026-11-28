@@ -421,6 +421,9 @@ function Test-CoreFiles {
         # PowerAccent - only the runner-loaded module interface ships in the install root.
         # The app, core, common and keyboard-service binaries moved to WinUI3Apps (see $winUI3SignedFiles).
         'PowerToys.PowerAccentModuleInterface.dll',
+
+        # Text Expander - the engine itself ships in WinUI3Apps (see $winUI3SignedFiles).
+        'PowerToys.TextExpanderModuleInterface.dll',
         
         # Workspaces
         'PowerToys.WorkspacesSnapshotTool.exe',
@@ -496,6 +499,14 @@ function Test-CoreFiles {
         'PowerToys.PowerAccent.exe',
         'PowerToys.PowerAccentKeyboardService.dll',
 
+        # Text Expander
+        'PowerToys.TextExpander.dll',
+        'PowerToys.TextExpander.exe',
+        'PowerToys.TextExpander.Core.dll',
+        'PowerToys.TextExpander.Storage.dll',
+        'PowerToys.TextExpander.Editor.dll',
+        'PowerToys.TextExpander.Editor.exe',
+
         # PowerOCR (Text Extractor) - managed app moved to WinUI3Apps
         'PowerToys.PowerOCR.Core.dll',
         'PowerToys.PowerOCR.dll',
@@ -504,6 +515,9 @@ function Test-CoreFiles {
 
     # Required unsigned files in the WinUI3Apps subdirectory
     $winUI3RequiredUnsignedFiles = @(
+        'PowerToys.TextExpander.Editor.pri',
+        'PowerToys.TextExpander.Editor.deps.json',
+        'PowerToys.TextExpander.Editor.runtimeconfig.json',
         'PowerToys.PowerOCR.pri'
     )
     

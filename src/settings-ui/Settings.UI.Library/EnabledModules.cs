@@ -314,6 +314,22 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
         }
 
+        private bool textExpander; // defaulting to off
+
+        [JsonPropertyName("TextExpander")]
+        public bool TextExpander
+        {
+            get => textExpander;
+            set
+            {
+                if (textExpander != value)
+                {
+                    LogTelemetryEvent(value);
+                    textExpander = value;
+                }
+            }
+        }
+
         private bool powerOCR; // defaulting to off
 
         [JsonPropertyName("TextExtractor")]

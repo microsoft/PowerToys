@@ -22,6 +22,8 @@ namespace CommonSharedConstants
 
     const wchar_t RUN_SEND_SETTINGS_TELEMETRY_EVENT[] = L"Local\\PowerToysRunInvokeEvent-638ec522-0018-4b96-837d-6bd88e06f0d6";
 
+    const wchar_t TEXT_EXPANDER_EXIT_EVENT[] = L"Local\\PowerToysTextExpanderExitEvent-3f6c1b48-9d02-4a17-8e5b-7c0a2d64f91e";
+
     const wchar_t RUN_EXIT_EVENT[] = L"Local\\PowerToysRunExitEvent-3e38e49d-a762-4ef1-88f2-fd4bc7481516";
     
     const wchar_t FZE_EXIT_EVENT[] = L"Local\\PowerToys-FZE-ExitEvent-ca8c73de-a52c-4274-b691-46e9592d3b43";

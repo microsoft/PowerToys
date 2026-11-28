@@ -35,6 +35,7 @@ namespace Microsoft.CmdPal.UI.Tray;
 public sealed partial class TrayPaletteWindow : WindowEx,
     IRecipient<RequestShowPaletteAtMessage>,
     IRecipient<HideWindowMessage>,
+    IRecipient<GetCommandPaletteInputTargetMessage>,
     IRecipient<DismissMessage>,
     IDisposable
 {
@@ -49,6 +50,7 @@ public sealed partial class TrayPaletteWindow : WindowEx,
     private readonly DockPageFlyoutController _pageController;
     private RECT _anchor;
     private HWND _windowBeforeActivation;
+    private CommandPaletteInputSession? _inputSession;
     private bool _closed;
     private bool _visible;
     private bool _isDragging;
@@ -84,6 +86,7 @@ public sealed partial class TrayPaletteWindow : WindowEx,
         _pageController.Closed += PageController_Closed;
         WeakReferenceMessenger.Default.Register<RequestShowPaletteAtMessage>(this);
         WeakReferenceMessenger.Default.Register<HideWindowMessage>(this);
+        WeakReferenceMessenger.Default.Register<GetCommandPaletteInputTargetMessage>(this);
         WeakReferenceMessenger.Default.Register<DismissMessage>(this);
         Title = ResourceLoaderInstance.GetString("TrayPalette_Title");
         SystemBackdrop = new DesktopAcrylicBackdrop();
@@ -119,6 +122,7 @@ public sealed partial class TrayPaletteWindow : WindowEx,
 
         _anchor = anchor;
         _windowBeforeActivation = PInvoke.GetForegroundWindow();
+        _inputSession = CommandPaletteInputSession.Capture(new HWND((nint)this.GetWindowHwnd()), _windowBeforeActivation, DispatcherQueue, Dismiss);
         _visible = true;
         QuickActions.Visibility = Visibility.Visible;
         _pageController.Activate();
@@ -342,6 +346,8 @@ public sealed partial class TrayPaletteWindow : WindowEx,
         var restoreFocus = PInvoke.GetForegroundWindow() == new HWND((nint)this.GetWindowHwnd());
         var previous = _windowBeforeActivation;
         _windowBeforeActivation = HWND.Null;
+        _inputSession?.End();
+        _inputSession = null;
         ++_contextRequestVersion;
         _visible = false;
         ItemContextMenu.Hide();
@@ -354,6 +360,15 @@ public sealed partial class TrayPaletteWindow : WindowEx,
     }
 
     void IRecipient<HideWindowMessage>.Receive(HideWindowMessage message) => DismissOnUiThread();
+
+    void IRecipient<GetCommandPaletteInputTargetMessage>.Receive(GetCommandPaletteInputTargetMessage message)
+    {
+        var route = new DockCommandRoute(message.SourceHwnd, message.SourceRouteId);
+        if (DispatcherQueue.HasThreadAccess && route.OwnerHwnd == (nint)this.GetWindowHwnd() && _pageController.HasOpenRoute(route))
+        {
+            message.Target = _inputSession?.GetTarget(() => _pageController.HasOpenRoute(route));
+        }
+    }
 
     void IRecipient<DismissMessage>.Receive(DismissMessage message) => DismissOnUiThread();
 
@@ -446,6 +461,8 @@ public sealed partial class TrayPaletteWindow : WindowEx,
         }
 
         _closed = true;
+        _inputSession?.End();
+        _inputSession = null;
         _visible = false;
         AppWindow.Closing -= AppWindow_Closing;
         _themeService.ThemeChanged -= ThemeChanged;

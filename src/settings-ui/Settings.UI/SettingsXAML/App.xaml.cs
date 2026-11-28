@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Text.Json;
 using System.Threading.Tasks;
 using ManagedCommon;
@@ -203,7 +204,7 @@ namespace Microsoft.PowerToys.Settings.UI
             _ = int.TryParse(cmdArgs[(int)Arguments.PTPid], out int powerToysPID);
             PowerToysPID = powerToysPID;
 
-            IsElevated = cmdArgs[(int)Arguments.ElevatedStatus] == "true";
+            IsElevated |= cmdArgs[(int)Arguments.ElevatedStatus] == "true";
             IsUserAnAdmin = cmdArgs[(int)Arguments.IsUserAdmin] == "true";
             ShowOobe = cmdArgs[(int)Arguments.ShowOobeWindow] == "true";
             ShowScoobe = cmdArgs[(int)Arguments.ShowScoobeWindow] == "true";
@@ -268,6 +269,12 @@ namespace Microsoft.PowerToys.Settings.UI
             }
         }
 
+        private static bool IsCurrentProcessElevated()
+        {
+            using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+            return new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator);
+        }
+
         /// <summary>
         /// Invoked when the application is launched normally by the end user.  Other entry points
         /// will be used such as when the application is launched to open a specific file.
@@ -275,6 +282,8 @@ namespace Microsoft.PowerToys.Settings.UI
         /// <param name="args">Details about the launch request and process.</param>
         protected override void OnLaunched(LaunchActivatedEventArgs args)
         {
+            IsElevated = IsCurrentProcessElevated();
+
             var cmdArgs = Environment.GetCommandLineArgs();
 
             if (cmdArgs?.Length >= RequiredArgumentsLaunchedFromRunnerQty)
@@ -466,6 +475,7 @@ namespace Microsoft.PowerToys.Settings.UI
                 case "PowerPreview": return typeof(PowerPreviewPage);
                 case "PowerRename": return typeof(PowerRenamePage);
                 case "QuickAccent": return typeof(PowerAccentPage);
+                case "TextExpander": return typeof(TextExpanderPage);
                 case "FileExplorer": return typeof(PowerPreviewPage);
                 case "ShortcutGuide": return typeof(ShortcutGuidePage);
                 case "PowerOcr": return typeof(PowerOcrPage);

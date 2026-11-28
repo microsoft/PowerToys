@@ -23,10 +23,14 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class SettingsBackupAndRestoreUtils
     {
+        private const string TextExpanderSnippetLibraryKey = @"\TextExpander\PowerToysTextExpanderSnippets.json";
+
         private static SettingsBackupAndRestoreUtils instance;
         private (bool Success, string Severity, bool LastBackupExists, DateTime? LastRan) lastBackupSettingsResults;
         private static Lock backupSettingsInternalLock = new Lock();
         private static Lock removeOldBackupsLock = new Lock();
+        private readonly Func<string> _getTemporaryPath;
+        private readonly Func<string> _readBackupConfiguration;
 
         public DateTime LastBackupStartTime { get; set; }
 
@@ -35,8 +39,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             WriteIndented = true,
         };
 
-        private SettingsBackupAndRestoreUtils()
+        private SettingsBackupAndRestoreUtils(Func<string> getTemporaryPath, Func<string> readBackupConfiguration)
         {
+            _getTemporaryPath = getTemporaryPath;
+            _readBackupConfiguration = readBackupConfiguration;
             LastBackupStartTime = DateTime.MinValue;
         }
 
@@ -46,7 +52,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             {
                 if (instance == null)
                 {
-                    instance = new SettingsBackupAndRestoreUtils();
+                    instance = new SettingsBackupAndRestoreUtils(Path.GetTempPath, GetBackupRestoreSettingsJson);
                 }
 
                 return instance;
@@ -290,7 +296,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error");
                 }
 
-                var latestSettingsFolder = GetLatestSettingsFolder();
+                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndRestoreDir);
 
                 if (latestSettingsFolder == null)
                 {
@@ -298,7 +304,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                 }
 
                 // get data needed for process
-                var backupRestoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
+                var backupRestoreSettings = JsonNode.Parse(_readBackupConfiguration());
                 var currentSettingsFiles = GetSettingsFiles(backupRestoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
                 var backupSettingsFiles = GetSettingsFiles(backupRestoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
@@ -311,16 +317,18 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 foreach (var currentFile in backupSettingsFiles)
                 {
-                    var relativePath = currentFile.Value.Substring(latestSettingsFolder.Length + 1);
-                    var restoreFullPath = Path.Combine(appBasePath, relativePath);
-                    var settingsToRestoreJson = GetExportVersion(backupRestoreSettings, currentFile.Key, currentFile.Value);
+                    var settingsToRestoreJson = ReadSettingsExport(backupRestoreSettings, currentFile.Key, currentFile.Value);
+                    if (settingsToRestoreJson is null)
+                    {
+                        continue;
+                    }
 
                     if (currentSettingsFiles.TryGetValue(currentFile.Key, out string value))
                     {
                         // we have a setting file to restore to
-                        var currentSettingsFileJson = GetExportVersion(backupRestoreSettings, currentFile.Key, value);
+                        var currentSettingsFileJson = ReadSettingsExport(backupRestoreSettings, currentFile.Key, value);
 
-                        if (JsonNormalizer.Normalize(settingsToRestoreJson) != JsonNormalizer.Normalize(currentSettingsFileJson))
+                        if (currentSettingsFileJson is null || !SettingsMatch(currentFile.Key, settingsToRestoreJson, currentSettingsFileJson))
                         {
                             // the settings file needs to be updated, update the real one with non-excluded stuff...
                             Logger.LogInfo($"Settings file {currentFile.Key} is different and is getting updated from backup");
@@ -333,14 +341,15 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                                 overwrite = customRestoreSettings["overwrite"] != null && (bool)customRestoreSettings["overwrite"];
                             }
 
-                            if (overwrite)
+                            // A valid backup can replace an unreadable live snippet library.
+                            if (overwrite || currentSettingsFileJson is null)
                             {
-                                File.WriteAllText(currentSettingsFiles[currentFile.Key], settingsToRestoreJson);
+                                File.WriteAllText(value, settingsToRestoreJson);
                             }
                             else
                             {
-                                var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(currentSettingsFiles[currentFile.Key]), settingsToRestoreJson);
-                                File.WriteAllText(currentSettingsFiles[currentFile.Key], newCurrentSettingsFile);
+                                var newCurrentSettingsFile = JsonMergeHelper.Merge(File.ReadAllText(value), settingsToRestoreJson);
+                                File.WriteAllText(value, newCurrentSettingsFile);
                             }
 
                             anyFilesUpdated = true;
@@ -411,10 +420,8 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <remarks>
         /// The backup will usually be a backup file that has to be extracted to a temp folder. This will do that for us.
         /// </remarks>
-        private string GetLatestSettingsFolder()
+        private string GetLatestSettingsFolder(string settingsBackupAndRestoreDir)
         {
-            string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
-
             if (settingsBackupAndRestoreDir == null)
             {
                 return null;
@@ -452,7 +459,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             }
             else
             {
-                var tempPath = Path.GetTempPath();
+                var tempPath = _getTemporaryPath();
 
                 var fullBackupDir = Path.Combine(tempPath, "PowerToys_settings_" + latestFile.ToString(CultureInfo.InvariantCulture));
 
@@ -510,7 +517,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// </summary>
         public JsonNode GetLatestSettingsBackupManifest()
         {
-            var folder = GetLatestSettingsFolder();
+            var folder = GetLatestSettingsFolder(GetSettingsBackupAndRestoreDir());
             if (folder == null)
             {
                 return null;
@@ -665,10 +672,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     }
 
                     // get data needed for process
-                    var backupRestoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
+                    var backupRestoreSettings = JsonNode.Parse(_readBackupConfiguration());
                     var currentSettingsFiles = GetSettingsFiles(backupRestoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
-                    var fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
-                    var latestSettingsFolder = GetLatestSettingsFolder();
+                    var fullBackupDir = Path.Combine(_getTemporaryPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
+                    var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndRestoreDir);
                     var lastBackupSettingsFiles = GetSettingsFiles(backupRestoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
                     lastBackupExists = lastBackupSettingsFiles.Count > 0;
@@ -686,32 +693,25 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     {
                         tempFile = currentFile;
 
-                        // need to check and back this up;
-                        var currentSettingsFileToBackup = GetExportVersion(backupRestoreSettings, currentFile.Key, currentFile.Value);
+                        var currentSettingsFileToBackup = ReadSettingsExport(backupRestoreSettings, currentFile.Key, currentFile.Value);
+                        var lastSettingsFileDoc = lastBackupSettingsFiles.TryGetValue(currentFile.Key, out string backupFile)
+                            ? ReadSettingsExport(backupRestoreSettings, currentFile.Key, backupFile)
+                            : null;
 
-                        var doBackup = false;
-                        if (lastBackupSettingsFiles.TryGetValue(currentFile.Key, out string value))
+                        if (currentSettingsFileToBackup is null)
                         {
-                            // there is a previous backup for this, get an export version of it.
-                            var lastSettingsFileDoc = GetExportVersion(backupRestoreSettings, currentFile.Key, value);
-
-                            // check to see if the new export version would be same as last export version.
-                            if (JsonNormalizer.Normalize(currentSettingsFileToBackup) != JsonNormalizer.Normalize(lastSettingsFileDoc))
+                            // An unreadable snippet library must not remove a good copy from the next backup.
+                            if (lastSettingsFileDoc is not null)
                             {
-                                doBackup = true;
-                                Logger.LogInfo($"BackupSettings, {currentFile.Value} content is different.");
+                                skippedSettingsFiles.Add(currentFile.Key, (currentFile.Value, lastSettingsFileDoc));
                             }
-                        }
-                        else
-                        {
-                            // this has never been backed up, we need to do it now.
-                            Logger.LogInfo($"BackupSettings, {currentFile.Value} does not exist.");
-                            doBackup = true;
+
+                            continue;
                         }
 
-                        if (doBackup)
+                        if (lastSettingsFileDoc is null || !SettingsMatch(currentFile.Key, currentSettingsFileToBackup, lastSettingsFileDoc))
                         {
-                            // add to list of files we noted as needing backup
+                            Logger.LogInfo($"BackupSettings, {currentFile.Value} has no matching backup.");
                             updatedSettingsFiles.Add(currentFile.Key, currentFile.Value);
 
                             // mark overall flag that a backup will be made
@@ -825,6 +825,35 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return "^" + Regex.Escape(value).Replace("\\*", ".*") + "$";
         }
 
+        private static bool IsTextExpanderSnippetLibrary(string settingFileKey)
+            => string.Equals(settingFileKey, TextExpanderSnippetLibraryKey, StringComparison.OrdinalIgnoreCase);
+
+        private static string ReadSettingsExport(JsonNode backupRestoreSettings, string settingFileKey, string settingsFileName)
+        {
+            try
+            {
+                return GetExportVersion(backupRestoreSettings, settingFileKey, settingsFileName);
+            }
+            catch (Exception ex) when (IsTextExpanderSnippetLibrary(settingFileKey) && (ex is IOException or UnauthorizedAccessException or JsonException))
+            {
+                Logger.LogWarning($"Could not read the Text Expander snippet library during settings backup or restore ({ex.GetType().Name}).");
+                return null;
+            }
+        }
+
+        private static bool SettingsMatch(string settingFileKey, string first, string second)
+        {
+            if (!IsTextExpanderSnippetLibrary(settingFileKey))
+            {
+                return JsonNormalizer.Normalize(first) == JsonNormalizer.Normalize(second);
+            }
+
+            // Text Expander resolves duplicate triggers to the last entry in file order.
+            using var firstDoc = JsonDocument.Parse(first);
+            using var secondDoc = JsonDocument.Parse(second);
+            return JsonElement.DeepEquals(firstDoc.RootElement, secondDoc.RootElement);
+        }
+
         /// <summary>
         /// Method <c>GetExportVersion</c> gets the version of the settings file that we want to backup.
         /// It will be formatted and all problematic settings removed from it.
@@ -832,7 +861,21 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         public static string GetExportVersion(JsonNode backupRestoreSettings, string settingFileKey, string settingsFileName)
         {
             var ignoredSettings = GetIgnoredSettings(backupRestoreSettings, settingFileKey);
-            var settingsFile = JsonDocument.Parse(File.ReadAllText(settingsFileName));
+
+            // The snippet library supports hand-written comments and trailing commas, as its editor and engine do.
+            bool isSnippetLibrary = IsTextExpanderSnippetLibrary(settingFileKey);
+            var options = isSnippetLibrary
+                ? new JsonDocumentOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip }
+                : default;
+            using var settingsFile = JsonDocument.Parse(File.ReadAllText(settingsFileName), options);
+
+            if (isSnippetLibrary &&
+                (settingsFile.RootElement.ValueKind != JsonValueKind.Object ||
+                 settingsFile.RootElement.EnumerateObject().LastOrDefault(property =>
+                     property.Name.Equals("snippets", StringComparison.OrdinalIgnoreCase)).Value.ValueKind != JsonValueKind.Array))
+            {
+                throw new JsonException("The Text Expander snippet library must have a snippets array.");
+            }
 
             var outputBuffer = new ArrayBufferWriter<byte>();
 

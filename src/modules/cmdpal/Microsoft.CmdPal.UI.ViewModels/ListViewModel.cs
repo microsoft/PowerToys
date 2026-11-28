@@ -1175,6 +1175,8 @@ public partial class ListViewModel : PageViewModel, IDisposable
     {
         CancelAndDisposeTokenSource(ref _selectedItemCts);
 
+        // An empty list keeps its empty content's command, such as an extension's Open settings, in the command bar. The
+        // view clears the selection once the empty list comes in, which can be after UpdateEmptyContent showed it.
         SetCommandBarContext(ShowEmptyContent && EmptyContent.Model.Unsafe is not null ? EmptyContent : null);
         SetDetails(null);
         SetSearchSuggestion(string.Empty);
@@ -1448,7 +1450,9 @@ public partial class ListViewModel : PageViewModel, IDisposable
             case nameof(EmptyContent):
                 EmptyContent = new(new(model.EmptyContent), PageContext, contextMenuFactory: null);
                 EmptyContent.SlowInitializeProperties();
-                UpdateProperty(nameof(HasContent));
+
+                // Refresh the command bar when a visible empty state gets a new command.
+                UpdateEmptyContent();
                 break;
             case nameof(Filters):
                 Filters?.PropertyChanged -= FiltersPropertyChanged;
@@ -1467,18 +1471,22 @@ public partial class ListViewModel : PageViewModel, IDisposable
     private void UpdateEmptyContent()
     {
         UpdateProperty(nameof(ShowEmptyContent), nameof(HasContent));
-        if (!ShowEmptyContent || EmptyContent.Model.Unsafe is null)
+        if (!ShowEmptyContent)
         {
             return;
         }
 
         UpdateProperty(nameof(EmptyContent));
 
-        DoOnActivePage(
-           () =>
-           {
-               SetCommandBarContext(EmptyContent);
-           });
+        DoOnActivePage(() =>
+        {
+            // Results and their selection may have reached the UI while this update was queued.
+            if (ShowEmptyContent)
+            {
+                var context = EmptyContent;
+                SetCommandBarContext(context.Model.Unsafe is not null ? context : null);
+            }
+        });
     }
 
     private void ApplyLayoutToItems()

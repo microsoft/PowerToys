@@ -152,6 +152,7 @@
     <ProjectReference Include="..\..\..\common\Common.UI.Controls\Common.UI.Controls.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.Actions\Microsoft.CmdPal.Ext.Actions.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.ClipboardHistory\Microsoft.CmdPal.Ext.ClipboardHistory.csproj" />
+    <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.TextExpander\Microsoft.CmdPal.Ext.TextExpander.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.RemoteDesktop\Microsoft.CmdPal.Ext.RemoteDesktop.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.System\Microsoft.CmdPal.Ext.System.csproj" />
     <ProjectReference Include="..\ext\Microsoft.CmdPal.Ext.WebSearch\Microsoft.CmdPal.Ext.WebSearch.csproj" />

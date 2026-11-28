@@ -32,6 +32,7 @@ namespace ManagedCommon
         PowerRename,
         PowerLauncher,
         PowerAccent,
+        TextExpander,
         PowerDisplay,
         RegistryPreview,
         MeasureTool,

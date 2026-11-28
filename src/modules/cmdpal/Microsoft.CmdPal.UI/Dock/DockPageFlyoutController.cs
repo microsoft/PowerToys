@@ -103,6 +103,9 @@ internal sealed partial class DockPageFlyoutController :
         _host.IsOpen ||
         (_control?.HasOpenTransientUi ?? false);
 
+    internal bool HasOpenRoute(DockCommandRoute route) =>
+        _isActive && _navigation?.Route == route && _host.IsOpen;
+
     internal void Activate()
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);

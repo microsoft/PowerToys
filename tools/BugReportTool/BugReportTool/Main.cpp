@@ -22,6 +22,7 @@
 #include "InstallationFolder.h"
 #include "ReportGPOValues.h"
 #include "ReportSanitizer.h"
+#include "TextExpanderPrivacy.h"
 
 using namespace std;
 using namespace std::filesystem;
@@ -48,6 +49,7 @@ map<wstring, vector<wstring>> escapeInfo = {
         L"properties/custom-actions/value/name",
         L"properties/custom-actions/value/prompt"
         } },
+    { L"TextExpander\\settings.json", { L"properties/snippets_path" } },
 };
 
 vector<wstring> filesToDelete = {
@@ -330,20 +332,15 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
 
     try
     {
-        create_directory(reportDir, settingsRootPath);
-        for (const auto& entry : directory_iterator(settingsRootPath))
+        // Directory links aren't followed, the same way the snippet exclusion below walks the
+        // tree, so a link can't bring snippets into the report under a path it never checks.
+        if (!TextExpanderPrivacy::CopyWithoutDirectoryLinks(path(settingsRootPath), reportDir))
         {
-            const auto filename = entry.path().filename();
-            // Runner holds this synchronization file exclusively for its entire lifetime.
-            if (_wcsicmp(filename.c_str(), L"settings.json.cli-lock") == 0)
-            {
-                continue;
-            }
-
-            copy(entry.path(), reportDir / filename, copy_options::recursive);
+            printf("Failed to copy PowerToys folder\n");
+            return 1;
         }
 
-        // Remove updates folder contents
+        // Remove updates folder contents so the final snippet check doesn't read the installers there
         DeleteFolder(reportDir / "Updates");
     }
 	
@@ -404,11 +401,25 @@ int wmain(int argc, wchar_t* argv[], wchar_t*)
     std::vector<path> removedPaths;
     try
     {
+        // Check all staged files for snippets before the sanitizer can change their contents.
+        if (!TextExpanderPrivacy::ExcludeConfiguredSnippetFile(path(settingsRootPath), reportDir))
+        {
+            printf("Failed to exclude the Text Expander snippet file from the bug report\n");
+            DeleteFolder(reportDir);
+            return 1;
+        }
+
         removedPaths = ReportSanitizer::Sanitize(reportDir);
     }
     catch (const std::exception& error)
     {
         printf("Failed to redact report data: %s\n", error.what());
+        DeleteFolder(reportDir);
+        return 1;
+    }
+    catch (...)
+    {
+        printf("Failed to redact report data\n");
         DeleteFolder(reportDir);
         return 1;
     }

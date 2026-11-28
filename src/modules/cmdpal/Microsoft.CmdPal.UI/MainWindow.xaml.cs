@@ -58,6 +58,7 @@ public sealed partial class MainWindow : WindowEx,
     IRecipient<TelemetryCommandStartedMessage>,
     IRecipient<ToggleDevRibbonMessage>,
     IRecipient<GetHwndMessage>,
+    IRecipient<GetCommandPaletteInputTargetMessage>,
     IRecipient<ExpandCompactModeMessage>,
     IRecipient<MaximizeForDialogMessage>,
     IDisposable,
@@ -123,6 +124,7 @@ public sealed partial class MainWindow : WindowEx,
     private bool _preventHideWhenDeactivated;
     private bool _isLoadedFromDock;
     private bool _isShowing;
+    private CommandPaletteInputSession? _inputSession;
 
     // While a modal dialog (e.g. a confirmation) is showing, the card is forced to fill the
     // whole window so the dialog — which renders in the window's popup layer and is clipped to
@@ -221,6 +223,7 @@ public sealed partial class MainWindow : WindowEx,
         WeakReferenceMessenger.Default.Register<TelemetryCommandStartedMessage>(this);
         WeakReferenceMessenger.Default.Register<ToggleDevRibbonMessage>(this);
         WeakReferenceMessenger.Default.Register<GetHwndMessage>(this);
+        WeakReferenceMessenger.Default.Register<GetCommandPaletteInputTargetMessage>(this);
         WeakReferenceMessenger.Default.Register<ExpandCompactModeMessage>(this);
         WeakReferenceMessenger.Default.Register<MaximizeForDialogMessage>(this);
 
@@ -894,6 +897,12 @@ public sealed partial class MainWindow : WindowEx,
         StopAutoGoHome();
 
         var hwnd = new HWND(hwndValue != 0 ? hwndValue : _hwnd);
+        var foreground = PInvoke.GetForegroundWindow();
+        if (foreground != hwnd)
+        {
+            _inputSession?.End();
+            _inputSession = CommandPaletteInputSession.Capture(hwnd, foreground, DispatcherQueue, HideForCommand);
+        }
 
         // Remember, IsIconic == "minimized", which is entirely different state
         // from "show/hide"
@@ -1058,14 +1067,20 @@ public sealed partial class MainWindow : WindowEx,
         });
     }
 
-    public void Receive(HideWindowMessage message)
+    public void Receive(HideWindowMessage message) => RunOnUiThread(HideForCommand);
+
+    public void Receive(GetCommandPaletteInputTargetMessage message)
     {
-        // This might come in off the UI thread. Make sure to hop back.
-        RunOnUiThread(() =>
+        if (message.SourceRouteId == Guid.Empty && (message.SourceHwnd == 0 || message.SourceHwnd == (nint)_hwnd))
         {
-            EndSession("Hide");
-            HideWindow();
-        });
+            message.Target = Volatile.Read(ref _inputSession)?.GetTarget();
+        }
+    }
+
+    private void HideForCommand()
+    {
+        EndSession("Hide");
+        HideWindow();
     }
 
     public void Receive(QuitMessage message)
@@ -1229,6 +1244,8 @@ public sealed partial class MainWindow : WindowEx,
     {
         if (!isVisibleToUser)
         {
+            _inputSession?.End();
+            _inputSession = null;
             _accessKeyMode.Exit();
         }
 

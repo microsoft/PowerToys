@@ -454,11 +454,16 @@ public partial class ShellViewModel : ObservableObject,
             }
             else
             {
+                var sourceRoute = message.Context?.Page?.DockRoute;
+                Func<ICommandResult> invoke = invokable is ICommandWithInputTarget inputTargetCommand
+                    ? inputTargetCommand.PrepareInvocation(sourceRoute?.OwnerHwnd ?? 0, sourceRoute?.RequestId ?? Guid.Empty)
+                    : () => invokable.Invoke(invocationSender);
+
                 // Count only accepted invocations, before Invoke can hide the palette and end the session.
                 WeakReferenceMessenger.Default.Send<TelemetryCommandStartedMessage>();
                 _handleInvokeTask = Task.Run(() =>
                 {
-                    SafeHandleInvokeCommandSynchronous(message, invokable, host, invocationSender, command, fallbackContext, invocationLease);
+                    SafeHandleInvokeCommandSynchronous(message, invoke, host, command, fallbackContext, invocationLease);
                 });
             }
         }
@@ -466,9 +471,8 @@ public partial class ShellViewModel : ObservableObject,
 
     private void SafeHandleInvokeCommandSynchronous(
         PerformCommandMessage message,
-        IInvokableCommand invokable,
+        Func<ICommandResult> invoke,
         AppExtensionHost? host,
-        object? invocationSender,
         CommandViewModel command,
         FallbackQueryContext? fallbackContext,
         IDisposable? invocationLease)
@@ -490,7 +494,7 @@ public partial class ShellViewModel : ObservableObject,
                 // Call out to extension process.
                 // * May fail!
                 // * May never return!
-                result = invokable.Invoke(invocationSender);
+                result = invoke();
                 success = true;
             }
             finally
