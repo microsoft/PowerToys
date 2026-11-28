@@ -169,17 +169,26 @@ public sealed class KeyboardManagerDialogValidationTests : KeyboardManagerTestBa
         text.SetText("Hello PowerToys");
         AssertSaveEnabled(dialog, false, "Text without a trigger enabled Save.");
 
-        Step("Recording Ctrl+F13 completes the text action");
-        RecordKeys(dialog, "TriggerKeyToggleBtn", LeftControl, F13);
-        AssertSaveEnabled(dialog, true, "Valid trigger and text did not enable Save.");
-
-        Step("Clearing text should immediately disable Save");
+        Step("Clearing text without a trigger must show the inline warning");
         text.SetText(string.Empty);
+        AssertInlineWarning(dialog, true);
         AssertSaveEnabled(dialog, false, "An empty text payload was accepted.");
 
-        Step("Nonempty literal whitespace is still text, not an empty value");
+        Step("Literal whitespace must clear the inline warning while Save remains disabled");
         text.SetText(" ");
-        AssertSaveEnabled(dialog, true, "Literal whitespace was unexpectedly rejected as empty text.");
+        Assert.AreEqual(" ", text.Value, "The text box did not retain the literal space.");
+        AssertInlineWarning(dialog, false);
+        AssertSaveEnabled(dialog, false, "Whitespace text enabled Save without a trigger.");
+
+        Step("Recording Ctrl+F13 completes the whitespace text action");
+        RecordKeys(dialog, "TriggerKeyToggleBtn", LeftControl, F13);
+        AssertSaveEnabled(dialog, true, "A valid trigger and literal whitespace did not enable Save.");
+
+        Step("Clearing text with a complete trigger must disable Save again");
+        text.SetText(string.Empty);
+        AssertSaveEnabled(dialog, false, "A complete trigger allowed an empty text payload.");
+        text.SetText(" ");
+        AssertSaveEnabled(dialog, true, "Restoring literal whitespace did not re-enable Save.");
 
         KeyboardHelper.SendKey(Key.Esc);
         AssertDialogClosed(editor, dialog);
@@ -237,35 +246,15 @@ public sealed class KeyboardManagerDialogValidationTests : KeyboardManagerTestBa
             $"Selecting {actionName} did not show the {requiredField} field.");
     }
 
-    private void RecordKeys(Session dialog, string toggleId, params int[] keys)
+    private static void AssertInlineWarning(Session dialog, bool expected)
     {
-        Step($"Recording [{string.Join(", ", keys.Select(k => $"0x{k:X2}"))}] in {toggleId}");
-        var toggle = dialog.Find<Element>(By.AccessibilityId(toggleId), timeoutMS: 5_000);
-        toggle.Invoke(msPostAction: 200);
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", timeoutMS: 3_000), $"{toggleId} did not enter recording mode.");
-
-        try
-        {
-            foreach (int key in keys)
-            {
-                KeyboardHelper.PressKey((Key)checked((byte)key));
-            }
-        }
-        finally
-        {
-            foreach (int key in keys.Reverse())
-            {
-                KeyboardHelper.ReleaseKey((Key)checked((byte)key));
-            }
-        }
-
-        toggle = dialog.Find<Element>(By.AccessibilityId(toggleId), timeoutMS: 5_000);
-        if (string.Equals(toggle.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
-        {
-            toggle.Invoke(msPostAction: 200);
-        }
-
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 3_000), $"{toggleId} did not leave recording mode.");
+        Assert.IsTrue(
+            dialog.WaitFor(
+                () => dialog.FindAll<Element>(By.AccessibilityId("ValidationInfoBar"), timeoutMS: 300)
+                    .Any(element => element.Displayed && element.Width > 0 && element.Height > 0) == expected,
+                timeoutMS: 5_000,
+                pollIntervalMS: 200),
+            $"Expected inline validation warning visibility: {expected}.");
     }
 
     private static void AssertSaveEnabled(Session dialog, bool expected, string message)

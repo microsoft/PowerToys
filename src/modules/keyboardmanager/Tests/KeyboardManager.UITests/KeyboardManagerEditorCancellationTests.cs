@@ -23,6 +23,7 @@ public sealed class KeyboardManagerEditorCancellationTests : KeyboardManagerTest
     private const int F14 = 0x7D;
     private const int F15 = 0x7E;
     private const int F16 = 0x7F;
+    private const int F17 = 0x80;
 
     private static KeyboardInputFixtureLock? inputFixtureLock;
 
@@ -182,7 +183,14 @@ public sealed class KeyboardManagerEditorCancellationTests : KeyboardManagerTest
             editor.WaitForElement(By.AccessibilityId("ActionKeyToggleBtn"), timeoutMS: 5_000),
             "The existing mapping did not open the unified edit dialog.");
 
-        Step("Dismissing edit without saving");
+        Step("Changing the action from F14 to F17 without saving");
+        RecordKeys(session, "ActionKeyToggleBtn", F17);
+        Assert.IsNotNull(FindExact<Element>(session, "F17", timeoutMS: 5_000), "The replacement action was not shown in the edit dialog.");
+        var save = FindExact<Button>(session, "Save", timeoutMS: 5_000);
+        Assert.IsNotNull(save, "The edit dialog did not expose Save.");
+        Assert.IsTrue(save!.IsEnabled, "The changed action was not a valid edit.");
+
+        Step("Dismissing the changed edit without saving");
         KeyboardHelper.SendKey(Key.Esc);
         Assert.IsTrue(
             editor.WaitFor(
@@ -196,10 +204,14 @@ public sealed class KeyboardManagerEditorCancellationTests : KeyboardManagerTest
         Step("Reopening editor to check persistence after cancellation");
         CloseEditor();
         var reopened = OpenEditor();
-        AssertVisibleRows(EditorSession(), 2);
+        var reopenedSession = EditorSession();
+        AssertVisibleRows(reopenedSession, 2);
+        Assert.IsNotNull(FindExact<Element>(reopenedSession, "F13", timeoutMS: 5_000), "The original trigger was not shown after reopening.");
+        Assert.IsNotNull(FindExact<Element>(reopenedSession, "F14", timeoutMS: 5_000), "The original action was not shown after reopening.");
+        Assert.IsNull(FindExact<Element>(reopenedSession, "F17", timeoutMS: 1_000), "The cancelled replacement action appeared after reopening.");
         Assert.IsTrue(
             reopened.WaitFor(
-                () => HasMapping(F13, F14) && HasMapping(F15, F16),
+                () => HasMapping(F13, F14) && HasMapping(F15, F16) && !HasMapping(F13, F17),
                 timeoutMS: 10_000,
                 pollIntervalMS: 250),
             "An unsaved edit replaced a previously stored remapping.");
@@ -220,8 +232,8 @@ public sealed class KeyboardManagerEditorCancellationTests : KeyboardManagerTest
             "The new mapping dialog did not appear.");
 
         Step("Recording a complete, valid A-to-B mapping");
-        Record(session, "TriggerKeyToggleBtn", A);
-        Record(session, "ActionKeyToggleBtn", B);
+        RecordKeys(session, "TriggerKeyToggleBtn", A);
+        RecordKeys(session, "ActionKeyToggleBtn", B);
         var save = FindExact<Button>(session, "Save", timeoutMS: 5_000);
         Assert.IsNotNull(save, "Save was not available in the new mapping dialog.");
         Assert.IsTrue(save!.IsEnabled, "Recording two complete columns did not enable Save.");
@@ -286,22 +298,6 @@ public sealed class KeyboardManagerEditorCancellationTests : KeyboardManagerTest
         row!.MouseClick(msPostAction: 300);
     }
 
-    private static void EnterSelectionMode(Session session)
-    {
-        var button = session.Find<Button>(By.AccessibilityId("SelectionModeButton"), timeoutMS: 5_000);
-        Assert.AreEqual("Select", button.Name, "The toolbar was already in selection mode.");
-        button.Click(msPostAction: 300);
-        Assert.AreEqual("Cancel", button.Name, "The toolbar failed to enter selection mode.");
-    }
-
-    private static void LeaveSelectionMode(Session session)
-    {
-        var button = session.Find<Button>(By.AccessibilityId("SelectionModeButton"), timeoutMS: 5_000);
-        Assert.AreEqual("Cancel", button.Name, "The toolbar was not in selection mode.");
-        button.Click(msPostAction: 300);
-        Assert.AreEqual("Select", button.Name, "The toolbar did not leave selection mode.");
-    }
-
     private static void ClickDeleteMenuForRow(Session session, string name)
     {
         var key = FindExact<Element>(session, name, timeoutMS: 5_000);
@@ -314,35 +310,5 @@ public sealed class KeyboardManagerEditorCancellationTests : KeyboardManagerTest
         var delete = FindExact<Element>(session, "Delete", timeoutMS: 5_000);
         Assert.IsNotNull(delete, "The row menu did not show Delete.");
         delete!.Click(msPostAction: 300);
-    }
-
-    private void Record(Session session, string toggleId, params int[] keys)
-    {
-        Step($"Recording keys through {toggleId}");
-        var toggle = session.Find<Element>(By.AccessibilityId(toggleId), timeoutMS: 5_000);
-        toggle.Invoke(msPostAction: 200);
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", timeoutMS: 3_000), $"{toggleId} never entered record mode.");
-        try
-        {
-            foreach (int key in keys)
-            {
-                KeyboardHelper.PressKey((Key)checked((byte)key));
-            }
-        }
-        finally
-        {
-            foreach (int key in keys.Reverse())
-            {
-                KeyboardHelper.ReleaseKey((Key)checked((byte)key));
-            }
-        }
-
-        toggle = session.Find<Element>(By.AccessibilityId(toggleId), timeoutMS: 5_000);
-        if (string.Equals(toggle.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
-        {
-            toggle.Invoke(msPostAction: 200);
-        }
-
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 3_000), $"{toggleId} did not stop recording.");
     }
 }

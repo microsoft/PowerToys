@@ -120,6 +120,59 @@ public abstract class KeyboardManagerTestBase : UITestBase
         session.FindAll<T>(By.Name(name), timeoutMS)
             .FirstOrDefault(element => element.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
 
+    protected static void EnterSelectionMode(Session session) =>
+        ChangeSelectionMode(session, "Select", "Cancel");
+
+    protected static void LeaveSelectionMode(Session session) =>
+        ChangeSelectionMode(session, "Cancel", "Select");
+
+    protected void RecordKeys(Session editor, string toggleAutomationId, params int[] keys)
+    {
+        Step($"Recording [{string.Join(", ", keys.Select(key => $"0x{key:X2}"))}] through {toggleAutomationId}");
+        var toggle = editor.Find<Element>(By.AccessibilityId(toggleAutomationId), timeoutMS: 5_000);
+        toggle.Invoke(msPostAction: 200);
+        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", timeoutMS: 3_000), $"{toggleAutomationId} did not enter recording mode.");
+
+        try
+        {
+            foreach (var key in keys)
+            {
+                KeyboardHelper.PressKey((Key)checked((byte)key));
+            }
+        }
+        finally
+        {
+            foreach (var key in keys.Reverse())
+            {
+                KeyboardHelper.ReleaseKey((Key)checked((byte)key));
+            }
+        }
+
+        toggle = editor.Find<Element>(By.AccessibilityId(toggleAutomationId), timeoutMS: 5_000);
+        if (string.Equals(toggle.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
+        {
+            toggle.Invoke(msPostAction: 200);
+        }
+
+        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 3_000), $"{toggleAutomationId} did not leave recording mode.");
+    }
+
+    private static void ChangeSelectionMode(Session session, string before, string after)
+    {
+        var selector = By.AccessibilityId("SelectionModeButton");
+        var button = session.Find<Button>(selector, timeoutMS: 5_000);
+        Assert.AreEqual(before, button.Name, "Unexpected selection mode before clicking.");
+        button.Click(msPostAction: 300);
+
+        // Element.Name is a snapshot from lookup time, so query the UI again.
+        Assert.IsTrue(
+            session.WaitFor(
+                () => session.Find<Button>(selector, timeoutMS: 500).Name == after,
+                timeoutMS: 5_000,
+                pollIntervalMS: 200),
+            $"The selection-mode button did not change to {after}.");
+    }
+
     internal static bool CloseEditor()
     {
         WindowControl.TryCloseByApp(KeyboardManagerTestConstants.EditorProcessName, timeoutMS: 5_000);

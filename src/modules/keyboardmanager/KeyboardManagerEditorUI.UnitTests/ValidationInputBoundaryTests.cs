@@ -166,16 +166,15 @@ namespace KeyboardManagerEditorUI.UnitTests
         [TestMethod]
         public void TextMappingAcceptsWhitespaceAsLiteralTextForLaterValidation()
         {
-            // Whitespace is meaningful text; verify the validation does not reject
-            // it as empty before examining the rest of the shortcut.
+            // Reach the text guard, then stop at application validation before native lookup.
             var result = ValidationHelper.ValidateTextMapping(
-                keys: null!,
+                keys: MakeKeys(1),
                 textContent: " ",
-                isAppSpecific: false,
+                isAppSpecific: true,
                 appName: string.Empty,
                 mappingService: null!);
 
-            Assert.AreEqual(ValidationErrorType.EmptyOriginalKeys, result);
+            Assert.AreEqual(ValidationErrorType.EmptyAppName, result);
         }
 
         [DataTestMethod]
@@ -230,7 +229,6 @@ namespace KeyboardManagerEditorUI.UnitTests
                     appName: string.Empty,
                     mappingService: null!));
         }
-
 
         [DataTestMethod]
         [DataRow(-1)]

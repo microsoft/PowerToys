@@ -61,7 +61,7 @@ public sealed class KeyboardManagerCrossCategorySelectionTests : KeyboardManager
         AssertProfileCount(editor, 3, "The three action types did not persist.");
 
         Step("Entering selection mode across three distinct list sections");
-        StartSelection(session);
+        EnterSelectionMode(session);
         SelectRow(session, "F13");
         SelectRow(session, "F15");
 
@@ -107,7 +107,7 @@ public sealed class KeyboardManagerCrossCategorySelectionTests : KeyboardManager
         var snapshot = ProfileSnapshot();
 
         Step("Selecting actions in the URL and program sections");
-        StartSelection(session);
+        EnterSelectionMode(session);
         SelectRow(session, "F13");
         SelectRow(session, "F14");
 
@@ -130,9 +130,7 @@ public sealed class KeyboardManagerCrossCategorySelectionTests : KeyboardManager
         AssertProfileCount(editor, 3, "Cancelling mixed-section deletion removed one or more actions.");
 
         Step("Leaving selection mode returns to normal rows without changing data");
-        var selectionToggle = session.Find<Button>(By.AccessibilityId("SelectionModeButton"), timeoutMS: 5_000);
-        selectionToggle.Click(msPostAction: 300);
-        Assert.AreEqual("Select", selectionToggle.Name, "Selection mode remained active after Cancel.");
+        LeaveSelectionMode(session);
         Assert.AreEqual(snapshot, ProfileSnapshot(), "Leaving selection mode modified action mappings.");
 
         Step("Restarting editor after cancellation must retain every action");
@@ -160,7 +158,7 @@ public sealed class KeyboardManagerCrossCategorySelectionTests : KeyboardManager
             session.WaitForElement(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 10_000),
             "The new action dialog did not open.");
 
-        RecordShortcut(session, LeftControl, key);
+        RecordKeys(session, "TriggerKeyToggleBtn", LeftControl, key);
         session.Find<ComboBox>(By.AccessibilityId("ActionTypeComboBox"), timeoutMS: 5_000)
             .Click(msPostAction: 300);
         var option = FindExact<Element>(session, actionName, timeoutMS: 5_000);
@@ -181,40 +179,6 @@ public sealed class KeyboardManagerCrossCategorySelectionTests : KeyboardManager
                 timeoutMS: 10_000,
                 pollIntervalMS: 250),
             $"{actionName} did not persist its Ctrl+0x{key:X2} trigger.");
-    }
-
-    private void RecordShortcut(Session session, int modifier, int keyCode)
-    {
-        var toggle = session.Find<Element>(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 5_000);
-        toggle.Invoke(msPostAction: 200);
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "On", timeoutMS: 3_000), "The trigger recorder did not start.");
-
-        try
-        {
-            KeyboardHelper.PressKey((Key)checked((byte)modifier));
-            KeyboardHelper.PressKey((Key)checked((byte)keyCode));
-        }
-        finally
-        {
-            KeyboardHelper.ReleaseKey((Key)checked((byte)keyCode));
-            KeyboardHelper.ReleaseKey((Key)checked((byte)modifier));
-        }
-
-        toggle = session.Find<Element>(By.AccessibilityId("TriggerKeyToggleBtn"), timeoutMS: 5_000);
-        if (string.Equals(toggle.GetProperty("ToggleState"), "On", StringComparison.OrdinalIgnoreCase))
-        {
-            toggle.Invoke(msPostAction: 200);
-        }
-
-        Assert.IsTrue(toggle.WaitForProperty("ToggleState", "Off", timeoutMS: 3_000), "The trigger recorder did not stop.");
-    }
-
-    private static void StartSelection(Session session)
-    {
-        var toggle = session.Find<Button>(By.AccessibilityId("SelectionModeButton"), timeoutMS: 5_000);
-        Assert.AreEqual("Select", toggle.Name, "Selection mode was unexpectedly active.");
-        toggle.Click(msPostAction: 300);
-        Assert.AreEqual("Cancel", toggle.Name, "The editor did not enter selection mode.");
     }
 
     private static void SelectRow(Session session, string keyName)
