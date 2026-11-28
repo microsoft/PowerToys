@@ -123,12 +123,26 @@ public:
         return std::nullopt;
     }
 
+    /* Called on the runner UI thread (via WM_HOTKEY), which also pumps the
+     * low-level keyboard hook, so the same "return quickly" contract as
+     * on_hotkey() applies.
+     */
     virtual void OnHotkeyEx()
     {
     }
 
     /* Called when one of the registered hotkeys is pressed. Should return true
      * if the key press is to be swallowed.
+     *
+     * Threading contract: this is called synchronously on the runner thread that
+     * services the system-wide low-level keyboard hook (WH_KEYBOARD_LL). While it
+     * runs, keyboard input is stalled for the whole machine, and if it exceeds
+     * LowLevelHooksTimeout Windows may skip or remove the hook, which can leave
+     * modifier keys latched. Implementations must return quickly: do not launch
+     * processes, do file or network I/O, sleep, wait on blocking locks or events,
+     * touch the clipboard, or call SendInput here. Signal an event or post a
+     * message to another thread and do the heavy work there. The runner logs a
+     * warning when an action takes longer than 50 ms.
      */
     virtual bool on_hotkey(size_t /*hotkeyId*/)
     {

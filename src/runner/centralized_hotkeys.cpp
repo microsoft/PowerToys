@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "centralized_hotkeys.h"
+#include "slow_hotkey_watchdog.h"
 
 #include <map>
 #include <common/logger/logger.h>
@@ -102,7 +103,16 @@ namespace CentralizedHotkeys
         {
             try
             {
+                const auto start = SlowHotkeyWatchdog::Clock::now();
                 actionIt->second.begin()->action(shortcut.modifiersMask, shortcut.vkCode);
+                const auto elapsed = SlowHotkeyWatchdog::Clock::now() - start;
+                if (SlowHotkeyWatchdog::IsSlow(elapsed)) [[unlikely]]
+                {
+                    // Look the action up again in case it changed the registrations while running.
+                    const auto slowIt = actions.find(shortcut);
+                    const std::wstring moduleName = slowIt != actions.end() && !slowIt->second.empty() ? slowIt->second.begin()->moduleName : L"<unknown>";
+                    SlowHotkeyWatchdog::ReportSlowAction(L"WM_HOTKEY", moduleName, ToWstring(shortcut), elapsed);
+                }
             }
             catch(std::exception& ex)
             {
