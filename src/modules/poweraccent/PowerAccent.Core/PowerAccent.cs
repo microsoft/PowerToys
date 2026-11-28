@@ -136,23 +136,30 @@ public partial class PowerAccent : IDisposable
     private string[] GetCharacters(LetterKey letterKey)
     {
         var characters = CharacterMappings.GetCharacters(letterKey, _settingService.SelectedLang);
-        if (_settingService.SortByUsageFrequency)
-        {
-            characters = characters.OrderByDescending(character => _usageInfo.GetUsageFrequency(character))
-                .ThenByDescending(character => _usageInfo.GetLastUsageTimestamp(character))
-                .ToArray<string>();
-        }
-        else if (!_usageInfo.Empty())
+        bool sortByUsage = _settingService.SortByUsageFrequency;
+        if (!sortByUsage && !_usageInfo.Empty())
         {
             _usageInfo.Clear();
         }
 
-        if (WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState())
+        return RankCharacters(
+            characters,
+            WindowsFunctions.IsCapsLockState() || WindowsFunctions.IsShiftState(),
+            sortByUsage,
+            _usageInfo.GetUsageFrequency,
+            _usageInfo.GetLastUsageTimestamp);
+    }
+
+    internal static string[] RankCharacters(string[] characters, bool uppercase, bool sortByUsage, Func<string, uint> frequency, Func<string, long> lastUsed)
+    {
+        if (uppercase)
         {
-            return ToUpper(characters);
+            characters = ToUpper(characters);
         }
 
-        return characters;
+        return sortByUsage
+            ? characters.OrderByDescending(frequency).ThenByDescending(lastUsed).ToArray()
+            : characters;
     }
 
     private static string GetCharacterDescription(string character)
