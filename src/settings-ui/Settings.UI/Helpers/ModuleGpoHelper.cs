@@ -74,6 +74,7 @@ namespace Microsoft.PowerToys.Settings.UI.Helpers
                 ModuleType.FileLocksmith => typeof(FileLocksmithPage),
                 ModuleType.FindMyMouse => typeof(MouseUtilsPage),
                 ModuleType.AltWindowCycle => typeof(AltWindowCyclePage),
+                ModuleType.WindowTabs => typeof(WindowTabsPage),
                 ModuleType.GeneralSettings => typeof(GeneralPage),
                 ModuleType.Hosts => typeof(HostsPage),
                 ModuleType.ImageResizer => typeof(ImageResizerPage),

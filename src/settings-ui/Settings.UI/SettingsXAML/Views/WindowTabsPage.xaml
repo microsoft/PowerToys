@@ -1,0 +1,43 @@
+<local:NavigablePage
+    x:Class="Microsoft.PowerToys.Settings.UI.Views.WindowTabsPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.PowerToys.Settings.UI.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:Microsoft.PowerToys.Settings.UI.Helpers"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:tkcontrols="using:CommunityToolkit.WinUI.Controls"
+    xmlns:ui="using:CommunityToolkit.WinUI"
+    AutomationProperties.LandmarkType="Main"
+    mc:Ignorable="d">
+    <local:NavigablePage.Resources />
+    <controls:SettingsPageControl
+        x:Uid="WindowTabs"
+        IsTabStop="False"
+        ModuleImageSource="ms-appx:///Assets/Settings/Modules/WindowHopper.png">
+        <controls:SettingsPageControl.ModuleContent>
+            <StackPanel ChildrenTransitions="{StaticResource SettingsCardsAnimations}" Orientation="Vertical">
+                <controls:GPOInfoControl ShowWarning="{x:Bind ViewModel.IsEnabledGpoConfigured, Mode=OneWay}">
+                    <tkcontrols:SettingsCard
+                        Name="WindowTabsEnableToggleControlHeaderText"
+                        x:Uid="WindowTabs_EnableToggleControl_HeaderText"
+                        HeaderIcon="{ui:BitmapIcon Source=/Assets/Settings/Icons/WindowHopper.png}">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.IsEnabled, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:GPOInfoControl>
+                <controls:SettingsGroup x:Uid="WindowTabs_Activation_GroupSettings" IsEnabled="{x:Bind ViewModel.IsEnabled, Mode=OneWay}">
+                    <tkcontrols:SettingsCard x:Uid="WindowTabs_RestoreSession">
+                        <ToggleSwitch x:Uid="ToggleSwitch" IsOn="{x:Bind ViewModel.RestoreSession, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="WindowTabs_NextTabShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE72A;}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.NextTabShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                    <tkcontrols:SettingsCard x:Uid="WindowTabs_PreviousTabShortcut" HeaderIcon="{ui:FontIcon Glyph=&#xE72B;}">
+                        <controls:ShortcutControl HotkeySettings="{x:Bind Path=ViewModel.PreviousTabShortcut, Mode=TwoWay}" />
+                    </tkcontrols:SettingsCard>
+                </controls:SettingsGroup>
+            </StackPanel>
+        </controls:SettingsPageControl.ModuleContent>
+
+    </controls:SettingsPageControl>
+</local:NavigablePage>
