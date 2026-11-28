@@ -4,5 +4,9 @@
 
 namespace KeyboardManagerEditorUI.Interop
 {
-    public record KeyNameEntry(int KeyCode, string DisplayName);
+    public record KeyNameEntry(int KeyCode, string DisplayName)
+    {
+        // The key picker's ListViewItem automation peers fall back to ToString() for their name.
+        public override string ToString() => DisplayName;
+    }
 }

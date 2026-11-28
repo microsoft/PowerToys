@@ -38,6 +38,15 @@ namespace KeyboardManagerEditorUI.Helpers
 
         public string SearchableText { get; set; } = string.Empty;
 
+        public string AccessibleName => MappingAccessibility.ForRemapping(this, ResourceHelper.GetString);
+
+        public string EnableToggleAccessibleName => MappingAccessibility.EnableToggleName(AccessibleName, ResourceHelper.GetString);
+
+        public string MoreOptionsAccessibleName => MappingAccessibility.MoreOptionsName(AccessibleName, ResourceHelper.GetString);
+
+        // ListViewItem automation peers fall back to ToString() for their name.
+        public override string ToString() => AccessibleName;
+
         public event PropertyChangedEventHandler? PropertyChanged;
 
         public bool IsEnabled

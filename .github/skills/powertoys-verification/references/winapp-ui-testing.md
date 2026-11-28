@@ -86,21 +86,32 @@ Test-UI "Logging is off" {
 }
 
 # ─── Accessibility Audit ───
-# Only audit controls in the app's main window (exclude OS picker/popup controls)
-$allElements = (winapp ui inspect -a $AppPid --interactive --json 2>$null | ConvertFrom-Json).elements
-$appElements = @($allElements | Where-Object {
-    $_.type -match 'Button|TextBox|ComboBox|CheckBox|ToggleSwitch|TabItem|Edit' -and
-    $_.name -notmatch 'Minimize|Maximize|Close|System' -and          # window chrome
-    $_.className -notmatch 'PickerHost|#32770|CabinetWClass'         # OS dialogs
-})
-$missingId = @($appElements | Where-Object { -not $_.automationId })
-if ($missingId.Count -eq 0) {
-    $pass++; $results += @{ name = "All app controls have AutomationId"; status = "PASS" }
+# AutomationId is a TEST hook; screen readers never announce it. Audit what users HEAR:
+# the UIA Name (and headings). Get-PtA11yAudit (scripts/pt-a11y-probe.ps1) flags empty names,
+# names that are .NET type names (ToString() fallback), names that are AutomationIds, and windows
+# with no headings. It reads HeadingLevel via a native UIA shim (managed UIA cannot).
+$audit = Get-PtA11yAudit -ProcessName (Get-Process -Id $AppPid).ProcessName -OutFile "a11y-probe.json"
+if ($audit.Summary.Findings -eq 0) {
+    $pass++; $results += @{ name = "Accessible names + headings"; status = "PASS" }
 } else {
     $fail++
-    $names = ($missingId | ForEach-Object { "$($_.type) '$($_.name)'" }) -join ", "
-    $results += @{ name = "AutomationId coverage"; status = "FAIL"; detail = "Missing: $names" }
+    $detail = ($audit.Findings | ForEach-Object { "$($_.Rule): $($_.Type) '$($_.Name)' [$($_.AutomationId)]" }) -join "; "
+    $results += @{ name = "Accessible names + headings"; status = "FAIL"; detail = $detail }
 }
+
+# ─── Accessibility behavior: announcements, focus, keyboard order ───
+# A name audit cannot tell whether a screen reader is told about results. Record the UIA events a
+# screen reader reacts to (scripts/pt-a11y-events.ps1): Focus = where focus went, Notification =
+# what the app asked to be spoken. Notifications need no input desktop; focus events and the Tab
+# walk need an unlocked, foreground window (else BLK-ENV).
+$trace = Start-PtA11yEventTrace -ProcessName (Get-Process -Id $AppPid).ProcessName
+# ... drive the scenario (ValuePattern.SetValue on the search box, InvokePattern on Save/Delete) ...
+$events = Stop-PtA11yEventTrace -Trace $trace -OutFile "events.json"
+if ($events | Where-Object Kind -eq 'Notification') { $pass++ } else { $fail++ }
+# Pitfall: a notification raised from a Page/UserControl/Panel peer is dropped silently, because
+# those elements have no automation peer. Raise it from a control or TextBlock that is in the tree.
+# Visual proof: overlay what a screen reader hears onto a screenshot of the same state.
+# Export-PtA11yAnnotatedScreenshot -ProbeJson "a11y-probe.json" -Screenshot "screenshots/01-initial.png" -OutFile "screenshots/01-initial-a11y.png"
 
 # ─── State Screenshots (capture each meaningful state for visual review) ───
 New-Item -ItemType Directory -Force -Path "screenshots" | Out-Null
@@ -136,7 +147,7 @@ Write tests for **every requirement** from the user's prompt:
 | "Right-click context menu" | `click --right` on element, `invoke` the flyout MenuItem |
 | "Confirmation dialog" | `invoke` trigger, `search` for dialog buttons, `invoke` Primary/Secondary/Close |
 | "Data persists" | Set values, `invoke` a button (to commit bindings), verify data file on disk (`Get-Content` + `ConvertFrom-Json`) |
-| "All controls accessible" | `inspect --interactive --json` + check all have AutomationId |
+| "All controls accessible" | `Get-PtA11yAudit` (`scripts/pt-a11y-probe.ps1`) per UI state — asserts meaningful UIA **Names** and headings. An AutomationId is **not** an accessible name. For focus after actions, live announcements and keyboard order, record events with `scripts/pt-a11y-events.ps1`; finish with a short screen-reader pass. |
 
 ### Step 3: Run and Read Results
 
