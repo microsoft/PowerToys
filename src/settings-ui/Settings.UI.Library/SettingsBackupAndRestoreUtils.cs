@@ -23,7 +23,10 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 {
     public class SettingsBackupAndRestoreUtils
     {
+        private const string CommandPaletteBackupDirectory = "CommandPalette";
+
         private static SettingsBackupAndRestoreUtils instance;
+        private readonly string commandPaletteSettingsPath;
         private (bool Success, string Severity, bool LastBackupExists, DateTime? LastRan) lastBackupSettingsResults;
         private static Lock backupSettingsInternalLock = new Lock();
         private static Lock removeOldBackupsLock = new Lock();
@@ -36,7 +39,13 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         };
 
         private SettingsBackupAndRestoreUtils()
+            : this(Path.GetDirectoryName(CmdPalProperties.GetSettingsFilePath()))
         {
+        }
+
+        internal SettingsBackupAndRestoreUtils(string commandPaletteSettingsPath)
+        {
+            this.commandPaletteSettingsPath = commandPaletteSettingsPath;
             LastBackupStartTime = DateTime.MinValue;
         }
 
@@ -290,7 +299,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     return (false, "General_SettingsBackupAndRestore_InvalidBackupLocation", "Error");
                 }
 
-                var latestSettingsFolder = GetLatestSettingsFolder();
+                var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndRestoreDir);
 
                 if (latestSettingsFolder == null)
                 {
@@ -299,7 +308,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 // get data needed for process
                 var backupRestoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
-                var currentSettingsFiles = GetSettingsFiles(backupRestoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
+                var currentSettingsFiles = GetCurrentSettingsFiles(backupRestoreSettings, appBasePath);
                 var backupSettingsFiles = GetSettingsFiles(backupRestoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
                 if (backupSettingsFiles.Count == 0)
@@ -311,8 +320,6 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                 foreach (var currentFile in backupSettingsFiles)
                 {
-                    var relativePath = currentFile.Value.Substring(latestSettingsFolder.Length + 1);
-                    var restoreFullPath = Path.Combine(appBasePath, relativePath);
                     var settingsToRestoreJson = GetExportVersion(backupRestoreSettings, currentFile.Key, currentFile.Value);
 
                     if (currentSettingsFiles.TryGetValue(currentFile.Key, out string value))
@@ -351,7 +358,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                         // we don't have anything to merge this into, we need to use it as is
                         Logger.LogInfo($"Settings file {currentFile.Key} is in the backup but does not exist for restore");
 
-                        var thisPathToRestore = Path.Combine(appBasePath, currentFile.Key.Substring(1));
+                        var thisPathToRestore = GetRestoreFilePath(appBasePath, currentFile.Key);
                         TryCreateDirectory(Path.GetDirectoryName(thisPathToRestore));
                         File.WriteAllText(thisPathToRestore, settingsToRestoreJson);
                         anyFilesUpdated = true;
@@ -411,9 +418,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
         /// <remarks>
         /// The backup will usually be a backup file that has to be extracted to a temp folder. This will do that for us.
         /// </remarks>
-        private string GetLatestSettingsFolder()
+        private string GetLatestSettingsFolder(string settingsBackupAndRestoreDir = null)
         {
-            string settingsBackupAndRestoreDir = GetSettingsBackupAndRestoreDir();
+            settingsBackupAndRestoreDir ??= GetSettingsBackupAndRestoreDir();
 
             if (settingsBackupAndRestoreDir == null)
             {
@@ -567,6 +574,45 @@ namespace Microsoft.PowerToys.Settings.UI.Library
             return Directory.GetFiles(path, "*.json", SearchOption.AllDirectories).Where(s => IsIncludeFile(settings, s) && !IsIgnoreFile(settings, s)).ToArray();
         }
 
+        private Dictionary<string, string> GetCurrentSettingsFiles(JsonNode settings, string appBasePath)
+        {
+            var files = GetSettingsFiles(settings, appBasePath).ToDictionary(
+                file => "\\" + Path.GetRelativePath(appBasePath, file),
+                file => file,
+                StringComparer.OrdinalIgnoreCase);
+
+            // Command Palette is packaged separately; store its settings under a
+            // logical archive directory instead of exposing a machine-specific path.
+            foreach (var file in GetSettingsFiles(settings, commandPaletteSettingsPath))
+            {
+                var key = "\\" + Path.Combine(CommandPaletteBackupDirectory, Path.GetRelativePath(commandPaletteSettingsPath, file));
+                files.Add(key, file);
+            }
+
+            return files;
+        }
+
+        private string GetRestoreFilePath(string appBasePath, string key)
+        {
+            var relativePath = key.Substring(1);
+            var commandPalettePrefix = CommandPaletteBackupDirectory + Path.DirectorySeparatorChar;
+            var root = appBasePath;
+            if (relativePath.StartsWith(commandPalettePrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                root = commandPaletteSettingsPath;
+                relativePath = relativePath.Substring(commandPalettePrefix.Length);
+            }
+
+            var fullRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)) + Path.DirectorySeparatorChar;
+            var destination = Path.GetFullPath(Path.Combine(fullRoot, relativePath));
+            if (!destination.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidDataException("The settings path is outside its restore directory.");
+            }
+
+            return destination;
+        }
+
         /// <summary>
         /// Method <c>BackupSettings</c> does the backup process.
         /// </summary>
@@ -666,9 +712,9 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
                     // get data needed for process
                     var backupRestoreSettings = JsonNode.Parse(GetBackupRestoreSettingsJson());
-                    var currentSettingsFiles = GetSettingsFiles(backupRestoreSettings, appBasePath).ToList().ToDictionary(x => x.Substring(appBasePath.Length));
+                    var currentSettingsFiles = GetCurrentSettingsFiles(backupRestoreSettings, appBasePath);
                     var fullBackupDir = Path.Combine(Path.GetTempPath(), $"settings_{DateTime.UtcNow.ToFileTimeUtc().ToString(CultureInfo.InvariantCulture)}");
-                    var latestSettingsFolder = GetLatestSettingsFolder();
+                    var latestSettingsFolder = GetLatestSettingsFolder(settingsBackupAndRestoreDir);
                     var lastBackupSettingsFiles = GetSettingsFiles(backupRestoreSettings, latestSettingsFolder).ToList().ToDictionary(x => x.Substring(latestSettingsFolder.Length));
 
                     lastBackupExists = lastBackupSettingsFiles.Count > 0;
@@ -718,7 +764,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                             anyFileBackedUp = true;
 
                             // write the export version of the settings file to backup location.
-                            var relativePath = currentFile.Value.Substring(appBasePath.Length + 1);
+                            var relativePath = currentFile.Key.Substring(1);
                             var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
                             Logger.LogInfo($"BackupSettings writing, {backupFullPath}, dryRun:{dryRun}.");
@@ -747,7 +793,7 @@ namespace Microsoft.PowerToys.Settings.UI.Library
                     {
                         // if we did do a backup, we need to copy in all the settings files we skipped so the backup is complete.
                         // this is needed since we might use the backup on another machine/
-                        var relativePath = currentFile.Value.Path.Substring(appBasePath.Length + 1);
+                        var relativePath = currentFile.Key.Substring(1);
                         var backupFullPath = Path.Combine(fullBackupDir, relativePath);
 
                         Logger.LogInfo($"BackupSettings writing, {backupFullPath}, dryRun:{dryRun}");

@@ -23,15 +23,19 @@ namespace Microsoft.PowerToys.Settings.UI.Library
 
         public CmdPalProperties()
         {
+            _settingsFilePath = GetSettingsFilePath();
+            InitializeHotkey();
+        }
+
+        internal static string GetSettingsFilePath()
+        {
             var localAppDataDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
 #if DEBUG
-            _settingsFilePath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette.Dev_8wekyb3d8bbwe", "LocalState", "settings.json");
+            return Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette.Dev_8wekyb3d8bbwe", "LocalState", "settings.json");
 #else
-            _settingsFilePath = Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe", "LocalState", "settings.json");
+            return Path.Combine(localAppDataDir, "Packages", "Microsoft.CommandPalette_8wekyb3d8bbwe", "LocalState", "settings.json");
 #endif
-
-            InitializeHotkey();
         }
 
         public void InitializeHotkey()
