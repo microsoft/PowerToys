@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using CommunityToolkit.WinUI.UI.Controls;
@@ -47,6 +48,7 @@ namespace Peek.FilePreviewer.Controls
 
         private double _lastColumnAutoWidth = double.NaN;
 
+        [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This dependency-property wrapper must remain writable so XAML and runtime bindings can replace the collection.")]
         public ObservableCollection<SqliteTableInfo>? Tables
         {
             get => (ObservableCollection<SqliteTableInfo>?)GetValue(TablesProperty);

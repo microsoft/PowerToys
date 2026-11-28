@@ -70,7 +70,7 @@ public sealed partial class TopLevelCommandManager : ObservableObject,
         }
     }
 
-    public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; set; } = [];
+    public ObservableCollection<TopLevelViewModel> TopLevelCommands { get; } = [];
 
     // DockBands uses a custom collection so that bulk changes (see
     // UpdateCommandsForProvider, RegisterAndLoadCommandsAsync) raise a single

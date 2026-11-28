@@ -2,6 +2,8 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.CmdPal.Common.ExtensionGallery.Models;
 
 public sealed class GalleryExtensionEntry
@@ -22,11 +24,14 @@ public sealed class GalleryExtensionEntry
 
     public string? IconUrl { get; set; }
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
     public List<string> ScreenshotUrls { get; set; } = [];
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
     public List<GalleryInstallSource> InstallSources { get; set; } = [];
 
     public GalleryDetection? Detection { get; set; }
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
     public List<string> Tags { get; set; } = [];
 }

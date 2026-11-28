@@ -61,12 +61,12 @@ public partial class MainViewModel : ObservableObject, IDisposable
     private bool _isLoading;
 
     [ObservableProperty]
-    public partial ObservableCollection<MonitorViewModel> Monitors { get; set; }
+    public partial ObservableCollection<MonitorViewModel> Monitors { get; private set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasProfiles))]
     [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
-    public partial ObservableCollection<PowerDisplayProfile> Profiles { get; set; }
+    public partial ObservableCollection<PowerDisplayProfile> Profiles { get; private set; }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowProfileSwitcherButton))]
@@ -268,7 +268,7 @@ public partial class MainViewModel : ObservableObject, IDisposable
     public List<CustomVcpValueMapping> CustomVcpMappings
     {
         get => _customVcpMappings;
-        set
+        private set
         {
             _customVcpMappings = value ?? new List<CustomVcpValueMapping>();
             OnPropertyChanged();

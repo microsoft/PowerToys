@@ -21,7 +21,7 @@ public partial class ContentPageViewModel : PageViewModel, ICommandBarContext
     private volatile CommandContextSnapshot _snapshot = CommandContextSnapshot.Empty;
 
     [ObservableProperty]
-    public partial ObservableCollection<ContentViewModel> Content { get; set; } = [];
+    public partial ObservableCollection<ContentViewModel> Content { get; private set; } = [];
 
     private List<IContextItemViewModel> Commands { get; } = [];
 

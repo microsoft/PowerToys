@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.CommandPalette.Extensions;
 
 namespace Microsoft.CmdPal.Ext.Apps;
@@ -25,6 +26,7 @@ public sealed class AppItem
 
     public bool IsPackaged { get; set; }
 
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This app-information DTO carries replaceable context commands from the app discovery layer.")]
     public List<IContextItem>? Commands { get; set; }
 
     public string AppIdentifier { get; set; } = string.Empty;

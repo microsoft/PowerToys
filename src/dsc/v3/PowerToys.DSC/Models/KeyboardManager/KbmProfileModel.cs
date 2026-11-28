@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace PowerToys.DSC.Models.KeyboardManager;
@@ -21,6 +22,7 @@ public sealed class KbmProfileModel
     /// </summary>
     [JsonPropertyName("keys")]
     [Description("Single-key remappings. Each entry remaps one key to a key, a shortcut, or text.")]
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
     public List<KbmKeyRemapEntry> Keys { get; set; } = [];
 
     /// <summary>
@@ -28,5 +30,6 @@ public sealed class KbmProfileModel
     /// </summary>
     [JsonPropertyName("shortcuts")]
     [Description("Shortcut remappings. Each entry remaps a shortcut to a key, a shortcut, text, a program, or a URI; optionally scoped to a target application.")]
+    [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "This JSON DTO retains its writable deserialization contract, including existing omitted-member defaults and explicit-null behavior.")]
     public List<KbmShortcutRemapEntry> Shortcuts { get; set; } = [];
 }

@@ -16,6 +16,69 @@ public class GalleryExtensionEntryTests
         "https://example.com/screenshots/2.png",
     ];
 
+    [DataTestMethod]
+    [DataRow("{}")]
+    [DataRow("{\"ScreenshotUrls\":[],\"InstallSources\":[],\"Tags\":[]}")]
+    public void Deserialize_DefaultCollectionsRemainAttachedWhenEdited(string json)
+    {
+        var context = GallerySerializationContext.Default;
+        var entry = JsonSerializer.Deserialize(json, context.GalleryExtensionEntry);
+
+        Assert.IsNotNull(entry);
+        Assert.IsNotNull(entry.ScreenshotUrls);
+        Assert.IsNotNull(entry.InstallSources);
+        Assert.IsNotNull(entry.Tags);
+        Assert.AreEqual(0, entry.ScreenshotUrls.Count);
+        Assert.AreEqual(0, entry.InstallSources.Count);
+        Assert.AreEqual(0, entry.Tags.Count);
+        entry.ScreenshotUrls.Add("https://example.com/screenshot.png");
+        entry.InstallSources.Add(new GalleryInstallSource { Type = "url", Uri = "https://example.com/install" });
+        entry.Tags.Add("productivity");
+
+        var saved = JsonSerializer.Serialize(entry, context.GalleryExtensionEntry);
+        var reloaded = JsonSerializer.Deserialize(saved, context.GalleryExtensionEntry);
+
+        Assert.IsNotNull(reloaded);
+        Assert.AreEqual("https://example.com/screenshot.png", reloaded.ScreenshotUrls[0]);
+        Assert.AreEqual("https://example.com/install", reloaded.InstallSources[0].Uri);
+        Assert.AreEqual("productivity", reloaded.Tags[0]);
+    }
+
+    [DataTestMethod]
+    [DataRow("{}")]
+    [DataRow("{\"Extensions\":[]}")]
+    public void Deserialize_IndexDefaultRemainsAttachedWhenEdited(string json)
+    {
+        var context = GallerySerializationContext.Default;
+        var index = JsonSerializer.Deserialize(json, context.GalleryRemoteIndex);
+
+        Assert.IsNotNull(index);
+        Assert.IsNotNull(index.Extensions);
+        Assert.AreEqual(0, index.Extensions.Count);
+        index.Extensions.Add(new GalleryExtensionEntry { Id = "added-extension" });
+
+        var saved = JsonSerializer.Serialize(index, context.GalleryRemoteIndex);
+        var reloaded = JsonSerializer.Deserialize(saved, context.GalleryRemoteIndex);
+
+        Assert.IsNotNull(reloaded);
+        Assert.AreEqual("added-extension", reloaded.Extensions[0].Id);
+    }
+
+    [TestMethod]
+    public void Deserialize_ExplicitNullCollectionsKeepTheirExistingMeaning()
+    {
+        var context = GallerySerializationContext.Default;
+        var entry = JsonSerializer.Deserialize("{\"ScreenshotUrls\":null,\"InstallSources\":null,\"Tags\":null}", context.GalleryExtensionEntry);
+        var index = JsonSerializer.Deserialize("{\"Extensions\":null}", context.GalleryRemoteIndex);
+
+        Assert.IsNotNull(entry);
+        Assert.IsNotNull(index);
+        Assert.IsNull(entry.ScreenshotUrls);
+        Assert.IsNull(entry.InstallSources);
+        Assert.IsNull(entry.Tags);
+        Assert.IsNull(index.Extensions);
+    }
+
     [TestMethod]
     public void Deserialize_UsesPlainStringManifestFields()
     {
