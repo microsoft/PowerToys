@@ -1977,6 +1977,23 @@ static UINT ReplayCapturedModifier(ModifierReplay replay)
     return 0;
 }
 
+// Modifier down and the chord key down in one SendInput call. A separate replay of
+// only the modifier lets the current hook event reach the target first, without
+// LLKHF_ALTDOWN, and can leave the modifier logically down after the physical up.
+static UINT ReplayModifierChord(const KBDLLHOOKSTRUCT& key)
+{
+    INPUT inputs[2] = {};
+    inputs[0].type = INPUT_KEYBOARD;
+    inputs[0].ki.wVk = static_cast<WORD>(g_modifierSession.key.vk);
+    inputs[0].ki.wScan = static_cast<WORD>(g_modifierSession.key.scanCode);
+    inputs[0].ki.dwFlags = (g_modifierSession.key.flags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
+    inputs[1].type = INPUT_KEYBOARD;
+    inputs[1].ki.wVk = static_cast<WORD>(key.vkCode);
+    inputs[1].ki.wScan = static_cast<WORD>(key.scanCode);
+    inputs[1].ki.dwFlags = (key.flags & LLKHF_EXTENDED) ? KEYEVENTF_EXTENDEDKEY : 0;
+    return SendInput(ARRAYSIZE(inputs), inputs, sizeof(INPUT));
+}
+
 static HookDisposition EnterModifierPassthrough(MouseButton button, bool latchHold)
 {
     HookDisposition disposition = HookDisposition::Chain;
@@ -2440,6 +2457,15 @@ static HookDisposition ReleaseModifierSession()
             }
         }
     }
+    else if (g_modifierSession.replayedDown)
+    {
+        // The chord path already injected the modifier down. Pair it with one
+        // injected up. A failed inject still chains the physical up.
+        if (ReplayCapturedModifier(ModifierReplay::UpOnly) != 0)
+        {
+            disposition = HookDisposition::Swallow;
+        }
+    }
 
     g_modifierSession = {};
     return disposition;
@@ -2461,6 +2487,25 @@ static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT
         }
     }
 
+    // Closing the foreground window can drop the modifier keyup after a replayed
+    // chord. Balance that up before this event is delivered, then keep handling it.
+    if (g_modifierSession.replayedDown &&
+        !IsModifierPhysicallyHeld(g_modifierSession.modifier) &&
+        !(IsKeyUpMessage(message) && IsModifierKey(key.vkCode, g_modifierSession.modifier)))
+    {
+        if (ReplayCapturedModifier(ModifierReplay::UpOnly) != 0)
+        {
+            // A keydown of this modifier starts a new session below; its own keyup
+            // must not be swallowed. Any other late physical up is the lost one.
+            if (!(IsKeyDownMessage(message) && IsModifierKey(key.vkCode, g_modifierSession.modifier)))
+            {
+                g_swallowNextModifierUpVk = g_modifierSession.key.vk;
+            }
+
+            g_modifierSession = {};
+        }
+    }
+
     if (HasModifierSession() && IsModifierKey(key.vkCode, g_modifierSession.modifier))
     {
         if (IsKeyDownMessage(message))
@@ -2475,15 +2520,23 @@ static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT
     }
 
     if (HasModifierSession() &&
+        IsKeyDownMessage(message) &&
         !IsModifierKey(key.vkCode, g_modifierSession.modifier) &&
         g_modifierSession.absorbed &&
         !g_modifierSession.consumed &&
         !g_modifierSession.replayedDown)
     {
-        ReplayCapturedModifier(ModifierReplay::DownOnly);
-        g_modifierSession.absorbed = false;
-        g_modifierSession.pressed = false;
-        g_modifierSession.replayedDown = true;
+        // Swallow the physical keydown only when both injected events were inserted.
+        // A short insert leaves the session unchanged so this key is chained once below.
+        // Repeats after a successful replay no longer match and are chained.
+        if (ReplayModifierChord(key) == 2)
+        {
+            g_modifierSession.absorbed = false;
+            g_modifierSession.pressed = false;
+            g_modifierSession.replayedDown = true;
+            TrackHeldNonModifierKey(key.vkCode, message);
+            return HookDisposition::Swallow;
+        }
     }
 
     TrackHeldNonModifierKey(key.vkCode, message);
