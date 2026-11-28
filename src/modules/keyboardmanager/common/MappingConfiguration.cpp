@@ -696,6 +696,7 @@ bool MappingConfiguration::LoadSettings()
 {
     Logger::trace(L"SettingsHelper::LoadSettings()");
     configurationNameResolved = false;
+    configurationFileRead = false;
     try
     {
         PowerToysSettings::PowerToyValues settings = PowerToysSettings::PowerToyValues::load_from_settings_file(KeyboardManagerConstants::ModuleName);
@@ -716,6 +717,7 @@ bool MappingConfiguration::LoadSettings()
             return false;
         }
 
+        configurationFileRead = true;
         bool result = LoadSingleKeyRemaps(*configFile);
         ClearOSLevelShortcuts();
         ClearAppSpecificShortcuts();
@@ -736,6 +738,28 @@ bool MappingConfiguration::LoadSettings()
 bool MappingConfiguration::IsConfigurationNameResolved() const
 {
     return configurationNameResolved;
+}
+
+bool MappingConfiguration::IsConfigurationFileRead() const
+{
+    return configurationFileRead;
+}
+
+void MappingConfiguration::TakeLoadedMappingsFrom(MappingConfiguration&& other)
+{
+    singleKeyReMap = std::move(other.singleKeyReMap);
+    aloneSingleKeyReMap = std::move(other.aloneSingleKeyReMap);
+    singleKeyToSequenceReMap = std::move(other.singleKeyToSequenceReMap);
+    storedSequenceRemaps = std::move(other.storedSequenceRemaps);
+    scanMap = std::move(other.scanMap);
+    singleKeyToTextReMap = std::move(other.singleKeyToTextReMap);
+    osLevelShortcutReMap = std::move(other.osLevelShortcutReMap);
+    osLevelShortcutReMapSortedKeys = std::move(other.osLevelShortcutReMapSortedKeys);
+    appSpecificShortcutReMap = std::move(other.appSpecificShortcutReMap);
+    appSpecificShortcutReMapSortedKeys = std::move(other.appSpecificShortcutReMapSortedKeys);
+    currentConfig = std::move(other.currentConfig);
+    configurationNameResolved = other.configurationNameResolved;
+    configurationFileRead = other.configurationFileRead;
 }
 
 // Builds the settings JSON of the current configuration (what SaveSettingsToFile writes).

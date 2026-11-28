@@ -98,24 +98,35 @@ KeyboardManager::KeyboardManager()
 
 void KeyboardManager::LoadSettings()
 {
-    bool loadedSuccessful = state.LoadSettings();
-    if (!loadedSuccessful)
+    // The settings are read and parsed into a configuration of their own, without touching the tables
+    // in use, and swapped in afterwards (State::ReplaceLoadedMappings), so the hook never sees tables
+    // that are half rebuilt.
+    MappingConfiguration loaded;
+    if (!loaded.LoadSettings())
     {
         std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
         // retry once
-        state.LoadSettings();
+        MappingConfiguration retried;
+        retried.LoadSettings();
+        if (retried.IsConfigurationFileRead() || !loaded.IsConfigurationFileRead())
+        {
+            loaded = std::move(retried);
+        }
     }
 
-    // The reload above rebuilt the alone remap table; discard any leftover alone runtime state so a key
-    // that was physically held across the reload can't leave a stale pending/combination entry (which a
-    // later event would promote, injecting an unmatched original key-down). No-op on the initial load.
-    state.ClearAllAloneKeyState();
+    // A load that could not read the configuration file left the tables as they were before (it
+    // returned before changing them), and so does this one. The swap also forgets the "Alone"
+    // runtime state, so a key held across the reload can't leave a stale pending/combination entry.
+    if (loaded.IsConfigurationFileRead())
+    {
+        state.ReplaceLoadedMappings(std::move(loaded));
+    }
 
     // The key-sequence remaps are not applied by the loading thread. Hand a finished copy over to
     // the hook thread instead (see State::PublishStagedSequenceTable). This covers the key-sequence
-    // table and its press records only; the other tables are still updated in place under
-    // loadingSettings, as before.
+    // table and its press records only; the other tables are swapped in above, under loadingSettings
+    // as before.
     state.StageSequenceTable();
     try
     {

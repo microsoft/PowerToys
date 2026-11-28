@@ -41,6 +41,27 @@ std::optional<SingleKeyRemapTable::iterator> State::GetSingleKeyAloneRemap(const
     return std::nullopt;
 }
 
+void State::ReplaceLoadedMappings(MappingConfiguration&& loaded)
+{
+    std::lock_guard lock{ mappingTablesMutex };
+    TakeLoadedMappingsFrom(std::move(loaded));
+
+    // A key that was held across the reload must not leave a pending or combination entry for the
+    // new tables (a later event would promote it and inject an unmatched key-down).
+    ClearAllAloneKeyState();
+    mappingTablesGeneration++;
+}
+
+std::unique_lock<std::mutex> State::LockMappingTables()
+{
+    return std::unique_lock{ mappingTablesMutex };
+}
+
+uint64_t State::MappingTablesGeneration() const noexcept
+{
+    return mappingTablesGeneration;
+}
+
 void State::StageSequenceTable()
 {
     // Build the finished table before taking the lock, and free a table that was staged but never

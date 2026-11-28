@@ -17,12 +17,26 @@ using AppSpecificShortcutRemapTable = std::map<std::wstring, ShortcutRemapTable>
 class MappingConfiguration
 {
 public:
+    MappingConfiguration() = default;
+    MappingConfiguration(const MappingConfiguration&) = default;
+    MappingConfiguration(MappingConfiguration&&) = default;
+    MappingConfiguration& operator=(const MappingConfiguration&) = default;
+    MappingConfiguration& operator=(MappingConfiguration&&) = default;
     ~MappingConfiguration() = default;
 
     // Load the configuration.
     bool LoadSettings();
 
     bool IsConfigurationNameResolved() const;
+
+    // True if the last LoadSettings got as far as reading the configuration file (it may still have
+    // skipped parts of it). False if it found no configuration name or could not read the file.
+    bool IsConfigurationFileRead() const;
+
+    // Moves everything a load fills in (the remap tables, the configuration name) from other into
+    // this configuration, replacing what it had. Runtime state that is not loaded (numpadKeyPressed)
+    // is kept.
+    void TakeLoadedMappingsFrom(MappingConfiguration&& other);
 
     // Save the updated configuration.
     bool SaveSettingsToFile();
@@ -132,6 +146,7 @@ public:
 
 private:
     bool configurationNameResolved = false;
+    bool configurationFileRead = false;
 
     bool LoadSingleKeyToTextRemaps(const json::JsonObject& jsonData);
     bool LoadShortcutRemaps(const json::JsonObject& jsonData, const std::wstring& objectName);

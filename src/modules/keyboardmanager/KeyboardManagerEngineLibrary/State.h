@@ -192,7 +192,30 @@ private:
     // mutex only when there is something to publish.
     std::atomic_bool sequenceTableStaged = false;
 
+    // Guards the swap of the loaded mapping tables (ReplaceLoadedMappings) against the key-sequence
+    // remap's use of the shortcut tables (see LockMappingTables). Never held across SendInput.
+    std::mutex mappingTablesMutex;
+
+    // Counts the swaps done by ReplaceLoadedMappings. Written and read with mappingTablesMutex held.
+    uint64_t mappingTablesGeneration = 0;
+
 public:
+    // Makes the tables that the settings loader read into a separate configuration the ones in use:
+    // moves them in, and forgets the "Alone" runtime state, under mappingTablesMutex. The file is read
+    // and parsed before, without the lock, so the hook waits at most for a few moves. Called by the
+    // thread that loaded the settings.
+    // The key-sequence remap takes the same lock while it uses the shortcut tables. The other
+    // handlers do not (as before, they rely on KeyboardManager's loadingSettings flag): the swap
+    // makes their window a few moves instead of the whole parse, but does not close it.
+    void ReplaceLoadedMappings(MappingConfiguration&& loaded);
+
+    // Takes mappingTablesMutex. Low-level keyboard hook thread, for short sections that read or
+    // change the shortcut tables; the lock must be released before any input is sent.
+    [[nodiscard]] std::unique_lock<std::mutex> LockMappingTables();
+
+    // The number of swaps so far. Only with the lock of LockMappingTables held.
+    uint64_t MappingTablesGeneration() const noexcept;
+
     // Function to get the iterator of a single key remap given the source key. Returns nullopt if it isn't remapped
     std::optional<SingleKeyRemapTable::iterator> GetSingleKeyRemap(const DWORD& originalKey);
 

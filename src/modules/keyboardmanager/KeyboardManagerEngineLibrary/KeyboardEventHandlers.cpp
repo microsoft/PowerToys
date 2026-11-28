@@ -120,34 +120,21 @@ namespace
         return true;
     }
 
-    // A shortcut remap that a key sequence puts back before its taps (see StartSequencePress).
-    // Named by its key in the shortcut tables rather than by a pointer into them: the remap is
-    // looked up again after the key events were sent (FindShortcutRemap), and a settings reload
-    // may have rebuilt the tables by then.
+    // A shortcut remap that a key sequence puts back before its taps (see StartSequencePress), and
+    // the state it had: the remap is reset before the key events are sent, and that state is put
+    // back if they cannot be sent. The pointer is only used while the lock of
+    // State::LockMappingTables is held and the tables are the same generation (a swap frees them).
     struct RevertedShortcutRemap
     {
-        // Set for an app-specific shortcut remap
-        std::optional<std::wstring> app;
-        Shortcut originalShortcut;
+        RemapShortcut* remap;
+
+        // True for an app-specific shortcut remap
+        bool appSpecific;
+
+        bool isShortcutInvoked;
+        Modifiers modifierKeysInvoked;
+        bool isOriginalActionKeyPressed;
     };
-
-    // The shortcut remap with that app and original shortcut as the tables are now, or nullptr
-    RemapShortcut* FindShortcutRemap(State& state, const RevertedShortcutRemap& reverted)
-    {
-        ShortcutRemapTable* table = &state.osLevelShortcutReMap;
-        if (reverted.app)
-        {
-            const auto appTable = state.appSpecificShortcutReMap.find(*reverted.app);
-            if (appTable == state.appSpecificShortcutReMap.end())
-            {
-                return nullptr;
-            }
-            table = &appTable->second;
-        }
-
-        const auto remap = table->find(reverted.originalShortcut);
-        return remap == table->end() ? nullptr : &remap->second;
-    }
 
     // The same for a left or right modifier key and the code without a side (0 for any other key)
     DWORD ModifierWithoutSide(const DWORD key)
@@ -268,9 +255,9 @@ namespace
 
     // For a key sequence that is about to be sent: appends the key events that put every invoked
     // shortcut remap back to the physically held keys, as a key outside the shortcut does when it
-    // goes down (AppendRevertOfInvokedShortcut), and lists those remaps. Looks at the app-specific
-    // remaps of the activated app and at the OS-level ones. Changes nothing: the caller resets the
-    // listed remaps once the events were sent.
+    // goes down (AppendRevertOfInvokedShortcut), and lists those remaps with their state. Looks at
+    // the app-specific remaps of the activated app and at the OS-level ones. Changes nothing: the
+    // caller resets the listed remaps. The caller holds the lock of State::LockMappingTables.
     // Each remap is judged on the key state after the events appended before it (KeyStateAfterQueuedEvents):
     // putting back an app-specific remap can press a key that an OS-level remap has as its target
     // (global LCtrl+X -> LShift, app LShift+A -> LAlt+B). That remap then stays invoked, as it does
@@ -278,7 +265,7 @@ namespace
     void AppendRevertOfInvokedShortcuts(KeyboardManagerInput::InputInterface& ii, State& state, const std::vector<DWORD>& keysJustPressed, std::vector<INPUT>& keyEventList, std::vector<RevertedShortcutRemap>& reverted)
     {
         KeyStateAfterQueuedEvents keyState{ ii, keyEventList, keysJustPressed };
-        const auto appendFrom = [&](const std::optional<std::wstring>& app, ShortcutRemapTable& table) {
+        const auto appendFrom = [&](const bool appSpecific, ShortcutRemapTable& table) {
             for (auto& [originalShortcut, remap] : table)
             {
                 if (!remap.isShortcutInvoked)
@@ -294,7 +281,7 @@ namespace
 
                 if (AppendRevertOfInvokedShortcut(keyState, originalShortcut, remap, keyEventList))
                 {
-                    reverted.push_back({ app, originalShortcut });
+                    reverted.push_back({ &remap, appSpecific, remap.isShortcutInvoked, remap.modifierKeysInvoked, remap.isOriginalActionKeyPressed });
                 }
             }
         };
@@ -305,11 +292,11 @@ namespace
             const auto appTable = state.appSpecificShortcutReMap.find(activatedApp);
             if (appTable != state.appSpecificShortcutReMap.end())
             {
-                appendFrom(activatedApp, appTable->second);
+                appendFrom(true, appTable->second);
             }
         }
 
-        appendFrom(std::nullopt, state.osLevelShortcutReMap);
+        appendFrom(false, state.osLevelShortcutReMap);
     }
 
     // The key of a key-sequence target that is down already, if there is one. A target code that
@@ -831,51 +818,81 @@ namespace KeyboardEventHandlers
         // A consequence, and intended: the taps of a sequence do not trigger shortcut remaps.
         std::vector<INPUT> keyEventList;
         std::vector<RevertedShortcutRemap> revertedShortcutRemaps;
-        AppendRevertOfInvokedShortcuts(ii, state, keysJustPressed, keyEventList, revertedShortcutRemaps);
-        const size_t revertEventCount = keyEventList.size();
-
-        // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
-        // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
-        //
-        // A target that is down already gets its key-down only, without the key-up: the key-up
-        // would release a key the sequence did not press (with Left Ctrl held, "Left Ctrl, A"
-        // would send A without Ctrl). The sequence only releases what it pressed; the key that is
-        // down stays down for the following taps and until its own key-up, whoever holds it (the
-        // user, or Keyboard Manager for another remap). Its key-down is still sent, as when the key
-        // repeats, so that a character key still types its character: with S still down from the
-        // letter typed before, "T, E, S, T" must not lose its S. Each occurrence of such a target
-        // sends one key-down. "Down" is judged as it will be after the events above: a modifier
-        // that is down only through the shortcut remap is not down then. A key that the "Alone"
-        // remap has just pressed in this same hook call is down (see KeyStateAfterQueuedEvents).
-        const std::vector<INPUT> revertEvents = keyEventList;
-        KeyStateAfterQueuedEvents keyStateAfterRevert{ ii, revertEvents, keysJustPressed };
-        const auto isKeyDown = [&keyStateAfterRevert](const DWORD key) {
-            return keyStateAfterRevert.GetVirtualKeyState(static_cast<int>(key));
-        };
-
-        for (const DWORD targetKey : sequenceRemap->second)
+        const std::wstring activatedAppBefore = state.GetActivatedApp();
+        uint64_t tablesGeneration = 0;
         {
-            if (targetKey == CommonSharedConstants::VK_DISABLED)
+            // The shortcut tables are read and their remaps reset under this lock, which a settings
+            // reload takes to swap the tables in (State::ReplaceLoadedMappings). It is released
+            // before anything is sent: the events sent below go through the hook again.
+            const auto tablesLock = state.LockMappingTables();
+            tablesGeneration = state.MappingTablesGeneration();
+            AppendRevertOfInvokedShortcuts(ii, state, keysJustPressed, keyEventList, revertedShortcutRemaps);
+            const size_t revertEventCount = keyEventList.size();
+
+            // Inject each element as a discrete tap (down then up), in order. Artificial KBM key codes
+            // (e.g. VK_WIN_BOTH) are filtered as elsewhere; a VK_DISABLED element is skipped.
+            //
+            // A target that is down already gets its key-down only, without the key-up: the key-up
+            // would release a key the sequence did not press (with Left Ctrl held, "Left Ctrl, A"
+            // would send A without Ctrl). The sequence only releases what it pressed; the key that is
+            // down stays down for the following taps and until its own key-up, whoever holds it (the
+            // user, or Keyboard Manager for another remap). Its key-down is still sent, as when the key
+            // repeats, so that a character key still types its character: with S still down from the
+            // letter typed before, "T, E, S, T" must not lose its S. Each occurrence of such a target
+            // sends one key-down. "Down" is judged as it will be after the events above: a modifier
+            // that is down only through the shortcut remap is not down then. A key that the "Alone"
+            // remap has just pressed in this same hook call is down (see KeyStateAfterQueuedEvents).
+            const std::vector<INPUT> revertEvents = keyEventList;
+            KeyStateAfterQueuedEvents keyStateAfterRevert{ ii, revertEvents, keysJustPressed };
+            const auto isKeyDown = [&keyStateAfterRevert](const DWORD key) {
+                return keyStateAfterRevert.GetVirtualKeyState(static_cast<int>(key));
+            };
+
+            for (const DWORD targetKey : sequenceRemap->second)
             {
-                continue;
+                if (targetKey == CommonSharedConstants::VK_DISABLED)
+                {
+                    continue;
+                }
+
+                if (const std::optional<DWORD> heldKey = HeldKeyOfSequenceTarget(targetKey, isKeyDown))
+                {
+                    Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(*heldKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
+                    continue;
+                }
+
+                const DWORD filtered = Helpers::FilterArtificialKeys(targetKey);
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
+                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
             }
 
-            if (const std::optional<DWORD> heldKey = HeldKeyOfSequenceTarget(targetKey, isKeyDown))
+            // Nothing to send (every element is VK_DISABLED): nothing reaches the system, so the
+            // shortcut remap is left as it is too.
+            if (keyEventList.size() == revertEventCount)
             {
-                Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(*heldKey), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
-                continue;
+                return SequencePressStep::Suppress;
             }
 
-            const DWORD filtered = Helpers::FilterArtificialKeys(targetKey);
-            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), 0, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
-            Helpers::SetKeyEvent(keyEventList, INPUT_KEYBOARD, static_cast<WORD>(filtered), KEYEVENTF_KEYUP, KeyboardManagerConstants::KEYBOARDMANAGER_SEQUENCE_FLAG);
-        }
+            // The shortcut remaps are put back by the events below: reset their state now, before
+            // the send, as the shortcut handler does. Done on the very remaps the scan above found,
+            // so the reset applies to exactly the invocations that the events put back. Nothing is
+            // changed after the send: hook calls nested in it may start a new invocation, and that
+            // one must stay.
+            for (const RevertedShortcutRemap& reverted : revertedShortcutRemaps)
+            {
+                if (!isAltRightKeyInvoked)
+                {
+                    reverted.remap->isShortcutInvoked = false;
+                    reverted.remap->modifierKeysInvoked.Reset();
+                    reverted.remap->isOriginalActionKeyPressed = false;
+                }
 
-        // Nothing to send (every element is VK_DISABLED): nothing reaches the system, so the
-        // shortcut remap is left as it is too.
-        if (keyEventList.size() == revertEventCount)
-        {
-            return SequencePressStep::Suppress;
+                // If app specific shortcut has finished invoking, reset the target application
+                if (reverted.appSpecific)
+                {
+                    state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
+                }
+            }
         }
 
         // If a Ctrl/Alt/Shift key is the source, reset the modifier state first (as the single-key
@@ -894,39 +911,35 @@ namespace KeyboardEventHandlers
             // a dead key, and keep passing this press through (no retry) until its key-up, so the
             // key isn't stranded down. The result is final: the caller must not hand the event to
             // the handlers after this one, or a Disabled remap of the same key would swallow it.
-            // Nothing was sent, so the shortcut remaps are still invoked and are not reset.
             state.SequencePresses().RecordPress(*data->lParam, SequencePressTracker::Disposition::PassThroughTerminal);
-            return SequencePressStep::PassThrough;
-        }
 
-        // The shortcut remaps were put back: reset their state, as the shortcut handler does. Each
-        // one is named by its key and looked up again here, not kept as a pointer across the send.
-        // Two different things are involved:
-        // - This thread: the events sent above can go through the hook nested inside this call,
-        //   and those calls run the handlers, which can change the shortcut state. So the state is
-        //   taken from the tables as they are now; a remap that is not there has nothing to reset.
-        // - The loading thread: a settings reload rebuilds the shortcut and Alone tables in place
-        //   while the hook may be reading them. That race is older than the key-sequence remap,
-        //   the shortcut handlers have it on every event, and this lookup does not close it (it
-        //   only avoids keeping a pointer over the send). It is out of scope here: only the
-        //   key-sequence table and the press records are published on the hook thread.
-        for (const RevertedShortcutRemap& reverted : revertedShortcutRemaps)
-        {
-            if (!isAltRightKeyInvoked)
+            // Nothing was sent, so the shortcut remaps are still invoked for the system: put back
+            // the state they had. Only into the same tables (a reload in the meantime replaced
+            // them with remaps that were never invoked), and only into a remap that nothing has
+            // invoked again since.
+            const auto tablesLock = state.LockMappingTables();
+            if (state.MappingTablesGeneration() == tablesGeneration)
             {
-                if (RemapShortcut* const remap = FindShortcutRemap(state, reverted))
+                bool appRestored = false;
+                for (const RevertedShortcutRemap& reverted : revertedShortcutRemaps)
                 {
-                    remap->isShortcutInvoked = false;
-                    remap->modifierKeysInvoked.Reset();
-                    remap->isOriginalActionKeyPressed = false;
+                    if (!isAltRightKeyInvoked && !reverted.remap->isShortcutInvoked)
+                    {
+                        reverted.remap->isShortcutInvoked = reverted.isShortcutInvoked;
+                        reverted.remap->modifierKeysInvoked = reverted.modifierKeysInvoked;
+                        reverted.remap->isOriginalActionKeyPressed = reverted.isOriginalActionKeyPressed;
+                    }
+
+                    appRestored = appRestored || reverted.appSpecific;
+                }
+
+                if (appRestored && state.GetActivatedApp() == KeyboardManagerConstants::NoActivatedApp)
+                {
+                    state.SetActivatedApp(activatedAppBefore);
                 }
             }
 
-            // If app specific shortcut has finished invoking, reset the target application
-            if (reverted.app)
-            {
-                state.SetActivatedApp(KeyboardManagerConstants::NoActivatedApp);
-            }
+            return SequencePressStep::PassThrough;
         }
 
         return SequencePressStep::Suppress;
