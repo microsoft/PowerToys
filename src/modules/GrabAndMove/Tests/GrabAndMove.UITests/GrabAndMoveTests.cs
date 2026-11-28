@@ -161,6 +161,24 @@ public sealed class GrabAndMoveTests : UITestBase
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void ShiftDragResizesOppositeCornerWithoutMovingAnchor(bool rightButton, bool shiftFirst)
+    {
+        DragAndAssert(Key.Alt, resize: rightButton, oppositeEdgeResize: true, shiftFirst: shiftFirst);
+    }
+
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(9)]
+    public void ReleasingShiftDoesNotChangePendingOrActiveResizeMode(int releaseShiftAtStep)
+    {
+        DragAndAssert(Key.Alt, resize: false, oppositeEdgeResize: true, releaseShiftAtStep: releaseShiftAtStep);
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void GeometryOverlayAppearsOnlyDuringGesture(bool resize)
@@ -215,6 +233,8 @@ public sealed class GrabAndMoveTests : UITestBase
 
         DragAndAssert(Key.LWin, resize: false);
         DragAndAssert(Key.LWin, resize: true);
+        DragAndAssert(Key.LWin, resize: false, oppositeEdgeResize: true);
+        DragAndAssert(Key.LWin, resize: true, oppositeEdgeResize: true, shiftFirst: true);
         DragAndAssert(Key.Alt, resize: false, expectedChange: false);
         DragAndAssert(Key.Alt, resize: true, expectedChange: false);
         Assert.AreEqual(processId, ModuleProcessId(), "Changing the modifier must hot-reload without restarting the module.");
@@ -236,6 +256,8 @@ public sealed class GrabAndMoveTests : UITestBase
         WaitForUnacknowledgedReload();
         DragAndAssert(Key.Alt, resize: false, expectedChange: false);
         DragAndAssert(Key.Alt, resize: true, expectedChange: false);
+        DragAndAssert(Key.Alt, resize: false, expectedChange: false, oppositeEdgeResize: true);
+        DragAndAssert(Key.Alt, resize: true, expectedChange: false, oppositeEdgeResize: true);
 
         Step("Removing the application exclusion and verifying the same window works again");
         excluded.SetText(string.Empty);
@@ -285,6 +307,7 @@ public sealed class GrabAndMoveTests : UITestBase
         MouseHelper.RightUp();
         KeyboardHelper.ReleaseKey(Key.Alt);
         KeyboardHelper.ReleaseKey(Key.LWin);
+        KeyboardHelper.ReleaseKey(Key.Shift);
     }
 
     private static void RecordPointerCleanup(TestContext context, string phase)
@@ -454,20 +477,32 @@ public sealed class GrabAndMoveTests : UITestBase
         fixture.Focus();
     }
 
-    private void DragAndAssert(Key modifier, bool resize, bool expectedChange = true, Action? duringDrag = null, bool retryUnclaimedMove = false)
+    private void DragAndAssert(
+        Key modifier,
+        bool resize,
+        bool expectedChange = true,
+        Action? duringDrag = null,
+        bool retryUnclaimedMove = false,
+        bool oppositeEdgeResize = false,
+        bool shiftFirst = false,
+        int releaseShiftAtStep = 0)
     {
         Assert.IsNotNull(fixture);
         FocusFixture();
         var before = fixture.Bounds;
-        var start = resize
-            ? new Point(before.Right - 60, before.Bottom - 60)
-            : new Point(before.Left + (before.Width / 2), before.Top + (before.Height / 2));
+        var start = oppositeEdgeResize
+            ? new Point(before.Left + 60, before.Top + 60)
+            : resize
+                ? new Point(before.Right - 60, before.Bottom - 60)
+                : new Point(before.Left + (before.Width / 2), before.Top + (before.Height / 2));
         var expected = expectedChange
-            ? resize
-                ? new Rectangle(before.X, before.Y, before.Width + DeltaX, before.Height + DeltaY)
-                : new Rectangle(before.X + DeltaX, before.Y + DeltaY, before.Width, before.Height)
+            ? oppositeEdgeResize
+                ? new Rectangle(before.X, before.Y, before.Width - DeltaX, before.Height - DeltaY)
+                : resize
+                    ? new Rectangle(before.X, before.Y, before.Width + DeltaX, before.Height + DeltaY)
+                    : new Rectangle(before.X + DeltaX, before.Y + DeltaY, before.Width, before.Height)
             : before;
-        Step($"{modifier}+{(resize ? "right" : "left")} drag from {start}; before={before}, expected={expected}");
+        Step($"{modifier}+{(oppositeEdgeResize ? "Shift+" : string.Empty)}{(resize ? "right" : "left")} drag from {start}; before={before}, expected={expected}");
         MouseHelper.MoveTo(start.X, start.Y);
         var cursor = WaitHelper.WaitForStable(
             MouseHelper.GetMousePosition,
@@ -480,7 +515,17 @@ public sealed class GrabAndMoveTests : UITestBase
         bool boundsChanged;
         try
         {
+            if (oppositeEdgeResize && shiftFirst)
+            {
+                KeyboardHelper.PressKey(Key.Shift);
+            }
+
             KeyboardHelper.PressKey(modifier);
+            if (oppositeEdgeResize && !shiftFirst)
+            {
+                KeyboardHelper.PressKey(Key.Shift);
+            }
+
             if (resize)
             {
                 MouseHelper.RightDown();
@@ -492,6 +537,11 @@ public sealed class GrabAndMoveTests : UITestBase
 
             for (var step = 1; step <= 16; step++)
             {
+                if (oppositeEdgeResize && step == releaseShiftAtStep)
+                {
+                    KeyboardHelper.ReleaseKey(Key.Shift);
+                }
+
                 MouseHelper.MoveTo(start.X + (DeltaX * step / 16), start.Y + (DeltaY * step / 16));
                 Thread.Sleep(30);
             }
@@ -518,6 +568,10 @@ public sealed class GrabAndMoveTests : UITestBase
             }
 
             KeyboardHelper.ReleaseKey(modifier);
+            if (oppositeEdgeResize)
+            {
+                KeyboardHelper.ReleaseKey(Key.Shift);
+            }
         }
 
         if (expectedChange)

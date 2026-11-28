@@ -6,6 +6,18 @@ Grab and Move moves a window with modifier + left drag and resizes it with modif
 Settings supports choosing Alt or Windows as the modifier, showing window geometry, and excluding
 applications. Settings changes apply to the running module without a restart.
 
+### Local prototype: opposite-edge resizing
+
+Hold the activation modifier and Shift, then drag with either mouse button to resize
+the edge or corner opposite the nearest handle. Dragging down and right near the
+upper-left corner keeps that corner anchored and shrinks the window from the
+bottom-right. Dragging in the other direction enlarges it.
+
+The mode is selected at mouse-down and the opposite handle stays fixed for the
+gesture, even if Shift is released or the pointer crosses the window's midpoint.
+Without Shift, left drag still moves and right drag still resizes the nearest
+handle. Disabling modifier-assisted resizing also disables both Shift gestures.
+
 ## Code structure
 
 | Location | Responsibility |

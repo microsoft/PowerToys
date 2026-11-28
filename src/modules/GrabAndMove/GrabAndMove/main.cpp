@@ -136,6 +136,7 @@ struct InteractionState
     POINT lastPoint{};
     RECT windowRect{};
     ResizeHandle resizeHandle = ResizeHandle::None;
+    bool oppositeEdgeResize = false;
     bool firstUpdate = false;
 };
 
@@ -1787,6 +1788,31 @@ static ResizeHandle GetClosestHandle(POINT pt, const RECT& rc)
     return closest;
 }
 
+static ResizeHandle GetOppositeHandle(ResizeHandle handle)
+{
+    switch (handle)
+    {
+    case ResizeHandle::TopLeft:
+        return ResizeHandle::BottomRight;
+    case ResizeHandle::Top:
+        return ResizeHandle::Bottom;
+    case ResizeHandle::TopRight:
+        return ResizeHandle::BottomLeft;
+    case ResizeHandle::Right:
+        return ResizeHandle::Left;
+    case ResizeHandle::BottomRight:
+        return ResizeHandle::TopLeft;
+    case ResizeHandle::Bottom:
+        return ResizeHandle::Top;
+    case ResizeHandle::BottomLeft:
+        return ResizeHandle::TopRight;
+    case ResizeHandle::Left:
+        return ResizeHandle::Right;
+    default:
+        return ResizeHandle::None;
+    }
+}
+
 static HCURSOR CursorForHandle(ResizeHandle handle)
 {
     switch (handle)
@@ -2020,7 +2046,7 @@ static HookDisposition EnterModifierPassthrough(MouseButton button, bool latchHo
 // real drag/resize) or the button is released first (then the absorbed input is
 // replayed so the target application receives a normal modifier+click).
 // ---------------------------------------------------------------------------
-static bool BeginInteraction(InteractionAction action, MouseButton button, HWND hwnd, POINT pt)
+static bool BeginInteraction(InteractionAction action, MouseButton button, HWND hwnd, POINT pt, bool oppositeEdgeResize)
 {
     RECT windowRect{};
     if (!GetWindowRect(hwnd, &windowRect))
@@ -2037,6 +2063,11 @@ static bool BeginInteraction(InteractionAction action, MouseButton button, HWND 
     g_interaction.windowRect = windowRect;
     g_interaction.firstUpdate = true;
     g_interaction.resizeHandle = action == InteractionAction::Resize ? GetClosestHandle(pt, windowRect) : ResizeHandle::None;
+    g_interaction.oppositeEdgeResize = oppositeEdgeResize;
+    if (oppositeEdgeResize)
+    {
+        g_interaction.resizeHandle = GetOppositeHandle(g_interaction.resizeHandle);
+    }
 
     g_modifierSession.consumed = true;
     g_modifierSession.disposition = ModifierHoldDisposition::Activated;
@@ -2052,7 +2083,7 @@ static bool BeginInteraction(InteractionAction action, MouseButton button, HWND 
     return true;
 }
 
-static void ArmPendingInteraction(InteractionAction action, MouseButton button, HWND hwnd, POINT pt)
+static void ArmPendingInteraction(InteractionAction action, MouseButton button, HWND hwnd, POINT pt, bool oppositeEdgeResize)
 {
     g_interaction = {};
     g_interaction.phase = InteractionPhase::Pending;
@@ -2060,6 +2091,7 @@ static void ArmPendingInteraction(InteractionAction action, MouseButton button, 
     g_interaction.button = button;
     g_interaction.target = hwnd;
     g_interaction.startPoint = pt;
+    g_interaction.oppositeEdgeResize = oppositeEdgeResize;
 }
 
 // Replays a modifier+click to the target: first the absorbed modifier key-down
@@ -2344,6 +2376,11 @@ static constexpr bool IsWinKey(DWORD vkCode)
     return vkCode == VK_LWIN || vkCode == VK_RWIN;
 }
 
+static constexpr bool IsShiftKey(DWORD vkCode)
+{
+    return vkCode == VK_SHIFT || vkCode == VK_LSHIFT || vkCode == VK_RSHIFT;
+}
+
 static constexpr bool IsModifierKey(DWORD vkCode, GrabAndMoveModifier modifier)
 {
     return modifier == GrabAndMoveModifier::Win ? IsWinKey(vkCode) : IsAltKey(vkCode);
@@ -2352,7 +2389,6 @@ static constexpr bool IsModifierKey(DWORD vkCode, GrabAndMoveModifier modifier)
 static bool HasConflictingInput(GrabAndMoveModifier modifier)
 {
     if ((GetAsyncKeyState(VK_CONTROL) & 0x8000) ||
-        (GetAsyncKeyState(VK_SHIFT) & 0x8000) ||
         g_heldNonAltKeyCount > 0)
     {
         return true;
@@ -2369,7 +2405,7 @@ static bool HasConflictingInput(GrabAndMoveModifier modifier)
 
 static void TrackHeldNonModifierKey(DWORD vkCode, WPARAM message)
 {
-    if (IsAltKey(vkCode) || IsWinKey(vkCode))
+    if (IsAltKey(vkCode) || IsWinKey(vkCode) || IsShiftKey(vkCode))
     {
         return;
     }
@@ -2408,7 +2444,8 @@ static HookDisposition ReleaseModifierSession()
 
     HookDisposition disposition = HookDisposition::Chain;
     if (interactionConsumedModifier &&
-        g_modifierSession.modifier == GrabAndMoveModifier::Win &&
+        (g_modifierSession.modifier == GrabAndMoveModifier::Win ||
+         (g_settings.shouldAbsorbAlt && g_modifierSession.replayedDown)) &&
         !g_modifierSession.absorbed)
     {
         INPUT dummy{};
@@ -2482,8 +2519,22 @@ static HookDisposition HandleKeyboardEvent(WPARAM message, const KBDLLHOOKSTRUCT
     {
         ReplayCapturedModifier(ModifierReplay::DownOnly);
         g_modifierSession.absorbed = false;
-        g_modifierSession.pressed = false;
+        // Shift participates in resize gestures, but still reaches applications
+        // with the activation modifier when no mouse gesture is claimed.
+        if (!IsShiftKey(key.vkCode))
+        {
+            g_modifierSession.pressed = false;
+        }
         g_modifierSession.replayedDown = true;
+    }
+
+    if (HasModifierSession() &&
+        !g_modifierSession.consumed &&
+        IsKeyDownMessage(message) &&
+        !IsModifierKey(key.vkCode, g_modifierSession.modifier) &&
+        !IsShiftKey(key.vkCode))
+    {
+        g_modifierSession.pressed = false;
     }
 
     TrackHeldNonModifierKey(key.vkCode, message);
@@ -2661,7 +2712,8 @@ static constexpr InteractionAction ActionForButton(MouseButton button)
 
 static HookDisposition HandleActionButtonDown(MouseButton button, POINT point)
 {
-    const InteractionAction action = ActionForButton(button);
+    const bool oppositeEdgeResize = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
+    const InteractionAction action = oppositeEdgeResize ? InteractionAction::Resize : ActionForButton(button);
 
     if (g_interaction.phase == InteractionPhase::Active)
     {
@@ -2689,7 +2741,7 @@ static HookDisposition HandleActionButtonDown(MouseButton button, POINT point)
 
     if (g_modifierSession.disposition == ModifierHoldDisposition::Activated)
     {
-        return BeginInteraction(action, button, target.window, point) ? HookDisposition::Swallow : EnterModifierPassthrough(button, false);
+        return BeginInteraction(action, button, target.window, point, oppositeEdgeResize) ? HookDisposition::Swallow : EnterModifierPassthrough(button, false);
     }
 
     if (g_interaction.phase == InteractionPhase::Pending)
@@ -2697,7 +2749,7 @@ static HookDisposition HandleActionButtonDown(MouseButton button, POINT point)
         return HookDisposition::Chain;
     }
 
-    ArmPendingInteraction(action, button, target.window, point);
+    ArmPendingInteraction(action, button, target.window, point, oppositeEdgeResize);
     return HookDisposition::Swallow;
 }
 
@@ -2759,7 +2811,7 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
 
     if (downButton != MouseButton::None && IsActivationModifierPressed())
     {
-        if (downButton == MouseButton::Right &&
+        if ((downButton == MouseButton::Right || (GetAsyncKeyState(VK_SHIFT) & 0x8000)) &&
             g_interaction.phase != InteractionPhase::Active &&
             !g_settings.useAltResize)
         {
@@ -2789,7 +2841,8 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
                     pending.action,
                     pending.button,
                     pending.target,
-                    pending.startPoint))
+                    pending.startPoint,
+                    pending.oppositeEdgeResize))
             {
                 if (pending.action == InteractionAction::Resize)
                 {
@@ -2862,6 +2915,10 @@ static HookDisposition HandleMouseEvent(WPARAM message, const MSLLHOOKSTRUCT& mo
         }
         else
         {
+            if (g_interaction.oppositeEdgeResize)
+            {
+                HandleDragResize(mouse.pt);
+            }
             RequestTargetUpdate(
                 g_interaction.target,
                 g_interaction.windowRect,
@@ -3017,15 +3074,26 @@ static void HandleDragResize(POINT pt)
             PrepareOverlayMetrics(g_interaction.target);
 
             g_interaction.lastPoint = pt;
-            g_interaction.resizeHandle = GetClosestHandle(pt, g_interaction.windowRect);
+            if (!g_interaction.oppositeEdgeResize)
+            {
+                g_interaction.resizeHandle = GetClosestHandle(pt, g_interaction.windowRect);
+            }
         }
     }
 
     int dx = pt.x - g_interaction.lastPoint.x;
     int dy = pt.y - g_interaction.lastPoint.y;
+    if (g_interaction.oppositeEdgeResize)
+    {
+        dx = -dx;
+        dy = -dy;
+    }
 
-    // Re-evaluate closest handle as the cursor moves
-    ResizeHandle newHandle = GetClosestHandle(pt, g_interaction.windowRect);
+    // Opposite-edge resizing keeps its original anchor even when the pointer
+    // crosses into another handle's region.
+    ResizeHandle newHandle = g_interaction.oppositeEdgeResize ?
+                                 g_interaction.resizeHandle :
+                                 GetClosestHandle(pt, g_interaction.windowRect);
     if (newHandle != g_interaction.resizeHandle)
     {
         g_interaction.resizeHandle = newHandle;
