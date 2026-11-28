@@ -103,6 +103,10 @@ public:
     // if Filter Keys does not set the repeat.
     static DWORD SlowedRepeatLimit(KeyboardManagerInput::InputInterface& ii);
 
+    // True if a press whose last event is the given number of milliseconds old can still be held:
+    // within StalePressAfterMs or SlowedRepeatLimit (see FindPress).
+    static bool IsStillHeldAfter(DWORD age, KeyboardManagerInput::InputInterface& ii);
+
     // Records the disposition of a new press, or changes the one recorded for the key.
     void RecordPress(const KBDLLHOOKSTRUCT& key, Disposition disposition);
 
@@ -115,6 +119,13 @@ public:
     // starts while keys may be held (the hook is installed), so that a remap of such a key waits
     // for its next press.
     void SeedForwardedPresses(KeyboardManagerInput::InputInterface& ii);
+
+    // True if a press that was replaced by its sequence is still on record, that is, the hook still
+    // has to suppress the rest of it: without the hook its auto-repeats and key-up would reach the
+    // system, without the key-down it never saw. now is the current event time (the clock of
+    // KBDLLHOOKSTRUCT.time). A record that FindPress would discard as stale at that time does not
+    // count, so a key whose key-up never arrives cannot keep the hook forever.
+    bool HasSuppressedPress(DWORD now, KeyboardManagerInput::InputInterface& ii) const;
 
     // Forgets every press. Called before the hook is installed: no event was seen while there was
     // no hook, so the records can be out of date.

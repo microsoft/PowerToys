@@ -81,7 +81,11 @@ int WINAPI wWinMain(_In_ HINSTANCE /*hInstance*/,
         kbm.StartLowlevelKeyboardHook();
     };
 
-    run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc } });
+    auto StopHookFunc = [&kbm]() {
+        kbm.StopLowlevelKeyboardHookWhenIdle();
+    };
+
+    run_message_loop({}, {}, { { KeyboardManager::StartHookMessageID, StartHookFunc }, { KeyboardManager::StopHookMessageID, StopHookFunc } });
 
     kbm.StopLowlevelKeyboardHook();
     Trace::UnregisterProvider();

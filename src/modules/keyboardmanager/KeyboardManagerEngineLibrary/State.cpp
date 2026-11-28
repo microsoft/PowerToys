@@ -140,16 +140,28 @@ DWORD SequencePressTracker::SlowedRepeatLimit(KeyboardManagerInput::InputInterfa
     return repeatMs < largestRepeatMs ? 2 * repeatMs : 2 * largestRepeatMs;
 }
 
+bool SequencePressTracker::IsStillHeldAfter(const DWORD age, KeyboardManagerInput::InputInterface& ii)
+{
+    // The time is a tick count that wraps around, so the age is the unsigned difference. A
+    // difference in the upper half of the range is a time stamp a little older than the last one
+    // (events are not always stamped in the order they arrive), not a gap of weeks. The Filter Keys
+    // setting is only asked when the age is over the ordinary limit.
+    return age <= StalePressAfterMs || age > static_cast<DWORD>(INT_MAX) || age <= SlowedRepeatLimit(ii);
+}
+
+bool SequencePressTracker::HasSuppressedPress(const DWORD now, KeyboardManagerInput::InputInterface& ii) const
+{
+    return std::any_of(m_presses.begin(), m_presses.end(), [now, &ii](const auto& press) {
+        return press.second.disposition == Disposition::SequenceFired && IsStillHeldAfter(now - press.second.lastEventTime, ii);
+    });
+}
+
 std::optional<SequencePressTracker::Disposition> SequencePressTracker::FindPress(const KBDLLHOOKSTRUCT& key, KeyboardManagerInput::InputInterface& ii)
 {
     const uint64_t id = KeyIdOf(key);
     if (const auto it = m_presses.find(id); it != m_presses.end())
     {
-        // The time is a tick count that wraps around, so the age is the unsigned difference. A
-        // difference in the upper half of the range is a time stamp a little older than the last
-        // one (events are not always stamped in the order they arrive), not a gap of weeks.
-        const DWORD age = key.time - it->second.lastEventTime;
-        if (age <= StalePressAfterMs || age > static_cast<DWORD>(INT_MAX) || age <= SlowedRepeatLimit(ii))
+        if (IsStillHeldAfter(key.time - it->second.lastEventTime, ii))
         {
             it->second.lastEventTime = key.time;
             return it->second.disposition;

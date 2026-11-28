@@ -1556,6 +1556,52 @@ namespace RemappingLogicTests
             Assert::AreEqual((size_t)8, SequenceEvents());
         }
 
+        // The last remap is deleted while a press that its sequence replaced is held. The hook must
+        // stay until that press has ended (KeyboardManager::StopLowlevelKeyboardHookWhenIdle asks
+        // HasSuppressedPress): until then the press is still suppressed.
+        TEST_METHOD (SequenceRemap_LastRemapDeletedWhileKeyIsHeld_HookIsNeededUntilTheKeyUp)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            AdvanceTime(100000);
+            Assert::IsFalse(testState.SequencePresses().HasSuppressedPress(eventTime, mockedInputHandler));
+
+            SendKey(VK_F1, false, f1ScanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+
+            ReloadSequenceRemaps({});
+            Assert::IsTrue(testState.SequencePresses().HasSuppressedPress(eventTime, mockedInputHandler));
+
+            AdvanceTime(500);
+            SendKey(VK_F1, false, f1ScanCode); // auto-repeat, after the new (empty) table is live
+            Assert::IsTrue(testState.SequencePresses().HasSuppressedPress(eventTime, mockedInputHandler));
+
+            SendKey(VK_F1, true, f1ScanCode);
+            Assert::IsFalse(testState.SequencePresses().HasSuppressedPress(eventTime, mockedInputHandler));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, false));
+            Assert::AreEqual((size_t)0, Delivered(VK_F1, true));
+        }
+
+        // Only presses that a sequence replaced keep the hook: a press that reached the app does not.
+        // A replaced press whose key-up never arrives stops counting once it is stale, so it cannot
+        // keep the hook forever; a slow Filter Keys repeat moves that point.
+        TEST_METHOD (SequenceRemap_HasSuppressedPress_CountsOnlyReplacedPressesThatCanStillBeHeld)
+        {
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+            AdvanceTime(100000);
+
+            SendKey(VK_F2, false);
+            Assert::IsFalse(testState.SequencePresses().HasSuppressedPress(eventTime, mockedInputHandler));
+
+            SendKey(VK_F1, false);
+            const DWORD pressTime = eventTime;
+            Assert::IsTrue(testState.SequencePresses().HasSuppressedPress(pressTime + SequencePressTracker::StalePressAfterMs, mockedInputHandler));
+            Assert::IsFalse(testState.SequencePresses().HasSuppressedPress(pressTime + SequencePressTracker::StalePressAfterMs + 1, mockedInputHandler));
+
+            mockedInputHandler.SetFilterKeysRepeatMs(3000);
+            Assert::IsTrue(testState.SequencePresses().HasSuppressedPress(pressTime + 6000, mockedInputHandler));
+            Assert::IsFalse(testState.SequencePresses().HasSuppressedPress(pressTime + 6001, mockedInputHandler));
+        }
+
         // The event time is a tick count that wraps around to 0. The age of a press is measured
         // across the wrap.
         TEST_METHOD (SequenceRemap_EventTimeWrapsAround_PressAgeIsStillMeasured)

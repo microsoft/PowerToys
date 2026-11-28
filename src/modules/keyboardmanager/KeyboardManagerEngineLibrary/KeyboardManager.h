@@ -9,6 +9,9 @@ class KeyboardManager
 public:
     static const inline DWORD StartHookMessageID = WM_APP + 1;
 
+    // Posted to the hook thread when the settings have no remapping left (see StopLowlevelKeyboardHookWhenIdle).
+    static const inline DWORD StopHookMessageID = WM_APP + 2;
+
     // Constructor
     KeyboardManager();
 
@@ -22,6 +25,11 @@ public:
 
     void StartLowlevelKeyboardHook();
     void StopLowlevelKeyboardHook();
+
+    // Removes the hook because the settings have no remapping left, unless the remappings are back
+    // or a press that a key sequence replaced is still held: the rest of that press must still be
+    // suppressed, so the hook stays until its key-up and is removed then. Hook thread only.
+    void StopLowlevelKeyboardHookWhenIdle();
 
     bool HasRegisteredRemappings() const;
 
@@ -64,6 +72,13 @@ private:
     EventWaiter settingsEventWaiter;
 
     std::atomic_bool loadingSettings = false;
+
+    // Set by the thread that loads the settings: true when the settings loaded last have no remapping.
+    std::atomic_bool noRemappingsLoaded = false;
+
+    // True while the hook waits for the held presses that key sequences replaced to end before it
+    // is removed (see StopLowlevelKeyboardHookWhenIdle). Hook thread only.
+    bool hookStopPending = false;
 
     HANDLE editorIsRunningEvent = nullptr;
 

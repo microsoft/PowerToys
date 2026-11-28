@@ -70,18 +70,21 @@ KeyboardManager::KeyboardManager()
         // StartLowlevelKeyboardHook).
 
         const bool newHasRemappings = HasRegisteredRemappingsUnchecked();
+        noRemappingsLoaded = !newHasRemappings;
+
         // We didn't have any bindings before and we have now
         if (newHasRemappings && !hookHandle)
             PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
 
-        // All bindings were removed
+        // All bindings were removed. The hook is removed by the hook thread, which knows whether a
+        // press that a key sequence replaced is still held (see StopLowlevelKeyboardHookWhenIdle).
         if (!newHasRemappings && hookHandle)
-            StopLowlevelKeyboardHook();
+            PostThreadMessageW(mainThreadId, StopHookMessageID, 0, 0);
 
         // The set of "Alone" (dual-key) remaps may have changed without changing whether ANY binding
         // exists, so reconcile the companion mouse hook. Route an install through the same StartHook
-        // message (SetWindowsHookEx must run on the hook thread); a removal is safe inline, mirroring
-        // the StopLowlevelKeyboardHook call above.
+        // message (SetWindowsHookEx must run on the hook thread); a removal is done inline (the mouse
+        // hook suppresses nothing, so no press depends on it).
         const bool needMouseHook = !state.aloneSingleKeyReMap.empty();
         if (needMouseHook && hookHandle && !mouseHookHandle)
             PostThreadMessageW(mainThreadId, StartHookMessageID, 0, 0);
@@ -262,6 +265,28 @@ void KeyboardManager::StopLowlevelKeyboardHook()
     StopLowlevelMouseHook();
 }
 
+void KeyboardManager::StopLowlevelKeyboardHookWhenIdle()
+{
+    // Remappings were loaded again since the message was posted, or there is no hook.
+    if (!noRemappingsLoaded || !hookHandle)
+    {
+        hookStopPending = false;
+        return;
+    }
+
+    // A press that a key sequence replaced is still held. Without the hook its auto-repeats and its
+    // key-up would reach the app, for a key-down the app never got. HandleKeyboardHookEvent posts
+    // this message again once no such press is left.
+    if (state.SequencePresses().HasSuppressedPress(GetTickCount(), inputHandler))
+    {
+        hookStopPending = true;
+        return;
+    }
+
+    hookStopPending = false;
+    StopLowlevelKeyboardHook();
+}
+
 void KeyboardManager::StartLowlevelMouseHook()
 {
 #if defined(DISABLE_LOWLEVEL_HOOKS_WHEN_DEBUGGED)
@@ -327,5 +352,16 @@ intptr_t KeyboardManager::HandleKeyboardHookEvent(LowlevelKeyboardEvent* data) n
     const bool remappingSuspended = loadingSettings || (editorIsRunningEvent != nullptr && WaitForSingleObject(editorIsRunningEvent, 0) == WAIT_OBJECT_0);
 
     // The handler chain lives in KeyboardEventHandlers so the unit tests can run it as a whole.
-    return KeyboardEventHandlers::DispatchKeyboardEvent(inputHandler, data, state, remappingSuspended);
+    const intptr_t result = KeyboardEventHandlers::DispatchKeyboardEvent(inputHandler, data, state, remappingSuspended);
+
+    // The hook is to be removed once the presses that key sequences replaced have ended. This event
+    // may have ended the last one (its key-up was just suppressed): ask the hook thread to try
+    // again, from its message loop rather than from inside the hook.
+    if (hookStopPending && !state.SequencePresses().HasSuppressedPress(data->lParam->time, inputHandler))
+    {
+        hookStopPending = false;
+        PostThreadMessageW(mainThreadId, StopHookMessageID, 0, 0);
+    }
+
+    return result;
 }
