@@ -30,6 +30,50 @@ public class HeadlessTransformServiceTests
     }
 
     [TestMethod]
+    public void Markdown_TreatsLineBreakAsWordSeparator()
+    {
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Markdown, "<p>hello\nworld and\n<strong>bold</strong></p>");
+
+        StringAssert.Contains(result, "hello world and **bold**");
+    }
+
+    [TestMethod]
+    public void Markdown_UnwrapsHardWrappedOfficeHtml()
+    {
+        var result = HeadlessTransformService.Transform(
+            HeadlessTransformFormat.Markdown,
+            "<!--StartFragment-->\r\n<p class=MsoNormal>Text whose source is\r\nhard-wrapped with <b>bold\r\ntext</b>.<o:p></o:p></p>\r\n<!--EndFragment-->");
+
+        StringAssert.Contains(result, "Text whose source is hard-wrapped with **bold text**.");
+    }
+
+    [TestMethod]
+    public void Markdown_IgnoresLineBreaksBetweenBlocks()
+    {
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Markdown, "<p>first</p>\n<p>second</p>");
+
+        StringAssert.Contains(result.ReplaceLineEndings("\n"), "first\n\nsecond");
+    }
+
+    [TestMethod]
+    public void Markdown_PreservesWhitespaceInPreformattedCode()
+    {
+        var result = HeadlessTransformService.Transform(
+            HeadlessTransformFormat.Markdown,
+            "<pre><code>if True:\n    print(1)\n    print(2)</code></pre>");
+
+        StringAssert.Contains(result.ReplaceLineEndings("\n"), "if True:\n        print(1)\n        print(2)");
+    }
+
+    [TestMethod]
+    public void Markdown_PreservesWhitespaceInInlineCode()
+    {
+        var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Markdown, "<p>Run <code>a  b</code></p>");
+
+        StringAssert.Contains(result, "`a  b`");
+    }
+
+    [TestMethod]
     public void Json_ConvertsCsv()
     {
         var result = HeadlessTransformService.Transform(HeadlessTransformFormat.Json, "name,age\r\nAda,37");
