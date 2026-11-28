@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
+using System.Threading;
 using Microsoft.CmdPal.Ext.PerformanceMonitor;
 
 namespace CoreWidgetProvider.Helpers;
@@ -65,11 +66,17 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
     // and List<T> is not safe for concurrent add/read.
     private readonly object _statsLock = new();
 
+    // Reads an adapter's temperature in degrees Celsius from its LUID key; 0 means unavailable.
+    private readonly Func<long, float> _readTemperature;
+
     // Previous raw samples for computing cooked (delta-based) values
     private Dictionary<string, CounterSample> _previousSamples = [];
     private bool _gpuEnumerationFailureLogged;
     private bool _gpuReadFailureLogged;
     private bool _gpuMemoryReadFailureLogged;
+    private bool _temperatureReadFailureLogged;
+    private int _detailRequests;
+    private bool _detailsRead;
 
     internal sealed record DisplayInfo(string Name, string ShortName, int AdapterCount);
 
@@ -116,9 +123,10 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         DiscoverGPUsFromCounters();
     }
 
-    internal GPUStats(Dictionary<long, GpuAdapterNames.AdapterInfo> adaptersByLuid, IEnumerable<long> gpuLuids)
+    internal GPUStats(Dictionary<long, GpuAdapterNames.AdapterInfo> adaptersByLuid, IEnumerable<long> gpuLuids, Func<long, float>? readTemperature = null)
     {
         _adaptersByLuid = adaptersByLuid;
+        _readTemperature = readTemperature ?? GpuTemperature.Read;
         lock (_statsLock)
         {
             foreach (var luid in gpuLuids)
@@ -299,6 +307,8 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
                     }
                 }
             }
+
+            UpdateTemperatures();
         }
         catch (Exception ex)
         {
@@ -431,6 +441,85 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
         return parts.Length >= 3
             && string.Equals(parts[0], KeyLuid, StringComparison.Ordinal)
             && TryParseLuidKey($"{parts[1]}_{parts[2]}", out luidKey);
+    }
+
+    /// <summary>
+    /// Starts or stops reading temperatures. Only the GPU card shows them, so the dock and the
+    /// overview don't pay for them, and a GPU isn't queried for them while nothing displays them.
+    /// </summary>
+    internal void RequestDetails(bool request)
+    {
+        if (request)
+        {
+            Interlocked.Increment(ref _detailRequests);
+        }
+        else if (Interlocked.Decrement(ref _detailRequests) < 0)
+        {
+            Interlocked.Exchange(ref _detailRequests, 0);
+        }
+    }
+
+    // Reads temperatures while a GPU card wants them, and forgets them once the last card closes so a
+    // card opened later doesn't briefly show a stale reading.
+    internal void UpdateTemperatures()
+    {
+        if (Volatile.Read(ref _detailRequests) > 0)
+        {
+            _detailsRead = true;
+            ReadTemperatures();
+        }
+        else if (_detailsRead)
+        {
+            _detailsRead = false;
+            lock (_statsLock)
+            {
+                foreach (var gpu in _stats)
+                {
+                    gpu.Temperature = 0;
+                }
+            }
+        }
+    }
+
+    // Reads every listed adapter, so switching GPUs on the card shows a temperature right away. The
+    // reads call into the display driver, so they happen outside _statsLock, which the UI / command
+    // accessors also take.
+    private void ReadTemperatures()
+    {
+        long[] luids;
+        lock (_statsLock)
+        {
+            luids = new long[_stats.Count];
+            for (var index = 0; index < luids.Length; index++)
+            {
+                luids[index] = _stats[index].LuidKey;
+            }
+        }
+
+        var temperatures = new Dictionary<long, float>(luids.Length);
+        try
+        {
+            foreach (var luid in luids)
+            {
+                temperatures[luid] = _readTemperature(luid);
+            }
+        }
+        catch (Exception ex)
+        {
+            LogFailureOnce(ref _temperatureReadFailureLogged, "Failed while reading GPU temperatures.", ex);
+            return;
+        }
+
+        lock (_statsLock)
+        {
+            foreach (var gpu in _stats)
+            {
+                if (temperatures.TryGetValue(gpu.LuidKey, out var temperature))
+                {
+                    gpu.Temperature = temperature;
+                }
+            }
+        }
     }
 
     // Adds any newly-seen adapters to _stats. Called once per tick with the set
@@ -673,12 +762,8 @@ internal sealed partial class GPUStats : PerformanceCounterSourceBase, IDisposab
 
     internal string GetGPUTemperature(int gpuActiveIndex)
     {
-        // MG Jan 2026: This code was lifted from the old Dev Home codebase.
-        // However, the performance counters for GPU temperature are not being
-        // collected. So this function always returns "--" for now.
-        //
-        // I have not done the code archeology to figure out why they were
-        // removed.
+        // Temperatures are read only while a GPU card is open (see RequestDetails). 0 means none has
+        // been read yet or the driver doesn't report one.
         lock (_statsLock)
         {
             if (_stats.Count <= gpuActiveIndex)
