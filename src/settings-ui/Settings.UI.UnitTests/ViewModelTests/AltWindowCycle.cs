@@ -47,12 +47,12 @@ namespace ViewModelTests
             Assert.IsNotNull(viewModel.NextWindowShortcut);
             Assert.IsTrue(viewModel.NextWindowShortcut.Alt);
             Assert.IsFalse(viewModel.NextWindowShortcut.Shift);
-            Assert.AreEqual(0xC0, viewModel.NextWindowShortcut.Code);
+            Assert.AreEqual(AltWindowCycleProperties.GetDefaultCycleKeyCode(), viewModel.NextWindowShortcut.Code);
 
             Assert.IsNotNull(viewModel.PreviousWindowShortcut);
             Assert.IsTrue(viewModel.PreviousWindowShortcut.Alt);
             Assert.IsTrue(viewModel.PreviousWindowShortcut.Shift);
-            Assert.AreEqual(0xC0, viewModel.PreviousWindowShortcut.Code);
+            Assert.AreEqual(AltWindowCycleProperties.GetDefaultCycleKeyCode(), viewModel.PreviousWindowShortcut.Code);
         }
 
         [TestMethod]
@@ -135,7 +135,7 @@ namespace ViewModelTests
             Assert.IsNotNull(viewModel.NextWindowShortcut);
             Assert.IsTrue(viewModel.NextWindowShortcut.Alt);
             Assert.IsFalse(viewModel.NextWindowShortcut.Shift);
-            Assert.AreEqual(0xC0, viewModel.NextWindowShortcut.Code);
+            Assert.AreEqual(AltWindowCycleProperties.GetDefaultCycleKeyCode(), viewModel.NextWindowShortcut.Code);
         }
     }
 }

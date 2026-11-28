@@ -175,6 +175,17 @@ namespace AltWindowCycleUnitTests
             Assert::AreEqual(0u, AltWindowCycleLogic::StableHoldModifiers(0));
         }
 
+        TEST_METHOD(DefaultCycleVirtualKeyUsesLayoutMappingOrFallsBackToOem3)
+        {
+            Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_3)); // US
+            Assert::AreEqual<int>(VK_OEM_8, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_8)); // UK
+            Assert::AreEqual<int>(VK_OEM_5, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_5)); // German
+            Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_AUTO)); // Japanese IME toggle
+            Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(VK_OEM_ENLW)); // Japanese IME toggle
+            Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(0));
+            Assert::AreEqual<int>(VK_OEM_3, AltWindowCycleLogic::DefaultCycleVirtualKey(0x100));
+        }
+
         TEST_METHOD(AreRequiredModifiersDownRequiresEveryHeldModifier)
         {
             Assert::IsFalse(AltWindowCycleLogic::AreRequiredModifiersDown(0, AltWindowCycleLogic::ModifierAlt));

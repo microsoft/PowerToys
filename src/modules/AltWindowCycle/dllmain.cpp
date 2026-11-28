@@ -39,8 +39,12 @@ namespace
     const wchar_t JSON_KEY_NEXT_WINDOW_SHORTCUT[] = L"next_window_shortcut";
     const wchar_t JSON_KEY_PREVIOUS_WINDOW_SHORTCUT[] = L"previous_window_shortcut";
 
-    // ` ~ key (VK_OEM_3) on US layouts.
-    const unsigned char DEFAULT_BACKTICK_VK = 0xC0;
+    // The key below Esc (` ~ on US layouts), resolved for the current keyboard layout.
+    static unsigned char ResolveDefaultCycleVirtualKey()
+    {
+        return AltWindowCycleLogic::DefaultCycleVirtualKey(
+            MapVirtualKeyExW(AltWindowCycleLogic::DefaultCycleKeyScanCode, MAPVK_VSC_TO_VK, GetKeyboardLayout(0)));
+    }
 
     // The configurable hotkeys stay in Settings UI order. Escape is handled by a
     // scoped low-level hook inside the module while the overlay is visible, so it
@@ -285,7 +289,7 @@ void AltWindowCycle::parse_settings(PowerToysSettings::PowerToyValues& settings)
         m_nextHotkey.ctrl = false;
         m_nextHotkey.shift = false;
         m_nextHotkey.alt = true;
-        m_nextHotkey.key = DEFAULT_BACKTICK_VK;
+        m_nextHotkey.key = ResolveDefaultCycleVirtualKey();
     }
 
     // Default: Shift+Alt+` cycles to the previous window of the focused app.
@@ -295,7 +299,7 @@ void AltWindowCycle::parse_settings(PowerToysSettings::PowerToyValues& settings)
         m_previousHotkey.ctrl = false;
         m_previousHotkey.shift = true;
         m_previousHotkey.alt = true;
-        m_previousHotkey.key = DEFAULT_BACKTICK_VK;
+        m_previousHotkey.key = ResolveDefaultCycleVirtualKey();
     }
 }
 

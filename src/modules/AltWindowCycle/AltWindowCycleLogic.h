@@ -65,6 +65,20 @@ namespace AltWindowCycleLogic
         return nonShiftModifiers != 0 ? nonShiftModifiers : sanitized;
     }
 
+    // Scan code of the physical key below Esc (` ~ on US layouts). The default
+    // shortcuts bind to this key rather than to a fixed virtual-key code, because its
+    // VK differs by layout: VK_OEM_3 on US, but VK_OEM_8 on UK where VK_OEM_3 is ' @.
+    constexpr UINT DefaultCycleKeyScanCode = 0x29;
+    constexpr unsigned char FallbackCycleVirtualKey = VK_OEM_3;
+
+    // Takes the VK that the current layout maps DefaultCycleKeyScanCode to, falling
+    // back to VK_OEM_3 when that key is not an OEM character key (VK_OEM_1 through
+    // VK_OEM_102), e.g. on Japanese layouts, where it is the half-width/full-width IME toggle.
+    constexpr unsigned char DefaultCycleVirtualKey(UINT layoutVirtualKey)
+    {
+        return layoutVirtualKey >= VK_OEM_1 && layoutVirtualKey <= VK_OEM_102 ? static_cast<unsigned char>(layoutVirtualKey) : FallbackCycleVirtualKey;
+    }
+
     constexpr bool AreRequiredModifiersDown(unsigned int requiredModifiers, unsigned int downModifiers)
     {
         return requiredModifiers != 0 && (downModifiers & requiredModifiers) == requiredModifiers;
