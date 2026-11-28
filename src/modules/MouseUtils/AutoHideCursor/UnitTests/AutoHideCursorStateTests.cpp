@@ -59,6 +59,60 @@ namespace AutoHideCursorUnitTests
             Assert::AreEqual(maximumIdleDelayMs, tooLong.idleDelayMs);
         }
 
+        TEST_METHOD (TimerRestoresTypingHiddenCursorWithoutMouseHook)
+        {
+            State state{ { true, false, defaultIdleDelayMs }, 0, { 10, 10 } };
+            state.OnKeyboardInput(100, { 10, 10 });
+
+            Assert::IsTrue(state.OnTimer(200, { 11, 10 }) == CursorAction::None);
+            Assert::IsTrue(state.OnTimer(300, { 12, 10 }) == CursorAction::Show);
+            Assert::IsFalse(state.IsHidden());
+            Assert::IsTrue(state.OnTimer(400, { 12, 10 }) == CursorAction::None);
+        }
+
+        TEST_METHOD (TimerRestoresIdleHiddenCursorWithoutMouseHook)
+        {
+            State state{ { false, true, 1000 }, 0, { 10, 10 } };
+            Assert::IsTrue(state.OnTimer(1000, { 10, 10 }) == CursorAction::Hide);
+            Assert::IsTrue(state.OnTimer(1100, { 10, 12 }) == CursorAction::Show);
+            Assert::IsTrue(state.OnTimer(2099, { 10, 12 }) == CursorAction::None);
+            Assert::IsTrue(state.OnTimer(2100, { 10, 12 }) == CursorAction::Hide);
+        }
+
+        TEST_METHOD (PolledMovementResetsIdleDeadlineWithoutMouseHook)
+        {
+            State state{ { false, true, 1000 }, 0, { 10, 10 } };
+            Assert::IsTrue(state.OnTimer(900, { 20, 20 }) == CursorAction::None);
+            Assert::IsTrue(state.OnTimer(1000, { 20, 20 }) == CursorAction::None);
+            Assert::IsTrue(state.OnTimer(1899, { 20, 20 }) == CursorAction::None);
+            Assert::IsTrue(state.OnTimer(1900, { 20, 20 }) == CursorAction::Hide);
+        }
+
+        TEST_METHOD (TypingUsesCurrentPositionForPolledMovement)
+        {
+            State state{ { true, false, defaultIdleDelayMs }, 0, { 10, 10 } };
+            state.OnKeyboardInput(100, { 20, 20 });
+            Assert::IsTrue(state.OnTimer(200, { 20, 20 }) == CursorAction::None);
+            Assert::IsTrue(state.IsHidden());
+        }
+
+        TEST_METHOD (PolledMovementUsesDistanceFromHiddenPosition)
+        {
+            State state{ { true, false, defaultIdleDelayMs }, 0, { 10, 10 } };
+            state.OnKeyboardInput(100, { 10, 10 });
+
+            Assert::IsTrue(state.OnTimer(200, { 9, 9 }) == CursorAction::None);
+            Assert::IsTrue(state.OnTimer(300, { 8, 10 }) == CursorAction::Show);
+        }
+
+        TEST_METHOD (MouseHookMovementIsNotCountedAgainByTimer)
+        {
+            State state{ { false, true, 1000 }, 0, { 10, 10 } };
+            state.OnMouseInput(100, { 20, 20 }, MouseInputKind::Move);
+            Assert::IsTrue(state.OnTimer(1000, { 20, 20 }) == CursorAction::None);
+            Assert::IsTrue(state.OnTimer(1100, { 20, 20 }) == CursorAction::Hide);
+        }
+
         TEST_METHOD (ModifierKeysDoNotCountAsTyping)
         {
             Assert::IsTrue(State::IsModifierVirtualKey(0x10));

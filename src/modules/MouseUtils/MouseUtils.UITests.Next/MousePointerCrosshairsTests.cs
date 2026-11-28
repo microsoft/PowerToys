@@ -18,6 +18,7 @@ public class MousePointerCrosshairsTests : UITestBase
     private const string CrosshairsColor = "#FF0000";
 
     private static readonly IDisposable ModuleSettings = SettingsConfigHelper.PreserveModuleSettings(ModuleName);
+    private static readonly IDisposable AutoHideSettings = SettingsConfigHelper.PreserveModuleSettings("AutoHideCursor");
 
     static MousePointerCrosshairsTests()
     {
@@ -44,6 +45,8 @@ public class MousePointerCrosshairsTests : UITestBase
                 FixedLength: 120),
             nameof(OpacityBlendsWithDesktop) => new CrosshairsConfiguration(Opacity: 50),
             nameof(AutoActivateStartsVisible) => new CrosshairsConfiguration(AutoActivate: true),
+            nameof(AutoHideFollowsTransparentCursorAndRestoration) => new CrosshairsConfiguration(AutoHide: true),
+            nameof(TransparentCursorDoesNotHideCrosshairsWhenAutoHideIsOff) => new CrosshairsConfiguration(),
             _ => new CrosshairsConfiguration(),
         };
 
@@ -51,7 +54,7 @@ public class MousePointerCrosshairsTests : UITestBase
     }
 
     [ClassCleanup]
-    public static void RestoreModuleSettings() => ModuleSettings.Dispose();
+    public static void RestoreModuleSettings() => MouseUtilsTestHelper.DisposeAll(ModuleSettings, AutoHideSettings);
 
     [TestCleanup]
     public async Task CleanupInput()
@@ -247,6 +250,61 @@ public class MousePointerCrosshairsTests : UITestBase
             requiredConsecutiveMatches: 3,
             pollIntervalMS: 100);
         Assert.IsTrue(result.Succeeded, "Crosshairs did not start visible when auto-activate was enabled.");
+    }
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("AutoHideCursor")]
+    public void AutoHideFollowsTransparentCursorAndRestoration() => AssertAutoHideInteraction(autoHide: true);
+
+    [TestMethod]
+    [TestCategory("MouseUtils")]
+    [TestCategory("AutoHideCursor")]
+    public void TransparentCursorDoesNotHideCrosshairsWhenAutoHideIsOff() => AssertAutoHideInteraction(autoHide: false);
+
+    private void AssertAutoHideInteraction(bool autoHide)
+    {
+        const string settings = """
+            {
+              "name": "AutoHideCursor", "version": "1.0",
+              "properties": {
+                "hide_on_typing": { "value": false },
+                "hide_on_idle": { "value": true },
+                "idle_delay_ms": { "value": 3000 }
+              }
+            }
+            """;
+        MouseUtilsTestHelper.ReplaceModuleSettings("AutoHideCursor", settings);
+        RestartScope(enableModules: new[] { ModuleName, "AutoHideCursor" });
+        WindowHelper.MinimizeWindow(new IntPtr(Session.WindowHandle));
+        var (x, y) = WindowHelper.GetScreenCenter();
+        MouseHelper.MoveTo(x, y);
+        MouseHelper.MoveBy(10, 0);
+        var window = MouseUtilsTestHelper.WaitForWindowClass(WindowClass);
+        using var watcher = new WindowShowWatcher(WindowClass, window.Hwnd.ToInt64());
+        Assert.IsTrue(NamedEventHelper.WaitAndSignal(NamedEventHelper.MouseCrosshairsToggle), "Crosshairs trigger event was unavailable.");
+        Assert.IsTrue(watcher.Wait(5_000), "Crosshairs did not show before the idle deadline.");
+        MouseUtilsTestHelper.AssertSystemCursorVisible(expectedVisible: false);
+
+        if (autoHide)
+        {
+            Assert.IsTrue(watcher.WaitForHidden(5_000), "Crosshairs stayed visible after Auto Hide Cursor made the cursor transparent.");
+        }
+        else
+        {
+            Assert.IsFalse(watcher.WaitForHidden(1_500), "Crosshairs hid despite their auto-hide option being disabled.");
+        }
+
+        MouseHelper.MoveBy(100, 100);
+        MouseUtilsTestHelper.AssertSystemCursorVisible(expectedVisible: true);
+        Assert.IsTrue(
+            WaitHelper.WaitForStable(
+                () => WindowControl.IsAnyWindowOfClassVisible(WindowClass),
+                visible => visible,
+                timeoutMS: 2_500,
+                requiredConsecutiveMatches: 2,
+                pollIntervalMS: 100).Succeeded,
+            "Crosshairs did not reappear after the cursor was restored.");
     }
 
     [TestMethod]

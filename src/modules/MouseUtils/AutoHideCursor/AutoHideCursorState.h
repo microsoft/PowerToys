@@ -46,6 +46,7 @@ namespace auto_hide_cursor
         State(Configuration configuration, std::uint64_t now, Point cursorPosition) noexcept :
             m_configuration{ NormalizeConfiguration(configuration) },
             m_lastPointerInputTime{ now },
+            m_lastObservedPosition{ cursorPosition },
             m_hiddenPosition{ cursorPosition }
         {
         }
@@ -88,6 +89,7 @@ namespace auto_hide_cursor
             }
 
             m_hidden = true;
+            m_lastObservedPosition = cursorPosition;
             m_hiddenPosition = cursorPosition;
             return CursorAction::Hide;
         }
@@ -95,6 +97,7 @@ namespace auto_hide_cursor
         CursorAction OnMouseInput(std::uint64_t now, Point cursorPosition, MouseInputKind inputKind) noexcept
         {
             m_lastPointerInputTime = now;
+            m_lastObservedPosition = cursorPosition;
             if (!m_hidden)
             {
                 return CursorAction::None;
@@ -111,6 +114,14 @@ namespace auto_hide_cursor
 
         CursorAction OnTimer(std::uint64_t now, Point cursorPosition) noexcept
         {
+            // UIPI or another application's hook can prevent mouse callbacks while the system
+            // cursors are hidden globally. Position polling must also restore the pointer.
+            if (cursorPosition.x != m_lastObservedPosition.x ||
+                cursorPosition.y != m_lastObservedPosition.y)
+            {
+                return OnMouseInput(now, cursorPosition, MouseInputKind::Move);
+            }
+
             if (!m_configuration.hideOnIdle || m_hidden ||
                 now - m_lastPointerInputTime < m_configuration.idleDelayMs)
             {
@@ -160,6 +171,7 @@ namespace auto_hide_cursor
 
         Configuration m_configuration;
         std::uint64_t m_lastPointerInputTime;
+        Point m_lastObservedPosition;
         Point m_hiddenPosition;
         bool m_hidden = false;
     };
