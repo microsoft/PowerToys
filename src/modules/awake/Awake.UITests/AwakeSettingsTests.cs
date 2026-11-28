@@ -175,7 +175,7 @@ public sealed class AwakeSettingsTests : UITestBase
         CollectionAssert.DoesNotContain(names.ToArray(), "Exit", "Runner-owned Awake must not offer standalone Exit.");
         var expiration = ShellMenu.FindVisibleMenuItem(menu, AwakeUi.TrayExpiration);
         Assert.IsNotNull(expiration);
-        Assert.IsFalse(expiration.IsEnabled, "Expiration must be configured in Settings, not through a disabled tray action.");
+        Assert.IsTrue(expiration.IsEnabled, "The tray menu must let users pick an expiration date and time.");
     }
 
     [TestMethod]
