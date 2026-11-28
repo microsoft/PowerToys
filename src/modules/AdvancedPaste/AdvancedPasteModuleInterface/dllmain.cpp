@@ -3,6 +3,7 @@
 
 #include "AdvancedPasteConstants.h"
 #include "AdvancedPasteProcessManager.h"
+#include "HotkeyWork.h"
 #include <interface/powertoy_module_interface.h>
 #include "trace.h"
 #include "Generated Files/resource.h"
@@ -19,8 +20,10 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cwctype>
 #include <chrono>
+#include <functional>
 #include <string_view>
 #include <thread>
 #include <vector>
@@ -79,7 +82,7 @@ class AdvancedPaste : public PowertoyModuleIface
 private:
     
     AdvancedPasteProcessManager m_process_manager;
-    bool m_enabled = false;
+    std::atomic_bool m_enabled = false;
 
     std::wstring app_name;
 
@@ -109,7 +112,8 @@ private:
     bool m_is_ai_enabled = false;
     bool m_is_advanced_ai_enabled = false;
     bool m_preview_custom_format_output = true;
-    bool m_auto_copy_selection_custom_action = false;
+    std::atomic_bool m_auto_copy_selection_custom_action = false;
+    advanced_paste::HotkeyWork m_hotkey_work;
 
     // Event listening for external triggers (e.g., from CmdPal extension)
     EventWaiter m_triggerEventWaiter;
@@ -513,60 +517,81 @@ private:
         }
     }
 
-    void try_inject_modifier_key_up(std::vector<INPUT>& inputs, short modifier)
+    static constexpr std::array<short, 8> modifier_keys = { VK_LCONTROL, VK_RCONTROL, VK_LWIN, VK_RWIN, VK_LSHIFT, VK_RSHIFT, VK_LMENU, VK_RMENU };
+
+    static bool is_key_down(short vk)
     {
         // Most significant bit is set if key is down
-        if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
-        {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = modifier;
-            input_event.ki.dwFlags = KEYEVENTF_KEYUP;
-            inputs.push_back(input_event);
-        }
+        return (GetAsyncKeyState(static_cast<int>(vk)) & 0x8000) != 0;
     }
 
-    void try_inject_modifier_key_restore(std::vector<INPUT>& inputs, short modifier)
+    struct HotkeyTarget
     {
-        // Most significant bit is set if key is down
-        if ((GetAsyncKeyState(static_cast<int>(modifier)) & 0x8000) != 0)
+        HWND window = nullptr;
+        HWND control = nullptr;
+        DWORD thread_id = 0;
+        DWORD process_id = 0;
+
+        static HotkeyTarget capture()
         {
-            INPUT input_event = {};
-            input_event.type = INPUT_KEYBOARD;
-            input_event.ki.wVk = modifier;
-            inputs.push_back(input_event);
+            HotkeyTarget target;
+            target.window = GetForegroundWindow();
+            target.thread_id = GetWindowThreadProcessId(target.window, &target.process_id);
+            GUITHREADINFO info{ sizeof(GUITHREADINFO) };
+            if (target.thread_id && GetGUIThreadInfo(target.thread_id, &info))
+            {
+                target.control = info.hwndFocus ? info.hwndFocus : info.hwndActive;
+            }
+            return target;
         }
+
+        bool is_current() const
+        {
+            const auto current = capture();
+            return window && control && window == current.window && control == current.control &&
+                   thread_id == current.thread_id && process_id == current.process_id;
+        }
+    };
+
+    static bool request_is_current(const HotkeyTarget& target, std::stop_token token)
+    {
+        return !token.stop_requested() && target.is_current();
     }
 
-    bool try_send_copy_message()
+    // Never wait on the keyboard hook thread, or synthesize releases for physically held keys.
+    static bool wait_for_modifiers_release(const HotkeyTarget& target, std::stop_token token)
     {
-        GUITHREADINFO gui_info = {};
-        gui_info.cbSize = sizeof(GUITHREADINFO);
-
-        if (!GetGUIThreadInfo(0, &gui_info))
+        const bool released = advanced_paste::wait_for_modifiers_release(
+            token, [&] { return target.is_current(); }, [] { return std::any_of(modifier_keys.begin(), modifier_keys.end(), is_key_down); });
+        if (!released)
         {
-            Logger::warn(L"Auto-copy: GetGUIThreadInfo failed (error={})", GetLastError());
-            return false;
+            Logger::trace(L"Advanced Paste request cancelled while waiting for modifiers");
         }
+        return released;
+    }
 
-        HWND target = gui_info.hwndFocus ? gui_info.hwndFocus : gui_info.hwndActive;
-        if (!target)
+    bool try_send_copy_message(const HotkeyTarget& target, std::stop_token token)
+    {
+        if (!request_is_current(target, token))
         {
-            Logger::warn(L"Auto-copy: no focused or active window found");
             return false;
         }
 
         DWORD_PTR result = 0;
-        auto sendResult = SendMessageTimeout(target, WM_COPY, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 50, &result);
+        auto sendResult = SendMessageTimeout(target.control, WM_COPY, 0, 0, SMTO_ABORTIFHUNG | SMTO_BLOCK, 50, &result);
         return sendResult != 0;
     }
 
     // Helper: poll clipboard sequence number for a change from initial_sequence.
     // Returns true if the sequence number changed within the given number of polls.
-    bool poll_clipboard_sequence(DWORD initial_sequence, int poll_attempts, std::chrono::milliseconds poll_delay)
+    bool poll_clipboard_sequence(DWORD initial_sequence, int poll_attempts, std::chrono::milliseconds poll_delay, const HotkeyTarget& target, std::stop_token token)
     {
         for (int poll = 0; poll < poll_attempts; ++poll)
         {
+            if (!request_is_current(target, token))
+            {
+                return false;
+            }
             if (GetClipboardSequenceNumber() != initial_sequence)
             {
                 return true;
@@ -576,22 +601,14 @@ private:
         return false;
     }
 
-    // Helper: send Ctrl+C via SendInput, releasing any held modifier keys first
-    // (the hotkey combination may still have modifiers physically pressed).
-    bool send_ctrl_c_input()
+    bool send_ctrl_c_input(const HotkeyTarget& target, std::stop_token token)
     {
-        std::vector<INPUT> inputs;
+        if (!wait_for_modifiers_release(target, token))
+        {
+            return false;
+        }
 
-        // Release all modifier keys that are currently held down from the hotkey.
-        // Without this, the target app sees e.g. Win+Shift+Ctrl+C instead of just Ctrl+C.
-        try_inject_modifier_key_up(inputs, VK_LCONTROL);
-        try_inject_modifier_key_up(inputs, VK_RCONTROL);
-        try_inject_modifier_key_up(inputs, VK_LWIN);
-        try_inject_modifier_key_up(inputs, VK_RWIN);
-        try_inject_modifier_key_up(inputs, VK_LSHIFT);
-        try_inject_modifier_key_up(inputs, VK_RSHIFT);
-        try_inject_modifier_key_up(inputs, VK_LMENU);
-        try_inject_modifier_key_up(inputs, VK_RMENU);
+        std::vector<INPUT> inputs;
 
         // Ctrl down
         {
@@ -631,23 +648,18 @@ private:
             inputs.push_back(input_event);
         }
 
-        // Restore modifiers that were held down
-        try_inject_modifier_key_restore(inputs, VK_LCONTROL);
-        try_inject_modifier_key_restore(inputs, VK_RCONTROL);
-        try_inject_modifier_key_restore(inputs, VK_LWIN);
-        try_inject_modifier_key_restore(inputs, VK_RWIN);
-        try_inject_modifier_key_restore(inputs, VK_LSHIFT);
-        try_inject_modifier_key_restore(inputs, VK_RSHIFT);
-        try_inject_modifier_key_restore(inputs, VK_LMENU);
-        try_inject_modifier_key_restore(inputs, VK_RMENU);
-
-        // Prevent Start Menu from activating after Win key release/restore
+        // Prevent Start Menu from activating after Win key release
         INPUT dummyEvent = {};
         dummyEvent.type = INPUT_KEYBOARD;
         dummyEvent.ki.wVk = 0xFF;
         dummyEvent.ki.dwFlags = KEYEVENTF_KEYUP;
         inputs.push_back(dummyEvent);
 
+        if (!request_is_current(target, token) ||
+            std::any_of(modifier_keys.begin(), modifier_keys.end(), is_key_down))
+        {
+            return false;
+        }
         auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
         if (uSent != inputs.size())
         {
@@ -660,7 +672,8 @@ private:
         return true;
     }
 
-    bool send_copy_selection()
+    // False cancels the request; an unchanged clipboard is still a valid best-effort outcome.
+    bool send_copy_selection(const HotkeyTarget& target, std::stop_token token)
     {
         constexpr int copy_attempts = 2;
         constexpr auto copy_retry_delay = std::chrono::milliseconds(100);
@@ -670,14 +683,18 @@ private:
         bool copy_succeeded = false;
         for (int attempt = 0; attempt < copy_attempts; ++attempt)
         {
+            if (!request_is_current(target, token))
+            {
+                return false;
+            }
             const auto initial_sequence = GetClipboardSequenceNumber();
 
             // Strategy 1: Try WM_COPY message (works for standard Win32 controls)
-            bool wm_copy_sent = try_send_copy_message();
+            bool wm_copy_sent = try_send_copy_message(target, token);
 
             if (wm_copy_sent)
             {
-                if (poll_clipboard_sequence(initial_sequence, clipboard_poll_attempts, clipboard_poll_delay))
+                if (poll_clipboard_sequence(initial_sequence, clipboard_poll_attempts, clipboard_poll_delay, target, token))
                 {
                     copy_succeeded = true;
                 }
@@ -688,12 +705,13 @@ private:
             {
                 const auto sequence_before_ctrl_c = GetClipboardSequenceNumber();
 
-                if (send_ctrl_c_input())
+                if (!send_ctrl_c_input(target, token))
                 {
-                    if (poll_clipboard_sequence(sequence_before_ctrl_c, clipboard_poll_attempts, clipboard_poll_delay))
-                    {
-                        copy_succeeded = true;
-                    }
+                    return false;
+                }
+                if (poll_clipboard_sequence(sequence_before_ctrl_c, clipboard_poll_attempts, clipboard_poll_delay, target, token))
+                {
+                    copy_succeeded = true;
                 }
             }
 
@@ -713,12 +731,17 @@ private:
             Logger::warn(L"Auto-copy: all {} copy attempts failed — the target application did not update the clipboard after WM_COPY and Ctrl+C", copy_attempts);
         }
 
-        return copy_succeeded;
+        return request_is_current(target, token);
     }
 
-    void try_to_paste_as_plain_text()
+    void try_to_paste_as_plain_text(const HotkeyTarget& target, std::stop_token token)
     {
+        if (!wait_for_modifiers_release(target, token))
+        {
+            return;
+        }
         std::wstring clipboard_text;
+        DWORD clipboard_sequence = 0;
 
         {
             // Read clipboard data begin
@@ -757,6 +780,7 @@ private:
 
             clipboard_text = pch_data;
             GlobalUnlock(h_clipboard_data);
+            clipboard_sequence = GetClipboardSequenceNumber();
 
             CloseClipboard();
             // Read clipboard data end
@@ -783,6 +807,13 @@ private:
                 auto errorMessage = get_last_error_message(errorCode);
                 Logger::error(L"Couldn't open the clipboard to copy the unformatted text. {}", errorMessage.has_value() ? errorMessage.value() : L"");
                 Trace::AdvancedPaste_Error(errorCode, errorMessage.has_value() ? errorMessage.value() : L"", L"write.OpenClipboard");
+                return;
+            }
+
+            if (!request_is_current(target, token) || GetClipboardSequenceNumber() != clipboard_sequence)
+            {
+                CloseClipboard();
+                Logger::trace(L"Plain text paste cancelled: target or clipboard changed");
                 return;
             }
 
@@ -829,26 +860,17 @@ private:
             // Don't show in history or allow data roaming.
             SetClipboardData(no_clipboard_history_or_roaming_format, 0);
 
+            clipboard_sequence = GetClipboardSequenceNumber();
             CloseClipboard();
             // Copy text to clipboard end
         }
         {
-            // Clear kb state and send Ctrl+V begin
+            if (!wait_for_modifiers_release(target, token))
+            {
+                return;
+            }
 
-            // we can assume that the last pressed key is...
-            //  (1) not a modifier key and
-            //  (2) marked as handled (so it never gets a key down input event).
-            // So, let's check which modifiers were pressed,
-            // and, if they were, inject a key up event for each of them
             std::vector<INPUT> inputs;
-            try_inject_modifier_key_up(inputs, VK_LCONTROL);
-            try_inject_modifier_key_up(inputs, VK_RCONTROL);
-            try_inject_modifier_key_up(inputs, VK_LWIN);
-            try_inject_modifier_key_up(inputs, VK_RWIN);
-            try_inject_modifier_key_up(inputs, VK_LSHIFT);
-            try_inject_modifier_key_up(inputs, VK_RSHIFT);
-            try_inject_modifier_key_up(inputs, VK_LMENU);
-            try_inject_modifier_key_up(inputs, VK_RMENU);
 
             // send Ctrl+V (key downs and key ups)
             {
@@ -885,22 +907,20 @@ private:
                 inputs.push_back(input_event);
             }
 
-            try_inject_modifier_key_restore(inputs, VK_LCONTROL);
-            try_inject_modifier_key_restore(inputs, VK_RCONTROL);
-            try_inject_modifier_key_restore(inputs, VK_LWIN);
-            try_inject_modifier_key_restore(inputs, VK_RWIN);
-            try_inject_modifier_key_restore(inputs, VK_LSHIFT);
-            try_inject_modifier_key_restore(inputs, VK_RSHIFT);
-            try_inject_modifier_key_restore(inputs, VK_LMENU);
-            try_inject_modifier_key_restore(inputs, VK_RMENU);
-
-            // After restoring the modifier keys send a dummy key to prevent Start Menu from activating
+            // Send a dummy key to prevent Start Menu from activating after the Win key release
             INPUT dummyEvent = {};
             dummyEvent.type = INPUT_KEYBOARD;
             dummyEvent.ki.wVk = 0xFF;
             dummyEvent.ki.dwFlags = KEYEVENTF_KEYUP;
             inputs.push_back(dummyEvent);
 
+            if (!request_is_current(target, token) ||
+                std::any_of(modifier_keys.begin(), modifier_keys.end(), is_key_down) ||
+                GetClipboardSequenceNumber() != clipboard_sequence)
+            {
+                Logger::trace(L"Plain text paste cancelled: target, modifiers, or clipboard changed");
+                return;
+            }
             auto uSent = SendInput(static_cast<UINT>(inputs.size()), inputs.data(), sizeof(INPUT));
             if (uSent != inputs.size())
             {
@@ -915,6 +935,30 @@ private:
         }
     }
 
+    void queue_hotkey_work(std::function<void(const HotkeyTarget&, std::stop_token)> action, bool copy_selection, unsigned char key = 0, size_t hotkey_id = 1)
+    {
+        const auto target = HotkeyTarget::capture();
+        m_hotkey_work.submit(hotkey_id, [this, target, copy_selection, key, action = std::move(action)](std::stop_token token) {
+            if (request_is_current(target, token) && (!copy_selection || wait_for_modifiers_release(target, token)))
+            {
+                const bool copy_ready = !copy_selection || send_copy_selection(target, token);
+                if (copy_ready && request_is_current(target, token))
+                {
+                    m_process_manager.start();
+                    action(target, token);
+                }
+            }
+
+            // Swallowed hotkey key-downs may not appear in GetAsyncKeyState. Also wait for
+            // modifiers so auto-repeat cannot rearm a request that timed out while held.
+            while (key && !token.stop_requested() &&
+                   (is_key_down(key) || std::any_of(modifier_keys.begin(), modifier_keys.end(), is_key_down)))
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            }
+        });
+    }
+
 public:
     AdvancedPaste()
     {
@@ -926,10 +970,7 @@ public:
 
     ~AdvancedPaste()
     {
-        if (m_enabled)
-        {
-        }
-        m_enabled = false;
+        Disable(false);
     }
 
     // Destroy the powertoy and free memory
@@ -1023,35 +1064,38 @@ public:
     {
         Logger::trace("AdvancedPaste::enable()");
         Trace::AdvancedPaste_Enable(true);
+        m_hotkey_work.start();
         m_enabled = true;
         m_process_manager.start();
 
         // Start listening for external trigger event so we can invoke the same logic as the hotkey.
         // Note: Use start() directly instead of constructor + move assignment to avoid dangling this pointer in the thread.
-        m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD) {
+        m_triggerEventWaiter.start(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_EVENT, [this](DWORD error) {
+            if (error != ERROR_SUCCESS)
+            {
+                Logger::error(L"Advanced Paste ShowUI event wait failed: {}", error);
+                return;
+            }
             // Same logic as hotkeyId == 1 (m_advanced_paste_ui_hotkey)
             Logger::trace(L"AdvancedPaste ShowUI event triggered");
 
-            if (m_auto_copy_selection_custom_action)
-            {
-                send_copy_selection(); // best-effort; ignore failure
-            }
-
-            m_process_manager.start();
-            m_process_manager.bring_to_front();
-            m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+            queue_hotkey_work([this](const HotkeyTarget&, std::stop_token) {
+                m_process_manager.bring_to_front();
+                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
+            },
+                              m_auto_copy_selection_custom_action);
             Trace::AdvancedPaste_Invoked(L"AdvancedPasteUIEvent");
         });
     };
 
     void Disable(bool traceEvent)
     {
-        if (m_enabled)
+        if (m_enabled.exchange(false))
         {
-            m_process_manager.stop();
-
-            // Stop event listening
+            // Reject submissions and join work before stopping the process manager or unloading the DLL.
+            m_hotkey_work.stop();
             m_triggerEventWaiter.stop();
+            m_process_manager.stop();
 
             if (traceEvent)
             {
@@ -1059,7 +1103,6 @@ public:
             }
         }
 
-        m_enabled = false;
     }
 
     virtual void disable()
@@ -1071,96 +1114,97 @@ public:
     virtual bool on_hotkey(size_t hotkeyId) override
     {
         Logger::trace(L"AdvancedPaste hotkey pressed");
-        if (m_enabled)
+        if (!m_enabled)
         {
-            size_t additional_action_index = 0;
-            size_t custom_action_index = 0;
-            bool is_custom_action_hotkey = false;
+            return false;
+        }
 
-            if (hotkeyId >= NUM_DEFAULT_HOTKEYS)
-            {
-                additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
-                if (additional_action_index >= m_additional_actions.size())
-                {
-                    custom_action_index = additional_action_index - m_additional_actions.size();
-                    is_custom_action_hotkey = custom_action_index < m_custom_actions.size();
-                }
-            }
+        // This runs synchronously inside the runner's low-level keyboard hook. Anything slow here
+        // stalls all keyboard input and, with modifier injection, can leave modifiers stuck (#27612).
+        // Resolve the action here, and run copy/paste work on a separate thread.
+        std::function<void(const HotkeyTarget&, std::stop_token)> action;
+        const wchar_t* trace_name = nullptr;
+        unsigned char key = 0;
 
-            // Try to capture selected text for all hotkey actions when the setting is enabled.
-            // If nothing is selected (clipboard unchanged), fall through to use existing clipboard content.
-            if (m_auto_copy_selection_custom_action)
-            {
-                send_copy_selection(); // best-effort; ignore failure
-            }
-
-            m_process_manager.start();
-
-            // hotkeyId in same order as set by get_hotkeys
-            if (hotkeyId == 0)
-            { // m_paste_as_plain_hotkey
-                Logger::trace(L"Paste as plain text hotkey pressed");
-
-                std::thread([=]() {
-                    // hotkey work should be kept to a minimum, or Windows might deregister our low level keyboard hook.
-                    // Move work to another thread.
-                    try_to_paste_as_plain_text();
-                }).detach();
-
-                Trace::AdvancedPaste_Invoked(L"PastePlainTextDirect");
-                return true;
-            }
-
-            if (hotkeyId == 1)
-            { // m_advanced_paste_ui_hotkey
+        // hotkeyId in same order as set by get_hotkeys
+        if (hotkeyId == 0)
+        { // m_paste_as_plain_hotkey
+            Logger::trace(L"Paste as plain text hotkey pressed");
+            action = [this](const HotkeyTarget& target, std::stop_token token) { try_to_paste_as_plain_text(target, token); };
+            key = m_paste_as_plain_hotkey.key;
+            trace_name = L"PastePlainTextDirect";
+        }
+        else if (hotkeyId == 1)
+        { // m_advanced_paste_ui_hotkey
+            key = m_advanced_paste_ui_hotkey.key;
+            action = [this](const HotkeyTarget&, std::stop_token) {
                 Logger::trace(L"Setting start up event");
-
                 m_process_manager.bring_to_front();
                 m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_SHOW_UI_MESSAGE);
-                Trace::AdvancedPaste_Invoked(L"AdvancedPasteUI");
-                return true;
-            }
-            if (hotkeyId == 2)
-            { // m_paste_as_markdown_hotkey
+            };
+            trace_name = L"AdvancedPasteUI";
+        }
+        else if (hotkeyId == 2)
+        { // m_paste_as_markdown_hotkey
+            key = m_paste_as_markdown_hotkey.key;
+            action = [this](const HotkeyTarget&, std::stop_token) {
                 Logger::trace(L"Starting paste as markdown directly");
                 m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_MARKDOWN_MESSAGE);
-                Trace::AdvancedPaste_Invoked(L"MarkdownDirect");
-                return true;
-            }
-            if (hotkeyId == 3)
-            { // m_paste_as_json_hotkey
+            };
+            trace_name = L"MarkdownDirect";
+        }
+        else if (hotkeyId == 3)
+        { // m_paste_as_json_hotkey
+            key = m_paste_as_json_hotkey.key;
+            action = [this](const HotkeyTarget&, std::stop_token) {
                 Logger::trace(L"Starting paste as json directly");
                 m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_JSON_MESSAGE);
-                Trace::AdvancedPaste_Invoked(L"JsonDirect");
-                return true;
-            }
-
-
+            };
+            trace_name = L"JsonDirect";
+        }
+        else
+        {
+            const size_t additional_action_index = hotkeyId - NUM_DEFAULT_HOTKEYS;
             if (additional_action_index < m_additional_actions.size())
             {
-                const auto& id = m_additional_actions.at(additional_action_index).id;
-
-                Logger::trace(L"Starting additional action id={}", id);
-
+                const auto id = m_additional_actions.at(additional_action_index).id;
+                key = m_additional_actions.at(additional_action_index).hotkey.key;
                 Trace::AdvancedPaste_Invoked(std::format(L"{}Direct", kebab_to_pascal_case(id)));
-
-                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE, id);
-                return true;
+                action = [this, id](const HotkeyTarget&, std::stop_token) {
+                    Logger::trace(L"Starting additional action id={}", id);
+                    m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_ADDITIONAL_ACTION_MESSAGE, id);
+                };
             }
-
-            if (custom_action_index < m_custom_actions.size())
+            else
             {
+                const size_t custom_action_index = additional_action_index - m_additional_actions.size();
+                if (custom_action_index >= m_custom_actions.size())
+                {
+                    return false;
+                }
+
                 const auto id = m_custom_actions.at(custom_action_index).id;
-
-                Logger::trace(L"Starting custom action id={}", id);
-
-                m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
-                Trace::AdvancedPaste_Invoked(L"CustomActionDirect");
-                return true;
+                key = m_custom_actions.at(custom_action_index).hotkey.key;
+                action = [this, id](const HotkeyTarget&, std::stop_token) {
+                    Logger::trace(L"Starting custom action id={}", id);
+                    m_process_manager.send_message(CommonSharedConstants::ADVANCED_PASTE_CUSTOM_ACTION_MESSAGE, std::to_wstring(id));
+                };
+                trace_name = L"CustomActionDirect";
             }
         }
 
-        return false;
+        // Try to capture selected text for all hotkey actions when the setting is enabled.
+        // If nothing is selected (clipboard unchanged), fall through to use existing clipboard content.
+        const bool copy_selection = m_auto_copy_selection_custom_action;
+
+        queue_hotkey_work(std::move(action), copy_selection, key, hotkeyId);
+
+        if (trace_name != nullptr)
+        {
+            Trace::AdvancedPaste_Invoked(trace_name);
+        }
+
+        return true;
     }
 
     virtual size_t get_hotkeys(Hotkey* hotkeys, size_t buffer_size) override

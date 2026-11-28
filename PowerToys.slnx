@@ -166,6 +166,7 @@
     <Project Path="src/modules/AdvancedPaste/AdvancedPasteModuleInterface/AdvancedPasteModuleInterface.vcxproj" Id="fc373b24-3293-453c-aaf5-cf2909dcee6a" />
   </Folder>
   <Folder Name="/modules/AdvancedPaste/Tests/">
+    <Project Path="src/modules/AdvancedPaste/AdvancedPasteModuleInterface.UnitTests/AdvancedPasteModuleInterface.UnitTests.vcxproj" Id="cb7d31f1-7832-487a-8633-1c5fd145ce74" />
     <Project Path="src/modules/AdvancedPaste/AdvancedPaste.Cli.UnitTests/AdvancedPaste.Cli.UnitTests.csproj">
       <Platform Solution="*|ARM64" Project="ARM64" />
       <Platform Solution="*|x64" Project="x64" />
