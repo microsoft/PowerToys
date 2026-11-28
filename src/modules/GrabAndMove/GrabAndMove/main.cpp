@@ -11,6 +11,9 @@
 
 #include "resource.h"
 
+#include <WindowBorder/CompositionBorder.h>
+#include <winrt/base.h>
+
 #include <dwmapi.h>
 #include <array>
 #include <optional>
@@ -191,6 +194,12 @@ static int g_overlayInfoW = 0, g_overlayInfoH = 0;
 static int g_overlayMarginL = 0, g_overlayMarginT = 0, g_overlayMarginR = 0, g_overlayMarginB = 0;
 static int g_overlayCornerRadius = 0; // physical px; 0 = square corners
 static int g_overlayBorderThickness = 4; // physical px
+static float g_overlayScale = 1.0f; // target window DPI scale
+
+// Composition-drawn border ring (crisp, geometry-only updates). When Composition is
+// unavailable this stays null and the GDI+/region border paths draw the ring instead.
+static std::unique_ptr<PowerToysWindowBorder::CompositionBorder> g_compositionBorder;
+static bool g_compositionBorderVisible = false;
 
 // Fluent "warning" gold - copy of WinUI SystemFillColorCaution
 // (used as a ThemeResource for warnings across the Settings UI). A Win32 layered
@@ -259,6 +268,7 @@ static const wchar_t* const CLASS_NAME = L"GrabAndMove_MsgWnd";
 static const wchar_t* const OVERLAY_CLASS_NAME = L"GrabAndMove_Overlay";
 static const wchar_t* const RESIZE_FILL_CLASS_NAME = L"GrabAndMove_ResizeFill";
 static const wchar_t* const RESIZE_BORDER_CLASS_NAME = L"GrabAndMove_ResizeBorder";
+static const wchar_t* const COMPOSITION_BORDER_CLASS_NAME = L"GrabAndMove_Border";
 static const wchar_t* const APP_TITLE = L"GrabAndMove";
 
 static HANDLE g_hReloadSettingsEvent = nullptr;
@@ -859,6 +869,7 @@ static void PrepareOverlayMetrics(HWND target)
     g_overlayMarginL = g_overlayMarginT = g_overlayMarginR = g_overlayMarginB = 0;
     g_overlayCornerRadius = 0;
     g_overlayBorderThickness = OVERLAY_BORDER_DIP;
+    g_overlayScale = 1.0f;
 
     if (!target)
     {
@@ -881,6 +892,52 @@ static void PrepareOverlayMetrics(HWND target)
 
     g_overlayCornerRadius = static_cast<int>(CornerRadiusForWindow(target) * scale);
     g_overlayBorderThickness = static_cast<int>(OVERLAY_BORDER_DIP * scale);
+    g_overlayScale = scale;
+}
+
+// Positions the Composition ring on the visible frame (screen px). `raise` puts it back
+// on top of the topmost band after an overlay window was raised above it.
+static void UpdateCompositionBorder(int visibleX, int visibleY, int visibleWidth, int visibleHeight, bool raise)
+{
+    if (!g_compositionBorder || visibleWidth <= 0 || visibleHeight <= 0)
+    {
+        return;
+    }
+
+    const RECT frame = { visibleX, visibleY, visibleX + visibleWidth, visibleY + visibleHeight };
+    g_compositionBorder->Update(
+        (raise || !g_compositionBorderVisible) ? HWND_TOPMOST : nullptr,
+        frame,
+        g_overlayScale,
+        static_cast<float>(g_overlayCornerRadius),
+        static_cast<float>(g_overlayBorderThickness),
+        OVERLAY_BORDER_COLOR,
+        1.0f);
+    if (!g_compositionBorderVisible)
+    {
+        g_compositionBorder->Show();
+        g_compositionBorderVisible = true;
+    }
+}
+
+// Same as above for an overlay rect that spans GetWindowRect (includes invisible margins).
+static void UpdateCompositionBorderForWindowRect(int x, int y, int width, int height, bool raise)
+{
+    UpdateCompositionBorder(
+        x + g_overlayMarginL,
+        y + g_overlayMarginT,
+        width - g_overlayMarginL - g_overlayMarginR,
+        height - g_overlayMarginT - g_overlayMarginB,
+        raise);
+}
+
+static void HideCompositionBorder()
+{
+    if (g_compositionBorder && g_compositionBorderVisible)
+    {
+        g_compositionBorder->Hide();
+    }
+    g_compositionBorderVisible = false;
 }
 
 // Draws an antialiased (optionally rounded) border stroke fully inside `rect` using
@@ -1044,6 +1101,7 @@ static void RenderOverlayContent(HWND hwnd, int cw, int ch)
             }
         }
 
+        if (!g_compositionBorder)
         {
             PERF_SCOPE(OverlayBorder);
             DrawOverlayBorder(graphics, visible, g_overlayBorderThickness, g_overlayCornerRadius);
@@ -1496,10 +1554,12 @@ static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR
                 height,
                 SWP_NOACTIVATE | SWP_SHOWWINDOW);
             RenderOverlayContent(g_hOverlay, width, height);
+            UpdateCompositionBorderForWindowRect(x, y, width, height, true);
         }
         return;
     }
 
+    const bool wasSegmentedVisible = g_segmentedOverlayVisible;
     if (g_hOverlay)
     {
         ShowWindow(g_hOverlay, SW_HIDE);
@@ -1531,7 +1591,7 @@ static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR
                 visibleHeight,
                 positionFlags);
         }
-        if (positions)
+        if (positions && !g_compositionBorder)
         {
             positions = DeferWindowPos(
                 positions,
@@ -1557,17 +1617,21 @@ static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR
                 visibleWidth,
                 visibleHeight,
                 positionFlags);
-            SetWindowPos(
-                g_hResizeBorderOverlay,
-                g_segmentedOverlayVisible ? nullptr : HWND_TOPMOST,
-                visibleX,
-                visibleY,
-                visibleWidth,
-                visibleHeight,
-                positionFlags);
+            if (!g_compositionBorder)
+            {
+                SetWindowPos(
+                    g_hResizeBorderOverlay,
+                    g_segmentedOverlayVisible ? nullptr : HWND_TOPMOST,
+                    visibleX,
+                    visibleY,
+                    visibleWidth,
+                    visibleHeight,
+                    positionFlags);
+            }
         }
     }
     g_segmentedOverlayVisible = true;
+    UpdateCompositionBorder(visibleX, visibleY, visibleWidth, visibleHeight, !wasSegmentedVisible);
 
     {
         PERF_SCOPE(ResizeBorderPaint);
@@ -1580,7 +1644,7 @@ static void RepositionResizeOverlay(int x, int y, int width, int height, HCURSOR
                 RDW_INVALIDATE | RDW_ERASE | RDW_UPDATENOW);
             g_resizeFillPainted = true;
         }
-        if (regionsChanged)
+        if (regionsChanged && !g_compositionBorder)
         {
             RedrawWindow(
                 g_hResizeBorderOverlay,
@@ -1645,6 +1709,7 @@ static void ShowOverlay(const RECT& rc, HCURSOR hCursor)
         SetWindowPos(g_hOverlay, HWND_TOPMOST, rc.left, rc.top, width, height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
     }
     RenderOverlayContent(g_hOverlay, width, height);
+    UpdateCompositionBorderForWindowRect(rc.left, rc.top, width, height, true);
 }
 
 // Repositions (and optionally re-renders) the overlay.
@@ -1698,12 +1763,14 @@ static void RepositionOverlay(int x, int y, int w, int h)
     {
         RenderOverlayContent(g_hOverlay, w, h);
     }
+    UpdateCompositionBorderForWindowRect(x, y, w, h, true);
 }
 
 static void HideOverlay()
 {
     g_segmentedOverlayVisible = false;
     g_resizeGeometryVisible = false;
+    HideCompositionBorder();
     if (g_hOverlay)
     {
         ShowWindow(g_hOverlay, SW_HIDE);
@@ -3244,6 +3311,8 @@ static void CleanupRuntime()
     FlushPendingPerfReport();
 #endif
 
+    g_compositionBorder = nullptr;
+    g_compositionBorderVisible = false;
     if (g_hResizeGeometryOverlay)
     {
         DestroyWindow(g_hResizeGeometryOverlay);
@@ -3434,6 +3503,20 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
         CleanupRuntime();
         return 1;
     }
+
+    // The border ring uses Windows.UI.Composition, which needs WinRT on this (UI) thread.
+    // On failure the GDI+/region overlay paths keep drawing the border.
+    try
+    {
+        winrt::init_apartment(winrt::apartment_type::single_threaded);
+    }
+    catch (...)
+    {
+    }
+    g_compositionBorder = PowerToysWindowBorder::CompositionBorder::Create(
+        hInstance,
+        COMPOSITION_BORDER_CLASS_NAME,
+        PowerToysWindowBorder::Style{ .placement = PowerToysWindowBorder::Placement::Inside, .halo = false, .highlight = true });
     // Pre-load system cursors (fix #6 – avoid LoadCursorW in hot path)
     g_curSizeAll = LoadCursorW(nullptr, IDC_SIZEALL);
     g_curSizeNWSE = LoadCursorW(nullptr, IDC_SIZENWSE);
