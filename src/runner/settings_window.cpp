@@ -47,6 +47,9 @@ namespace
 
 json::JsonObject get_power_toys_settings()
 {
+    // Only loaded modules are reported. Settings does not read module configs from this response,
+    // so loading deferred DLLs here would undo lazy loading for no consumer.
+    // Main thread (Settings IPC is dispatched there), so reading modules() needs no lock.
     json::JsonObject result;
     for (const auto& [name, powertoy] : modules())
     {
@@ -145,10 +148,10 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
             {
             }
         }
-        else if (modules().find(name) != modules().end())
+        else if (auto* powertoy = load_known_module(name))
         {
             const auto element = powertoy_element.Value().Stringify();
-            modules().at(name)->call_custom_action(element.c_str());
+            (*powertoy)->call_custom_action(element.c_str());
         }
     }
 
@@ -157,16 +160,15 @@ std::optional<std::wstring> dispatch_json_action_to_module(const json::JsonObjec
 
 void send_json_config_to_module(const std::wstring& module_key, const std::wstring& settings, bool hotkeyUpdated)
 {
-    auto moduleIt = modules().find(module_key);
-    if (moduleIt != modules().end())
+    if (auto* powertoy = load_known_module(module_key))
     {
-        moduleIt->second->set_config(settings.c_str());
+        (*powertoy)->set_config(settings.c_str());
 
         if (hotkeyUpdated)
         {
-            moduleIt->second.remove_hotkey_records();
-            moduleIt->second.update_hotkeys();
-            moduleIt->second.UpdateHotkeyEx();
+            powertoy->remove_hotkey_records();
+            powertoy->update_hotkeys();
+            powertoy->UpdateHotkeyEx();
         }
     }
 }
