@@ -6,7 +6,7 @@
     Width="400"
     ActivationMode="Activate">
 
-    <desktopflyouts:DesktopFlyoutIsland IslandHeight="516">
+    <desktopflyouts:DesktopFlyoutIsland Height="516">
         <Frame x:Name="ContentFrame" Loaded="ContentFrame_Loaded" />
     </desktopflyouts:DesktopFlyoutIsland>
 </desktopflyouts:DesktopFlyout>

@@ -3,15 +3,18 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Threading.Tasks;
 using ManagedCommon;
 using Microsoft.PowerToys.QuickAccess.Services;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.PowerToys.QuickAccess;
 
 public sealed partial class App : Application, IDisposable
 {
     private QuickAccessFlyoutHost? _flyoutHost;
+    private Window? _xamlWindow;
     private bool _isExiting;
     private bool _disposed;
 
@@ -21,12 +24,32 @@ public sealed partial class App : Application, IDisposable
         UnhandledException += App_UnhandledException;
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
+        if (_xamlWindow is not null || _disposed)
+        {
+            return;
+        }
+
         try
         {
+            var content = new Grid();
+            var contentLoaded = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            content.Loaded += OnContentLoaded;
+            _xamlWindow = new Window { Content = content };
+
+            // The runner can request visibility during startup. Wait for WinUI's default styles
+            // to be ready before the flyout host begins handling requests.
+            await contentLoaded.Task;
+
             var launchContext = QuickAccessLaunchContext.Parse(Environment.GetCommandLineArgs());
             _flyoutHost = new QuickAccessFlyoutHost(launchContext, ExitApplication);
+
+            void OnContentLoaded(object sender, RoutedEventArgs e)
+            {
+                content.Loaded -= OnContentLoaded;
+                contentLoaded.TrySetResult();
+            }
         }
         catch (Exception ex)
         {
@@ -59,6 +82,8 @@ public sealed partial class App : Application, IDisposable
 
         _flyoutHost?.Dispose();
         _flyoutHost = null;
+        _xamlWindow?.Close();
+        _xamlWindow = null;
         _disposed = true;
         GC.SuppressFinalize(this);
     }
