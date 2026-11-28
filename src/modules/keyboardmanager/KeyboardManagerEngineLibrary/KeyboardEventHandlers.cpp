@@ -748,12 +748,9 @@ namespace KeyboardEventHandlers
             return SequencePressStep::NotTracked;
         }
 
-        // No key-sequence remap and no press on record: nothing to pair (the common case for users
-        // without key sequences).
-        if (state.IsSequenceRemapIdle())
-        {
-            return SequencePressStep::NotTracked;
-        }
+        // Every physical press is tracked, also while there is no key-sequence remap: a remap that
+        // is added while its key is held must know that the press began without it, even if
+        // another remap suppressed the key-down (F1 -> Z held: the system sees Z down, not F1).
 
         const auto toStep = [](const SequencePressTracker::Disposition disposition) {
             switch (disposition)
@@ -788,9 +785,9 @@ namespace KeyboardEventHandlers
                 return toStep(*disposition);
             }
 
-            // New presses are only tracked while there are key-sequence remaps. (Without remaps we
-            // get here only while presses from before the remaps were removed are still on record.)
-            return state.HasLiveSequenceRemaps() ? SequencePressStep::NewPress : SequencePressStep::NotTracked;
+            // A new press. The caller records what became of it (StartSequencePress records a key
+            // without a sequence remap as forwarded).
+            return SequencePressStep::NewPress;
         }
 
         return SequencePressStep::NotTracked;
@@ -2794,7 +2791,7 @@ namespace KeyboardEventHandlers
         // yet. (A call further up the stack may have, if this event is one it injected; it holds on
         // to the table it took.) Done while remapping is suspended too: the staged table is a
         // finished copy. One atomic read when nothing is staged.
-        state.PublishStagedSequenceTable(ii);
+        state.PublishStagedSequenceTable();
 
         // Key-sequence remap, step 1: pair the event with its physical press. This comes
         // before everything else, the suspension check included, and reads no mapping table: an

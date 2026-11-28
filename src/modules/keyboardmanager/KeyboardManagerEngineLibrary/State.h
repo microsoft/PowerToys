@@ -52,10 +52,10 @@
 //  - A key-up whose scan code and virtual key both differ from those of its key-down is not
 //    paired. A key-up that matches no press by scan code ends a press that began with the same
 //    virtual key, even if it comes from another key with that virtual key.
-//  - Keys that are already down when tracking starts are only known by virtual key, taken from the
-//    key state the system reports (see SeedForwardedPresses). That misses a key whose key-down an
-//    earlier remap suppressed, and it cannot tell apart two keys with the same virtual key (for
-//    example the keypad and the navigation End).
+//  - Keys that are already down when the hook is installed are only known by virtual key, taken
+//    from the key state the system reports (see SeedForwardedPresses). That cannot tell apart two
+//    keys with the same virtual key (for example the keypad and the navigation End), and it misses
+//    a key whose key-down another program's hook kept from the system.
 class SequencePressTracker
 {
 public:
@@ -198,13 +198,12 @@ public:
     // notify the hook thread; the same is done before a hook is installed. When nothing is staged
     // this is one atomic read. Press records are kept: a press that began under the old table
     // ends the way it began. Returns false if nothing was staged.
-    bool PublishStagedSequenceTable(KeyboardManagerInput::InputInterface& ii);
+    bool PublishStagedSequenceTable();
 
     // Gets the key-sequence remap ready for a hook that is about to be installed: publishes a
-    // staged table, forgets the press records (no event was seen while there was no hook) and, if
-    // there are key-sequence remaps, records the keys that are down right now as presses that
-    // already reached the system. Low-level keyboard hook thread only, before the hook can deliver
-    // anything.
+    // staged table, forgets the press records (no event was seen while there was no hook) and
+    // records the keys that are down right now as presses that already reached the system.
+    // Low-level keyboard hook thread only, before the hook can deliver anything.
     void StartSequencePressTracking(KeyboardManagerInput::InputInterface& ii);
 
     // The key-sequence table the hook uses. Low-level keyboard hook thread only. The caller keeps
@@ -215,14 +214,6 @@ public:
 
     // True if the hook has key-sequence remaps to apply. Low-level keyboard hook thread only.
     bool HasLiveSequenceRemaps() const noexcept;
-
-    // True if the key-sequence remap has nothing to do for any event: no live remap and no press
-    // on record. Presses are not tracked then, so users without key sequences pay two empty()
-    // checks per event (and the atomic read of PublishStagedSequenceTable). Tracking starts when a
-    // table with remaps is published; the keys that are down at that moment are seeded as
-    // forwarded presses (see PublishStagedSequenceTable).
-    // Low-level keyboard hook thread only.
-    bool IsSequenceRemapIdle() const noexcept;
 
     // The press records of the key-sequence remap. Low-level keyboard hook thread only.
     SequencePressTracker& SequencePresses() noexcept;

@@ -60,8 +60,8 @@ namespace KeyboardEventHandlers
     enum class SequencePressStep
     {
         // Not part of a tracked physical press: sent by Keyboard Manager itself, Unicode input of
-        // another program (VK_PACKET), neither a key-down nor a key-up, or there is no key-sequence
-        // remap at all.
+        // another program (VK_PACKET), or neither a key-down nor a key-up. Every other physical
+        // press is tracked, whether or not there are key-sequence remaps.
         NotTracked,
 
         // First key-down of a press. Nothing is recorded for it yet.

@@ -33,7 +33,7 @@ KeyboardManager::KeyboardManager()
     // Load the initial settings. This is the hook thread and no hook is installed yet, so the
     // key-sequence table can be published right here.
     LoadSettings();
-    state.PublishStagedSequenceTable(inputHandler);
+    state.PublishStagedSequenceTable();
 
     // Set the static pointer to the newest object of the class
     keyboardManagerObjectPtr = this;

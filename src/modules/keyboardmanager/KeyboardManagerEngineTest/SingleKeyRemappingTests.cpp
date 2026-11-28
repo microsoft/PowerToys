@@ -953,7 +953,7 @@ namespace RemappingLogicTests
         {
             testState.AddSingleKeyToSequenceRemap(key, sequence);
             testState.StageSequenceTable();
-            testState.PublishStagedSequenceTable(mockedInputHandler);
+            testState.PublishStagedSequenceTable();
         }
 
         void RecordInjected()
@@ -1285,8 +1285,7 @@ namespace RemappingLogicTests
             mockedInputHandler.SendVirtualInput(escDown); // key-up of this press is "lost"
 
             // What KeyboardManager::StartLowlevelKeyboardHook does before it installs the hook
-            testState.SequencePresses().Reset();
-            testState.SequencePresses().SeedForwardedPresses(mockedInputHandler);
+            testState.StartSequencePressTracking(mockedInputHandler);
             Assert::IsTrue(testState.SequencePresses().Empty());
             mockedInputHandler.SendVirtualInput(escDown);
 
@@ -1649,10 +1648,9 @@ namespace RemappingLogicTests
             RemovedWhileKeyIsHeld_KeepsThatPressSuppressed(f1ScanCode);
         }
 
-        // The same as SequenceRemap_EnabledWhileKeyIsHeld_WaitsForTheNextPress, but presses are
-        // already tracked when the key goes down, because another key has a sequence remap. The
-        // press is then on record from its own key-down as one that reached the system (it is not
-        // taken from the key state when tracking starts), and the remap added for the key while it
+        // The same as SequenceRemap_EnabledWhileKeyIsHeld_WaitsForTheNextPress, with another key's
+        // sequence remap already there. The press is on record from its own key-down as one that
+        // reached the system (the key state is not asked), and the remap added for the key while it
         // is held waits for the next press.
         void EnabledWhileKeyIsHeld_WithAnotherSequenceRemapPresent_WaitsForTheNextPress(WORD scanCode)
         {
@@ -2055,15 +2053,15 @@ namespace RemappingLogicTests
         // Only the newest staged table is published, and each staged table is published once.
         TEST_METHOD (SequenceTable_Publish_TakesTheNewestStagedTable_Once)
         {
-            Assert::IsFalse(testState.PublishStagedSequenceTable(mockedInputHandler));
+            Assert::IsFalse(testState.PublishStagedSequenceTable());
 
             LoadSequenceRemaps({ { VK_F1, { 0x41 } } });
             testState.StageSequenceTable();
             LoadSequenceRemaps({ { VK_F2, { 0x42 } } });
             testState.StageSequenceTable();
 
-            Assert::IsTrue(testState.PublishStagedSequenceTable(mockedInputHandler));
-            Assert::IsFalse(testState.PublishStagedSequenceTable(mockedInputHandler));
+            Assert::IsTrue(testState.PublishStagedSequenceTable());
+            Assert::IsFalse(testState.PublishStagedSequenceTable());
 
             const auto live = testState.GetLiveSequenceTable();
             Assert::AreEqual((size_t)1, live->size());
@@ -2122,30 +2120,77 @@ namespace RemappingLogicTests
             Assert::IsTrue(testState.SequencePresses().Empty());
         }
 
-        // Without key-sequence remaps nothing is tracked. Tracking starts when a table with remaps is
-        // published, and stops for new presses when the remaps are gone.
-        TEST_METHOD (SequenceTable_PressesAreTrackedOnlyWhileThereAreSequenceRemaps)
+        // Every physical press is on record until its key-up, with or without key-sequence remaps,
+        // and the events of a key without a sequence remap reach the system unchanged.
+        TEST_METHOD (SequenceTable_PressesAreTrackedWithOrWithoutSequenceRemaps)
         {
-            Assert::IsTrue(testState.IsSequenceRemapIdle());
+            Assert::IsFalse(testState.HasLiveSequenceRemaps());
             SendKey(0x43, false);
-            Assert::IsTrue(testState.SequencePresses().Empty());
+            Assert::IsFalse(testState.SequencePresses().Empty());
             SendKey(0x43, true);
+            Assert::IsTrue(testState.SequencePresses().Empty());
 
             ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
             SendKey(0x43, false);
-            Assert::IsFalse(testState.IsSequenceRemapIdle());
             Assert::IsFalse(testState.SequencePresses().Empty());
 
-            // The remaps are removed while C is held: its record stays until its key-up, and new presses are not recorded
+            // The remaps are removed while C is held: C's record stays until its key-up, and a new press is recorded too
             ReloadSequenceRemaps({});
             SendKey(0x44, false);
-            Assert::IsFalse(testState.IsSequenceRemapIdle());
             Assert::IsFalse(testState.HasLiveSequenceRemaps());
-            SendKey(0x44, true);
             SendKey(0x43, true);
-            Assert::IsTrue(testState.IsSequenceRemapIdle());
+            Assert::IsFalse(testState.SequencePresses().Empty());
+            SendKey(0x44, true);
+            Assert::IsTrue(testState.SequencePresses().Empty());
+
             Assert::AreEqual((size_t)2, Delivered(0x43, false));
             Assert::AreEqual((size_t)2, Delivered(0x43, true));
+            Assert::AreEqual((size_t)1, Delivered(0x44, false));
+            Assert::AreEqual((size_t)1, Delivered(0x44, true));
+        }
+
+        // A key held under an ordinary remap (F1 -> Z: the system sees Z down, not F1) gets a
+        // sequence remap while it is held. The press began without the sequence, so it ends the way
+        // it began: the auto-repeat sends Z again, and the key-up releases Z. The next press sends
+        // the sequence.
+        void AddedWhileKeyIsHeldUnderAnotherRemap_PressEndsAsItBegan(WORD scanCode)
+        {
+            testState.AddSingleKeyRemap(VK_F1, (DWORD)0x5A);
+
+            SendKey(VK_F1, false, scanCode);
+            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState(0x5A));
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState(VK_F1));
+
+            ReloadSequenceRemaps({ { VK_F1, { 0x41, 0x42 } } });
+
+            SendKey(VK_F1, false, scanCode); // auto-repeat
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::IsTrue(mockedInputHandler.GetVirtualKeyState(0x5A));
+
+            SendKey(VK_F1, true, scanCode);
+            Assert::AreEqual((size_t)0, SequenceEvents());
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState(0x5A));
+            Assert::IsTrue(testState.SequencePresses().Empty());
+
+            // The next press is replaced by the sequence, and no Z is sent for it
+            const size_t before = mockedInputHandler.GetDeliveredEvents().size();
+            SendKey(VK_F1, false, scanCode);
+            SendKey(VK_F1, true, scanCode);
+            Assert::AreEqual((size_t)4, SequenceEvents());
+            Assert::AreEqual((size_t)4, mockedInputHandler.GetDeliveredEvents().size() - before);
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState(0x5A));
+            Assert::IsFalse(mockedInputHandler.GetVirtualKeyState(VK_F1));
+        }
+
+        TEST_METHOD (SequenceRemap_AddedWhileKeyIsHeldUnderAnotherRemap_PressEndsAsItBegan)
+        {
+            AddedWhileKeyIsHeldUnderAnotherRemap_PressEndsAsItBegan(0);
+        }
+
+        // The same with the scan code a real keyboard sends, so the press is identified by it
+        TEST_METHOD (SequenceRemap_AddedWhileKeyIsHeldUnderAnotherRemap_PressEndsAsItBegan_WithScanCode)
+        {
+            AddedWhileKeyIsHeldUnderAnotherRemap_PressEndsAsItBegan(f1ScanCode);
         }
 
         // The events that reached the system from the given position on, as (key, is key-up) pairs.
