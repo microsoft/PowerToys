@@ -333,6 +333,8 @@ public partial class MainViewModel
     /// </summary>
     private async Task ApplyProfileAsync(List<ProfileMonitorSetting> monitorSettings)
     {
+        using var bulkApply = BeginBulkApply();
+
         if (LinkedLevelsActive)
         {
             Logger.LogInfo("[Profile] Disabling linked brightness before applying per-monitor profile values");
@@ -377,6 +379,8 @@ public partial class MainViewModel
     /// </summary>
     public async Task RestoreMonitorSettingsAsync()
     {
+        using var bulkApply = BeginBulkApply();
+
         try
         {
             IsLoading = true;

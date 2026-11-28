@@ -50,6 +50,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     private DispatcherQueueTimer? _contrastCommitTimer;
     private DispatcherQueueTimer? _volumeCommitTimer;
 
+    // True while the pending brightness commit was scheduled by "follow built-in display
+    // brightness" rather than by this card's slider. A slider gesture clears it, so the latest
+    // input wins; a cancelled or no-longer-allowed follow commit restores the confirmed value.
+    private bool _pendingBrightnessFromFollow;
+
     // Visibility settings (controlled by Settings UI)
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ShowBrightnessSlider))]
@@ -101,6 +106,11 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
         {
             _brightness = brightness;
             OnPropertyChanged(nameof(Brightness));
+        }
+
+        if (IsInternal)
+        {
+            _mainViewModel?.OnBuiltInBrightnessWriting(brightness);
         }
 
         await ApplyPropertyToHardwareAsync(nameof(Brightness), brightness, _monitorManager.SetBrightnessAsync);
@@ -387,14 +397,22 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
     /// Gets a value indicating whether the per-card exclude toggle is shown. Only relevant while
     /// link mode is on and the monitor supports brightness — otherwise exclusion has no effect.
     /// </summary>
-    public bool ShowExcludeButton => (_mainViewModel?.LinkedLevelsActive ?? false) && SupportsBrightness;
+    public bool ShowExcludeButton => SupportsBrightness && (IsLinkedModeOn || IsFollowExclusionRelevant);
+
+    private bool IsLinkedModeOn => _mainViewModel?.LinkedLevelsActive ?? false;
+
+    // With link mode off, the exclusion set still selects which external displays follow the
+    // built-in display, so it must stay editable (the built-in panel itself never follows).
+    private bool IsFollowExclusionRelevant => (_mainViewModel?.FollowBuiltInDisplayBrightness ?? false) && !IsInternal;
 
     /// <summary>
     /// Gets the tooltip for the per-card linked-brightness toggle. The action reverses with the
     /// current exclusion state: linked monitors can be excluded, excluded monitors can be included.
     /// </summary>
     public string SyncToggleToolTip => ResourceLoaderInstance.ResourceLoader.GetString(
-        IsExcludedFromSync ? "IncludeInSyncToggleToolTip" : "ExcludeFromSyncToggleToolTip");
+        IsLinkedModeOn
+            ? (IsExcludedFromSync ? "IncludeInSyncToggleToolTip" : "ExcludeFromSyncToggleToolTip")
+            : (IsExcludedFromSync ? "IncludeInFollowToggleToolTip" : "ExcludeFromFollowToggleToolTip"));
 
     /// <summary>
     /// Gets a value indicating whether this monitor supports volume control via VCP 0x62
@@ -586,9 +604,80 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             {
                 _brightness = value;
                 OnPropertyChanged();
-                ScheduleCommit(ref _brightnessCommitTimer, () => SetBrightnessAsync(_brightness));
+                _pendingBrightnessFromFollow = false;
+                ScheduleCommit(ref _brightnessCommitTimer, CommitPendingBrightnessAsync);
             }
         }
+    }
+
+    /// <summary>
+    /// Shows a brightness value mirrored from the built-in display and schedules it through the
+    /// same debounced commit as this card's slider, so a newer slider gesture or a newer follow
+    /// value replaces it instead of racing it.
+    /// </summary>
+    internal void ScheduleFollowBrightness(int value)
+    {
+        value = Math.Clamp(value, 0, 100);
+        if (_brightness != value)
+        {
+            _brightness = value;
+            OnPropertyChanged(nameof(Brightness));
+        }
+
+        _pendingBrightnessFromFollow = true;
+        ScheduleCommit(ref _brightnessCommitTimer, CommitPendingBrightnessAsync);
+    }
+
+    /// <summary>
+    /// Drops a follow write still waiting for the debounce timer and restores the card to the value
+    /// the hardware last confirmed. A pending slider gesture is left untouched.
+    /// </summary>
+    internal void CancelPendingFollowBrightness()
+    {
+        if (!_pendingBrightnessFromFollow)
+        {
+            return;
+        }
+
+        _pendingBrightnessFromFollow = false;
+        _brightnessCommitTimer?.Stop();
+        RevertBrightnessPreview();
+    }
+
+    /// <summary>
+    /// Records a brightness value Windows reported for the built-in panel. Updates the cached model
+    /// value as well as the card, so a monitor-list rebuild (e.g. after a Settings change) does not
+    /// bring back the value read at discovery. Never writes hardware.
+    /// </summary>
+    internal void SyncObservedBrightness(int value)
+    {
+        _monitor.CurrentBrightness = value;
+        UpdateBrightnessDisplay(value);
+    }
+
+    /// <summary>
+    /// Restores the card to the last value confirmed by discovery or a successful write.
+    /// </summary>
+    internal void RevertBrightnessPreview() => UpdateBrightnessDisplay(_monitor.CurrentBrightness);
+
+    /// <summary>
+    /// Debounced brightness commit shared by the slider and follow paths. Reads the latest value at
+    /// fire time; a follow-originated value is re-validated because the setting, the exclusion set
+    /// or the scanning state can change while the timer is pending.
+    /// </summary>
+    private Task CommitPendingBrightnessAsync()
+    {
+        if (_pendingBrightnessFromFollow)
+        {
+            _pendingBrightnessFromFollow = false;
+            if (_mainViewModel?.CanCommitFollowBrightness(this) != true)
+            {
+                RevertBrightnessPreview();
+                return Task.CompletedTask;
+            }
+        }
+
+        return SetBrightnessAsync(_brightness);
     }
 
     /// <summary>
@@ -979,6 +1068,12 @@ public partial class MonitorViewModel : ObservableObject, IDisposable
             OnPropertyChanged(nameof(IsBrightnessSliderEnabled));
             OnPropertyChanged(nameof(ShowBrightnessSlider));
             OnPropertyChanged(nameof(ShowExcludeButton));
+            OnPropertyChanged(nameof(SyncToggleToolTip));
+        }
+        else if (e.PropertyName == nameof(MainViewModel.FollowBuiltInDisplayBrightness))
+        {
+            OnPropertyChanged(nameof(ShowExcludeButton));
+            OnPropertyChanged(nameof(SyncToggleToolTip));
         }
     }
 

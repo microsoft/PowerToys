@@ -240,6 +240,12 @@
   <data name="ExcludeFromSyncToggleToolTip" xml:space="preserve">
     <value>Brightness is controlled by linked mode.</value>
   </data>
+  <data name="ExcludeFromFollowToggleToolTip" xml:space="preserve">
+    <value>Brightness follows the built-in display.</value>
+  </data>
+  <data name="IncludeInFollowToggleToolTip" xml:space="preserve">
+    <value>Follow the built-in display brightness on this display</value>
+  </data>
   <data name="IncludeInSyncToggleToolTip" xml:space="preserve">
     <value>Include this display in linked brightness</value>
   </data>

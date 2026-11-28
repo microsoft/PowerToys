@@ -265,7 +265,7 @@ public partial class MainViewModel
         try
         {
             var writes = Monitors
-                .Where(IsLinkedTarget)
+                .Where(m => IsLinkedTarget(m) && !IsBuiltInAlreadyAt(m, value))
                 .Select(m => m.SetBrightnessAsync(value))
                 .ToList();
 
