@@ -2,12 +2,13 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.CmdPal.Common.Messages;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Helpers;
 using Microsoft.CmdPal.Ext.ClipboardHistory.Models;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using Windows.ApplicationModel.DataTransfer;
 
 namespace Microsoft.CmdPal.Ext.ClipboardHistory.Commands;
 
@@ -37,14 +38,34 @@ internal sealed partial class PasteCommand : InvokableCommand
 
     public override CommandResult Invoke()
     {
+        var setTime = DateTimeOffset.Now;
         ClipboardHelper.SetClipboardContent(_clipboardItem, _clipboardFormat);
         HideWindow();
 
+        // The hide is processed asynchronously on the UI thread, while Invoke runs on a
+        // background thread. Wait (bounded) for another app to take the foreground, otherwise
+        // Ctrl+V can land in Command Palette itself instead of the target app.
+        if (!ForegroundWindowWaiter.WaitForForegroundToLeaveCurrentProcess(out var waited))
+        {
+            // Don't paste into Command Palette, and keep the history item since nothing was pasted.
+            // The content is still on the clipboard, so the user can paste it manually.
+            ExtensionHost.LogMessage(new LogMessage
+            {
+                Message = $"Paste skipped: Command Palette still had the foreground after {waited.TotalMilliseconds:F0} ms",
+                State = MessageState.Warning,
+            });
+            return CommandResult.ShowToast(Properties.Resources.copied_toast_text);
+        }
+
+        ExtensionHost.LogMessage(new LogMessage { Message = $"Foreground left Command Palette after {waited.TotalMilliseconds:F0} ms" });
         ClipboardHelper.SendPasteKeyCombination();
 
         if (!_settings.KeepAfterPaste)
         {
-            Clipboard.DeleteItemFromHistory(_clipboardItem.Item);
+            // Deferred and retried so it doesn't compete with the target app's OpenClipboard. It also removes the
+            // new history entry created by putting the content back on the clipboard.
+            var pasted = new PastedContent(_clipboardFormat, _clipboardFormat == ClipboardFormat.Text ? _clipboardItem.Content : null);
+            ClipboardHistoryDeleter.DeleteAfterPaste(_clipboardItem.Item, pasted, setTime);
         }
 
         return CommandResult.ShowToast(Properties.Resources.paste_toast_text);
