@@ -433,9 +433,9 @@
         <InfoBar
             x:Name="ValidationInfoBar"
             Grid.Row="1"
-            AutomationProperties.AutomationId="ValidationInfoBar"
             Grid.ColumnSpan="3"
             Margin="0,16,0,0"
+            AutomationProperties.AutomationId="ValidationInfoBar"
             IsClosable="False"
             IsOpen="False"
             Severity="Warning" />

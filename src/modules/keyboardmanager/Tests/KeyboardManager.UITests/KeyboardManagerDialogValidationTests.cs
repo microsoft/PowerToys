@@ -167,6 +167,7 @@ public sealed class KeyboardManagerDialogValidationTests : KeyboardManagerTestBa
         Step("Supplying text alone must not allow saving without trigger");
         var text = dialog.Find<TextBox>(By.AccessibilityId("TextContentBox"), timeoutMS: 5_000);
         text.SetText("Hello PowerToys");
+        AssertInlineWarning(dialog, false);
         AssertSaveEnabled(dialog, false, "Text without a trigger enabled Save.");
 
         Step("Clearing text without a trigger must show the inline warning");
@@ -259,9 +260,12 @@ public sealed class KeyboardManagerDialogValidationTests : KeyboardManagerTestBa
 
     private static void AssertSaveEnabled(Session dialog, bool expected, string message)
     {
-        var save = FindExact<Button>(dialog, "Save", timeoutMS: 5_000);
-        Assert.IsNotNull(save, "The remapping dialog does not expose Save.");
-        Assert.AreEqual(expected, save!.IsEnabled, message);
+        Assert.IsTrue(
+            dialog.WaitFor(
+                () => FindExact<Button>(dialog, "Save", timeoutMS: 500) is { } save && save.IsEnabled == expected,
+                timeoutMS: 5_000,
+                pollIntervalMS: 200),
+            message);
     }
 
     private static void AssertDialogClosed(Session editor, Session dialog)

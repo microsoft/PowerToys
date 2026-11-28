@@ -32,16 +32,41 @@ ordinary letters, they rarely interfere with UI text entry during the test.
 ## Running on a Windows development machine
 
 1. Follow the root developer setup instructions and initialize submodules.
-2. Install the Windows UI automation test prerequisites described in the
-   repository's UI testing documentation. Use an **interactive desktop**.
-3. Build the changed project using the repository build scripts and confirm the
-   build exited successfully. Build the UI test project before launching tests.
-4. Start PowerToys with the Keyboard Manager enabled, using the configuration
-   documented for the UITestAutomation.Next suite.
-5. Run the target tests from Visual Studio Test Explorer (or the repository's
-   documented `vstest.console.exe` workflow). Do **not** use `dotnet test`
-   as a substitute for the prescribed runner in this repository.
-6. Review results and any test artifacts before submitting a PR.
+2. Install the pinned `winappcli` runtime using the repository's
+   `.pipelines/InstallWinAppCli.ps1` helper, or configure `WINAPP_CLI_PATH`
+   as described in the UI testing documentation. This suite uses
+   UITestAutomation.Next, not WinAppDriver or Selenium.
+3. Build the PowerToys runtime and both affected test projects with the
+   repository build scripts. Check the exit code of each build before
+   proceeding to testing.
+4. Use a dedicated Windows VM with an interactive standard-user desktop.
+   Exit any existing PowerToys instance; the test harness owns the runner
+   and module lifecycle.
+5. Run the built UI-test executable directly with Microsoft.Testing.Platform.
+   Use explicit filter properties (not a bare test display name).
+6. Review the TRX results and failure artifacts. The full local validation
+   matrix is documented in the repository's UI testing guide.
+
+From the repository root, build the focused UI-test project after the runtime
+and prerequisites have been built:
+
+```powershell
+tools\build\build.cmd -Path src\modules\keyboardmanager\Tests\KeyboardManager.UITests -Platform x64 -Configuration Debug
+if ($LASTEXITCODE -ne 0) { throw 'Keyboard Manager UI test build failed.' }
+```
+
+On the interactive test desktop, with the built runtime and test payload staged,
+run the suite executable (adjust the path to the staged payload as needed):
+
+```powershell
+$exe = 'x64\Debug\tests\KeyboardManager.UITests\net10.0-windows10.0.26100.0\KeyboardManager.UITests.exe'
+& $exe --filter 'TestCategory=Keyboard Manager' --report-trx --report-trx-filename keyboard-manager.trx --results-directory .\TestResults\KeyboardManager
+if ($LASTEXITCODE -ne 0) { throw 'Keyboard Manager UI tests failed.' }
+```
+
+For a focused regression run, use a filter such as
+`Name=KeyboardManager.Editor.TextOutputValidation`. Confirm the TRX contains
+executed tests; a zero-test result is not evidence of success.
 
 Do not run these tests on a machine you rely on for keyboard accessibility
 remaps or custom productivity shortcuts. They replace the active Keyboard
@@ -86,7 +111,9 @@ A cancelled action should not modify the native profile:
   with stale selection state.
 
 A test should compare the persisted profile and the visible UI, not merely
-assert that the dialog disappeared.
+assert that the dialog disappeared. When testing edit cancellation, change a
+valid action before cancelling and verify that the original mapping, rather
+than the replacement, remains after reopening.
 
 ### Testing validation
 
@@ -108,7 +135,8 @@ without closing the dialog.
 
 Inserting literal whitespace is a valid text action; this differs from an
 empty string. The dialog's inline warning and Save enablement should agree
-with the underlying `ValidationHelper` rules.
+with the underlying `ValidationHelper` rules. Exercise the warning while
+the trigger is incomplete so that complete-input validation cannot mask it.
 
 ### Testing cross-category selection
 
@@ -156,6 +184,10 @@ When extending tests:
 
 - Keep each scenario focused on an observable user outcome.
 - Use short, bounded polling to wait for UI and persistence to settle.
+- Re-query elements after state transitions; `Element.Name` is cached at
+  lookup time.
+- Reuse the selection-mode and key recording helpers in
+  `KeyboardManagerTestBase`.
 - Assert both the intended change and preservation of unrelated mappings.
 - Release injected keys in a `finally` block, even on failure.
 - Use the existing scope instead of writing directly to a user's normal
