@@ -29,50 +29,52 @@ internal static class ExpirationTimeParser
             DateTimeStyles.AllowWhiteSpaces | DateTimeStyles.NoCurrentDateDefault,
             out DateTime parsedNoDefault))
         {
-            // Compare with and without NoCurrentDateDefault so literal 0001-01-01 dates and
-            // offset wraparound across midnight onto 0001-01-02 are not treated as time-only.
+            // Compare with and without NoCurrentDateDefault to exclude literal 0001-01-01 dates
+            // while keeping time-only offsets that cross midnight onto 0001-01-02.
             bool isTimeOnly = DateTime.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTime parsedWithDefault)
                 && parsedNoDefault.Date != parsedWithDefault.Date;
 
             if (isTimeOnly)
             {
-                DateTimeOffset anchoredNow;
-                TimeSpan timeOfDay;
-                TimeSpan? fixedOffset = null;
+                try
+                {
+                    DateTimeOffset anchoredNow;
+                    TimeSpan timeOfDay;
+                    TimeSpan? fixedOffset = null;
 
-                if (parsedNoDefault.Kind == DateTimeKind.Unspecified)
-                {
-                    anchoredNow = TimeZoneInfo.ConvertTime(now, timeZone);
-                    timeOfDay = parsedNoDefault.TimeOfDay;
-                }
-                else
-                {
-                    if (!DateTimeOffset.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTimeOffset parsedTimeOffset))
+                    if (parsedNoDefault.Kind == DateTimeKind.Unspecified)
                     {
-                        return ExpirationTimeParseStatus.InvalidFormat;
+                        anchoredNow = TimeZoneInfo.ConvertTime(now, timeZone);
+                        timeOfDay = parsedNoDefault.TimeOfDay;
+                    }
+                    else
+                    {
+                        if (!DateTimeOffset.TryParse(value, culture, DateTimeStyles.AllowWhiteSpaces, out DateTimeOffset parsedTimeOffset))
+                        {
+                            return ExpirationTimeParseStatus.InvalidFormat;
+                        }
+
+                        anchoredNow = now.ToOffset(parsedTimeOffset.Offset);
+                        timeOfDay = parsedTimeOffset.TimeOfDay;
+                        fixedOffset = parsedTimeOffset.Offset;
                     }
 
-                    anchoredNow = now.ToOffset(parsedTimeOffset.Offset);
-                    timeOfDay = parsedTimeOffset.TimeOfDay;
-                    fixedOffset = parsedTimeOffset.Offset;
-                }
+                    DateTime todayDateTime = anchoredNow.Date + timeOfDay;
+                    DateTimeOffset candidate = new(todayDateTime, fixedOffset ?? timeZone.GetUtcOffset(todayDateTime));
 
-                DateTime todayDateTime = anchoredNow.Date + timeOfDay;
-                DateTimeOffset candidate = new(todayDateTime, fixedOffset ?? timeZone.GetUtcOffset(todayDateTime));
-
-                if (candidate <= now)
-                {
-                    if (anchoredNow.Date >= DateTime.MaxValue.Date)
+                    if (candidate <= now)
                     {
-                        return ExpirationTimeParseStatus.InvalidFormat;
+                        DateTime tomorrowDateTime = anchoredNow.Date.AddDays(1) + timeOfDay;
+                        candidate = new DateTimeOffset(tomorrowDateTime, fixedOffset ?? timeZone.GetUtcOffset(tomorrowDateTime));
                     }
 
-                    DateTime tomorrowDateTime = anchoredNow.Date.AddDays(1) + timeOfDay;
-                    candidate = new DateTimeOffset(tomorrowDateTime, fixedOffset ?? timeZone.GetUtcOffset(tomorrowDateTime));
+                    expirationDateTime = candidate;
+                    return ExpirationTimeParseStatus.Success;
                 }
-
-                expirationDateTime = candidate;
-                return ExpirationTimeParseStatus.Success;
+                catch (ArgumentOutOfRangeException)
+                {
+                    return ExpirationTimeParseStatus.InvalidFormat;
+                }
             }
 
             if (parsedNoDefault.Kind == DateTimeKind.Unspecified)

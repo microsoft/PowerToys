@@ -104,6 +104,9 @@ public class ExpirationTimeParserTests
 
         DateTimeOffset exactMidnightUtc = new(2026, 11, 22, 0, 0, 0, TimeSpan.Zero);
         AssertSuccess("00:00:00Z", exactMidnightUtc, UsCulture, Eastern, new DateTimeOffset(2026, 11, 23, 0, 0, 0, TimeSpan.Zero));
+
+        AssertSuccess("08:00-05:00", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 23, 8, 0, 0, TimeSpan.FromHours(-5)));
+        AssertSuccess("23:00:00-14:00", BaseNow, UsCulture, Eastern, new DateTimeOffset(2026, 11, 22, 23, 0, 0, TimeSpan.FromHours(-14)));
     }
 
     [TestMethod]
@@ -131,6 +134,15 @@ public class ExpirationTimeParserTests
         Assert.AreEqual(
             ExpirationTimeParseStatus.InvalidFormat,
             ExpirationTimeParser.TryParse("08:00:00Z", new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero), UsCulture, Eastern, out _));
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InvalidFormat,
+            ExpirationTimeParser.TryParse("08:00:00+02:00", new DateTimeOffset(9999, 12, 31, 23, 0, 0, TimeSpan.Zero), UsCulture, Eastern, out _));
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InvalidFormat,
+            ExpirationTimeParser.TryParse("22:00:00-05:00", new DateTimeOffset(9999, 12, 30, 23, 30, 0, TimeSpan.FromHours(-5)), UsCulture, Eastern, out _));
+        Assert.AreEqual(
+            ExpirationTimeParseStatus.InvalidFormat,
+            ExpirationTimeParser.TryParse("9999-12-31T23:00:00-05:00", BaseNow, UsCulture, Eastern, out _));
     }
 
     [TestMethod]
