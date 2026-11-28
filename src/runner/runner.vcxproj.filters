@@ -108,6 +108,9 @@
     <ClInclude Include="slow_hotkey_watchdog.h">
       <Filter>Utils</Filter>
     </ClInclude>
+    <ClInclude Include="hotkey_dispatcher.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
     <ClInclude Include="settings_telemetry.h">
       <Filter>Utils</Filter>
     </ClInclude>
